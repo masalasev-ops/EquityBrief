@@ -17,12 +17,17 @@ public static class ExposureProcedures
 {
     public const string Proposal = ExposureVariant.Proposal;
 
-    // The families whose walk reads the exposure.
-    public static IReadOnlyList<string> Families { get; } = [BreakoutRule.Name, DriftRule.Name];
+    // The families whose walk reads the exposure, from 21.16 the pullback and the dip beside the breakout and the drift.
+    // see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, DipRule.Name];
 
-    // The breadth floor a rule's market check reads, which its exposure grades at; none where it reads no check.
+    // The breadth floor a rule's market check reads, which its exposure grades at; none where it reads no check, and for a
+    // dip none where its market setting reads no breadth, its fund's trend or the VIX.
     public static double? FloorOf(CandidateEvaluator? evaluator, IReadOnlyDictionary<string, double> p) => evaluator switch
     {
+        DipCandidate dip => DipRule.MarketLevels(dip.Index).ElementAtOrDefault((int)p.GetValueOrDefault(DipCandidate.MarketParameter)) is { Reads: DipRule.ReadsOwnBreadth or DipRule.ReadsLargeBreadth } level
+            ? level.Floor
+            : null,
         IndexRuleCandidate when p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter) == IndexRuleCandidate.NoMarketCheck => null,
         IndexRuleCandidate when p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter) == 1 => IndexRuleCandidate.LargeBreadthFloor,
         IndexRuleCandidate => p.TryGetValue(IndexRuleCandidate.BreadthFloorParameter, out var floor) && floor > 0 ? floor : FamilySweep.MarketFloor,

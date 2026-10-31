@@ -36,8 +36,7 @@ public sealed class RuleWalk(
     IReadOnlyDictionary<string, double>? standing = null,
     Func<int, IReadOnlyList<double?>>? readingsOf = null,
     Func<long, TreeModel?>? trees = null,
-    Func<Func<int, bool>?, Func<FamilyListing, bool>, IReadOnlyList<ExitProcedures.Walked>>? walkSkipping = null,
-    bool readsMenu = true)
+    Func<Func<int, bool>?, Func<FamilyListing, bool>, IReadOnlyList<ExitProcedures.Walked>>? walkSkipping = null)
 {
     // From 21.7 the expected value of the setups like each listing, by its place, which an order by it reads: matched
     // among the setups that ended before the listing's session on the readings of its fold's own score; none where the
@@ -49,11 +48,6 @@ public sealed class RuleWalk(
     public IReadOnlyList<double?>? ReadingsAt(int place) => readingsOf?.Invoke(place);
 
     IReadOnlyList<ExitProcedures.Walked>? own;
-
-    // From 21.5 whether the family's night reads an exit of the menu its hooks name; the short-term dip's does not, so an
-    // exit the autopsy finds for it is tested and shown and never put.
-    // see: A change a family's night does not read is tested and shown and never put to the operator
-    public bool ReadsMenu => readsMenu;
 
     // From 21.3 the rule's walk over the listings a filter keeps with the listings a skip names not bought, their places
     // on the night spent and their stocks left free, as the record command replays the drift's open floor: the walk a
@@ -274,14 +268,161 @@ public sealed class RuleWalk(
             trees);
     }
 
+    // From 21.16 a frozen S&P 400 or 600 pullback stating a level only its search's own reading walks, as the engines read
+    // it: the picks its setting and levels keep, each night's in the night's own order, the reward to risk highest first
+    // and the ticker breaking a tie, five a night with one open trade a stock as the night keeps them; under its own exit
+    // each trade the outcome its search read at the next open after its round trip, and under an exit of the menu each
+    // walked from its plan through the menu's one function and bought at the next open, as every swing family's is.
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+    public static RuleWalk OwnPullback(IndexSweepRunner.OwnPullbackRead own, RuleReplay.PullbackAt at, string words, IReadOnlyDictionary<string, double> hooks, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null)
+    {
+        var read = own.Laid;
+        var (design, picks) = own.Under(at.Levels);
+        var setting = own.SettingUnder(at.Point, at.Levels);
+        var conditions = own.Space.Conditions(at.Point);
+        var exit = design.ExitIndex;
+        var floor = SweepStages.StopFloor(setting);
+        var closes = ClosesOf(read.Series);
+        var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
+        var listed = new List<FamilyListing>();
+        var plans = new List<(SweepPlanOutcomes Plan, int Year)>();
+        var seen = new HashSet<(int Name, int Session)>();
+
+        foreach (var pick in picks
+            .Where(pick => pick.Corner.Passes(setting) && conditions.Passes(pick.Readings))
+            .OrderBy(pick => pick.Session)
+            .ThenByDescending(pick => pick.Plan.RewardToRisk)
+            .ThenBy(pick => tickers[pick.Name], StringComparer.Ordinal))
+        {
+            var bar = Array.BinarySearch(read.Series[pick.Name].SessionAt, pick.Session);
+
+            if (bar < 0 || !seen.Add((pick.Name, pick.Session)))
+            {
+                continue;
+            }
+
+            var entry = closes[pick.Name][bar];
+            var move = read.Series[pick.Name].Atr[bar];
+            var stop = entry - (pick.Plan.StopMoves * move);
+
+            listed.Add(new FamilyListing(pick.Name, bar, pick.Session, pick.Plan.RewardToRisk, 0, entry, stop, entry + (pick.Plan.RewardToRisk * (entry - stop)), double.NaN, SweepIdeas.Cap, move));
+            plans.Add((pick.Plan, pick.Year));
+        }
+
+        var places = listed.Select((listing, place) => (listing, place)).ToDictionary(pair => (pair.listing.Name, pair.listing.Session), pair => pair.place);
+
+        // A listing's trade under its own exit, the search's outcome at the next open, none where the search read no trade.
+        (double? Result, double Benchmark, int Sessions) Own(FamilyListing listing)
+        {
+            var (plan, year) = plans[places[(listing.Name, listing.Session)]];
+
+            return year is >= 0 and < SweepFigures.Years
+                && plan.Code[exit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved
+                && !float.IsNaN(plan.Multiple[exit])
+                && !float.IsNaN(plan.Benchmark[exit])
+                && plan.IsATradeAt(exit, floor)
+                    ? (plan.Multiple[exit], plan.Benchmark[exit], plan.Ends[exit])
+                    : (null, double.NaN, plan.Ends[exit]);
+        }
+
+        int YearOf(int session) => read.Calendar[session].Year - SweepColumns.FirstScored.Year;
+
+        // The listings handed in, each night's in their order, five a night with one open trade a stock.
+        IReadOnlyList<ExitProcedures.Walked> OwnWalk(IReadOnlyList<FamilyListing> chosen)
+        {
+            var walked = new List<ExitProcedures.Walked>();
+            var openUntil = new Dictionary<int, int>();
+
+            foreach (var night in chosen.GroupBy(listing => listing.Session).OrderBy(group => group.Key))
+            {
+                var taken = 0;
+
+                foreach (var listing in night.OrderByDescending(one => one.Order).ThenByDescending(one => one.ThenBy).ThenBy(one => tickers[one.Name], StringComparer.Ordinal))
+                {
+                    if (taken == FamilySweep.PerNight)
+                    {
+                        break;
+                    }
+
+                    if (openUntil.TryGetValue(listing.Name, out var held) && listing.Session <= held)
+                    {
+                        continue;
+                    }
+
+                    var (result, benchmark, sessions) = Own(listing);
+
+                    openUntil[listing.Name] = listing.Session + sessions;
+                    walked.Add(new ExitProcedures.Walked(listing.Session, result is null ? null : listing.Session + sessions, new FamilyTrade(listing, YearOf(listing.Session), result, benchmark), string.Empty));
+                    taken++;
+                }
+            }
+
+            return walked;
+        }
+
+        var standingExit = RuleHooks.Of(hooks).ExitChoice;
+
+        RuleListing Unit(FamilyListing listing)
+        {
+            if (standingExit is null)
+            {
+                var (result, benchmark, sessions) = Own(listing);
+
+                return new RuleListing(listing.Name, listing.Bar, listing.Session, result is null ? null : listing.Session + sessions, result is { } made && !double.IsNaN(benchmark) ? made - benchmark : null);
+            }
+
+            var taken = ExitProcedures.Walk(read, Unwalked, closes, [listing], standingExit).SingleOrDefault();
+
+            return new RuleListing(listing.Name, listing.Bar, listing.Session, taken?.Exit, taken?.Edge);
+        }
+
+        IReadOnlyList<ExitProcedures.Walked> Walk(ExitChoice? under, Func<int, bool>? keep, Func<IReadOnlyList<int>, IReadOnlyList<int>>? arrange)
+        {
+            IReadOnlyList<FamilyListing> chosen = keep is null ? listed : [.. listed.Where((_, place) => keep(place))];
+
+            if (arrange is not null)
+            {
+                var ordered = new List<FamilyListing>();
+
+                foreach (var night in Enumerable.Range(0, listed.Count).Where(place => keep is null || keep(place)).GroupBy(place => listed[place].Session).OrderBy(group => group.Key))
+                {
+                    var kept = arrange([.. night]);
+
+                    for (var place = 0; place < kept.Count; place++)
+                    {
+                        ordered.Add(listed[kept[place]] with { Order = kept.Count - place, ThenBy = 0 });
+                    }
+                }
+
+                chosen = ordered;
+            }
+
+            return under is null ? OwnWalk(chosen) : ExitProcedures.Walk(read, Unwalked, closes, chosen, under);
+        }
+
+        return new RuleWalk(
+            SetupFamilies.Pullback,
+            WordsOf(words, hooks),
+            closes,
+            SweepIdeas.Cap,
+            [.. listed.Select(Unit)],
+            Walk,
+            hooks,
+            readings is null ? null : place => readings.Of(listed[place].Name, listed[place].Bar, listed[place].Session),
+            trees);
+    }
+
+    // The adapter a walk under an exit of the menu is handed, whose own exit no such walk reads.
+    static readonly FamilySweepRunner.Adapter Unwalked = new(null!, 0, _ => [], _ => (null, 0), _ => double.NaN);
+
     // From 21.5 the short-term dip's live rule on an index read once for every engine: its listings at the setting and the
     // second stage's levels its registration states over the dip's own reading of the history, the market level read on
     // each listing's session, and its walk, the dip's own, five a night in its order with one open trade a stock, each
     // bought at the next open and sold at the open after its exit's close or at its time limit's close, after its round
     // trip; under an exit of the menu each listing walked as the dip walks one under it. Its night keeps and orders its
-    // list by the hooks it stands at and reads no exit of the menu.
+    // list by the hooks it stands at and from 21.16 walks its trades under the exit of the menu they name.
     // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
-    // see: A change a family's night does not read is tested and shown and never put to the operator
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
     public static RuleWalk Dip(LoopRead read, IndexSweepRunner.DipRead dip, IReadOnlyDictionary<string, double> parameters, string words, IReadOnlyDictionary<string, double> hooks, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null)
     {
         var (setting, levels) = dip.SettingOf(parameters);
@@ -339,8 +480,7 @@ public sealed class RuleWalk(
             Walk,
             hooks,
             readings is null ? null : at => readings.Of(listed[at].Name, listed[at].Bar, listed[at].Session),
-            trees,
-            readsMenu: false);
+            trees);
     }
 
     // The S&P 400's or 600's provisional pullback, the pullback's base as its record replays it, five a night with one
@@ -352,7 +492,17 @@ public sealed class RuleWalk(
     {
         var replay = candidates ?? SweepIdeasRunner.Read(read.Inputs, market, progress).Replay;
         var series = replay.Series;
-        var rule = SweepIdeas.BaseRule with { Setting = setting ?? SweepIdeas.BaseRule.Setting, PerNight = SetupFamilies.ListedANight };
+        var at = setting ?? SweepIdeas.BaseRule.Setting;
+
+        // From 21.16 a pullback standing at the exposure reads its listings with its market dial off, as the night reads
+        // them, the exposure's picks a night cutting each night's list through its hooks' order.
+        // see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+        if (RuleHooks.Of(standing?.Hooks ?? LoopChange.NoHooks).Exposure is not null)
+        {
+            at = at with { Market = SweepGrid.IndexOf(SweepGrid.Extended.MarketFloors, SweepGrid.MarketOff) };
+        }
+
+        var rule = SweepIdeas.BaseRule with { Setting = at, PerNight = SetupFamilies.ListedANight };
 
         bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? []);
 

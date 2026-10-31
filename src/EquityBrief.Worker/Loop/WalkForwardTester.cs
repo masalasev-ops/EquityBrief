@@ -305,13 +305,36 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             }
         }
 
+        // From 21.16 the pullback's and the dip's graded exposure at the floor the live rule's market check reads, walked
+        // where each family's reading is laid out and proposed with the rule's other changes.
+        // see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+        var exposedWalks = new Dictionary<string, (IReadOnlyList<(int Entry, double? Edge)> Units, double Floor)>(StringComparer.Ordinal);
+
         if (!large)
         {
             baseReplay = SweepIdeasRunner.Read(read.Inputs, market, output.WriteLine).Replay;
 
             if (FrozenOn(SetupFamilies.Pullback) is { } pullbackLive)
             {
-                AddLive(SetupFamilies.Pullback, RuleTests.LivePullbackWalk(read, market, pullbackLive, output.WriteLine, readings, trees, baseReplay));
+                // From 21.16 a live pullback stating a level only its search's own reading walks is read over that reading,
+                // its round trip charged once as the per-rule test charges it.
+                // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+                IndexSweepRunner.OwnPullbackRead? ownPullback = null;
+
+                if (Core.Candidates.CandidateEvaluators.Find(pullbackLive.Evaluator) is Core.Candidates.IndexRuleCandidate pullbackEvaluator
+                    && RuleTests.ReadsOwnSweep(pullbackEvaluator, Core.Candidates.CandidateEvaluator.Read(pullbackLive.Parameters)))
+                {
+                    output.WriteLine($"{Verb}: reading the {DecisionCards.NameOf(index)}'s pullback as its own search reads it, for its live rule stating a level the extended grid's walk does not read");
+                    ownPullback = await IndexSweepRunner.OwnPullbackRead.ReadAsync(read, await LargeReadAsync(), history, through, output.WriteLine, cancellation);
+                    ownPullback.Charge(1);
+                }
+
+                AddLive(SetupFamilies.Pullback, RuleTests.LivePullbackWalk(read, market, pullbackLive, output.WriteLine, readings, trees, baseReplay, ownPullback));
+
+                if (procedures && RuleTests.PullbackExposedUnits(read, market, pullbackLive, ownPullback, output.WriteLine, readings, trees, baseReplay) is { } pulled)
+                {
+                    exposedWalks[SetupFamilies.Pullback] = pulled;
+                }
             }
             else
             {
@@ -379,6 +402,11 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
             rules.Add(RuleWalk.Dip(read, dipRead, parameters, words, hooks, readings, trees));
 
+            if (procedures && RuleTests.DipExposedUnits(read, dipRead, dipLive, readings, trees) is { } dipped)
+            {
+                exposedWalks[DipRule.Name] = dipped;
+            }
+
             if (procedures && hooks.Count > 0)
             {
                 output.WriteLine($"{Verb}: the {DipRule.Name}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at hooks the grid's walk reads none of");
@@ -394,7 +422,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // grid's walk reads none of; and its live rule handed to winners against losers, the learned score and the idea
         // generator over the ledger's setups of the family on the index.
         // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
-        // see: A change a family's night does not read is tested and shown and never put to the operator
+        // see: Every change the engines propose is one its family's night reads, so each is put to the operator
         var books = new List<EngineRule>();
         const string UnderTheAverage = "a holding also sold at a close under its 200-day average";
 
@@ -415,10 +443,15 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             if (procedures)
             {
                 var onFiling = quality with { SellOnFiling = true };
+                var underAverage = quality with { SoldUnderAverage = true };
 
+                // From 21.16 the sale under the 200-day average is a change the book's night reads, so it is put.
+                // see: Every change the engines propose is one its family's night reads, so each is put to the operator
                 BookProcedures.MenuChange[] menu =
                 [
-                    new(UnderTheAverage, qualityLay.Book(quality, soldUnderAverage: true, arrange: arranged).Months, null),
+                    .. quality.SoldUnderAverage
+                        ? []
+                        : new[] { new BookProcedures.MenuChange(UnderTheAverage, qualityLay.Book(underAverage, arrange: arranged).Months, new LoopChange(null, underAverage.Key, null, LoopChange.NoHooks)) },
                     .. quality.SellOnFiling
                         ? []
                         : new[] { new BookProcedures.MenuChange("a holding also sold at the close of the night a filing drops its score below the floor", qualityLay.Book(onFiling, arrange: arranged).Months, new LoopChange(null, onFiling.Key, null, LoopChange.NoHooks)) },
@@ -451,9 +484,13 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
             if (procedures)
             {
+                var underAverage = improving with { SoldUnderAverage = true };
+
                 BookProcedures.MenuChange[] menu =
                 [
-                    new(UnderTheAverage, improvingLay.Book(improving, soldUnderAverage: true, arrange: arranged).Months, null),
+                    .. improving.SoldUnderAverage
+                        ? []
+                        : new[] { new BookProcedures.MenuChange(UnderTheAverage, improvingLay.Book(underAverage, arrange: arranged).Months, new LoopChange(null, underAverage.Key, null, LoopChange.NoHooks)) },
                     .. ImprovingGrid.SessionLevels
                         .Where(level => level != improving.Sessions)
                         .Select(level => improving with { Sessions = level })
@@ -536,7 +573,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
             var from = exposedFrom.GetValueOrDefault(rule.Family);
 
-            if (RuleTests.ExposedUnits(read, rule.Family, large, from.Live, standing.GetValueOrDefault(rule.Family), from.Own, readings, trees) is { } exposed)
+            if ((RuleTests.ExposedUnits(read, rule.Family, large, from.Live, standing.GetValueOrDefault(rule.Family), from.Own, readings, trees)
+                ?? (exposedWalks.TryGetValue(rule.Family, out var walked) ? walked : null)) is { } exposed)
             {
                 proposals.Add(ExposureProcedures.Run(read, EngineRule.Of(read, rule, readings), exposed.Units, exposed.Floor));
             }
