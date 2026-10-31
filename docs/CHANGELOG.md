@@ -26,6 +26,77 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-31 - docs/ARCHITECTURE.html - the second move of the pins: the index families hand the expected value, the dip walks an approved exit, the books sell under the 200-day average, and the engines read every change a night reads
+Authorised by: Every change the engines propose is one its family's night reads, so each is put to the operator
+Was:
+> (Index families) ... (see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn)</td>
+> (Dip family) ... a night run again leaving the night row its earlier run stored and naming the failure on the stage's alone, the step and the night going on; makes no request and calls no model</td>
+> (Quality family) ... runs through no step any rule's version pins; a failure in one index's part ...
+> (Improving family) membership, bar store, companies, filed facts, ... runs through no step another family's rule pins, its own rules from 22.15 pinning it; a failure in one index's part ...
+> (Walk-forward tester) ... (see: A family's version is chosen each month by its recent record as a procedure judged against staying with the live rule, and an approval of it waits on the operator's word)</td>
+> (Dip trades) ... (see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close)</td>
+> (Quality holdings) ... (see: A quality holding is sold at a reshuffle where it no longer qualifies and at its last close as a member, and is bought at the next open)</td>
+> (Improving trades) ... (see: A Fundamentals trade is held while its score stays at seven in nine, and judged against an equal-weighted hold of its index's members after its round trip)</td>
+> (13.13's autopsy paragraph) A change the family's night reads no dial for, every exit of the menu for the dip and the sale under the 200-day average for the two books, is walked, ranked and judged as every change is and shown with why, and never put to the operator (see: A change a family's night does not read is tested and shown and never put to the operator).
+> (The autopsy's findings) ...; and from 21.5 beneath a change the family's night reads no dial for, the words saying it is shown and not put and no press (see: A change a family's night does not read is tested and shown and never put to the operator)
+> (The autopsy's proposals) ... and the short-term dip's under the swing families' menu, a change the family's night reads no dial for shown and never put (see: ...) (see: A change a family's night does not read is tested and shown and never put to the operator)
+> (The graded exposure variant) for the breakout and the drift on each index, the family's live rule ... and none for a rule reading no check; ... (see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half)
+Now:
+> (Index families) ...; and from 21.16 hands a registered rule ordered or ranked by the expected value of the setups like each candidate that figure, read from the ledger's finished setups of its family on its index as a pick's card reads them (see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere)</td>
+> (Dip family) ...; from 21.16 a trade of a rule whose approved change names an exit of the menu in its sell dial's place is walked under it, the trade storing the exit (see: Every change the engines propose is one its family's night reads, so each is put to the operator); makes no request and calls no model</td>
+> (Quality family) ...; from 21.16 a holding of a rule stating the sale under the 200-day average sold at the close of a night after its buy on which it stands under it (see: ...); a failure in one index's part ...
+> (Improving family) membership, bar store, indicators, companies, filed facts, ...; from 21.16 a trade of a rule stating the sale under the 200-day average sold at the close of a night after its buy on which it stands under it, read off the night's stored averages (see: ...); a failure in one index's part ...
+> (Walk-forward tester) ...; and from 21.16 a frozen S&amp;P 400 or 600 pullback stating a level only its search's own reading walks read by every engine over that reading, the dip's exits and the books' sale under the 200-day average put, an S&amp;P 400 or 600 rule ordered by the expected value walked in that order, and each live pullback's and dip's graded exposure walked and proposed (see: ...) (see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are)</td>
+> (Dip trades) ...; from 21.16 each holding the exit of the menu its rule's approved change names, which it is walked under (see: ...)</td>
+> (Quality holdings, Improving trades) ...; from 21.16 one sold at a close under its 200-day average ended under its own reason (see: ...)</td>
+> (13.13's autopsy paragraph) From 21.16 the dip's night walks a trade under the exit of the menu its rule names in its sell dial's place and the two books read the sale under the 200-day average, so every change the menus hold is one the family's night reads, walked, ranked and judged as every change is and put to the operator (see: Every change the engines propose is one its family's night reads, so each is put to the operator).
+> (The autopsy's findings) ...; and from 21.16 every change of the menus is one the family's night reads and is drawn with its finding, the one put with its press (see: ...)
+> (The autopsy's proposals) ... and the short-term dip's under the swing families' menu, each a change the family's night reads (see: ...) (see: Every change the engines propose is one its family's night reads, so each is put to the operator)
+> (The graded exposure variant) for the breakout and the drift on each index, and for the pullback wherever its family's rule takes a hook and the dip on each index, ... and none for a rule reading no check or, for a dip, a market setting reading its fund's trend or the VIX; ... (see: ...) (see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are)
+Why: the operator's answers of 2026-10-30 made the second move of the pins: the order by the expected value read on the S&P 400 and 600, graded exposure read by the pullback and the dip, and the dip's exits, the books' sale under the 200-day average and the frozen S&P 400 and 600 pullbacks' changes made approvable.
+
+### 2026-10-31 - docs/SCHEMA.md - the dip trade's exit of the menu, and the books' end reasons admitting the sale under the 200-day average
+Authorised by: Every change the engines propose is one its family's night reads, so each is put to the operator
+Was:
+> (dip_trade) the columns ending at `cost`
+> (quality_holding) | `end_reason` | TEXT | `open`, `no longer qualifies` or `left the index` |
+> (improving_trade) | `end_reason` | TEXT | `open`, `score fell`, `time limit` or `left the index` |
+Now:
+> (dip_trade) and from 21.16 | `exit` | INTEGER | the exit of the menu its rule's approved change names in its sell dial's place, which the trade is walked under ...; null under the rule's own sell dial (see: ...) |
+> (quality_holding) ..., and from 21.16 `under its 200-day average` for a rule selling a holding bought before the night at a close under it |
+> (improving_trade) ..., and from 21.16 `under its 200-day average` for a rule selling a trade bought before the night at a close under it |
+Why: migration 117 adds the column and rebuilds the two tables so their checks admit the new reason, every row copied across.
+
+### 2026-10-31 - docs/RUNBOOK.md - the ordered form, the exposed form for the pullback and the dip, and the autopsy's changes all put
+Authorised by: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+Was:
+> It is refused for a family other than the breakout and the drift, whose walks alone read the exposure, where no live rule of the family stands on the index, where the live rule reads no market check, and where the family holds nine rules.
+> (the autopsy) ...; a change the family's night reads no dial for, every exit of the menu for the dip and the sale under the 200-day average for the two books, is shown on the Loop page with why and never put to you (see: ...) (see: A change a family's night does not read is tested and shown and never put to the operator).
+> (no paragraph for the ordered form)
+Now:
+> It is refused for a family whose walk reads no exposure, from 21.16 any but the pullback, the breakout, the drift and the dip (see: ...), where no live rule of the family stands on the index, where the live rule reads no market check, a dip's reading its fund's trend or the VIX among them, and where the family holds nine rules.
+> (the autopsy) ...; from 21.16 every exit of the menu for the dip and the sale under the 200-day average for the two books is a change the family's night reads, put to you on the Loop page with its press as any change is (see: ...) (see: Every change the engines propose is one its family's night reads, so each is put to the operator).
+> **An S&P 400 or 600 swing family's order by the expected value** is registered beside its live rule on one index by one command, from 21.16, ... `register --ordered drift --index MID` ... refused on the S&P 500, ... for a family the index families' step lists by no hook, ... and where the family holds nine rules.
+Why: the same answers; the runbook states each form the move adds and what the move made approvable.
+
+### 2026-10-31 - .claude/rules/checks.md - fixture-expectations states the book menu's sale under the 200-day average put with its key
+Authorised by: Every change the engines propose is one its family's night reads, so each is put to the operator
+Was:
+> fixture-expectations: ... the book menu ranked in each fold above the live book at the month floors, the 200-day sale shown and never put; ...
+> fixture-expectations: ... and a run moving every stored settlement to the day the rule gives |
+Now:
+> fixture-expectations: ... the book menu ranked in each fold above the live book at the month floors, from 21.16 the 200-day sale stating its setting's key; ...
+> fixture-expectations: ... and a run moving every stored settlement to the day the rule gives; and from 21.16 a dip trade walked under an exit of the menu by hand, ... and the remedy's lines over a register shaped as the operator's |
+Why: each roster row says what its check asserts.
+
+### 2026-10-31 - docs/BUILD_PLAN.md - 21.16's citation names the decision that superseded the one it supersedes
+Authorised by: Every change the engines propose is one its family's night reads, so each is put to the operator
+Was:
+> superseding for them the decision that such a change is tested and shown and never put (see: A change a family's night does not read is tested and shown and never put to the operator)
+Now:
+> superseding for them the decision that such a change is tested and shown and never put (see: Every change the engines propose is one its family's night reads, so each is put to the operator)
+Why: a spec cites no decision under Previously decided.
+
 ### 2026-10-30 - docs/SCHEMA.md - the short interest reader updates a stored settlement's published day, which moves one business day later before the closure table's reach
 Authorised by: A FINRA publication day counted before the closure table's reach is moved later by the largest miss counting weekdays alone makes where the table reaches
 Was:

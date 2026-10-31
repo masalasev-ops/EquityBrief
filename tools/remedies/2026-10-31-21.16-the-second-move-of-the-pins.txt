@@ -1,0 +1,24 @@
+# The remedy of 21.16, the second move of the pins, on the operator's answers of 2026-10-30. Migration 117 adds the dip
+# trade's exit of the menu and rebuilds the two books' holdings so their end reasons admit the sale under the 200-day
+# average, every row copied across. Sources registered rules pin moved once in the pull request: the index families'
+# step, which hands a rule ordered or ranked by the expected value of the setups like each candidate that figure and which
+# every S&P 400 and 600 rule and every dip rule pins; the dip's rule and step, which walk a trade under an exit of the menu
+# an approval names; and the two books' rules and steps, which sell a holding at a close under its 200-day average where
+# the rule states it. The hooks' own sources did not move, so no S&P 500 breakout or drift rule is registered again. One
+# command registers again every standing candidate whose evaluator the code no longer carries at the version it was
+# registered with, each S&P 400 and 600, dip, quality and Fundamentals record restarting at this instant, its count
+# printed before it restarts. Then the variants the operator's answers make, each where its family has room: the S&P
+# 600's breakout ordered by the expected value, the one S&P 400 or 600 family whose score audit's expected-value fifths
+# order it, the top fifth above the bottom, as the 21.8 amendment reads an order off the audit; and the graded exposure for
+# the S&P 400's pullback at its own breadth floor and for the S&P 400's and 600's dips at the breadth their market setting
+# reads. The S&P 600's pullback reads no market check and has none to grade; the S&P 500's pullback is the swing filter,
+# which takes no hook, and the S&P 500's dip reads the VIX, so neither has an exposure. Tonight's lists are unchanged by
+# it, since no rule standing states a new hook. No request to the provider and no model call. Run from main after the
+# merge, when no night, local run, drain, labeller, ledger build or monthly run is writing, read the output for "remedy
+# done" and the counts, and restart the read surface after it.
+migrate
+register --moved --evidence "21.16: the second move of the pins on the operator's answers of 2026-10-30, the index families' step handing the expected value, the dip walking an approved exit of the menu and the two books selling under the 200-day average"
+register --ordered breakout --index SML
+register --exposed pullback --index MID
+register --exposed dip --index MID
+register --exposed dip --index SML

@@ -1410,6 +1410,7 @@ Grain: one row per rule, index, stock and session a dip list kept a trade on, fr
 | `sessions` | INTEGER | the sessions held to its sale, or held so far while open |
 | `result` | REAL | what it came to bought at the open in multiples of the risk its listing close set, before its cost, null while held |
 | `cost` | REAL | its round trip in multiples of that risk at the published table, its company valued as the member readings read it on its night, null while held |
+| `exit` | INTEGER | from 21.16, the exit of the menu its rule's approved change names in its sell dial's place, which the trade is walked under, sold at the next open after the menu's trigger and at its own close where the menu's time or the time limit ends it; null under the rule's own sell dial (see: Every change the engines propose is one its family's night reads, so each is put to the operator) |
 
 Primary key: `rule`, `index_code`, `ticker`, `session_date`.
 
@@ -2778,7 +2779,7 @@ Grain: one row per rule, index, stock and night it was chosen, from 22.9.
 | `through` | TEXT | the session its growth was carried to |
 | `ended_on` | TEXT | the session it was sold at, null while held |
 | `sale` | TEXT | decimal in code, its close on that session |
-| `end_reason` | TEXT | `open`, `no longer qualifies` or `left the index` |
+| `end_reason` | TEXT | `open`, `no longer qualifies` or `left the index`, and from 21.16 `under its 200-day average` for a rule selling a holding bought before the night at a close under it |
 | `result` | REAL | its growth less one less its gap, null while held or where it was sold before its buy |
 | `benchmark` | REAL | the members' mean carried growth from its choice to its sale less one less `bench_gap` |
 | `cost` | REAL | its round trip in per cent of its buy at the published table, its company valued as the member readings read it on the night it was chosen |
@@ -2861,7 +2862,7 @@ Grain: one row per rule, index, stock and night it was chosen, from 22.13.
 | `sessions` | INTEGER | the sessions it was held to that session, its buy's counted first, each a session the store holds a bar of the stock for |
 | `ended_on` | TEXT | the session it was sold at, null while held |
 | `sale` | TEXT | decimal in code, its close on that session |
-| `end_reason` | TEXT | `open`, `score fell`, `time limit` or `left the index` |
+| `end_reason` | TEXT | `open`, `score fell`, `time limit` or `left the index`, and from 21.16 `under its 200-day average` for a rule selling a trade bought before the night at a close under it |
 | `result` | REAL | its growth less one less its gap, null while held or where it was sold before its buy |
 | `benchmark` | REAL | the members' mean carried growth from its choice to its sale less one less `bench_gap` |
 | `cost` | REAL | its round trip in per cent of its buy at the published table, its company valued as the member readings read it on the night it was chosen |
