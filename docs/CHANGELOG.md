@@ -50,7 +50,7 @@ Now:
 > (15.18, the follower) ... or its last close as a member, from 21.14 a close through its stop or at its target sold at the next session's open, its result in the plan's risk from the fill, ...
 > (Trade fills, 16) ... drawn nowhere; from 21.14 a swing trade's sale beside it, the session and the price it was sold at, the open after the close that signalled its stop, its target or its trail or its own close for the cap or a time exit, its result and edge sold there
 > (21.9's graded exposure) ... (see: ...). From 21.14, on the operator's ruling of 2026-10-30, the direction stays as built, ..., and the per-rule test walks each graded exposure again with the direction reversed, ..., unregistered and written nowhere, and prints both over the test years for the operator's word; nothing more is registered for it.
-> (added) the Drift surprises check's catalogue and matrix rows, and 15.21's row The tone variant's line
+> (added) the Drift surprises catalogue and matrix rows, and 15.21's row The tone variant's line
 Why: the operator ruled on 2026-10-30, on 21.3's figures, that every swing trade's exit is priced at the next session's open by a fill step of its own with no rule registered again and no record restarting, that the tone variant's card says its history before 2025 does not count, that two read-only checks precede 21.15 and that the VIX's reversed direction is walked beside each graded variant; 21.14 builds each.
 
 ### 2026-10-31 - docs/SCHEMA.md - trade_fill's sale beside its fill

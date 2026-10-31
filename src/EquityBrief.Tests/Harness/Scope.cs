@@ -3679,11 +3679,11 @@ internal static class Scope
             ByAccess),
 
         // 21.14, the drift surprises check, a read-only check of its own.
-        [CheckReach.Key(CatalogueTable, "Drift surprises check")] = new Scoped(
+        [CheckReach.Key(CatalogueTable, "Drift surprises")] = new Scoped(
             Verdict.Pass,
             "the class declares the night's inputs, the drift's stored rows and the pulled surprises it reads and nothing it writes, each reconciled against the row",
             ByAccess),
-        [CheckReach.Key(MatrixTable, "Drift surprises check")] = new Scoped(
+        [CheckReach.Key(MatrixTable, "Drift surprises")] = new Scoped(
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),

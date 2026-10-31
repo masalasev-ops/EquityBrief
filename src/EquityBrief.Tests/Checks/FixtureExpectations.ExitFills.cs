@@ -17,8 +17,8 @@ public partial class FixtureExpectations
     // The rows 21.14 adds to the architecture: the drift surprises check's catalogue and matrix rows.
     internal static readonly string[] ExitFillRows =
     [
-        CheckReach.Key(Scope.CatalogueTable, "Drift surprises check"),
-        CheckReach.Key(Scope.MatrixTable, "Drift surprises check"),
+        CheckReach.Key(Scope.CatalogueTable, "Drift surprises"),
+        CheckReach.Key(Scope.MatrixTable, "Drift surprises"),
     ];
 
     // The sources 21.14 writes, none of which a rule's version pins.

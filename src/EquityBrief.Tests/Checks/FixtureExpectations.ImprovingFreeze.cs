@@ -328,7 +328,9 @@ public partial class FixtureExpectations
         Assert.Equal(ImprovingLive("S&P 400", MidImprovingFrozen), rules[0].Rule);
         Assert.Equal(MidImprovingFrozen, walked[0]);
         Assert.All(rules, rule => Assert.Equal(ImprovingRule.Name, rule.Family));
-        Assert.Equal([MidImprovingFrozen, .. ImprovingNeighbours(MidImprovingFrozen)], walked);
+        // From 21.14 a rule requiring a flag first is walked again beside it at the same settings without the flag.
+        Assert.Equal([.. new[] { MidImprovingFrozen }.Concat(ImprovingNeighbours(MidImprovingFrozen)).SelectMany(setting => setting.FlagFirst ? new[] { setting, setting with { FlagFirst = false } } : [setting])], walked);
+        Assert.Equal(walked.Count - rules.Length, rules.Count(rule => rule.Unflagged is not null));
         Assert.Empty(RuleTests.Improving(after, "SML", _ => []));
     }
 

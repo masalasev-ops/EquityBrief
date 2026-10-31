@@ -348,8 +348,8 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Score audit"),
 
             // 21.14, the drift surprises check.
-            CheckReach.Key(Scope.CatalogueTable, "Drift surprises check"),
-            CheckReach.Key(Scope.MatrixTable, "Drift surprises check"),
+            CheckReach.Key(Scope.CatalogueTable, "Drift surprises"),
+            CheckReach.Key(Scope.MatrixTable, "Drift surprises"),
 
             // 16.3, the taken trades' follower.
             CheckReach.Key(Scope.CatalogueTable, "Taken follower"),
