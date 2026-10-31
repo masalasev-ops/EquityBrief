@@ -425,7 +425,7 @@ public partial class FixtureExpectations
         // From 20.9 each index's ideas come after which readings go with winners and before its tester runs, and the
         // worker builds its steps in the order the names state, read off its own source.
         Assert.Equal(
-            ["facts", "history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "report"],
+            ["facts", "dividends", "history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "report"],
             MonthlyRun.StepNames);
 
         var source = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Program.cs"));
@@ -433,13 +433,13 @@ public partial class FixtureExpectations
 
         month = month[..month.IndexOf("\n}", StringComparison.Ordinal)];
 
-        string[] built = ["new(\"facts\"", "\"history\",", "new(\"check-\" + index", "\"links-\" + index", "\"ideas-\" + index", "\"test-\" + index", "\"rules-\" + index", "new(\"report\""];
+        string[] built = ["new(\"facts\"", "new(\"dividends\"", "\"history\",", "new(\"check-\" + index", "\"links-\" + index", "\"ideas-\" + index", "\"test-\" + index", "\"rules-\" + index", "new(\"report\""];
         var places = built.Select(literal => month.IndexOf(literal, StringComparison.Ordinal)).ToArray();
 
         Assert.All(places, place => Assert.True(place >= 0));
         Assert.Equal(places.Order(), places);
         Assert.Equal(
-            ["facts", "history", "check", "links", "ideas", "test", "rules", "report"],
+            ["facts", "dividends", "history", "check", "links", "ideas", "test", "rules", "report"],
             MonthlyRun.StepNames.Select(name => name.Split('-')[0]).Distinct());
     }
 

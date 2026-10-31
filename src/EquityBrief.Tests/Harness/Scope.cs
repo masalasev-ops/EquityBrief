@@ -3741,6 +3741,11 @@ internal static class Scope
             Verdict.Pass,
             "the ranking's candidates and order worked by hand over a constructed night of seven setups under a constructed score and under the expected value, the best five taken and a setup neither can read left off, at the hooks and in the S&P 500's recorder; the figures read off the document against the constants",
             ByExpectations),
+        // 21.12's cap and weights of the monthly run's housekeeping asks.
+        [CheckReach.Key(LimitsTable, "The monthly run's housekeeping asks")] = new Scoped(
+            Verdict.Pass,
+            "a member with no filer and one with another asked and one matching the SEC's file not, over the three indices of a constructed store; the cap with one past it leaving that one to the next run and one under it asking; a member with no kept dividend asked from the history run's first date and one with any not; each statement made before any request; the figures read off the document against the constants",
+            ByExpectations),
         // 21.10's windows and floors of choosing a version by its record.
         [CheckReach.Key(LimitsTable, "Choosing a version by its record")] = new Scoped(
             Verdict.Pass,
@@ -8174,6 +8179,8 @@ internal static class Scope
         ["The graded exposure variant"] = "21.9",
         // 21.10's row, which the plan names as section 17's windows and floor.
         ["Choosing a version by its record"] = "21.10",
+        // 21.12's row, which the plan names as section 17's cap.
+        ["The monthly run's housekeeping asks"] = "21.12",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

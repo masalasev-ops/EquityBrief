@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-31 - docs/ARCHITECTURE.html - the monthly run asks the filers' quarters, reads the reports filed with other registrants and asks the dividends no run kept
+Authorised by: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and the dividends of each member none were kept for, each ask stated before the first
+Was:
+> (13.16) ... so a member's filer is the one the file names at its next quarters fetch (see: A member's filer is the one ...); every index's history computed again ...
+> (Monthly run, catalogue) runs the month's steps in order, the SEC's facts asked whole by the filings refresher after the SEC tickers step has read the SEC's own ticker file, from the 17.3 correction of 2026-10-16, every index's history ...
+> (Dividend keeper, Runs) nightly, once, in the corporate action step after the check; and by hand over the history
+> (Quarter fetcher, Runs) nightly, after the arithmetic has closed and before the filings refresh
+Now:
+> (13.16) ... at its next quarters fetch (see: ...), from 21.12 with the quarters of each member of the three indices whose newest company row carries no filer or another than the file names asked again straight after the file is read, at most 220 a run and the rest left to the next run, and once the facts are asked each member's report filed since the first of the month before the run's that the store holds no fact of read from its own instance under the member's own line, a report filed with other registrants among them; from 21.12 the dividends of each member of the three indices no run has kept one for, each asked once from the history run's first date, a member paying none asked again the next month, the two asks each stating its weighted calls before its first request (see: ...); every index's history computed again ...
+> (Monthly run, catalogue) ... from the 17.3 correction of 2026-10-16, from 21.12 the quarter fetcher asking again between the two the quarters of each member whose filer is none or not the file's, at most 220 a run, and the filings refresher reading after them each member's report the store holds no fact of since the first of the month before from its own instance, from 21.12 the dividend keeper asking the dividends of each member no run has kept one for (see: ...), every index's history ...
+> (Dividend keeper, Runs) nightly, once, in the corporate action step after the check; by hand over the history; and from 21.12 in the monthly run's dividends step for each member no run has kept a dividend for
+> (Quarter fetcher, Runs) nightly, after the arithmetic has closed and before the filings refresh; and from 21.12 in the monthly run's facts step for each member whose filer is none or not the SEC's own
+Why: 21.12 builds what the 17.3 corrections left to a hand, the two lines tabled for phase 21; section 17 gains the row of the housekeeping asks, new, and the lines above are the ones that stood and now name them.
+
+### 2026-10-31 - docs/RUNBOOK.md - the monthly run's housekeeping asks and its dividends step
+Authorised by: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and the dividends of each member none were kept for, each ask stated before the first
+Was:
+> From 17.10 the loop runs once a month: the SEC's facts asked whole, from the 17.3 correction of 2026-10-16 after the SEC's own ticker file is read, every index's history ...
+> ... beneath a run named `loop-month-`, the month and the instant it started: `facts`, `history`, ...
+Now:
+> From 17.10 the loop runs once a month: the SEC's facts asked whole, from the 17.3 correction of 2026-10-16 after the SEC's own ticker file is read, from 21.12 with the quarters of each member whose filer is none or not the file's asked again between the two and each member's report the store holds no fact of since the first of the month before read from its own instance after them, from 21.12 the dividends of each member no run has kept one for, every index's history ...
+> ... beneath a run named `loop-month-`, the month and the instant it started: `facts`, from 21.12 `dividends`, `history`, ...
+Why: the same; the paragraph after them, new, says what the two asks print and which by-hand runs they replace.
+
+### 2026-10-31 - .claude/rules/checks.md - fixture-expectations states 21.12's housekeeping asks
+Authorised by: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and the dividends of each member none were kept for, each ask stated before the first
+Was:
+> (fixture-expectations) ... and the remedy's lines over a register shaped as the operator's |
+Now:
+> (fixture-expectations) ... and the remedy's lines over a register shaped as the operator's; and from 21.12 the monthly run's facts step asking a member with no filer and one with another than the SEC's file over the three indices and not one matching, stopping at its cap with the one past it left to the next run and one under it asking, its dividends step asking a member no run kept a dividend for and not one with any, each statement made before any request, and the steps in their order with the dividends after the facts |
+Why: each check gains the assertions 21.12's tests add.
+
 ### 2026-10-31 - .claude/rules/checks.md - read-surface states 21.11's combined account
 Authorised by: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
 Was:

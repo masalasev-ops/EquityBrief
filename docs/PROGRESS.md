@@ -12989,3 +12989,45 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the screenshots of paper trading with the account at 1440 and a true 390 in both palettes, read off the
             operator's app from main after the merge, as the screens of 21.7 to 21.10 were; and everything 21.16
             carried.
+
+### 21.12 - the two housekeeping lines, what was left of them: the monthly run asks again the quarters of each member whose filer is none or not the SEC's own, reads each report filed with other registrants itself and asks the dividends no run kept   2026-10-31
+
+Queue:      done, 21.1 to 21.11 and 21.16 as PRs 587 to 604 with their remedies, recorded above; in progress, 21.12;
+            next, 21.13 on the standing go with the operator's market strip, then 21.14's rulings and 21.15; beside them
+            the sign-offs of phases 18, 20 and 22 by fresh sessions.
+Covered:    already, by the 17.3 corrections of 2026-10-16, 2026-10-26 and 2026-10-27: a member's filer is the one the
+            SEC's own ticker file names, the file is read in the monthly run's facts step, `quarters --refetch-unfiled`
+            and `--refetch-misfiled` ask such a member again by hand at eleven weighted calls an ask, and
+            `filings --instances` reads by hand each member's own line of a report filed with other registrants.
+Built:      the rest. The facts step, straight after the ticker file, asks the quarters of each member of the three
+            indices whose newest company row carries no filer or another than the file names, at most 220 a run and the
+            rest left to the next run, and once the facts are asked whole reads from its own instance each member's
+            report filed since the first of the month before the run's that the store holds no fact of; a new
+            `dividends` step after the facts asks each member of the three indices no run has kept a dividend for, from
+            2018-01-01, one weighted call a member, held at a pull's stop. Each ask prints its count and weighted calls
+            before its first request. Read-only off the operator's store on 2026-10-31: no member of the 1,505 owed a
+            filer ask and 440 holding no kept dividend, about 440 weighted calls on the run of 2026-11-07.
+Judgement:  the instance read's window, the first of the month before the run's, since the night reads each new report's
+            own line and the month's read is the catch-all; a member paying no dividend asked again each month, about 440
+            weighted calls, since no store keeps that a member was asked and answered nothing.
+Decisions:  one written: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and
+            the dividends of each member none were kept for, each ask stated before the first.
+Tests:      2989, from 2986: three added, a member with no filer and one with another asked over the three indices and
+            one matching not, stated before any request; the cap with one past it left to the next run and one under it
+            asking; a member no run kept a dividend for asked and one with any not, stated before any request; and the
+            monthly run's step lists with the dividends after the facts.
+Claims:     1486, from 1485: one added, section 17's row of the housekeeping asks, against the plan's count of about 3;
+            the monthly paragraph and the catalogue's three rows amended in place; 1501 placements.
+Pins:       none moved: no source 21.12 writes is one a rule's version pins, read off every evaluator's source list.
+Remedy:     none; the monthly run of 2026-11-07 asks for the first time.
+Mutation:   chosen before the run by this rule, the property the done condition names first, a member with no filer and
+            one with another asked: the query asking only the members with none. The filers' test went red, NFLX's
+            other filer never asked; reverted, green. Not mutated: the cap, the dividends' unkept set and the statement
+            before the first request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2989 of 2989 tests ran
+            with none failed, migrations 0 to 117 with none pending, schema version 117, against `data-ci` and never
+            `data`; the phase report 64 tables, 1486 claims, 1486 passing, none out of scope and none unexamined, 1501
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the two asks' first counts, read off the monthly run of 2026-11-07's facts and dividends rows; and everything
+            21.11 carried.

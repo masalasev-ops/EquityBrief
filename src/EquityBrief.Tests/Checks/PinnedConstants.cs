@@ -278,6 +278,8 @@ public class PinnedConstants
             new("The live alarm", "2", Core.Loop.LiveAlarm.Running, "LiveAlarm.Running"),
             new("The monthly run", "0.5", (decimal)EquityBrief.Worker.Ledger.SetupLedger.RebuildShortfallShare * 100, "SetupLedger.RebuildShortfallShare in per cent"),
             new("The monthly run", "10", EquityBrief.Worker.Ledger.SetupLedger.RebuildShortfallFloor, "SetupLedger.RebuildShortfallFloor"),
+            new("The monthly run's housekeeping asks", "220", EquityBrief.Worker.Quarters.QuarterFetcher.MonthlyFilerAsks, "QuarterFetcher.MonthlyFilerAsks"),
+            new("The monthly run's housekeeping asks", "11", EquityBrief.Worker.Quarters.QuarterFetcher.WeightOfAnAsk, "QuarterFetcher.WeightOfAnAsk"),
             new("The fundamentals-first family", "1.0", (decimal)Core.Families.FundamentalsRule.Provisional.CashFloor, "FundamentalsRule.Provisional.CashFloor"),
             new("The fundamentals-first family", "63", Worker.Indices.IndexNightRead.PullbackCap, "IndexNightRead.PullbackCap"),
             new("The fundamentals-first family", "5", Core.Families.SetupFamilies.ListedANight, "SetupFamilies.ListedANight"),
