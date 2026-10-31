@@ -6,16 +6,18 @@ namespace EquityBrief.Core.Families;
 // One setting of the Fundamentals family's history test: the score a newly read filing must lift a stock to, whether a
 // flag must have stood on the night before, whether the score must rise above the filing before's, whether the sales
 // growth must be faster than the quarter before's, the score a trade is held at or above, each score in nine and read as
-// a share of the checks that applied, and the most sessions a trade is held.
-public sealed record ImprovingSweepSetting(int BuyInNine, bool FlagFirst, bool Rise, bool Faster, int HoldInNine, int Sessions)
+// a share of the checks that applied, and the most sessions a trade is held; from 21.16 whether a trade is also sold at a
+// close under its 200-day average after the session it was bought on, the book menu's change an approval may set, which
+// no setting of the grid states.
+public sealed record ImprovingSweepSetting(int BuyInNine, bool FlagFirst, bool Rise, bool Faster, int HoldInNine, int Sessions, bool SoldUnderAverage = false)
 {
     public string Key => string.Create(
         CultureInfo.InvariantCulture,
-        $"buy={BuyInNine}|flag={(FlagFirst ? "first" : "off")}|rise={(Rise ? "on" : "off")}|faster={(Faster ? "on" : "off")}|hold={HoldInNine}|limit={Sessions}");
+        $"buy={BuyInNine}|flag={(FlagFirst ? "first" : "off")}|rise={(Rise ? "on" : "off")}|faster={(Faster ? "on" : "off")}|hold={HoldInNine}|limit={Sessions}{(SoldUnderAverage ? "|average=on" : string.Empty)}");
 
     public string Words => string.Create(
         CultureInfo.InvariantCulture,
-        $"a newly read filing lifting its score to at least {BuyInNine} in 9{(Rise ? " and above its previous filing's" : string.Empty)}{(Faster ? ", its sales growth faster than the quarter before's" : string.Empty)}{(FlagFirst ? ", a flag standing the night before" : string.Empty)}; held while its score stays at {HoldInNine} in 9 or better, at most {Sessions} sessions");
+        $"a newly read filing lifting its score to at least {BuyInNine} in 9{(Rise ? " and above its previous filing's" : string.Empty)}{(Faster ? ", its sales growth faster than the quarter before's" : string.Empty)}{(FlagFirst ? ", a flag standing the night before" : string.Empty)}; held while its score stays at {HoldInNine} in 9 or better, at most {Sessions} sessions{(SoldUnderAverage ? ", and sold at a close under its 200-day average" : string.Empty)}");
 
     // How many dials a setting stands from another.
     public int Changes(ImprovingSweepSetting other) =>
@@ -24,7 +26,8 @@ public sealed record ImprovingSweepSetting(int BuyInNine, bool FlagFirst, bool R
         + (Rise != other.Rise ? 1 : 0)
         + (Faster != other.Faster ? 1 : 0)
         + (HoldInNine != other.HoldInNine ? 1 : 0)
-        + (Sessions != other.Sessions ? 1 : 0);
+        + (Sessions != other.Sessions ? 1 : 0)
+        + (SoldUnderAverage != other.SoldUnderAverage ? 1 : 0);
 }
 
 // The Fundamentals family's history test's grid: the score to buy at 7, 8 or 9 in 9; a flag required first or not; the

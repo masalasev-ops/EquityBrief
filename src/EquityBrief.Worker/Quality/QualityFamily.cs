@@ -72,6 +72,9 @@ public sealed class QualityFamily : IComponent
     // Why the history test sold a holding on a filing; the night stores such a sale as no longer qualifying.
     public const string OnAFiling = "a filing dropped its score";
 
+    // From 21.16 why a holding of a rule selling under its 200-day average was sold at a close under it.
+    public const string UnderItsAverage = "under its 200-day average";
+
     // Why a registered rule was not kept on a night: its evaluator's code moved since it was registered.
     public const string Moved = "its evaluator's code moved since it was registered, so it is kept no further until it is registered again";
 
@@ -196,7 +199,7 @@ public sealed class QualityFamily : IComponent
 
     // What every rule on an index reads on the night: its members, each one's scorecard, its valuation's place and
     // whether it closed above its 200-session average.
-    sealed record IndexInputs(HashSet<string> Members, IReadOnlyDictionary<string, (int Passed, int Applied)> Scores, IReadOnlyDictionary<string, double?> Places, IReadOnlyDictionary<string, bool> Above, IReadOnlyDictionary<string, double?[]> Readings);
+    sealed record IndexInputs(HashSet<string> Members, IReadOnlyDictionary<string, (int Passed, int Applied)> Scores, IReadOnlyDictionary<string, double?> Places, IReadOnlyDictionary<string, bool> Above, IReadOnlyDictionary<string, double?[]> Readings, IReadOnlyDictionary<string, bool> Below);
 
     readonly IClock clock;
     readonly string databaseFile;
@@ -364,19 +367,21 @@ public sealed class QualityFamily : IComponent
         }
 
         var above = new Dictionary<string, bool>(StringComparer.Ordinal);
+        var below = new Dictionary<string, bool>(StringComparer.Ordinal);
 
-        if (rules.Any(rule => rule.Settings.Trend))
+        if (rules.Any(rule => rule.Settings.Trend || rule.Settings.SoldUnderAverage))
         {
             await foreach (var row in RowsAsync(connection, null, AveragesOn, [("$night", Stamp(night)), ("$name", Core.Indicators.IndicatorSeries.Sma200)], cancellation))
             {
                 if (Close(bars, row.GetString(0), night) is { } close)
                 {
                     above[row.GetString(0)] = Statistic.FromPrice(close) > row.GetDouble(1);
+                    below[row.GetString(0)] = Statistic.FromPrice(close) < row.GetDouble(1);
                 }
             }
         }
 
-        var inputs = new IndexInputs(members, scores, places, above, catalogue);
+        var inputs = new IndexInputs(members, scores, places, above, catalogue, below);
         QualityIndexOutcome? first = null;
         var rows = 0;
 
@@ -557,9 +562,15 @@ public sealed class QualityFamily : IComponent
                 && tonight.TryGetValue(holding.Ticker, out var scoredNow) && scoredThen.TryGetValue(holding.Ticker, out var was)
                 && Clears(was) && !Clears((scoredNow.Passed, scoredNow.Applied));
 
-            if (gone || failing || filed)
+            // From 21.16, where the rule reads it, one bought before tonight whose close stands under its 200-day average is
+            // sold at tonight's close, as the history test sells it.
+            // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+            var under = !gone && !failing && !filed && settings.SoldUnderAverage
+                && holding.BoughtOn is { } bought && bought < night && inputs.Below.TryGetValue(holding.Ticker, out var isBelow) && isBelow;
+
+            if (gone || failing || filed || under)
             {
-                await EndAsync(connection, transaction, index, rule, holding, gone ? holding.Through : night, gone ? LeftTheIndex : NoLongerQualifies, bars, tonight, night, cancellation);
+                await EndAsync(connection, transaction, index, rule, holding, gone ? holding.Through : night, gone ? LeftTheIndex : under ? UnderItsAverage : NoLongerQualifies, bars, tonight, night, cancellation);
                 sold.Add(holding.Ticker);
                 written++;
 

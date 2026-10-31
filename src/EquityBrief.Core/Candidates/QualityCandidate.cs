@@ -16,7 +16,7 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
     public const string BookParameter = "book";
     public const string SaleParameter = "sale";
 
-    public override string Version => "af9c53c70d87";
+    public override string Version => "cd9612244d07";
 
     public override string SetupFamily => QualityRule.Name;
 
@@ -50,8 +50,9 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
     ];
 
     // The parameters a registration states for settings, and the settings a registration's parameters state.
-    public static IReadOnlyDictionary<string, double> ParametersOf(QualitySettings settings) =>
-        new Dictionary<string, double>(StringComparer.Ordinal)
+    public static IReadOnlyDictionary<string, double> ParametersOf(QualitySettings settings)
+    {
+        var parameters = new Dictionary<string, double>(StringComparer.Ordinal)
         {
             [FloorParameter] = settings.ScoreFloorInNine,
             [ValuationParameter] = settings.Valuation switch { QualityValuation.Off => 0, QualityValuation.AtOrBelowMedian => 1, _ => 2 },
@@ -60,10 +61,28 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
             [SaleParameter] = settings.SellOnFiling ? 1 : 0,
         };
 
+        if (settings.SoldUnderAverage)
+        {
+            parameters[AverageParameter] = 1;
+        }
+
+        return parameters;
+    }
+
     public static QualitySettings SettingsOf(IReadOnlyDictionary<string, double> parameters) => new(
         (int)parameters[FloorParameter],
         parameters[ValuationParameter] switch { 0 => QualityValuation.Off, 1 => QualityValuation.AtOrBelowMedian, _ => QualityValuation.CheapestThird },
         parameters[TrendParameter] == 1,
         (int)parameters[BookParameter],
-        parameters[SaleParameter] == 1);
+        parameters[SaleParameter] == 1,
+        parameters.GetValueOrDefault(AverageParameter) == 1);
+
+    // From 21.16 a book's holding also sold at a close under its 200-day average, stated as 1 and otherwise not stated, so
+    // a registration from before it reads as one with the sale off; the Fundamentals family reads it under the same name.
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+    public const string AverageParameter = "average";
+
+    // The parameters a book's registration may state beside the ones it must.
+    public static IReadOnlyList<string> OptionalOf(CandidateEvaluator? evaluator) =>
+        evaluator is QualityCandidate or ImprovingCandidate ? [AverageParameter] : [];
 }

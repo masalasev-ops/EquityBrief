@@ -167,7 +167,7 @@ public sealed class QualityLay
     // the session it was chosen on, the menu's sale no dial of the rule reads; and each reshuffle's qualifying members, in
     // the family's own ranking, handed to an arrangement a proposal's hooks set, which keeps and orders them as the night's
     // hooks do.
-    // see: A change a family's night does not read is tested and shown and never put to the operator
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
     public static (List<HeavyweightTrade> Trades, Dictionary<int, HeavyweightRebalance> Rebalances) Walk(
         HeavyweightTape tape,
         IReadOnlyList<int> reshuffles,
@@ -270,7 +270,7 @@ public sealed class QualityLay
     // charged its round trip, and its months.
     public QualityBook Book(QualitySettings setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
     {
-        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting, soldUnderAverage, arrange);
+        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting, soldUnderAverage || setting.SoldUnderAverage, arrange);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,

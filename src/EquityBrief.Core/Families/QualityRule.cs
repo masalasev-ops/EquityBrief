@@ -16,13 +16,14 @@ public enum QualityValuation
 
 // What the quality family's rule reads: the score's floor stated in nine and read as a share of the checks that applied,
 // how it reads the price against its own past, whether it reads the close above its 200-day average, the holdings it
-// keeps, and whether a holding is also sold at the close of the night that first reads a filing dropping its score
-// under the floor.
-public sealed record QualitySettings(int ScoreFloorInNine, QualityValuation Valuation, bool Trend, int Holdings, bool SellOnFiling)
+// keeps, whether a holding is also sold at the close of the night that first reads a filing dropping its score under
+// the floor, and from 21.16 whether it is also sold at a close under its 200-day average after the session it was bought
+// on, the book menu's change an approval may set.
+public sealed record QualitySettings(int ScoreFloorInNine, QualityValuation Valuation, bool Trend, int Holdings, bool SellOnFiling, bool SoldUnderAverage = false)
 {
     public string Words => string.Create(
         CultureInfo.InvariantCulture,
-        $"a score of at least {ScoreFloorInNine} in 9 of the checks that apply, {ValuationWords}{(Trend ? ", the close above its 200-day average" : string.Empty)}, the top {Holdings} kept, each sold at {(SellOnFiling ? "a reshuffle or on a filing dropping its score" : "a reshuffle")} where it no longer qualifies");
+        $"a score of at least {ScoreFloorInNine} in 9 of the checks that apply, {ValuationWords}{(Trend ? ", the close above its 200-day average" : string.Empty)}, the top {Holdings} kept, each sold at {(SellOnFiling ? "a reshuffle or on a filing dropping its score" : "a reshuffle")} where it no longer qualifies{(SoldUnderAverage ? " and at a close under its 200-day average" : string.Empty)}");
 
     string ValuationWords => Valuation switch
     {
@@ -31,19 +32,20 @@ public sealed record QualitySettings(int ScoreFloorInNine, QualityValuation Valu
         _ => "its price over earnings in the cheapest third of its own 12 quarters",
     };
 
-    // The setting as the history test's grid names it: the floor, the valuation, the trend, the book and the sale.
+    // The setting as the history test's grid names it: the floor, the valuation, the trend, the book and the sale, and the
+    // sale under the 200-day average after them where it is on, which no setting of the grid states.
     public string Key => string.Join(
         "|",
         "floor=" + ScoreFloorInNine.ToString(CultureInfo.InvariantCulture),
         "valuation=" + Valuation switch { QualityValuation.Off => "off", QualityValuation.AtOrBelowMedian => "median", _ => "third" },
         "trend=" + (Trend ? "on" : "off"),
         "book=" + Holdings.ToString(CultureInfo.InvariantCulture),
-        "sale=" + (SellOnFiling ? "filing" : "reshuffle"));
+        "sale=" + (SellOnFiling ? "filing" : "reshuffle")) + (SoldUnderAverage ? "|average=on" : string.Empty);
 
-    // How many of the five dials stand apart from another setting's.
+    // How many of the dials stand apart from another setting's.
     public int Changes(QualitySettings other) =>
         (ScoreFloorInNine != other.ScoreFloorInNine ? 1 : 0) + (Valuation != other.Valuation ? 1 : 0) + (Trend != other.Trend ? 1 : 0)
-        + (Holdings != other.Holdings ? 1 : 0) + (SellOnFiling != other.SellOnFiling ? 1 : 0);
+        + (Holdings != other.Holdings ? 1 : 0) + (SellOnFiling != other.SellOnFiling ? 1 : 0) + (SoldUnderAverage != other.SoldUnderAverage ? 1 : 0);
 }
 
 // Whether a member qualifies, and why not where it does not.

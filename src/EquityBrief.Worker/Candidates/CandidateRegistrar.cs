@@ -1103,7 +1103,7 @@ public sealed class CandidateRegistrar : IComponent
         // A family rule's optional parameters, each off where it is not stated, from 20.4 the reading version a drift
         // rule's tone condition reads, which is a whole number from 1 where it is stated.
         // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
-        var optional = ReleaseTone.OptionalOf(carried);
+        IReadOnlyList<string> optional = [.. ReleaseTone.OptionalOf(carried), .. QualityCandidate.OptionalOf(carried)];
 
         if (optional.Contains(ReleaseTone.VersionParameter, StringComparer.Ordinal)
             && parameters.TryGetValue(ReleaseTone.VersionParameter, out var version)

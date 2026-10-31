@@ -79,7 +79,7 @@ public static class QualityRules
     // A setting in the few words a rule's name carries, each of the five dials.
     public static string Short(QualitySettings setting) => string.Create(
         CultureInfo.InvariantCulture,
-        $"a score of {setting.ScoreFloorInNine} in 9, {ValuationShort(setting.Valuation)}, {(setting.Trend ? "above its 200-day average" : "the trend off")}, {setting.Holdings} held, sold {(setting.SellOnFiling ? "at reshuffles and on a filing" : "at reshuffles")}");
+        $"a score of {setting.ScoreFloorInNine} in 9, {ValuationShort(setting.Valuation)}, {(setting.Trend ? "above its 200-day average" : "the trend off")}, {setting.Holdings} held, sold {(setting.SellOnFiling ? "at reshuffles and on a filing" : "at reshuffles")}{(setting.SoldUnderAverage ? " and under its 200-day average" : string.Empty)}");
 
     static string ValuationShort(QualityValuation valuation) => valuation switch
     {
