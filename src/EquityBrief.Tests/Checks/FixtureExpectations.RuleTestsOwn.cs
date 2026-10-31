@@ -284,6 +284,37 @@ public partial class FixtureExpectations
         Assert.Null(searched.Why);
         Assert.NotNull(searched.Trades);
 
+        // From 21.16 the engines read the same pullback over the same reading, each night's picks in the night's own order,
+        // five a night with one open trade a stock: no night of the constructed history holds more than five, so its own
+        // walk keeps the trades the per-rule test's does, each at the same edge.
+        // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+        var pullbackRow = StandingRow(FamilyRecords.LivePrefix + "S&P 600 pullback rule", "pullback-600", frozenPullback);
+        var (engine, engineWhy) = RuleTests.LivePullbackWalk(laid, [], pullbackRow, _ => { }, null, null, null!, pullback);
+
+        Assert.Null(engineWhy);
+
+        var engineUnits = engine!.Own.Select(one => (one.Entry, one.Edge)).OrderBy(unit => unit.Entry).ToArray();
+
+        Assert.Equal(searched.Trades!.Select(unit => unit.Entry), engineUnits.Select(unit => unit.Entry));
+        Assert.All(searched.Trades!.Zip(engineUnits), pair =>
+        {
+            Assert.Equal(pair.First.Edge is null, pair.Second.Edge is null);
+            Assert.Equal(pair.First.Edge ?? 0, pair.Second.Edge ?? 0, 6);
+        });
+
+        // From 21.16 the graded exposure over the same reading with its market check off: five a night where both switches
+        // hold keeps the same trades, as many as the night allows where one holds, none where neither.
+        // see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+        var pullbackEvaluator = IndexEvaluator("pullback-600");
+
+        Assert.Equal(searched.Trades, RuleTests.GradedOwnPullback(pullback, pullbackEvaluator, frozenPullback, (_, _) => RuleHooks.ExposureFull));
+        Assert.Empty(RuleTests.GradedOwnPullback(pullback, pullbackEvaluator, frozenPullback, (_, _) => 0)!);
+
+        var half = RuleTests.GradedOwnPullback(pullback, pullbackEvaluator, frozenPullback, (_, _) => RuleHooks.ExposureHalf)!;
+
+        Assert.All(half.GroupBy(unit => unit.Entry), night => Assert.True(night.Count() <= RuleHooks.ExposureHalf));
+        Assert.Subset(searched.Trades!.ToHashSet(), half.ToHashSet());
+
         // A book off its design's six settings, design (a) at a look-back of 63 sessions with one leader a sector, walked at
         // its own setting with its months the record command's own replay of it; twelve months' strength, which the record
         // command replays at no setting, walked by the six settings' own reader at the registration's quality and floors, a

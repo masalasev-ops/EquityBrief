@@ -84,7 +84,10 @@ public static class LoopRegistrations
 
             case QualityCandidate:
             {
-                var setting = change.Key is { } key ? QualityRule.Grid.FirstOrDefault(one => one.Key == key) : QualityCandidate.SettingsOf(parameters);
+                // From 21.16 a setting of the grid with the sale under the 200-day average on, which the grid states none of.
+                var setting = change.Key is { } key
+                    ? QualityRule.Grid.Select(one => one.Key == key ? one : (one with { SoldUnderAverage = true }).Key == key ? one with { SoldUnderAverage = true } : null).FirstOrDefault(one => one is not null)
+                    : QualityCandidate.SettingsOf(parameters);
 
                 if (setting is null)
                 {
@@ -96,7 +99,9 @@ public static class LoopRegistrations
 
             case ImprovingCandidate:
             {
-                var setting = change.Key is { } key ? ImprovingGrid.Settings.FirstOrDefault(one => one.Key == key) : ImprovingCandidate.SettingsOf(parameters);
+                var setting = change.Key is { } key
+                    ? ImprovingGrid.Settings.Select(one => one.Key == key ? one : (one with { SoldUnderAverage = true }).Key == key ? one with { SoldUnderAverage = true } : null).FirstOrDefault(one => one is not null)
+                    : ImprovingCandidate.SettingsOf(parameters);
 
                 if (setting is null)
                 {

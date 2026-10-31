@@ -7,13 +7,13 @@ using EquityBrief.Worker.Sweep;
 namespace EquityBrief.Tests.Checks;
 
 // fixture-expectations, 21.5: the two book families as the engines read them. Each book's walk sells a holding at its first
-// close under its 200-day average where the engines ask, the menu's sale no dial of the rule reads, and keeps only the
-// members an arrangement keeps where a proposal's hooks set one, each worked by hand over the history tests' own tapes. The
-// book menu ranks its changes inside each fold above the rule's own book at the month floors, the k-th proposal the k-th
-// change, the 200-day sale shown and never put and the filing's sale stating its setting's key; and the engine hands a
+// close under its 200-day average where the engines ask, from 21.16 a dial the rule reads, and keeps only the members an
+// arrangement keeps where a proposal's hooks set one, each worked by hand over the history tests' own tapes. The book menu
+// ranks its changes inside each fold above the rule's own book at the month floors, the k-th proposal the k-th change,
+// each stating its setting's key, the 200-day sale's with the sale on after the grid's dials; and the engine hands a
 // change's hooks to the book's walk as an arrangement and none where they read no reading.
 // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
-// see: A change a family's night does not read is tested and shown and never put to the operator
+// see: Every change the engines propose is one its family's night reads, so each is put to the operator
 public partial class FixtureExpectations
 {
     [Fact]
@@ -54,7 +54,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void TheBookMenuRanksItsChangesInEachFoldAndPutsOnlyAChangeTheRuleReads()
+    public void TheBookMenuRanksItsChangesInEachFoldAndPutsEachAsTheChangeTheNightReads()
     {
         // Weekdays from 2019 to October 2026, each month's first session a month's start, and three books of months: the
         // rule's own at a tenth of a point a month, the 200-day sale at three tenths and the filing's sale at two tenths.
@@ -65,9 +65,10 @@ public partial class FixtureExpectations
         IReadOnlyList<(int Opens, double? Edge)> Months(double edge) => [.. starts.SkipLast(1).Select(start => (start, (double?)edge))];
 
         var onFiling = QualityRule.Starting with { SellOnFiling = true };
+        var underAverage = QualityRule.Starting with { SoldUnderAverage = true };
         BookProcedures.MenuChange[] menu =
         [
-            new("a holding also sold at a close under its 200-day average", Months(0.003), null),
+            new("a holding also sold at a close under its 200-day average", Months(0.003), new LoopChange(null, underAverage.Key, null, LoopChange.NoHooks)),
             new("a holding also sold at the close of the night a filing drops its score below the floor", Months(0.002), new LoopChange(null, onFiling.Key, null, LoopChange.NoHooks)),
         ];
 
@@ -82,17 +83,15 @@ public partial class FixtureExpectations
         Assert.Equal(0.001, edge!.Value, 12);
 
         // Every fold ranks the 200-day sale first and the filing's second, both above the rule's own and meeting the floors;
-        // the first is shown with why and puts no change, the second states the filing's setting by its key.
+        // from 21.16 each states its setting by its key, the 200-day sale's the starting setting's with the sale on after it.
         var proposals = BookProcedures.Menu(read, QualityRule.Name, "the quality rule today", Months(0.001), starts, menu, _ => { });
 
         Assert.Equal(2, proposals.Count);
         Assert.Equal(["exit: " + menu[0].Words, "exit: " + menu[1].Words], proposals.Select(one => one.Words));
         Assert.All(proposals, one => Assert.Equal(read.Folds.Count, one.StableFolds));
-        Assert.Null(proposals[0].Change);
-        Assert.EndsWith(BookProcedures.NotRead, proposals[0].Finding, StringComparison.Ordinal);
-        Assert.StartsWith($"{menu[0].Words} read +0.30 points a month on the years it learned on against the rule's own +0.10", proposals[0].Finding, StringComparison.Ordinal);
+        Assert.Equal(QualityRule.Starting.Key + "|average=on", proposals[0].Change!.Key);
+        Assert.Equal($"{menu[0].Words} read +0.30 points a month on the years it learned on against the rule's own +0.10", proposals[0].Finding);
         Assert.Equal(onFiling.Key, proposals[1].Change!.Key);
-        Assert.DoesNotContain(BookProcedures.NotRead, proposals[1].Finding, StringComparison.Ordinal);
         Assert.All(proposals, one => Assert.Equal(LoopProcedures.Points, one.Unit));
 
         // The engine hands a condition's hooks to the book's walk as an arrangement, and none where its hooks read no reading.

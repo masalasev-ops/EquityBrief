@@ -441,7 +441,7 @@ public sealed partial class IndexSweepRunner
         // time, the cap's or the menu's time stop, at its own close. The plan names no target, so an exit keeping the plan's
         // target walks the stop and the time limit with its own change; a half sale, whose first half the menu sells at its
         // close, is not walked for the dip and buys nothing.
-        // see: A change a family's night does not read is tested and shown and never put to the operator
+        // see: Every change the engines propose is one its family's night reads, so each is put to the operator
         public Walked MenuWalkOf(int name, int bar, ExitChoice exit, int limit, int stop) =>
             menuWalks.GetOrAdd((name, bar, exit.Number, limit, stop), key =>
             {

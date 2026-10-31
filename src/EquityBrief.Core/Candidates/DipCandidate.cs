@@ -26,7 +26,7 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
 
     public const string SellParameterBefore = "exit";
 
-    public override string Version => "96ade2efcc10";
+    public override string Version => "c29d7e670cd3";
 
     public override string SetupFamily => DipRule.Name;
 
@@ -89,11 +89,13 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Core/Indicators/IndicatorSeries.cs",
         "src/EquityBrief.Core/Ladders/TrendSeries.cs",
         "src/EquityBrief.Core/Ledger/LedgerReadings.cs",
+        "src/EquityBrief.Core/Ledger/SetupAnchor.cs",
         "src/EquityBrief.Core/Ledger/TradeFills.cs",
         "src/EquityBrief.Core/Prices/PriceForm.cs",
         "src/EquityBrief.Core/Prices/Statistic.cs",
         "src/EquityBrief.Core/Readings/MemberReadings.cs",
         "src/EquityBrief.Core/Readings/TradeCost.cs",
+        "src/EquityBrief.Core/Sweep/FamilyWalks.cs",
         "src/EquityBrief.Core/Sweep/SweepAxes.cs",
         "src/EquityBrief.Core/Sweep/SweepReadings.cs",
         "src/EquityBrief.Core/Sweep/SweepWindows.cs",

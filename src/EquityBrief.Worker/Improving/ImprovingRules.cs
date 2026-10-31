@@ -81,5 +81,5 @@ public static class ImprovingRules
     // A setting in the few words a rule's name carries, each of the six dials.
     public static string Short(ImprovingSweepSetting setting) => string.Create(
         CultureInfo.InvariantCulture,
-        $"buy at {setting.BuyInNine} in 9, {(setting.FlagFirst ? "a flag first" : "no flag first")}, the rise {(setting.Rise ? "asked" : "not asked")}, the growth {(setting.Faster ? "asked" : "not asked")}, held at {setting.HoldInNine}, {setting.Sessions} sessions");
+        $"buy at {setting.BuyInNine} in 9, {(setting.FlagFirst ? "a flag first" : "no flag first")}, the rise {(setting.Rise ? "asked" : "not asked")}, the growth {(setting.Faster ? "asked" : "not asked")}, held at {setting.HoldInNine}, {setting.Sessions} sessions{(setting.SoldUnderAverage ? ", sold under its 200-day average" : string.Empty)}");
 }

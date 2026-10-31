@@ -77,6 +77,13 @@ public static class RegisterVerb
     // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
     public const string Exposed = "--exposed";
 
+    // From 21.16 the flag that registers an S&P 400 or 600 swing family's order by the expected value of the setups like
+    // each candidate beside its live rule: the live rule's setting with its own list ordered by that figure, refused on
+    // the S&P 500, whose breakout registers it with its family, for a family the index families' step does not keep, and
+    // where the family holds nine.
+    // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+    public const string Ordered = "--ordered";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -91,6 +98,7 @@ public static class RegisterVerb
         new(IndexVariants, [IndexVariants, "--index", "--variants"], ["--evidence"], [Again]),
         new(Ranked, [Ranked, "--index", "--by"], [], []),
         new(Exposed, [Exposed, "--index"], [], []),
+        new(Ordered, [Ordered, "--index"], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -332,6 +340,15 @@ public static class RegisterVerb
                 : await Said(await registrar.RegisterAsync(exposure.Candidate, exposure.Rule, exposure.Test, exposure.Evaluator, exposure.Parameters, runId), output, error);
         }
 
+        if (form.Flag == Ordered)
+        {
+            var (ordered, refusedOrder) = OrderedVariant(Given(Ordered), Given("--index"), await registrar.RowsAsync(), at);
+
+            return ordered is null
+                ? await RefusedAsync(registrar, runId, refusedOrder!, error)
+                : await Said(await registrar.RegisterAsync(ordered.Candidate, ordered.Rule, ordered.Test, ordered.Evaluator, ordered.Parameters, runId), output, error);
+        }
+
         if (form.Flag == Ranked)
         {
             var (ranking, refusedRanking) = RankedVariant(Given(Ranked), Given("--index"), Given("--by"), await registrar.RowsAsync(), at);
@@ -432,6 +449,36 @@ public static class RegisterVerb
         }
 
         return (new Registration("the " + live.Candidate[Core.Candidates.FamilyRecords.LivePrefix.Length..] + ", " + Loop.ExposureProcedures.WordsOf(floor), live.Rule, live.Test, live.Evaluator, Loop.ExposureProcedures.Exposed(p, floor)), null);
+    }
+
+    // From 21.16 an S&P 400 or 600 swing family's order by the expected value on an index: its live rule's name without the
+    // word live and the order's words after it, its words and its test, its evaluator and its setting with the order on;
+    // or why none can be registered.
+    // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+    public static (Registration? Registration, string? Refusal) OrderedVariant(string family, string index, IReadOnlyList<Core.Candidates.RegisterRow> register, DateTimeOffset at)
+    {
+        if (index == Loop.WalkForwardTester.LargeIndex)
+        {
+            return (null, "the S&P 500's breakout registers its order by the expected value with its family, by '--family-again breakout', and its pullback and drift hold nine rules.");
+        }
+
+        if (LiveOn(register, family, index, at) is not { } live)
+        {
+            return (null, $"no live {family} rule stands registered on the {Cards.DecisionCards.NameOf(index)}, so there is no rule to order.");
+        }
+
+        if (Core.Candidates.CandidateEvaluators.Find(live.Evaluator) is not Core.Candidates.IndexRuleCandidate or Core.Candidates.IndexHeavyweightCandidate)
+        {
+            return (null, $"the index families' step does not list the {family} on the {Cards.DecisionCards.NameOf(index)} by a hook, so none is registered; the order is offered to the pullback, the breakout and the drift on the S&P 400 and 600.");
+        }
+
+        var parameters = new Dictionary<string, double>(Core.Candidates.CandidateEvaluator.Read(live.Parameters), StringComparer.Ordinal)
+        {
+            [Core.Loop.RuleHooks.ExpectedOrderParameter] = 1,
+        };
+        var words = Core.Loop.RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { [Core.Loop.RuleHooks.ExpectedOrderParameter] = 1 }).Words()!;
+
+        return (new Registration("the " + live.Candidate[Core.Candidates.FamilyRecords.LivePrefix.Length..] + ", " + words, live.Rule, live.Test, live.Evaluator, parameters), null);
     }
 
     // What each replayed rule's record does, a line a rule.

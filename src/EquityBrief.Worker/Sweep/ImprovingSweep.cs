@@ -244,7 +244,7 @@ public sealed class ImprovingLay
     // From 21.5 the walk the engines read as well: a trade also sold at the first close under its 200-day average after the
     // session it was chosen on, the menu's sale no dial of the rule reads; and each session's buys handed to an arrangement
     // a proposal's hooks set, which keeps and orders them as the night's hooks do.
-    // see: A change a family's night does not read is tested and shown and never put to the operator
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
     public static (List<HeavyweightTrade> Trades, Dictionary<int, HeavyweightRebalance> Chosen) Walk(
         HeavyweightTape tape,
         IReadOnlyList<IReadOnlyList<ImprovingFiling>> filings,
@@ -373,7 +373,7 @@ public sealed class ImprovingLay
     // its round trip, and its months.
     public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
     {
-        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage, arrange);
+        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage || setting.SoldUnderAverage, arrange);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,

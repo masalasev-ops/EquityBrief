@@ -3726,7 +3726,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LimitsTable, "The autopsy's proposals")] = new Scoped(
             Verdict.Pass,
-            "the five strongest exits chosen on the learning years alone above the rule's own, an exit one trade short of its floor and one whose trades end in the test year left unranked; from 21.5 a book's menu ranked in each fold above the live book at the month floors over constructed months, the 200-day sale shown and never put and the filing's sale stating its setting's key, and the dip's exits stating no change; the figures read off the document against the constants",
+            "the five strongest exits chosen on the learning years alone above the rule's own, an exit one trade short of its floor and one whose trades end in the test year left unranked; from 21.5 a book's menu ranked in each fold above the live book at the month floors over constructed months, and from 21.16 each change of it stating its setting's key, the 200-day sale's with the sale on, and the dip's exits stating their change; the figures read off the document against the constants",
             ByExpectations),
         // 21.4's hook forms: section 17's exposure and ranking.
         [CheckReach.Key(LimitsTable, "The exposure")] = new Scoped(
@@ -3817,7 +3817,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LoopPage, LoopFindings)] = new Scoped(
             Verdict.Pass,
-            "a family's figures beneath its rule today each with its value and trades, and an exit proposal's finding beneath its change, read back off the rendered page against the stored rows, a family with no figure and a proposal naming no change drawing none; and from 21.5 the dip's exit drawn with the words saying it is shown and not put and no press",
+            "a family's figures beneath its rule today each with its value and trades, and an exit proposal's finding beneath its change, read back off the rendered page against the stored rows, a family with no figure and a proposal naming no change drawing none; and from 21.16 the dip's exit drawn with its finding and its press",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card's rule")] = new Scoped(
             Verdict.Pass,

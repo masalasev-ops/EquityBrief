@@ -58,6 +58,9 @@ public static class ImprovingRule
     public const string TimeLimit = "time limit";
     public const string LeftTheIndex = "left the index";
 
+    // From 21.16 a trade of a rule selling under its 200-day average sold at a close under it.
+    public const string UnderItsAverage = "under its 200-day average";
+
     // Why a member whose newest filing was read on the night is not bought, in the rule's order.
     public const string NoWord = "too few checks read for a score";
     public const string NotHigher = "no higher than its previous filing's score";

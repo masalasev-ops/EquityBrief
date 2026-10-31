@@ -259,7 +259,7 @@ public static class RuleTests
             .. Swings(inputs, DriftRule.Name),
             .. Heavyweights(inputs),
             .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting).Months) : []),
-            .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters)) : []),
+            .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters, inputs)) : []),
             .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting).Months) : []),
         ];
 
@@ -430,8 +430,27 @@ public static class RuleTests
 
     // A dip rule's trades over its sweep's history at the setting its registration states, walked by the sweep's own
     // code, five a night and one open trade a stock, each after its round trip, by the session it was listed on.
-    public static IReadOnlyList<(int Entry, double? Edge)> DipTrades(IndexSweepRunner.DipRead dip, IReadOnlyDictionary<string, double> parameters)
+    public static IReadOnlyList<(int Entry, double? Edge)> DipTrades(IndexSweepRunner.DipRead dip, IReadOnlyDictionary<string, double> parameters, RuleTestInputs? inputs = null)
     {
+        // From 21.16 a rule stating hooks is walked under them as the engines walk the dip, its exit of the menu, its
+        // conditions and its order; one stating the graded exposure with its market setting off, each night's picks as its
+        // exposure allows.
+        // see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+        if (inputs is not null && DipCandidate.HooksOf(parameters) is { IsOff: false } hooks)
+        {
+            var walked = hooks.Exposure is null
+                ? parameters
+                : new Dictionary<string, double>(parameters, StringComparer.Ordinal) { [DipCandidate.MarketParameter] = 0 };
+            var hooked = LoopRegistrations.HooksOf(new DipCandidate(inputs.Read.Index), parameters);
+
+            if (hooks.ReadsReadings && inputs.Readings is null)
+            {
+                return [];
+            }
+
+            return Units(RuleWalk.Dip(inputs.Read, dip, walked, string.Empty, hooked, inputs.Readings, inputs.Trees).Own);
+        }
+
         var (setting, levels) = dip.SettingOf(parameters);
 
         return [.. dip.TradesUnder(setting, levels).Select(trade => (trade.Listing.Session, new OwnProcedures.Walked(trade.Listing.Session, null, trade).Edge))];
@@ -544,7 +563,7 @@ public static class RuleTests
             // profit and cover check among them, is walked by its search's own reading at every level it states.
             if (CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate own && ReadsOwnSweep(own, p))
             {
-                yield return ThroughOwnSearch(inputs.Own?.Pullback, own, row, p);
+                yield return ThroughOwnSearch(inputs.Own?.Pullback, own, row, p, inputs.Readings);
 
                 continue;
             }
@@ -568,7 +587,7 @@ public static class RuleTests
     // plan on every member that session; kept with why where the search reads no such setting or the run laid out no
     // reading.
     // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
-    public static RuleUnderTest ThroughOwnSearch(IndexSweepRunner.OwnPullbackRead? own, IndexRuleCandidate evaluator, RegisterRow row, IReadOnlyDictionary<string, double> p)
+    public static RuleUnderTest ThroughOwnSearch(IndexSweepRunner.OwnPullbackRead? own, IndexRuleCandidate evaluator, RegisterRow row, IReadOnlyDictionary<string, double> p, LoopReadings? readings = null)
     {
         RuleUnderTest Kept(string why) => new(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, SweepIdeas.Cap, Why: why);
 
@@ -582,6 +601,16 @@ public static class RuleTests
         if (at is null)
         {
             return Kept(refused!);
+        }
+
+        // From 21.16 a pullback stating the graded exposure is walked with its market check off, each night's picks as its
+        // exposure allows.
+        // see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+        if (RuleHooks.Of(HooksOf(p)) is { Exposure: not null } hooks)
+        {
+            return GradedOwnPullback(readings, own, evaluator, p, hooks) is { } graded
+                ? new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, SweepIdeas.Cap, graded)
+                : Kept(NoOwnRead);
         }
 
         var (design, picks) = own.Under(at.Levels);
@@ -786,22 +815,29 @@ public static class RuleTests
     // hooks, where that grid's walk reads every level it states; or why it cannot, a level only its search's own reading
     // walks, which no engine's walk reads.
     // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
-    public static (RuleWalk? Walk, string? Why) LivePullbackWalk(LoopRead read, IReadOnlyList<SweepMarketSeries> market, RegisterRow row, Action<string> progress, LoopReadings? readings, Func<long, TreeModel?>? trees, IdeaReplay candidates)
+    public static (RuleWalk? Walk, string? Why) LivePullbackWalk(LoopRead read, IReadOnlyList<SweepMarketSeries> market, RegisterRow row, Action<string> progress, LoopReadings? readings, Func<long, TreeModel?>? trees, IdeaReplay candidates, IndexSweepRunner.OwnPullbackRead? ownRead = null)
     {
         var p = CandidateEvaluator.Read(row.Parameters);
 
+        // From 21.16 one stating a level only its search's own reading walks is read by the engines over that reading.
+        // see: Every change the engines propose is one its family's night reads, so each is put to the operator
         if (CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate own && ReadsOwnSweep(own, p))
         {
-            return (null, OwnSearchOnly);
+            if (ownRead is null)
+            {
+                return (null, NoOwnRead);
+            }
+
+            var (at, refused) = RuleReplay.OwnPullback(ownRead, own, p);
+            var words = FamilyRecords.IsLive(row.Candidate) ? row.Candidate[FamilyRecords.LivePrefix.Length..] : row.Candidate;
+
+            return at is null ? (null, refused) : (RuleWalk.OwnPullback(ownRead, at, words, HooksOf(p), readings, trees), null);
         }
 
         return DialsOf(p) is { } dials
             ? (RuleWalk.Pullback(read, market, progress, LoopChange.OfHooks(HooksOf(p)), readings, trees, dials, candidates), null)
             : (null, OffTheGrid);
     }
-
-    // Why the engines read no frozen pullback stating a level only its search's own reading walks.
-    public const string OwnSearchOnly = "its live rule states a level only its search's own reading of the index's history walks, which no engine's walk reads";
 
     static RuleUnderTest SwingAt(RuleTestInputs inputs, string family, RegisterRow row, bool large, (bool[] Average, bool[] Vix)? switches)
     {
@@ -934,6 +970,69 @@ public static class RuleTests
             : Units(own.Costed(own.AtOpenGraded(own.ListingsUnder(open.Setting, open.Levels), listing => hooks.PicksUnder(readings?.Of(listing.Name, listing.Bar, listing.Session)) ?? 0), 1));
     }
 
+    // From 21.16 a frozen S&P 400 or 600 pullback's graded exposure walked over its search's own reading: its picks with the
+    // market check off, each night's taken in the night's own order, the reward to risk highest first and the ticker
+    // breaking a tie, a stock an earlier pick still holds passed over, and as many kept as the first pick's readings allow.
+    // see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+    static IReadOnlyList<(int Entry, double? Edge)>? GradedOwnPullback(LoopReadings? readings, IndexSweepRunner.OwnPullbackRead own, IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p, RuleHooks hooks) =>
+        GradedOwnPullback(own, evaluator, p, (name, session) =>
+            Array.BinarySearch(own.Laid.Series[name].SessionAt, session) is var bar and >= 0 ? hooks.PicksUnder(readings?.Of(name, bar, session)) ?? 0 : 0);
+
+    // The same walk with each night's picks the count handed for its first pick, by its stock and session.
+    public static IReadOnlyList<(int Entry, double? Edge)>? GradedOwnPullback(IndexSweepRunner.OwnPullbackRead own, IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p, Func<int, int, int> picksOn)
+    {
+        var (at, _) = RuleReplay.OwnPullback(own, evaluator, MarketOff(Unversioned(p)));
+
+        if (at is null)
+        {
+            return null;
+        }
+
+        var (design, picks) = own.Under(at.Levels);
+        var setting = own.SettingUnder(at.Point, at.Levels);
+        var conditions = own.Space.Conditions(at.Point);
+        var exit = design.ExitIndex;
+        var floor = SweepStages.StopFloor(setting);
+        var series = own.Laid.Series;
+        var openUntil = new Dictionary<int, int>();
+        var units = new List<(int Entry, double? Edge)>();
+
+        foreach (var night in picks.Where(pick => pick.Corner.Passes(setting) && conditions.Passes(pick.Readings)).GroupBy(pick => pick.Session).OrderBy(group => group.Key))
+        {
+            SweepPick[] ordered = [.. night.OrderByDescending(pick => pick.Plan.RewardToRisk).ThenBy(pick => series[pick.Name].Name.Ticker, StringComparer.Ordinal)];
+            var allowed = Math.Min(FamilySweep.PerNight, picksOn(ordered[0].Name, ordered[0].Session));
+            var taken = 0;
+
+            foreach (var pick in ordered)
+            {
+                if (taken == allowed)
+                {
+                    break;
+                }
+
+                if (openUntil.TryGetValue(pick.Name, out var held) && pick.Session <= held)
+                {
+                    continue;
+                }
+
+                var plan = pick.Plan;
+                double? edge = pick.Year is >= 0 and < SweepFigures.Years
+                    && plan.Code[exit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved
+                    && !float.IsNaN(plan.Multiple[exit])
+                    && !float.IsNaN(plan.Benchmark[exit])
+                    && plan.IsATradeAt(exit, floor)
+                        ? plan.EdgeAt(exit)
+                        : null;
+
+                openUntil[pick.Name] = pick.Session + plan.Ends[exit];
+                units.Add((pick.Session, edge));
+                taken++;
+            }
+        }
+
+        return [.. units.OrderBy(unit => unit.Entry)];
+    }
+
     // From 21.9 a breakout's or a drift's graded exposure as the tester proposes it: on the S&P 500 the family's rule at the
     // market floor its sweep reads, and on the S&P 400 or 600 the frozen live rule at the floor its check reads, walked by
     // its sweep's own reading where it states a level only that reading walks; none for another family, a rule reading no
@@ -941,7 +1040,7 @@ public static class RuleTests
     // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
     public static (IReadOnlyList<(int Entry, double? Edge)> Units, double Floor)? ExposedUnits(LoopRead read, string family, bool large, RegisterRow? live, LoopChange? standing, IndexSweepRunner.OwnSwingRead? own, LoopReadings? readings, Func<long, TreeModel?>? trees)
     {
-        if (!ExposureProcedures.Families.Contains(family, StringComparer.Ordinal))
+        if (family is not (BreakoutRule.Name or DriftRule.Name))
         {
             return null;
         }
@@ -979,6 +1078,61 @@ public static class RuleTests
         return places.Any(place => place < 0)
             ? null
             : (Units(RuleWalk.Swing(read, family, false, new LoopChange(places, grid.Key(places), stopFloor > 0 ? stopFloor : null, ExposureProcedures.Exposed(HooksOf(p), floor)), readings, trees).Own), floor);
+    }
+
+    // From 21.16 a frozen S&P 400 or 600 pullback's graded exposure as the tester proposes it, at the floor its market check
+    // reads: walked by its search's own reading where it states a level only that reading walks, and otherwise on the
+    // extended grid with its market dial off; none where it reads no check, already stands at the exposure, or is off the
+    // grid with no reading of its own.
+    // see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+    public static (IReadOnlyList<(int Entry, double? Edge)> Units, double Floor)? PullbackExposedUnits(LoopRead read, IReadOnlyList<SweepMarketSeries> market, RegisterRow live, IndexSweepRunner.OwnPullbackRead? own, Action<string> progress, LoopReadings? readings, Func<long, TreeModel?>? trees, IdeaReplay candidates)
+    {
+        if (CandidateEvaluators.Find(live.Evaluator) is not IndexRuleCandidate evaluator)
+        {
+            return null;
+        }
+
+        var p = Unversioned(CandidateEvaluator.Read(live.Parameters));
+
+        if (RuleHooks.Of(HooksOf(p)).Exposure is not null || ExposureProcedures.FloorOf(evaluator, p) is not { } floor)
+        {
+            return null;
+        }
+
+        if (ReadsOwnSweep(evaluator, p))
+        {
+            return own is not null && GradedOwnPullback(readings, own, evaluator, ExposureProcedures.Exposed(p, floor), RuleHooks.Of(ExposureProcedures.Exposed(LoopChange.NoHooks, floor))) is { } graded
+                ? (graded, floor)
+                : null;
+        }
+
+        return DialsOf(p) is { } dials
+            ? (Units(RuleWalk.Pullback(read, market, progress, LoopChange.OfHooks(ExposureProcedures.Exposed(HooksOf(p), floor)), readings, trees, dials, candidates).Own), floor)
+            : null;
+    }
+
+    // From 21.16 a live dip rule's graded exposure as the tester proposes it, at the breadth floor its market setting
+    // reads, walked as the engines walk the dip with its market setting off; none where its setting reads no breadth or
+    // it already stands at the exposure.
+    // see: The pullback's and the dip's graded exposure stand in their market check's place as a variant, walked as the breakout's and the drift's are
+    public static (IReadOnlyList<(int Entry, double? Edge)> Units, double Floor)? DipExposedUnits(LoopRead read, IndexSweepRunner.DipRead dip, RegisterRow live, LoopReadings? readings, Func<long, TreeModel?>? trees)
+    {
+        if (CandidateEvaluators.Find(live.Evaluator) is not DipCandidate evaluator || readings is null)
+        {
+            return null;
+        }
+
+        var parameters = DipCandidate.Renamed(CandidateEvaluator.Read(live.Parameters));
+        var hooks = LoopRegistrations.HooksOf(evaluator, parameters);
+
+        if (RuleHooks.Of(hooks).Exposure is not null || ExposureProcedures.FloorOf(evaluator, parameters) is not { } floor)
+        {
+            return null;
+        }
+
+        var open = new Dictionary<string, double>(parameters, StringComparer.Ordinal) { [DipCandidate.MarketParameter] = 0 };
+
+        return (Units(RuleWalk.Dip(read, dip, open, string.Empty, ExposureProcedures.Exposed(hooks, floor), readings, trees).Own), floor);
     }
 
     // From 21.9 a live or provisional rule's graded exposure beside it, as the run prints it: its trades and their mean edge
@@ -1078,6 +1232,16 @@ public static class RuleTests
                 : Kept(NoOwnRead);
         }
 
+        // From 21.16 a rule ordered by the expected value of the setups like each listing is walked by it, each night's
+        // listings put in that order as the night's step orders them, matched inside each fold among what ended before it.
+        // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+        if (hooks.ReadsExpected)
+        {
+            return ByExpected(inputs, family, own, listings, hooks) is { } ordered
+                ? new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(ordered), 1)))
+                : Kept(NoExpected);
+        }
+
         IReadOnlyList<(int Entry, double? Edge)>? besideUnits = null;
         double? besideFloor = null;
 
@@ -1116,6 +1280,41 @@ public static class RuleTests
         var opposite = Units(own.Costed(own.AtOpen(listings.Where(listing => ToneOpposite(own.Series, own.Calendar, listing.Name, listing.Bar, listing.Session, releases, inputs.Tones))), 1));
 
         return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, variant, Tone: new ToneSides(version, inputs.Tones.CutoffOf(version), variant, opposite));
+    }
+
+    // A frozen rule's own listings with each night's put in the order its hooks set by the expected value of the setups
+    // like each, the family's own order breaking a tie and placing those with no figure, each kept carrying its place as
+    // its order; none where the run holds no pool of settled setups or no readings.
+    static IReadOnlyList<FamilyListing>? ByExpected(RuleTestInputs inputs, string family, IndexSweepRunner.OwnSwingRead own, IReadOnlyList<FamilyListing> listings, RuleHooks hooks)
+    {
+        if (inputs.Like is not { } like || inputs.Readings is not { } readings)
+        {
+            return null;
+        }
+
+        double? ExpectedOf(FamilyListing one) =>
+            readings.Of(one.Name, one.Bar, one.Session) is { } read ? like.ExpectedAt(family, own.Calendar[one.Session].Year, own.Series[one.Name].Name.Ticker, read) : null;
+
+        var ordered = new List<FamilyListing>();
+
+        foreach (var night in listings.GroupBy(listing => listing.Session).OrderBy(group => group.Key))
+        {
+            FamilyListing[] inItsOwnOrder =
+            [
+                .. night
+                    .OrderByDescending(one => one.Order)
+                    .ThenByDescending(one => one.ThenBy)
+                    .ThenBy(one => own.Series[one.Name].Name.Ticker, StringComparer.Ordinal),
+            ];
+            var kept = hooks.Order(inItsOwnOrder, one => readings.Of(one.Name, one.Bar, one.Session), ExpectedOf);
+
+            for (var place = 0; place < kept.Count; place++)
+            {
+                ordered.Add(kept[place] with { Order = kept.Count - place, ThenBy = 0 });
+            }
+        }
+
+        return ordered;
     }
 
     // From 21.1 the dials of a family's second stage a registered rule may state beside its grid places.

@@ -18,7 +18,7 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
     public const string HoldParameter = "hold";
     public const string LimitParameter = "limit";
 
-    public override string Version => "b1bb17189a77";
+    public override string Version => "97846f9bf071";
 
     public override string SetupFamily => ImprovingRule.Name;
 
@@ -65,8 +65,9 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
     ];
 
     // The parameters a registration states for a setting, and the setting a registration's parameters state.
-    public static IReadOnlyDictionary<string, double> ParametersOf(ImprovingSweepSetting setting) =>
-        new Dictionary<string, double>(StringComparer.Ordinal)
+    public static IReadOnlyDictionary<string, double> ParametersOf(ImprovingSweepSetting setting)
+    {
+        var parameters = new Dictionary<string, double>(StringComparer.Ordinal)
         {
             [BuyParameter] = setting.BuyInNine,
             [FlagParameter] = setting.FlagFirst ? 1 : 0,
@@ -76,11 +77,20 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
             [LimitParameter] = setting.Sessions,
         };
 
+        if (setting.SoldUnderAverage)
+        {
+            parameters[QualityCandidate.AverageParameter] = 1;
+        }
+
+        return parameters;
+    }
+
     public static ImprovingSweepSetting SettingsOf(IReadOnlyDictionary<string, double> parameters) => new(
         (int)parameters[BuyParameter],
         parameters[FlagParameter] == 1,
         parameters[RiseParameter] == 1,
         parameters[FasterParameter] == 1,
         (int)parameters[HoldParameter],
-        (int)parameters[LimitParameter]);
+        (int)parameters[LimitParameter],
+        parameters.GetValueOrDefault(QualityCandidate.AverageParameter) == 1);
 }

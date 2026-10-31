@@ -433,7 +433,7 @@ public sealed class IndexFamilies : IComponent
         var passing = qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal).ToArray();
         var (open, heldIn) = await OpenAsync(connection, session, passing, cancellation, large);
         var picks = FamilyList.Draw(qualifying, open);
-        var readings = ruleAnswers.Any(pair => RuleHooks.Of(pair.Rule.Parameters).ReadsReadings) ? tonight : null;
+        var readings = ruleAnswers.Any(pair => RuleHooks.Of(pair.Rule.Parameters) is var hooks && (hooks.ReadsReadings || hooks.ReadsExpected)) ? tonight : null;
 
         // From 21.4 the families' setups at the ledger's loose gates on the night, handed in by the night as the readings
         // are, for a registered rule stating the ranking; laid only where one does.
@@ -2365,10 +2365,26 @@ public static class IndexRuleTrades
                 hooks = hooks.WithRanker(await EquityBrief.Worker.Loop.StoredRidge.NewestAsync(connection, transaction, index, rule.Family, cancellation));
             }
 
-            if ((hooks.ReadsReadings && readings is null) || (hooks.Ranks && setups is null))
+            if (((hooks.ReadsReadings || hooks.ReadsExpected) && readings is null) || (hooks.Ranks && setups is null))
             {
                 continue;
             }
+
+            // From 21.16 a rule ordered or ranked by the expected value of the setups like each candidate is handed it, read
+            // from the ledger's finished setups of its family on its index as a pick's card reads them.
+            // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+            var expected = hooks.ReadsExpected
+                ? await EquityBrief.Worker.Cards.LikeSetups.ExpectedAsync(
+                    connection,
+                    transaction,
+                    index,
+                    rule.Family,
+                    readings!,
+                    ticker => hooks.Ranks
+                        ? setups!(rule.Family).FirstOrDefault(setup => setup.Ticker == ticker) is { Target: not null }
+                        : answers.FirstOrDefault(one => one.Ticker == ticker) is { Target: not null },
+                    cancellation)
+                : null;
 
             await ExecuteAsync(connection, transaction, ClearTheRulesNight, [("$index", index), ("$night", Stamp(night)), ("$candidate", rule.Candidate)], cancellation);
 
@@ -2391,13 +2407,7 @@ public static class IndexRuleTrades
 
             var place = 0;
 
-            // Under a ranking the candidates are the family's setups at the loose gates in the ranking's order, each at the
-            // setup's own plan with the score as its order figure; otherwise the rule's own passing members under its hooks.
-            IReadOnlyList<IndexAnswer> candidates = hooks.Ranks
-                ? [.. hooks.Order(setups!(rule.Family), setup => setup.Readings).Where(setup => !holding.Contains(setup.Ticker)).Select((setup, at) => new IndexAnswer(setup.Ticker, rule.Family, true, at + 1, setup.Entry, setup.Stop, setup.Target, setup.Trail, setup.Cap, hooks.Ranker?.Score(setup.Readings), null))]
-                : hooks.Order([.. answers.Where(one => one.Passed && !holding.Contains(one.Ticker)).OrderBy(one => one.Place)], one => readings?.Invoke(one.Ticker));
-
-            foreach (var answer in candidates.Take(IndexRules.PerNight))
+            foreach (var answer in Candidates(hooks, rule.Family, answers, holding, readings, setups, expected).Take(IndexRules.PerNight))
             {
                 var name = Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, answer.Ticker, StringComparison.Ordinal));
                 var move = inputs.Series[name].Atr[IndexNightRead.BarOf(inputs.Series[name], inputs.At)];
@@ -2418,6 +2428,23 @@ public static class IndexRuleTrades
 
         return new Kept(kept, ended, benchmarked);
     }
+
+    // A rule's candidates on the night in its hooks' order: under a ranking its family's setups at the loose gates in the
+    // ranking's order, each at the setup's own plan with the score as its order figure; otherwise the rule's own passing
+    // members in their places under its hooks, from 21.16 ordered by the expected value of the setups like each where its
+    // hooks name that order; a stock the rule holds a trade on left off either way.
+    // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+    public static IReadOnlyList<IndexAnswer> Candidates(
+        RuleHooks hooks,
+        string family,
+        IReadOnlyList<IndexAnswer> answers,
+        IReadOnlySet<string> holding,
+        Func<string, IReadOnlyList<double?>?>? readings,
+        Func<string, IReadOnlyList<LooseSetup>>? setups,
+        Func<string, double?>? expected) =>
+        hooks.Ranks
+            ? [.. hooks.Order(setups!(family), setup => setup.Readings, setup => expected?.Invoke(setup.Ticker)).Where(setup => !holding.Contains(setup.Ticker)).Select((setup, at) => new IndexAnswer(setup.Ticker, family, true, at + 1, setup.Entry, setup.Stop, setup.Target, setup.Trail, setup.Cap, hooks.Ranker?.Score(setup.Readings), null))]
+            : hooks.Order([.. answers.Where(one => one.Passed && !holding.Contains(one.Ticker)).OrderBy(one => one.Place)], one => readings?.Invoke(one.Ticker), one => expected?.Invoke(one.Ticker));
 
     static async Task<(int Ended, int Benchmarked)> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, IndexNightInputs inputs, CancellationToken cancellation)
     {

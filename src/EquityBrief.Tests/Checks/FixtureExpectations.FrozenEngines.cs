@@ -42,17 +42,16 @@ public partial class FixtureExpectations
         Assert.Equal(walked.Trades, engines!.Own.Select(one => (one.Entry, one.Edge)));
         Assert.Single(engines.Own);
         Assert.Equal("S&P 600 breakout rule at its own breadth", engines.Current);
-        Assert.True(engines.ReadsMenu);
         Assert.Equal(engines.Own.Single().Entry, Assert.Single(engines.Listings).Session);
 
         // With no reading of its sweep laid out, the engines read none of it and say why.
         Assert.Equal((null, RuleTests.NoOwnRead), RuleTests.LiveSwingWalk(laid, BreakoutRule.Name, row, null, null, null));
 
-        // A frozen pullback stating the profit and cover check, which only its search's own reading walks, is read by no
-        // engine.
+        // A frozen pullback stating the profit and cover check, which only its search's own reading walks, is read from
+        // 21.16 over that reading, and with none laid out the engines read none of it and say why.
         var frozenPullback = FrozenParameters(RemedyFreezes[4].Parameters);
 
-        Assert.Equal((null, RuleTests.OwnSearchOnly), RuleTests.LivePullbackWalk(laid, [], StandingRow(FamilyRecords.LivePrefix + "S&P 600 pullback rule", "pullback-600", frozenPullback), _ => { }, null, null, null!));
+        Assert.Equal((null, RuleTests.NoOwnRead), RuleTests.LivePullbackWalk(laid, [], StandingRow(FamilyRecords.LivePrefix + "S&P 600 pullback rule", "pullback-600", frozenPullback), _ => { }, null, null, null!));
 
         // A frozen book selling under its 200-day average holds the one change of the menu its rule reads; one that does
         // not is walked by no engine of its own book.

@@ -196,6 +196,45 @@ public partial class FixtureExpectations
         Assert.Equal(exits.GetProperty("limitSale").GetDouble(), limit.Sale!.Value, 9);
     }
 
+    // 21.16: a dip trade an approved exit of the menu stands in its sell dial's place is walked under that exit, as the
+    // engines walk the dip under one, worked by hand.
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+    [Fact]
+    public void ADipTradeIsWalkedUnderTheExitOfTheMenuItsRuleNamesWorkedByHand()
+    {
+        var target = EquityBrief.Core.Loop.ExitMenu.Swing.First(one => one.Kind == EquityBrief.Core.Loop.ExitKind.Target && one.K == 1.5);
+        DipPath Own() => DipRule.Walk(100, 96, 10, [Day(5, 99, 98, 99)]);
+
+        // From a listing close of 100 and a stop of 96, a risk of 4 two typical moves deep, a target at 1.5 risks stands at
+        // 106: the second session's close of 106.5 reaches it, sold at the third's open of 107, 1.75 risks over the
+        // listing close; the first session's close of 101.5 is above the 5-session average the sell dial reads, which the
+        // menu's exit does not read.
+        var reached = DipRule.WalkUnder(100, 96, 10, 2, target, [Day(5, 99, 101.5, 99), Day(6, 102, 106.5, 100), Day(7, 107, 108, 101)], Own);
+
+        Assert.Equal((new DateOnly(2026, 10, 5), 99.0, new DateOnly(2026, 10, 7), 107.0, DipEnd.Exit, 2), (reached.BoughtOn, reached.Open, reached.EndedOn, reached.Sale, reached.End, reached.Sessions));
+        Assert.Equal(1.75, reached.ResultAtClose!.Value, 9);
+
+        // A close of 95.5 under the stop on the first session is sold at the second's open of 95, a stop.
+        var stopped = DipRule.WalkUnder(100, 96, 10, 2, target, [Day(5, 99, 95.5, 99), Day(6, 95, 97, 98)], Own);
+
+        Assert.Equal((new DateOnly(2026, 10, 6), 95.0, DipEnd.Stop, 1), (stopped.EndedOn, stopped.Sale, stopped.End, stopped.Sessions));
+        Assert.Equal(-1.25, stopped.ResultAtClose!.Value, 9);
+
+        // Reaching neither over a time limit of three, the third session's close of 104 sells it, the limit.
+        var limited = DipRule.WalkUnder(100, 96, 3, 2, target, [Day(5, 99, 101, 99), Day(6, 101, 103, 100), Day(7, 103, 104, 101), Day(8, 104, 110, 102)], Own);
+
+        Assert.Equal((new DateOnly(2026, 10, 7), 104.0, DipEnd.Limit, 3), (limited.EndedOn, limited.Sale, limited.End, limited.Sessions));
+        Assert.Equal(1.0, limited.ResultAtClose!.Value, 9);
+
+        // A trigger on the last stored session waits for its next session's open.
+        Assert.Equal((DipEnd.Open, (DateOnly?)null), (DipRule.WalkUnder(100, 96, 10, 2, target, [Day(5, 99, 106.5, 99)], Own).End, DipRule.WalkUnder(100, 96, 10, 2, target, [Day(5, 99, 106.5, 99)], Own).EndedOn));
+
+        // An exit moving half is one the plan cannot be walked under, and the trade is left to its sell dial's own walk.
+        var half = EquityBrief.Core.Loop.ExitMenu.Swing.First(one => one.Kind is EquityBrief.Core.Loop.ExitKind.HalfTarget or EquityBrief.Core.Loop.ExitKind.HalfBreakEven);
+
+        Assert.Equal(Own(), DipRule.WalkUnder(100, 96, 10, 2, half, [Day(5, 99, 98, 99)], Own));
+    }
+
     static double TradeFillsAtOpen(double atClose, double close, double risk, double open) =>
         EquityBrief.Core.Ledger.TradeFills.AtOpen(atClose, close, risk, open)!.Value;
 

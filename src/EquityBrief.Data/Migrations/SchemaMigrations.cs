@@ -737,7 +737,84 @@ public static class SchemaMigrations
         new Migration(114, "create label_pin", CreateLabelPin),
         new Migration(115, "add the setup's five readings the operator chose and the business state off the filings", AddTheReadingsTheOperatorChose),
         new Migration(116, "create short_interest and estimate_trend_night", CreateShortInterestAndNightTrends),
+        new Migration(117, "add dip_trade.exit, and rebuild quality_holding and improving_trade with the sale under the 200-day average", AddTheChangesTheNightsRead),
     ];
+
+    // From 21.16: the exit of the menu an approval set in a dip rule's sell dial's place, which its trade is walked under,
+    // null under the rule's own sell dial; and a book's holding sold at a close under its 200-day average, which the two
+    // book tables' end reasons admit only once rebuilt, since SQLite cannot change a check in place, every row copied
+    // across before the old table goes.
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+    const string AddTheChangesTheNightsRead = @"
+        ALTER TABLE dip_trade ADD COLUMN exit INTEGER;
+
+        CREATE TABLE quality_holding_rebuilt (
+            rule          TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            chosen_on     TEXT NOT NULL,
+            buy_close     TEXT NOT NULL,
+            bought_on     TEXT,
+            fill          TEXT,
+            gap           REAL,
+            bench_gap     REAL,
+            members       INTEGER,
+            growth        REAL NOT NULL,
+            through       TEXT NOT NULL,
+            ended_on      TEXT,
+            sale          TEXT,
+            end_reason    TEXT NOT NULL CHECK (end_reason IN ('open', 'no longer qualifies', 'left the index', 'under its 200-day average')),
+            result        REAL,
+            benchmark     REAL,
+            cost          REAL,
+            edge          REAL,
+            PRIMARY KEY (rule, index_code, ticker, chosen_on)
+        ) STRICT;
+
+        INSERT INTO quality_holding_rebuilt (rule, index_code, ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, ended_on, sale, end_reason, result, benchmark, cost, edge)
+        SELECT rule, index_code, ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, ended_on, sale, end_reason, result, benchmark, cost, edge FROM quality_holding;
+
+        DROP TABLE quality_holding;
+
+        ALTER TABLE quality_holding_rebuilt RENAME TO quality_holding;
+
+        CREATE TABLE improving_trade_rebuilt (
+            rule            TEXT NOT NULL,
+            index_code      TEXT NOT NULL,
+            ticker          TEXT NOT NULL,
+            chosen_on       TEXT NOT NULL,
+            filed           TEXT NOT NULL,
+            released        TEXT,
+            passed_checks   INTEGER NOT NULL,
+            applied         INTEGER NOT NULL,
+            before_passed   INTEGER NOT NULL,
+            before_applied  INTEGER NOT NULL,
+            buy_close       TEXT NOT NULL,
+            bought_on       TEXT,
+            fill            TEXT,
+            gap             REAL,
+            bench_gap       REAL,
+            members         INTEGER,
+            growth          REAL NOT NULL,
+            through         TEXT NOT NULL,
+            sessions        INTEGER NOT NULL,
+            ended_on        TEXT,
+            sale            TEXT,
+            end_reason      TEXT NOT NULL CHECK (end_reason IN ('open', 'score fell', 'time limit', 'left the index', 'under its 200-day average')),
+            result          REAL,
+            benchmark       REAL,
+            cost            REAL,
+            edge            REAL,
+            PRIMARY KEY (rule, index_code, ticker, chosen_on)
+        ) STRICT;
+
+        INSERT INTO improving_trade_rebuilt (rule, index_code, ticker, chosen_on, filed, released, passed_checks, applied, before_passed, before_applied, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, sessions, ended_on, sale, end_reason, result, benchmark, cost, edge)
+        SELECT rule, index_code, ticker, chosen_on, filed, released, passed_checks, applied, before_passed, before_applied, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, sessions, ended_on, sale, end_reason, result, benchmark, cost, edge FROM improving_trade;
+
+        DROP TABLE improving_trade;
+
+        ALTER TABLE improving_trade_rebuilt RENAME TO improving_trade;
+    ";
 
     // From 21.6: FINRA's consolidated short interest, a stock's settlement a row with the day FINRA published it, read
     // once a publication outside the night and its history once by hand; and the night's ask of each member's estimate

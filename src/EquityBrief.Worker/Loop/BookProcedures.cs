@@ -9,20 +9,16 @@ namespace EquityBrief.Worker.Loop;
 // read them inside each fold. The book menu: each change walked by the book's own walk over the whole history, each fold
 // ranking the changes above the rule's own book on the months that ended before its year, at the family's month floors in
 // proportion to the years it learns on, the k-th proposal the k-th change each fold ranks, scored on that fold's year
-// against the rule's own book, a change no dial of the rule reads shown and never put. And the rule as the engines that
+// against the rule's own book, each a change the book's night reads. And the rule as the engines that
 // propose a change of its hooks read it: the ledger's settled setups of the family on the index as what they search, each
 // one's readings the catalogue's on its session, and its walk the book's own with a change's hooks keeping and ordering the
 // members each session chooses, as the night's hooks do, its months the unit.
 // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
-// see: A change a family's night does not read is tested and shown and never put to the operator
+// see: Every change the engines propose is one its family's night reads, so each is put to the operator
 public static class BookProcedures
 {
-    // One change of a book's menu: its words, its book's months, and the change an approval would register, none for a
-    // sale no dial of the rule reads.
-    public sealed record MenuChange(string Words, IReadOnlyList<(int Opens, double? Edge)> Months, LoopChange? Change);
-
-    // Why a change of a book's menu is not put.
-    public const string NotRead = "shown and not put to you, since the family's night reads no such sale";
+    // One change of a book's menu: its words, its book's months, and the change an approval would register.
+    public sealed record MenuChange(string Words, IReadOnlyList<(int Opens, double? Edge)> Months, LoopChange Change);
 
     // A book's months a fold learns on, those whose close, the session the next month opens on, falls before its year, with
     // the family's month floors read over them and their mean edge, none where none is held.
@@ -88,7 +84,6 @@ public static class BookProcedures
             {
                 Finding = named is { } found
                     ? FormattableString.Invariant($"{menu[found.At].Words} read {found.Edge * 100:+0.00;-0.00} points a month on the years it learned on against the rule's own {ownFinished * 100:+0.00;-0.00}")
-                        + (menu[found.At].Change is null ? "; " + NotRead : string.Empty)
                     : null,
                 Change = named is { } kept ? menu[kept.At].Change : null,
             });

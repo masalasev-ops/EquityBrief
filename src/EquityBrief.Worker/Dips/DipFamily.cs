@@ -125,12 +125,12 @@ public sealed class DipFamily : IComponent
     ";
 
     const string InsertTrade = @"
-        INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, end_reason)
-        VALUES ($rule, $index, $ticker, $night, $place, $entry, $stop, $time_limit, $exit_average, $risk_moves, 'open');
+        INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, end_reason, exit)
+        VALUES ($rule, $index, $ticker, $night, $place, $entry, $stop, $time_limit, $exit_average, $risk_moves, 'open', $exit);
     ";
 
     const string OpenTradesOf = @"
-        SELECT rule, ticker, session_date, entry, stop, time_limit, exit_average FROM dip_trade
+        SELECT rule, ticker, session_date, entry, stop, time_limit, exit_average, risk_moves, exit FROM dip_trade
         WHERE index_code = $index AND end_reason = 'open' AND session_date < $night
         ORDER BY session_date, ticker;
     ";
@@ -388,7 +388,7 @@ public sealed class DipFamily : IComponent
                     ? [.. hooks.Order(setups?.Invoke(DipRule.Name) ?? [], setup => setup.Readings).Select(setup => new DipAnswer(setup.Ticker, [], setup.Entry, setup.Stop, setup.Cap, null, null))]
                     : hooks.Order(DipRule.Ranked(answers), answer => readings?.Invoke(answer.Ticker));
 
-                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: ranked);
+                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: ranked, Exit: hooks.Exit);
             })
             .ToArray();
         var tickers = read.SelectMany(rule => rule.Ranked).Select(answer => answer.Ticker).Distinct(StringComparer.Ordinal).ToArray();
@@ -423,7 +423,7 @@ public sealed class DipFamily : IComponent
         DipIndexOutcome? card = null;
         var written = ended;
 
-        foreach (var (rule, setting, fault, gate, answers, ranked) in read)
+        foreach (var (rule, setting, fault, gate, answers, ranked, exit) in read)
         {
             var first = card is null;
 
@@ -499,7 +499,7 @@ public sealed class DipFamily : IComponent
                     [
                         ("$rule", rule), ("$index", index), ("$ticker", pick.Ticker), ("$night", Stamp(night)), ("$place", pick.Place!.Value),
                         ("$entry", Money.ToStorage(entry)), ("$stop", Money.ToStorage(stop)), ("$time_limit", limit), ("$exit_average", setting.ExitLevel),
-                        ("$risk_moves", setting.StopMoves),
+                        ("$risk_moves", setting.StopMoves), ("$exit", exit == 0 ? DBNull.Value : exit),
                     ], cancellation);
                 }
             }
@@ -812,11 +812,13 @@ public sealed class DipFamily : IComponent
     // holds none yet; the count ended.
     async Task<int> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<DateOnly> calendar, CancellationToken cancellation)
     {
-        var trades = new List<(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, int Limit, int Exit)>();
+        var trades = new List<(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, int Limit, int Exit, double? RiskMoves, int Menu)>();
 
         await foreach (var row in RowsAsync(connection, transaction, OpenTradesOf, [("$index", index), ("$night", Stamp(night))], cancellation))
         {
-            trades.Add((row.GetString(0), row.GetString(1), Date(row.GetString(2)), Money.FromStorage(row.GetString(3)), Money.FromStorage(row.GetString(4)), row.GetInt32(5), row.GetInt32(6)));
+            trades.Add((
+                row.GetString(0), row.GetString(1), Date(row.GetString(2)), Money.FromStorage(row.GetString(3)), Money.FromStorage(row.GetString(4)), row.GetInt32(5), row.GetInt32(6),
+                row.IsDBNull(7) ? null : row.GetDouble(7), row.IsDBNull(8) ? 0 : row.GetInt32(8)));
         }
 
         var ended = 0;
@@ -843,7 +845,13 @@ public sealed class DipFamily : IComponent
             var scale = bars[listing].Close / Statistic.FromPrice(trade.Entry);
             var close0 = bars[listing].Close;
             var stop = Statistic.FromPrice(trade.Stop) * scale;
-            var path = DipRule.Walk(close0, stop, trade.Limit, DipRule.Sessions([.. bars.Select(bar => (bar.Session, bar.Open, bar.Close))], listing, trade.Exit, calendar));
+            var after = DipRule.Sessions([.. bars.Select(bar => (bar.Session, bar.Open, bar.Close))], listing, trade.Exit, calendar);
+
+            // From 21.16 a trade an approved exit of the menu stands in its sell dial's place is walked under that exit.
+            // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+            var path = trade.Menu != 0 && EquityBrief.Core.Loop.ExitMenu.Of(trade.Menu) is { } menu && trade.RiskMoves is { } moves
+                ? DipRule.WalkUnder(close0, stop, trade.Limit, moves, menu, after, () => DipRule.Walk(close0, stop, trade.Limit, after))
+                : DipRule.Walk(close0, stop, trade.Limit, after);
 
             if (path.BoughtOn is null)
             {

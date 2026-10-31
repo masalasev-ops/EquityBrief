@@ -43,6 +43,7 @@ public sealed class ImprovingFamily : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.FundamentalScore, Touch.Read),
@@ -136,6 +137,9 @@ public sealed class ImprovingFamily : IComponent
         UPDATE improving_trade SET ended_on = NULL, sale = NULL, end_reason = 'open', result = NULL, benchmark = NULL, cost = NULL, edge = NULL
         WHERE rule = $rule AND index_code = $index AND ended_on = $night;
     ";
+
+    // Each member's 200-session average on the night, which a rule selling under it reads its close against.
+    const string AveragesOn = "SELECT ticker, value FROM indicator WHERE session_date = $night AND name = $name AND value IS NOT NULL;";
 
     const string OpenTrades = @"
         SELECT ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, growth, through
@@ -555,6 +559,21 @@ public sealed class ImprovingFamily : IComponent
         var written = 0;
         var kept = new HashSet<string>(StringComparer.Ordinal);
 
+        // From 21.16, where the rule sells under its 200-day average, each member whose close tonight stands under it.
+        // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+        var under = new HashSet<string>(StringComparer.Ordinal);
+
+        if (setting.SoldUnderAverage)
+        {
+            await foreach (var row in RowsAsync(connection, transaction, AveragesOn, [("$night", Stamp(night)), ("$name", Core.Indicators.IndicatorSeries.Sma200)], cancellation))
+            {
+                if (Close(bars, row.GetString(0), night) is { } close && Statistic.FromPrice(close) < row.GetDouble(1))
+                {
+                    under.Add(row.GetString(0));
+                }
+            }
+        }
+
         foreach (var open in trades)
         {
             var trade = open;
@@ -597,9 +616,13 @@ public sealed class ImprovingFamily : IComponent
             var fell = !gone && tonight.TryGetValue(trade.Ticker, out var answer) && answer.Applied > 0 && !ImprovingRule.Holds(answer.Passed, answer.Applied, setting);
             var ended = !gone && !fell && trade.Through == night && sessions >= setting.Sessions;
 
-            if (gone || fell || ended)
+            // Where the rule reads it, one bought before tonight whose close stands under its 200-day average is sold at
+            // tonight's close, as the history test sells it.
+            var below = !gone && !fell && !ended && trade.BoughtOn is { } boughtOn && boughtOn < night && trade.Through == night && under.Contains(trade.Ticker);
+
+            if (gone || fell || ended || below)
             {
-                await EndAsync(connection, transaction, index, rule, trade, gone ? trade.Through : night, gone ? LeftTheIndex : fell ? ScoreFell : TimeLimit, bars, tonight, night, cancellation);
+                await EndAsync(connection, transaction, index, rule, trade, gone ? trade.Through : night, gone ? LeftTheIndex : fell ? ScoreFell : below ? ImprovingRule.UnderItsAverage : TimeLimit, bars, tonight, night, cancellation);
                 sold.Add(trade.Ticker);
                 written++;
 
