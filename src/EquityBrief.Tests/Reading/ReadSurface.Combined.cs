@@ -1,5 +1,6 @@
 using System.Net;
 using EquityBrief.Core.Cards;
+using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
 
@@ -107,11 +108,15 @@ public partial class ReadSurface
         Assert.Contains("</span>All setups together</button>", chart, StringComparison.Ordinal);
 
         // The card: one sentence counting what it skipped and why, and each trade with the setup it came from.
-        Assert.Contains("It skipped 1 pick(s): 1 because another setup already held the stock, 0 because three positions in the stock's sector were already open, and 0 because the free cash could not cover the buy.", card, StringComparison.Ordinal);
+        Assert.Contains("It skipped 1 pick(s): 1 because another setup already owned the stock, 0 because three positions in the stock's sector were already open, and 0 because the free cash could not cover the buy.", card, StringComparison.Ordinal);
         Assert.Contains($"data-family=\"breakout\" data-ticker=\"A\" data-bought=\"2026-11-02\" data-open=\"true\" data-skipped=\"{PaperAccount.AlreadyHeld}\"", card, StringComparison.Ordinal);
         Assert.Contains($"skipped: {PaperAccount.AlreadyHeld}", card, StringComparison.Ordinal);
         Assert.Contains(">20</td>", card, StringComparison.Ordinal);
         Assert.Contains("+3.0%", card, StringComparison.Ordinal);
+
+        // The card's words carry no term of 15.23's word list.
+        var said = PlainWords.Visible(marks.PaperCombined(combined));
+        Assert.All(PlainWords.Terms(), term => Assert.DoesNotMatch(PlainWords.Pattern(term), said));
 
         // No combined account to draw before any live rule has a trade.
         Assert.Contains("data-combined=\"none\"", marks.PaperCombined(null), StringComparison.Ordinal);

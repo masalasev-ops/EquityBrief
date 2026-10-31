@@ -244,7 +244,7 @@ public static partial class PaperAccount
 
     public const decimal BookShare = 0.2m;
 
-    public const string AlreadyHeld = "another setup already held the stock";
+    public const string AlreadyHeld = "another setup already owned the stock";
 
     public const string SectorFull = "three positions in its sector were open";
 

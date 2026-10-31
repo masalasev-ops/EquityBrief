@@ -862,7 +862,7 @@ public sealed partial class MarkRenderer
         html.Append(Invariant, $"<div class=\"paper-combined\" data-trades=\"{all.Trades.Count}\" data-skipped=\"{all.Skipped}\" data-held=\"{all.AlreadyHeld}\" data-sector=\"{all.SectorFull}\" data-cash=\"{all.UnderCash}\">");
         html.Append(all.Skipped == 0
             ? "<p class=\"paper-combined-skips\">It has taken every pick it was handed.</p>"
-            : Formatted($"<p class=\"paper-combined-skips\">It skipped {all.Skipped} pick(s): {all.AlreadyHeld} because another setup already held the stock, {all.SectorFull} because three positions in the stock's sector were already open, and {all.UnderCash} because the free cash could not cover the buy.</p>"));
+            : Formatted($"<p class=\"paper-combined-skips\">It skipped {all.Skipped} pick(s): {all.AlreadyHeld} because another setup already owned the stock, {all.SectorFull} because three positions in the stock's sector were already open, and {all.UnderCash} because the free cash could not cover the buy.</p>"));
         html.Append("<div class=\"tbl-wrap\"><table class=\"paper-combined-table\"><thead><tr><th>Setup</th><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Shares</th><th>Ended</th><th class=\"r\">Return</th></tr></thead><tbody>");
 
         foreach (var trade in all.Trades.OrderByDescending(trade => trade.Bought).ThenBy(trade => SetupFamilies.OrderOf(trade.Family)).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
