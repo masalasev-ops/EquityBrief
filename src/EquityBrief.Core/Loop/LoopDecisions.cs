@@ -147,7 +147,7 @@ public static class LoopDecisions
     // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
     public static bool HeldByCutoff(string? words, IEnumerable<(int Year, int Units, double Proposed, double Current)> years, DateOnly? cutoff)
     {
-        if (cutoff is not { } day || !LedgerReleases.Reads(words))
+        if (cutoff is not { } day || !ReleaseJudging.Reads(words))
         {
             return false;
         }

@@ -442,6 +442,20 @@ public sealed class CandidateRegistrar : IComponent
             cancellation,
             row => !FamilyRecords.IsLive(row.Candidate) && !FamilyRecords.IsBackground(row.Candidate));
 
+    // From 21.17 the named rules of a family retired and the registrations given written at one instant, or none of it, the
+    // family's other rules standing on untouched.
+    // see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version
+    public Task<RegistrationOutcome> ReplaceTogetherAsync(string family, IReadOnlyList<string> retire, IReadOnlyList<Registration> registrations, string evidence, string runId, CancellationToken cancellation = default) =>
+        AgainAsync(
+            family,
+            (_, _) => Task.FromResult<IReadOnlyList<Registration>?>(registrations),
+            $"nothing of the {family} was given to register, so none was written.",
+            $"no rule of the {family} stands registered, so none was written.",
+            evidence,
+            runId,
+            cancellation,
+            row => retire.Contains(row.Candidate, StringComparer.Ordinal));
+
     // A family registered again whole at one instant: every standing rule of the family, or every one the form retires,
     // retired on the evidence given and the registrations written for it registered, or none of it, refused where none is
     // written or none of the family stands.

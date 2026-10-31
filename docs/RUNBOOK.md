@@ -1037,6 +1037,18 @@ dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
 
 The file migrates to 119, prices every stored trade again and replays the rule records. No rule's version moves, so nothing is registered again and no record or paper account restarts; the records' figures move, the entry stating each before and after.
 
+On the operator's ruling of 2026-10-31 every swing trade is judged against a benchmark whose members are sold as the trade is, each at its own open after the close its stop, its target or its trail ended it on and at its close for the cap or a time exit (see: Every swing trade is judged against a benchmark whose members are sold as the trade is, and no rule's version moves because of it). The fill step prices each swing trade's benchmark so as it arrives, the ledger and its history and the monthly tests the same way, and `ledger-exits` then reads the stored benchmark and the one it works from nothing alike over a history built since. The same ruling registers the Fundamentals family's live rule on the S&P 400 and 600 again without its flag, and judges every rule and proposal reading a release reading on the test years from the local model's cutoff's year alone. Its remedy, from main after the merge while nothing else writes, then each index's history again with its check:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-11-01-21.17-the-three-findings.txt
+tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through <the night before> --again
+tools/ledger-build.ps1 --index MID --from 2019-01-02 --through <the night before> --again
+tools/ledger-build.ps1 --index SML --from 2019-01-02 --through <the night before> --again
+dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
+```
+
+The file records each index's answer at its live setting without the flag and registers the two live rules again; no migration runs and no source a rule pins moved, so no other rule is registered again. The two rules on each index whose names change restart their records at that instant.
+
 From 19.9 the night and the build write the fundamentals-first family's setups beside the others (see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried). A setup of the family is a pullback setup whose newest quarter's revenue grew by more than -0.05 on the year before and whose cash from operations is at least 0.6 of its net income, at the pullback row's own plan, with the provisional rule's pass beside it; it needs the SEC's facts, so on a store whose facts were never pulled whole the family holds no setup. A history built before 19.9 holds none of the family's setups until it is built again with `--again`, which 19.9's remedy does for each index before its file registers the S&P 400's and 600's moved rules again, since the index families' step moved their versions in reading the family's approved setting, and checks each index's history:
 
 ```
@@ -1676,6 +1688,14 @@ It is refused for a family whose walk reads no exposure, from 21.16 any but the 
 ```
 dotnet run --project src/EquityBrief.Worker -- register --ordered drift --index MID
 ```
+
+**The Fundamentals family's live rule without its flag** is registered on one index by one command, from 21.17 on the operator's ruling of 2026-10-31: the live rule and the version standing at its setting without the flag are retired and registered again as each other at one instant, the unflagged setting the live rule and the flagged one a version, the family keeping its nine rules (see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version).
+
+```
+dotnet run --project src/EquityBrief.Worker -- register --without-flag MID --evidence "the ruling it is registered on"
+```
+
+It is refused for an index the family carries no rule for, where no live rule of the family stands, where the live rule asks no flag, as the S&P 500's does, and where no version stands at the live rule's setting without the flag, writing nothing. The two rules' records restart at the registration. Record the index's answer at the unflagged setting with `sweep-answer --run <its history test's run> --ruled <the ruling's day> --setting <the setting's key>` first, so the card draws that setting's figures.
 
 It is refused on the S&P 500, whose breakout registers the order with its family and whose pullback and drift hold nine rules, where no live rule of the family stands on the index, for a family the index families' step lists by no hook, the heavyweights' book and the dip among them, and where the family holds nine rules. The monthly run's `loop-rules` walks it over the rule's own listings, each night's put in that order.
 

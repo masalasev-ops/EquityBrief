@@ -78,6 +78,52 @@ public static class ImprovingRules
             null);
     }
 
+    // From 21.17, on the operator's ruling of 2026-10-31, the family's live rule on an index registered again at its own
+    // setting without the flag: the live rule and the version standing at that setting retired, and at the same instant
+    // the version's registration written again as the live rule and the live rule's as a version, each with the parameters
+    // and the words it stood at, so the family holds the rules it held, none of them retired from it; or why none can be
+    // written: no Fundamentals rule carried for the index, no live rule of the family standing on it, a live rule asking no
+    // flag, or no version standing at its setting without the flag.
+    // see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version
+    public static (IReadOnlyList<string>? Retire, IReadOnlyList<Registration>? Register, string? Refusal) WithoutFlag(string index, IReadOnlyList<RegisterRow> register, DateTimeOffset at)
+    {
+        if (CandidateEvaluators.All.OfType<ImprovingCandidate>().FirstOrDefault(evaluator => evaluator.Index == index) is not { } carried)
+        {
+            return (null, null, $"no Fundamentals rule is carried for an index coded '{index}'; the indices are {string.Join(", ", CandidateEvaluators.All.OfType<ImprovingCandidate>().Select(evaluator => evaluator.Index))}.");
+        }
+
+        var standing = CandidateFamily.In(CandidateFamily.Standing(register, at), carried.Family);
+
+        if (FamilyRecords.LiveOf(standing) is not { } live)
+        {
+            return (null, null, $"no live rule of the {carried.Family} stands, so there is none to register again without its flag.");
+        }
+
+        var flagged = ImprovingCandidate.SettingsOf(CandidateEvaluator.Read(live.Parameters));
+
+        if (!flagged.FlagFirst)
+        {
+            return (null, null, $"'{live.Candidate}' asks no flag first, so it stands as the ruling asks and nothing was written.");
+        }
+
+        var unflagged = flagged with { FlagFirst = false };
+
+        if (standing.FirstOrDefault(row => row != live && !FamilyRecords.IsBackground(row.Candidate) && ImprovingCandidate.SettingsOf(CandidateEvaluator.Read(row.Parameters)) == unflagged) is not { } twin)
+        {
+            return (null, null, $"no version of the {carried.Family} stands at '{Short(unflagged)}', the live rule's setting without its flag, so nothing was written.");
+        }
+
+        var named = OwnStepCandidate.NameOf(index) + " Fundamentals rule at ";
+
+        return (
+            [live.Candidate, twin.Candidate],
+            [
+                new Registration(FamilyRecords.LivePrefix + named + Short(unflagged), twin.Rule, twin.Test, twin.Evaluator, CandidateEvaluator.Read(twin.Parameters)),
+                new Registration("the " + named + Short(flagged), live.Rule, live.Test, live.Evaluator, CandidateEvaluator.Read(live.Parameters)),
+            ],
+            null);
+    }
+
     // A setting in the few words a rule's name carries, each of the six dials.
     public static string Short(ImprovingSweepSetting setting) => string.Create(
         CultureInfo.InvariantCulture,

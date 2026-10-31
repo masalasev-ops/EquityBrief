@@ -17,7 +17,8 @@ namespace EquityBrief.Worker.Ledger;
 // as a resting order filled on the first session whose high reaches it, the stop still a close and sold at the next
 // open; the time limit at its own close either way. The short-term dip is shown as it already prices, sold at the next
 // open. From 21.14, when the ledger sells at the next open, the stored result is reproduced by that pricing, and the
-// benchmark is read beside the stored one with each member sold as the trade is, for the operator. It reads the store and
+// benchmark is read beside the stored one with each member sold as the trade is, which from 21.17 the stored one is too,
+// so the two read alike over a history built since. It reads the store and
 // writes nothing to it, its answer an HTML page with its figures beside it under the data root's loop folder; a change it
 // suggests waits for a fill step of its own on the operator's word.
 // see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
@@ -43,7 +44,7 @@ public sealed partial class SetupLedger
         public double? EdgeResting => Edge(Priced.Resting.Result);
 
         // From 21.14 the benchmark were its members sold as the trade is, at each one's open after the close that ended
-        // it, and the edge at the next open read against it, which no rule, record or page reads.
+        // it, worked from nothing, and the edge at the next open read against it beside the stored one's.
         public double? BenchmarkSold { get; init; }
 
         public double? EdgeBothAtNextOpen => Priced.AtNextOpen.Result is { } made && BenchmarkSold is { } benchmark ? made - benchmark - (Cost ?? 0) : null;
@@ -241,7 +242,7 @@ public sealed partial class SetupLedger
         var lines = new List<string>
         {
             FormattableString.Invariant($"{read.Length} of {swings} settled swing setup(s) on the {DecisionCards.NameOf(index)} priced three ways over the history read through {newest}, {swings - read.Length} whose stock, session or next open the history does not hold left out; {near.Count(same => same)} of the {read.Length} reproduce the stored result, sold at the next open from 21.14, within {NearWithin}."),
-            "From 21.14 the benchmark is also read with each member sold as the trade is, at its own open after the close that ended it, which no rule, record or page reads: the edge at the next open against it beside the edge against the stored benchmark, whose members are sold at their closes, over the same setups.",
+            "From 21.14 the benchmark is also read with each member sold as the trade is, at its own open after the close that ended it, worked from nothing: the edge at the next open against it beside the edge against the stored benchmark over the same setups. From 21.17 the stored benchmark's members are sold the same way, so the two read alike over a history built since, and a history built before reads the stored one with its members sold at their closes.",
             "Each result is in multiples of the risk the plan put up at the listing's close, bought at the open after it. The edge after costs under each pricing is its result less the stored benchmark and the stored cost, so only the sale moves between the three.",
             "Under the resting order a session whose high reaches the target sells at the target before its close is read, so a session reaching the target and closing under the stop sells at the target; a plan whose stop trails rests no order.",
         };

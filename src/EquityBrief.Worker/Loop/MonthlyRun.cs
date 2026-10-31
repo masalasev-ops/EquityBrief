@@ -309,7 +309,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
                 if (cutoff is { } cut)
                 {
-                    foreach (var reading in family.Where(proposal => proposal.Passed && proposal.Change is not null && LedgerReleases.Reads(proposal.Words)))
+                    foreach (var reading in family.Where(proposal => proposal.Passed && proposal.Change is not null && ReleaseJudging.Reads(proposal.Words)))
                     {
                         var years = await YearsAsync(connection, run, reading, cancellation);
 
@@ -329,7 +329,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                     // From 20.8 a change reading a release reading, its test years before the local model's cutoff and
                     // after it.
                     // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
-                    if (cutoff is { } day && LedgerReleases.Reads(one.Words))
+                    if (cutoff is { } day && ReleaseJudging.Reads(one.Words))
                     {
                         text.AppendLine("    " + CutoffLine(LedgerReleases.Split(await YearsAsync(connection, run, one, cancellation), day), day, one.Unit));
                     }
@@ -361,7 +361,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                 {
                     while (await reader.ReadAsync(cancellation))
                     {
-                        if (LedgerReleases.Reads(reader.GetString(3)))
+                        if (ReleaseJudging.Reads(reader.GetString(3)))
                         {
                             rules.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetInt64(4) == 1, reader.IsDBNull(5) ? null : reader.GetString(5)));
                         }
@@ -399,8 +399,10 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
         return (true, FormattableString.Invariant($"{put} proposal(s) put to you over {runs.Count} index run(s), the report in {Folder}/{month}/{ReportFile}"));
     }
 
-    // From 20.8 a change's or a rule's total less the one it is set against, on each side of the local model's cutoff.
+    // From 20.8 a change's or a rule's total less the one it is set against, on each side of the local model's cutoff, and
+    // from 21.17 the side it is judged on first, the years before printed beside it as read by a model trained after them.
     // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    // see: A rule or a change reading a release reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside it
     public static string CutoffLine(CutoffSides sides, DateOnly cutoff, string unit)
     {
         static string Side(IReadOnlyList<int> years, int units, double difference, string unit) =>
@@ -408,10 +410,10 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                 ? "no test year"
                 : FormattableString.Invariant($"{(years.Count == 1 ? years[0].ToString(CultureInfo.InvariantCulture) : $"{years.Min()} to {years.Max()}")}, {difference:+0.000;-0.000} {unit} over {units} units");
 
-        return FormattableString.Invariant($"Before the local model's cutoff of {cutoff:yyyy-MM-dd}, which it may have known the outcome of: ")
-            + Side(sides.BeforeYears, sides.BeforeUnits, sides.BeforeProposed - sides.BeforeCurrent, unit)
-            + "; from it, the years relied on: "
+        return FormattableString.Invariant($"Judged on the test years from the local model's cutoff of {cutoff:yyyy-MM-dd} alone: ")
             + Side(sides.AfterYears, sides.AfterUnits, sides.AfterProposed - sides.AfterCurrent, unit)
+            + "; beside it, the years before, " + ReleaseJudging.TrainedAfter + ": "
+            + Side(sides.BeforeYears, sides.BeforeUnits, sides.BeforeProposed - sides.BeforeCurrent, unit)
             + ".";
     }
 

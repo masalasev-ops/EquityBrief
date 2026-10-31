@@ -47,10 +47,13 @@ public sealed record FillOutcome(IReadOnlyList<FillCount> Sources)
 // a swing trade that ended on a close's signal, its stop, its target or its trail, is sold at the open of the session
 // after that close, its result and edge moved by that gap over the same risk and the session and the price it was sold
 // at written beside them; its cap's or a time exit's close stands, and one whose sale's open is not stored yet holds no
-// result until it is. The benchmark stays as the entry's fill priced it. It reads the store and writes its own table and
-// its run log row, asks for nothing and calls no model, and moves no rule's version, since no source a rule pins changes.
+// result until it is. From 21.17 the benchmark's members are sold the same way, each walked again from its own bars under
+// the trade's plan and sold at its own open after the close that ended it, the benchmark waiting while any member's sale
+// does. It reads the store and writes its own table and its run log row, asks for nothing and calls no model, and moves
+// no rule's version, since no source a rule pins changes.
 // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
 // see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
+// see: Every swing trade is judged against a benchmark whose members are sold as the trade is, and no rule's version moves because of it
 public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 {
     public static ComponentAccess Access => new(
@@ -198,6 +201,10 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             .Distinct()
             .ToDictionary(session => session, session => NextOf(calendar, session));
         var read = await PricesAsync(connection, due, next, cancellation);
+        var benchmarked = due.Where(trade => !trade.Book && trade.Benchmark is not null).Select(trade => trade.Session).ToArray();
+        var paths = benchmarked.Length > 0
+            ? await MemberPathsAsync(connection, benchmarked.Min(), cancellation)
+            : new Dictionary<string, MemberPath>(StringComparer.Ordinal);
         var counts = Sources.ToDictionary(source => source, _ => new int[7], StringComparer.Ordinal);
 
         foreach (var trade in trades)
@@ -228,7 +235,18 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             if (fill is { Result: { } bought } && !trade.Book && trade.EndedOn is { } endedOn)
             {
                 sale = Sold(trade, bought, await PathAsync(connection, transaction, trade.Ticker, trade.Session, NextOf(calendar, endedOn) ?? endedOn, cancellation));
-                fill = fill with { Result = sale.Result, Edge = sale.Result is { } sold && fill.Benchmark is { } against ? sold - against : null };
+                fill = fill with { Result = sale.Result };
+            }
+
+            // From 21.17 a swing trade's benchmark with its members sold as the trade is, waiting with it on their sales.
+            if (fill is { Benchmark: { } boughtBenchmark } && !trade.Book)
+            {
+                fill = fill with { Benchmark = BenchmarkSale(trade, read, paths) is { } moved ? boughtBenchmark + moved : null };
+            }
+
+            if (fill is not null && !trade.Book)
+            {
+                fill = fill with { Edge = fill.Result is { } made && fill.Benchmark is { } against ? made - against : null };
             }
 
             counts[trade.Source][fill is not null ? 0 : reason == TradeFills.NoOpen ? 2 : reason == TradeFills.NoRisk ? 5 : 1]++;
@@ -338,12 +356,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             return Priced(TradeFills.Holding(on, trade.Entry, open, trade.Result, trade.Benchmark, cut));
         }
 
-        // The stop's distance in typical moves: the trade's own where its table keeps one, else read off its stock's
-        // typical move on the night.
-        var riskMoves = trade.RiskMoves is > 0 ? trade.RiskMoves
-            : trade.Stop is { } floor && read.Moves.TryGetValue((trade.Ticker, trade.Session), out var move) && move > 0
-                ? (trade.Entry - floor) / (move * scale)
-                : null;
+        var riskMoves = RiskMovesOf(trade, read);
         var members = trade.Benchmark is null || riskMoves is not { } moves
             ? []
             : read.MembersOn(trade.Index, trade.Session)
@@ -357,6 +370,97 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
     // An open held and no fill is a plan that put up no risk at its close.
     static (TradeFill? Fill, string? Reason) Priced(TradeFill? fill) => fill is null ? (null, TradeFills.NoRisk) : (fill, null);
+
+    // The stop's distance in typical moves: the trade's own where its table keeps one, else read off its stock's typical
+    // move on the night at the trade's own scale.
+    static double? RiskMovesOf(StoredTrade trade, FillPrices read) =>
+        trade.RiskMoves is > 0 ? trade.RiskMoves
+            : trade.Stop is { } floor && read.Moves.TryGetValue((trade.Ticker, trade.Session), out var move) && move > 0
+                && read.Bars.TryGetValue((trade.Ticker, trade.Session), out var night) && night.Close > 0
+                ? (trade.Entry - floor) / (move * (trade.Entry / night.Close))
+                : null;
+
+    // One stock's sessions from the first listing night a due trade's benchmark reads, oldest first, each one's open and
+    // close as the bars hold them now.
+    public sealed record MemberPath(DateOnly[] Sessions, double[] Opens, double[] Closes);
+
+    // From 21.17 what the members' sales move a swing trade's benchmark by, in each member's own risk: the same plan on
+    // every member the index held that night with a bar and a typical move, its stop the trade's typical moves under the
+    // member's close and its target or its trail the trade's multiple of the member's own risk, walked again from the
+    // member's closes under the exit of the menu the trade is walked under or its rule's own, and sold at the open after
+    // the close that ended it where its end calls for one, as the trade is; none while any member's sale's open is not
+    // stored yet, so the benchmark waits on its members as the trade waits on its own sale, and nought where no member's
+    // walk ended.
+    // see: Every swing trade is judged against a benchmark whose members are sold as the trade is, and no rule's version moves because of it
+    public static double? BenchmarkSale(StoredTrade trade, FillPrices read, IReadOnlyDictionary<string, MemberPath> paths)
+    {
+        if (trade.Book || trade.Relative || trade.Stop is not { } stop || !(trade.Entry > stop) || trade.Cap is not { } cap || RiskMovesOf(trade, read) is not { } riskMoves)
+        {
+            return 0;
+        }
+
+        var risk = trade.Entry - stop;
+        double? reward = trade.Target is { } target ? (target - trade.Entry) / risk : null;
+        double? trailRisks = reward is null && trade.Trail is { } trail ? trail / risk : null;
+        var choice = EquityBrief.Core.Loop.ExitMenu.Of(trade.Exit);
+        var walked = new List<(SetupOutcome, double?)>();
+
+        foreach (var ticker in read.MembersOn(trade.Index, trade.Session))
+        {
+            if (!paths.TryGetValue(ticker, out var path) || !read.Moves.TryGetValue((ticker, trade.Session), out var move) || !(move > 0))
+            {
+                continue;
+            }
+
+            var bar = Array.BinarySearch(path.Sessions, trade.Session);
+            var entry = bar >= 0 ? path.Closes[bar] : 0;
+            var memberRisk = riskMoves * move;
+
+            if (bar < 0 || !(entry > 0) || !(memberRisk > 0) || entry - memberRisk <= 0)
+            {
+                continue;
+            }
+
+            var anchor = new SetupAnchor(trade.Session, entry, entry - memberRisk, reward is { } r ? entry + (r * memberRisk) : null, trailRisks is { } t ? t * memberRisk : null, cap, riskMoves);
+            var outcome = EquityBrief.Core.Loop.ExitMenu.Replay(path.Closes, bar, anchor, move, choice);
+            double Close(int at) => path.Closes[at];
+            double? OpenAfter(int at) => at + 1 < path.Opens.Length && path.Opens[at + 1] > 0 ? path.Opens[at + 1] : null;
+
+            walked.Add((outcome, ExitFills.SaleMove(outcome, Close, OpenAfter, bar, memberRisk, ExitFills.HalfSoldOn(Close, bar, anchor, choice, outcome))));
+        }
+
+        var (mean, _, waiting) = ExitFills.SaleMoves(walked);
+
+        return waiting > 0 ? null : mean;
+    }
+
+    // Every stock's path from the first session given, the kept bars' first, read once for the trades whose benchmark a
+    // night prices.
+    public static async Task<IReadOnlyDictionary<string, MemberPath>> MemberPathsAsync(SqliteConnection connection, DateOnly from, CancellationToken cancellation)
+    {
+        var rows = new Dictionary<string, SortedDictionary<DateOnly, (double Open, double Close)>>(StringComparer.Ordinal);
+
+        foreach (var table in new[] { "kept_bar", "bar" })
+        {
+            await using var command = Command(connection, null, $"SELECT ticker, session_date, open, close FROM {table} WHERE session_date >= $from;", [("$from", Stamp(from))]);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (!rows.TryGetValue(reader.GetString(0), out var path))
+                {
+                    rows[reader.GetString(0)] = path = [];
+                }
+
+                path[Date(reader.GetString(1))] = (Price(reader, 2) ?? 0, Price(reader, 3) ?? 0);
+            }
+        }
+
+        return rows.ToDictionary(
+            pair => pair.Key,
+            pair => new MemberPath([.. pair.Value.Keys], [.. pair.Value.Values.Select(one => one.Open)], [.. pair.Value.Values.Select(one => one.Close)]),
+            StringComparer.Ordinal);
+    }
 
     static (string, string, string, string, DateOnly) Key(StoredTrade trade) => (trade.Source, trade.Index, trade.Owner, trade.Ticker, trade.Session);
 

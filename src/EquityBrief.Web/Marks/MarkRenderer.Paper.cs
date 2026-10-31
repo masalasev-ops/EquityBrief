@@ -57,6 +57,9 @@ public sealed record PaperAccountView(
     public const string You = "you";
 
     public bool Head => Standing is Live or Provisional;
+
+    // From 21.17 the local model's cutoff's year a rule reading a release reading is judged from, none for any other.
+    public int? JudgedFrom { get; init; }
 }
 
 // One trade of an account's trade log: its stock, its buy session and price, its stop where it holds one, the session it
@@ -660,6 +663,8 @@ public sealed partial class MarkRenderer
             : held.Needed == LoopScreens.BookMonths ? Formatted($"{held.Counted} of {held.Needed} months")
             : Formatted($"{held.Counted} of {held.Needed} decided");
 
+    static string CutoffLabel => ReleaseJudging.TrainedAfter;
+
     // The scorecard's history half: the test years as boxes, better or worse with each year's edge, and the scale of luck.
     static string History(PaperAccountView head)
     {
@@ -678,14 +683,23 @@ public sealed partial class MarkRenderer
 
         html.Append("<h4>Did it beat the easy alternative?</h4>");
         html.Append(Invariant, $"<p class=\"sh-line\">{(head.Better is { } better && head.Counted is { } counted and > 0 ? Formatted($"Better in {better} of {counted} complete {(counted == 1 ? "year" : "years")}. ") : string.Empty)}Each box is a test year: did its {(book ? "holdings" : "trades")} beat {(book ? BookAgainst(head.Family, "their") : "the same plan bought on every stock that night")}, and by how much, in {(book ? "points a month" : "risks a trade")}.</p>");
+        // From 21.17 a rule reading a release reading is judged on the years from the local model's cutoff's year alone, the
+        // years before drawn beside them and labelled as read by a model trained after them.
+        // see: A rule or a change reading a release reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside it
+        if (head.JudgedFrom is { } from)
+        {
+            html.Append(Invariant, $"<p class=\"sh-line\" data-judged-from=\"{from}\">Its verdict reads the years from {from} alone. The years before are shown beside them, {Escaped(CutoffLabel)}.</p>");
+        }
+
         html.Append("<div class=\"sh-years\">");
 
         foreach (var box in boxes)
         {
             var kind = box.Word == PaperAccount.Better ? "better" : box.Word == PaperAccount.Worse ? "worse" : box.Word == PaperAccount.Even ? "even" : "none";
             var year = head.Years.FirstOrDefault(row => row.Year == box.Year);
+            var before = head.JudgedFrom is { } judged && box.Year < judged;
 
-            html.Append(Invariant, $"<div class=\"sy {kind}\" data-year=\"{box.Year}\" data-word=\"{Escaped(box.Word)}\" data-edge=\"{(box.Edge is { } held ? held.ToString("R", Invariant) : "none")}\"{(year is null ? string.Empty : Formatted($" title=\"{box.Year}: {year.Units} {(book ? (year.Units == 1 ? "month" : "months") : (year.Units == 1 ? "trade" : "trades"))}, a total of {Escaped(Plain(head.Unit, year.Total))} against {Escaped(Plain(head.Unit, year.ComparedTotal))}\""))}>");
+            html.Append(Invariant, $"<div class=\"sy {kind}\" data-year=\"{box.Year}\" data-word=\"{Escaped(box.Word)}\" data-edge=\"{(box.Edge is { } held ? held.ToString("R", Invariant) : "none")}\"{(before ? " data-before-cutoff=\"1\"" : string.Empty)}{(year is null ? string.Empty : Formatted($" title=\"{box.Year}: {year.Units} {(book ? (year.Units == 1 ? "month" : "months") : (year.Units == 1 ? "trade" : "trades"))}, a total of {Escaped(Plain(head.Unit, year.Total))} against {Escaped(Plain(head.Unit, year.ComparedTotal))}{(before ? ", " + Escaped(CutoffLabel) : string.Empty)}\""))}>");
             html.Append(Invariant, $"<span class=\"sy-y\">{box.Year}{(box.Complete ? string.Empty : " so far")}</span><b>{Escaped(box.Word)}</b>");
             html.Append(box.Edge is { } edge ? Formatted($"<span class=\"sy-e\">{(book ? SignedTwo(edge * 100) : SignedTwo(edge))}</span>") : string.Empty);
             html.Append("</div>");

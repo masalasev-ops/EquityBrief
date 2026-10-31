@@ -427,10 +427,11 @@ public sealed partial class MarkRenderer
             + $"<form class=\"loop-press\" method=\"post\" action=\"{Escaped(action)}\" data-loop-key=\"{Escaped(key)}\"><button type=\"submit\">Approve the restore</button></form><p class=\"loop-said\" aria-live=\"polite\"></p></div>";
     }
 
-    // From 20.8 a change or a rule reading a release reading on each side of the local model's cutoff: the total less the
-    // rule's over the test years before the cutoff's year, which the model may have known the outcome of, and over the
-    // years from it, the ones relied on.
+    // From 20.8 a change or a rule reading a release reading on each side of the local model's cutoff: from 21.17 the
+    // total less the rule's over the test years from the cutoff's year, which its verdict is judged on alone, and beside it
+    // over the years before, read by a model trained after them.
     // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    // see: A rule or a change reading a release reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside it
     public string CutoffSplit(CutoffSides sides, DateOnly cutoff, string unit)
     {
         string Side(IReadOnlyList<int> years, int units, double proposed, double current) =>
@@ -442,9 +443,9 @@ public sealed partial class MarkRenderer
         var after = sides.AfterProposed - sides.AfterCurrent;
         var day = cutoff.ToString("yyyy-MM-dd", Invariant);
 
-        return Formatted($"<p class=\"loop-cutoff\" data-cutoff=\"{day}\" data-before=\"{before.ToString("R", Invariant)}\" data-after=\"{after.ToString("R", Invariant)}\"><b>Before and after the local model's cutoff of {day}.</b> ")
-            + $"It reads what the local model read of the results releases. The total less the rule's in the test years before the cutoff, which the model may have known the outcome of: {Side(sides.BeforeYears, sides.BeforeUnits, sides.BeforeProposed, sides.BeforeCurrent)}. "
-            + $"In the years from it, the ones relied on: {Side(sides.AfterYears, sides.AfterUnits, sides.AfterProposed, sides.AfterCurrent)}.</p>";
+        return Formatted($"<p class=\"loop-cutoff\" data-cutoff=\"{day}\" data-before=\"{before.ToString("R", Invariant)}\" data-after=\"{after.ToString("R", Invariant)}\"><b>Judged from the local model's cutoff of {day}.</b> ")
+            + $"It reads what the local model read of the results releases, so its verdict reads the test years from {cutoff.Year.ToString(Invariant)} alone. The total less the rule's in those years: {Side(sides.AfterYears, sides.AfterUnits, sides.AfterProposed, sides.AfterCurrent)}. "
+            + $"Beside it, the years before, {ReleaseJudging.TrainedAfter}: {Side(sides.BeforeYears, sides.BeforeUnits, sides.BeforeProposed, sides.BeforeCurrent)}.</p>";
     }
 
     // One proposal: what it changes, its verdict part by part, its test years, and what the gate could detect; and from
@@ -467,7 +468,7 @@ public sealed partial class MarkRenderer
             html.Append($"<p class=\"loop-finding\" data-finding=\"{Escaped(finding)}\"><b>Why.</b> {WithSignedFigures(Capitalised(finding))}.</p>");
         }
 
-        if (cutoff is { } day && LedgerReleases.Reads(proposal.Words))
+        if (cutoff is { } day && ReleaseJudging.Reads(proposal.Words))
         {
             html.Append(CutoffSplit(LedgerReleases.Split(YearsOf(proposal, years), day), day, proposal.Unit));
 

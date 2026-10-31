@@ -609,7 +609,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             proposals.AddRange(ExitProcedures.Heavyweights(read, lay!, output.WriteLine));
         }
 
-        var tested = ScoreProcedures.AgainstRidge(Judge(read, proposals));
+        var tested = ScoreProcedures.AgainstRidge(Judge(read, proposals, await NewestCutoffAsync(cancellation)));
         var runId = FormattableString.Invariant($"{Verb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
         if (!print)
@@ -859,7 +859,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             Like: like,
             Ranked: family => ranked.GetValueOrDefault(family));
         var rules = RuleTests.Walk(ruleInputs);
-        var tested = RuleTests.Judge(read, rules);
+        var tested = RuleTests.Judge(read, rules, await NewestCutoffAsync(cancellation));
         var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
         if (!print)
@@ -1284,15 +1284,33 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             LoopFolds.Of(calendar, through));
     }
 
-    // Each rule's proposals judged together, in the order they were brought.
-    public static IReadOnlyList<Tested> Judge(LoopRead read, IReadOnlyList<LoopProposalRead> proposals)
+    // From 21.17 the local model's cutoff the newest reading version whose history read is complete states, which a rule
+    // or a change reading a release reading is judged from; none before one is.
+    async Task<DateOnly?> NewestCutoffAsync(CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        return await ReleaseReadings.CompleteVersionsAsync(connection, null, cancellation) is [var newest, ..]
+            ? await ReleaseReadings.CutoffAsync(connection, newest, cancellation)
+            : null;
+    }
+
+    // Each rule's proposals judged together, in the order they were brought; from 21.17 one whose change reads a release
+    // reading judged on the test years from the local model's cutoff's year alone where a reading version states one, its
+    // earlier years kept in its evidence and printed beside its verdict.
+    // see: A rule or a change reading a release reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside it
+    public static IReadOnlyList<Tested> Judge(LoopRead read, IReadOnlyList<LoopProposalRead> proposals, DateOnly? cutoff = null)
     {
         var verdicts = new Dictionary<LoopProposalRead, LoopVerdict>();
+
+        LoopEvidence Judged(LoopProposalRead proposal) =>
+            cutoff is { } day && ReleaseJudging.Reads(proposal.Words) ? LoopJudge.From(proposal.Evidence, read.Calendar, day.Year) : proposal.Evidence;
 
         foreach (var rule in proposals.GroupBy(proposal => proposal.Family, StringComparer.Ordinal))
         {
             var group = rule.ToArray();
-            var judged = LoopJudge.Judge([.. group.Select(proposal => proposal.Evidence)], read.Opens, read.Newest, group.Max(proposal => proposal.Cap));
+            var judged = LoopJudge.Judge([.. group.Select(Judged)], read.Opens, read.Newest, group.Max(proposal => proposal.Cap));
 
             for (var at = 0; at < group.Length; at++)
             {

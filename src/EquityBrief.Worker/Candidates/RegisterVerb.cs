@@ -84,6 +84,12 @@ public static class RegisterVerb
     // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
     public const string Ordered = "--ordered";
 
+    // From 21.17 the option that registers the Fundamentals family's live rule on the index it names again at its setting
+    // without the flag, the flagged rule standing beside it as a version, refused where the live rule asks no flag or no
+    // version stands at that setting.
+    // see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version
+    public const string WithoutFlag = "--without-flag";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -99,6 +105,7 @@ public static class RegisterVerb
         new(Ranked, [Ranked, "--index", "--by"], [], []),
         new(Exposed, [Exposed, "--index"], [], []),
         new(Ordered, [Ordered, "--index"], [], []),
+        new(WithoutFlag, [WithoutFlag, "--evidence"], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -170,6 +177,18 @@ public static class RegisterVerb
             await ReplayedAsync(await replay.MovedAsync(), output);
 
             return await Said(await registrar.RegisterMovedAgainAsync(Given("--evidence"), runId), output, error);
+        }
+
+        // From 21.17 the Fundamentals family's live rule on the index given registered again at its setting without the
+        // flag, the flagged rule standing beside it as a version, on the operator's ruling of 2026-10-31.
+        // see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version
+        if (form.Flag == WithoutFlag)
+        {
+            var (retire, again, refusedAgain) = Improving.ImprovingRules.WithoutFlag(Given(WithoutFlag), await registrar.RowsAsync(), at);
+
+            return again is null
+                ? await RefusedAsync(registrar, runId, refusedAgain!, error)
+                : await Said(await registrar.ReplaceTogetherAsync(Core.Candidates.CandidateFamily.SetupFamilyOf(again[0].Evaluator), retire!, again, Given("--evidence"), runId), output, error);
         }
 
         if (form.Flag == TheFamilyAgain)

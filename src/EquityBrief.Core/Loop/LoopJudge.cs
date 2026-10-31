@@ -49,6 +49,22 @@ public static class LoopJudge
         ];
     }
 
+    // From 21.17 the evidence of a rule or a proposal reading a release reading as it is judged, on the test years from the
+    // local model's cutoff's year alone: its units entered from that year, its test years from it and each side's results
+    // over those units. The years before stay in the evidence it is printed from, beside its verdict.
+    // see: A rule or a change reading a release reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside it
+    public static LoopEvidence From(LoopEvidence evidence, IReadOnlyList<DateOnly> calendar, int year)
+    {
+        PairedUnit[] units = [.. evidence.Units.Where(unit => calendar[unit.Session].Year >= year)];
+
+        return new LoopEvidence(
+            evidence.Book,
+            units,
+            [.. evidence.Years.Where(one => one.Year >= year)],
+            [.. units.Where(unit => unit.Current is not null).Select(unit => unit.Current!.Value)],
+            [.. units.Where(unit => unit.Proposed is not null).Select(unit => unit.Proposed!.Value)]);
+    }
+
     // Each test year's pair from the units entered in it: a unit counts for a side where that side holds a result in it.
     public static IReadOnlyList<LoopYear> Years(IReadOnlyList<LoopFold> folds, IReadOnlyList<DateOnly> calendar, IReadOnlyList<PairedUnit> units) =>
     [
