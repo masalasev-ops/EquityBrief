@@ -12875,3 +12875,67 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `data`; the phase report 64 tables, 1482 claims, 1482 passing, none out of scope and none unexamined, 1497
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    nothing new.
+
+### 21.16 - the second move of the pins: the S&P 400's and 600's rules ordered by the expected value, the pullback's and the dip's graded exposure walked, and the dip's exits, the books' sale under the 200-day average and the frozen S&P 400 and 600 pullbacks' changes put to the operator   2026-10-31
+
+Ruled:      the operator's sixth answer of 2026-10-30, word for word in `prompts/2026-10-30-21.14-operator-answers.md` and
+            the 21.16 ruling entry above, built as 21.4 was, in one pull request of reviewable commits.
+Built:      part 1, the index families' step hands a registered S&P 400 or 600 rule ordered or ranked by the expected
+            value of the setups like each candidate that figure, from the ledger's finished setups of its family on its
+            index as a pick's card reads them, the order lifted into one function the night calls, and the register's
+            ordered form registering the live rule's setting ordered by it beside a live pullback, breakout or drift
+            there, refused on the S&P 500, for a family that step lists by no hook and at nine. Part 2, the dip's night
+            walks a trade under the exit of the menu its rule's approved change names in its sell dial's place, as the
+            tester walks the dip under one, the trade storing the exit; migration 117 adds `dip_trade.exit`. Part 3, the
+            two books read a sale at a close under the holding's 200-day average after its buy, the optional dial
+            `average`, the setting's key, words and rule name carrying it, the night selling under its own reason, and an
+            approval of the menu's sale registering the live rule again at it; migration 117 rebuilds `quality_holding`
+            and `improving_trade` so their end reasons admit it, every row copied across. Part 4, the engines read a
+            frozen S&P 400 or 600 pullback stating a level only its search's own reading walks over that reading, its
+            picks each night's in the night's own order five a night, the autopsy's exits for the dip and the books'
+            sale stating their change, the per-rule test walking a registered S&P 400 or 600 rule ordered by the
+            expected value over its own listings, a pullback and a dip stating the exposure with the market check off,
+            and the tester proposing each live pullback's and dip's exposure. Part 5, every moved evaluator's version
+            raised to its sources' pin. Part 6, the tests, and part 7 the documents and the remedy.
+Pins:       moved, read off the version check: every S&P 400 and 600 pullback, breakout, drift and heavyweights rule,
+            through the index families' step; every dip rule, through its rule, its step and the menu's walk it now
+            reads; every quality and Fundamentals rule, through their rules and steps. Not moved: the hooks' sources, so
+            no S&P 500 breakout or drift rule is registered again or replayed, and the S&P 500's swing filter and
+            heavyweights. Restarting at the remedy, read-only off the operator's register at 00:14 UTC on 2026-10-31,
+            98 standing rules, each record one night long, the night of 2026-10-30, every one registered on 2026-10-30:
+            the S&P 400's pullback 3, breakout 4, drift 7 and heavyweights 2; the S&P 600's pullback 4, breakout 5, drift
+            4 and heavyweights 4; the dip 4, 5 and 5 on the S&P 400, 500 and 600; quality 8 on each index; the
+            Fundamentals family 9 on each index.
+Remedy:     `tools/remedies/2026-10-31-21.16-the-second-move-of-the-pins.txt`: the migration; every moved rule registered
+            again; then the S&P 600's breakout ordered by the expected value, the one S&P 400 or 600 family whose score
+            audit of 21.8 orders by it, the top fifth +0.020 against the bottom's -0.027, the five others standing
+            inverted, so none of them is built as the 21.8 amendment reads an order off the audit; and the graded
+            exposure for the S&P 400's pullback at its own 0.35 and the S&P 400's and 600's dips at the S&P 500's 0.45
+            and their own 0.35. The S&P 600's pullback reads no market check, the S&P 500's dip reads the VIX and the S&P
+            500's pullback is the swing filter, which takes no hook, so none of the three has an exposure.
+Decisions:  two written: Every change the engines propose is one its family's night reads, so each is put to the
+            operator, superseding A change a family's night does not read is tested and shown and never put to the
+            operator; and The pullback's and the dip's graded exposure stand in their market check's place as a variant,
+            walked as the breakout's and the drift's are. Amended in place: the hooks' decision naming 21.16 among the
+            moves of the pins and the dip's exit read, and the expected value's order decision naming the S&P 400 and
+            600 handing the figure.
+Judgement:  the order by the expected value registered only where the audit's fifths order it; the own-search
+            pullback's night order, the reward to risk highest first, for the engines' walk and the graded walk.
+Tests:      2984, from 2978: six added, the dip's walk under a menu exit by hand, a quality and a Fundamentals rule
+            selling under the average over constructed nights, an S&P 600 rule ordered by the expected value over a
+            constructed night, approvals of the dip's exit, the books' sale and a frozen pullback's hooks, and the
+            remedy's lines over a register shaped as the operator's; the own-search pullback's engine walk and graded
+            walk added to 21.1's own-search test; the never-put tests moved to the changes put.
+Claims:     1482, unchanged: the catalogue, data, section 15.20 and section 17 rows amended in place; 1497 placements.
+Mutation:   chosen before the run by this rule, the property the checkpoint's text names first, the S&P 400's and
+            600's rules ordered by the expected value: the night's order handed no figure. The constructed night's order
+            test went red, the rule's own places kept; reverted, green. Not mutated: the dip's menu walk, the books'
+            sale, the engines' own-search walk and the graded walks.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2984 of 2984 tests ran
+            with none failed, migrations 0 to 117 with none pending, schema version 117, against `data-ci` and never
+            `data`; the phase report 64 tables, 1482 claims, 1482 passing, none out of scope and none unexamined, 1497
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy, run from main after the merge with its counts in a record entry; the unregistered order by the
+            expected value beside a frozen rule only its own search walks, which the per-rule test does not print; and
+            the S&P 500's pullback's exposure, which waits on a move of the swing filter's pins.
