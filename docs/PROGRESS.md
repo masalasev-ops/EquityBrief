@@ -13207,3 +13207,110 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the remedy and the three ledger histories, read off their output after the merge; the operator's word on the
             benchmark, the release readings and the VIX's direction; 21.15's phase report.
+
+### 21.14 - the remedy run from main: migration 119, every stored trade sold at the next open again, the records replayed, and the three ledger histories built again and checked   2026-10-31
+
+Not a checkpoint entry: it records 21.14's remedy and the histories built after it, and lands nothing.
+Ran:        `tools/remedies/2026-10-31-21.14-exits-at-the-next-open.txt` from main's 60bfcaaa, PR 608's merge, from 12:06
+            to 12:54 UTC on 2026-10-31, after the local run's early slot ended at 12:05 and with no night, drain,
+            labeller or monthly run writing; then each index's history built again with `--again` over 2019-01-02 to
+            2026-10-30 from its clean copy and checked: the S&P 500's build from 12:58 to 13:23 and its check to 13:55,
+            the S&P 400's from 13:55 to 14:34 and its check to 14:52, and the S&P 600's from 14:52 to 15:18 and its check
+            to 15:48. No request and no model call.
+Measured:   the migration applied 119. The fill step priced 15,186 stored trades at the next open again, 2 whose stock
+            holds no bar on its next session and 432 buying at the next open, and holds 672 ended on the close of
+            2026-10-30 whose sale waits on the next session's open, sold on it once stored; 12,234 rows carry the session
+            and the price a trade was sold at. The records replayed as the entry's after: the S&P 500's pullback 1,928 at
+            +0.178, breakout 1,034 at +0.118, drift 2,264 at +0.035, heavyweights 375 at 3.85 per cent; the S&P 400's
+            723 at +0.232, 1,038 at +0.039, 1,812 at +0.147 and 339 at 4.87; the S&P 600's 548 at +0.393, 958 at +0.021,
+            1,028 at +0.244 and 304 at 7.07. Each build left the 16 sessions holding the night's own rows, 2026-10-09 to
+            2026-10-30, to the night and read the history again through 2026-10-08: the S&P 500's wrote 385,072 setups
+            over 1,953 sessions, 61,622 passing the live rule; the S&P 400's 280,720, 43,881 passing; the S&P 600's
+            384,355, 50,886 passing. Each check rebuilt 200 of 200 sampled history setups with every reading the same.
+            Of the night's own settled swing setups, 2 keep the sale at the close they were settled on, an S&P 500 and an
+            S&P 400 drift target, and the rest are read again by the night. `ledger-exits` on the S&P 500 afterwards:
+            58,604 of 58,637 settled swing setups reproduce at the sale at the next open.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.15's entry below, on whose
+            branch this is recorded; records alone change in this entry.
+
+### 21.1 - correction: a scorecard's verdict naming what judges a rule the history cannot walk wraps inside its header at a phone's width, found by 21.15's read-back   2026-10-31
+
+Found:      by 21.15's read-back of paper trading on the S&P 400 at a true 390 pixels from main's 60bfcaaa on
+            2026-10-31: the page laid out 785 pixels wide, in both palettes. The live drift's scorecard header draws its
+            verdict as a pill, and a pill never wraps; 21.1's verdict for a rule the history cannot walk names the
+            settings it does not read and what judges it instead, one line of about 140 characters.
+Corrected:  a verdict pill in a scorecard's header wraps within the header's width; every other pill stays on one line.
+            No source a rule's version pins moves: the stylesheet is pinned by none.
+Tests:      3010, from 3009: one added, the S&P 400 drift's verdict drawn in a scorecard's header with the rule that
+            wraps it, and the pill's own rule left on one line.
+Claims:     1491, unchanged: no row of the architecture states a pill's width; 1506 placements.
+Mutation:   chosen before the run by this rule, the property the correction adds, the long verdict wrapping: the
+            header's verdict rule taken out of the stylesheet. The test went red on the missing rule; reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.15's entry below, this
+            pull request's last.
+Carried:    paper trading on the S&P 400 read again at a true 390 from main's Release build after the merge.
+
+### 21.15 - the phase 21 report: every screen read back against the store, each checkpoint's answer and each ruling's outcome, the counts each checkpoint stated, the pair checked against the actual, and the two operating rows phase 21 opened   2026-10-31
+
+Queue:      done, 21.0 to 21.14 and 21.16 with their corrections, rulings and remedies, the three ledger histories
+            built again after 21.14's; in progress, this report and the correction its read-back found; next, Tonight's
+            heading naming the next session the exchange trades, which the operator asked for after this phase, and the
+            sign-offs of phases 18, 20, 21 and 22 by fresh sessions when the operator says.
+Screens:    captured on 2026-10-31 between 15:50Z and 15:58Z from main's Release build at 60bfcaaa over the live store,
+            read-only, after 21.14's remedy and the three histories, at 1,440 pixels and a true 390 in both palettes, 9
+            screens and 36 captures, laid out with what each was read back against at https://claude.ai/artifact/6N5jShGUeBJ1wgx2vzVge4. The pages draw the
+            night of 2026-10-30. Tonight's buys, each its stored row's: the S&P 500's WDAY, GDDY, REGN, DASH, LNT, DXCM
+            and LHX; the S&P 400's EXEL, THG, AM, H, EVR, MUSA and CR; the S&P 600's SMP, ETSY, HAYW, BOOT and BNL. The
+            market strip: the S&P 500 at 7,580.07, down 1.82 per cent, IJH 73.33 and IJR 140.29, down 1.17 and 1.21, the
+            VIX 19.42, up 12.91 per cent, HYG 77.43, down 0.19, and the 10-year at 4.94; QQQ, DIA, WTI, the dollar and
+            the three-month, which the night first asks on 2026-11-02, draw no figure. Paper trading's combined account
+            on the S&P 500 up 0.3 per cent since 2 October with LH, bought on 2026-10-29 at 355.94, its one position; the
+            tone variant's line on each index's drift tone variant. The Loop page's 59 changes over 4 setups, the store
+            holding 79, the 20 others the fundamentals-first family's, which business first's leaving the night took off
+            every page. The Ledger's pullback 31,443 setups and 30,264 settled, breakout 22,980 and 22,472, drift 6,041
+            and 5,901. The Run page's rule rows after both moves of the pins. Every page at its screen's width but paper
+            trading on the S&P 400 at 390, 785 pixels, the correction above.
+Answers:    each in its checkpoint's entry: 21.1's 22 rules walked or named with what judges them; 21.2's branches;
+            21.3's score audit, the exits priced three ways and the open floor through the tester; 21.4's move of the
+            pins, 9 and 110 rules registered again, and 21.16's, 98; 21.8's order chosen on each index off the audit;
+            21.5's first monthly run carried by its operating row. The rulings: 21.14's of 2026-10-30, exits sold at the
+            next open by a fill step with no record restarting, the tone variant kept with its line, the open floor left
+            unregistered, the surprises check and the release readings' split and the reversed VIX built and their
+            figures put to the operator; and 21.16's of 2026-10-30, the second move of the pins.
+Counts:     as each entry stated, tests in all and claims in all: 21.0 2918, 1455; 21.1 2921, 1455; 21.2 2921, 1455; 21.3
+            2925, 1457; 21.4 2931, 1460, finished 2932, 1460, its corrections 2935, 1461; 21.5 2943, 1461; 21.6 2957,
+            1476; 21.7 2963, 1477; 21.8 2967, 1478; 21.9 2971, 1480; 21.10 2975, 1482; 21.16 2984, 1482; 21.11 2986, 1485;
+            21.12 2989, 1486; 21.13 3001, 1488; 21.14 3009, 1491; and this report 3011, 1491, the corrections between
+            adding the rest.
+Pair:       before phase 21, 1455 claims on main at 96fc734f, phase 22's actual 1444 and the 11 rows 22.13 and 22.14
+            landed after its report; the plan's pair after 21.15 about 1505, within 1485 to 1525, its checkpoints'
+            counts adding to 54, four over the pair; the actual 1491, inside the range and 14 short of the pair, the 18
+            the checkpoints landed fewer than their counts less those four. Against its count each landed: 21.1 two
+            fewer, its rows amended in place; 21.3 six fewer, its three commands landing as the score audit's two rows,
+            the other two being the ledger's and the tester's commands, and its report rows as paragraphs; 21.4 two more,
+            the exposure's, the ranking's and the chosen readings' rows beside the hooks' amended in place, and its
+            correction one, which no count held; 21.5 eight fewer, every row amended in place; 21.6 six more, three
+            components' rows where the plan counted one process's; 21.7, 21.10 and 21.12 two fewer each; 21.8, 21.9
+            and 21.13 one fewer each; 21.11 four fewer; 21.14 three more, which no count held; 21.15 one fewer; 21.0, 21.2 and
+            21.16 none, as counted. Each checkpoint's rows named with what it landed in
+            `ArchitectureConformance.PhaseTwentyOneLanded`.
+Operating:  phase 21 opened two operating rows, both at its planning pass: **The monthly run's time with every family
+            tested** and **The ratings refresh's cap read on its first five runs**; `obligation-reconciles` states phase
+            21 at two.
+Tests:      one new, the pair; 3011 in all, with the correction's above.
+Claims:     1491, none new; 1506 placements.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the report adds, each filtered to the test it was
+            predicted red at, made in this checkout and reverted with the editor. M1 21.6's count of more at none, at
+            the pair test; M2 21.14's rows left out of what it landed, at the pair test; M3 phase 21 stated as opening
+            one operating row, at the operating rows test. Each red: M1, 21.6 landing 15 against 9; M2, 21.14 landing
+            none against its 3; M3, phase 21 stated at one against the two the table holds. Not mutated: the screens,
+            read back by hand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull
+            request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3011 of 3011
+            tests ran with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and
+            never `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined,
+            1506 placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the sign-offs of phases 18, 20, 21 and 22 by fresh sessions; the operator's word on the benchmark, the
+            release readings and the VIX's direction, put with 21.14's entry; Tonight's heading naming the next session
+            the exchange trades; the hosted runners swept once at the phase's end.
