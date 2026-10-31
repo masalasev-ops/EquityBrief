@@ -241,7 +241,7 @@ public sealed partial class MarkRenderer
     // A tile a family's live or provisional account in the one family order: its return since its record began, the trades
     // its walk holds open and has closed and the day it counts from, the version it counts under the pointer; and the
     // index's fund over the same days.
-    public string PaperTiles(IReadOnlyList<PaperAccountView> accounts, PaperFundView? fund, PaperCombinedView? combined = null)
+    public string PaperTiles(IReadOnlyList<PaperAccountView> accounts, PaperFundView? fund, PaperCombinedView? combined = null, decimal? size = null)
     {
         var heads = accounts.Where(account => account.Head).OrderBy(account => SetupFamilies.OrderOf(account.Family)).ToArray();
         var html = new StringBuilder();
@@ -257,7 +257,7 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<div class=\"paper-tile combined\" data-standing=\"{PaperCombinedView.Key}\" data-return=\"{(together is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{all.Open}\" data-closed=\"{all.Closed}\" data-skipped=\"{all.Skipped}\" data-since=\"{DayOf(all.Since)}\" title=\"Every live rule's trades in one account of your size\">");
             html.Append(Invariant, $"<div class=\"pt-name\">{Escaped(PaperCombinedView.Name)}</div>");
             html.Append(together is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
-            html.Append(Formatted($"<div class=\"pt-sub\">{all.Open} open · {all.Closed} closed · {all.Skipped} skipped · since <span class=\"day\">{DayOf(all.Since)}</span></div></div>"));
+            html.Append(Formatted($"<div class=\"pt-sub\">{Escaped(TileSaid(together, all.Since, size, all.Open))} {all.Closed} closed, {all.Skipped} skipped.</div></div>"));
         }
 
         foreach (var head in heads)
@@ -267,7 +267,7 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<div class=\"paper-tile\" data-family=\"{Escaped(head.Family)}\" data-standing=\"{head.Standing}\" data-return=\"{(made is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{head.Open}\" data-closed=\"{head.Closed}\" data-since=\"{(head.Since is { } since ? DayOf(since) : "none")}\" title=\"{Escaped(Capitalised(head.Words) + (head.Version is { } version ? "; counts " + version : string.Empty))}\">");
             html.Append(Invariant, $"<div class=\"pt-name\"><span class=\"fam-swatch\" data-family=\"{Escaped(head.Family)}\"></span>{Escaped(FamilyName(head.Family))} <span class=\"status-pill {head.Standing}\">{Escaped(head.Name)}</span></div>");
             html.Append(made is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
-            html.Append(Invariant, $"<div class=\"pt-sub\">{(head.Since is { } from ? Formatted($"{head.Open} open · {head.Closed} closed · since <span class=\"day\">{DayOf(from)}</span>") : "no trade yet")}</div></div>");
+            html.Append(Invariant, $"<div class=\"pt-sub\">{Escaped(TileSaid(made, head.Since, size, head.Open))}{(head.Since is null || made is null ? string.Empty : Formatted($" {head.Closed} closed."))}</div></div>");
         }
 
         if (fund is { } index)

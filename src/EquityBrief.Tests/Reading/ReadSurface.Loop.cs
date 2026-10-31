@@ -61,7 +61,7 @@ public partial class ReadSurface
 
         // Beneath the drift's proposals, folded shut: a row a reading, its listings, winners and losers, each side's
         // median and the edge of each tenth; a reading no listing holds drawing none for each figure.
-        Assert.Contains("<details class=\"loop-readings\" data-family=\"drift\" data-readings=\"2\"><summary>Each reading, winners against losers</summary>", page, StringComparison.Ordinal);
+        Assert.Contains("<details class=\"loop-readings\" data-family=\"drift\" data-readings=\"2\"><summary>Each reading, what the winning picks had in common</summary>", page, StringComparison.Ordinal);
         Assert.Contains(
             "<tr data-reading=\"rsi\" data-units=\"1200\" data-winners=\"560\" data-losers=\"640\"><td>rsi</td><td class=\"r num\">1200: 560 won, 640 did not</td><td class=\"r num\">63.1</td><td class=\"r num\">58.4</td>"
             + "<td class=\"num\" data-deciles=\"-0.20 -0.10 0.00 +0.05 +0.10 +0.10 +0.15 +0.20 +0.25 +0.30\">",
@@ -103,12 +103,12 @@ public partial class ReadSurface
         // order; and its proposal's finding beneath its change.
         Assert.Contains(
             "<div class=\"loop-findings\" data-family=\"drift\" data-figures=\"2\"><p><b>What the rule's finished trades did.</b></p><ul>"
-            + "<li data-figure=\"best\" data-value=\"1.04\" data-trades=\"1372\">The median trade's best close was 1.04 risks above its buy before it ended.</li>"
+            + "<li data-figure=\"best\" data-value=\"1.04\" data-trades=\"1372\">The median trade's best close was 1.04 times its risk above its buy before it ended.</li>"
             + $"<li data-figure=\"stopped once a risk up\" data-value=\"{(236.0 / 1286).ToString("R", CultureInfo.InvariantCulture)}\" data-trades=\"1286\">236 of the 1286 trades the stop ended had first closed a risk up.</li></ul></div>",
             page,
             StringComparison.Ordinal);
         Assert.True(page.IndexOf("data-rule=\"the drift rule today\"", StringComparison.Ordinal) < page.IndexOf("data-family=\"drift\" data-figures=\"2\"", StringComparison.Ordinal));
-        Assert.Contains($"<p class=\"loop-finding\" data-finding=\"{Finding}\"><b>Why.</b> The median trade's best close was 1.04 risks above its buy", page, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"loop-finding\" data-finding=\"{Finding}\"><b>Why.</b> The median trade's best close was 1.04 times its risk above its buy", page, StringComparison.Ordinal);
 
         // The breakout draws no figures and its proposal, which names no change, no finding.
         Assert.DoesNotContain("<div class=\"loop-findings\" data-family=\"breakout\"", page, StringComparison.Ordinal);
@@ -153,7 +153,7 @@ public partial class ReadSurface
         // A family's rule today: each card opens on the words its run stored, and the pullback, which the run tested no
         // procedure for, says so.
         Assert.Contains("data-card=\"loop-pullback\"", page, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"degraded\" data-loop-rule=\"none\" data-family=\"pullback\">No procedure was tested for this family in this run, so no rule is read here.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-loop-rule=\"none\" data-family=\"pullback\">No procedure was tested for this setup in this run, so no rule is read here.</p>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"loop-rule\" data-family=\"breakout\" data-rule=\"the breakout rule today\"><b>The rule today.</b> The breakout rule today</p>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"loop-rule\" data-family=\"drift\" data-rule=\"the drift rule today\"><b>The rule today.</b> The drift rule today</p>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"loop-rule\" data-family=\"heavyweight\" data-rule=\"the heavyweights rule today\"><b>The rule today.</b> The heavyweights rule today</p>", page, StringComparison.Ordinal);
@@ -161,26 +161,26 @@ public partial class ReadSurface
         // A proposal's verdict: the breakout's proposes nothing; the drift's change and its four parts, the gate over the
         // bar and the other three held; the heavyweights' trimmed total in points.
         Assert.Contains("<p class=\"loop-change degraded\" data-words=\"none\"><b>No change.</b> The procedure run on all finished data chose no setting that met the floors", page, StringComparison.Ordinal);
-        Assert.Contains("<h4 class=\"loop-name\">The grid: did not pass the tester</h4><p class=\"loop-change\" data-words=\"the drift rule within 3 sessions\"><b>Proposed, run on all finished data.</b> The drift rule within 3 sessions</p>", page, StringComparison.Ordinal);
-        Assert.Contains("<li data-part=\"gate\" data-adjusted=\"0.1752\" data-held=\"0\">The gate: an adjusted p-value of 0.1752 over 19 blocks of 63 sessions, against the bar of 0.0042; over it.</li>", page, StringComparison.Ordinal);
-        Assert.Contains("<li data-part=\"stable\" data-counted=\"4\" data-better=\"3\" data-held=\"1\">Stability: better in 3 of the 4 complete year(s) holding 50 trades a side, against three in five with the latest complete year counted and better; held.</li>", page, StringComparison.Ordinal);
-        Assert.Contains("<li data-part=\"trimmed\" data-trimmed=\"12.5\" data-held=\"1\">With the 5 largest results by size left out of each side, the proposal's total less the rule's: <span class=\"gain\">+12.50</span> risks; above nothing.</li>", page, StringComparison.Ordinal);
-        Assert.Contains("<li data-part=\"counts\" data-units=\"1181\" data-held=\"1\">The count: 1181 trade(s) over the test years, against the 300 trades a swing family is judged on; enough.</li>", page, StringComparison.Ordinal);
-        Assert.Contains("<li data-part=\"trimmed\" data-trimmed=\"0.012\" data-held=\"1\">With the 5 largest results by size left out of each side, the proposal's total less the rule's: <span class=\"gain\">+1.20</span> points; above nothing.</li>", page, StringComparison.Ordinal);
-        Assert.Contains("<li data-part=\"counts\" data-units=\"57\" data-held=\"1\">The count: 57 month(s) over the test years, against the 36 months a book is judged on; enough.</li>", page, StringComparison.Ordinal);
-        Assert.Contains("data-detectable=\"0.09\">At this bar the gate detects a difference of about <span class=\"gain\">+0.09</span> risks a trade four times in five", page, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"loop-folds\" data-stable-folds=\"3\" data-folds=\"3\">3 of the 3 folds chose within a grid step of the proposal on their own years before.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<h4 class=\"loop-name\">The grid: did not pass the tester</h4><p class=\"loop-change\" data-words=\"the drift rule within 3 sessions\"><b>Proposed, run on all finished data.</b> The drift rule within 3 trading days</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<li data-part=\"gate\" data-adjusted=\"0.1752\" data-held=\"0\">Could this be luck: a chance of 0.1752 over 19 runs of 63 trading days, against the bar of 0.0042; over it.</li>", page, StringComparison.Ordinal);
+        Assert.Contains("<li data-part=\"stable\" data-counted=\"4\" data-better=\"3\" data-held=\"1\">Stability: better in 3 of the 4 complete year(s) holding 50 trades a side, against three in five with the latest complete year counted and better; met.</li>", page, StringComparison.Ordinal);
+        Assert.Contains("<li data-part=\"trimmed\" data-trimmed=\"12.5\" data-held=\"1\">With the 5 largest results by size left out of each side, the change's total less the rule's: <span class=\"gain\">+12.50</span> per $1 risked; above nothing.</li>", page, StringComparison.Ordinal);
+        Assert.Contains("<li data-part=\"counts\" data-units=\"1181\" data-held=\"1\">The count: 1181 trade(s) over the test years, against the 300 trades a swing setup is judged on; enough.</li>", page, StringComparison.Ordinal);
+        Assert.Contains("<li data-part=\"trimmed\" data-trimmed=\"0.012\" data-held=\"1\">With the 5 largest results by size left out of each side, the change's total less the rule's: <span class=\"gain\">+1.20</span> points; above nothing.</li>", page, StringComparison.Ordinal);
+        Assert.Contains("<li data-part=\"counts\" data-units=\"57\" data-held=\"1\">The count: 57 month(s) over the test years, against the 36 months holdings are judged on; enough.</li>", page, StringComparison.Ordinal);
+        Assert.Contains("data-detectable=\"0.09\">At this bar the test detects a difference of about <span class=\"gain\">+0.09</span> per $1 risked a trade four times in five", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"loop-folds\" data-stable-folds=\"3\" data-folds=\"3\">3 of the 3 years it had never seen chose within a grid step of the change tried on their own years before.</p>", page, StringComparison.Ordinal);
 
         // A proposal's test years: each with the setting its fold chose, each side's total over its units, and whether
         // the year is counted and better; the partial year and a book's year short of twelve months not counted.
-        Assert.Contains("<tr data-year=\"2023\" data-complete=\"1\" data-current-units=\"233\" data-proposed-units=\"213\" data-current-total=\"-27.655\" data-proposed-total=\"22.788\"><td class=\"num\">2023</td><td data-chosen=\"the drift rule within 5 sessions\">The drift rule within 5 sessions</td><td class=\"r num\"><span class=\"loss\">-27.66</span> risks over 233 trade(s)</td><td class=\"r num\"><span class=\"gain\">+22.79</span> risks over 213 trade(s)</td><td class=\"r\" data-better=\"yes\">yes</td></tr>", page, StringComparison.Ordinal);
+        Assert.Contains("<tr data-year=\"2023\" data-complete=\"1\" data-current-units=\"233\" data-proposed-units=\"213\" data-current-total=\"-27.655\" data-proposed-total=\"22.788\"><td class=\"num\">2023</td><td data-chosen=\"the drift rule within 5 sessions\">The drift rule within 5 trading days</td><td class=\"r num\"><span class=\"loss\">-27.66</span> per $1 risked over 233 trade(s)</td><td class=\"r num\"><span class=\"gain\">+22.79</span> per $1 risked over 213 trade(s)</td><td class=\"r\" data-better=\"yes\">yes</td></tr>", page, StringComparison.Ordinal);
         Assert.Contains("<td class=\"num\">2026 to date</td><td data-chosen=\"none\" class=\"degraded\">no setting met the floors on the years before, so the year reads the rule today</td>", page, StringComparison.Ordinal);
         Assert.Contains("data-better=\"not counted, to date\">not counted, to date</td>", page, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\"><span class=\"loss\">-3.90</span> points over 12 month(s)</td><td class=\"r num\"><span class=\"gain\">+9.90</span> points over 12 month(s)</td><td class=\"r\" data-better=\"yes\">yes</td>", page, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\"><span class=\"gain\">+8.60</span> points over 12 month(s)</td><td class=\"r num\"><span class=\"loss\">-3.40</span> points over 11 month(s)</td><td class=\"r\" data-better=\"not counted, too few\">not counted, too few</td>", page, StringComparison.Ordinal);
 
         // Each card's key says the rule today was chosen on these test years.
-        Assert.Contains("The rule today was chosen on these same test years, so a proposal reads understated against it.", page, StringComparison.Ordinal);
+        Assert.Contains("The rule today was chosen on these same test years, so a change tried reads understated against it.", page, StringComparison.Ordinal);
 
         // September's run named in the link, its families each saying none was tested, the seven the loop proposes for: the
         // dip's and the two books' cards among them and the business-first family's not.
@@ -194,7 +194,7 @@ public partial class ReadSurface
         // An index with no run says so in one line.
         var small = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600"));
 
-        Assert.Contains("<p class=\"degraded\" data-loop=\"none\">No tester run is stored for this index.", small, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-summary data-loop=\"none\">No tester run is stored for this index.", small, StringComparison.Ordinal);
         Assert.DoesNotContain("data-card=\"loop-breakout\"", small, StringComparison.Ordinal);
     }
 }

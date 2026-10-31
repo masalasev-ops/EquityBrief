@@ -38,7 +38,7 @@ public partial class ReadSurface
         // No run has worked it yet: the card says so and draws no table.
         var none = await Ledger();
 
-        Assert.Contains("<p class=\"degraded\" data-links=\"none\">No monthly run has worked which readings go with winners for this family on this index yet.</p>", none, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-links=\"none\">No monthly run has worked which readings go with winners for this setup on this index yet.</p>", none, StringComparison.Ordinal);
         Assert.DoesNotContain("<table class=\"ledger-links\"", none, StringComparison.Ordinal);
 
         // An older run, then the newest: its rows stored with a correlation of 0.4242 said to go with winners, -0.3 with

@@ -44,7 +44,7 @@ public partial class ReadSurface
     static readonly string MidImprovingFixed =
         "<p class=\"family-frozen improving-fixed\" data-fixed=\"2026-09-30\" data-trades=\"517\" data-edge=\"0.0118\" data-years=\"8\" data-ahead=\"5\" data-beat-luck=\"false\" data-tester-passed=\"false\">" +
         "Its settings were fixed on 30 Sep after its history test from 2019: 517 trades, 1.2 points a trade ahead of an equal-weight hold of the index's stocks after costs, ahead in 5 of the 8 years it had trades. " +
-        "No setting beat luck, so treat it as a starting point rather than a proven edge. " + ImprovingRule.ReadingsCaveat + "</p>";
+        "No setting beat luck, so treat it as a starting point that has not yet proved itself. " + ImprovingRule.ReadingsCaveat + "</p>";
 
     static string MidImprovingLive => Core.Candidates.FamilyRecords.LivePrefix + "S&P 400 Fundamentals rule at " + ImprovingRules.Short(MidImprovingFrozen);
 

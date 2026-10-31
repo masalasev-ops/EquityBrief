@@ -51,7 +51,9 @@ public static partial class TonightScreen
                     now?.Applied,
                     now?.ValuePlace,
                     since,
-                    TonightLine(holding, now, night, AnswerOn(lastReshuffle ?? holding.ChosenOn, holding.Ticker)));
+                    TonightLine(holding, now, night, AnswerOn(lastReshuffle ?? holding.ChosenOn, holding.Ticker)),
+                    holding.Fill,
+                    holding.BoughtOn);
             }),
         ];
 

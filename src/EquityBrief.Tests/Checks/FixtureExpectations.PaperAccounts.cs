@@ -63,7 +63,7 @@ public partial class FixtureExpectations
         Assert.Contains($"<section class=\"paper\" data-universe=\"500\" data-night=\"{night}\"", page, StringComparison.Ordinal);
         Assert.Equal(accounts.Select(account => (account.Family, account.Standing)), tiles.Select(tile => (tile.Family, tile.Standing)));
         Assert.All(tiles, tile => Assert.Equal("none|0|0|none", tile.Figures));
-        Assert.Contains("<p class=\"degraded\" data-paper-chart=\"none\">No account has a session to draw yet.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-paper-chart=\"none\">No account has a trading day to draw yet.</p>", page, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"degraded\" data-yours=\"{expected.GetProperty("yours").GetString()}\">", page, StringComparison.Ordinal);
 
         // Each family chosen for its variants and its scorecard: its one account with no trade, the verdict the derivation
@@ -82,7 +82,7 @@ public partial class FixtureExpectations
             Assert.Contains("<p class=\"degraded\" data-variants=\"none\">", chosen, StringComparison.Ordinal);
             Assert.StartsWith($"<div class=\"score\" data-family=\"{family}\" data-standing=\"{standing}\" data-verdict=\"{verdict}\">", score, StringComparison.Ordinal);
             Assert.Contains("<p class=\"degraded\" data-history=\"none\">No monthly test has read this rule on this index yet.</p>", score, StringComparison.Ordinal);
-            Assert.Contains(sinceLive is { } said ? $"data-counted=\"0\" data-needed=\"{said.Split(' ')[2]}\">{said}</p>" : $"<p class=\"sh-line\" data-record=\"none\">{MarkRenderer.NoRecordLine}</p>", since, StringComparison.Ordinal);
+            Assert.Contains(sinceLive is { } said ? $"data-counted=\"0\" data-needed=\"{said.Split(' ')[2]}\">{ReaderText.Words(said)}</p>" : $"<p class=\"sh-line\" data-record=\"none\">{ReaderText.Words(MarkRenderer.NoRecordLine)}</p>", since, StringComparison.Ordinal);
         }
     }
 }

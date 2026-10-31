@@ -65,7 +65,7 @@ public sealed partial class MarkRenderer
         foreach (var row in rows)
         {
             html.Append(Invariant, $"<tr data-family=\"{Escaped(row.Family)}\" data-tested=\"{row.Tested}\" data-strongest=\"{Escaped(row.Strongest?.Proposal ?? "none")}\" data-put=\"{Escaped(row.Put?.Proposal ?? "none")}\">");
-            html.Append(Invariant, $"<td><span class=\"fam-tag\" data-family=\"{Escaped(row.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(row.Family)}\"></span>{Escaped(FamilyName(row.Family))}</span></td>");
+            html.Append(Invariant, $"<td><span class=\"fam-tag\" data-family=\"{Escaped(row.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(row.Family)}\"></span>{Escaped(FamilyName(row.Family))}</span><span class=\"loop-tried\" data-tried=\"{row.Tested}\">{Escaped(LoopTriedSaid(row.Tested, row.Put is not null))}</span></td>");
             html.Append(row.Chips.Count > 0
                 ? "<td><span class=\"rule-chips\">" + string.Concat(row.Chips.Select(chip => $"<span class=\"chip\">{Escaped(chip)}</span>")) + "</span></td>"
                 : "<td class=\"degraded\">not read</td>");

@@ -58,14 +58,14 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            Invariant($"<p class=\"paper-what\">{Escaped(PaperWhat)}</p>") + line
+            MarkRenderer.CardSummary(MarkRenderer.PaperAccountSaid(settings, example)) + Invariant($"<p class=\"paper-what\">{Escaped(PaperWhat)}</p>") + line
                 + Invariant($"<details class=\"paper-change\"{(walked is null ? " open" : string.Empty)}><summary>Change the account</summary>{AccountForm(settings?.Size, settings?.Risk, settings?.Cap, proposedCap)}</details>"),
             title: "Each rule's trades, in your money",
             region: "account"));
 
         region.Append(Cards.Computed(
             "Paper trading",
-            Guide(PaperGuide) + marks.PaperTiles(accounts, page.Fund, page.Combined) + MarkRenderer.PaperFamilies(accounts, link)
+            MarkRenderer.CardSummary(MarkRenderer.PaperChartSaid(accounts, page.Fund, walked is not null)) + Guide(PaperGuide) + marks.PaperTiles(accounts, page.Fund, page.Combined, walked?.Size) + MarkRenderer.PaperFamilies(accounts, link)
                 + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, link.Family, page.Combined)),
             title: "Each rule since its record began",
             lede: "Each family's live or provisional rule, its return on your size beside the index's fund over the same days, and beneath, each account's return in per cent of its size, session by session.",
@@ -76,7 +76,7 @@ public sealed partial class SinglePageApp
         // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
         region.Append(Cards.Computed(
             "Paper trading",
-            walked is null ? "<p class=\"degraded\" data-combined=\"unset\">Set your account above to walk the combined account.</p>" : marks.PaperCombined(page.Combined),
+            MarkRenderer.CardSummary(MarkRenderer.PaperCombinedSaid(page.Combined, walked is not null)) + (walked is null ? "<p class=\"degraded\" data-combined=\"unset\">Set your account above to walk the combined account.</p>" : marks.PaperCombined(page.Combined)),
             title: "All setups together",
             lede: "Every live rule's trades in one account of your size: one position a stock, at most three open in one sector, each book a fifth of the account, and a buy the free cash cannot cover skipped.",
             stamp: Cards.Night(night),
@@ -84,7 +84,7 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            marks.PaperBought(page, link),
+            MarkRenderer.CardSummary(MarkRenderer.PaperBoughtSaid(page)) + marks.PaperBought(page, link),
             title: "What the system bought",
             lede: "The live and provisional rules' trades, newest first, each bought at the open after the night that listed it and sized from that night's close and stop.",
             stamp: Cards.Night(night),
@@ -92,7 +92,7 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            marks.PaperVariants(page, link, variants),
+            MarkRenderer.CardSummary(MarkRenderer.PaperVariantsSaid(page, variants)) + marks.PaperVariants(page, link, variants),
             title: "What the variants did differently",
             lede: "Each variant is its rule with a setting changed, trading in the background and never on Tonight: what it changes, the trades it shared with its rule and those it took alone.",
             stamp: Cards.Night(night),
@@ -100,7 +100,7 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            marks.PaperScorecard(page, link, rule),
+            MarkRenderer.CardSummary(MarkRenderer.PaperScorecardSaid(page, rule)) + marks.PaperScorecard(page, link, rule),
             title: "Rule scorecard",
             lede: "On history: over the test years, did the rule beat the same plan bought on every stock in the index that night, and is the gap bigger than luck would give a rule picking at random? Since it went live: how its own trades have done, counted toward the count a verdict needs. The two are never added together.",
             stamp: Cards.Night(night),
@@ -108,14 +108,15 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            marks.PaperYours(accounts.FirstOrDefault(account => account.Standing == PaperAccountView.You), reading.Word),
+            MarkRenderer.CardSummary(MarkRenderer.PaperYoursSaid(accounts.FirstOrDefault(account => account.Standing == PaperAccountView.You))) + marks.PaperYours(accounts.FirstOrDefault(account => account.Standing == PaperAccountView.You), reading.Word),
             title: "Your own trades",
             lede: "The trades you took from a pick's card on this index, as an account of your size, apart from the system's.",
             stamp: Cards.Night(night),
             region: "paper-yours"));
         region.Append("</section>");
 
-        return region.ToString();
+        // see: Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases into the reader's words
+        return ReaderText.Page(region.ToString());
     }
 
     // The trade log's selector on Past picks: the page's own lists first, the live and provisional rules' trades, then

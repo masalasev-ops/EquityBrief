@@ -686,7 +686,7 @@ public sealed class DecisionCards : IComponent
         }
         catch (Exception failure) when (!cancellation.IsCancellationRequested)
         {
-            return new ScorePart(null, new CardSimilar(Unmatched: "the learned score could not be read tonight: " + IndexFamilies.Cause(failure)));
+            return new ScorePart(null, new CardSimilar(Unmatched: "the score fitted to past setups could not be read tonight: " + IndexFamilies.Cause(failure)));
         }
     }
 

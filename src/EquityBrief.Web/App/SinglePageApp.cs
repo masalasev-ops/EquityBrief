@@ -326,7 +326,7 @@ public sealed partial class SinglePageApp : IComponent
                 : forming > 0 ? Invariant($"{forming} forming")
                 : "nothing tonight";
 
-            tiles.Add(new SetupTileView(card.Family, card.Label, card.Picks.Count, card.Picks.Count == 1 ? "pick" : "picks", state));
+            tiles.Add(new SetupTileView(card.Family, card.Label, card.Picks.Count, card.Picks.Count == 1 ? "pick" : "picks", state, MarkRenderer.QuietSaid(card.RuleChoice?.Stretch)));
             points.AddRange(card.Picks.Select(pick => new BuyPointView(card.Family, card.Label, pick)));
         }
 
@@ -3654,6 +3654,8 @@ public sealed partial class SinglePageApp : IComponent
             "heavyweight" => "Sector heavyweights",
             EquityBrief.Core.Families.FundamentalsRule.Name => EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Label,
             EquityBrief.Core.Families.DipRule.Name => EquityBrief.Core.Families.SetupFamilies.Dips.Label,
+            EquityBrief.Core.Families.QualityRule.Name => EquityBrief.Core.Families.QualityRule.Label,
+            EquityBrief.Core.Families.ImprovingRule.Name => EquityBrief.Core.Families.ImprovingRule.Label,
             _ => word,
         };
 
@@ -3672,13 +3674,13 @@ public sealed partial class SinglePageApp : IComponent
         {
             region.Append(Cards.Computed(
                 "Setup ledger",
-                "<p class=\"degraded\" data-ledger=\"none\">The ledger holds no setup on this index yet. Each night appends the setups its families' loose gates pass, and the history build writes the years before the store's own.</p>",
+                "<p class=\"degraded\" data-summary data-ledger=\"none\">The ledger holds no setup on this index yet. Each night appends the setups its families' loose gates pass, and the history build writes the years before the store's own.</p>",
                 title: "Every near-setup",
                 stamp: Cards.Night(night),
                 region: "ledger-none"));
             region.Append("</section>");
 
-            return region.ToString();
+            return ReaderText.Page(region.ToString());
         }
 
         foreach (var group in years.GroupBy(year => year.Family, StringComparer.Ordinal).OrderBy(group => EquityBrief.Core.Families.SetupFamilies.OrderOf(group.Key)))
@@ -3688,7 +3690,8 @@ public sealed partial class SinglePageApp : IComponent
 
             region.Append(Cards.Computed(
                 "Setup ledger",
-                (group.Key == families[0] ? Guide(LedgerGuide) : string.Empty)
+                MarkRenderer.CardSummary(MarkRenderer.LedgerFamilySaid(Named(group.Key), rows))
+                    + (group.Key == families[0] ? Guide(LedgerGuide) : string.Empty)
                     + marks.LedgerYears(group.Key, rows)
                     + Invariant($"<p class=\"ledger-deciles-said\">{(newest is null ? "No year of the family holds a settled setup yet." : Invariant($"The edge at each tenth of {newest.Year}'s {newest.Settled} settled setups, the median drawn larger, and the cut points beneath."))}</p>")
                     + marks.LedgerDeciles(newest),
@@ -3699,7 +3702,8 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append(Cards.Computed(
             "Setup ledger",
-            MarkRenderer.LedgerTabs(families, family, reading.Word, LedgerRoute)
+            MarkRenderer.CardSummary(MarkRenderer.LedgerPathSaid(family is null ? null : Named(family), settled, path))
+                + MarkRenderer.LedgerTabs(families, family, reading.Word, LedgerRoute)
                 + marks.LedgerSettled(settled, reading.Word, LedgerRoute)
                 + marks.LedgerPath(path),
             title: family is null ? "Settled setups" : Escaped(Named(family)) + ": newest settled setups",
@@ -3710,7 +3714,8 @@ public sealed partial class SinglePageApp : IComponent
         // see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule
         region.Append(Cards.Computed(
             "Setup ledger",
-            marks.LedgerLinks(links)
+            MarkRenderer.CardSummary(MarkRenderer.LedgerLinksSaid(links))
+                + marks.LedgerLinks(links)
                 + (sources is null ? string.Empty : MarkRenderer.LedgerSources(sources))
                 + Cards.Key(
                     "How to read it.",
@@ -3725,7 +3730,8 @@ public sealed partial class SinglePageApp : IComponent
         // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
         region.Append(Cards.Computed(
             "Setup ledger",
-            marks.LedgerAnswers(family ?? string.Empty, answers)
+            MarkRenderer.CardSummary(MarkRenderer.LedgerAnswersSaid(answers))
+                + marks.LedgerAnswers(family ?? string.Empty, answers)
                 + Cards.Key(
                     "How to read it.",
                     "Each row is one answer the local model gave to one of its four questions on the newest results release of each settled setup, read with the release's names and dates removed: how many setups held it, how many of them won, a winner one whose edge was above nothing, and their mean result and edge in the unit each heading names, first over the releases the SEC accepted after the model's cutoff and beside them over those before. A setup whose release holds no reading stands under not read.",
@@ -3735,7 +3741,8 @@ public sealed partial class SinglePageApp : IComponent
             region: "release-answers"));
         region.Append("</section>");
 
-        return region.ToString();
+        // see: Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases into the reader's words
+        return ReaderText.Page(region.ToString());
     }
 
     // How the Researched page is read, opened from its "?".
@@ -3816,13 +3823,13 @@ public sealed partial class SinglePageApp : IComponent
         {
             region.Append(Cards.Computed(
                 "Loop",
-                "<p class=\"degraded\" data-loop=\"none\">No tester run is stored for this index. The tester runs by hand with 'loop-test' on each index, and each month in the monthly run.</p>",
+                "<p class=\"degraded\" data-summary data-loop=\"none\">No tester run is stored for this index. The tester runs by hand with 'loop-test' on each index, and each month in the monthly run.</p>",
                 title: "The loop",
                 stamp: Cards.Night(night),
                 region: "loop-none"));
             region.Append("</section>");
 
-            return region.ToString();
+            return ReaderText.Page(region.ToString());
         }
 
         // From 19.7 the page opens on a summary a family in the one order, its rule today as chips, the proposals tested,
@@ -3834,8 +3841,8 @@ public sealed partial class SinglePageApp : IComponent
         foreach (var family in LoopFamilies)
         {
             var own = proposals.Where(proposal => proposal.Family == family).ToArray();
-            var body = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));
             var put = decided is null ? null : EquityBrief.Core.Loop.LoopDecisions.PutOf(own, one => MarkRenderer.HeldBack(run, one, decided));
+            var body = new StringBuilder(MarkRenderer.CardSummary(MarkRenderer.LoopTriedSaid(own.Length, put is not null)) + marks.LoopRule(family, own.FirstOrDefault()?.Current));
             var presses = string.Empty;
 
             body.Append(marks.LoopFindings(family, [.. (findings ?? []).Where(finding => finding.Family == family)]));
@@ -3876,7 +3883,7 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append(Cards.Computed(
             "Loop",
-            Guide(LoopGuide) + marks.LoopSummary(summary) + MarkRenderer.LoopChangeLine(),
+            MarkRenderer.CardSummary(MarkRenderer.LoopSummarySaid(run.Month, summary)) + Guide(LoopGuide) + marks.LoopSummary(summary) + MarkRenderer.LoopChangeLine(),
             title: Invariant($"What the run for {Escaped(run.Month)} found"),
             lede: "A row a setup: the rule today, what was tested against it, the strongest proposal against the bar, and the one put to you.",
             stamp: Cards.Night(night),
@@ -3890,13 +3897,13 @@ public sealed partial class SinglePageApp : IComponent
         {
             region.Append(Cards.Computed(
                 "Loop",
-                marks.LoopHistory(decided),
+                MarkRenderer.CardSummary(MarkRenderer.LoopDecisionsSaid(decided)) + marks.LoopHistory(decided),
                 title: "Your decisions",
                 stamp: Cards.Night(night),
                 region: "loop-decisions"));
             region.Append(Cards.Computed(
                 "Loop",
-                marks.LoopAlarm(reading.Code, decided) + Cards.Key(
+                MarkRenderer.CardSummary(MarkRenderer.LoopAlarmSaid(decided)) + marks.LoopAlarm(reading.Code, decided) + Cards.Key(
                     "The live alarm.",
                     "Each month a live rule's mean edge after costs over the trades that ended in it is read against the fifth percentile of ten thousand draws of as many of its reference's trades, the rule today's over the newest run's test years in weekly blocks; two counted months running under it flag the rule, a sector heavyweights' book read by quarter.",
                     "The rule today was chosen on those same test years, so its reference reads high and the alarm is for a rule that has broken, not one drifting a little."),
@@ -3907,7 +3914,8 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append("</section>");
 
-        return region.ToString();
+        // see: Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases into the reader's words
+        return ReaderText.Page(region.ToString());
     }
 
     // How the Loop page is read, opened from its "?".

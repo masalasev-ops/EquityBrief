@@ -450,7 +450,7 @@ public sealed partial class MarkRenderer
                 : Formatted($"<p class=\"family-sweep\" data-sweep=\"none passed\" data-lost=\"{(lost.Count == 0 ? "none" : string.Join(" ", lost))}\">{Escaped(ReaderWords.Plain(EquityBrief.Core.Sweep.SweepAnswer.Line + EquityBrief.Core.Sweep.SweepLine.LostLine(lost)))}.</p>");
 
     // The words a fixed card's figures close on where no setting its search read beat what it is measured against.
-    public const string StartingPoint = "so treat it as a starting point rather than a proven edge";
+    public const string StartingPoint = "so treat it as a starting point that has not yet proved itself";
 
     // The sentence a fixed card draws where the operator chose a setting bought on an entry its search did not keep.
     public const string EntryNotKept = "Its entry did not survive the search's second round, so it depends on its exact setting.";

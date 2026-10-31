@@ -247,10 +247,10 @@ public partial class ReadSurface
             Assert.Equal(
                 [("quality", "live"), ("improving", "provisional")],
                 Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).TakeLast(2));
-            Assert.Contains("<option value=\"quality\" selected>Quality at a fair price · live rule</option>", rule, StringComparison.Ordinal);
+            Assert.Contains("<option value=\"quality\" selected>Quality at a fair price · live setup</option>", rule, StringComparison.Ordinal);
             Assert.Contains("<option value=\"quality\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
             Assert.Contains("<div class=\"score\" data-family=\"quality\" data-standing=\"live\"", page, StringComparison.Ordinal);
-            Assert.DoesNotContain("No variant is registered for this rule.", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("No version is registered for this rule.", page, StringComparison.Ordinal);
             Assert.Equal(7, Regex.Matches(page, $"<tr data-account=\"[^\"]*{slug}-quality-rule-at[^\"]*\"[^>]*data-standing=\"variant\"").Count);
         }
     }
@@ -290,7 +290,7 @@ public partial class ReadSurface
         RunAgainAt(store, "GSPC", RunAgainReadAt);
 
         Assert.EndsWith(
-            "<td><span class=\"rule-chips\"><span class=\"chip\">10 largest</span><span class=\"chip\">251-session look-back</span><span class=\"chip\">2 leaders</span><span class=\"chip\">against the fund</span><span class=\"chip\">beta at least 1</span><span class=\"chip\">sold on losing the lead</span></span></td>",
+            "<td><span class=\"rule-chips\"><span class=\"chip\">10 largest</span><span class=\"chip\">251-day look-back</span><span class=\"chip\">2 leaders</span><span class=\"chip\">against the fund</span><span class=\"chip\">beta at least 1</span><span class=\"chip\">sold on losing the lead</span></span></td>",
             await RuleToday(),
             StringComparison.Ordinal);
     }

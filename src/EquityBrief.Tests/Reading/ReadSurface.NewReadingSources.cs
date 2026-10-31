@@ -74,7 +74,7 @@ public partial class ReadSurface
         Assert.Equal(
             "<p class=\"ledger-sources\" data-first-fetch=\"none\" data-first-night=\"none\" data-first-settlement=\"none\" data-analyst-stocks=\"0\">"
             + "The estimate revision reads the analysts' consensus, which its source states only on the day it is asked, so it holds nothing before a stock's first quarters fetch, the first on no day yet, and from the night the night first asks it the night's own ask of every member. "
-            + "The rating actions read each stock's newest answer from Yahoo, 0 stocks holding one, and none on a session after its ask. "
+            + "The rating actions read each stock's newest answer from Yahoo, 0 stocks holding one, and none on a trading day after its ask. "
             + "FINRA's short interest reads every settlement from the first the store holds, none yet.</p>",
             await Line());
 
@@ -92,7 +92,7 @@ public partial class ReadSurface
         Assert.Equal(
             "<p class=\"ledger-sources\" data-first-fetch=\"28 Sep 2026\" data-first-night=\"30 Oct 2026\" data-first-settlement=\"29 Dec 2017\" data-analyst-stocks=\"1\">"
             + "The estimate revision reads the analysts' consensus, which its source states only on the day it is asked, so it holds nothing before a stock's first quarters fetch, the first on 28 Sep 2026, and from 30 Oct 2026 the night's own ask of every member. "
-            + "The rating actions read each stock's newest answer from Yahoo, 1 stock holding one, and none on a session after its ask. "
+            + "The rating actions read each stock's newest answer from Yahoo, 1 stock holding one, and none on a trading day after its ask. "
             + "FINRA's short interest reads every settlement from 29 Dec 2017.</p>",
             await Line());
     }

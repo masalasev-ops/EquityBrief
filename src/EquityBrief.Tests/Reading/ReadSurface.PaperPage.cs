@@ -205,7 +205,7 @@ public partial class ReadSurface
 
         var closed = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&bought=closed&show=drift"));
 
-        Assert.Contains("<td>Sold at its time exit<span class=\"pb-day\">held 10 sessions</span></td>", PaperRowOf(closed, "<tr data-ticker=\"TX\""), StringComparison.Ordinal);
+        Assert.Contains("<td>Sold at its time exit<span class=\"pb-day\">kept 10 trading days</span></td>", PaperRowOf(closed, "<tr data-ticker=\"TX\""), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -450,31 +450,31 @@ public partial class ReadSurface
 
         Assert.Contains("data-standing=\"near its target\"", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"pb-stock\"><a href=\"#/chart/O1\">O1</a><span class=\"pb-co\">Oak One Inc</span></td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\">100.00<span class=\"pb-day\">2026-09-29</span></td><td class=\"r num\">90.00</td><td class=\"r num\">120.00</td><td class=\"r num\">117.00<span class=\"pb-day\">3 of 20 sessions</span></td>", first, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"gain\">+1.70</span> risks<span class=\"pb-day\"><span class=\"gain\">+17.0%</span></span>", first, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">100.00<span class=\"pb-day\">2026-09-29</span></td><td class=\"r num\">90.00</td><td class=\"r num\">120.00</td><td class=\"r num\">117.00<span class=\"pb-day\">3 of 20 trading days</span></td>", first, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"gain\">+1.70</span> per $1 risked<span class=\"pb-day\"><span class=\"gain\">+17.0%</span></span>", first, StringComparison.Ordinal);
         Assert.Contains("<span class=\"pb-standing near-target\" data-standing=\"near its target\">Near its target</span>", first, StringComparison.Ordinal);
 
         // O2 at 46.8, eight tenths over its stop of 46 on a move of 1.6: half a move, near its stop; -0.80 risks.
         var second = PaperRowOf(page, "<tr data-ticker=\"O2\"");
 
         Assert.Contains("data-standing=\"near its stop\"", second, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"loss\">-0.80</span> risks<span class=\"pb-day\"><span class=\"loss\">-6.4%</span></span>", second, StringComparison.Ordinal);
-        Assert.Contains("46.80<span class=\"pb-day\">2 of 20 sessions</span>", second, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"loss\">-0.80</span> per $1 risked<span class=\"pb-day\"><span class=\"loss\">-6.4%</span></span>", second, StringComparison.Ordinal);
+        Assert.Contains("46.80<span class=\"pb-day\">2 of 20 trading days</span>", second, StringComparison.Ordinal);
 
         // O3 trails: its stop raised from 36 to 43 by its close of 47, its target none as it trails, and at 46 a move and a
         // half over its stop on a move of 2, on track.
         var third = PaperRowOf(page, "<tr data-ticker=\"O3\"");
 
         Assert.Contains("data-standing=\"on track\"", third, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\">43.00<span class=\"pb-day\">raised from 36.00</span></td><td class=\"r\">it trails</td>", third, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"gain\">+1.50</span> risks", third, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">43.00<span class=\"pb-day\">raised from 36.00</span></td><td class=\"r\">its stop rises</td>", third, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"gain\">+1.50</span> per $1 risked", third, StringComparison.Ordinal);
 
         // Beneath them the stocks not bought, a reason at a time, each linking to its chart, and the line about entries.
         Assert.Contains(
-            "<p class=\"paper-unbought\" data-unbought=\"2\">Not bought: 2 listed stocks. <span class=\"pu-reason\" data-count=\"1\">The free cash was under its cost (1): <a href=\"#/chart/S1\" title=\"listed 2026-09-29\">S1</a>.</span> <span class=\"pu-reason\" data-count=\"1\">Waits on the next session's open (1): <a href=\"#/chart/U1\" title=\"listed 2026-10-02\">U1</a>.</span></p>",
+            "<p class=\"paper-unbought\" data-unbought=\"2\">Not bought: 2 listed stocks. <span class=\"pu-reason\" data-count=\"1\">The free cash was under its cost (1): <a href=\"#/chart/S1\" title=\"listed 2026-09-29\">S1</a>.</span> <span class=\"pu-reason\" data-count=\"1\">Waits on the next trading day's open (1): <a href=\"#/chart/U1\" title=\"listed 2026-10-02\">U1</a>.</span></p>",
             page,
             StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"paper-entry\">{MarkRenderer.EntryPriceLine}</p>", page, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"paper-entry\">{ReaderText.Words(MarkRenderer.EntryPriceLine)}</p>", page, StringComparison.Ordinal);
 
         // Closed: C1 sold at its target of 24 on Thursday, held three sessions, two risks and twenty per cent, its edge 1.5
         // over its benchmark of half a risk; C2 at 26.40 under its stop of 27, held two, 1.2 risks and twelve per cent down,
@@ -484,11 +484,11 @@ public partial class ReadSurface
         var stop = PaperRowOf(closed, "<tr data-ticker=\"C2\"");
 
         Assert.Contains("data-ended=\"2026-10-01\" data-edge=\"1.5\"", target, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\">24.00<span class=\"pb-day\">2026-10-01</span></td><td>Reached its target<span class=\"pb-day\">held 3 sessions</span></td>", target, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"gain\">+2.00</span> risks<span class=\"pb-day\"><span class=\"gain\">+20.0%</span></span>", target, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\"><span class=\"gain\">+1.50</span> risks</td>", target, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\">26.40<span class=\"pb-day\">2026-09-30</span></td><td>Closed under its stop<span class=\"pb-day\">held 2 sessions</span></td>", stop, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"loss\">-1.20</span> risks<span class=\"pb-day\"><span class=\"loss\">-12.0%</span></span>", stop, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">24.00<span class=\"pb-day\">2026-10-01</span></td><td>Reached its target<span class=\"pb-day\">kept 3 trading days</span></td>", target, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"gain\">+2.00</span> per $1 risked<span class=\"pb-day\"><span class=\"gain\">+20.0%</span></span>", target, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\"><span class=\"gain\">+1.50</span> per $1 risked</td>", target, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">26.40<span class=\"pb-day\">2026-09-30</span></td><td>Closed under its stop<span class=\"pb-day\">kept 2 trading days</span></td>", stop, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"loss\">-1.20</span> per $1 risked<span class=\"pb-day\"><span class=\"loss\">-12.0%</span></span>", stop, StringComparison.Ordinal);
         Assert.Contains("<span class=\"degraded\">not read yet</span>", stop, StringComparison.Ordinal);
         Assert.Contains("aria-pressed=\"true\">Closed · 2</a>", closed, StringComparison.Ordinal);
 
@@ -565,7 +565,7 @@ public partial class ReadSurface
         var select = Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value;
 
         Assert.Equal(["", "breakout", "drift", "dip", "heavyweight", "quality", "improving"], Regex.Matches(select, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
-        Assert.Contains("<option value=\"breakout\" selected>Breakout · live rule and 1 variant</option>", select, StringComparison.Ordinal);
+        Assert.Contains("<option value=\"breakout\" selected>Breakout · live setup and 1 version</option>", select, StringComparison.Ordinal);
         Assert.DoesNotContain("<option value=\"fundamentals\"", select, StringComparison.Ordinal);
 
         // The live rule first, then V1: the page list's B0, K1 and K2 against the variant's T7, T1, T6 and K1, the one stock
@@ -585,7 +585,7 @@ public partial class ReadSurface
 
         Assert.StartsWith("V1 · ", tab, StringComparison.Ordinal);
         Assert.Contains($"\">V1</a>", variant, StringComparison.Ordinal);
-        Assert.Contains($"<td>{tab["V1 · ".Length..]}</td>", variant, StringComparison.Ordinal);
+        Assert.Contains($"<td>{ReaderText.Words(tab["V1 · ".Length..])}</td>", variant, StringComparison.Ordinal);
         Assert.Contains($"title=\"{char.ToUpperInvariant(ProvisionalBreakout[0])}{ProvisionalBreakout[1..]}; counts the version registered 2026-01-02, code v; from ", variant, StringComparison.Ordinal);
 
         // Beneath, the trades only V1 took, newest first: T6 open at 103 by its closes' ratio through its split, a risk; T1
@@ -594,9 +594,9 @@ public partial class ReadSurface
 
         Assert.Equal(["T6", "T1", "T7"], Regex.Matches(only, "<tr data-ticker=\"([A-Z0-9]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("<tr data-ticker=\"T6\" data-bought=\"2026-10-01\" data-by=\"V1\">", only, StringComparison.Ordinal);
-        Assert.Contains("<td><span class=\"pill\">open</span></td><td class=\"r num\"><span class=\"gain\">+1.00</span> risks<span class=\"pb-day\"><span class=\"gain\">+3.0%</span></span></td>", only, StringComparison.Ordinal);
-        Assert.Contains("<td>Closed under its trailing stop</td><td class=\"r num\"><span class=\"loss\">-0.50</span> risks", only, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"paper-adopted\">{MarkRenderer.AdoptedLine}</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<td><span class=\"pill\">open</span></td><td class=\"r num\"><span class=\"gain\">+1.00</span> per $1 risked<span class=\"pb-day\"><span class=\"gain\">+3.0%</span></span></td>", only, StringComparison.Ordinal);
+        Assert.Contains("<td>Closed under its rising stop</td><td class=\"r num\"><span class=\"loss\">-0.50</span> per $1 risked", only, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"paper-adopted\">{ReaderText.Words(MarkRenderer.AdoptedLine)}</p>", page, StringComparison.Ordinal);
 
         // The page list's K1, which V1 holds too, names it.
         Assert.Contains("<span class=\"pb-also\">V1 holds it too</span>", PaperRowOf(page, "<tr data-ticker=\"K1\""), StringComparison.Ordinal);
@@ -604,8 +604,8 @@ public partial class ReadSurface
         // A family with no variant says so, and draws no trade only a variant took.
         var none = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?variants=fundamentals"));
 
-        Assert.Contains("<p class=\"degraded\" data-variants=\"none\">No variant is registered for Fundamentals first on this index, so its rule alone trades.</p>", none, StringComparison.Ordinal);
-        Assert.DoesNotContain("Bought only by a variant", none, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-variants=\"none\">No version is registered for Fundamentals first on this index, so its rule alone trades.</p>", none, StringComparison.Ordinal);
+        Assert.DoesNotContain("Bought only by a version", none, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -633,7 +633,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("adjusted p", text, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotMatch(", code \\w", text);
         Assert.DoesNotMatch("registered \\d{4}-\\d{2}-\\d{2}", text);
-        Assert.Contains("<select data-merge-key=\"rule\" aria-label=\"The rule whose scorecard is drawn\"><option value=\"\">Pullback · live rule</option><option value=\"breakout\" selected>Breakout · live rule</option>", page, StringComparison.Ordinal);
+        Assert.Contains("<select data-merge-key=\"rule\" aria-label=\"The rule whose scorecard is drawn\"><option value=\"\">Pullback · live setup</option><option value=\"breakout\" selected>Breakout · live setup</option>", page, StringComparison.Ordinal);
 
         // On history, 2024 to 2026: better in three of three complete years as the test counted, and a box a year, 2024's
         // three risks under its benchmark over 150 trades two hundredths a trade, 2025's 12.5 over 140 nine, and 2026's five
@@ -654,19 +654,19 @@ public partial class ReadSurface
         // Since it went live, apart: B0 decided of 300, its edge read off its live rule's own trade, three quarters of a risk,
         // not evidence yet; no figure of the history in it and none of it in the history.
         Assert.Contains("<p class=\"sh-count\" data-counted=\"1\" data-needed=\"300\">1 of 300 trades decided</p>", since, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"sh-line\" data-edge=\"0.75\">So far: <span class=\"gain\">+0.75</span> risks a trade against the same plan on every stock, over 1 decided trade whose comparison is read. Not evidence yet.</p>", since, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"sh-line\" data-edge=\"0.75\">So far: <span class=\"gain\">+0.75</span> per $1 risked a trade against the same plan on every stock, over 1 decided trade whose comparison is read. Not evidence yet.</p>", since, StringComparison.Ordinal);
         Assert.DoesNotContain("sy ", since, StringComparison.Ordinal);
         Assert.DoesNotContain("sh-count", history, StringComparison.Ordinal);
 
         // Its variant folds out beneath with its verdict, its years better than its rule and its progress.
-        Assert.Contains($"<details class=\"score-variants\" data-variants=\"1\"><summary>Its 1 variant</summary>", card, StringComparison.Ordinal);
+        Assert.Contains($"<details class=\"score-variants\" data-variants=\"1\"><summary>Its 1 version</summary>", card, StringComparison.Ordinal);
         Assert.Contains($"<tr data-account=\"{RunScreen.Slug(ProvisionalBreakout)}\" data-verdict=\"{RuleVerdict.WithinLuck}\" data-better=\"2\">", card, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\">2 of 3</td><td class=\"r num\">2 of 300 decided</td>", card, StringComparison.Ordinal);
 
         // A provisional rule keeps no record since it went live, and a rule no test has read says so.
         var provisional = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?rule=dip"));
 
-        Assert.Contains($"<p class=\"sh-line\" data-record=\"none\">{MarkRenderer.NoRecordLine}</p>", provisional, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"sh-line\" data-record=\"none\">{ReaderText.Words(MarkRenderer.NoRecordLine)}</p>", provisional, StringComparison.Ordinal);
         Assert.Contains("<p class=\"degraded\" data-history=\"none\">No monthly test has read this rule on this index yet.</p>", provisional, StringComparison.Ordinal);
     }
 
@@ -683,8 +683,8 @@ public partial class ReadSurface
         Assert.Contains("data-family=\"breakout\" data-walked=\"true\" data-example=\"false\" data-bought=\"closed\" data-show=\"pullback\" data-variants=\"drift\" data-rule=\"heavyweight\">", page, StringComparison.Ordinal);
         Assert.Contains("<option value=\"drift\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
         Assert.Contains("<option value=\"heavyweight\" selected>", Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
-        Assert.Contains("data-filter=\"show\" href=\"#/paper?universe=500&family=breakout&bought=closed&variants=drift&rule=heavyweight\" aria-pressed=\"false\">Every family</a>", page, StringComparison.Ordinal);
-        Assert.Contains("<a href=\"#/paper?universe=500&bought=closed&show=pullback&variants=drift&rule=heavyweight\">Live and provisional only</a>", page, StringComparison.Ordinal);
+        Assert.Contains("data-filter=\"show\" href=\"#/paper?universe=500&family=breakout&bought=closed&variants=drift&rule=heavyweight\" aria-pressed=\"false\">Every setup</a>", page, StringComparison.Ordinal);
+        Assert.Contains("<a href=\"#/paper?universe=500&bought=closed&show=pullback&variants=drift&rule=heavyweight\">Live and not-yet-tested only</a>", page, StringComparison.Ordinal);
         Assert.Equal("#/paper?universe=400&family=drift&bought=closed&show=pullback&variants=breakout&rule=heavyweight", new PaperLink("400", "drift", true, "pullback", "breakout", "heavyweight").Href);
 
         // A select's choice is merged into the link under its key, the first choice its absence, a choice inside a card

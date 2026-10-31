@@ -72,7 +72,7 @@ public partial class ReadSurface
         "Its settings were fixed on 2 Oct 2026 at the strongest setting its search over settings read. " +
         "Over the history it was tested on, its 1,033 trades came to about $2.30 for every $100 risked beyond the same plan on every stock after costs, or about -$1.00 without its five largest results, and it came out ahead in 4 of the 8 years, 2025 at -$7.10 and 2026 at -$9.60. " +
         "The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce or the tester's bar: 0 of the 378 settings it tried met its floors, where luck alone would pass about 54.6, and the tester put its search's chance of being luck at 0.1798, against the 0.0042 it needs, " +
-        "so treat it as a starting point rather than a proven edge.</p>";
+        "so treat it as a starting point that has not yet proved itself.</p>";
 
     const string KeptLine = "<p class=\"family-sweep\" data-sweep=\"none passed\" data-lost=\"2025 2026\">Its search over settings found no setting that passed the floors, and the setting fixed here lost in 2025 and 2026.</p>";
 
@@ -155,7 +155,7 @@ public partial class ReadSurface
             "Its settings were fixed on 2 Oct 2026 at the best setting its search over settings found. " +
             "Over the history it was tested on, its 335 holdings came to +2.17 percentage points against the same companies by size after costs, or -0.08 points without its five largest results, and it came out ahead in 6 of the 8 years, 2025 at +9.11 points and 2026 at -2.81 points. " +
             "The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce or the tester's bar: 53 of the 648 settings it tried met its floors, where luck alone would pass about 93.7, and the tester put its search's chance of being luck at 0.2610, against the 0.0042 it needs, " +
-            "so treat it as a starting point rather than a proven edge.</p>",
+            "so treat it as a starting point that has not yet proved itself.</p>",
             Assert.Single(Blocks(card, "<p class=\"family-frozen\".*?</p>")));
         Assert.Contains("<p class=\"family-frozen\"", RuleFoldOf(card), StringComparison.Ordinal);
         Assert.DoesNotContain("family-sweep", card, StringComparison.Ordinal);
@@ -185,13 +185,13 @@ public partial class ReadSurface
             ">Its settings were fixed on 21 Oct 2026 at the best setting its search over settings found. Over the history it was tested on, its 717 trades came to about $19.00 for every $100 risked beyond the same plan on every stock after costs, " +
             "or about $14.80 without its five largest results, " +
             "and it came out ahead in 6 of the 8 years, 2025 at $42.40 and 2026 at $9.30. " +
-            "The best of many tries always looks better than it is, and no setting it tried beat the tester's bar: the tester put its search's chance of being luck at 0.6552, against the 0.0042 it needs, so treat it as a starting point rather than a proven edge.</p>",
+            "The best of many tries always looks better than it is, and no setting it tried beat the tester's bar: the tester put its search's chance of being luck at 0.6552, against the 0.0042 it needs, so treat it as a starting point that has not yet proved itself.</p>",
             tested[tested.IndexOf(">Its settings were fixed on", StringComparison.Ordinal)..]);
         Assert.Contains("data-settings-read=\"none\" data-meeting=\"none\" data-luck=\"none\"", Frozen(pullback), StringComparison.Ordinal);
 
         // Luck alone, no tester stored: 0 of 567 against 81.9.
         Assert.EndsWith(
-            ". The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce: 0 of the 567 settings it tried met its floors, where luck alone would pass about 81.9, so treat it as a starting point rather than a proven edge.</p>",
+            ". The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce: 0 of the 567 settings it tried met its floors, where luck alone would pass about 81.9, so treat it as a starting point that has not yet proved itself.</p>",
             Frozen(pullback with { SettingsRead = 567, Meeting = 0, Luck = 81.9, TesterRun = null, Adjusted = null, TesterPassed = null }),
             StringComparison.Ordinal);
 
@@ -217,7 +217,7 @@ public partial class ReadSurface
             ">Its settings were fixed on 21 Oct 2026 at the setting the operator chose on 20 Oct 2026 from among those its search read. Over the history it was tested on, its 1,807 trades came to about $9.80 for every $100 risked beyond the same plan on every stock after costs, " +
             "and it came out ahead in 6 of the 8 years, 2025 at -$6.70 and 2026 at $9.90. " +
             "Its entry did not survive the search's second round, so it depends on its exact setting. " +
-            "The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce or the tester's bar: 0 of the 567 settings it tried met its floors, where luck alone would pass about 81.9, and the tester put its search's chance of being luck at 0.4104, against the 0.0042 it needs, so treat it as a starting point rather than a proven edge.</p>",
+            "The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce or the tester's bar: 0 of the 567 settings it tried met its floors, where luck alone would pass about 81.9, and the tester put its search's chance of being luck at 0.4104, against the 0.0042 it needs, so treat it as a starting point that has not yet proved itself.</p>",
             line[line.IndexOf(">Its settings were fixed on", StringComparison.Ordinal)..]);
         Assert.DoesNotContain(MarkRenderer.EntryNotKept, Frozen(ruled with { EntryKept = true }, "none passed"), StringComparison.Ordinal);
     }

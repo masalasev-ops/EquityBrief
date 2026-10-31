@@ -2,7 +2,7 @@ namespace EquityBrief.Web.Marks;
 
 // One setup's tile at the top of tonight's page: the family's word and label, tonight's count, what that count is of,
 // and its state in words, in the family's tint and edge.
-public sealed record SetupTileView(string Family, string Label, int Count, string Counted, string State);
+public sealed record SetupTileView(string Family, string Label, int Count, string Counted, string State, string? Quiet = null);
 
 // One of tonight's buy points as the table across every setup draws it: the setup's word and label and its pick.
 public sealed record BuyPointView(string Family, string Label, FamilyPickCell Pick);

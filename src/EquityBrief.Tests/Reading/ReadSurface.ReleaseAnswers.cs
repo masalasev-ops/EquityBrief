@@ -49,7 +49,7 @@ public partial class ReadSurface
         // No run has worked it yet: the card says so and draws no table.
         var none = await Ledger("pullback");
 
-        Assert.Contains("<p class=\"degraded\" data-answers=\"none\">No monthly run has worked what the release readings came to for this family on this index yet: they join the ledger once their history read is complete.</p>", none, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-answers=\"none\">No monthly run has worked what the release readings came to for this setup on this index yet: they join the ledger once their history read is complete.</p>", none, StringComparison.Ordinal);
         Assert.DoesNotContain("<table class=\"ledger-answers\"", none, StringComparison.Ordinal);
 
         // An older run, then the newest: results better on both sides of the cutoff and worse after it alone, the
@@ -133,8 +133,8 @@ public partial class ReadSurface
         Assert.Single(Regex.Matches(page, "class=\"loop-cutoff\""));
         Assert.Contains(
             "<p class=\"loop-cutoff\" data-cutoff=\"2025-01-31\" data-before=\"1.5\" data-after=\"2.5\"><b>Before and after the local model's cutoff of 2025-01-31.</b> It reads what the local model read of the results releases. "
-            + "The total less the rule's in the test years before the cutoff, which the model may have known the outcome of: 2022 to 2024, <span class=\"gain\">+1.50</span> risks over 30 trade(s). "
-            + "In the years from it, the ones relied on: 2025 to 2026, <span class=\"gain\">+2.50</span> risks over 26 trade(s).</p>",
+            + "The total less the rule's in the test years before the cutoff, which the model may have known the outcome of: 2022 to 2024, <span class=\"gain\">+1.50</span> per $1 risked over 30 trade(s). "
+            + "In the years from it, the ones relied on: 2025 to 2026, <span class=\"gain\">+2.50</span> per $1 risked over 26 trade(s).</p>",
             page,
             StringComparison.Ordinal);
 
@@ -194,15 +194,16 @@ public partial class ReadSurface
         CompletePin(store, "2025-01-31");
 
         const string Words = "Held back: it reads a release reading, and its total less the rule's over the test years from the cutoff's year, 2025, is not above nothing, so it is not put to you.";
+        const string OnPage = "Set aside: it reads a release reading, and its total less the rule's over the test years from the cutoff's year, 2025, is not above nothing, so it is not put to you.";
         var page = await Loop();
 
-        // Both held back with the words, beneath each one's two sides, which stay drawn; the RSI's condition put to you with
-        // its presses, and the breakout waiting with the words.
-        Assert.Equal(2, Regex.Count(page, "<p class=\"loop-held-cutoff\" data-held=\"cutoff\">" + Regex.Escape(Words) + "</p>"));
-        Assert.Equal(2, Regex.Count(page, "<p class=\"degraded\" data-decision=\"held-cutoff\">" + Regex.Escape(Words) + "</p>"));
+        // Both held back with the words, in the reader's words on the page, beneath each one's two sides, which stay drawn;
+        // the RSI's condition put to you with its presses, and the breakout waiting with the words.
+        Assert.Equal(2, Regex.Count(page, "<p class=\"loop-held-cutoff\" data-held=\"cutoff\">" + Regex.Escape(OnPage) + "</p>"));
+        Assert.Equal(2, Regex.Count(page, "<p class=\"degraded\" data-decision=\"held-cutoff\">" + Regex.Escape(OnPage) + "</p>"));
         Assert.Contains("data-after=\"-2.5\"", page, StringComparison.Ordinal);
         Assert.Contains("data-after=\"0\"", page, StringComparison.Ordinal);
-        Assert.Contains("Its passing proposal reads a release reading. " + Words + " The next monthly run is on 2026-11-07.", page, StringComparison.Ordinal);
+        Assert.Contains("Its passing change tried reads a release reading. " + OnPage + " The next monthly run is on 2026-11-07.", page, StringComparison.Ordinal);
         Assert.Equal("1", await Badge());
 
         // The presses: the held proposals refused with the words, an approval and a decline alike, writing nothing; the
