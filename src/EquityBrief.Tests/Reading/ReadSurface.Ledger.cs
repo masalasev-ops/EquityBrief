@@ -117,12 +117,12 @@ public partial class ReadSurface
         Assert.Contains("data-stop=\"95\"", page, StringComparison.Ordinal);
         Assert.Contains("data-target=\"110\"", page, StringComparison.Ordinal);
         Assert.Contains("data-bought=\"2026-03-09\"", page, StringComparison.Ordinal);
-        Assert.Contains(SinglePageApp.LedgerGuide, page, StringComparison.Ordinal);
+        Assert.Contains(EquityBrief.Web.Marks.ReaderText.Words(SinglePageApp.LedgerGuide), page, StringComparison.Ordinal);
 
         // BBB's bars sit in the pulled history, which the page does not read, and it says so; and no setup chosen asks
         // for one.
         Assert.Contains(
-            "The store holds 0 close(s) of BBB over this setup's sessions: its bars sit in the pulled history, which this page does not read.",
+            "The store holds 0 close(s) of BBB over this setup's trading days: its bars sit in the pulled history, which this page does not read.",
             WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger?family=pullback&setup=BBB.2025-02-03")),
             StringComparison.Ordinal);
         Assert.Contains("Choose a settled setup above to draw its path.", WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger")), StringComparison.Ordinal);

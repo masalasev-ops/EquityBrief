@@ -122,6 +122,11 @@ builder.Services.AddSingleton<SinglePageApp>();
 builder.Services.AddSingleton<ReportExporter>();
 builder.Services.AddSingleton<RouteTimes>();
 
+// From 21.13 Yahoo's quotes of the market strip's symbols, asked while the regular session is open and kept five minutes.
+// see: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
+builder.Services.AddSingleton<EquityBrief.Core.Providers.IStripQuoteFeed>(_ => EquityBrief.Core.Providers.YahooSparkFeed.Live());
+builder.Services.AddSingleton<StripQuotes>();
+
 // What a press starts once its request is written: the worker's drain, from a copy of the
 // worker's build beside the surface's own. A surface running from any build but its own,
 // as the suite hosts it, finds no worker beside it and starts nothing.
@@ -1631,7 +1636,8 @@ app.MapGet("/screens/tonight/{night?}", async (
     SinglePageApp page,
     SpendCaps caps,
     IClock clock,
-    StoreLocation store) =>
+    StoreLocation store,
+    StripQuotes stripQuotes) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
@@ -1662,6 +1668,12 @@ app.MapGet("/screens/tonight/{night?}", async (
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
     var selector = Cards.Universe(reading, await read.MembersByIndexAsync(dated), night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/");
 
+    // From 21.13 the market strip atop the page on every index: the night's closes, and on the newest night while the
+    // regular session is open Yahoo's quotes, asked at most once every five minutes.
+    // see: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
+    var (quoted, quotedAt) = await read.NewestNightAsync() == dated ? await stripQuotes.AskAsync(clock.UtcNow, clock.SessionZone) : (null, null);
+    var strip = await MarketStripScreen.DrawAsync(read, marks, reading, dated, quoted, quotedAt, clock.SessionZone);
+
     // The live alarm's flag on each family of the index chosen, as its newest period stands, drawn on the newest night.
     // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
     if (night is not { Length: > 0 })
@@ -1677,7 +1689,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         if (indexNight is null)
         {
             return Results.Content(
-                notice + page.IndexTonightRegion(marks, dated, reading, selector, indexHeld, null, [], null, due: due),
+                notice + strip + page.IndexTonightRegion(marks, dated, reading, selector, indexHeld, null, [], null, due: due),
                 "text/html; charset=utf-8");
         }
 
@@ -1864,7 +1876,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         var indexCells = UniverseScreen.Rows(await read.UniverseAsync(reading.Code, dated)).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
 
         return Results.Content(
-            notice + page.IndexTonightRegion(
+            notice + strip + page.IndexTonightRegion(
                 marks,
                 dated,
                 reading,
@@ -1905,7 +1917,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     if (first is { } start && dated < start)
     {
         return Results.Content(
-            notice + SinglePageApp.BeforeTheRecord(dated, start, "Tonight", SinglePageApp.NightRoute, "#/", held),
+            notice + strip + SinglePageApp.BeforeTheRecord(dated, start, "Tonight", SinglePageApp.NightRoute, "#/", held),
             "text/html; charset=utf-8");
     }
 
@@ -1916,7 +1928,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     if (listings.Count == 0)
     {
         return Results.Content(
-            notice + page.StaleBanner(dated, await read.NewestNightAsync()),
+            notice + strip + page.StaleBanner(dated, await read.NewestNightAsync()),
             "text/html; charset=utf-8");
     }
 
@@ -2246,7 +2258,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             watchedNames.Select(row => row.Ticker).ToHashSet(StringComparer.Ordinal));
 
     return Results.Content(
-        notice + page.TonightRegion(
+        notice + strip + page.TonightRegion(
             marks,
             dated,
             universe.Count,

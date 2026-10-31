@@ -53,7 +53,7 @@ public sealed partial class MarkRenderer
         {
             var largest = Math.Max(view.Headings.Max(heading => Math.Abs(heading.Push ?? 0)), 1e-9);
 
-            body.Append(Invariant, $"<p class=\"behind-lede\">Each heading's push on the learned score, which passed the walk-forward tester on this index: its weights times the stock's readings less their means over the setups it learned on, in typical moves, the score's own unit.</p>");
+            body.Append(Invariant, $"<p class=\"behind-lede\">Each heading's push on the score fitted to past setups by code, which passed the walk-forward tester on this index: its weights times the stock's readings less their means over the setups it learned on, in typical days' moves, the score's own unit.</p>");
             body.Append(Invariant, $"<ul class=\"behind-push\" data-centre=\"{centre.ToString("R", Invariant)}\" data-score=\"{score.ToString("R", Invariant)}\">");
 
             foreach (var heading in view.Headings)
@@ -75,7 +75,7 @@ public sealed partial class MarkRenderer
 
         if (view.Unread is { } why)
         {
-            body.Append(Invariant, $"<p class=\"degraded\" data-push=\"unread\">The learned score passed on this index, and its push is not drawn: its stored text could not be read: {Escaped(why)}</p>");
+            body.Append(Invariant, $"<p class=\"degraded\" data-push=\"unread\">The score fitted to past setups passed on this index, and its push is not drawn: its stored text could not be read: {Escaped(why)}</p>");
         }
 
         body.Append("</section>");

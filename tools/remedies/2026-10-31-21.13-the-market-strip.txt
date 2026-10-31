@@ -1,0 +1,8 @@
+# The remedy of 21.13, the market strip, on the operator's addition of 2026-10-30. Migration 118 adds the Treasury's
+# 3-month par yield beside its 10-year, which the night's Treasury step writes from the same answer from its next run, so
+# it must stand before that night. Nothing is registered: no source a rule's version pins moved, and no rule reads the
+# strip's four series or the 3-month. The four series fill from the next night, one request a series, QQQ's, DIA's and the
+# dollar index's of the provider at one weighted call each and WTI crude's of Yahoo's chart, free. No request to the
+# provider and no model call here. Run from main after the merge, when no night, local run, drain, labeller, ledger build
+# or monthly run is writing, read the output for "remedy done", and restart the read surface after it.
+migrate

@@ -46,6 +46,18 @@ public static class ReaderWords
         ("live rule", "the live setup"),
         ("nought", "zero"),
         ("one gate short", "one step short"),
+        ("adjusted p", "could this be luck"),
+        ("edge", "gain over the easy alternative"),
+        ("benchmark", "the easy alternative, the same plan on every stock or an equal-weight hold"),
+        ("fold", "a year it had never seen"),
+        ("block", "a run of 63 trading days"),
+        ("step-down", "judged together with the other changes tried"),
+        ("hooks", "settings a change can set"),
+        ("proposal", "a change tried"),
+        ("autopsy", "what its trades did between buy and sale"),
+        ("winners against losers", "what the winning picks had in common"),
+        ("learned score", "a score fitted to past setups by code"),
+        ("idea generator", "an idea the local model put, turned into a rule by code"),
     ];
 
     // Each step by the setup whose rule stores it and its name as stored, with what a stock that passed it did and what a
@@ -158,6 +170,7 @@ public static class ReaderWords
             (@"\bmoves the session 1 session after the night\b", "falls 1 trading day after the night"),
             (@"\bmoves the session (\d+) sessions after the night\b", "falls $1 trading days after the night"),
             (@"\bnot held\b", "not read"),
+            (@"\blearned scores?\b", "score fitted to past setups"),
             (@"\binside the (\d+)-session window\b", "within $1 trading days"),
             (@"\bthe reaction session's\b", "the report day's"),
             (@"\bthe reaction session\b", "the report day"),

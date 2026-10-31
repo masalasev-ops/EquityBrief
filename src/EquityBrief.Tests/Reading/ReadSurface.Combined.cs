@@ -101,7 +101,7 @@ public partial class ReadSurface
         Assert.Contains("data-skipped=\"1\"", tiles, StringComparison.Ordinal);
         Assert.Contains(">All setups together<", tiles, StringComparison.Ordinal);
         Assert.Contains("+0.6%", tiles, StringComparison.Ordinal);
-        Assert.Contains("1 open · 0 closed · 1 skipped · since", tiles, StringComparison.Ordinal);
+        Assert.Contains("Up 0.6% since 2 Nov, with 1 trade open. 0 closed, 1 skipped.", tiles, StringComparison.Ordinal);
 
         // Its line in the chart, keyed by its own name.
         Assert.Contains("data-standing=\"combined\"", chart, StringComparison.Ordinal);

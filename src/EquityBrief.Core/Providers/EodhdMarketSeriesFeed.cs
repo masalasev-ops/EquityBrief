@@ -24,7 +24,7 @@ public sealed class EodhdMarketSeriesFeed(
     // The suffix a series is asked for under: the index exchange's for the index and the VIX, and a listing's for a
     // sector fund.
     public static string SuffixOf(string series) =>
-        series is Families.MarketCloses.Index or Families.MarketCloses.Vix ? IndexSuffix : ListingSuffix;
+        series is Families.MarketCloses.Index or Families.MarketCloses.Vix or Quotes.MarketStrip.Dollar ? IndexSuffix : ListingSuffix;
 
     readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
 

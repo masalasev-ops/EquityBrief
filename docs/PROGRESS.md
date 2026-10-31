@@ -13031,3 +13031,56 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the two asks' first counts, read off the monthly run of 2026-11-07's facts and dividends rows; and everything
             21.11 carried.
+
+### 21.13 - plain words on paper trading, the Loop page and the Ledger, and the market strip atop Tonight and the copy with the four series the night gains for it   2026-10-31
+
+Queue:      done, 21.1 to 21.12 and 21.16 as PRs 587 to 605 with their remedies, recorded above; in progress, 21.13 with the
+            operator's market strip; next, 21.14's rulings and 21.15; beside them the sign-offs of phases 18, 20 and 22
+            by fresh sessions.
+Built:      part 1, the three pages join the plain-words check covered whole, the word list gaining the plan's twelve
+            terms. Every card of each opens on a sentence from its numbers; every text between its tags is drawn through
+            one table of phrases in the web project into the reader's words, since much of it is words the tester, the
+            night and the rules stored, which a stored row or a pinned source would otherwise have to change. Tonight's
+            setup tiles carry their quiet nights, Quality's holding rows open on their buy and how they are kept, a
+            paper tile on its return on the account's size, the combined card and each Loop summary row on the plan's
+            sentences, and the pick card's and the frozen card's words that drew a listed term are reworded. Part 2, the
+            market strip atop Tonight on every index: twelve tiles from the night's closes against the session before,
+            and while the regular session is open from Yahoo's spark asked once for every tile and kept five minutes, a
+            tile Yahoo does not answer drawing the close with prior close only; atop every page of the copy the closes
+            alone. The night asks QQQ, DIA and the dollar index of the provider and WTI crude of Yahoo's chart, one
+            request a series, stating its weighted calls first; migration 118 keeps the Treasury's 3-month beside its
+            10-year.
+Measured:   read-only before building, the provider answers QQQ.US, DIA.US and DXY.INDX and no symbol of WTI crude among
+            CL.COMM, WTI.COMM, CRUDE.COMM, USOIL.FOREX, WTIUSD.FOREX and CL.F, nor any commodity exchange, eleven
+            requests at one weighted call each; Yahoo's spark answers the nine strip symbols in one keyless request.
+Judgement:  WTI crude from Yahoo's chart of CL=F, so its stored close and its quote in the session share one unit; block
+            read as "a run of 63 trading days", since the plan's "a stretch" is a listed term, and edge as "gain over the
+            easy alternative", which reads in a sentence; "register" and "version" left as 15.23 holds them, "a version"
+            being the reader's word for a variant; Quality's row reads "kept while it qualifies", "held" being a listed
+            term; the share tile labelled "Above 200-day", "breadth" being a listed term; an S&P 400 or 600 page's share
+            reading that each setup there reads its own floor, since each does.
+Decisions:  two written: Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases
+            into the reader's words; and The market strip draws each market's close and its change on the day from the
+            night's store, and Yahoo's delayed quote in the session.
+Tests:      3001, from 2989: twelve added, the three pages' cards in the reader's words over constructed stores, a listed
+            term planted in each found and every term of the word list removed by a phrase; the night's four series, the
+            3-month, Yahoo's capture, the strip's tiles outside and inside the session and no pinned source among those
+            21.13 writes; and the strip read back off Tonight in and outside the session and atop the copy. Twenty-seven
+            read-surface tests' expected words rewritten in the reader's words.
+Claims:     1488, from 1486: two added, 15.7's market strip and the copy's, against the plan's count of about 3; 15.23's
+            terms and pages placed whole, and the rows that now open on a sentence amended in place; 1503 placements.
+Pins:       none moved: no source 21.13 writes is one a rule's version pins, asserted.
+Remedy:     `tools/remedies/2026-10-31-21.13-the-market-strip.txt`, the migration alone, run from main after the merge
+            before the next night.
+Mutation:   chosen before the run by this rule, the property the done condition names first, the three pages passing
+            the plain-words check: the table of phrases translating nothing. The three pages' test, the planted term's
+            and the word list's went red; reverted, green. Not mutated: the summaries, the strip's tiles and the night's
+            four series.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3001 of 3001 tests ran
+            with none failed, migrations 0 to 118 with none pending, schema version 118, against `data-ci` and never
+            `data`; the phase report 64 tables, 1488 claims, 1488 passing, none out of scope and none unexamined, 1503
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the three pages and Tonight with the strip at 1440 and a true 390 in both palettes, read off the operator's app
+            from main after the merge and the remedy; the four series' first night, read off its fetch row; the strip's
+            quotes read in a session; and everything 21.12 carried.

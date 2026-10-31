@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Quotes;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -31,7 +32,9 @@ public sealed record MarketSeriesOutcome(DateOnly? Through, IReadOnlyList<string
 // closed and a heavyweights' rebalance waits for a night the store holds one. It runs in the fetch step after the bar
 // fetcher, reading the night's session off the bars that step stored, and calls no model.
 // see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars
-public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, string databaseFile) : IComponent
+// From 21.13 it asks Yahoo's chart beside the provider for WTI crude, one request, free and keyless, stating what it asks
+// before its first request; a fetcher built without that feed asks the provider alone.
+public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, string databaseFile, IMarketSeriesFeed? oil = null, Action<string>? stating = null) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -40,7 +43,7 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
             new StoreTouch(Store.MarketBar, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
-        Feeds: [Feed.HistoricalPrice]);
+        Feeds: [Feed.HistoricalPrice, Feed.OilChart]);
 
     public const string Stage = "market-series";
 
@@ -49,10 +52,18 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
     // see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
     public static IReadOnlyList<string> IndexAndCreditFunds { get; } = ["SPY", "IJH", "IJR", "HYG"];
 
-    // The series it asks for, in this order: the index itself, the VIX, each sector's fund by its sector's name, and
-    // the index and credit funds.
+    // The series it asks the provider for, in this order: the index itself, the VIX, each sector's fund by its sector's
+    // name, the index and credit funds, and from 21.13 the market strip's QQQ, DIA and dollar index, which no rule reads.
     public static IReadOnlyList<string> Series { get; } =
-        [MarketCloses.Index, MarketCloses.Vix, .. GicsSectors.Eleven.Select(sector => GicsSectors.Funds[sector]), .. IndexAndCreditFunds];
+        [MarketCloses.Index, MarketCloses.Vix, .. GicsSectors.Eleven.Select(sector => GicsSectors.Funds[sector]), .. IndexAndCreditFunds, .. MarketStrip.ProviderSeries];
+
+    // From 21.13 the series it asks Yahoo's chart for, WTI crude, which the provider files no price of.
+    public static IReadOnlyList<string> YahooSeries => MarketStrip.YahooSeries;
+
+    // What it says before its first request: the provider's series at one weighted call each, and Yahoo's, free.
+    public static string Stated(bool yahoo) =>
+        FormattableString.Invariant($"asks {Series.Count} series of the provider at one weighted call each, {Series.Count} weighted call(s) in all")
+        + (yahoo ? FormattableString.Invariant($", and {YahooSeries.Count} of Yahoo's chart, free") : string.Empty);
 
     // The calendar days before the night's session it asks for: more than a year, so the 200 sessions the
     // index's average reads, the ten the VIX is read back over and the 252 a fund's year and a beta read are held with
@@ -78,7 +89,8 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
 
     // Whether a series is a fund, a sector's or an index and credit fund, whose held sessions the answer may state again.
     public static bool IsFund(string series) =>
-        GicsSectors.Funds.Values.Contains(series, StringComparer.Ordinal) || IndexAndCreditFunds.Contains(series, StringComparer.Ordinal);
+        GicsSectors.Funds.Values.Contains(series, StringComparer.Ordinal) || IndexAndCreditFunds.Contains(series, StringComparer.Ordinal)
+        || series is MarketStrip.Nasdaq or MarketStrip.Dow;
 
     const string HeldOf = "SELECT COUNT(*) FROM market_bar WHERE series = $series;";
 
@@ -109,19 +121,21 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
             return nothing;
         }
 
-        var requestsBefore = feed.Requests;
+        var requestsBefore = feed.Requests + (oil?.Requests ?? 0);
         var answered = new List<(string Series, IReadOnlyList<ProviderBar> Bars)>();
         var refused = new List<string>();
 
-        foreach (var series in Series)
+        stating?.Invoke(Stated(oil is not null));
+
+        foreach (var (series, asked) in Series.Select(series => (series, feed)).Concat(oil is null ? [] : YahooSeries.Select(series => (series, oil))))
         {
             try
             {
-                var bars = await feed.SeriesAsync(series, through.AddDays(-WindowDays), through, cancellation);
+                var bars = await asked.SeriesAsync(series, through.AddDays(-WindowDays), through, cancellation);
 
                 if (bars.Count == 0)
                 {
-                    refused.Add($"{series}: the provider sent no session, so nothing was stored for it");
+                    refused.Add($"{series}: {(ReferenceEquals(asked, feed) ? "the provider" : "Yahoo")} sent no session, so nothing was stored for it");
                 }
                 else
                 {
@@ -130,7 +144,7 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
             }
             catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
             {
-                refused.Add($"{series}: the provider did not answer in time on any try, so nothing was stored for it");
+                refused.Add($"{series}: {(ReferenceEquals(asked, feed) ? "the provider" : "Yahoo")} did not answer in time on any try, so nothing was stored for it");
             }
             catch (Exception failure) when (failure is not OperationCanceledException)
             {
@@ -215,7 +229,7 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
                 + (newest < through ? FormattableString.Invariant($", the newest sent {newest:yyyy-MM-dd} and none for the night") : string.Empty));
         }
 
-        var outcome = new MarketSeriesOutcome(through, stored, refused, written, feed.Requests - requestsBefore);
+        var outcome = new MarketSeriesOutcome(through, stored, refused, written, feed.Requests + (oil?.Requests ?? 0) - requestsBefore);
 
         await AppendAsync(connection, transaction, runId, startedAt, outcome, cancellation);
         await transaction.CommitAsync(cancellation);

@@ -41,7 +41,7 @@ public partial class ReadSurface
     const string MidQualityFixed =
         "<p class=\"family-frozen quality-fixed\" data-fixed=\"2026-09-30\" data-holdings=\"412\" data-edge=\"-0.012\" data-years=\"7\" data-ahead=\"1\" data-beat-luck=\"false\" data-tester-passed=\"none\">" +
         "Its settings were fixed on 30 Sep after its history test from 2019: 412 holdings, 1.2 points a holding behind an equal-weight hold of the index's stocks after costs, behind in 6 of the 7 years it had holdings. " +
-        "No setting beat luck, so treat it as a starting point rather than a proven edge.</p>";
+        "No setting beat luck, so treat it as a starting point that has not yet proved itself.</p>";
 
     static string MidLive => Core.Candidates.FamilyRecords.LivePrefix + "S&P 400 quality rule at " + QualityRules.Short(QualityRule.Starting);
 

@@ -233,7 +233,11 @@ public static class SiteCopyCommand
             Write(folder, file, markup);
         }
 
-        Write(folder, SiteCopy.ShellFile, SiteCopy.Shell(night, files));
+        // From 21.13 the market strip atop every page, the S&P 500's closes on the night alone, since the copy asks no quote.
+        // see: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
+        var strip = await MarketStripScreen.DrawAsync(read, new EquityBrief.Web.Marks.MarkRenderer(), Universes.Large, night, null, null, TimeZoneInfo.FindSystemTimeZoneById(EquityBrief.Core.Time.SessionZones.UnitedStates));
+
+        Write(folder, SiteCopy.ShellFile, SiteCopy.Shell(night, files, SiteCopy.Relink(strip, "#/", held, stockPagesFirst: false)));
         Write(folder, SiteCopy.MissingFile, SiteCopy.Missing(night));
         Write(folder, EquityBrief.Core.Cloudflare.PublishedSite.HeadersFile, Headers);
 

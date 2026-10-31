@@ -5,7 +5,7 @@ namespace EquityBrief.Web.Marks;
 // One holding on Quality at a fair price's card: the stock, its company, the night it was chosen, its score tonight as
 // checks passed of the checks that applied, its valuation's place tonight, its change since it was bought, none before
 // its buy, and tonight's line in the reader's words.
-public sealed record QualityHoldingCell(string Ticker, string? Company, DateOnly ChosenOn, int? Passed, int? Applied, double? Place, double? SinceBought, string Tonight);
+public sealed record QualityHoldingCell(string Ticker, string? Company, DateOnly ChosenOn, int? Passed, int? Applied, double? Place, double? SinceBought, string Tonight, decimal? Fill = null, DateOnly? BoughtOn = null);
 
 // One stock next in line: qualifying tonight and not held, in the family's order.
 public sealed record QualityNextCell(string Ticker, string? Company, int Passed, int Applied, double? Place);
@@ -121,7 +121,7 @@ public sealed partial class MarkRenderer
                 body.Append(cell.SinceBought is { } change
                     ? Formatted($"<td class=\"r num quality-since\">{SignedFigure(change * 100, 1, Formatted($"{Unsigned(change * 100, 1):+0.0;-0.0;0.0}%"))}</td>")
                     : "<td class=\"r num quality-since\"><span class=\"degraded\">bought at the next open</span></td>");
-                body.Append(Invariant, $"<td class=\"quality-tonight\">{Escaped(cell.Tonight)}</td></tr>");
+                body.Append(Invariant, $"<td class=\"quality-tonight\"><span class=\"quality-bought\">{Escaped(QualityBoughtSaid(cell, card.NextReshuffle))}</span> {Escaped(cell.Tonight)}</td></tr>");
             }
 
             body.Append("</tbody></table></div>");

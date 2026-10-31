@@ -279,6 +279,9 @@ public static partial class SiteCopy
         text = Removed(text, "li", start => AttributeOf(start, "data-line") == "size");
         text = Removed(text, "div", start => HasClass(start, "rs-controls") || HasClass(start, "firm-actions"));
         text = Removed(text, "section", start => AttributeOf(start, "data-graph") == "ratings");
+
+        // The market strip a screen draws for itself, since the copy draws its own atop every page, the closes alone.
+        text = Removed(text, "section", start => AttributeOf(start, "data-card") == EquityBrief.Web.Marks.MarkRenderer.StripRegion);
         text = NightDue().Replace(text, string.Empty);
 
         return SurfaceAttribute().Replace(text, string.Empty);
@@ -423,7 +426,7 @@ public static partial class SiteCopy
     // sends nothing and asks no other address, and what it does beyond that is drawn in the browser alone: the palette, the
     // menu, a fold or a pick's card opened, a place on the page scrolled to, a tile bringing its card into view, the chart's
     // levels and its candle under the pointer.
-    public static string Shell(DateOnly night, IReadOnlyDictionary<string, string> files)
+    public static string Shell(DateOnly night, IReadOnlyDictionary<string, string> files, string strip = "")
     {
         var bar = new StringBuilder("<nav class=\"m-nav\" aria-label=\"Screens\">");
 
@@ -459,6 +462,7 @@ public static partial class SiteCopy
             <body>
             <header class="mast" id="mast"><div class="wrap"><a class="m-brand" href="#/">{{{Brand}}}</a><div class="m-panel" id="menu">{{{bar}}}<button type="button" class="theme" id="theme">Dark palette</button></div><div class="m-index" id="index-slot"></div><button type="button" class="m-menu" id="menu-button" aria-expanded="false" aria-controls="menu">Menu</button></div></header>
             {{{Banner(night)}}}
+            <div class="wrap copy-strip" id="strip">{{{strip}}}</div>
             <div class="wrap page-head" id="identity"></div>
             <main class="wrap" id="screen"></main>
             <script>

@@ -101,6 +101,9 @@ public partial class ReadSurface
             // 21.11, the combined account.
             .. CombinedPageClaims,
 
+            // 21.13, the market strip on Tonight and on the copy.
+            .. StripRows,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 
@@ -5133,17 +5136,37 @@ public partial class ReadSurface
     // the global namespace, so naming that one is ambiguous and the compiler
     // says so.
     // A clock handed in stands in for the machine's, for a page that reads the session the day holds.
-    internal sealed class Host(string root, IClock? clock = null) : WebApplicationFactory<ReadApi>
+    // From 21.13 the market strip's quotes come from the feed handed in, and from one that answers nothing otherwise, so no
+    // test asks Yahoo whatever hour it runs at.
+    internal sealed class Host(string root, IClock? clock = null, EquityBrief.Core.Providers.IStripQuoteFeed? quotes = null) : WebApplicationFactory<ReadApi>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseSetting(StoreLocation.DataRootKey, root);
             Providers.ResearchModelFeedTests.PinModels(builder);
 
-            if (clock is not null)
+            builder.ConfigureTestServices(services =>
             {
-                builder.ConfigureTestServices(services => services.AddSingleton(clock));
-            }
+                services.AddSingleton(quotes ?? new NoStripQuotes());
+
+                if (clock is not null)
+                {
+                    services.AddSingleton(clock);
+                }
+            });
+        }
+    }
+
+    // A quote feed answering no symbol, and counting each ask.
+    internal sealed class NoStripQuotes : EquityBrief.Core.Providers.IStripQuoteFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyDictionary<string, EquityBrief.Core.Providers.SparkQuote>> QuotesAsync(IReadOnlyList<string> symbols, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult<IReadOnlyDictionary<string, EquityBrief.Core.Providers.SparkQuote>>(new Dictionary<string, EquityBrief.Core.Providers.SparkQuote>());
         }
     }
 

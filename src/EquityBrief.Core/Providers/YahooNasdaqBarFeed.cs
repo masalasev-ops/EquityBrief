@@ -26,7 +26,7 @@ public sealed class YahooNasdaqBarFeed(HttpClient yahoo, HttpClient nasdaq, Prov
 
     public static YahooNasdaqBarFeed Live() => new(Client(YahooAddress), Client(NasdaqAddress));
 
-    static HttpClient Client(string address)
+    internal static HttpClient Client(string address)
     {
         var client = new HttpClient { BaseAddress = new Uri(address), Timeout = Policy.Timeout + Policy.Timeout };
 
@@ -77,6 +77,12 @@ public sealed class YahooNasdaqBarFeed(HttpClient yahoo, HttpClient nasdaq, Prov
     {
         Requests++;
 
+        return await GetAsync(request, client, path, named, cancellation).ConfigureAwait(false);
+    }
+
+    // One request of either source, its refusal named for the source, shared with the strip's quotes and the oil's chart.
+    internal static async Task<string> GetAsync(ProviderRequest request, HttpClient client, string path, string named, CancellationToken cancellation)
+    {
         return await request
             .SendAsync(
                 async token =>

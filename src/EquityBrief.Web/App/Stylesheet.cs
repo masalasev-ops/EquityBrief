@@ -487,6 +487,14 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-key-mark[data-standing='combined']{border-top-width:4px}
 .paper-combined-skips{font-size:14px;color:var(--ink-2);margin:0 0 10px;max-width:78ch}
 .paper-combined-table{min-width:640px}
+.strip-line{font-size:12.5px;color:var(--ink-2);margin:0 0 8px}
+.strip-tiles{display:flex;flex-wrap:wrap;gap:8px}
+.strip-tile{display:flex;flex-direction:column;gap:2px;flex:1 1 128px;min-width:0;padding:8px 10px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface)}
+.st-label{font:600 12px var(--sans);color:var(--ink-2)}
+.st-level{font:600 17px var(--sans);font-variant-numeric:tabular-nums;color:var(--ink)}
+.st-change{font-size:12.5px;font-variant-numeric:tabular-nums}
+.st-words,.st-beneath{font-size:11.5px;color:var(--ink-2);overflow-wrap:anywhere}
+.copy-strip{margin-top:10px}
 .paper-tile .pt-name{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--ink)}
 .paper-tile .pt-figure{font:600 22px var(--sans);font-variant-numeric:tabular-nums}
 .paper-tile .pt-sub{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}

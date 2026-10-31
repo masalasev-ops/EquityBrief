@@ -1324,10 +1324,10 @@ public partial class NightlyRun
 
         Assert.True(servedCode == 0, servedError);
 
-        // Every series once, the index, the VIX, the eleven sector funds and from 15.1 the four index and credit funds,
-        // the funds this capture does not serve named and storing nothing.
-        Assert.Equal(17, MarketSeriesFetcher.Series.Count);
-        Assert.Equal(["SPY", "IJH", "IJR", "HYG"], MarketSeriesFetcher.Series.TakeLast(4));
+        // Every series once, the index, the VIX, the eleven sector funds, from 15.1 the four index and credit funds and from
+        // 21.13 the market strip's three of the provider, the funds this capture does not serve named and storing nothing.
+        Assert.Equal(20, MarketSeriesFetcher.Series.Count);
+        Assert.Equal(["SPY", "IJH", "IJR", "HYG", "QQQ", "DIA", "DXY"], MarketSeriesFetcher.Series.TakeLast(7));
         Assert.Equal(MarketSeriesFetcher.Series.Count, series.Requests);
         Assert.Contains("XLK: nothing was stored for it, No captured response for the XLK series.", RunLog(served, "night-market-served").Single(row => row.Stage == MarketSeriesFetcher.Stage).Detail, StringComparison.Ordinal);
         Assert.Equal(6L, Count(served, "SELECT COUNT(*) FROM market_bar WHERE run_id = 'night-market-served';"));

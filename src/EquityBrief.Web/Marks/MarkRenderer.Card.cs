@@ -724,8 +724,8 @@ public sealed partial class MarkRenderer
         }
 
         body.Append(score.Rank is { } rank
-            ? Formatted($"<p class=\"card-rank\" data-rank=\"{rank}\">The learned score, which passed its test on this index, ranks it {rank} of 100 among the setups it learned from here.</p>")
-            : "<p class=\"card-rank degraded\" data-rank=\"none\">The learned score has not passed its test on this index yet, so it ranks nothing here.</p>");
+            ? Formatted($"<p class=\"card-rank\" data-rank=\"{rank}\">The score fitted to past setups by code, which passed its test on this index, ranks it {rank} of 100 among the setups it learned from here.</p>")
+            : "<p class=\"card-rank degraded\" data-rank=\"none\">The score fitted to past setups by code has not passed its test on this index yet, so it ranks nothing here.</p>");
         body.Append(Invariant, $"<p class=\"card-caution\">These are setups like this one under the same setup on the {Escaped(named)}, not this stock's chance.</p>");
 
         return body.Append("</section>").ToString();
@@ -893,8 +893,8 @@ public sealed partial class MarkRenderer
         {
             var largest = Math.Max(view.Headings.Max(heading => Math.Abs(heading.Push ?? 0)), 1e-9);
 
-            body.Append("<details class=\"fold card-push\"><summary>How each heading moved the learned score</summary><div class=\"fold-b\">");
-            body.Append("<p class=\"card-note\">The learned score passed its test on this index. Each heading's push is its weight times how far the stock's readings sit from the average of the setups it learned from, in typical days' moves.</p>");
+            body.Append("<details class=\"fold card-push\"><summary>How each heading moved the score fitted to past setups</summary><div class=\"fold-b\">");
+            body.Append("<p class=\"card-note\">The score fitted to past setups by code passed its test on this index. Each heading's push is its weight times how far the stock's readings sit from the average of the setups it learned from, in typical days' moves.</p>");
             body.Append(Invariant, $"<ul class=\"behind-push\" data-centre=\"{centre.ToString("R", Invariant)}\" data-score=\"{score.ToString("R", Invariant)}\">");
 
             foreach (var heading in view.Headings)
@@ -917,7 +917,7 @@ public sealed partial class MarkRenderer
 
         if (view.Unread is { } why)
         {
-            body.Append(Invariant, $"<p class=\"degraded\" data-push=\"unread\">The learned score passed on this index, and its pushes are not drawn: its stored text could not be read: {Escaped(why)}</p>");
+            body.Append(Invariant, $"<p class=\"degraded\" data-push=\"unread\">The score fitted to past setups passed on this index, and its pushes are not drawn: its stored text could not be read: {Escaped(why)}</p>");
         }
 
         return body.Append("</section>").ToString();

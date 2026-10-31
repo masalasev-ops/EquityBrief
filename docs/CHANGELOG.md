@@ -26,6 +26,68 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-31 - CLAUDE.md - the hard rule names the market strip's four series among those the night asks
+Authorised by: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
+Was:
+> ... the four index and credit funds' daily closes in one request a series, read by the market switches of two registered variants and by the sector heavyweights on the operator's rulings of 2026-10-03 and 2026-10-04, and the S&P 400's ...
+Now:
+> ... on the operator's rulings of 2026-10-03 and 2026-10-04, and from 21.13 QQQ's, DIA's and the dollar index's daily closes in one request a series and WTI crude's in one request to Yahoo's chart, free, keyless and not the provider's, read by the market strip alone on the operator's addition of 2026-10-30 (see: ...), and the S&P 400's ...
+Why: the operator's addition of 2026-10-30 to 21.13 has the night gain the four series the strip draws, which the plan says the hard rule names with its prior text here.
+
+### 2026-10-31 - docs/ARCHITECTURE.html - the market strip, its series and its yields; plain words on the Loop page, paper trading and the Ledger
+Authorised by: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session; and Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases into the reader's words
+Was:
+> (Market series fetcher) ... historical price feed, bar store, market series ... asks the provider for the index's, the VIX's, the eleven sector funds' and the four index and credit funds' daily series over the days before the night's session section 17 states, one request a series whatever the universe's size, the index and the VIX under the index exchange and each fund as a listing, ...
+> (Treasury reader) ... and keeps each session's 10-year to the night's that the store does not hold, ...
+> (Read API) every store but the market series and the pulled history, its bars read from 19.11 for the chart page | ... the research the request leads to is the worker's (see: ...)
+> (15.10's frozen card) ... so the rule is a starting point and not a proven edge; ...
+> (Tonight in one minute) from 22.6 the page's first card on every index on a night the setup families drew the page's list: ...
+> (Tonight's setups) ... and the card's title counts its tiles in words (see: ...)
+> (Quality at a fair price's card) ... and the full rule behind a fold (see: ...)
+> (The summary, 15.20) ... the fundamentals-first family's proposals drawn nowhere (see: ...)
+> (The tiles, 15.21) ... and from 22.13 no tile of the fundamentals-first family's, its rule running out of sight (see: ...)
+> (The combined paper account, 15.21) ... or why it was skipped (see: ...)
+> (Market series, 16) ... an index or credit fund's open, high, low and close as the provider sent them, and the run that wrote it | kept whole, seventeen rows a session, ...
+> (Treasury yields, 16) one row per session: the Treasury's 10-year par yield in per cent and the run that kept it | ... read by a payer's dividend on the name page ...
+Now:
+> (Market series fetcher) ... historical price feed, oil chart feed, bar store, market series ... and from 21.13 the market strip's QQQ's, DIA's and the dollar index's ..., and from 21.13 Yahoo's chart for WTI crude's, which the provider files no price of, free and keyless, one request a series whatever the universe's size and its weighted calls stated before its first request, the index, the VIX and the dollar index under the index exchange and each fund as a listing, ...
+> (Treasury reader) ... and keeps each session's 10-year, and from 21.13 its 3-month beside it, to the night's that the store does not hold, ...
+> (Read API) every store but the pulled history and its bars read from 19.11 for the chart page, strip quote feed | ... the worker's (see: ...); from 21.13 Tonight opened on its newest night while the regular session is open asks Yahoo's spark once for every tile of the market strip, keeps the answer in memory five minutes and stores none of it (see: ...)
+> (15.10's frozen card) ... so the rule is a starting point that has not yet proved itself; ...
+> (Tonight in one minute) from 22.6 the page's first card on every index on a night the setup families drew the page's list, from 21.13 after the market strip: ...
+> (Tonight's setups) ... (see: ...); from 21.13 a tile whose setup found nothing tonight carries its quiet nights, "Quiet nn nights; up to nn in its history", or that it is too new to know its usual
+> (Quality at a fair price's card) ... (see: ...); from 21.13 each holding's words tonight opening on the price and the day it was bought and that with no stop and no target it is kept while it qualifies at each monthly reshuffle, the next named by its day
+> (The summary, 15.20) ... (see: ...); from 21.13 each row opening on how many changes were tried for its setup and whether one beat luck, "n changes were tried for this setup this month; none beat luck." or "...; one did, and waits for your word."
+> (The tiles, 15.21) ... (see: ...); from 21.13 each tile opening on its return since the day it counts from on the account's size with the trades it holds open, "Up n.n% since dd mmm on $nnn,nnn, with n trades open."
+> (The combined paper account, 15.21) ... (see: ...); from 21.13 its card opening on one sentence of its return since its first day with the positions it holds open and the picks it skipped
+> (Market series, 16) ... as the provider sent them, from 21.13 QQQ's, DIA's and the dollar index's beside them and WTI crude's as Yahoo sent it, and the run that wrote it | kept whole, seventeen rows a session and from 21.13 twenty-one, the four the market strip draws read by it alone and by no rule, ...
+> (Treasury yields, 16) one row per session: the Treasury's 10-year par yield in per cent, from 21.13 its 3-month beside it, and the run that kept it | ... read by a payer's dividend on the name page and from 21.13 by the market strip ...
+Why: 21.13 adds the market strip on the operator's addition of 2026-10-30 and brings the Loop page, paper trading and the Ledger under the plain-words check; 15.7 gains the strip's two rows, 15.23 its twelve terms, its three pages and a paragraph, all new, and the lines above are the ones that stood and now name them. The read API's cell names the market series it always read for paper trading's fund and now the strip. The frozen card's words changed with the card, "edge" being a listed term.
+
+### 2026-10-31 - docs/SCHEMA.md - the market strip's series and the Treasury's 3-month
+Authorised by: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
+Was:
+> (market_bar.series) ... or from 15.1 one of the index and credit funds, `SPY`, `IJH`, `IJR` and `HYG` |
+> (market_bar.open, high, low, close) decimal in code, as the provider sent them on the night that wrote the row |
+Now:
+> (market_bar.series) ... `SPY`, `IJH`, `IJR` and `HYG`, or from 21.13 one the market strip alone reads, `QQQ`, `DIA`, `DXY`, the dollar index, and `WTI`, crude |
+> (market_bar.open, high, low, close) ..., and WTI crude's as Yahoo's chart sent them |
+Why: the night stores the strip's four series; `treasury_yield` gains its `three_month` column, new, by migration 118.
+
+### 2026-10-31 - .claude/rules/checks.md - plain-words, nightly-cost, fixture-expectations and read-surface state 21.13's assertions
+Authorised by: Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases into the reader's words; and The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
+Was:
+> (plain-words) ...; and from 22.13 the Fundamentals family's card among Tonight's regions |
+> (nightly-cost) ... the weights the runbook states holding the trends' one a symbol |
+> (fixture-expectations) ... and the steps in their order with the dividends after the facts |
+> (read-surface) ... drawn on paper trading with what it skipped and why |
+Now:
+> (plain-words) ...; and from 21.13 paper trading, the Loop page and the Ledger covered whole, every card of each read over constructed stores ..., a listed term planted in a card of each found, every term of the word list put into the reader's words by the pages' table of phrases ..., and the market strip's card among Tonight's regions |
+> (nightly-cost) ...; and from 21.13 Yahoo's chart of WTI crude, one request a night, is carved by name to the market series fetcher, and it and Yahoo's spark of the market strip are among the shipped files that may hold a client |
+> (fixture-expectations) ...; and from 21.13 the night asking the market strip's four series one request each ..., the Treasury's 3-month read beside its 10-year ..., Yahoo's spark read as sent from a capture, the strip's tiles worked by hand ..., and no source a rule's version pins among those 21.13 writes |
+> (read-surface) ...; and from 21.13 the market strip read back off Tonight ... and the copy's shell drawing the strip atop every page ..., and the Loop page's, paper trading's and the Ledger's read-back in the reader's words |
+Why: each check gains the assertions 21.13's tests add.
+
 ### 2026-10-31 - docs/ARCHITECTURE.html - the monthly run asks the filers' quarters, reads the reports filed with other registrants and asks the dividends no run kept
 Authorised by: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and the dividends of each member none were kept for, each ask stated before the first
 Was:

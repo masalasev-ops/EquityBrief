@@ -187,28 +187,28 @@ public partial class ReadSurface
         // it says which is and carries no press.
         var second = Assert.Single(Blocks(page, "<div class=\"loop-decision\" data-loop-key=\"breakout\\|the autopsy's exit, ranked 2\">.*?</div>"));
 
-        Assert.Contains("<p class=\"degraded\" data-decision=\"not-put\">Not put to you: this run puts the family's strongest proposal that passed to you, the autopsy's exit, ranked 1.</p>", second, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-decision=\"not-put\">Not put to you: this run puts the setup's strongest change tried that passed to you, the exit its trades' paths suggested, ranked 1.</p>", second, StringComparison.Ordinal);
         Assert.DoesNotContain("class=\"loop-press\"", second, StringComparison.Ordinal);
 
         // The drift's approval with what the apply did; the pullback's decline with its reason; the provisional book's exit
         // not offered, saying why; the failing exit drawing no word.
-        Assert.Contains("<p class=\"loop-decided\" data-decision=\"approved\" data-outcome=\"applied\"><b>Approved</b> on 2026-10-09. Applied on 2026-10-09: the family stands from the next night at exit: the eighth.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"loop-decided\" data-decision=\"approved\" data-outcome=\"applied\"><b>Approved</b> on 2026-10-09. Applied on 2026-10-09: the setup stands from the next night at exit: the eighth.</p>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"loop-decided\" data-decision=\"declined\"><b>Declined</b> on 2026-10-09: too young. It changes nothing.</p>", page, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"degraded\" data-decision=\"not-offered\">Approve is not offered here: {LoopDecisions.ProvisionalBookRefused}.</p>", page, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"degraded\" data-decision=\"not-offered\">Approve is not offered here: {ReaderText.Words(LoopDecisions.ProvisionalBookRefused)}.</p>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-loop-key=\"drift|the autopsy's exit, ranked 2\"", page, StringComparison.Ordinal);
 
         // Your decisions, newest first, and the setting the approval stored.
-        Assert.Contains("<li data-setting=\"1\" data-family=\"drift\">The drift, change 1 on 2026-10-09: exit: the eighth, from the autopsy's exit, ranked 1 of run loop-test-SML-20261009T120000Z.</li>", page, StringComparison.Ordinal);
+        Assert.Contains("<li data-setting=\"1\" data-family=\"drift\">The drift, change 1 on 2026-10-09: exit: the eighth, from the exit its trades' paths suggested, ranked 1 of run loop-test-SML-20261009T120000Z.</li>", page, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(page, "<tr data-run=\"loop-test-SML-20261009T120000Z\" data-family=\"[a-z]+\" data-decision=\"[a-z]+\"").Count);
-        Assert.Contains("<td>approved</td><td>applied on 2026-10-09: the family stands from the next night at exit: the eighth</td>", page, StringComparison.Ordinal);
+        Assert.Contains("<td>approved</td><td>applied on 2026-10-09: the setup stands from the next night at exit: the eighth</td>", page, StringComparison.Ordinal);
 
         // The alarm: the drift flagged on August, two counted months running, with the restore of change 1 waiting.
         var alarm = Assert.Single(Blocks(page, "<div class=\"loop-alarm\" data-family=\"drift\".*?</table></div></div>"));
 
         Assert.Contains("data-flagged=\"1\" data-periods=\"2\"", alarm, StringComparison.Ordinal);
-        Assert.Contains("<b>The drift rule is flagged.</b> Its edge after costs stood under its reference's low in 2 counted months running, the newest 2026-08. The flag changes nothing by itself.", alarm, StringComparison.Ordinal);
+        Assert.Contains("<b>The drift rule is flagged.</b> Its gain over the easy alternative after costs stood under its reference's low in 2 counted months running, the newest 2026-08. The flag changes nothing by itself.", alarm, StringComparison.Ordinal);
         Assert.Contains($"<form class=\"loop-press\" method=\"post\" action=\"{SinglePageApp.LoopRestorePostRoute}SML/drift/1\" data-loop-key=\"drift|{LoopDecisions.RestoreProposal(1)}\"><button type=\"submit\">Approve the restore</button></form>", alarm, StringComparison.Ordinal);
-        Assert.Contains("<tr data-period=\"2026-08-01\" data-units=\"5\" data-counted=\"1\" data-under=\"1\" data-streak=\"2\" data-reference=\"loop-test-SML-20261009T120000Z\"><td class=\"num\">2026-08</td><td class=\"r num\">5</td><td class=\"r num\"><span class=\"loss\">-0.30</span> risks</td><td class=\"r num\"><span class=\"loss\">-0.10</span> risks</td><td>under the low, 2 running</td></tr>", alarm, StringComparison.Ordinal);
+        Assert.Contains("<tr data-period=\"2026-08-01\" data-units=\"5\" data-counted=\"1\" data-under=\"1\" data-streak=\"2\" data-reference=\"loop-test-SML-20261009T120000Z\"><td class=\"num\">2026-08</td><td class=\"r num\">5</td><td class=\"r num\"><span class=\"loss\">-0.30</span> per $1 risked</td><td class=\"r num\"><span class=\"loss\">-0.10</span> per $1 risked</td><td>under the low, 2 running</td></tr>", alarm, StringComparison.Ordinal);
 
         // A restore pressed: refused without the header, then written once; the page then says it is waiting.
         Assert.Equal(HttpStatusCode.Forbidden, (await CardPress(client, $"{SinglePageApp.LoopRestorePostRoute}SML/drift/1", [], fromThePage: false)).Status);

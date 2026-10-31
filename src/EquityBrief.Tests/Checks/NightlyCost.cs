@@ -141,7 +141,9 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/TipRanksRatingsFeed.cs",
         "src/EquityBrief.Core/Providers/TreasuryParYieldFeed.cs",
         "src/EquityBrief.Core/Providers/YahooAnalystFeed.cs",
+        "src/EquityBrief.Core/Providers/YahooMarketSeriesFeed.cs",
         "src/EquityBrief.Core/Providers/YahooNasdaqBarFeed.cs",
+        "src/EquityBrief.Core/Providers/YahooSparkFeed.cs",
     ];
 
     // The shipped files permitted to reach a model, each by its path, which is the
@@ -326,11 +328,13 @@ public partial class NightlyCost
         // the 18.4 correction of 2026-10-28, Cloudflare Pages' direct upload of the read-only copy, which the publish verb
         // asks by hand or on the scheduler's run after the off-peak run and no night does, and twenty-nine from 21.6, the
         // provider's trends, which the night asks a page of symbols a request, and FINRA's short interest, which the
-        // off-peak run's step asks and no night does.
+        // off-peak run's step asks and no night does, and thirty-one from 21.13, Yahoo's chart of WTI crude, one request a
+        // night in the fetch step, and Yahoo's spark of the market strip, which Tonight opened in the session asks and no
+        // night does.
         Assert.True(
-            MayHoldAClient.Length <= 29,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-nine feed " +
-            "implementations. A thirtieth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 31,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirty-one feed " +
+            "implementations. A thirty-second is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: four files, the local lane's client, the local
         // run's reading feed and the paid model's live feed in each of its two formats.
@@ -588,6 +592,10 @@ public partial class NightlyCost
         // weighted call a symbol, the one carve whose weight grows with the index, as the operator allowed.
         // see: The night asks every member's estimate trend once a night in requests of a page of symbols
         (nameof(EquityBrief.Worker.Filter.TrendsFetcher), Feed.EstimateTrends),
+        // From 21.13 WTI crude's daily closes for the market strip, one request a night to Yahoo's chart beside the provider's
+        // market series, free and keyless, which the provider files no price of and no rule reads.
+        // see: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
+        (nameof(MarketSeriesFetcher), Feed.OilChart),
     ];
 
     static string NightSource() =>

@@ -70,6 +70,7 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.VersionChoiceClaims,
         .. Reading.ReadSurface.VersionChoicePageClaims,
         .. Reading.ReadSurface.CombinedPageClaims,
+        .. Reading.ReadSurface.StripRows,
         .. FixtureExpectations.HousekeepingClaims,
     ];
 

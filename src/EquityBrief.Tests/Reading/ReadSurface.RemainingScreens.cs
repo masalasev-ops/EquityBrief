@@ -262,7 +262,7 @@ public partial class ReadSurface
 
         // The line on what a change must pass, each figure its constant.
         Assert.Contains(
-            FormattableString.Invariant($"an adjusted p at or under the bar of {LoopGate.Bar:0.0000}; better in 3 of 5 complete test years with the latest complete year better; its total less the rule's above nothing with the 5 largest results on each side left out; and 300 trades, or 36 months for a book, over the test years."),
+            FormattableString.Invariant($"a chance it is luck at or under the bar of {LoopGate.Bar:0.0000}; better in 3 of 5 complete test years with the latest complete year better; its total less the rule's above nothing with the 5 largest results on each side left out; and 300 trades, or 36 months for holdings, over the test years."),
             summary,
             StringComparison.Ordinal);
 

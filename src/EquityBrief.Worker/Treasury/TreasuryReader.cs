@@ -29,8 +29,8 @@ public sealed class TreasuryReader(IClock clock, string databaseFile) : ICompone
     public const string Stage = "treasury";
 
     const string Insert = @"
-        INSERT INTO treasury_yield (session_date, ten_year, run_id)
-        VALUES ($session_date, $ten_year, $run_id)
+        INSERT INTO treasury_yield (session_date, ten_year, three_month, run_id)
+        VALUES ($session_date, $ten_year, $three_month, $run_id)
         ON CONFLICT (session_date) DO NOTHING;
     ";
 
@@ -89,6 +89,7 @@ public sealed class TreasuryReader(IClock clock, string databaseFile) : ICompone
                 insert.CommandText = Insert;
                 insert.Parameters.AddWithValue("$session_date", yield.Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 insert.Parameters.AddWithValue("$ten_year", yield.TenYear);
+                insert.Parameters.AddWithValue("$three_month", yield.ThreeMonth is { } threeMonth ? threeMonth : DBNull.Value);
                 insert.Parameters.AddWithValue("$run_id", runId);
 
                 await insert.ExecuteNonQueryAsync(cancellation);

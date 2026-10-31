@@ -97,11 +97,11 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"r num quality-score\">8 of 9</td>", m1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"quality-place\">cheaper than in 9 of 12 quarters</td>", m1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num quality-since\"><span class=\"gain\">+9.5%</span></td>", m1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"quality-tonight\">Still qualifies.</td>", m1, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"quality-tonight\"><span class=\"quality-bought\">Bought at 49.20 on 2 Oct. No stop and no target: it is kept while it qualifies, checked at each monthly reshuffle, next on 2 Nov.</span> Still qualifies.</td>", m1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num quality-score\">6 of 9</td>", m2, StringComparison.Ordinal);
         Assert.Contains("<td class=\"quality-place\">cheaper than in 6 of 12 quarters</td>", m2, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num quality-since\"><span class=\"loss\">-6.0%</span></td>", m2, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"quality-tonight\">Score fell to 6 of 9; sold at the next reshuffle unless it recovers.</td>", m2, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"quality-tonight\"><span class=\"quality-bought\">Bought at 50.00 on 2 Oct. No stop and no target: it is kept while it qualifies, checked at each monthly reshuffle, next on 2 Nov.</span> Score fell to 6 of 9; sold at the next reshuffle unless it recovers.</td>", m2, StringComparison.Ordinal);
 
         // What the last reshuffle chose, and M3 next in line at 9 of 9.
         Assert.Contains("The last reshuffle, on 1 Oct 2026, chose M1, M2.", section, StringComparison.Ordinal);

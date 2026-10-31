@@ -168,7 +168,7 @@ public partial class ReadSurface
         Assert.Equal(
             [("pullback", "live"), ("breakout", "live"), ("drift", "live"), ("dip", "provisional"), ("heavyweight", "live"), ("quality", "provisional"), ("improving", "provisional")],
             Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
-        Assert.Contains("<option value=\"\">Pullback · live rule and 2 variants</option>", page, StringComparison.Ordinal);
+        Assert.Contains("<option value=\"\">Pullback · live setup and 2 versions</option>", page, StringComparison.Ordinal);
         Assert.Equal(
             ["", "breakout", "drift", "dip", "heavyweight", "quality", "improving"],
             Regex.Matches(Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
@@ -209,8 +209,8 @@ public partial class ReadSurface
         Assert.Contains(".paper-key[data-line]", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
 
         // The two lines beneath what the system bought and the variants' table.
-        Assert.Contains(MarkRenderer.AdoptedLine, page, StringComparison.Ordinal);
-        Assert.Contains(MarkRenderer.EntryPriceLine, page, StringComparison.Ordinal);
+        Assert.Contains(ReaderText.Words(MarkRenderer.AdoptedLine), page, StringComparison.Ordinal);
+        Assert.Contains(ReaderText.Words(MarkRenderer.EntryPriceLine), page, StringComparison.Ordinal);
 
         // The variant's trade log: its verdict and its label apart, its trades newest first, the open one's result so far
         // at tonight's close, and the running total of the two ended, half a risk, not evidence yet.

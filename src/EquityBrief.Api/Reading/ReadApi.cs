@@ -811,6 +811,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.KeptBar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.ChartAverage, Touch.Read),
@@ -918,7 +919,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.TakenRecord, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
-        Feeds: []);
+        Feeds: [Feed.StripQuotes]);
 
     public const string Stage = "read-api";
 
