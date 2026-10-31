@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // family's proposal drawn nowhere, the dip's exit shown with why it is not put and no press, and every table the page draws
 // read in a box of its own, so a phone's narrow column holds the page.
 // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
-// see: A change a family's night does not read is tested and shown and never put to the operator
+// see: Every change the engines propose is one its family's night reads, so each is put to the operator
 public partial class ReadSurface
 {
     [Fact]
@@ -26,11 +26,11 @@ public partial class ReadSurface
         Tested(store, run, "SML", "breakout", "the autopsy's exit, ranked 1", 0.3, false, Exit(7));
         Tested(store, run, "SML", "drift", "the learned score, ordering the list", 0.4, false, Condition("rsi", 55));
         Tested(store, run, "SML", ImprovingRule.Name, "the grid", 0.5, false, new LoopChange(null, ImprovingGrid.Settings[1].Key, null, LoopChange.NoHooks).Json);
-        Tested(store, run, "SML", DipRule.Name, "the autopsy's exit, ranked 1", 0.0001, true, null);
+        Tested(store, run, "SML", DipRule.Name, "the autopsy's exit, ranked 1", 0.0001, true, Exit(7));
         Tested(store, run, "SML", HeavyweightRule.Name, "the autopsy's exit, ranked 1", 0.6, false, null);
         Tested(store, run, "SML", QualityRule.Name, "the autopsy's exit, ranked 1", 0.7, false, null);
         Tested(store, run, "SML", FundamentalsRule.Name, "the grid", 0.0001, true, LoopChange.OfSetting([0, 0, 2], "growth 0|margins either|cash 1.2", 0).Json);
-        store.Execute($"UPDATE loop_proposal SET words = '{dipExit}', finding = 'a target at 1.5 risks read more; {EquityBrief.Worker.Loop.ExitProcedures.NotRead.Replace("'", "''", StringComparison.Ordinal)}' WHERE family = '{DipRule.Name}';");
+        store.Execute($"UPDATE loop_proposal SET words = '{dipExit}', finding = 'a target at 1.5 risks read more' WHERE family = '{DipRule.Name}';");
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -52,12 +52,12 @@ public partial class ReadSurface
         // The fundamentals-first family's proposal, passing with a change, is drawn nowhere and put to no one.
         Assert.DoesNotContain("data-family=\"fundamentals\"", page, StringComparison.Ordinal);
 
-        // The dip's exit passed and states no change: its finding says why, and no press is drawn for it.
+        // From 21.16 the dip's exit passed and states its change, which the dip's night reads: its finding is drawn with no
+        // words saying it is not put.
         var dip = Card(page, "loop-dip");
 
-        Assert.Contains(EquityBrief.Worker.Loop.ExitProcedures.NotRead, dip, StringComparison.Ordinal);
-        Assert.DoesNotContain("class=\"loop-press\"", dip, StringComparison.Ordinal);
-        Assert.DoesNotContain("class=\"loop-press\"", Regex.Match(summary, "<tr data-family=\"dip\".*?</tr>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+        Assert.Contains("a target at 1.5 risks read more", dip, StringComparison.Ordinal);
+        Assert.DoesNotContain("not put to you, since", dip, StringComparison.Ordinal);
 
         // Every table the page draws sits in the box that scrolls it.
         var tables = Regex.Matches(page, "(.{0,24})<table(?: class=\"([a-z-]+)\")?[ >]");

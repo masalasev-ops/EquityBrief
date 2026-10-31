@@ -80,7 +80,7 @@ public partial class FixtureExpectations
         Assert.Equal(hooks.Words(), ExposureProcedures.WordsOf(0.40));
         Assert.Contains("0.4", ExposureProcedures.WordsOf(0.40), StringComparison.Ordinal);
         Assert.Equal(ExposureVariant.Proposal, ExposureProcedures.Proposal);
-        Assert.Equal([BreakoutRule.Name, DriftRule.Name], ExposureProcedures.Families);
+        Assert.Equal([SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, DipRule.Name], ExposureProcedures.Families);
     }
 
     [Fact]
@@ -182,15 +182,16 @@ public partial class FixtureExpectations
             CheckedAt(BreakoutRule.Name, "SML", 0, 0.40).OrderBy(pair => pair.Key, StringComparer.Ordinal),
             CandidateEvaluator.Read(graded[2].Parameters).Where(pair => pair.Key != RuleHooks.ExposureParameter).OrderBy(pair => pair.Key, StringComparer.Ordinal));
 
-        // Refused, writing nothing: the S&P 600's drift, which reads no market check; the S&P 500's drift at nine; a
-        // pullback, whose walk reads no exposure; and the S&P 500's breakout, with no live rule standing here.
+        // Refused, writing nothing: the S&P 600's drift, which reads no market check; the S&P 500's drift at nine; from
+        // 21.16 a pullback on the S&P 400 with no live rule standing here, its walk now reading the exposure; and the S&P
+        // 500's breakout, with no live rule standing here.
         var before = Scalar(store, "SELECT COUNT(*) FROM candidate_register;");
 
         foreach (var ((args, expected), place) in new (string[] Args, string Said)[]
         {
             ([RegisterVerb.Exposed, DriftRule.Name, "--index", "SML"], "reads no market check"),
             ([RegisterVerb.Exposed, DriftRule.Name, "--index", "GSPC"], "9 candidates of the drift family already stand registered"),
-            ([RegisterVerb.Exposed, SetupFamilies.Pullback, "--index", "MID"], "the per-rule test's walk of the pullback reads no exposure"),
+            ([RegisterVerb.Exposed, SetupFamilies.Pullback, "--index", "MID"], "no live pullback rule stands registered on the S&P 400"),
             ([RegisterVerb.Exposed, BreakoutRule.Name, "--index", "GSPC"], "no live breakout rule stands registered on the S&P 500"),
         }.Select((refusal, place) => (refusal, place)))
         {

@@ -395,4 +395,48 @@ public partial class FixtureExpectations
         Assert.Superset(QualityRuleSources.Where(path => !path.EndsWith("/QualityCandidate.cs", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal), quality.ToHashSet(StringComparer.Ordinal));
         Assert.NotEmpty(new[] { "src/EquityBrief.Worker/Indices/IndexFamilies.cs" }.Intersect(pinned, StringComparer.Ordinal));
     }
+
+    // 21.16: a quality rule registered with the sale under the 200-day average sells a holding bought before the night at a
+    // close under it, and the rule stating none keeps it, worked by hand over the quality store. On 2 November Q01 closes at
+    // 105 under an average of 200 and Q02 at 106 over one of 100: the rule reading the sale sells Q01 at 105 under its own
+    // reason and keeps Q02; Q03's score fell, so it is sold as no longer qualifying, the earlier reason.
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+    [Fact]
+    public async Task AQualityRuleSellingUnderTheAverageSellsAHoldingAtACloseUnderItsTwoHundredDayAverage()
+    {
+        using var store = QualityStore();
+
+        var (code, said) = await RegisterVerbAt(store, QualityFrozenAt, RegisterVerb.IndexFamily, QualityRule.Name, "--index", "MID", "--parameters", "floor=7,valuation=1,trend=0,book=10,sale=0");
+
+        Assert.True(code == 0, said);
+
+        // The family's ninth, the live setting with the sale on, registered by the form an approval's registration reads.
+        var selling = VersionName("S&P 400", QualityRule.Starting with { SoldUnderAverage = true });
+        var (sellingCode, sellingSaid) = await RegisterVerbAt(store, QualityFrozenAt.AddMinutes(1), "--candidate", selling, "--rule", QualityRules.RuleWords, "--test", QualityRules.Test, "--evaluator", "quality-400", "--parameters", "floor=7,valuation=1,trend=0,book=10,sale=0,average=1");
+
+        Assert.True(sellingCode == 0, sellingSaid);
+        Assert.EndsWith(", sold at reshuffles and under its 200-day average", selling, StringComparison.Ordinal);
+        Assert.True(QualityCandidate.SettingsOf(CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{selling.Replace("'", "''", StringComparison.Ordinal)}';"))).SoldUnderAverage);
+
+        var live = FamilyRecords.LivePrefix + "S&P 400 quality rule at " + QualityRules.Short(QualityRule.Starting);
+
+        store.Execute(
+            "INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES " +
+            $"('Q01', '{QualityReshuffle}', 'sma200', 200.0, 200), ('Q02', '{QualityReshuffle}', 'sma200', 100.0, 200), ('Q01', '{QualityNext}', 'sma200', 200.0, 200);");
+
+        await QualityNightsAsync(store, 3);
+
+        string Ended(string rule) => string.Join(",", FamilyRows(store, $"SELECT ticker || '|' || IFNULL(ended_on, 'open') || '|' || IFNULL(sale, '') || '|' || end_reason FROM quality_holding WHERE index_code = 'MID' AND rule = '{rule.Replace("'", "''", StringComparison.Ordinal)}' AND chosen_on = '{QualityFirst}' AND ticker IN ('Q01', 'Q02', 'Q03') ORDER BY ticker;"));
+
+        // Bought on 27 October, Q01 stood under its average that night too and is not sold on the night it was bought; sold
+        // on 2 November, the reshuffle that night chooses it again, since it still qualifies, as the history test does.
+        Assert.Equal(
+            $"Q01|{QualityReshuffle}|105|{QualityFamily.UnderItsAverage},Q02|open||open,Q03|{QualityReshuffle}|100|{QualityFamily.NoLongerQualifies}",
+            Ended(selling));
+
+        // The live rule, stating no sale under the average, keeps Q01.
+        Assert.Equal(
+            $"Q01|open||open,Q02|open||open,Q03|{QualityReshuffle}|100|{QualityFamily.NoLongerQualifies}",
+            Ended(live));
+    }
 }

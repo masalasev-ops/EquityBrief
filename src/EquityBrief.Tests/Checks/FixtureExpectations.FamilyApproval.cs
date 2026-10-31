@@ -141,4 +141,63 @@ public partial class FixtureExpectations
             new[] { breakout.Candidate, dip.Candidate, quality.Candidate }.Select(one => CandidateRegistrar.Stage + ": " + one).Order(StringComparer.Ordinal),
             FamilyRows(store, "SELECT stage FROM run_log WHERE run_id = 'night-reached' AND outcome = 'retired' ORDER BY stage;"));
     }
+
+    // 21.16: the changes no night read before are put and registered as any change is: the S&P 500 dip's exit of the menu,
+    // which its night walks a trade under in its sell dial's place; its quality book's sale under the 200-day average,
+    // named by its setting's key with the sale after the grid's dials; and the S&P 400's frozen pullback's exit, a change of
+    // its hooks, which the index families' step reads.
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+    [Fact]
+    public async Task AnApprovalRegistersTheDipsExitTheBooksSaleUnderTheAverageAndAFrozenPullbacksHooks()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var frozenAt = new DateTimeOffset(2026, 10, 21, 11, 15, 0, TimeSpan.Zero);
+
+        Assert.Equal(0, (await RegisterVerbAt(store, frozenAt, RegisterVerb.IndexFamily, SetupFamilies.Pullback, "--index", "MID", "--parameters", RemedyFreezes[0].Parameters)).Code);
+        Assert.Equal(0, (await RegisterVerbAt(store, frozenAt.AddMinutes(1), RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", FamilyApprovalDip)).Code);
+        Assert.Equal(0, (await RegisterVerbAt(store, frozenAt.AddMinutes(2), RegisterVerb.IndexFamily, QualityRule.Name, "--index", "GSPC", "--parameters", QualityFrozen)).Code);
+
+        var before = await StandingRowsAsync(store, frozenAt.AddMinutes(3));
+        var pullback = FamilyRecords.LiveOf(CandidateFamily.In(before, IndexRuleCandidate.FamilyOn(SetupFamilies.Pullback, "MID")))!;
+        var dip = FamilyRecords.LiveOf(CandidateFamily.In(before, OwnStepCandidate.FamilyOn(DipRule.Name, "GSPC")))!;
+        var quality = FamilyRecords.LiveOf(CandidateFamily.In(before, OwnStepCandidate.FamilyOn(QualityRule.Name, "GSPC")))!;
+        var underAverage = QualityCandidate.SettingsOf(CandidateEvaluator.Read(quality.Parameters)) with { SoldUnderAverage = true };
+
+        LargeSession(store, "2026-10-22");
+        LoopRun(store, FamilyApprovalRun, "MID", "2026-10");
+        LoopProposed(store, FamilyApprovalRun, "MID", SetupFamilies.Pullback, "the autopsy's exit, ranked 1", true, ExitChange(7));
+        LoopDecided(store, FamilyApprovalRun, "MID", SetupFamilies.Pullback, "the autopsy's exit, ranked 1", LoopDecisions.Approved);
+        LoopRun(store, FamilyApprovalLargeRun, "GSPC", "2026-10");
+        LoopProposed(store, FamilyApprovalLargeRun, "GSPC", DipRule.Name, "the autopsy's exit, ranked 1", true, ExitChange(7));
+        LoopDecided(store, FamilyApprovalLargeRun, "GSPC", DipRule.Name, "the autopsy's exit, ranked 1", LoopDecisions.Approved);
+        LoopProposed(store, FamilyApprovalLargeRun, "GSPC", QualityRule.Name, ExitProcedures.ProposalName(1), true, new LoopChange(null, underAverage.Key, null, LoopChange.NoHooks).Json);
+        LoopDecided(store, FamilyApprovalLargeRun, "GSPC", QualityRule.Name, ExitProcedures.ProposalName(1), LoopDecisions.Approved);
+
+        var night = await new LoopApply(At(2026, 10, 22, 23, 35), store.DatabaseFile, null).NightAsync("night-applied");
+
+        Assert.Equal(
+            [$"GSPC|{DipRule.Name}|applied", $"GSPC|{QualityRule.Name}|applied", $"MID|{SetupFamilies.Pullback}|applied"],
+            night.Applications.Select(one => $"{one.Index}|{one.Family}|{(one.Applied ? "applied" : "refused")}").Order(StringComparer.Ordinal));
+
+        var after = await StandingRowsAsync(store, new DateTimeOffset(2026, 10, 22, 23, 40, 0, TimeSpan.Zero));
+
+        RegisterRow LiveOn(string family) => FamilyRecords.LiveOf(CandidateFamily.In(after, family))!;
+
+        // The pullback's live rule at its own setting with the exit on top, and the dip's at its own dials with the exit
+        // its night walks a trade under in its sell dial's place.
+        var newPullback = LiveOn(IndexRuleCandidate.FamilyOn(SetupFamilies.Pullback, "MID"));
+        var newDip = LiveOn(OwnStepCandidate.FamilyOn(DipRule.Name, "GSPC"));
+
+        Assert.Equal(7, RuleHooks.Of(CandidateEvaluator.Read(newPullback.Parameters)).Exit);
+        Assert.Equal(CandidateEvaluator.Read(pullback.Parameters).OrderBy(pair => pair.Key, StringComparer.Ordinal), RuleHooks.Without(CandidateEvaluator.Read(newPullback.Parameters)).OrderBy(pair => pair.Key, StringComparer.Ordinal));
+        Assert.Equal(7, DipCandidate.HooksOf(CandidateEvaluator.Read(newDip.Parameters)).Exit);
+        Assert.Equal(CandidateEvaluator.Read(dip.Parameters)[DipCandidate.SellParameter], CandidateEvaluator.Read(newDip.Parameters)[DipCandidate.SellParameter]);
+
+        // The quality book selling under its average, its parameters stating the sale and its name saying so.
+        var newQuality = LiveOn(OwnStepCandidate.FamilyOn(QualityRule.Name, "GSPC"));
+
+        Assert.Equal(underAverage, QualityCandidate.SettingsOf(CandidateEvaluator.Read(newQuality.Parameters)));
+        Assert.Equal(1.0, CandidateEvaluator.Read(newQuality.Parameters)[QualityCandidate.AverageParameter]);
+        Assert.Equal(FamilyRecords.LivePrefix + OwnStepCandidate.NameOf("GSPC") + " quality rule at " + QualityRules.Short(underAverage), newQuality.Candidate);
+    }
 }

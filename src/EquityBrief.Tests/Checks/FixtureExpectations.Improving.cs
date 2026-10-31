@@ -498,4 +498,32 @@ public partial class FixtureExpectations
         Assert.Empty(ImprovingSources.Intersect(pinned, StringComparer.Ordinal));
         Assert.NotEmpty(new[] { "src/EquityBrief.Core/Families/SetupFamilies.cs", "src/EquityBrief.Worker/Quality/QualityFamily.cs" }.Intersect(pinned, StringComparer.Ordinal));
     }
+
+    // 21.16: a Fundamentals rule registered with the sale under the 200-day average sells a trade bought before the night at
+    // a close under it, worked by hand over the store above with I01's score left at 8 of 9 on the third night: I01, bought
+    // on 27 October, closes at 100 under an average of 200 on 28 October and is sold at that close under its own reason; I08,
+    // bought that night under the same average, is not sold on the night it was bought.
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+    [Fact]
+    public async Task AFundamentalsRuleSellingUnderTheAverageSellsATradeAtACloseUnderItsTwoHundredDayAverage()
+    {
+        using var store = ImprovingStore();
+
+        var selling = ImprovingGrid.Starting with { SoldUnderAverage = true };
+        var parameters = string.Join(",", Core.Candidates.ImprovingCandidate.ParametersOf(selling).Select(pair => FormattableString.Invariant($"{pair.Key}={pair.Value}")));
+        var name = "the S&P 400 Fundamentals rule at " + ImprovingRules.Short(selling);
+        var (code, said) = await RegisterVerbAt(store, new DateTimeOffset(2026, 10, 25, 21, 0, 0, TimeSpan.Zero), "--candidate", name, "--rule", "the rule", "--test", "the test", "--evaluator", "improving-400", "--parameters", parameters);
+
+        Assert.True(code == 0, said);
+        Assert.EndsWith(", sold under its 200-day average", name, StringComparison.Ordinal);
+
+        store.Execute($"UPDATE fundamental_score SET passed = 8 WHERE index_code = 'MID' AND ticker = 'I01' AND session_date = '{ImprovingSold}';");
+        store.Execute($"INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES ('I01', '{ImprovingSold}', 'sma200', 200.0, 200), ('I08', '{ImprovingSold}', 'sma200', 200.0, 200);");
+
+        await ImprovingNightsAsync(store, 3);
+
+        Assert.Equal(
+            [$"I01|{ImprovingSold}|100|{ImprovingRule.UnderItsAverage}", $"I08|null|null|open"],
+            FamilyRows(store, $"SELECT ticker, IFNULL(ended_on, 'null'), IFNULL(sale, 'null'), end_reason FROM improving_trade WHERE index_code = 'MID' AND rule = '{name.Replace("'", "''", StringComparison.Ordinal)}' ORDER BY ticker;"));
+    }
 }

@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Checks;
 // is the change a dip registration states, its places with the drop's volume last, or none where it crossed a level no
 // registration states.
 // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
-// see: A change a family's night does not read is tested and shown and never put to the operator
+// see: Every change the engines propose is one its family's night reads, so each is put to the operator
 public partial class FixtureExpectations
 {
     const string DipEngineListing = "2019-01-22";
@@ -112,7 +112,6 @@ public partial class FixtureExpectations
         Assert.Equal((tested.Listing, tested.Result, tested.Benchmark), (own.Trade.Listing, own.Trade.Result, own.Trade.Benchmark));
         Assert.Equal((session, session + 3), (own.Entry, own.Exit!.Value));
         Assert.Equal(tested.Result!.Value - tested.Benchmark, listed.Edge!.Value, 12);
-        Assert.False(walk.ReadsMenu);
 
         // A target at 1.5 risks: A's close reaches it on the second session, 13 over c against a risk of 4 typical moves,
         // and it is sold at the third session's open, 12.5 over c; bought at the open 0.5 over c, 12 over the risk. B and C,
