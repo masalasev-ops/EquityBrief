@@ -255,7 +255,7 @@ public static class Nightly
             {
                 var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile, feeds.Substitutes)
                     .RunAsync(indexCode, runId, night.Token, wider);
-                var series = await new MarketSeriesFetcher(market, clock, store.DatabaseFile)
+                var series = await new MarketSeriesFetcher(market, clock, store.DatabaseFile, feeds.Oil, line => output.WriteLine("market-series: " + line))
                     .RunAsync(runId, night.Token);
                 var refused = outcome.Refused ?? [];
 

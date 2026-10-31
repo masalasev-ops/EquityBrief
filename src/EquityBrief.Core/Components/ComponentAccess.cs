@@ -207,6 +207,12 @@ public enum Feed
     // From 21.6 the provider's earnings trends of many symbols in one request at one weighted call a symbol, asked by the
     // night's trends fetcher alone in the swing filter's step.
     EstimateTrends,
+    // From 21.13 Yahoo's daily chart of WTI crude, keyless and free, one request a night, asked by the market series
+    // fetcher alone in the fetch step, since the provider files no price of crude.
+    OilChart,
+    // From 21.13 Yahoo's spark of the market strip's symbols, keyless and free, every tile in one request, asked by the
+    // read API alone for a page opened in the regular session and kept five minutes.
+    StripQuotes,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);

@@ -75,6 +75,12 @@ public sealed record NightFeeds(
     // see: The night asks every member's estimate trend once a night in requests of a page of symbols
     public IEstimateTrendsFeed? Trends { get; init; }
 
+    // The fifteenth, from 21.13, is Yahoo's daily chart of WTI crude for the market strip, one request a night in the fetch
+    // step, free, keyless and not the provider's, so in neither figure below, since the provider files no price of crude.
+    // A set of feeds built without it asks for no crude, and the strip's oil tile draws none.
+    // see: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
+    public IMarketSeriesFeed? Oil { get; init; }
+
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
@@ -150,6 +156,7 @@ public sealed record NightFeeds(
             Treasury = TreasuryParYieldFeed.Live(),
             Substitutes = YahooNasdaqBarFeed.Live(),
             Trends = EodhdEstimateTrendsFeed.Live(address, key),
+            Oil = YahooMarketSeriesFeed.Live(),
         };
     }
 

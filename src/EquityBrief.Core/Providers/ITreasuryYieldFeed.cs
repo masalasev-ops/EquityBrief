@@ -2,8 +2,9 @@ using System.Globalization;
 
 namespace EquityBrief.Core.Providers;
 
-// One session's 10-year par yield as the Treasury publishes it, in per cent.
-public sealed record TreasuryYield(DateOnly Session, double TenYear);
+// One session's 10-year par yield as the Treasury publishes it, in per cent, and from 21.13 its 3-month beside it, none
+// where the Treasury left that cell empty.
+public sealed record TreasuryYield(DateOnly Session, double TenYear, double? ThreeMonth = null);
 
 // The Treasury's daily par yield curve for one calendar year, one request whatever the year holds, free and keyless and
 // not the provider's, so it counts against no allowance.
@@ -23,6 +24,8 @@ public static class TreasuryYields
 {
     public const string TenYearColumn = "10 Yr";
 
+    public const string ThreeMonthColumn = "3 Mo";
+
     public static IReadOnlyList<TreasuryYield> Parse(string csv)
     {
         var lines = csv.Replace("\r\n", "\n", StringComparison.Ordinal)
@@ -37,6 +40,7 @@ public static class TreasuryYields
 
         var header = Cells(lines[0]);
         var column = Array.IndexOf(header, TenYearColumn);
+        var threeColumn = Array.IndexOf(header, ThreeMonthColumn);
 
         if (header.Length == 0 || header[0] != "Date" || column < 0)
         {
@@ -60,8 +64,10 @@ public static class TreasuryYields
                 continue;
             }
 
+            double? threeMonth = threeColumn >= 0 && threeColumn < cells.Length && double.TryParse(cells[threeColumn], NumberStyles.Float, CultureInfo.InvariantCulture, out var three) ? three : null;
+
             yields.Add(double.TryParse(cells[column], NumberStyles.Float, CultureInfo.InvariantCulture, out var tenYear)
-                ? new TreasuryYield(session, tenYear)
+                ? new TreasuryYield(session, tenYear, threeMonth)
                 : throw new FormatException(FormattableString.Invariant($"The Treasury's 10-year for {session:yyyy-MM-dd} reads '{cells[column]}', which is no figure.")));
         }
 

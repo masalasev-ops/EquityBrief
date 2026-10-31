@@ -1790,6 +1790,13 @@
       "query": "POST https://api.finra.org/data/group/otcMarket/name/consolidatedShortInterest, keyless, with the body {\"limit\": 50, \"fields\": [\"symbolCode\",\"issueName\",\"settlementDate\",\"currentShortPositionQuantity\"], \"domainFilters\": [{\"fieldName\": \"symbolCode\", \"values\": [\"BRK.B\",\"BRK/B\",\"BRKB\",\"BRK-B\",\"BF.B\",\"BF/B\",\"MOG.A\",\"MOG/A\"]}], \"compareFilters\": [{\"compareType\": \"EQUAL\", \"fieldName\": \"settlementDate\", \"fieldValue\": \"2026-10-15\"}]}",
       "fetchedAt": "2026-10-30T10:58:10Z",
       "trimmedTo": "nothing. FINRA's answer as sent: of eight spellings of three share classes, the one record FINRA files, BRKB, Berkshire Hathaway's class B joined to its ticker with no separator, 13,769,255 shares short at the settlement of 2026-10-15."
+    },
+    {
+      "file": "strip-yahoo-spark.json",
+      "endpoint": "v7/finance/spark",
+      "query": "https://query1.finance.yahoo.com/v7/finance/spark?symbols=%5EGSPC,IJH,IJR,QQQ,DIA,%5EVIX,HYG,CL%3DF,DX-Y.NYB&range=1d&interval=1d",
+      "fetchedAt": "2026-10-31T03:50:00Z",
+      "trimmedTo": "each symbol's `meta` cut to the four fields the strip reads, `symbol`, `regularMarketTime`, `regularMarketPrice` and `chartPreviousClose`, as Yahoo sent them, keyless and asked with a browser's name, after the close of 2026-10-30; every other field and each symbol's `timestamp` and `indicators` left out. All nine symbols in Yahoo's own order, the S&P 500 at 7580.07 against 7720.39 the session before and crude at 102.95 against 102.0."
     }
   ]
 }

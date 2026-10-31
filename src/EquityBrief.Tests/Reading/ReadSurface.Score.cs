@@ -300,7 +300,7 @@ public partial class ReadSurface
         await new DecisionCards(clock, store.DatabaseFile).RunAsync("cards-2");
 
         Assert.StartsWith(
-            "the learned score could not be read tonight: ",
+            "the score fitted to past setups could not be read tonight: ",
             CardSimilar.Read(Strings(store, "SELECT similar FROM decision_card WHERE ticker = 'AAA';").Single()).Unmatched,
             StringComparison.Ordinal);
         Assert.Equal([string.Empty], Strings(store, "SELECT COALESCE(score_rank, '') FROM decision_card WHERE ticker = 'AAA';"));

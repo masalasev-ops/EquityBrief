@@ -3215,6 +3215,15 @@ internal static class Scope
             Verdict.Pass,
             "every family's picks in one table in the one order and each family's own, tagged and numbered from one across the table; from 19.3 each row's report state, business and stories read off the row, and a row opened beneath another held inside the box the table scrolls in by the stylesheet's rule; from the 19.2 correction of 2026-10-21 every row followed by its fold, hidden where the link names no row and open for the row a link names, its control the one in the row's stock cell; and from 22.6 the table's sentence and columns read off the page and each fold holding its pick's card alone with one stop and no levels plan though the night stored a band for the stock, on both kinds of index",
             ByReadSurface),
+        // 21.13's market strip, on Tonight and on the copy.
+        [CheckReach.Key("15.7 Tonight", "The market strip")] = new Scoped(
+            Verdict.Pass,
+            "read back off Tonight over a constructed store above every card on the S&P 500 and the S&P 400, outside the session from the night's closes and inside it from Yahoo's quotes read from a capture, asked once and kept five minutes; each tile worked by hand with its change and arrow on both sides of nought, the VIX's words on both sides of its median, the yields in points, the line above in and outside the session and a tile Yahoo does not answer drawing the close with prior close only; and the strip's card read in the reader's words",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The market strip on the read-only copy")] = new Scoped(
+            Verdict.Pass,
+            "the copy's shell drawing the strip beneath its banner atop every page and each screen's own strip taken out by the copy's clean step, the strip the closes alone with no quote asked",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight in one minute")] = new Scoped(
             Verdict.Pass,
             "each of its four lines read off the rendered page and worked by hand over constructed nights on both kinds of index: the market's sentence open and closed with the share against the floor, an S&P 400 night whose setups each read a check of their own, the picks and the setups they came from with the stocks qualifying, the trades still open and those ended tonight by how each ended, and the stocks one step short with the link opening them or the words that none was read",
@@ -7042,6 +7051,8 @@ internal static class Scope
         [CheckReach.Key("15.22 Chart", "In brief")] = "22.4",
         // 22.6's two, which the addendum names as Tonight in one minute and the page's words at its foot.
         [CheckReach.Key("15.7 Tonight", "Tonight in one minute")] = "22.6",
+        [CheckReach.Key("15.7 Tonight", "The market strip")] = "21.13",
+        [CheckReach.Key("15.7 Tonight", "The market strip on the read-only copy")] = "21.13",
         [CheckReach.Key("15.7 Tonight", "Words used on this page")] = "22.6",
         // 22.8's two, which the plan names as the chart page's card beneath the brief read and the full page's.
         [CheckReach.Key("15.22 Chart", "Fundamentals")] = "22.8",

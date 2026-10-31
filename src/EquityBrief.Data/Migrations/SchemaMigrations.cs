@@ -738,7 +738,14 @@ public static class SchemaMigrations
         new Migration(115, "add the setup's five readings the operator chose and the business state off the filings", AddTheReadingsTheOperatorChose),
         new Migration(116, "create short_interest and estimate_trend_night", CreateShortInterestAndNightTrends),
         new Migration(117, "add dip_trade.exit, and rebuild quality_holding and improving_trade with the sale under the 200-day average", AddTheChangesTheNightsRead),
+        new Migration(118, "add treasury_yield.three_month", AddTreasuryThreeMonth),
     ];
+
+    // From 21.13 the 3-month par yield beside the 10-year, read from the same answer for the market strip, null on every
+    // session stored before it and where the Treasury left the cell empty.
+    const string AddTreasuryThreeMonth = @"
+        ALTER TABLE treasury_yield ADD COLUMN three_month REAL;
+    ";
 
     // From 21.16: the exit of the menu an approval set in a dip rule's sell dial's place, which its trade is walked under,
     // null under the rule's own sell dial; and a book's holding sold at a close under its 200-day average, which the two
