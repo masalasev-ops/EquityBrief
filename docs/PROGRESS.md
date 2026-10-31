@@ -13341,3 +13341,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the sign-offs of phases 18, 20, 21 and 22 by fresh sessions; the operator's word on the benchmark, the
             release readings and the VIX's direction, put with 21.14's entry; the hosted runners swept once at the
             phase's end.
+
+### 21.17 ruling - the operator's word on the three findings 21.14 put: every trade judged against a benchmark sold as it is, the release readings judged from the model's cutoff's year with the Fundamentals live rule asking no flag, and the VIX's direction kept   2026-10-31
+
+Not a checkpoint entry: it records the operator's ruling of 2026-10-31 on the benchmark, the release readings and the
+VIX's direction, which adds 21.17 to the phase, and lands nothing.
+Ruled:      word for word in `prompts/2026-10-31-21.17-operator-ruling.md`: "1. Benchmark. Judge every trade against a
+            benchmark sold the same way the trade is: a stop, target or trail signalled on a close sells at the next
+            session's open, the cap's and a time exit's sale stays at the close, as in the exits ruling of 2026-10-30.
+            Everywhere the benchmark is read: the fill step, the ledger, the per-rule tests, the tester and the
+            scorecards. ... No rule's version should move for this, as with the exits ruling. If any source a rule pins
+            would have to move, stop and put it to me first, listing the rules that would restart. In the entry, show
+            each family's edge on each index before and after. 2. Release readings. Apply phase 20's decision that their
+            use is judged on the years after the model's cutoff. a. Fundamentals on all three indexes: register the live
+            rule's same settings without the flag as the live rule, and keep the flagged rule running beside it as a
+            version (amendment 2 of the nine-rule limit where the family holds nine). The flag still shows on each pick
+            for information. Retire nothing. b. For any rule, version or proposal that reads a release reading, the
+            per-rule test, the tester and the scorecard judge it on 2025 on only, printing the earlier years beside it,
+            labelled as read by a model trained after them. If the tester already works this way, say so and build
+            nothing for this part. c. The drift's tone variant stays registered with its sentence. 3. VIX direction. Keep
+            it as built: a VIX over its median counts against the night. Register nothing reversed, and keep printing
+            the reversed walk beside each graded variant in the monthly test. Build this as one checkpoint, with its
+            remedy run from main while no other writer runs."
+Written:    21.17's text and its done condition in the build plan, numbered after the phase report, and section 20's
+            phase 21 row, its prior text in the changelog; the ruling's three decisions with 21.17's entry.
+Verified:   `tools/ci.ps1` green over the tree carrying 21.15's entry above, which states that run's figures; documents
+            alone change after it.
