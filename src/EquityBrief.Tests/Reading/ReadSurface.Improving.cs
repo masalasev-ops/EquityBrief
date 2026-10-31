@@ -150,13 +150,13 @@ public partial class ReadSurface
         Assert.Contains("<span class=\"fam-count\">1 pick tonight</span>", section, StringComparison.Ordinal);
         Assert.Contains($"{ImprovingRule.Description}<br>{EquityBrief.Web.Marks.MarkRenderer.CheckedNightly}</p>", section, StringComparison.Ordinal);
         Assert.Contains("<span class=\"stamp computed\">Computed for ", section, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"card-summary\" data-summary>Tonight 3 companies' businesses improved on a new report. 1 is bought at tomorrow's open; 1 more is flagged from its results release and waits for its filing.</p>", section, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-summary\" data-summary>Tonight 3 companies' businesses improved on a new report. 1 is bought at Monday's open; 1 more is flagged from its results release and waits for its filing.</p>", section, StringComparison.Ordinal);
 
         // The four tiles, each a count and its line. M3, held since its buy, rose 5.0%; the index's three stocks over the
         // same nights by the mean of 10%, -3% and 5%, 4.0%.
         var tiles = Assert.Single(Blocks(section, "<div class=\"hw-tiles improving-tiles\".*?</div></div>"));
 
-        Assert.Contains("<span class=\"tile-label\">Bought at tomorrow's open</span><b data-state=\"bought\">1</b><span>its filing confirmed the improvement</span>", tiles, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"tile-label\">Bought at Monday's open</span><b data-state=\"bought\">1</b><span>its filing confirmed the improvement</span>", tiles, StringComparison.Ordinal);
         Assert.Contains("<span class=\"tile-label\">Flagged, waiting for the filing</span><b data-state=\"flagged\">1</b><span>results release read; filing usually within weeks</span>", tiles, StringComparison.Ordinal);
         Assert.Contains("<span class=\"tile-label\">Holding</span><b>1</b><span><span class=\"gain\">+5.0%</span> since bought, the index's stocks <span class=\"gain\">+4.0%</span></span>", tiles, StringComparison.Ordinal);
         Assert.Contains("<span class=\"tile-label\">Reporting this week</span><b>1</b><span>of the index's stocks, in the next 5 trading days</span>", tiles, StringComparison.Ordinal);
@@ -182,7 +182,7 @@ public partial class ReadSurface
         Assert.Contains("href=\"#/chart/M1\"", m1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"improving-score\"><b>8 of 9</b><span class=\"improving-from\">up from 5</span></td>", m1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"improving-changed\">Sales growth sped up from 10.0% to 12.0% on a year. Return on assets rose from 10.4% to 11.8%. It now brings in more cash than it reports as profit. Current assets now cover current liabilities 2.05 times, up from 1.95. Gross margin widened from 52.6% to 53.8%. It no longer shows more sales against its assets.</td>", m1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"improving-status\" data-state=\"bought\"><b>Bought at tomorrow's open</b><span>Its filing of 1 Oct confirmed the release of 29 Sep.</span></td>", m1, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-status\" data-state=\"bought\"><b>Bought at the next trading day's open</b><span>Its filing of 1 Oct confirmed the release of 29 Sep.</span></td>", m1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"improving-score\"><b>7 of 9</b><span class=\"improving-from\">up from 5</span></td>", m3, StringComparison.Ordinal);
         Assert.Contains("<td class=\"improving-changed\">Sales growth sped up from 9.0% to 10.0% on a year. Current assets cover more of current liabilities. It issued no new shares beyond the scorecard's allowance. Gross margin widened. It no longer shows less long-term debt against its assets.</td>", m3, StringComparison.Ordinal);
         Assert.Contains("<td class=\"improving-status\" data-state=\"improved\"><b>Improved, short of the bar</b><span>Needs 8 of 9; one check short, missing less long-term debt against its assets and more sales against its assets.</span></td>", m3, StringComparison.Ordinal);
@@ -238,7 +238,7 @@ public partial class ReadSurface
         var m2 = await Brief("M2");
         var m3 = await Brief("M3");
 
-        Assert.Contains("data-family=\"improving\" data-state=\"bought\"><span class=\"fam-swatch\" data-family=\"improving\"></span>Fundamentals: bought at tomorrow's open</span>", m1, StringComparison.Ordinal);
+        Assert.Contains("data-family=\"improving\" data-state=\"bought\"><span class=\"fam-swatch\" data-family=\"improving\"></span>Fundamentals: bought at the next trading day's open</span>", m1, StringComparison.Ordinal);
         Assert.Contains("data-family=\"improving\" data-state=\"flagged\"><span class=\"fam-swatch\" data-family=\"improving\"></span>Fundamentals: flagged, waiting for its filing</span>", m2, StringComparison.Ordinal);
         Assert.Contains("data-family=\"improving\" data-state=\"held\"><span class=\"fam-swatch\" data-family=\"improving\"></span>Fundamentals: in its holdings</span>", m3, StringComparison.Ordinal);
         Assert.All(new[] { m1, m2, m3 }, brief => Assert.DoesNotContain("data-family=\"fundamentals\"", brief, StringComparison.Ordinal));

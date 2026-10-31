@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-31 - docs/ARCHITECTURE.html - Tonight's buy points name the session their picks are bought at
+Authorised by: Tonight names the session its picks are bought at, tomorrow only where the exchange trades the next day
+Was:
+> From 22.6 the table is tomorrow's buys and opens on its sentence counting the stocks to buy at tomorrow's open; or it says no setup picked one and draws no table. Its columns
+Now:
+> From 22.6 the table is tomorrow's buys and opens on its sentence counting the stocks to buy at tomorrow's open; or it says no setup picked one and draws no table. From the 22.6 correction of 2026-10-31 its title and its sentences name the session its picks are bought at: tomorrow's where the exchange trades the day after the night; that session's weekday otherwise, so a Friday's card is Monday's buys; the next trading day's where the closure table cannot place the day (see: Tonight names the session its picks are bought at, tomorrow only where the exchange trades the next day). Its columns
+Why: the operator found Friday's card saying its stocks are bought at tomorrow's open, a Saturday.
+
+### 2026-10-31 - .claude/rules/checks.md - architecture-conformance reads phase 21's pair
+Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+Was:
+> ... its actual inside the range and short of the pair by what each part after 22.6 landed fewer than its count, each named with what it landed |
+Now:
+> ... each named with what it landed; and from 21.15 phase 21's pair is read off the plan and checked the same way, counted from phase 22's actual and the rows 22.13 and 22.14 landed after its report, each row the phase added reached once and passing, its actual inside the range and short of the pair by the net of what each checkpoint landed fewer or more than its count, each named with what it landed, the four by which the plan's counts exceed its pair named beside them |
+Why: the roster row says what its check asserts, and 21.15's pair test extends it.
+
 ### 2026-10-31 - docs/ARCHITECTURE.html - every swing trade sold on a close's signal sold at the next session's open; the drift surprises check; the tone variant's line; the per-rule test's reversed exposure and flag split
 Authorised by: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
 Was:

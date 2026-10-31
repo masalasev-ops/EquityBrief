@@ -110,7 +110,7 @@ public partial class ReadSurface
         // each stock missed.
         var minute = Assert.Single(Blocks(page, "<div class=\"one-minute\".*?</div></div></div>"));
 
-        Assert.Contains("<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>1 new pick to buy at tomorrow's open, all from the breakout.</b></p><p class=\"minute-said\">2 of the 3 S&P 400 stocks qualified under some setup tonight. The other 2 setups found nothing new.</p></div>", minute, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>1 new pick to buy at Monday's open, all from the breakout.</b></p><p class=\"minute-said\">2 of the 3 S&P 400 stocks qualified under some setup tonight. The other 2 setups found nothing new.</p></div>", minute, StringComparison.Ordinal);
         Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>No trade from an earlier night is still open.</b></p><p class=\"minute-said\">None ended tonight. <a href=\"#/picks?status=open&universe=400\">See them on Past picks</a></p></div>", minute, StringComparison.Ordinal);
         Assert.Contains("<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>Which stocks are one step from qualifying is not read tonight.</b></p><p class=\"minute-said\">This index's night stores only the first step each stock missed.</p></div>", minute, StringComparison.Ordinal);
         Assert.DoesNotContain("S&P 500 members", page, StringComparison.Ordinal);

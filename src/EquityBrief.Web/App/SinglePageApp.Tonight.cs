@@ -45,8 +45,11 @@ public sealed partial class SinglePageApp
 
         var (tiles, points) = TopOf(families, heavyweights, line.Open, night, line.Checks, line.DipOpen);
 
-        region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null)), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
-        region.Append(Cards.Computed("Tomorrow's buys", marks.TomorrowsBuys(points, open, links, plans, universe == Universes.Large.Word), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
+        // The buys' title names the session they are bought at, as their sentences do: Monday's buys on a Friday.
+        var opens = MarkRenderer.OpenDay(night);
+
+        region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night)), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
+        region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, universe == Universes.Large.Word, night), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
         region.Append(marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
 
         // The setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or the

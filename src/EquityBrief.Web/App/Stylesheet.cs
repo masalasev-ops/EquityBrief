@@ -526,6 +526,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .score-halves{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:1px;background:var(--hair)}
 .score-half{padding:12px 14px;min-width:0;background:var(--surface)}
 .sh-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:4px}
+.sh-h .pill.verdict{white-space:normal;max-width:100%;border-radius:10px}
 .sh-lbl{font:600 11.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
 .score-half h4{font:600 14.5px var(--sans);margin:12px 0 4px}
 .sh-line{font-size:13.5px;color:var(--ink-2);margin:6px 0}
