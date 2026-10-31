@@ -429,9 +429,12 @@ public static class RuleTests
         {
             var kept = months.Where(month => on(month.Opens) && month.Edge is not null).ToArray();
 
+            // A mean rounding to nought is read as nought, never as a signed one.
+            var points = kept.Length == 0 ? 0 : Math.Round(kept.Average(month => month.Edge!.Value) * 100, 2) + 0.0;
+
             return kept.Length == 0
                 ? "no month ended"
-                : FormattableString.Invariant($"{kept.Length} month(s) at {kept.Average(month => month.Edge!.Value) * 100:+0.00;-0.00} points");
+                : FormattableString.Invariant($"{kept.Length} month(s) at {points:+0.00;-0.00;0.00} points");
         }
 
         var own = rule.Months ?? [];
@@ -455,10 +458,11 @@ public static class RuleTests
         {
             var kept = units.Where(unit => on(unit.Entry)).ToArray();
             var edged = kept.Where(unit => unit.Edge is not null).ToArray();
+            var risks = edged.Length == 0 ? 0 : Math.Round(edged.Average(unit => unit.Edge!.Value), 3) + 0.0;
 
             return edged.Length == 0
                 ? FormattableString.Invariant($"{kept.Length} trade(s), none ended")
-                : FormattableString.Invariant($"{kept.Length} trade(s) at {edged.Average(unit => unit.Edge!.Value):+0.000;-0.000} risks");
+                : FormattableString.Invariant($"{kept.Length} trade(s) at {risks:+0.000;-0.000;0.000} risks");
         }
 
         var own = graded.Graded ? graded.Trades ?? [] : graded.Exposure ?? [];
