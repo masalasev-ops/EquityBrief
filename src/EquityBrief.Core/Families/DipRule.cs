@@ -650,6 +650,58 @@ public static class DipRule
         return new DipPath(bought.Session, bought.Open, null, null, DipEnd.Open, after.Count, null);
     }
 
+    // From 21.16 a trade's path under an exit of the menu an approval set in its sell dial's place, as the engines walk the
+    // dip under one: its plan the listing close and the stop with no target, its time limit the menu's cap, each session's
+    // close read by the menu's one function in the stop's typical moves; bought at the first session's open, a trigger
+    // sold at the next session's open and the time limit or the menu's time at its own close. The path waits where a
+    // session it needs is not stored, and an exit the plan cannot be walked under, one moving half or one counted in a
+    // typical move the stop does not state, leaves the trade to its own sell dial's walk.
+    // see: Every change the engines propose is one its family's night reads, so each is put to the operator
+    public static DipPath WalkUnder(double listingClose, double stop, int timeLimit, double riskMoves, Loop.ExitChoice exit, IReadOnlyList<DipSession> after, Func<DipPath> own)
+    {
+        if (exit.Kind is Loop.ExitKind.HalfTarget or Loop.ExitKind.HalfBreakEven || !(riskMoves > 0) || !(listingClose > stop))
+        {
+            return own();
+        }
+
+        if (after.Count == 0 || !(after[0].Open > 0))
+        {
+            return new DipPath(null, null, null, null, DipEnd.Open, 0, null);
+        }
+
+        var risk = listingClose - stop;
+        var bought = after[0];
+        double[] closes = [listingClose, .. after.Select(session => session.Close)];
+        var anchor = new Ledger.SetupAnchor(DateOnly.MinValue, listingClose, stop, double.PositiveInfinity, null, timeLimit, riskMoves);
+        var outcome = Loop.ExitMenu.Replay(closes, 0, anchor, risk / riskMoves, exit);
+
+        if (outcome.End == Ledger.SetupEnds.None)
+        {
+            return own();
+        }
+
+        if (outcome.End == Ledger.SetupEnds.Open || outcome.Result is null)
+        {
+            return new DipPath(bought.Session, bought.Open, null, null, DipEnd.Open, after.Count, null);
+        }
+
+        var triggered = after[outcome.Sessions - 1];
+
+        if (outcome.End is Ledger.SetupEnds.Cap or Ledger.SetupEnds.Time)
+        {
+            return new DipPath(bought.Session, bought.Open, triggered.Session, triggered.Close, outcome.End == Ledger.SetupEnds.Cap ? DipEnd.Limit : DipEnd.Exit, outcome.Sessions, (triggered.Close - listingClose) / risk);
+        }
+
+        if (outcome.Sessions >= after.Count || !(after[outcome.Sessions].Open > 0))
+        {
+            return new DipPath(bought.Session, bought.Open, null, null, DipEnd.Open, outcome.Sessions, null);
+        }
+
+        var sale = after[outcome.Sessions].Open;
+
+        return new DipPath(bought.Session, bought.Open, after[outcome.Sessions].Session, sale, outcome.End is Ledger.SetupEnds.Stop or Ledger.SetupEnds.Trail ? DipEnd.Stop : DipEnd.Exit, outcome.Sessions, (sale - listingClose) / risk);
+    }
+
     // Each session after a listing as the walk reads it, the exit's average over the closes to it, the listing's and
     // the closes before it among them; none from the first session of the exchange's calendar the stock's bars skip,
     // so a trade waits for a missing session where it would otherwise read past it. From 22.3 the exit is read by its
