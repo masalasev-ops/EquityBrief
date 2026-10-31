@@ -65,12 +65,22 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            Guide(PaperGuide) + marks.PaperTiles(accounts, page.Fund) + MarkRenderer.PaperFamilies(accounts, link)
-                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, link.Family)),
+            Guide(PaperGuide) + marks.PaperTiles(accounts, page.Fund, page.Combined) + MarkRenderer.PaperFamilies(accounts, link)
+                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, link.Family, page.Combined)),
             title: "Each rule since its record began",
             lede: "Each family's live or provisional rule, its return on your size beside the index's fund over the same days, and beneath, each account's return in per cent of its size, session by session.",
             stamp: Cards.Night(night),
             region: "paper-chart"));
+
+        // From 21.11 every live rule's trades in one account of your size.
+        // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+        region.Append(Cards.Computed(
+            "Paper trading",
+            walked is null ? "<p class=\"degraded\" data-combined=\"unset\">Set your account above to walk the combined account.</p>" : marks.PaperCombined(page.Combined),
+            title: "All setups together",
+            lede: "Every live rule's trades in one account of your size: one position a stock, at most three open in one sector, each book a fifth of the account, and a buy the free cash cannot cover skipped.",
+            stamp: Cards.Night(night),
+            region: "paper-combined"));
 
         region.Append(Cards.Computed(
             "Paper trading",

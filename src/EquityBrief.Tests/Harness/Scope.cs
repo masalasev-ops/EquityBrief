@@ -76,6 +76,10 @@ internal static class Scope
 
     internal const string PaperHalvedTrade = "A trade sized at half";
 
+    internal const string PaperCombined = "The combined paper account";
+
+    internal const string PaperTwoFamilies = "Two families pick one stock in the combined account";
+
     internal const string LoopChoices = "Choosing a version by its recent record";
     internal const string CardApproved = "A rule standing at an approved change";
     const string ByNight = "nightly-run";
@@ -4219,6 +4223,12 @@ internal static class Scope
             Verdict.Pass, "the sentence on what the page is, the account's line of the settings kept or the example's and the form behind Change the account read back off the rendered page, and distinctive settings found in no byte of the store or the run log", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = new Scoped(
             Verdict.Pass, "a trade the walk sized at half drawn in its account's log with its mark and its row's flag, and a trade sized whole with neither, read back off the rendered log", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", PaperCombined)] = new Scoped(
+            Verdict.Pass, "the combined account worked by hand over constructed trades, a stock two families picked, a sector at its cap, a buy the cash cannot cover, two books and a sale before a buy, and its tile, its line and its card with the sentence counting what it skipped read back off the rendered page", ByReadSurface),
+        [CheckReach.Key(LimitsTable, PaperCombined)] = new Scoped(
+            Verdict.Pass, "the sector's cap and a book family's share of the account read by the walk worked by hand, a fourth open position in a sector skipped and a book's holding sized at a tenth of a fifth of the account; the figures read off the document against the constants", ByReadSurface),
+        [CheckReach.Key(FailureTable, PaperTwoFamilies)] = new Scoped(
+            Verdict.Pass, "a second family's pick of a stock the combined account holds skipped as already held and counted, worked by hand and read back off the rendered card", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The tiles")] = new Scoped(
             Verdict.Pass, "each live or provisional account's tile read back off the rendered page over a constructed store, its return worked by hand from the walk with a skip under the cash, its trades open and closed and its day, and the fund's tile over the same days worked by hand from its closes", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The chart")] = new Scoped(
@@ -6347,6 +6357,7 @@ internal static class Scope
         [CheckReach.Key(CardPage, CardScorePart)] = "17.7",
         [CheckReach.Key(CardPage, CardChancePart)] = "21.7",
         [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = "21.9",
+        [CheckReach.Key("15.21 Paper trading", PaperCombined)] = "21.11",
         [CheckReach.Key(LoopPage, LoopChoices)] = "21.10",
         // 17.9's Loop page regions, Tonight's line and the card's row for a rule standing at an approved change.
         [CheckReach.Key(LoopPage, LoopWord)] = "17.9",
@@ -7936,6 +7947,8 @@ internal static class Scope
         // 22.13's two, which the plan names as a filing the family cannot weigh and a buy waiting for its session.
         ["A filing the Fundamentals family cannot weigh"] = "22.13",
         ["A Fundamentals buy whose next session is not stored"] = "22.13",
+        // 21.11's row, which the plan names as section 18's row for a trade two families took.
+        [PaperTwoFamilies] = "21.11",
     };
 
     // The two rows of the read and write matrix whose component already exists.

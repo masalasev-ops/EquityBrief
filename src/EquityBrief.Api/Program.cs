@@ -2413,7 +2413,8 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             link.Show,
             variants,
             PaperScreen.Fund(reading.Code),
-            accounts.Fund ?? (_ => null))
+            accounts.Fund ?? (_ => null),
+            accounts.Combined)
         : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
 
     return Results.Content(
@@ -2609,7 +2610,8 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
         sessions,
         stocks,
         Fund,
-        await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks));
+        await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks),
+        PaperScreen.Combined(sources, settings, sessions, night, Close, Fund, stocks));
 }
 
 // The standing tonight of each holding the family's live or provisional heavyweights account holds open, worked by the

@@ -98,6 +98,9 @@ public partial class ReadSurface
             // 21.10, the Loop page's versions chosen by their record.
             .. VersionChoicePageClaims,
 
+            // 21.11, the combined account.
+            .. CombinedPageClaims,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 

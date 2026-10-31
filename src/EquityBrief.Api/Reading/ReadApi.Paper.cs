@@ -44,8 +44,9 @@ public sealed record PaperRow(
     double? RiskMoves = null);
 
 // What paper trading reads of a stock on the night: its company as the membership names it, its typical move and its
-// 200-session average as the night's indicators stored them, each none where none is stored.
-public sealed record PaperStockRow(string Ticker, string? Company, double? TypicalMove, double? Average200);
+// 200-session average as the night's indicators stored them, and from 21.11 its GICS sector on the night as the
+// membership files it, each none where none is stored.
+public sealed record PaperStockRow(string Ticker, string? Company, double? TypicalMove, double? Average200, string? Sector = null);
 
 // One rule's verdict in an index's newest monthly per-rule test, as the tester stored it.
 public sealed record RuleTestRow(
@@ -149,7 +150,8 @@ public sealed partial class ReadApi
         SELECT t.value,
                (SELECT m.name FROM membership m WHERE m.ticker = t.value ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
                (SELECT i.value FROM indicator i WHERE i.ticker = t.value AND i.session_date = $night AND i.name = $typical),
-               (SELECT i.value FROM indicator i WHERE i.ticker = t.value AND i.session_date = $night AND i.name = $average)
+               (SELECT i.value FROM indicator i WHERE i.ticker = t.value AND i.session_date = $night AND i.name = $average),
+               (SELECT m.sector FROM membership m WHERE m.ticker = t.value ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1)
         FROM json_each($names) t;";
 
     // The newest per-rule test on an index, by the order the runs were written.
@@ -304,7 +306,7 @@ public sealed partial class ReadApi
         {
             var ticker = reader.GetString(0);
 
-            read[ticker] = new PaperStockRow(ticker, reader.IsDBNull(1) ? null : reader.GetString(1), Optional(reader, 2), Optional(reader, 3));
+            read[ticker] = new PaperStockRow(ticker, reader.IsDBNull(1) ? null : reader.GetString(1), Optional(reader, 2), Optional(reader, 3), Core.Families.GicsSectors.On(ticker, reader.IsDBNull(4) ? null : reader.GetString(4), night));
         }
 
         return read;
