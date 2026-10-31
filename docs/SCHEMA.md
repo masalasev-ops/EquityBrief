@@ -286,9 +286,9 @@ Grain: one row per series per session a night stored.
 
 | Column | Type | Notes |
 |---|---|---|
-| `series` | TEXT | `GSPC`, the index itself, `VIX`, one of the eleven sector funds, `XLB` to `XLY`, or from 15.1 one of the index and credit funds, `SPY`, `IJH`, `IJR` and `HYG` |
+| `series` | TEXT | `GSPC`, the index itself, `VIX`, one of the eleven sector funds, `XLB` to `XLY`, or from 15.1 one of the index and credit funds, `SPY`, `IJH`, `IJR` and `HYG`, or from 21.13 one the market strip alone reads, `QQQ`, `DIA`, `DXY`, the dollar index, and `WTI`, crude |
 | `session_date` | TEXT | date |
-| `open`, `high`, `low`, `close` | TEXT | decimal in code, as the provider sent them on the night that wrote the row |
+| `open`, `high`, `low`, `close` | TEXT | decimal in code, as the provider sent them on the night that wrote the row, and WTI crude's as Yahoo's chart sent them |
 | `run_id` | TEXT | the run id of the night that wrote the row |
 
 Primary key: `series`, `session_date`.
@@ -362,6 +362,7 @@ Grain: one row per session the Treasury published a 10-year par yield for.
 | `session_date` | TEXT | the session, as the Treasury's table dates it |
 | `ten_year` | REAL | the 10-year par yield in per cent, a statistic, as the Treasury published it |
 | `run_id` | TEXT | the run of the night that kept it |
+| `three_month` | REAL | from 21.13 the 3-month par yield in per cent from the same answer, a statistic, null on a session kept before it and where the Treasury left the cell empty |
 
 Primary key: `session_date`.
 
