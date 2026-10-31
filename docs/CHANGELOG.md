@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-31 - .claude/rules/checks.md - read-surface states 21.11's combined account
+Authorised by: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+Was:
+> (read-surface) ...; and from 21.10 a family's versions chosen by their record drawn on the Loop page with what each does, the version it would run now, its trades, its adjusted p and whether it beat staying put, and no press |
+Now:
+> (read-surface) ...; and from 21.10 ... and no press; and from 21.11 the combined account walked by hand over a stock two families picked, a sector at its cap, a buy the free cash cannot cover and two books sized at a fifth of the account, and its tile, its line in the chart and its card drawn on paper trading with what it skipped and why |
+Why: 21.11 adds the combined account; 15.21, section 17 and section 18 each gain a row of their own, all new, and the line above is the one that stood and now names the assertions its tests add.
+
 ### 2026-10-31 - docs/ARCHITECTURE.html - the second move of the pins: the index families hand the expected value, the dip walks an approved exit, the books sell under the 200-day average, and the engines read every change a night reads
 Authorised by: Every change the engines propose is one its family's night reads, so each is put to the operator
 Was:
