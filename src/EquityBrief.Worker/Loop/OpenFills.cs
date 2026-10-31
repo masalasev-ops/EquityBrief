@@ -32,7 +32,7 @@ public sealed class OpenFills(IReadOnlyList<SweepSeries> series, SweepBenchmark.
     {
         public ConcurrentDictionary<(int Session, double StopMoves, double? Reward, double? Trail, int Cap, int Exit), double> Plans { get; } = new();
 
-        public ConcurrentDictionary<(int Session, double StopMoves, double Reward, int Exit), double> Pullbacks { get; } = new();
+        public ConcurrentDictionary<(int Session, double StopMoves, double Reward), double[]> Pullbacks { get; } = new();
 
         public Lazy<double[][]> Closes { get; } = new(() => [.. series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray())]);
     }
@@ -43,7 +43,7 @@ public sealed class OpenFills(IReadOnlyList<SweepSeries> series, SweepBenchmark.
 
     ConcurrentDictionary<(int Session, double StopMoves, double? Reward, double? Trail, int Cap, int Exit), double> sales => shared.Plans;
 
-    ConcurrentDictionary<(int Session, double StopMoves, double Reward, int Exit), double> pullbackSales => shared.Pullbacks;
+    ConcurrentDictionary<(int Session, double StopMoves, double Reward), double[]> pullbackSales => shared.Pullbacks;
 
     Lazy<double[][]> closes => shared.Closes;
 
@@ -143,8 +143,11 @@ public sealed class OpenFills(IReadOnlyList<SweepSeries> series, SweepBenchmark.
         Benchmark(atClose, session, riskMoves) + PullbackSale(session, riskMoves, rewardToRisk, exit);
 
     // The members' sale alone under a pullback's plan, for a plan bought at a fill of its own on a later session.
-    public double PullbackSale(int session, double stopMoves, double rewardToRisk, int exit) =>
-        pullbackSales.GetOrAdd((session, stopMoves, rewardToRisk, exit), key => PullbackSaleOf(key.Session, key.StopMoves, key.Reward, key.Exit));
+    public double PullbackSale(int session, double stopMoves, double rewardToRisk, int exit) => PullbackSales(session, stopMoves, rewardToRisk)[exit];
+
+    // The members' sale under a pullback's plan for every exit, worked once a session and plan.
+    public double[] PullbackSales(int session, double stopMoves, double rewardToRisk) =>
+        pullbackSales.GetOrAdd((session, stopMoves, rewardToRisk), key => PullbackSalesOf(key.Session, key.StopMoves, key.Reward));
 
     // The mean move the members' sales make to the same plan on every member that session under an exit of the menu or
     // the plan's own, each member's stop its own typical moves under its close and its target or its trail the plan's
@@ -180,13 +183,16 @@ public sealed class OpenFills(IReadOnlyList<SweepSeries> series, SweepBenchmark.
         return ExitFills.SaleMoves(read).Mean;
     }
 
-    // The same for a pullback's plan, each member walked as the sweep's benchmark walks it: a close under its stop or at its
-    // target ends it, the stop raised to the buy from the session after a close a risk up where the exit moves it, and the
-    // hold's close ends it otherwise, sold at that close.
-    double PullbackSaleOf(int session, double stopMoves, double rewardToRisk, int exit)
+    // The same for a pullback's plan under every exit, each member walked as the sweep's benchmark walks it, once with its
+    // stop standing and once moved: a close under its stop or at its target ends it for every hold not yet reached and is
+    // sold at the next open, the stop raised to the buy from the session after a close a risk up where the exit moves it,
+    // and a hold's close ends it otherwise, sold at that close; a member whose closes run out before a hold, or whose sale's
+    // open is not held, is not counted under it.
+    double[] PullbackSalesOf(int session, double stopMoves, double rewardToRisk)
     {
-        var (hold, moveStop) = SweepAxes.ExitOf(exit);
-        var read = new List<(SetupOutcome, double?)>(members.Names[session].Length);
+        var holds = SweepAxes.Holds;
+        var sums = new double[SweepAxes.Exits];
+        var counts = new int[SweepAxes.Exits];
 
         for (var place = 0; place < members.Names[session].Length; place++)
         {
@@ -201,38 +207,43 @@ public sealed class OpenFills(IReadOnlyList<SweepSeries> series, SweepBenchmark.
                 continue;
             }
 
-            var (floor, target) = (entry - risk, entry + (rewardToRisk * risk));
-            SetupOutcome? outcome = null;
-
-            for (var held = 1; held <= hold && bar + held < row.Length; held++)
+            for (var move = 0; move < 2; move++)
             {
-                var close = row[bar + held];
+                var (floor, target, holdAt) = (entry - risk, entry + (rewardToRisk * risk), 0);
 
-                if (close < floor || close >= target)
+                for (var held = 1; held <= holds[^1] && bar + held < row.Length && holdAt < holds.Count; held++)
                 {
-                    outcome = new SetupOutcome((close - entry) / risk, held, close >= target ? SetupEnds.Target : SetupEnds.Stop);
+                    var close = row[bar + held];
 
-                    break;
+                    if (close < floor || close >= target)
+                    {
+                        if (OpenAfter(one, bar + held) is { } open)
+                        {
+                            for (var hold = holdAt; hold < holds.Count; hold++)
+                            {
+                                sums[(hold * 2) + move] += (open - close) / risk;
+                                counts[(hold * 2) + move]++;
+                            }
+                        }
+
+                        break;
+                    }
+
+                    if (move == 1 && close >= entry + risk && floor < entry)
+                    {
+                        floor = entry;
+                    }
+
+                    while (holdAt < holds.Count && held == holds[holdAt])
+                    {
+                        counts[(holdAt * 2) + move]++;
+                        holdAt++;
+                    }
                 }
-
-                if (moveStop && close >= entry + risk && floor < entry)
-                {
-                    floor = entry;
-                }
-
-                if (held == hold)
-                {
-                    outcome = new SetupOutcome((close - entry) / risk, held, SetupEnds.Cap);
-                }
-            }
-
-            if (outcome is { } ended)
-            {
-                read.Add((ended, ExitFills.SaleMove(ended, at => row[at], at => OpenAfter(one, at), bar, risk)));
             }
         }
 
-        return ExitFills.SaleMoves(read).Mean;
+        return [.. sums.Select((sum, exit) => counts[exit] > 0 ? sum / counts[exit] : 0)];
     }
 
     // A book's size cut, each holding's result a fraction of its close, moved by the members' gaps over their closes.

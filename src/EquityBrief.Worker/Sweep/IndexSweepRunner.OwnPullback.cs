@@ -105,6 +105,19 @@ public sealed partial class IndexSweepRunner
 
             SweepBenchmark.Fill(pool, series, laid.Members, parallelism);
 
+            // From 21.17 each plan's members sold as the plan is, worked once a session and plan beside the benchmark the
+            // sweep fills, in parallel as it fills it.
+            Parallel.ForEach(pool, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, candidate =>
+            {
+                foreach (var plan in candidate.Plans)
+                {
+                    if (plan is not null)
+                    {
+                        fills.PullbackSales(candidate.Session, plan.StopMoves, plan.RewardToRisk);
+                    }
+                }
+            });
+
             // From 19.10 a plan bought at the close is bought at the open after it: each exit's result moved by the stock's
             // own gap over the risk its close put up and its benchmark by the members' gaps, none where no open is held
             // after it; a stepped plan, bought at its own fill on a later session, stands as it was. From 21.14 every plan,
