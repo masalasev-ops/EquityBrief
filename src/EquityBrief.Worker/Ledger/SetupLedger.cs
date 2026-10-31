@@ -944,7 +944,26 @@ public sealed partial class SetupLedger : IComponent
 
         var (benchmark, listed) = SetupBenchmark.WithMembers(members, anchor.Session, plan);
 
-        return AtOpen(anchor, outcome, benchmark, listed, OpenAfter(closes[name], opens[name], bar), book: false);
+        return Sold(AtOpen(anchor, outcome, benchmark, listed, OpenAfter(closes[name], opens[name], bar), book: false), closes[name], opens[name], bar, anchor);
+    }
+
+    // From 21.14 a swing setup a close's signal ended, its stop, its target or its trail, sold at the open after that
+    // close, its result moved by that gap over the risk its close set; one whose open after it is not stored yet is open
+    // until it is. The cap's close stands, and the benchmark stays as its entry's fill priced it.
+    // see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
+    static SetupRead Sold(SetupRead read, double[] closes, double[] opens, int bar, SetupAnchor anchor)
+    {
+        if (read.Outcome.Result is null)
+        {
+            return read;
+        }
+
+        var sale = ExitFills.Sold(read.Outcome, at => closes[at], at => OpenAfter(closes, opens, at), bar, anchor.Risk);
+
+        return read with
+        {
+            Outcome = sale.Result is { } sold ? read.Outcome with { Result = sold } : new SetupOutcome(null, read.Outcome.Sessions, SetupEnds.Open),
+        };
     }
 
     // A setup read at its next session's open: its result, its benchmark and where that open stood against its plan, the

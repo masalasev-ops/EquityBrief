@@ -78,6 +78,8 @@ internal static class Scope
 
     internal const string PaperCombined = "The combined paper account";
 
+    internal const string PaperToneLine = "The tone variant's line";
+
     internal const string PaperTwoFamilies = "Two families pick one stock in the combined account";
 
     internal const string LoopChoices = "Choosing a version by its recent record";
@@ -3675,6 +3677,16 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+
+        // 21.14, the drift surprises check, a read-only check of its own.
+        [CheckReach.Key(CatalogueTable, "Drift surprises")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the night's inputs, the drift's stored rows and the pulled surprises it reads and nothing it writes, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Drift surprises")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(StoresTable, "Loop runs")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
@@ -4239,6 +4251,8 @@ internal static class Scope
             Verdict.Pass, "a trade the walk sized at half drawn in its account's log with its mark and its row's flag, and a trade sized whole with neither, read back off the rendered log", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", PaperCombined)] = new Scoped(
             Verdict.Pass, "the combined account worked by hand over constructed trades, a stock two families picked, a sector at its cap, a buy the cash cannot cover, two books and a sale before a buy, and its tile, its line and its card with the sentence counting what it skipped read back off the rendered page", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", PaperToneLine)] = new Scoped(
+            Verdict.Pass, "the operator's sentence read back beneath the tone variant's words in the variants' table and the scorecard's variants over a constructed register, and no other rule's row carrying it", ByReadSurface),
         [CheckReach.Key(LimitsTable, PaperCombined)] = new Scoped(
             Verdict.Pass, "the sector's cap and a book family's share of the account read by the walk worked by hand, a fourth open position in a sector skipped and a book's holding sized at a tenth of a fifth of the account; the figures read off the document against the constants", ByReadSurface),
         [CheckReach.Key(FailureTable, PaperTwoFamilies)] = new Scoped(
@@ -6372,6 +6386,7 @@ internal static class Scope
         [CheckReach.Key(CardPage, CardChancePart)] = "21.7",
         [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = "21.9",
         [CheckReach.Key("15.21 Paper trading", PaperCombined)] = "21.11",
+        [CheckReach.Key("15.21 Paper trading", PaperToneLine)] = "21.14",
         [CheckReach.Key(LoopPage, LoopChoices)] = "21.10",
         // 17.9's Loop page regions, Tonight's line and the card's row for a rule standing at an approved change.
         [CheckReach.Key(LoopPage, LoopWord)] = "17.9",

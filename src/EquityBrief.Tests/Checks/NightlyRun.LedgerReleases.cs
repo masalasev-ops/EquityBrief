@@ -73,9 +73,10 @@ public partial class NightlyRun
         Assert.Equal<double?>([null, null, null, null], Readings("BBB", 70));
         Assert.Equal<double?>([null, null, null, null], Readings("CCC", 70));
         Assert.Equal<double?>([1.0, 1.0, 1.0, 1.0], Readings("AAA", 71));
+        // From 21.14 the two windows the stop's close ended stand open until the next session's open sells them.
         Assert.Equal(3, next.Indices.Single(index => index.Index == "GSPC").ReleasesAgain);
         Assert.Contains(
-            "2 window(s) closed on the S&P 500, 3 row(s) of the nights before with their release readings read again",
+            "0 window(s) closed on the S&P 500, 3 row(s) of the nights before with their release readings read again",
             Texts(store, $"SELECT detail FROM run_log WHERE stage = '{SetupLedger.Stage}' ORDER BY rowid DESC LIMIT 1;").Single(),
             StringComparison.Ordinal);
 

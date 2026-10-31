@@ -267,8 +267,8 @@ public sealed partial class MarkRenderer
         ("Why it qualified", "What the stock did that its setup buys, from the figures the night stored."),
         ("The business", "How the company's reported quarters read: improving, steady or getting worse, with what its numbers say under the pointer. It removes no pick."),
         ("Buy about", "Tonight's close. The pick is bought at tomorrow's open."),
-        ("Stop", "A close below it sells the trade at a loss."),
-        ("Target", "Reaching it sells the trade at a gain. A breakout has a stop that rises with the price and no target; the short-term dip names its exit."),
+        ("Stop", "A close below it sells the trade at a loss, at the next day's open."),
+        ("Target", "A close at or above it sells the trade at a gain, at the next day's open. A breakout has a stop that rises with the price and no target; the short-term dip names its exit."),
         ("Risk $1 to make", "How far the target is against the stop: $2.00 means the target is twice as far away as the stop. It is a fact about the chart and not a chance of anything."),
         ("News, 30 days", "The stories of the last 30 days the labeller read as good or bad for the company."),
     ];
@@ -337,8 +337,8 @@ public sealed partial class MarkRenderer
     // foot.
     public static IReadOnlyList<(string Term, string Meaning)> TonightWords { get; } =
     [
-        ("Stop", "The price that says the idea was wrong. If the stock closes below it, the trade is sold."),
-        ("Target", "The price that says the idea worked. If the stock reaches it, the trade is sold. A breakout has none: its stop rises as the price climbs."),
+        ("Stop", "The price that says the idea was wrong. If the stock closes below it, the trade is sold at the next day's open."),
+        ("Target", "The price that says the idea worked. If the stock closes at or above it, the trade is sold at the next day's open. A breakout has none: its stop rises as the price climbs."),
         ("Risk $1 to make", "How far the target is compared with the stop. $2.50 means the target is 2.5 times as far away as the stop. It is a fact about the chart and not a chance of anything."),
         ("Typical day's move", "How much this stock usually moves in a day. Measuring jumps and distances in these units makes calm and jumpy stocks comparable."),
         ("Live", "The setup's settings were chosen from years of history and fixed; its record now counts only the nights after that."),

@@ -34,9 +34,13 @@ public sealed record RuleUnderTest(
     IReadOnlyList<(int Entry, double? Edge)>? Ranking = null,
     string? RankingWords = null,
     IReadOnlyList<(int Entry, double? Edge)>? Exposure = null,
-    double? ExposureFloor = null)
+    double? ExposureFloor = null,
+    IReadOnlyList<(int Opens, double? Edge)>? Unflagged = null)
 {
     public bool Book => Unit == LoopProcedures.Points;
+
+    // From 21.14 whether the rule's own walk reads the graded exposure as its registration states it.
+    public bool Graded { get; init; }
 }
 
 // From 21.1 a tone variant's walk and its opposite's over the same history, each trade by the session it was listed on,
@@ -243,7 +247,7 @@ public static class RuleTests
     // rule first and then its variants, the pullback's candidates read once for every walk of them. From 21.5 the
     // fundamentals-first family, which the night computes no longer, is walked no more.
     // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
-    public static IReadOnlyList<RuleUnderTest> Walk(RuleTestInputs inputs)
+    public static IReadOnlyList<RuleUnderTest> Walk(RuleTestInputs inputs, bool choosing = true)
     {
         var large = inputs.Read.Index == WalkForwardTester.LargeIndex;
         var read = inputs.Candidates;
@@ -263,9 +267,11 @@ public static class RuleTests
             .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting).Months) : []),
         ];
 
+        walked = [.. walked.Select(rule => inputs.Standing.FirstOrDefault(row => row.Candidate == rule.Rule) is { } row && RuleHooks.Of(CandidateEvaluator.Read(row.Parameters)).Exposure is not null ? rule with { Graded = true } : rule)];
+
         var ranked = inputs.Ranked is null ? walked : Ranked(inputs, walked);
 
-        return [.. ranked, .. Choosing(inputs.Read, ranked)];
+        return choosing ? [.. ranked, .. Choosing(inputs.Read, ranked)] : ranked;
     }
 
     // From 21.10 each family's version chosen by its recent record, three procedures a family walked beside its rules over
@@ -409,8 +415,77 @@ public static class RuleTests
         {
             var setting = ImprovingCandidate.SettingsOf(CandidateEvaluator.Read(row.Parameters));
 
-            yield return new RuleUnderTest(ImprovingRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting));
+            // From 21.14 a rule requiring a flag first carries the same settings without it beside, walked unregistered
+            // and written nowhere, for the split on each side of the local model's cutoff the operator asked for.
+            yield return new RuleUnderTest(ImprovingRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting), Unflagged: setting.FlagFirst ? months(setting with { FlagFirst = false }) : null);
         }
+    }
+
+    // From 21.14 a Fundamentals rule requiring a flag first, its months on each side of the local model's cutoff's year
+    // beside the same settings without the flag, each its months and their mean edge after costs in points.
+    public static string FlagLine(RuleUnderTest rule, DateOnly[] calendar, DateOnly? cutoff)
+    {
+        static string Side(IReadOnlyList<(int Opens, double? Edge)> months, Func<int, bool> on)
+        {
+            var kept = months.Where(month => on(month.Opens) && month.Edge is not null).ToArray();
+
+            // A mean rounding to nought is read as nought, never as a signed one.
+            var points = kept.Length == 0 ? 0 : Math.Round(kept.Average(month => month.Edge!.Value) * 100, 2) + 0.0;
+
+            return kept.Length == 0
+                ? "no month ended"
+                : FormattableString.Invariant($"{kept.Length} month(s) at {points:+0.00;-0.00;0.00} points");
+        }
+
+        var own = rule.Months ?? [];
+        var without = rule.Unflagged ?? [];
+
+        if (cutoff is not { } year)
+        {
+            return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: its flag first, {Side(own, _ => true)} over the history; the same settings without the flag, walked unregistered and written nowhere, {Side(without, _ => true)}; no reading version states a cutoff");
+        }
+
+        bool Before(int opens) => calendar[opens].Year < year.Year;
+
+        return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: its flag first, {Side(own, Before)} before the local model's cutoff's year, {year.Year}, and {Side(own, opens => !Before(opens))} from it; the same settings without the flag, walked unregistered and written nowhere, {Side(without, Before)} and {Side(without, opens => !Before(opens))}");
+    }
+
+    // From 21.14 a graded exposure walked again with the VIX's direction reversed, a VIX over its median counting for the
+    // night, beside the graded walk the rule states or the one walked unregistered beside it, over the test years.
+    public static string ReverseLine(RuleUnderTest graded, IReadOnlyList<(int Entry, double? Edge)> reversed, Func<int, bool> inTestYears)
+    {
+        static string Side(IReadOnlyList<(int Entry, double? Edge)> units, Func<int, bool> on)
+        {
+            var kept = units.Where(unit => on(unit.Entry)).ToArray();
+            var edged = kept.Where(unit => unit.Edge is not null).ToArray();
+            var risks = edged.Length == 0 ? 0 : Math.Round(edged.Average(unit => unit.Edge!.Value), 3) + 0.0;
+
+            return edged.Length == 0
+                ? FormattableString.Invariant($"{kept.Length} trade(s), none ended")
+                : FormattableString.Invariant($"{kept.Length} trade(s) at {risks:+0.000;-0.000;0.000} risks");
+        }
+
+        var own = graded.Graded ? graded.Trades ?? [] : graded.Exposure ?? [];
+
+        return FormattableString.Invariant($"{graded.Family}, {graded.Rule}: its graded exposure with the VIX's direction reversed, a VIX over its median counting for the night, walked unregistered and written nowhere, {Side(reversed, inTestYears)} over the test years, against the graded walk's {Side(own, inTestYears)}");
+    }
+
+    // From 21.14 the graded walks of an index's rules again with the VIX's direction reversed: each rule stating the
+    // exposure and each live rule walking one beside it, read again with the readings reversed alone, keyed by its family
+    // and its rule; the reversed walk of a graded rule its own trades, of a live rule the exposure beside it.
+    public static IReadOnlyDictionary<(string Family, string Rule), IReadOnlyList<(int Entry, double? Edge)>> Reversed(RuleTestInputs inputs, IReadOnlyList<RuleUnderTest> walked)
+    {
+        if (inputs.Readings is not { } readings || !walked.Any(rule => rule.Graded || rule.Exposure is not null))
+        {
+            return new Dictionary<(string, string), IReadOnlyList<(int Entry, double? Edge)>>();
+        }
+
+        var graded = walked.Where(rule => rule.Graded || rule.Exposure is not null).Select(rule => rule.Rule).ToHashSet(StringComparer.Ordinal);
+        var again = Walk(inputs with { Standing = [.. inputs.Standing.Where(row => graded.Contains(row.Candidate))], Readings = readings.ReversedVix(), Ranked = null }, choosing: false);
+
+        return again
+            .Where(rule => graded.Contains(rule.Rule) && (rule.Graded ? rule.Trades : rule.Exposure) is not null)
+            .ToDictionary(rule => (rule.Family, rule.Rule), rule => (rule.Graded ? rule.Trades : rule.Exposure)!);
     }
 
     // From 22.3 the short-term dip on any index once a freeze stands on it: each registered rule's trades walked at its

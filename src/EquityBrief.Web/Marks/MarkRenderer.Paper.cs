@@ -45,7 +45,8 @@ public sealed record PaperAccountView(
     PaperLuck? Luck = null,
     PaperProgress? Progress = null,
     int Open = 0,
-    int Closed = 0)
+    int Closed = 0,
+    string? Note = null)
 {
     public const string Live = "live";
 
@@ -549,7 +550,7 @@ public sealed partial class MarkRenderer
         {
             html.Append(Invariant, $"<tr data-account=\"{Escaped(account.Key)}\" data-standing=\"{account.Standing}\" data-trades=\"{account.Overlap?.Trades ?? account.Trades}\" data-shared=\"{account.Overlap?.Shared ?? 0}\" data-only=\"{account.Overlap?.Only ?? 0}\">");
             html.Append(Invariant, $"<td class=\"pv-rule\"><a class=\"paper-log\" href=\"{LogHref(link.Universe, account.Key)}\" title=\"{Escaped(Capitalised(account.Words) + (account.Version is { } version ? "; counts " + version : string.Empty) + (account.Since is { } since ? "; from " + DayOf(since) : string.Empty))}\">{Escaped(account.Short ?? account.Name)}</a><span class=\"pv-verdict\" data-verdict=\"{Escaped(account.Verdict)}\">{Escaped(account.Verdict)}</span></td>");
-            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}</td>");
+            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{AccountNote(account)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{account.Overlap?.Trades ?? account.Trades}</td><td class=\"r num\">{account.Overlap?.Shared ?? 0}</td><td class=\"r num\">{account.Overlap?.Only ?? 0}</td>");
             html.Append(Invariant, $"<td class=\"r num\" data-return=\"{(account.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\">{(account.Walk?.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">none yet</span>")}{(account.TooFew is { } few ? Formatted($"<span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}</td></tr>");
         }
@@ -633,7 +634,7 @@ public sealed partial class MarkRenderer
             foreach (var variant in variants)
             {
                 html.Append(Invariant, $"<tr data-account=\"{Escaped(variant.Key)}\" data-verdict=\"{Escaped(variant.Verdict)}\" data-better=\"{(variant.Better is { } better ? better.ToString(Invariant) : "none")}\">");
-                html.Append(Invariant, $"<td><b>{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span></td>");
+                html.Append(Invariant, $"<td><b>{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{AccountNote(variant)}</td>");
                 html.Append(Invariant, $"<td><span class=\"pill\"{(variant.Adjusted is { } p ? Formatted($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span></td>");
                 html.Append(Invariant, $"<td class=\"r num\">{(variant.Better is { } of && variant.Counted is { } counted ? Formatted($"{of} of {counted}") : "<span class=\"degraded\">not read</span>")}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Progressed(variant.Progress, variant.Standing)}</td></tr>");
@@ -646,6 +647,11 @@ public sealed partial class MarkRenderer
 
         return html.ToString();
     }
+
+    // From 21.14 the line an account's rule carries beneath its words, the tone variant's that its history before the local
+    // model's cutoff does not count; none for any other.
+    static string AccountNote(PaperAccountView account) =>
+        account.Note is { } note ? Formatted($"<span class=\"pv-note\" data-note=\"tone\">{Escaped(note)}</span>") : string.Empty;
 
     // A record's progress in words: decided trades or a book's months of the count a verdict reads.
     static string Progressed(PaperProgress? progress, string standing) =>

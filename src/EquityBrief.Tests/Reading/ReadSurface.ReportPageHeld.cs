@@ -44,7 +44,7 @@ public partial class ReadSurface
 
         Assert.Equal(["held", "quarter"], System.Text.RegularExpressions.Regex.Matches(lead, "data-part=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains(
-            "The earnings drift picked it on 26 Oct 2026 and holds it: bought at 434.12 at the open of 27 Oct 2026; sold at 529.64, at a close below 406.46 or after 60 trading days, about 22 Jan 2027, whichever comes first; open after 1 session; its reward to risk at the fill 3.45.",
+            "The earnings drift picked it on 26 Oct 2026 and holds it: bought at 434.12 at the open of 27 Oct 2026; sold at the next open after a close at or above 529.64, at the next open after a close below 406.46 or after 60 trading days, about 22 Jan 2027, whichever comes first; open after 1 session; its reward to risk at the fill 3.45.",
             lead,
             StringComparison.Ordinal);
 
@@ -60,12 +60,12 @@ public partial class ReadSurface
         var exits = marks.PicksOwnExit(held.Card, held.Pick);
 
         Assert.Contains("data-held=\"2026-10-26\"", exits, StringComparison.Ordinal);
-        Assert.Contains("held on the trade the earnings drift picked it for on 26 Oct 2026, sold at 529.64, at a close below 406.46 or after 60 trading days, whichever comes first.", WebUtility.HtmlDecode(exits), StringComparison.Ordinal);
+        Assert.Contains("held on the trade the earnings drift picked it for on 26 Oct 2026, sold at the next open after a close at or above 529.64, at the next open after a close below 406.46 or after 60 trading days, whichever comes first.", WebUtility.HtmlDecode(exits), StringComparison.Ordinal);
 
         // Where the levels' plan places no exit, its line names the held trade's in place of saying it places none.
         var noExit = WebUtility.HtmlDecode(marks.PlanTables("ROP", [], trade: held.Card, held: true));
 
-        Assert.Contains("The levels' plan places no exit of its own; the held trade is sold at 529.64, at a close below 406.46 or after 60 trading days, whichever comes first.", noExit, StringComparison.Ordinal);
+        Assert.Contains("The levels' plan places no exit of its own; the held trade is sold at the next open after a close at or above 529.64, at the next open after a close below 406.46 or after 60 trading days, whichever comes first.", noExit, StringComparison.Ordinal);
         Assert.DoesNotContain("data-exits=\"none\"", noExit, StringComparison.Ordinal);
         Assert.Contains("<p class=\"degraded\" data-exits=\"none\">The plan places no exit.</p>", marks.PlanTables("ROP", []), StringComparison.Ordinal);
 

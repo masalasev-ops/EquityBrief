@@ -146,7 +146,7 @@ public partial class ReadSurface
 
         Assert.Equal(
             [
-                "Sell at the close of a day that closes below the stop, 47.30 at the buy, raised after each close to that close less 2.70 and never lowered.",
+                "Sell at the next trading day's open after a day that closes below the stop, 47.30 at the buy, raised after each close to that close less 2.70 and never lowered.",
                 "No target: the trade is ended by its stop or its time limit.",
                 "Otherwise sell at the close 63 trading days after the buy.",
             ],
@@ -160,15 +160,15 @@ public partial class ReadSurface
             ManagementOf(await CardRowOf(client, "MID", HeavyweightRule.Name, "M2")));
         Assert.Equal(
             [
-                "Sell at the close of a day that closes below the stop, 47.00 at the buy, raised after each close to that close less 3.00 and never lowered.",
+                "Sell at the next trading day's open after a day that closes below the stop, 47.00 at the buy, raised after each close to that close less 3.00 and never lowered.",
                 "No target: the trade is ended by its stop or its time limit.",
                 "Otherwise sell at the close 63 trading days after the buy.",
             ],
             ManagementOf(await CardRowOf(client, "SML", "breakout", "S1")));
         Assert.Equal(
             [
-                "Sell at the close of a day that closes below 37.00.",
-                "Sell at the close of a day that closes at or above 46.00.",
+                "Sell at the next trading day's open after a day that closes below 37.00.",
+                "Sell at the next trading day's open after a day that closes at or above 46.00.",
                 "Otherwise sell at the close 60 trading days after the buy.",
             ],
             ManagementOf(await CardRowOf(client, "SML", "drift", "S2")));
@@ -221,12 +221,12 @@ public partial class ReadSurface
 
             string[] expected = !rule.Trails
                 ? [
-                    FormattableString.Invariant($"Sell at the close of a day that closes below {stop:0.00}."),
-                    FormattableString.Invariant($"Sell at the close of a day that closes at or above {decimal.Parse(target, CultureInfo.InvariantCulture):0.00}."),
+                    FormattableString.Invariant($"Sell at the next trading day's open after a day that closes below {stop:0.00}."),
+                    FormattableString.Invariant($"Sell at the next trading day's open after a day that closes at or above {decimal.Parse(target, CultureInfo.InvariantCulture):0.00}."),
                     FormattableString.Invariant($"Otherwise sell at the close {cap} trading days after the buy."),
                 ]
                 : [
-                    FormattableString.Invariant($"Sell at the close of a day that closes below the stop, {stop:0.00} at the buy, raised after each close to that close less {entry - stop:0.00} and never lowered."),
+                    FormattableString.Invariant($"Sell at the next trading day's open after a day that closes below the stop, {stop:0.00} at the buy, raised after each close to that close less {entry - stop:0.00} and never lowered."),
                     "No target: the trade is ended by its stop or its time limit.",
                     FormattableString.Invariant($"Otherwise sell at the close {cap} trading days after the buy."),
                 ];

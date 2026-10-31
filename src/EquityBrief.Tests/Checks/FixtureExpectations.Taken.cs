@@ -29,7 +29,7 @@ public partial class FixtureExpectations
     // The card's night, a Thursday, and the sessions after it.
     const string TakenNight = "2026-10-01";
 
-    static readonly string[] TakenSessions = ["2026-10-02", "2026-10-05", "2026-10-06", "2026-10-07"];
+    static readonly string[] TakenSessions = ["2026-10-02", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08"];
 
     // One trade taken from a pullback card on the S&P 500 bought at 50.00 with its stop at 47.00 and its target at 56.00,
     // capped at 63 sessions, unless a case states otherwise.
@@ -129,33 +129,36 @@ public partial class FixtureExpectations
     public async Task ATakenTradeIsFollowedToItsStopAndACloseEqualToTheStopLeavesItOpen()
     {
         // The provisional fill is replaced by the fill's session's open, 50.40, and the risk is 50.40 less 47.00, 3.40.
-        // A close of 47.00 on 2026-10-05 equals the stop and leaves it open; 46.90 the session after is under it, a
-        // result of (46.90 - 50.40) / 3.40, -1.0294.
+        // A close of 47.00 on 2026-10-05 equals the stop and leaves it open; 46.90 the session after is under it, and
+        // from 21.14 it is sold at the open after, standing until that session is stored: 46.50 on 2026-10-07, a result
+        // of (46.50 - 50.40) / 3.40, -1.1471.
         Assert.Equal("50.40 0 - - - - 2026-10-05", await Followed(new TakenCase(), Sessions("50.40", "49.00", "47.00")));
-        Assert.Equal("50.40 0 2026-10-06 46.90 stop -1.0294 2026-10-06", await Followed(new TakenCase(), Sessions("50.40", "49.00", "47.00", "46.90")));
+        Assert.Equal("50.40 0 - - - - 2026-10-06", await Followed(new TakenCase(), Sessions("50.40", "49.00", "47.00", "46.90")));
+        Assert.Equal("50.40 0 2026-10-07 46.50 stop -1.1471 2026-10-07", await Followed(new TakenCase(), Sessions("50.40", "49.00", "47.00", "46.90", "46.50")));
     }
 
     [Fact]
     public async Task ATakenTradeIsFollowedToItsTargetToItsCapAndAlongARaisedTrail()
     {
         // An entered fill of 50.00 is never replaced by the open of 50.40; a close of 56.10 is at or above the target of
-        // 56.00: (56.10 - 50.00) / 3.00, 2.0333.
-        Assert.Equal("50.00 0 2026-10-05 56.10 target 2.0333 2026-10-05", await Followed(new TakenCase(Fill: "50.00"), Sessions("50.40", "52.00", "56.10")));
+        // 56.00, sold at the next session's open of 57.00: (57.00 - 50.00) / 3.00, 2.3333.
+        Assert.Equal("50.00 0 2026-10-06 57.00 target 2.3333 2026-10-06", await Followed(new TakenCase(Fill: "50.00"), Sessions("50.40", "52.00", "56.10", "57.00")));
 
         // A cap of three sessions, the fill's own the first: sold at the third close, 53.00, (53.00 - 50.00) / 3.00, 1.0000.
         Assert.Equal("50.00 0 2026-10-06 53.00 cap 1.0000 2026-10-06", await Followed(new TakenCase(Fill: "50.00", Cap: 3), Sessions("50.40", "51.00", "52.00", "53.00")));
 
         // The breakout's trail of 3.00 and no target: the stop raised to 49.00 after 52.00 and to 52.00 after 55.00, so
-        // 51.90 is under it, (51.90 - 50.00) / 3.00, 0.6333, where the plan's own stop of 47.00 would have held.
+        // 51.90 is under it, where the plan's own stop of 47.00 would have held, sold at the next open of 51.50:
+        // (51.50 - 50.00) / 3.00, 0.5000.
         Assert.Equal(
-            "50.00 0 2026-10-06 51.90 stop 0.6333 2026-10-06",
-            await Followed(new TakenCase(Family: "breakout", Fill: "50.00", Target: null, Trail: "3"), Sessions("50.40", "52.00", "55.00", "51.90")));
+            "50.00 0 2026-10-07 51.50 stop 0.5000 2026-10-07",
+            await Followed(new TakenCase(Family: "breakout", Fill: "50.00", Target: null, Trail: "3"), Sessions("50.40", "52.00", "55.00", "51.90", "51.50")));
 
         // A falling close never lowers the raised stop: 53.00 after 55.00 leaves it at 52.00 and not 50.00, so 51.00 is
-        // under it, (51.00 - 50.00) / 3.00, 0.3333, where a stop lowered to 50.00 would hold.
+        // under it, where a stop lowered to 50.00 would hold, sold at the next open of 50.80: (50.80 - 50.00) / 3.00, 0.2667.
         Assert.Equal(
-            "50.00 0 2026-10-07 51.00 stop 0.3333 2026-10-07",
-            await Followed(new TakenCase(Family: "breakout", Fill: "50.00", Target: null, Trail: "3"), Sessions("50.40", "52.00", "55.00", "53.00", "51.00")));
+            "50.00 0 2026-10-08 50.80 stop 0.2667 2026-10-08",
+            await Followed(new TakenCase(Family: "breakout", Fill: "50.00", Target: null, Trail: "3"), Sessions("50.40", "52.00", "55.00", "53.00", "51.00", "50.80")));
     }
 
     [Fact]
@@ -202,12 +205,13 @@ public partial class FixtureExpectations
     public async Task AnOpenUnderTheStopIsReadAtThePlansDistanceAndAHoldingIsEndedByItsBooksSale()
     {
         // The fill's session opened at 46.50, under the stop of 47.00: the fill is that open, and the risk the plan's own,
-        // 50.00 less 47.00. Its close of 46.80 is under the stop: (46.80 - 46.50) / 3.00, 0.1000.
-        Assert.Equal("46.50 0 2026-10-02 46.80 stop 0.1000 2026-10-02", await Followed(new TakenCase(), Sessions("46.50", "46.80")));
+        // 50.00 less 47.00. Its close of 46.80 is under the stop, sold at the next open of 46.20: (46.20 - 46.50) / 3.00,
+        // -0.1000.
+        Assert.Equal("46.50 0 2026-10-05 46.20 stop -0.1000 2026-10-05", await Followed(new TakenCase(), Sessions("46.50", "46.80", "46.20")));
 
         // An open exactly at the stop is at or under it, so its risk is the plan's own 3.00 and not the nothing the fill
-        // less the stop leaves: (46.80 - 47.00) / 3.00, -0.0667.
-        Assert.Equal("47.00 0 2026-10-02 46.80 stop -0.0667 2026-10-02", await Followed(new TakenCase(), Sessions("47.00", "46.80")));
+        // less the stop leaves: (46.20 - 47.00) / 3.00, -0.2667.
+        Assert.Equal("47.00 0 2026-10-05 46.20 stop -0.2667 2026-10-05", await Followed(new TakenCase(), Sessions("47.00", "46.80", "46.20")));
         Assert.Equal(((decimal?)3.00m, (decimal?)0.50m), (TakenWalk.Risk(47.00m, 47.00m, 50.00m), TakenWalk.Risk(47.50m, 47.00m, 50.00m)));
 
         // A sector heavyweight, with no stop, no target and no cap, held until its book sold it on 2026-10-06 at 63.00:
@@ -314,6 +318,12 @@ public partial class FixtureExpectations
             Bar(ticker, TakenNight, "49", "50");
             Bar(ticker, "2026-10-02", "50.60", "51");
             Bar(ticker, "2026-10-05", "51", at < 12 ? "56.10" : at < 19 ? "46.90" : "52");
+
+            // From 21.14 a close at the target or under the stop sells at the next session's open, 56.50 or 46.50.
+            if (at < 19)
+            {
+                Bar(ticker, "2026-10-06", at < 12 ? "56.50" : "46.50", at < 12 ? "56.50" : "46.50");
+            }
         }
 
         Card("2026-10-02", 1, "Q");
@@ -344,12 +354,13 @@ public partial class FixtureExpectations
         // nineteen ended, so no average; Q's night is not one the operator took a trade on.
         Assert.Equal("1 0 1 0 - | 1 20 12 7 19 -", await Record());
 
-        // P19 closes at 56.10 on 2026-10-06 and the twentieth ends. From 19.10 each pick is bought at the next session's
-        // open of 50.60, as the operator's fill was, its risk the 3.60 down to its stop as the operator's is read: a win is
-        // (56.10 - 50.60) / 3.60 and a loss (46.90 - 50.60) / 3.60, (13 x 5.50 - 7 x 3.70) / (20 x 3.60), 0.6333; from the
-        // plan's buy of 50.00 it read 0.9600.
+        // P19 closes at 56.10 on 2026-10-06 and the twentieth ends, sold at 2026-10-07's open of 56.50. From 19.10 each pick
+        // is bought at the next session's open of 50.60, as the operator's fill was, its risk the 3.60 down to its stop as
+        // the operator's is read, and from 21.14 sold at the open after the close that ended it: a win is
+        // (56.50 - 50.60) / 3.60 and a loss (46.50 - 50.60) / 3.60, (13 x 5.90 - 7 x 4.10) / (20 x 3.60), 0.6667.
         Bar("P19", "2026-10-06", "52", "56.10");
+        Bar("P19", "2026-10-07", "56.50", "56.50");
 
-        Assert.Equal("1 0 1 0 - | 1 20 13 7 20 0.6333", await Record());
+        Assert.Equal("1 0 1 0 - | 1 20 13 7 20 0.6667", await Record());
     }
 }

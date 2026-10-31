@@ -4590,7 +4590,7 @@ public sealed partial class MarkRenderer : IComponent
                 : card is not null
                     ? Formatted($"Its trade is the one the {SetupOf(card.Family)} picked it for{(card.Entry is { } price ? Formatted($", in at about {Price(price)}") : string.Empty)}, drawn on its card below with its exit.")
                     : held is { Card: var heldCard } heldTrade
-                        ? FormattableString.Invariant($"Its trade is the one the {SetupOf(heldCard.Family)} picked it for on {heldTrade.Pick.Night:yyyy-MM-dd}, sold{(heldCard.Target is { } aim ? Formatted($" at {Price(aim)},") : string.Empty)}{(heldCard.Stop is { } floor ? Formatted($" at a close below {Price(floor)}") : string.Empty)}{(heldCard.Cap is { } most ? Formatted($" or after {most} trading days") : string.Empty)}, drawn on its short card below.")
+                        ? FormattableString.Invariant($"Its trade is the one the {SetupOf(heldCard.Family)} picked it for on {heldTrade.Pick.Night:yyyy-MM-dd}, sold{(heldCard.Target is { } aim ? Formatted($" at the next open after a close at or above {Price(aim)},") : string.Empty)}{(heldCard.Stop is { } floor ? Formatted($" at the next open after a close below {Price(floor)}") : string.Empty)}{(heldCard.Cap is { } most ? Formatted($" or after {most} trading days") : string.Empty)}, drawn on its short card below.")
                         : "No plan with an entry, a stop and a target is stored for this night.";
 
         var drawn = new StringBuilder();

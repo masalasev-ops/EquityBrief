@@ -94,16 +94,22 @@ public sealed partial class ReadApi
 
     const int FillWidth = 6;
 
+    // From 21.14 the session a swing trade was sold on, the open after the close its stop, its target or its trail
+    // signalled, as the fill step wrote it; none while that sale waits on its open, so the trade is still held; and the
+    // session it ended on where the fill step has not priced it again since.
+    // see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
+    const string SoldOn = "CASE WHEN f.sold_on IS NOT NULL THEN f.sold_on WHEN t.ended_on IS NOT NULL AND f.result IS NULL AND f.filled_on IS NOT NULL THEN NULL ELSE t.ended_on END";
+
     // Each swing trade in one column order after its account and family: its stock, night, place, close, stop, end, result
     // at its fill, target, the distance it trails, cap, round trip, the exit of the menu it is walked under and its stop's
     // distance in typical moves, a column a table keeps none of read as none.
-    static readonly string FamilyTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, f.result, t.target, NULL, t.cap, t.cost, t.exit, t.risk_moves, {FillColumns} FROM family_trade t {Filled("family_trade", "t", "'GSPC'", "t.candidate", "session_date")} ORDER BY t.session_date, t.place;";
+    static readonly string FamilyTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, NULL, t.cap, t.cost, t.exit, t.risk_moves, {FillColumns} FROM family_trade t {Filled("family_trade", "t", "'GSPC'", "t.candidate", "session_date")} ORDER BY t.session_date, t.place;";
 
-    static readonly string RulePicksKept = $"SELECT t.rule, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, f.result, t.target, NULL, t.cap, NULL, NULL, NULL, {FillColumns} FROM rule_pick t {Filled("rule_pick", "t", "t.index_code", "t.rule", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
+    static readonly string RulePicksKept = $"SELECT t.rule, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, NULL, t.cap, NULL, NULL, NULL, {FillColumns} FROM rule_pick t {Filled("rule_pick", "t", "t.index_code", "t.rule", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
-    static readonly string IndexFamilyTradesOn = $"SELECT t.family, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, f.result, t.target, t.trail, t.cap, t.cost, t.exit, t.risk_moves, {FillColumns} FROM index_family_trade t {Filled("index_family_trade", "t", "t.index_code", "t.family", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
+    static readonly string IndexFamilyTradesOn = $"SELECT t.family, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, t.trail, t.cap, t.cost, t.exit, t.risk_moves, {FillColumns} FROM index_family_trade t {Filled("index_family_trade", "t", "t.index_code", "t.family", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
-    static readonly string IndexRuleTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, f.result, t.target, t.trail, t.cap, t.cost, t.exit, t.risk_moves, {FillColumns} FROM index_rule_trade t {Filled("index_rule_trade", "t", "t.index_code", "t.candidate", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
+    static readonly string IndexRuleTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, t.trail, t.cap, t.cost, t.exit, t.risk_moves, {FillColumns} FROM index_rule_trade t {Filled("index_rule_trade", "t", "t.index_code", "t.candidate", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
     // Each holding in one column order after its account: its stock, rebalance, close, end, result at its fill, round
     // trip, sector and the reason its book sold it, a book keeping no round trip read as none.

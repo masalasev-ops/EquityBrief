@@ -54,6 +54,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-next-open" => await LedgerNextOpenRun(args),
     "ledger-exits" => await LedgerExitsRun(args),
     "ledger-score-audit" => await ScoreAuditRun(args),
+    "drift-surprises" => await DriftSurprisesRun(),
     "loop-open-floor" => await LoopOpenFloorRun(args),
     "ledger-night" => await LedgerNightRun(),
     "scores" => await ScoresRun(),
@@ -93,7 +94,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 58 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 59 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -168,7 +169,8 @@ static int NoVerb()
         "which a family's card reads to say its sweep found none, '--newest <family> --index <index>' in place of the run " +
         "naming the newest run stating one for that family on that index, " +
         "'rule-record' replays each rule a pick's card names on each index at its one setting over the pulled history, " +
-        "each trade after its cost, and stores its record for the card, with '--index <GSPC, MID or SML>' one index alone, " +
+        "each trade after its cost, and stores its record for the card, with '--index <GSPC, MID or SML>' one index alone " +
+        "and with '--print' printing each record and writing nothing, " +
         "and 'rule-record --nights' replays instead each standing rule's listed count on every session of the pulled " +
         "history, the live rules and the breakout's and the drift's variants at their grid settings, for the cards' " +
         "stretch lines, and 'rule-record --open-floor' replays the S&P 500's live drift rule beside the same rule " +
@@ -194,6 +196,9 @@ static int NoVerb()
         "group's setups, winning share, mean edge after costs and the rule's own picks, the setups since the first " +
         "monthly run by the newest model fitted before their night, on a page under the loop folder, writing no " +
         "store row, " +
+        "'drift-surprises' reads every S&P 500 drift row a night stored a surprise on against the calendar's figure " +
+        "today for the same print, and the pulled surprises the history reads, and prints how many differ and by how " +
+        "much, writing nothing, " +
         "'loop-open-floor --index <GSPC, MID or SML>' walks the drift's rules standing on the index as the per-rule " +
         "test walks them with the open floor beside the live or provisional rule, skipping a fill whose reward to " +
         "risk at the open is under 1, and judges it against that rule in the drift's own correction over the test " +
@@ -712,7 +717,7 @@ static async Task<int> RuleRecordRun(string[] args)
         ? await recorder.OpenFloorAsync(print: args.Contains("--print", StringComparer.Ordinal))
         : args.Contains("--nights", StringComparer.Ordinal)
             ? await recorder.NightsAsync(indices)
-            : await recorder.RunAsync(indices);
+            : await recorder.RunAsync(indices, print: args.Contains("--print", StringComparer.Ordinal));
 }
 
 // The setup ledger's history, by hand: one index over a span of sessions, each setup the loose gates pass over the
@@ -884,6 +889,17 @@ static async Task<int> ScoreAuditRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Loop.ScoreAudit(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out).RunAsync(index);
+}
+
+// 21.14's read-only check of the surprises the drift reads, by hand: every drift row a night stored a surprise on against
+// the calendar's figure today, and the pulled surprises the history reads, printed and written nowhere.
+// see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+static async Task<int> DriftSurprisesRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Families.DriftSurprises(store.DatabaseFile, Console.Out).RunAsync();
 }
 
 // 21.3's open floor through the walk-forward tester by hand, on one index, the drift's rules walked as the per-rule

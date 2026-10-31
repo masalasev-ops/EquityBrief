@@ -13105,3 +13105,105 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `data`; the phase report 64 tables, 1488 claims, 1488 passing, none out of scope and none unexamined, 1503
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    Tonight read again off the operator's app from main after the merge for no plain-words fault.
+
+### 21.14 - the held decisions built: every swing trade a close's signal ends sold at the next session's open, the tone variant's line, the drift surprises check, and the flag split and the reversed VIX beside the per-rule test   2026-10-31
+
+Built:      on the operator's rulings of 2026-10-30, word for word in `prompts/2026-10-30-21.14-operator-answers.md` and
+            `prompts/2026-10-30-21.9-21.13-operator-ruling.md`. Every swing trade on every family and index ended by a
+            close through its stop, at its target or under its trail is sold at the open of the session after that close,
+            a half exit of the menu's first half at the open after the close that reached its level, the cap's and a time
+            exit's close standing (see: A swing trade sold on a close's signal is sold at the next session's open by the
+            fill step, and no rule's version moves because of it). One function in the core works every sale; the fill
+            step writes the session and the price each was sold at, migration 119's `trade_fill.sold_on` and `sale`, a
+            trade whose sale's open is not stored yet holding no result until the next night prices it; the ledger keeps
+            such a setup open; the rule records' replays, the monthly tests' walks and the follower of the operator's
+            trades sell the same way, the dip's walks untouched; paper trading sells on the sale's session; a pick's card,
+            its brief and the report say each stop and target sells at the next day's open. The benchmark stays as the
+            entry's fill priced it, each member sold at its own closes, as the figures the ruling rests on read it. The
+            tone variant's rows on paper trading carry the operator's sentence. The drift surprises check, the worker's
+            `drift-surprises`, reads the drift's stored surprises against the calendar today and writes nothing. The
+            per-rule test prints, beside each graded exposure, the same walk with the VIX's direction reversed, and
+            beside each Fundamentals rule requiring a flag first the same settings without it, each split on the local
+            model's cutoff's year. `rule-record --print` replays the records and writes nothing. `ledger-exits` reads the
+            benchmark beside the stored one with each member sold as the trade is. The decision, 13.10, the catalogue,
+            the matrix, 15.18 and 15.21, SCHEMA, the runbook, the guide and the changelog. No source a rule pins moves.
+Measured:   read-only over the operator's store on 2026-10-31 from a copy of this branch's build pointed at the live data
+            root, between 08:16 and 10:54 UTC, nothing written to the store, the history read through 2026-10-30.
+            The records, each family's on each index as its card draws it: before, as the rule recorder stored them, the
+            S&P 500's on 2026-10-16 through 2026-10-15, the S&P 600's on 2026-10-20 through 2026-10-19 and the S&P 400's
+            on 2026-10-21 through 2026-10-20, every trade sold at its close; after, `rule-record --print`, every swing
+            trade a close's signal ended sold at the next open, the counts differing by the trades that ended in between.
+            Trades, then the mean result after costs in risks, the books' in per cent, their sale unchanged:
+            S&P 500's pullback 1891 at +0.171 before, 1928 at +0.178 after; breakout 1012 at +0.120, 1034 at +0.118;
+            drift 2251 at +0.021, 2264 at +0.035; heavyweights 374 at 3.88, 375 at 3.85.
+            S&P 400's pullback 720 at +0.206, 723 at +0.232; breakout 1033 at +0.031, 1038 at +0.039; drift 1807 at
+            +0.099, 1812 at +0.147; heavyweights 335 at 4.64, 339 at 4.87.
+            S&P 600's pullback 548 at +0.380, 548 at +0.393; breakout 957 at +0.019, 958 at +0.021; drift 1021 at
+            +0.216, 1028 at +0.244; heavyweights 304 at 7.07, 304 at 7.07.
+            The benchmark, `ledger-exits` over every settled swing setup of each index, the mean edge after costs a trade
+            sold at the close, sold at the next open against the benchmark the fill step keeps, its members sold at
+            their closes, and sold at the next open against the benchmark sold the same way: the S&P 500's pullback,
+            30,229 setups, +0.021, +0.040 and +0.024; breakout, 22,461, -0.016, -0.002 and -0.015; drift, 5,889,
+            -0.014, 0.000 and -0.009. The S&P 400's pullback, 22,737, +0.009, +0.022 and +0.008; breakout, 15,453,
+            -0.025, -0.019 and -0.027; drift, 4,354, +0.013, +0.089 and +0.029. The S&P 600's pullback, 31,884, +0.050,
+            +0.076 and +0.060; breakout, 19,994, -0.026, -0.016 and -0.025; drift, 5,687, -0.109, -0.086 and -0.107.
+            Against a benchmark sold the same way the sale at the next open moves the edge by -0.002 to +0.016 risks a
+            trade, where against the kept benchmark it reads +0.006 to +0.076: most of what 21.3 measured is the gap
+            every stock carries overnight after the close, and not the plan's.
+            The surprises, `drift-surprises`: 725 S&P 500 drift rows over 292 stocks on 22 nights stored a surprise, from
+            2026-10-01; 40 rows over 27 stocks differ from the calendar's figure today to two decimals, a median of 8.4
+            points and at most 127.3, TSLA's -9.09 on 2026-10-22 against 118.18 today; 11 rows over 9 stocks, AMP, AMT,
+            KIM, LIN, PCG, PLD, PNC, TSLA and VMC, turn from a miss to a beat or back; the drift passed on 4 of the
+            differing stocks, FLEX, MMM, NCLH and TSCO. The history the drift's sweeps and the walk-forward tester read
+            takes its surprises as pulled, 65,243 prints with a figure from 2018-01-01 to 2026-10-01 written by 9
+            pulls, so every past surprise it reads is the provider's figure at the pull, revised.
+            The release readings, `loop-rules --print` on each index, trades or a book's months and their mean edge
+            after costs before the local model's cutoff's year, 2025, and from it. The tone variant, its print's release
+            reading better with its outlook not cut: the S&P 500's 1,185 at +0.189 and 465 at -0.001, its opposite 584
+            at -0.548 and 186 at -0.262; the S&P 400's 973 at +0.189 and 395 at -0.014, its opposite 492 at +0.212 and
+            165 at -0.011; the S&P 600's 566 at +0.109 and 235 at -0.027, its opposite 190 at +0.145 and 74 at +0.498.
+            Each Fundamentals rule requiring a flag first beside the same settings without it, in points a month: the
+            S&P 500's, 71 months at -0.16 and 21 at -0.14, without 72 at +0.07 and 21 at +0.56;
+            the S&P 400's live rule 72 at +0.49 and 21 at -0.12, without 72 at +0.18 and 21 at +0.17, and its seven
+            versions requiring one, each above its unflagged twin before 2025 but one and below it from 2025 on every
+            one; the S&P 600's live rule 71 at +1.41 and 21 at -0.04, without 71 at +0.08 and 21 at +0.59, and its
+            seven versions requiring one, each above its unflagged twin before 2025 and below it from 2025.
+            The VIX's direction reversed, trades and mean edge after costs over the test years against the graded walk:
+            the S&P 500's breakout 458 at +0.076 against 492 at +0.066, its drift 945 at -0.042 against 898 at -0.112;
+            the S&P 400's pullback 523 at +0.034 against 488 at +0.085, breakout 582 at +0.036 against 586 at +0.019,
+            drift 1,039 at +0.121 against 984 at +0.200, dip 316 at -0.029 against 266 at -0.013; the S&P 600's breakout
+            530 at +0.078 against 555 at +0.058, its dip 211 at +0.045 against 185 at +0.065.
+Put:        to the operator with this entry, for their word. The benchmark: the fill step, the ledger and the monthly
+            tests keep it as the entry's fill priced it, its members sold at their closes, as the decision says and as
+            21.3's figures read it; against it the sale at the next open reads up to 0.06 risks a trade better than
+            against a benchmark sold the same way, which only the ledger's check walks today. The release readings:
+            on every index the tone variant's edge before 2025 is gone from 2025, and so is every flag-first Fundamentals
+            rule's lead over its unflagged twin on the S&P 400 and 600, the S&P 500's having none to lose, the pattern
+            phase 20 set as the mark of an edge carried by the model's memory. The VIX's direction: reversed, it reads
+            better on the S&P 500's breakout and drift, the S&P 400's breakout and the S&P 600's breakout, and worse on
+            the S&P 400's pullback, drift and dip and the S&P 600's dip. Nothing is registered or retired for any of it.
+Decisions:  one written: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and
+            no rule's version moves because of it.
+Tests:      3009, from 3001: eight added, a stop, a target and a cap sold where their signal says worked by hand, a
+            trail on its cap's session and a half sold first, the fill step selling a stored trade and waiting on its
+            sale's open, the drift surprises check worked by hand and over a constructed store writing nothing, the
+            reversed VIX at both of its switches, the flag split, the tone variant's line read back off its rows, and no
+            pinned source among those 21.14 writes. The tests holding a sale at the close, or its words, moved to the
+            sale at the next open, each figure worked by hand again.
+Claims:     1491, from 1488: three added, the drift surprises catalogue and matrix rows and 15.21's tone variant's line;
+            the amended rows in place; 1506 placements.
+Pins:       none moved: no source 21.14 writes is one a rule's version pins, asserted.
+Remedy:     `tools/remedies/2026-10-31-21.14-exits-at-the-next-open.txt`, from main after the merge while no other
+            writer runs: the migration to 119, the fill step over every stored trade again and the records replayed;
+            then each index's ledger history built again with its check, by hand.
+Mutation:   chosen before the run by this rule, the property 21.14 adds first, a close's signal sold at the next open: the
+            core made to sell a stop at its close. The hand-worked sale, the fill step's, the half exit's, the ledger's
+            night and the history rebuilt went red, five; reverted, green. Not mutated: the tone line, the surprises
+            check, the reversed VIX and the flag split.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3009 of 3009 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy and the three ledger histories, read off their output after the merge; the operator's word on the
+            benchmark, the release readings and the VIX's direction; 21.15's phase report.

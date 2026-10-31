@@ -1489,7 +1489,8 @@ public partial class ArchitectureConformance
         // 265 at 21.10: the Loop page's versions chosen by their record.
         // 266 at 21.11: paper trading's combined account.
         // 268 at 21.13: Tonight's market strip and the copy's.
-        Assert.Equal(268, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 269 at 21.14: paper trading's tone variant's line.
+        Assert.Equal(269, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1660,7 +1661,8 @@ public partial class ArchitectureConformance
         // 667 at 21.10: the Loop page's versions chosen by their record.
         // 668 at 21.11: paper trading's combined account.
         // 670 at 21.13: Tonight's market strip and the copy's.
-        Assert.Equal(670, inDocument.Length);
+        // 671 at 21.14: paper trading's tone variant's line.
+        Assert.Equal(671, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

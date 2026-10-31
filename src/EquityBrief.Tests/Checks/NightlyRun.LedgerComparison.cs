@@ -119,10 +119,12 @@ public partial class NightlyRun
             Assert.Equal(before.Benchmark!.Value, after.Benchmark!.Value, 12);
         }
 
-        // GGG's path and every member's end on the night's close, which the second build reads.
+        // GGG's path and every member's end on the night's close, which the second build reads; from 21.14 GGG's close
+        // through its stop is sold at the next session's open, which the store does not hold yet, so it stands open beside
+        // its settled benchmark, whose members are sold at their closes.
         var settled = Breakout(rebuilt, "GGG", 134);
 
-        Assert.Equal((1, SetupEnds.Stop, LedgerStamp(ComparisonNight)), (settled.Settled, settled.End, settled.EndedOn));
+        Assert.Equal((0, SetupEnds.Open, (string?)null), (settled.Settled, settled.End, settled.EndedOn));
         Assert.NotNull(settled.Benchmark);
         Assert.DoesNotContain(rebuilt, row => row.Settled == 1 && row.Benchmark is null);
     }

@@ -347,6 +347,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Score audit"),
             CheckReach.Key(Scope.MatrixTable, "Score audit"),
 
+            // 21.14, the drift surprises check.
+            CheckReach.Key(Scope.CatalogueTable, "Drift surprises"),
+            CheckReach.Key(Scope.MatrixTable, "Drift surprises"),
+
             // 16.3, the taken trades' follower.
             CheckReach.Key(Scope.CatalogueTable, "Taken follower"),
             CheckReach.Key(Scope.MatrixTable, "Taken follower"),
@@ -827,8 +831,9 @@ public partial class ComponentAccess
         // and the sweep's point-in-time check, which reads scratch stores of its own the night's components wrote,
         // from 20.3 the release accuracy report, which prints its figures and writes nothing, from 20.5 the local
         // comparison, which opens the store read-only and writes its figures to a file under the data root, and from
-        // 21.3 the score audit, which reads the setups and the stored models and writes its page under the data root.
-        Assert.Equal(["ComparisonFiles", "FilterCounts", "LocalComparison", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // 21.3 the score audit, which reads the setups and the stored models and writes its page under the data root, and
+        // from 21.14 the drift surprises check, which prints what it reads and writes nothing.
+        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "LocalComparison", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

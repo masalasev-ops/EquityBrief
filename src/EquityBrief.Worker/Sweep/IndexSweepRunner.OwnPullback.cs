@@ -53,7 +53,7 @@ public sealed partial class IndexSweepRunner
 
         public SweepCandidate[] Candidates { get; }
 
-        // The exits restated at the next open, those of a stepped plan left as they were, and those holding no open.
+        // The exits restated at the next open, those of a stepped plan bought as they were, and those holding no open.
         public long AtOpen { get; }
 
         public long Stepped { get; }
@@ -107,7 +107,8 @@ public sealed partial class IndexSweepRunner
 
             // From 19.10 a plan bought at the close is bought at the open after it: each exit's result moved by the stock's
             // own gap over the risk its close put up and its benchmark by the members' gaps, none where no open is held
-            // after it; a stepped plan, bought at its own fill on a later session, stands as it was.
+            // after it; a stepped plan, bought at its own fill on a later session, stands as it was. From 21.14 every plan,
+            // a stepped one among them, is sold at the open after the close its stop or its target ended it on.
             var exits = SweepAxes.Exits;
             var (atOpen, stepped, noOpen) = (0L, 0L, 0L);
 
@@ -138,10 +139,14 @@ public sealed partial class IndexSweepRunner
                         {
                             stepped++;
 
+                            var steppedSold = fills.Pullback(plan.Multiple[exit], candidate.Name, bar, plan, exit, risk);
+
+                            plan.Multiple[exit] = steppedSold is { } kept ? (float)kept : float.NaN;
+
                             continue;
                         }
 
-                        var restated = open is { } price ? TradeFills.AtOpen(plan.Multiple[exit], close, risk, price) : null;
+                        var restated = fills.Pullback(open is { } price ? TradeFills.AtOpen(plan.Multiple[exit], close, risk, price) : null, candidate.Name, bar, plan, exit, risk);
 
                         plan.Multiple[exit] = restated is { } moved ? (float)moved : float.NaN;
                         plan.Benchmark[exit] = (float)fills.Benchmark(plan.Benchmark[exit], candidate.Session, plan.StopMoves);
