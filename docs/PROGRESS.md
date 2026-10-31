@@ -13084,3 +13084,24 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the three pages and Tonight with the strip at 1440 and a true 390 in both palettes, read off the operator's app
             from main after the merge and the remedy; the four series' first night, read off its fetch row; the strip's
             quotes read in a session; and everything 21.12 carried.
+
+### 18.4 - correction: the open floor's line on a drift pick's card in the reader's words, risking $1 at the open and the picks it skipped, held to the word list   2026-10-31
+
+Found:      after 21.13's merge, read off the operator's Tonight from main on 2026-10-31 at 06:30 UTC: the plain-words
+            check found 10 faults on the page, every one in the line the S&P 500's drift picks' cards draw beneath the
+            rule's record, which said "reward to risk" and "listings", two terms the word list holds. No test held the
+            line to the list.
+Corrected:  the line reads "skipping a fill where risking $1 at the open would make under $1" and "it skipped n picks the
+            rule bought", its figures unchanged, and its test holds it to every term of the word list. No source a rule's
+            version pins moves: the card's renderer is pinned by none.
+Tests:      3001, unchanged: the card's test asserts the new words and that the line draws no listed term.
+Claims:     1488, unchanged: no row of the architecture states the line's words; 1503 placements.
+Mutation:   chosen before the run by this rule, the property the correction adds, the line drawing no listed term: the
+            line's old word "listings" put back in the renderer and in the test's expected words, so only the word list's
+            assertion can see it. The test went red on "listing"; reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3001 of 3001 tests ran
+            with none failed, migrations 0 to 118 with none pending, schema version 118, against `data-ci` and never
+            `data`; the phase report 64 tables, 1488 claims, 1488 passing, none out of scope and none unexamined, 1503
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    Tonight read again off the operator's app from main after the merge for no plain-words fault.
