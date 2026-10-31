@@ -13367,3 +13367,68 @@ Written:    21.17's text and its done condition in the build plan, numbered afte
             phase 21 row, its prior text in the changelog; the ruling's three decisions with 21.17's entry.
 Verified:   `tools/ci.ps1` green over the tree carrying 21.15's entry above, which states that run's figures; documents
             alone change after it.
+
+### 21.17 - the operator's word on 21.14's findings built: every swing trade judged against a benchmark whose members are sold as the trade is, a rule or a change reading a release reading judged on the test years from the model's cutoff's year alone, and the Fundamentals live rule on the S&P 400 and 600 without its flag   2026-10-31
+
+Built:      on the operator's ruling of 2026-10-31, word for word in `prompts/2026-10-31-21.17-operator-ruling.md`.
+            The benchmark: each member of a swing trade's benchmark is bought at its own next open as before and sold as
+            the trade is, at its own open after the close its stop, its target or its trail ended it on and at its close
+            for the cap or a time exit, its walk under the trade's plan and exit read again from its own closes; a member
+            whose sale's open is not stored keeps the benchmark waiting (see: Every swing trade is judged against a
+            benchmark whose members are sold as the trade is, and no rule's version moves because of it). The core
+            prices each member's sale; the fill step, the ledger and its history, the monthly tests' one pricing at the
+            open, the S&P 400's and 600's own sweeps' walks and the scorecards reading the per-rule test each sell the
+            members so. The S&P 500's sweeps sell trade and members at the close and the dip's walk sells both at the
+            open already, so neither moves. No live swing trade holds a benchmark yet, its cap's sessions not having
+            passed since 2026-10-02, so the fill step first prices one so as it arrives. The release readings: the tester
+            did not work as ruled; it judged a proposal reading one over every test year and held it back where its
+            years from the cutoff stood at nothing or under. Now the tester and the per-rule test judge every rule and
+            proposal reading one, a Fundamentals setting asking a flag first among them, on its units from the cutoff's
+            year alone, its every year kept and printed beside it as read by a model trained after them on the month's
+            report, the Loop page and the scorecard on paper trading (see: A rule or a change reading a release reading
+            is judged on the test years from the model's cutoff's year alone, the earlier years printed beside it). The
+            Fundamentals family: `register --without-flag <index>` retires the live rule and the version at its setting
+            without the flag and registers them again as each other at one instant, each family keeping its nine, so no
+            rule goes to the background and none is retired from the family; the S&P 500's live rule asks no flag
+            already (see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule
+            standing beside it as a version). The tone variant stays with its sentence and the VIX's direction as built,
+            the reversed walk printed as 21.14 built it; neither asked for code. The decisions, 13.10, 13.11, the
+            catalogue, 15.20, 15.21, section 20's row, SCHEMA, the runbook, the guide and the changelog.
+Measured:   each family's mean edge after costs a trade on each index, `ledger-exits` over every settled swing setup read
+            read-only from this branch's build on 2026-10-31 between 22:56 and 22:59 UTC, the history through
+            2026-10-30, each trade sold at the next open: before, against the stored benchmark, its members sold at their
+            closes; after, against the benchmark with its members sold as the trade is. The S&P 500's pullback, 30,264
+            setups, +0.039 before and +0.024 after; breakout, 22,472, -0.002 and -0.015; drift, 5,901, +0.001 and -0.008.
+            The S&P 400's pullback, 22,757, +0.022 and +0.007; breakout, 15,462, -0.018 and -0.026; drift, 4,372, +0.088
+            and +0.028. The S&P 600's pullback, 31,923, +0.076 and +0.060; breakout, 20,013, -0.016 and -0.025; drift,
+            5,730, -0.084 and -0.105. The stored figures move once the remedy builds each history again.
+Decisions:  three written, each narrowing one that stands: Every swing trade is judged against a benchmark whose members
+            are sold as the trade is, and no rule's version moves because of it; A rule or a change reading a release
+            reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside
+            it; The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside
+            it as a version.
+Tests:      3020, from 3012: eight added, each member's sale worked by hand in the core, the ledger's benchmark, the
+            monthly walk's and the fill step's each selling its members and waiting on one, no pinned source among those
+            21.17 writes, a rule and a proposal reading a release reading judged from the cutoff's year worked by hand, the
+            month's report's line, and the remedy's lines registering the two live rules again over a register shaped as
+            the operator's. Four amended: the cutoff's line and the Loop page's in their new words, and the history's
+            settled breakout whose members wait on the next open now waiting.
+Claims:     1491, none new; the rows amended in place; 1506 placements.
+Pins:       none moved, asserted over every rule's pinned sources and the ledger's readings version's: the words a flag
+            first reads and the label sit in a source of their own, apart from the release readings' sources, which the
+            readings version pins.
+Remedy:     `tools/remedies/2026-11-01-21.17-the-three-findings.txt`, from main after the merge while no other writer
+            runs: each index's answer at its live setting without the flag, the two live rules registered again; then
+            each index's ledger history built again with its check, by hand.
+Mutation:   chosen before the run by this rule, the property 21.17 adds first, the benchmark's members sold as the trade
+            is, and the second, the judging from the cutoff's year. M1 the core's sale move made nothing for every member,
+            predicted red at the core's, the ledger's, the monthly walk's and the fill step's tests: those four red. M2 the
+            evidence handed back whole, predicted red at the judging test: red. Each reverted, green. Not mutated: the
+            register form and the scorecard's label.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3020 of 3020 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy and the three ledger histories, read off their output after the merge; the sign-offs of phases
+            18, 20, 21 and 22 by fresh sessions; the hosted runners swept once at the phase's end.
