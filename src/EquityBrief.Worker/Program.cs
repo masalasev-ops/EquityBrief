@@ -1015,12 +1015,93 @@ static async Task<int> LoopMonthRun(string[] args)
             return (false, refused);
         }
 
-        var whole = await new EquityBrief.Worker.Ledger.FilingsRefresher(archive, clock, store.DatabaseFile)
-            .WholeAsync(runId, Console.Out, cancellation);
+        // Then each member whose newest company row carries no filer or another than the file names is asked its quarters
+        // again, so the fetch takes the file's filer, at most the run's cap and stated before the first request.
+        // see: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and the dividends of each member none were kept for, each ask stated before the first
+        NightFeeds feeds;
 
-        return whole.Refusal is null
-            ? (true, FormattableString.Invariant($"{whole.FactsAsked} filer(s) asked and {whole.Facts} fact(s) stored in {whole.Seconds:0} s"))
-            : (false, "the archive refused: " + whole.Refusal);
+        try
+        {
+            feeds = NightFeeds.Resolve(
+                configuration[NightFeeds.SourceKey],
+                configuration[NightFeeds.FixtureKey],
+                configuration[EodhdBulkPriceFeed.BaseAddressKey],
+                configuration[ProviderCredentials.ApiKeyName]);
+        }
+        catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
+        {
+            return (false, "the provider's feeds: " + refusal.Message);
+        }
+
+        var filers = await new EquityBrief.Worker.Quarters.QuarterFetcher(feeds.Fundamentals, feeds.Historical, () => feeds.WeightedCalls, clock, store.DatabaseFile)
+            .RunAsync(
+                EquityBrief.Worker.Indices.IndexFamilies.LargeIndex,
+                runId,
+                cancellation,
+                wider: [.. EquityBrief.Worker.Loop.MonthlyRun.Indices.Where(index => index != EquityBrief.Worker.Indices.IndexFamilies.LargeIndex)],
+                most: EquityBrief.Worker.Quarters.QuarterFetcher.MonthlyFilerAsks,
+                stating: line => Console.Out.WriteLine("quarters: " + line),
+                filers: true);
+
+        var refresher = new EquityBrief.Worker.Ledger.FilingsRefresher(archive, clock, store.DatabaseFile);
+        var whole = await refresher.WholeAsync(runId, Console.Out, cancellation);
+
+        if (whole.Refusal is not null)
+        {
+            return (false, "the archive refused: " + whole.Refusal);
+        }
+
+        // And each member's report filed since the first of the month before the run's that the store holds no fact of,
+        // read from its own instance under the member's own line, a report filed with other registrants among them.
+        // see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
+        var since = DateOnly.ParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture).AddMonths(-1);
+        var read = await refresher.InstancesAsync(
+            since,
+            EquityBrief.Worker.Indices.IndexFamilies.LargeIndex,
+            [.. EquityBrief.Worker.Loop.MonthlyRun.Indices.Where(index => index != EquityBrief.Worker.Indices.IndexFamilies.LargeIndex)],
+            runId,
+            Console.Out,
+            cancellation);
+
+        var words = FormattableString.Invariant($"{filers.Asked.Count} member(s) asked their filer again, {whole.FactsAsked} filer(s) asked and {whole.Facts} fact(s) stored, {read.Instances} report(s) read from their own instance since {since:yyyy-MM-dd}, in {whole.Seconds + read.Seconds:0} s");
+
+        return read.Refusal is null ? (true, words) : (false, words + "; the archive refused: " + read.Refusal);
+    }));
+
+    // The dividends of each member the indices hold that no run has kept one for, asked from the history run's first date.
+    // see: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and the dividends of each member none were kept for, each ask stated before the first
+    steps.Add(new("dividends", async (runId, cancellation) =>
+    {
+        var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+        IDividendHistoryFeed feed;
+
+        try
+        {
+            feed = FeedSource.Resolve<IDividendHistoryFeed>(
+                configuration[NightFeeds.SourceKey],
+                configuration[NightFeeds.FixtureKey],
+                RecordedDividendHistoryFeed.FromFolder,
+                () => EodhdCorporateActionFeed.Live(
+                    string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+                    new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
+                "the monthly run's dividends step");
+        }
+        catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
+        {
+            return (false, "the provider's feed: " + refusal.Message);
+        }
+
+        try
+        {
+            var kept = await new EquityBrief.Worker.Dividends.DividendKeeper(clock, store.DatabaseFile)
+                .UnkeptAsync(feed, EquityBrief.Worker.Loop.MonthlyRun.Indices, runId, line => Console.Out.WriteLine("dividends: " + line), cancellation);
+
+            return (true, EquityBrief.Worker.Dividends.DividendKeeper.HistoryDetail(kept));
+        }
+        catch (ArgumentException refusal)
+        {
+            return (false, refusal.Message);
+        }
     }));
 
     steps.Add(new(

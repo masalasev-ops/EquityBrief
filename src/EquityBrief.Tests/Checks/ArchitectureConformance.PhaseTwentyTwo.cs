@@ -70,6 +70,7 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.VersionChoiceClaims,
         .. Reading.ReadSurface.VersionChoicePageClaims,
         .. Reading.ReadSurface.CombinedPageClaims,
+        .. FixtureExpectations.HousekeepingClaims,
     ];
 
     // The rows the document loses after phase 22's report: none.

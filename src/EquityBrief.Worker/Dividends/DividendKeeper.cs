@@ -14,10 +14,11 @@ public sealed record DividendsKept(int Handed, int Kept, int Asked = 0, IReadOnl
 
 // The dividends a member paid, kept for the name page's dividend history and its safety.
 //
-// Two ways in, one writer. On the night, the dividends the night's bulk answer carried for the names the night stores,
+// Three ways in, one writer. On the night, the dividends the night's bulk answer carried for the names the night stores,
 // which the corporate action check has already asked for, so keeping them asks nothing. And on the operator's command,
 // the dividends history run: each member an index holds today asked once for its dividends from a date, one request a
-// member at the historical weight, stated before the first request and held at the stop a pull is held at. One row a
+// member at the historical weight, stated before the first request and held at the stop a pull is held at; and the
+// monthly run's dividends step, the same ask for each member of the indices no run has kept a dividend for. One row a
 // member and ex-dividend date, the first kept standing, so a date the night and the history both name is written once and
 // never rewritten. Each amount is as the provider restated it for splits on the day it was read, beside the amount paid.
 // see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read
@@ -57,6 +58,12 @@ public sealed class DividendKeeper(IClock clock, string databaseFile) : ICompone
     ";
 
     const string Held = "SELECT COUNT(*) FROM dividend_event;";
+
+    // The members any run has kept a dividend for.
+    const string KeptFor = "SELECT DISTINCT ticker FROM dividend_event;";
+
+    // The first ex-dividend date the monthly run's dividends step asks for, the history run's own first date.
+    public static readonly DateOnly HistoryFrom = new(2018, 1, 1);
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -187,12 +194,74 @@ public sealed class DividendKeeper(IClock clock, string databaseFile) : ICompone
 
         var members = await MembersAsync(connection, indexCode, session, cancellation);
         var asked = only is null ? members : [.. members.Where(ticker => only.Contains(ticker, StringComparer.Ordinal))];
+        var what = FormattableString.Invariant($"{asked.Count:N0} member(s) of {indexCode} today, one request each, from {from:yyyy-MM-dd}");
+
+        return await AskAsync(connection, feed, asked, indexCode, from, session, startedAt, runId, what, stating, pastTheStop, cancellation);
+    }
+
+    // The monthly run's dividends step: each member the indices hold on today's session that no run has kept a dividend
+    // for asked once for its dividends from `HistoryFrom`, as the history run asks, a member paying none asked again at
+    // the next month's run.
+    // see: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and the dividends of each member none were kept for, each ask stated before the first
+    public async Task<DividendsKept> UnkeptAsync(
+        IDividendHistoryFeed feed,
+        IReadOnlyList<string> indices,
+        string runId,
+        Action<string>? stating = null,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var session = clock.SessionDateAt(startedAt);
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var kept = new HashSet<string>(StringComparer.Ordinal);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = KeptFor;
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                kept.Add(reader.GetString(0));
+            }
+        }
+
+        var members = new List<string>();
+
+        foreach (var index in indices)
+        {
+            members.AddRange(await MembersAsync(connection, index, session, cancellation));
+        }
+
+        IReadOnlyList<string> asked = [.. members.Distinct(StringComparer.Ordinal).Where(ticker => !kept.Contains(ticker)).Order(StringComparer.Ordinal)];
+        var named = string.Join(", ", indices);
+        var what = FormattableString.Invariant($"{asked.Count:N0} member(s) of {named} today no run has kept a dividend for, one request each, from {HistoryFrom:yyyy-MM-dd}");
+
+        return await AskAsync(connection, feed, asked, named, HistoryFrom, session, startedAt, runId, what, stating, pastTheStop: false, cancellation);
+    }
+
+    async Task<DividendsKept> AskAsync(
+        SqliteConnection connection,
+        IDividendHistoryFeed feed,
+        IReadOnlyList<string> asked,
+        string indexCode,
+        DateOnly from,
+        DateOnly session,
+        DateTimeOffset startedAt,
+        string runId,
+        string what,
+        Action<string>? stating,
+        bool pastTheStop,
+        CancellationToken cancellation)
+    {
         var weighted = asked.Count * ProviderWeights.HistoricalPerTicker;
 
         // Stated before the first request, and held at the stop a pull is held at.
         // see: Every pull states its provider calls before it runs and stops for the operator at the day's cap
-        var what = FormattableString.Invariant($"{asked.Count:N0} member(s) of {indexCode} today, one request each, from {from:yyyy-MM-dd}");
-
         stating?.Invoke(ProviderStop.Stated(what, weighted));
         ProviderStop.Hold(what, weighted, pastTheStop);
 

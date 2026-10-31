@@ -408,9 +408,10 @@ public partial class ArchitectureConformance
         // 21.8, section 17's ranking variant, and 1480 from 21.9, section 17's graded exposure variant and paper trading's
         // trade sized at half, and 1482 from 21.10, section 17's windows and floors of choosing a version and the Loop page's
         // row of it, and 1485 from 21.11, paper trading's combined account, section 17's row of its settings and section
-        // 18's row for a stock two families picked.
+        // 18's row for a stock two families picked, and 1486 from 21.12, section 17's row of the monthly run's housekeeping
+        // asks.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1485),
+            (789, 853, 6, 4, 855, 876, 1486),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

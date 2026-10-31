@@ -223,6 +223,18 @@ public sealed class QuarterFetcher : IComponent
           AND c.cik <> (SELECT s.cik FROM sec_ticker s WHERE s.ticker = c.ticker ORDER BY s.read_at DESC LIMIT 1);
     ";
 
+    // Both at once, as the monthly run's facts step asks them after it reads the SEC's ticker file.
+    const string FiledNoneOrOther = @"
+        SELECT c.ticker FROM company c
+        WHERE c.fetched_at = (SELECT MAX(fetched_at) FROM company WHERE ticker = c.ticker)
+          AND (c.cik IS NULL
+            OR c.cik <> (SELECT s.cik FROM sec_ticker s WHERE s.ticker = c.ticker ORDER BY s.read_at DESC LIMIT 1));
+    ";
+
+    // The most members the monthly run's facts step asks again for their filer in one run, the rest left to the next run.
+    // see: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and the dividends of each member none were kept for, each ask stated before the first
+    public const int MonthlyFilerAsks = 220;
+
     // One ask a member a night: a night run again keeps the ask it made rather than asking twice.
     const string InsertAsk = @"
         INSERT INTO quarter_ask (ticker, session_date, asked_at, reason, awaited, outcome, quarters, weighted, nights, next_ask, detail)
@@ -345,7 +357,8 @@ public sealed class QuarterFetcher : IComponent
     // The wider indices are the S&P 400 and 600 the night reads beside its own, whose members' quarters it asks for on
     // the schedule the index's own are. A run by hand may ask instead for the members no fetch stored a company for, or
     // for those whose newest fetch read no interest expense, at most `most` of them, and is told what it will ask before
-    // its first request.
+    // its first request; the monthly run's facts step asks with `filers` every member whose newest company row carries no
+    // filer or another than the SEC's own ticker file names, at most `MonthlyFilerAsks` of them.
     public async Task<QuartersOutcome> RunAsync(
         string indexCode,
         string runId,
@@ -357,7 +370,8 @@ public sealed class QuarterFetcher : IComponent
         Action<string>? stating = null,
         bool lines = false,
         bool unfiled = false,
-        bool misfiled = false)
+        bool misfiled = false,
+        bool filers = false)
     {
         var startedAt = clock.UtcNow;
         var session = clock.SessionDateAt(startedAt);
@@ -371,10 +385,10 @@ public sealed class QuarterFetcher : IComponent
         var reports = await ReportsAsync(connection, session, cancellation);
         var first = await FirstNightAsync(connection, cancellation) ?? session;
         IReadOnlySet<string> withACompany = companies ? await TickersAsync(connection, WithACompany, cancellation) : new HashSet<string>(StringComparer.Ordinal);
-        IReadOnlySet<string> readNone = unread || lines || unfiled || misfiled
-            ? await TickersAsync(connection, unread ? ReadNoInterest : lines ? ReadNoLines : unfiled ? FiledNoCik : FiledOtherThanTheSec, cancellation)
+        IReadOnlySet<string> readNone = unread || lines || unfiled || misfiled || filers
+            ? await TickersAsync(connection, unread ? ReadNoInterest : lines ? ReadNoLines : unfiled ? FiledNoCik : misfiled ? FiledOtherThanTheSec : FiledNoneOrOther, cancellation)
             : new HashSet<string>(StringComparer.Ordinal);
-        var byHand = companies || unread || lines || unfiled || misfiled;
+        var byHand = companies || unread || lines || unfiled || misfiled || filers;
 
         // A member asked by hand is asked once a session, as a fill storing whatever quarters the answer carries.
         var due = byHand
@@ -400,6 +414,7 @@ public sealed class QuarterFetcher : IComponent
             : lines ? "whose newest fetch read none of the gross profit and the cash flow lines"
             : unfiled ? "whose newest company row carries no filer"
             : misfiled ? "whose newest company row carries a filer other than the SEC's own ticker file's"
+            : filers ? "whose newest company row carries no filer or another than the SEC's own ticker file's"
             : "due";
 
         stating?.Invoke(FormattableString.Invariant(

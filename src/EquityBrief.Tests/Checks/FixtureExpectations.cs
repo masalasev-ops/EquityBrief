@@ -152,6 +152,8 @@ public partial class FixtureExpectations
             .. ExposureClaims,
             // 21.10, choosing a version by its record: section 17's windows and floors.
             .. VersionChoiceClaims,
+            // 21.12, the monthly run's housekeeping asks: section 17's cap and weights.
+            .. HousekeepingClaims,
             // 17.6, winners against losers: section 17's two rows and section 18's one.
             .. ConditionClaims,
             // 17.7, the learned score: section 17's three rows.
