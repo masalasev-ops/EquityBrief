@@ -26,6 +26,51 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-31 - docs/ARCHITECTURE.html - every swing trade sold on a close's signal sold at the next session's open; the drift surprises check; the tone variant's line; the per-rule test's reversed exposure and flag split
+Authorised by: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
+Was:
+> (Setup ledger) ... bought at the open after its session as the ledger buys it: sold at the close that triggered its exit as the ledger sells it, sold at the open of the session after that close, ...
+> (Taken follower) ... its record counting each ended and none won or lost, since the dip sets no target (see: ...)
+> (Trade filler) ... and moves no rule's version, since no source a rule pins changes (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it)
+> (Walk-forward tester) ... and each live pullback's and dip's graded exposure walked and proposed (see: ...) (see: ...)
+> (13.10, the setup's anchor) ... through the core's one pricing function every trade's entry is priced by (see: ...). Any exit, for the setup or for the benchmark, replays ...
+> (13.10, 21.3's checks) ... bought at the open after its session as the ledger buys it: sold at the close that triggered its exit as the ledger sells it, sold at the open of the session after that close, ...
+> (15.18, the plan) ... as tiles, the buy at the next day's open, a close below the stop, the target where the rule sets one or the rising stop or the short-term dip's exit in words, ...
+> (15.18, the follower) ... and ends a trade at its stop, its target, its cap, its book's sale, the operator's exit or its last close as a member, its result in the plan's risk from the fill, ...
+> (Trade fills, 16) ... every page and figure that reports a trade's result reads it, and the trades' own close-priced figures are drawn nowhere
+> (21.9's graded exposure) ... and walked unregistered by the monthly per-rule test where the family holds nine (see: ...).
+Now:
+> (Setup ledger) ... sold at the close that triggered its exit as the ledger sold it before 21.14, sold at the open of the session after that close as it sells it from 21.14, ...
+> (Taken follower) ... (see: ...); and from 21.14 a swing trade a close through its stop or at its target ends is sold at the open of the session after that close, standing until that session is stored, its cap's close standing (see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it)
+> (Trade filler) ... (see: ...); and from 21.14 sells each swing trade a close's signal ended, its stop, its target or its trail, at the open of the session after that close, a scored plan's end read off its stored outcome and a trade under an exit of the menu replayed under it, its result and edge moved by that gap over the same risk and the session and price it was sold at written beside them, the cap's or a time exit's close standing, a trade whose sale's open is not stored yet holding no result until it is, and the benchmark as the entry's fill priced it (see: ...)
+> (Walk-forward tester) ... (see: ...); and from 21.14 every swing trade a close's signal ends sold at the open after that close (see: ...), and the per-rule test printing, beside each graded exposure, ... the same walk with the VIX's direction reversed, ..., and beside each Fundamentals rule requiring a flag first its months on each side of the local model's cutoff's year with the same settings without the flag, each walked unregistered and written nowhere, for the operator's rulings
+> (13.10, the setup's anchor) ... (see: ...). From 21.14 a swing setup a close's signal ended, a close through its stop, at its target or under its trail, is sold at the open of the session after that close, its result moved by that gap over the same risk, and one whose open after it is not stored yet stays open until it is; the cap's close stands, and the benchmark stays bought at each member's own next open and sold at its own closes (see: ...). Any exit, ...
+> (13.10, 21.3's checks) ... as the ledger sold it before 21.14, sold at the open of the session after that close as it sells it from 21.14, ...
+> (15.18, the plan) ... a close below the stop and the target where the rule sets one, each sold at the next day's open from 21.14, or the rising stop or the short-term dip's exit in words, ...
+> (15.18, the follower) ... or its last close as a member, from 21.14 a close through its stop or at its target sold at the next session's open, its result in the plan's risk from the fill, ...
+> (Trade fills, 16) ... drawn nowhere; from 21.14 a swing trade's sale beside it, the session and the price it was sold at, the open after the close that signalled its stop, its target or its trail or its own close for the cap or a time exit, its result and edge sold there
+> (21.9's graded exposure) ... (see: ...). From 21.14, on the operator's ruling of 2026-10-30, the direction stays as built, ..., and the per-rule test walks each graded exposure again with the direction reversed, ..., unregistered and written nowhere, and prints both over the test years for the operator's word; nothing more is registered for it.
+> (added) the Drift surprises check's catalogue and matrix rows, and 15.21's row The tone variant's line
+Why: the operator ruled on 2026-10-30, on 21.3's figures, that every swing trade's exit is priced at the next session's open by a fill step of its own with no rule registered again and no record restarting, that the tone variant's card says its history before 2025 does not count, that two read-only checks precede 21.15 and that the VIX's reversed direction is walked beside each graded variant; 21.14 builds each.
+
+### 2026-10-31 - docs/SCHEMA.md - trade_fill's sale beside its fill
+Authorised by: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
+Was:
+> ... and every page and figure that reports a trade's result reads this table's in their place. The fill is the one money column, TEXT as every price is; the figures beside it are statistics.
+Now:
+> ... in their place. From 21.14 a swing trade that ended on a close's signal, its stop, its target or its trail, is sold at the open of the session after that close, its result and edge moved by that gap over the same risk and the session and price it was sold at written beside them; a trade whose sale's open is not stored yet holds no result until it is, and is priced again once it is; the benchmark stays as the entry's fill priced it (see: ...). The fill and the sale are the money columns, TEXT as every price is; the figures beside them are statistics. (added) the columns `sold_on` and `sale`
+Why: migration 119 adds the session and the price each swing trade was sold at, which the fill step writes from 21.14.
+
+### 2026-10-31 - docs/RUNBOOK.md - 21.3's exits check after the sale moves, the drift surprises check, the per-rule test's two new lines and 21.14's remedy
+Authorised by: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
+Was:
+> None registers a rule, moves a version or restarts a record; a change any of them suggests waits for 21.14 and the operator's word (see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word).
+> ... A card drawn before its rule's record is stored shows a dashed outline saying so, and its earnings line reads the rule's cap alone.
+Now:
+> None registers a rule, ... (see: ...). From 21.14 `ledger-exits` reproduces the stored result by the next open's pricing, which the ledger then stores, and reads the benchmark beside the stored one with each member sold as the trade is, the edge at the next open against each.
+> ... and its earnings line reads the rule's cap alone. From 21.14 `rule-record --print` replays and prints each record and writes nothing, not even a run log row, so a change's records can be read before its remedy writes them. (added) the `drift-surprises` command and the per-rule test's two new lines; the paragraph on the sale at the next open and 21.14's remedy block
+Why: 21.14 builds the operator's rulings of 2026-10-30, which change where the ledger sells and add two read-only checks before 21.15.
+
 ### 2026-10-31 - CLAUDE.md - the hard rule names the market strip's four series among those the night asks
 Authorised by: The market strip draws each market's close and its change on the day from the night's store, and Yahoo's delayed quote in the session
 Was:
