@@ -70,7 +70,10 @@ public partial class ReadSurface
         var replay = new CardOpenFloorView(1, new DateOnly(2019, 1, 2), new DateOnly(2026, 10, 27), new DateOnly(2026, 10, 27), RuleRecorder.OpenFloorWords, 410, 0.4, 0.21, 0, null, 455, 0.38, 0.17, 0, null, 52);
         var line = WebUtility.HtmlDecode(MarkRenderer.OpenFloorBeside(replay));
 
-        Assert.Contains("Beside it, the same rule replayed skipping a fill whose reward to risk at the open is under 1, registered as no rule: over 2 Jan 2019 to 27 Oct 2026 it kept 410 trades at +0.21 of the risk a trade after costs, 40% won, where the rule's own walk kept 455 at +0.17 of the risk a trade, 38% won, and it skipped 52 listings the rule bought. Followed forward from 27 Oct 2026: 0 trades at no average yet, against the rule's 0 at no average yet.", line, StringComparison.Ordinal);
+        Assert.Contains("Beside it, the same rule replayed skipping a fill where risking $1 at the open would make under $1, registered as no rule: over 2 Jan 2019 to 27 Oct 2026 it kept 410 trades at +0.21 of the risk a trade after costs, 40% won, where the rule's own walk kept 455 at +0.17 of the risk a trade, 38% won, and it skipped 52 picks the rule bought. Followed forward from 27 Oct 2026: 0 trades at no average yet, against the rule's 0 at no average yet.", line, StringComparison.Ordinal);
+
+        // A pick's card on Tonight speaks in the reader's words, and the line is drawn on it.
+        Assert.All(EquityBrief.Tests.Checks.PlainWords.Terms(), term => Assert.DoesNotMatch(EquityBrief.Tests.Checks.PlainWords.Pattern(term), line));
         Assert.Equal(string.Empty, MarkRenderer.OpenFloorBeside(null));
 
         // The newest run's row is read as the record command writes it, its detail as the first replay printed it.
