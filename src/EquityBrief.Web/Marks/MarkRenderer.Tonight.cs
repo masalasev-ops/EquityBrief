@@ -11,7 +11,7 @@ public sealed record EndedTonightView(int AtTarget, int AtStop, int AtLimit, int
 
 // What Tonight in one minute reads: the market line, tonight's picks by setup, the trades from earlier nights still open
 // with those that ended on the night, and the stocks one step from qualifying with the link opening them.
-public sealed record OneMinuteView(MarketLineView Line, IReadOnlyList<SetupTileView> Tiles, EndedTonightView? Ended, string? PicksHref);
+public sealed record OneMinuteView(MarketLineView Line, IReadOnlyList<SetupTileView> Tiles, EndedTonightView? Ended, string? PicksHref, DateOnly? Night = null);
 
 // One setup in the reader's words: the line its tile states what it looks for in, and the two sentences its card's header
 // describes it with.
@@ -54,6 +54,34 @@ public sealed partial class MarkRenderer
     // A setup's words, its own label's where the list holds none for it.
     public static SetupWordsView WordsOf(string family, string label) =>
         SetupWords.TryGetValue(family, out var words) ? words : new SetupWordsView(label + ".", label + ".");
+
+    // The session whose open a night's picks are bought at, in the reader's words: tomorrow's where the exchange trades the
+    // day after the night, that session's weekday where a weekend or a closure comes between, and the next trading day's
+    // where the closure table cannot place a day, rather than a guess.
+    // see: Tonight names the session its picks are bought at, tomorrow only where the exchange trades the next day
+    public static string OpenDay(DateOnly? night)
+    {
+        if (night is not { } after)
+        {
+            return "tomorrow's";
+        }
+
+        var day = after.AddDays(1);
+
+        try
+        {
+            while (!EquityBrief.Core.Bars.ExchangeClosures.IsSession(day))
+            {
+                day = day.AddDays(1);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            return "the next trading day's";
+        }
+
+        return day == after.AddDays(1) ? "tomorrow's" : day.DayOfWeek + "'s";
+    }
 
     // A count as a sentence says it, one noun and its plural.
     static string Counted(int count, string one, string many) => Formatted($"{count} {(count == 1 ? one : many)}");
@@ -128,9 +156,10 @@ public sealed partial class MarkRenderer
             1 => ", all from the " + listing[0].Label.ToLowerInvariant(),
             _ => ", from the " + string.Join(", the ", listing[..^1].Select(tile => tile.Label.ToLowerInvariant())) + " and the " + listing[^1].Label.ToLowerInvariant(),
         };
+        var opens = OpenDay(view.Night);
         var picks = line.BuyPoints == 0
-            ? "No new picks to buy at tomorrow's open."
-            : Counted(line.BuyPoints, "new pick", "new picks") + " to buy at tomorrow's open" + from + ".";
+            ? "No new picks to buy at " + opens + " open."
+            : Counted(line.BuyPoints, "new pick", "new picks") + " to buy at " + opens + " open" + from + ".";
         var qualified = line.Passed is { } passed && line.Members is { } members
             ? Formatted($"{passed} of the {members} {line.Index} stocks qualified under some setup tonight. ")
             : string.Empty;
@@ -266,7 +295,7 @@ public sealed partial class MarkRenderer
         ("Setup", "The setup that picked the stock tonight."),
         ("Why it qualified", "What the stock did that its setup buys, from the figures the night stored."),
         ("The business", "How the company's reported quarters read: improving, steady or getting worse, with what its numbers say under the pointer. It removes no pick."),
-        ("Buy about", "Tonight's close. The pick is bought at tomorrow's open."),
+        ("Buy about", "Tonight's close. The pick is bought at the next trading day's open."),
         ("Stop", "A close below it sells the trade at a loss, at the next day's open."),
         ("Target", "A close at or above it sells the trade at a gain, at the next day's open. A breakout has a stop that rises with the price and no target; the short-term dip names its exit."),
         ("Risk $1 to make", "How far the target is against the stop: $2.00 means the target is twice as far away as the stop. It is a fact about the chart and not a chance of anything."),
@@ -278,12 +307,13 @@ public sealed partial class MarkRenderer
     // until a press on the row or its Open plan opens it, the row the link names open; and one line on how to read it. An
     // index the labeller reads no list of says so in each row holding no label.
     // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
-    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, bool labelled = true)
+    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, bool labelled = true, DateOnly? night = null)
     {
         var body = new StringBuilder();
+        var opens = OpenDay(night);
         var summary = points.Count == 0
-            ? "No stock to buy at tomorrow's open: no setup picked one tonight."
-            : Counted(points.Count, "stock", "stocks") + " to buy at tomorrow's open, at about tonight's close.";
+            ? "No stock to buy at " + opens + " open: no setup picked one tonight."
+            : Counted(points.Count, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close.";
 
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary data-buy-points=\"{points.Count}\">{Escaped(summary)}</p>");
 
@@ -328,7 +358,9 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</tbody></table></div>");
-        body.Append("<p class=\"buys-read\">The business is how the company's reported quarters read: improving, steady or getting worse. News counts the stories of the last 30 days the labeller read as good or bad for the company. Open a row for its full plan, what could go wrong and how its setup has done. Each pick is bought at tomorrow's open, with its stop and target where tonight's close set them.</p>");
+        body.Append("<p class=\"buys-read\">The business is how the company's reported quarters read: improving, steady or getting worse. News counts the stories of the last 30 days the labeller read as good or bad for the company. Open a row for its full plan, what could go wrong and how its setup has done. Each pick is bought at ");
+        body.Append(opens);
+        body.Append(" open, with its stop and target where tonight's close set them.</p>");
 
         return body.ToString();
     }

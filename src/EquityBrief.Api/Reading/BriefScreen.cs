@@ -541,7 +541,7 @@ public static class BriefScreen
             BriefStates.NoReport => "no recent report",
             BriefStates.Held => "in its holdings",
             BriefStates.NotHeld => "not in its holdings",
-            BriefStates.Bought => "bought at tomorrow's open",
+            BriefStates.Bought => "bought at the next trading day's open",
             BriefStates.Flagged => "flagged, waiting for its filing",
             _ => "not read tonight",
         });

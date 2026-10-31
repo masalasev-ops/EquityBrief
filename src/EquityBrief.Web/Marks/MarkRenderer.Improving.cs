@@ -49,7 +49,7 @@ public sealed partial class MarkRenderer
     public const int ReportingDays = 5;
 
     // A row's status, in the reader's words.
-    public const string BoughtWords = "Bought at tomorrow's open";
+    public const string BoughtWords = "Bought at the next trading day's open";
     public const string FlaggedWords = "Flagged, waiting for its filing";
     public const string ImprovedWords = "Improved, short of the bar";
     public const string HeldWords = "Bought earlier";
@@ -273,7 +273,8 @@ public sealed partial class MarkRenderer
             : improved == 1
                 ? "Tonight 1 company's business improved on a new report."
                 : Formatted($"Tonight {improved} companies' businesses improved on a new report.");
-        var bought = card.Bought == 1 ? "1 is bought at tomorrow's open" : Formatted($"{card.Bought} are bought at tomorrow's open");
+        var opens = OpenDay(card.Night);
+        var bought = card.Bought == 1 ? "1 is bought at " + opens + " open" : Formatted($"{card.Bought} are bought at {opens} open");
         var flagged = card.Flagged == 1
             ? "1 more is flagged from its results release and waits for its filing"
             : Formatted($"{card.Flagged} more are flagged from their results release and wait for their filing");
@@ -291,7 +292,7 @@ public sealed partial class MarkRenderer
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<div class=\"hw-tiles improving-tiles\" data-bought=\"{card.Bought}\" data-flagged=\"{card.Flagged}\" data-holding=\"{card.Holding}\" data-holding-since=\"{(card.HoldingSince is { } since ? since.ToString("R", Invariant) : "none")}\" data-members-since=\"{(card.MembersSince is { } members ? members.ToString("R", Invariant) : "none")}\" data-reporting=\"{(card.Reporting is { } reporting ? reporting.ToString(Invariant) : "none")}\">");
-        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Bought at tomorrow's open</span><b data-state=\"bought\">{card.Bought}</b><span>{(card.Bought switch { 0 => "no new filing lifted one over the bar", 1 => "its filing confirmed the improvement", _ => "their filing confirmed the improvement" })}</span></div>");
+        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Bought at {OpenDay(card.Night)} open</span><b data-state=\"bought\">{card.Bought}</b><span>{(card.Bought switch { 0 => "no new filing lifted one over the bar", 1 => "its filing confirmed the improvement", _ => "their filing confirmed the improvement" })}</span></div>");
         body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Flagged, waiting for the filing</span><b data-state=\"flagged\">{card.Flagged}</b><span>results release read; filing usually within weeks</span></div>");
         body.Append(card.Holding == 0
             ? "<div class=\"hw-tile\"><span class=\"tile-label\">Holding</span><b>0</b><span>none bought yet</span></div>"

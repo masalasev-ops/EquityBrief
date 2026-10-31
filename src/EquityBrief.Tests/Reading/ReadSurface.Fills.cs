@@ -46,7 +46,7 @@ public partial class ReadSurface
         using var tonightClient = tonightHost.CreateClient();
 
         Assert.Matches(
-            "</table></div><p class=\"buys-read\">[^<]* Each pick is bought at tomorrow's open, with its stop and target where tonight's close set them\\.</p>",
+            "</table></div><p class=\"buys-read\">[^<]* Each pick is bought at Monday's open, with its stop and target where tonight's close set them\\.</p>",
             WebUtility.HtmlDecode(await tonightClient.GetStringAsync($"/screens/tonight/{TheSwitch}")));
     }
 

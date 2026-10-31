@@ -130,7 +130,7 @@ public partial class ReadSurface
 
         Assert.StartsWith("<div class=\"one-minute\" data-picks=\"7\" data-open-trades=\"1\" data-ended=\"0\" data-one-step=\"2\"><div class=\"minute-line\" data-line=\"market\" data-summary><p class=\"market-line\"", minute, StringComparison.Ordinal);
         Assert.Contains(
-            FormattableString.Invariant($"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>7 new picks to buy at tomorrow's open, from the pullback and the breakout.</b></p><p class=\"minute-said\">{passed} of the {members} S&P 500 stocks qualified under some setup tonight. The other setup found nothing new.</p></div>"),
+            FormattableString.Invariant($"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>7 new picks to buy at Monday's open, from the pullback and the breakout.</b></p><p class=\"minute-said\">{passed} of the {members} S&P 500 stocks qualified under some setup tonight. The other setup found nothing new.</p></div>"),
             minute,
             StringComparison.Ordinal);
         Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>1 trade from an earlier night is still open.</b></p><p class=\"minute-said\">None ended tonight. <a href=\"#/picks?status=open\">See them on Past picks</a></p></div>", minute, StringComparison.Ordinal);
