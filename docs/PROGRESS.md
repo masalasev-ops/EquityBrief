@@ -13250,12 +13250,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pull request's last.
 Carried:    paper trading on the S&P 400 read again at a true 390 from main's Release build after the merge.
 
+### 22.6 - correction: Tonight names the session its picks are bought at, Monday's buys on a Friday, where the card said tomorrow's open whatever the next day was   2026-10-31
+
+Found:      by the operator on 2026-10-31, reading Tonight's night of 2026-10-30, a Friday: "the heading says stocks to buy
+            on tomorrow's open. TOmorrow is Saturday. so nothing can be bought. The statement is misguiding". From 22.6
+            the card was titled Tomorrow's buys and its sentences, the minute's line counting the picks and the
+            Fundamentals card's sentence and tile said tomorrow's open on every night.
+Corrected:  the page reads the session after the night off the exchange's closure table: tomorrow's where it is the day
+            after the night, that session's weekday otherwise, the next trading day's where the table cannot place the
+            day. The card's title, its sentence, its line on how to read it, the minute's line and the Fundamentals
+            card's sentence and tile name it; the column's note, a Fundamentals row's status and a stock's chip say the
+            next trading day's open. The decision, 15.7's row, the guide and the changelog. No source a rule's version
+            pins moves: the renderers and the brief are pinned by none, and the closure table is read, not edited.
+Decisions:  one written: Tonight names the session its picks are bought at, tomorrow only where the exchange trades the
+            next day.
+Tests:      3011, from 3010: one added, a Thursday, a Friday, the night before Thanksgiving's closure and the table's
+            last day by hand, and the Friday of 2026-10-02 drawn with Monday's buys and no tomorrow; five tests over
+            that Friday's fixture moved to the new words, Monday's open where the night is named and the next trading
+            day's where it is not.
+Claims:     1491, unchanged: 15.7's row amended in place; 1506 placements.
+Mutation:   chosen before the run by this rule, the property the correction adds, a night with no session the next day
+            naming the session after it: the session's weekday replaced by tomorrow's. The new test and the four whose
+            fixture night is a Friday went red, five; reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.15's entry below, this
+            pull request's last.
+Carried:    Tonight read again from main's Release build after the merge, naming Monday's buys for the night of
+            2026-10-30.
+
 ### 21.15 - the phase 21 report: every screen read back against the store, each checkpoint's answer and each ruling's outcome, the counts each checkpoint stated, the pair checked against the actual, and the two operating rows phase 21 opened   2026-10-31
 
 Queue:      done, 21.0 to 21.14 and 21.16 with their corrections, rulings and remedies, the three ledger histories
-            built again after 21.14's; in progress, this report and the correction its read-back found; next, Tonight's
-            heading naming the next session the exchange trades, which the operator asked for after this phase, and the
-            sign-offs of phases 18, 20, 21 and 22 by fresh sessions when the operator says.
+            built again after 21.14's; in progress, this report, the correction its read-back found and the 22.6
+            correction above, Tonight naming the session its picks are bought at, which the operator asked to carry in
+            this pull request; next, the sign-offs of phases 18, 20, 21 and 22 by fresh sessions when the operator says.
 Screens:    captured on 2026-10-31 between 15:50Z and 15:58Z from main's Release build at 60bfcaaa over the live store,
             read-only, after 21.14's remedy and the three histories, at 1,440 pixels and a true 390 in both palettes, 9
             screens and 36 captures, laid out with what each was read back against at https://claude.ai/artifact/6N5jShGUeBJ1wgx2vzVge4. The pages draw the
@@ -13280,7 +13307,7 @@ Answers:    each in its checkpoint's entry: 21.1's 22 rules walked or named with
 Counts:     as each entry stated, tests in all and claims in all: 21.0 2918, 1455; 21.1 2921, 1455; 21.2 2921, 1455; 21.3
             2925, 1457; 21.4 2931, 1460, finished 2932, 1460, its corrections 2935, 1461; 21.5 2943, 1461; 21.6 2957,
             1476; 21.7 2963, 1477; 21.8 2967, 1478; 21.9 2971, 1480; 21.10 2975, 1482; 21.16 2984, 1482; 21.11 2986, 1485;
-            21.12 2989, 1486; 21.13 3001, 1488; 21.14 3009, 1491; and this report 3011, 1491, the corrections between
+            21.12 2989, 1486; 21.13 3001, 1488; 21.14 3009, 1491; and this report 3012, 1491, the corrections between
             adding the rest.
 Pair:       before phase 21, 1455 claims on main at 96fc734f, phase 22's actual 1444 and the 11 rows 22.13 and 22.14
             landed after its report; the plan's pair after 21.15 about 1505, within 1485 to 1525, its checkpoints'
@@ -13297,7 +13324,7 @@ Pair:       before phase 21, 1455 claims on main at 96fc734f, phase 22's actual 
 Operating:  phase 21 opened two operating rows, both at its planning pass: **The monthly run's time with every family
             tested** and **The ratings refresh's cap read on its first five runs**; `obligation-reconciles` states phase
             21 at two.
-Tests:      one new, the pair; 3011 in all, with the correction's above.
+Tests:      one new, the pair; 3012 in all, with the two corrections' above.
 Claims:     1491, none new; 1506 placements.
 Pins:       none move.
 Mutated:    the rule, stated before the runs: one mutation a property the report adds, each filtered to the test it was
@@ -13307,10 +13334,10 @@ Mutated:    the rule, stated before the runs: one mutation a property the report
             none against its 3; M3, phase 21 stated at one against the two the table holds. Not mutated: the screens,
             read back by hand.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull
-            request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3011 of 3011
+            request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3012 of 3012
             tests ran with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and
             never `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined,
             1506 placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the sign-offs of phases 18, 20, 21 and 22 by fresh sessions; the operator's word on the benchmark, the
-            release readings and the VIX's direction, put with 21.14's entry; Tonight's heading naming the next session
-            the exchange trades; the hosted runners swept once at the phase's end.
+            release readings and the VIX's direction, put with 21.14's entry; the hosted runners swept once at the
+            phase's end.
