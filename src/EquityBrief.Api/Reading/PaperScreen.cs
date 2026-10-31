@@ -48,7 +48,8 @@ public sealed record PaperAccounts(
     IReadOnlyList<DateOnly>? Sessions = null,
     IReadOnlyDictionary<string, PaperStockRow>? Stocks = null,
     Func<DateOnly, decimal?>? Fund = null,
-    IReadOnlyDictionary<string, string>? Standings = null);
+    IReadOnlyDictionary<string, string>? Standings = null,
+    PaperCombinedView? Combined = null);
 
 // The projection from stored trades and test rows to paper trading's accounts and their trade logs. The accounts are an
 // index's: each family's live or provisional rule's list, the page's own, each registered variant's own list or book,
@@ -632,7 +633,8 @@ public static class PaperScreen
         string? show,
         string variants,
         string fundName,
-        Func<DateOnly, decimal?> fund)
+        Func<DateOnly, decimal?> fund,
+        PaperCombinedView? combined = null)
     {
         var heads = views.Where(view => view.Head && (show is null || view.Family == show)).ToArray();
         var source = sources.ToDictionary(account => account.Key, StringComparer.Ordinal);
@@ -711,7 +713,70 @@ public static class PaperScreen
             earlier,
             PaperAccount.NotBought([.. heads.Select(head => (head.Walk, source[head.Key].Unfilled ?? []))]),
             only,
-            new PaperFundView(fundName, counted?.Return, from, counted?.From));
+            new PaperFundView(fundName, counted?.Return, from, counted?.From),
+            combined);
+    }
+
+    // From 21.11 the combined account on an index: every trade each family's live or provisional account counts, in one
+    // pot walked by the core from the account settings over the sessions from the earliest day those accounts count from,
+    // each with the family it came from and its stock's GICS sector on the night; none before the settings are set or
+    // where no such account counts a trade. Each trade's return is on its position, its sale over its buy, or tonight's
+    // close over its buy session's while it is open.
+    // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+    public static PaperCombinedView? Combined(
+        IReadOnlyList<PaperAccountSource> accounts,
+        AccountSettings? settings,
+        IReadOnlyList<DateOnly> sessions,
+        DateOnly night,
+        Func<string, DateOnly, decimal?> close,
+        Func<DateOnly, decimal?> fund,
+        IReadOnlyDictionary<string, PaperStockRow> stocks)
+    {
+        var heads = accounts.Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional && account.Since is not null).ToArray();
+
+        if (settings is not { } held || heads.Length == 0)
+        {
+            return null;
+        }
+
+        var since = heads.Min(account => account.Since!.Value);
+        CombinedTrade[] trades =
+        [
+            .. heads.SelectMany(account => account.Trades.Select(one => new CombinedTrade(
+                one.Trade,
+                account.Family,
+                SetupFamilies.OrderOf(account.Family),
+                stocks.TryGetValue(one.Trade.Ticker, out var stock) ? stock.Sector : null,
+                account.Book))),
+        ];
+        var walked = PaperAccount.Combined(held, trades, [.. sessions.Where(session => session >= since && session <= night)], close, fund);
+        var (open, closed) = PaperAccount.Held(walked.Walk, night);
+
+        double? ReturnOf(PaperTrade trade) =>
+            trade.Ended is { } ended && ended <= night
+                ? trade.Sale is { } sale && trade.Buy > 0m ? Statistic.FromRatio((sale / trade.Buy) - 1m) : null
+                : close(trade.Ticker, night) is { } now && (trade.MarkedFrom ?? close(trade.Ticker, trade.Bought)) is { } then && then > 0m ? Statistic.FromRatio((now / then) - 1m) : null;
+
+        return new PaperCombinedView(
+            walked.Walk,
+            since,
+            open,
+            closed,
+            walked.AlreadyHeld,
+            walked.SectorFull,
+            walked.UnderCash,
+            [
+                .. walked.Trades.Select(one => new PaperCombinedTradeView(
+                    one.From.Family,
+                    one.Taken.Trade.Ticker,
+                    one.Taken.Trade.Bought,
+                    one.Taken.Trade.Buy,
+                    one.Taken.Shares,
+                    one.Taken.Skipped,
+                    one.Taken.Trade.Ended,
+                    one.Taken.Skipped is null ? ReturnOf(one.Taken.Trade) : null,
+                    one.Taken.Trade.Ended is null || one.Taken.Trade.Ended > night)),
+            ]);
     }
 
     // An account's trade log: each trade with its result in the account's unit, an open one's so far at tonight's close

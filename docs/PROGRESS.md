@@ -12939,3 +12939,53 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the remedy, run from main after the merge with its counts in a record entry; the unregistered order by the
             expected value beside a frozen rule only its own search walks, which the per-rule test does not print; and
             the S&P 500's pullback's exposure, which waits on a move of the swing filter's pins.
+
+### 21.16 - the remedy run from main: 98 rules registered again at the second move of the pins, the S&P 600's breakout ordered by the expected value and three graded exposures   2026-10-31
+
+Not a checkpoint entry: it records 21.16's remedy and what it measured, and lands nothing.
+Ran:        `tools/remedies/2026-10-31-21.16-the-second-move-of-the-pins.txt` from main's 1af7b5f6, PR 603's merge, at
+            00:56 UTC on 2026-10-31, after the night of 2026-10-30 ended at 00:30 UTC, with no night, local run, drain,
+            labeller, ledger build or monthly run writing.
+Measured:   migration 116 to 117 applied; 98 rules retired and registered again at one instant, each unchanged in its
+            setting and its version moved, the count the entry above read off the register before it ran, each record
+            restarting at the registration; registered as 1156, the S&P 600's breakout ordered by the expected value,
+            its family 6 of 9; 1157, the S&P 400's pullback at its graded exposure of 0.35, 4 of 9; 1158, the S&P 400's
+            dip at 0.45, 5 of 9; and 1159, the S&P 600's dip at 0.35, 6 of 9. All six steps, exit 0. No request and no
+            model call.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.11's entry below, on whose
+            branch this is recorded; records alone change in this entry.
+
+### 21.11 - the combined paper account: every live rule's trades on an index in one pot, one position a stock, three open a sector and each book family a fifth of it, drawn on paper trading with what it skipped and why   2026-10-31
+
+Queue:      done, 21.1 to 21.10 and 21.16 as PRs 587 to 603 with their remedies, recorded above; in progress, 21.11;
+            next, 21.12 and 21.13 on the standing go, 21.13 with the operator's market strip, then 21.14's rulings and
+            21.15; beside them the sign-offs of phases 18, 20 and 22 by fresh sessions.
+Built:      the core's one walk gains two optional hands, one refusing a trade over what the account holds and one
+            sizing it; the combined account hands every live or provisional rule's trades on the index to it in session
+            order and the families' order, refusing a stock already held, a fourth open position in one GICS sector and,
+            as every account does, a buy the free cash cannot cover, and sizing a swing trade by the risk setting off the
+            account's value and a book's holding as an equal share of a fifth of it across the most its book holds, the
+            account's own most-in-one-stock limit kept for every trade. Paper trading reads each stock's sector beside
+            its name and draws the account's tile first among the tiles, its line in the chart, and a card listing each
+            trade with the family it came from and one sentence counting what it skipped and why. Worked when the page is
+            read and stored nowhere.
+Decisions:  one written: The combined account holds every live rule's trades in one pot with one position a stock and
+            three a sector, each book family a fifth of it.
+Tests:      2986, from 2984: two added, the account walked by hand over a stock two families picked, a sector at its
+            cap, a buy the free cash cannot cover and two books, and its tile, line and card read back with the card's
+            words carrying no term of 15.23's word list, which found "held" in its first sentence, now "owned".
+Claims:     1485, from 1482: three added, 15.21's row, section 17's two settings and section 18's row for a stock two
+            families picked, against the plan's count of about 7; 1500 placements.
+Pins:       none moved: no source 21.11 writes is one a rule's version pins, read off every evaluator's source list.
+Remedy:     none; the page reads the account from the stored trades.
+Mutation:   chosen before the run by this rule, the property the done condition names first, a stock two families
+            picked: the already-held refusal never firing. Both tests went red, the breakout's A bought beside the
+            pullback's; reverted, green. Not mutated: the sector's cap, the books' fifth and the cash.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2986 of 2986 tests ran
+            with none failed, migrations 0 to 117 with none pending, schema version 117, against `data-ci` and never
+            `data`; the phase report 64 tables, 1485 claims, 1485 passing, none out of scope and none unexamined, 1500
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the screenshots of paper trading with the account at 1440 and a true 390 in both palettes, read off the
+            operator's app from main after the merge, as the screens of 21.7 to 21.10 were; and everything 21.16
+            carried.
