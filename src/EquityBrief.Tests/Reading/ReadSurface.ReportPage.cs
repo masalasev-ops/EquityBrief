@@ -382,7 +382,7 @@ public partial class ReadSurface
         // The peer group is read against the company's own segments: ROP's software segments, most of its revenue, in a group
         // of electronic equipment makers are flagged, and a page drawing the flag where the group names the business fails as
         // one drawing none where it does not.
-        const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components's S&amp;P 500 members on the night, the provider's classification</div>";
+        const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components' S&amp;P 500 members on the night, the provider's classification</div>";
         var ropSegments = new EquityBrief.Core.Report.SegmentReading(
             "release",
             new DateOnly(2026, 9, 30),

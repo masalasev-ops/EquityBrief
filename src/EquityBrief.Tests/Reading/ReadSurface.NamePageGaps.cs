@@ -432,13 +432,31 @@ public partial class ReadSurface
         Assert.Equal("banking", IndustryCheck.Business([new("Global Banking & Markets", 15_520_000_000m), new("Asset & Wealth Management", 4_597_000_000m)])?.Business);
 
         // The proof reads the lines off the drawn table, the release's own clean one for ROP.
-        const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components's S&amp;P 500 members on the night, the provider's classification</div>";
+        var peers = MarkRenderer.PeerHeading("Electronic Equipment, Instruments & Components", "Electronic Equipment, Instruments & Components");
         var table = new MarkRenderer().SegmentsTable(RopReleaseSegments(), "USD");
         var flag = MarkRenderer.IndustryMismatch("Electronic Equipment, Instruments & Components", rop);
 
         Assert.Contains("put 78% of the quarter's revenue in software", flag, StringComparison.Ordinal);
-        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", Peers + flag + table), "industry-mismatch"));
-        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", Peers + table), "industry-mismatch"));
-        Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", Peers), "industry-mismatch"));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", peers + flag + table), "industry-mismatch"));
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", peers + table), "industry-mismatch"));
+        Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", peers), "industry-mismatch"));
+    }
+
+    // The valuation's heading over the industry's members writes the possessive as English writes a name: Software's, and
+    // Banks' and Components' for a name ending in s, where it wrote Banks's; and it names the industry the provider's or
+    // the one set for the stock, which the proof reads under either form.
+    // see: The valuation reads a stock against its own quarters and its industry's S&P 500 members from the night's readings alone
+    [Fact]
+    public void TheValuationsHeadingWritesAnIndustrysPossessiveAsANameIsWritten()
+    {
+        Assert.Equal("<div class=\"sub\">Against Banks' S&amp;P 500 members on the night, the provider's classification</div>", MarkRenderer.PeerHeading("Banks", "Banks"));
+        Assert.Equal("<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components' S&amp;P 500 members on the night, the provider's classification</div>", MarkRenderer.PeerHeading("Electronic Equipment, Instruments & Components", null));
+        Assert.Equal(
+            "<div class=\"sub\">Against Software's S&amp;P 500 members on the night, the industry set for the stock in place of the provider's Electronic Equipment, Instruments &amp; Components</div>",
+            MarkRenderer.PeerHeading("Software", "Electronic Equipment, Instruments & Components"));
+
+        // The proof reads the industry under either possessive: a heading set for the stock passes its label rule.
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("XYZ", MarkRenderer.PeerHeading("Banks", "Banks")), "industry-label"));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", MarkRenderer.PeerHeading("Software", "Electronic Equipment, Instruments & Components")), "industry-label"));
     }
 }

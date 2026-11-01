@@ -676,7 +676,7 @@ public static partial class ReportProof
     private static partial Regex NewsRegion();
 
     // The peer group's label: the group and what the page says it is.
-    [GeneratedRegex("<div class=\"sub\">Against (.+?)'s S&amp;P 500 members on the night, ([^<]*)</div>")]
+    [GeneratedRegex("<div class=\"sub\">Against (.+?)'s? S&amp;P 500 members on the night, ([^<]*)</div>")]
     private static partial Regex PeerGroup();
 
     // Each section the research region draws as left out or not written.

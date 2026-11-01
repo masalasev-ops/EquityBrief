@@ -13841,3 +13841,20 @@ Ruled:      word for word in `prompts/2026-11-01-18.5-phase-18-signoff-fifth-fin
             handoffs of phases 20, 21 and 22 carry it, and the sixth phase 18 handoff will.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.2 - correction: the valuation's heading writes an industry's possessive as a name is written, Banks' and not Banks's   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Found:      the fifth phase 18 sign-off review reading the pages of the night of 2026-10-30: the valuation's heading over
+            the industry's members read "Banks's" and "Diversified REITs's", an apostrophe and s after every industry, and
+            about forty of the S&P 500's industries end in s; put to the operator as a judgement, who chose to change it.
+Corrected:  the heading is one function writing an apostrophe alone after a name ending in s, Software's and Banks', its
+            words otherwise as the 18.4 correction of 2026-10-28 left them, the industry set for the stock in place of the
+            provider's named where one is; the proof reads the industry under either form. The constructed headings the
+            proof's tests read are written as the page now draws them.
+Tests:      one new, the heading for Banks, for an industry ending in Components with none set and for Software set in
+            place of the provider's, and the proof's industry label reading the first and the last.
+Mutation:   chosen before the run by this rule, the property the correction adds: p1 an apostrophe and s after every name
+            again, predicted red at the new test on Banks', red there, reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

@@ -303,7 +303,7 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", Before + "followed for 63 sessions"), "own-limit"));
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", News), "own-limit"));
 
-        const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components's S&amp;P 500 members on the night, the provider's classification</div>";
+        const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components' S&amp;P 500 members on the night, the provider's classification</div>";
         var sells = new MarkRenderer().SegmentsTable(
             new EquityBrief.Core.Report.SegmentReading(
                 "release",
