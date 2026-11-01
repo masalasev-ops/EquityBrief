@@ -15,7 +15,11 @@ namespace EquityBrief.Core.Providers;
 // for it. A result's date is RFC 3339 or null, and the tool rates each result with an authority tier and a rerank
 // score, both read onto the result. A search returning nothing is not billed, and neither is a refusal.
 // see: Theme material comes from a search tool, and per-name material never does
-public sealed class DeepSeekSearchFeed(HttpClient client, ProviderRequest? request = null, Func<TimeSpan, CancellationToken, Task>? pause = null) : ISearchFeed
+public sealed class DeepSeekSearchFeed(
+    HttpClient client,
+    ProviderRequest? request = null,
+    Func<TimeSpan, CancellationToken, Task>? pause = null,
+    Func<string, int, string, CancellationToken, Task>? kept = null) : ISearchFeed
 {
     public const string DefaultBaseAddress = "https://api.deepseek.com/";
 
@@ -57,8 +61,10 @@ public sealed class DeepSeekSearchFeed(HttpClient client, ProviderRequest? reque
             : null;
 
     // The key travels in the authorisation header and never in an address or a body, so no request line, log line or
-    // stored row can carry it. A blank one is refused by name here rather than sent as an anonymous request.
-    public static DeepSeekSearchFeed Live(string? apiKey, string? baseAddress = null, HttpMessageHandler? handler = null)
+    // stored row can carry it. A blank one is refused by name here rather than sent as an anonymous request. `kept` is
+    // handed each request's body, the answer's status and the answer's body as they went, which the measurement keeps
+    // when asked; no header reaches it.
+    public static DeepSeekSearchFeed Live(string? apiKey, string? baseAddress = null, Func<string, int, string, CancellationToken, Task>? kept = null)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -67,13 +73,15 @@ public sealed class DeepSeekSearchFeed(HttpClient client, ProviderRequest? reque
                 $"'{ModelProfiles.Field(KeyProfile, ModelProfiles.KeyField)}', set as that section's ApiKey in appsettings.Secrets.json.");
         }
 
-        var client = handler is null ? new HttpClient() : new HttpClient(handler);
+        var client = new HttpClient
+        {
+            BaseAddress = new Uri(string.IsNullOrWhiteSpace(baseAddress) ? DefaultBaseAddress : baseAddress),
+            Timeout = RetryPolicy.Standard.Timeout + RetryPolicy.Standard.Timeout,
+        };
 
-        client.BaseAddress = new Uri(string.IsNullOrWhiteSpace(baseAddress) ? DefaultBaseAddress : baseAddress);
-        client.Timeout = RetryPolicy.Standard.Timeout + RetryPolicy.Standard.Timeout;
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
-        return new DeepSeekSearchFeed(client);
+        return new DeepSeekSearchFeed(client, kept: kept);
     }
 
     public async Task<SearchAnswer> SearchAsync(SearchQuery query, CancellationToken cancellation = default)
@@ -94,10 +102,17 @@ public sealed class DeepSeekSearchFeed(HttpClient client, ProviderRequest? reque
 
                         try
                         {
-                            using var content = new StringContent(Body(query), Encoding.UTF8, "application/json");
+                            var sent = Body(query);
+
+                            using var content = new StringContent(sent, Encoding.UTF8, "application/json");
                             using var response = await client.PostAsync(Path, content, token).ConfigureAwait(false);
 
                             var text = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+
+                            if (kept is not null)
+                            {
+                                await kept(sent, (int)response.StatusCode, text, token).ConfigureAwait(false);
+                            }
 
                             return response.IsSuccessStatusCode
                                 ? text

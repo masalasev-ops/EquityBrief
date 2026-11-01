@@ -147,10 +147,10 @@ static int NoVerb()
         "'history-pull --index-funds' pulls SPY's, IJH's, IJR's and HYG's daily series, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
         "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store, " +
-        "'measure-search' searches the theme search's five measured industries a site at a time on Tavily's search tool and on " +
-        "DeepSeek's, and the whole list together on DeepSeek, counting what each form returned and would admit, writing a report " +
-        "and nothing to the store, '--industries <x,y>' naming others and '--capture' keeping DeepSeek's requests and answers " +
-        "beside it. '--live' " +
+        "'measure-search' searches the theme search's five measured industries on both search tools the runbook names, a site " +
+        "at a time and the whole list together, counting what each form returned and would admit, writing a report and nothing " +
+        "to the store, '--industries <x,y>' naming others and '--capture' keeping the second tool's requests and answers beside " +
+        "it. '--live' " +
         "'sweep' replays the swing filter over the stored history across its designs and settings, reading the store and " +
         "writing nothing to it, and writes its report in a run folder of its own beside it, '--run <name>' going on with a " +
         "run started before from its last saved chunk, " +
@@ -525,60 +525,14 @@ static async Task<int> MeasureSources(string[] args)
     return 0;
 }
 
-// The theme search measured on Tavily's search tool and on DeepSeek's side by side, as 21.19's ruling asks. Both tools
-// are live; DeepSeek's key is the one the secrets file holds for the deepseek model profile, read here and handed to the
-// feed's header alone. Nothing is written to the store, and the report goes under the working folder's artifacts.
+// The theme search's tool measured, as 21.19's ruling asks. The verb's work, both tools and the key read for each, is
+// in `SearchMeasurementRun`; nothing is written to the store.
 // see: Theme material comes from a search tool, and per-name material never does
-static async Task<int> MeasureSearch(string[] args)
+static Task<int> MeasureSearch(string[] args)
 {
     var configuration = Configuration();
-    IClock clock = SystemClock.ForUnitedStatesSessions();
-    var lists = SourceLists.Read(Path.Combine(Directory.GetCurrentDirectory(), SourceLists.FileName));
-    var folder = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
-    string[] industries = Argument(args, "--industries")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? SearchMeasurementRun.Industries;
-    var plan = SearchMeasurementRun.Plan(industries, lists.Industry, clock.SessionDateAt(clock.UtcNow));
 
-    if (SearchMeasurementRun.Most(plan) > SearchMeasurementRun.MostARun)
-    {
-        Console.Error.WriteLine(FormattableString.Invariant(
-            $"measure-search: refused, its DeepSeek searches could cost ${SearchMeasurementRun.Most(plan)}, past the ${SearchMeasurementRun.MostARun} a run may spend."));
-
-        return 1;
-    }
-
-    ISearchFeed tavily;
-    DeepSeekSearchFeed deepSeek;
-
-    try
-    {
-        tavily = TavilySearchFeed.Live(configuration[TavilySearchFeed.ApiKeyName]);
-        deepSeek = DeepSeekSearchFeed.Live(
-            DeepSeekSearchFeed.KeyFrom(key => configuration[key]),
-            handler: args.Contains("--capture")
-                ? new SearchMeasurementRun.Capturing(Path.Combine(folder, "measure-search-captures-" + clock.UtcNow.UtcDateTime.ToString("yyyy-MM-ddTHHmmssZ", CultureInfo.InvariantCulture)))
-                : null);
-    }
-    catch (InvalidOperationException refusal)
-    {
-        Console.Error.WriteLine("measure-search: " + refusal.Message);
-
-        return 1;
-    }
-
-    Console.WriteLine(FormattableString.Invariant(
-        $"measure-search: {plan.Where(planned => planned.Tool == SearchMeasurementRun.Tavily).Sum(planned => planned.Queries.Count)} Tavily search(es) and {plan.Where(planned => planned.Tool == SearchMeasurementRun.DeepSeek).Sum(planned => planned.Queries.Count)} DeepSeek search(es), the DeepSeek ones costing at most ${SearchMeasurementRun.Most(plan)}"));
-
-    var (file, counts) = await SearchMeasurementRun.RunAsync(tavily, deepSeek, clock, industries, lists.Industry, folder);
-
-    foreach (var count in counts.Concat(SearchMeasurementRun.Totals(counts)))
-    {
-        Console.WriteLine(SearchMeasurementRun.Line(count));
-    }
-
-    Console.WriteLine(FormattableString.Invariant(
-        $"measure-search: {tavily.Requests} Tavily search(es), {deepSeek.Requests} DeepSeek search(es) of which {deepSeek.Billed} answered with a result, costing ${deepSeek.Billed * DeepSeekSearchFeed.PriceASearch}; report {file}"));
-
-    return 0;
+    return SearchMeasurementRun.VerbAsync(args, key => configuration[key], SystemClock.ForUnitedStatesSessions());
 }
 
 // The quarters step run by hand, outside the night, the fourth carve-out's own asks taken when the

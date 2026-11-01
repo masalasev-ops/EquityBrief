@@ -109,6 +109,26 @@ public class DeepSeekSearchFeedTests
         Assert.DoesNotContain(NotAKey, seen.Sent, StringComparison.Ordinal);
 
         Assert.Equal(3, answer.Results.Count);
+
+        // The hook the measurement keeps captures through is handed the request's body and the answer as they went, and
+        // no header.
+        var keptAs = new List<(string Sent, int Status, string Body)>();
+        var keeping = new DeepSeekSearchFeed(
+            new HttpClient(new Seeing(HttpStatusCode.OK, Captured(Trendforce))) { BaseAddress = new Uri(Base) },
+            kept: (sent, status, body, _) =>
+            {
+                keptAs.Add((sent, status, body));
+
+                return Task.CompletedTask;
+            });
+
+        await keeping.SearchAsync(query);
+
+        var one = Assert.Single(keptAs);
+
+        Assert.Equal(seen.Sent, one.Sent);
+        Assert.Equal(200, one.Status);
+        Assert.Equal(Captured(Trendforce), one.Body);
     }
 
     [Fact]

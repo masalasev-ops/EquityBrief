@@ -13641,8 +13641,10 @@ Decisions:  none written; the decision that theme material comes from a search t
 Tests:      3036, from 3027: nine added, the request built over a constructed query, the captured answers read, a
             result with no text and a date in a form nobody captured, the refusal and a tool not answering, the pause
             before every request but the first, the list packed, the key read where the profile names it, the
-            measurement's counts worked by hand, and the theme search answered by Tavily alone. One amended: the store
-            check's list of the sites that write a file, the measurement's two among them.
+            measurement's counts worked by hand, and the theme search answered by Tavily alone. Two amended: the store
+            check's list of the sites that write a file, the measurement's two among them; and the nightly cost check's,
+            the feed among the files that may hold a client, at thirty-two, and it and the measurement's run the two
+            files that may name DeepSeek for its search tool, every other model pattern read in both.
 Claims:     1491, none new; 1506 placements.
 Mutation:   chosen before the run by this rule, the property 21.19 adds first, DeepSeek's query carrying the site it
             searches: the site clauses dropped from the query, predicted red at the request's test, the packing's and
