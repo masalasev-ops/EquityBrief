@@ -113,8 +113,13 @@ public sealed partial class SetupLedger
             var factor = setup.Entry > 0 ? closes[bar] / setup.Entry : 1;
             var anchor = new SetupAnchor(setup.Session, closes[bar], setup.Stop * factor, setup.Target * factor, setup.Trail * factor, setup.Cap, setup.RiskMoves);
 
-            if (ExitPricings.Price(closes, opens[name], HighsOf(name), bar, anchor, fill) is not { } three
-                || StandingTarget.Sold(closes, opens[name], HighsOf(name), bar, anchor, fill) is not { } standing)
+            if (ExitPricings.Price(closes, opens[name], HighsOf(name), bar, anchor, fill) is not { } three)
+            {
+                return;
+            }
+
+            // A plan whose stop trails names no target and stands no order, so it and its benchmark are sold as now.
+            if ((anchor.Trails ? three.AtNextOpen : StandingTarget.Sold(closes, opens[name], HighsOf(name), bar, anchor, fill)) is not { } standing)
             {
                 return;
             }
@@ -128,7 +133,7 @@ public sealed partial class SetupLedger
                 [.. slots.Select((member, slot) => (prepared.Closes[member], opens[member], prepared.Members.Bars[at][slot], prepared.Series[member].Atr[prepared.Members.Bars[at][slot]], prepared.Stopped[member]))],
                 setup.Session,
                 plan);
-            var standingBenchmark = StandingTarget.Benchmark(
+            var standingBenchmark = anchor.Trails ? now : StandingTarget.Benchmark(
                 [.. slots.Select((member, slot) => (prepared.Closes[member], opens[member], HighsOf(member), prepared.Members.Bars[at][slot], prepared.Series[member].Atr[prepared.Members.Bars[at][slot]]))],
                 setup.Session,
                 plan);
