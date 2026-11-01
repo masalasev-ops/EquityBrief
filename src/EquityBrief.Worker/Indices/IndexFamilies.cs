@@ -654,7 +654,7 @@ public sealed class IndexFamilies : IComponent
 
             var reward = trade.Target is { } target && risk > 0 ? Statistic.FromPrice(target - trade.Entry) / risk : 0;
             var (average, members) = ExitMenu.Of(trade.Exit) is { } exit
-                ? ExitMenu.Benchmark(closes, inputs.Members.Names[session], inputs.Members.Bars[session], (one, at) => inputs.Series[one].Atr[at], moves, trade.Trails ? null : reward, trade.Trails ? 1 : null, trade.Cap, exit)
+                ? ExitMenu.Benchmark(closes, inputs.Members.Names[session], inputs.Members.Bars[session], (one, at) => inputs.Series[one].Atr[at], moves, trade.Trails ? null : reward, trade.Trails ? 1 : null, trade.Cap, exit, EquityBrief.Worker.Loop.SeriesPrices.Opens(inputs.Series), EquityBrief.Worker.Loop.SeriesPrices.Highs(inputs.Series))
                 : trade.Trails
                     ? BreakoutSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, trade.Cap)
                     : DriftSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, reward, trade.Cap);
@@ -1260,12 +1260,12 @@ public sealed class IndexFamilies : IComponent
 
         foreach (var trade in open)
         {
-            var bars = new List<(DateOnly Session, decimal Close, decimal Raw)>();
+            var bars = new List<(DateOnly Session, decimal Close, decimal Raw, decimal Open, decimal High)>();
 
             await using (var command = connection.CreateCommand())
             {
                 command.Transaction = transaction;
-                command.CommandText = "SELECT session_date, close, raw_close FROM bar WHERE ticker = $ticker AND session_date >= $from AND session_date <= $night ORDER BY session_date;";
+                command.CommandText = "SELECT session_date, close, raw_close, open, high FROM bar WHERE ticker = $ticker AND session_date >= $from AND session_date <= $night ORDER BY session_date;";
                 command.Parameters.AddWithValue("$ticker", trade.Ticker);
                 command.Parameters.AddWithValue("$from", Stamp(trade.Session));
                 command.Parameters.AddWithValue("$night", Stamp(night));
@@ -1274,7 +1274,7 @@ public sealed class IndexFamilies : IComponent
 
                 while (await reader.ReadAsync(cancellation))
                 {
-                    bars.Add((Date(reader.GetString(0)), Money.FromStorage(reader.GetString(1)), reader.IsDBNull(2) ? 0m : Money.FromStorage(reader.GetString(2))));
+                    bars.Add((Date(reader.GetString(0)), Money.FromStorage(reader.GetString(1)), reader.IsDBNull(2) ? 0m : Money.FromStorage(reader.GetString(2)), Money.FromStorage(reader.GetString(3)), Money.FromStorage(reader.GetString(4))));
                 }
             }
 
@@ -1296,7 +1296,7 @@ public sealed class IndexFamilies : IComponent
             if (ExitMenu.Of(trade.Exit) is { } exit)
             {
                 var anchor = new SetupAnchor(trade.Session, entry, stop, trade.Trail is null ? Statistic.FromPrice(trade.Target ?? trade.Entry) * scale : null, trade.Trail is { } trailing ? Statistic.FromPrice(trailing) * scale : null, trade.Cap, trade.RiskMoves);
-                var outcome = ExitMenu.Replay(closes, 0, anchor, trade.RiskMoves is > 0 ? (entry - stop) / trade.RiskMoves.Value : double.NaN, exit);
+                var outcome = ExitMenu.Replay(closes, 0, anchor, trade.RiskMoves is > 0 ? (entry - stop) / trade.RiskMoves.Value : double.NaN, exit, [.. bars.Select(bar => Statistic.FromPrice(bar.Open))], [.. bars.Select(bar => Statistic.FromPrice(bar.High))]);
 
                 (result, sessions) = (outcome.Result, outcome.Sessions);
             }
@@ -2312,7 +2312,7 @@ public static class IndexRuleTrades
         ORDER BY session_date, candidate, ticker;
     ";
 
-    const string BarsFrom = "SELECT session_date, close, raw_close FROM bar WHERE ticker = $ticker AND session_date >= $from AND session_date <= $night ORDER BY session_date;";
+    const string BarsFrom = "SELECT session_date, close, raw_close, open, high FROM bar WHERE ticker = $ticker AND session_date >= $from AND session_date <= $night ORDER BY session_date;";
 
     // The company's value on a trade's own night as the member readings read it, none where they read none.
     const string ValueOn = "SELECT company_value FROM member_reading WHERE index_code = $index AND session_date = $session AND ticker = $ticker;";
@@ -2502,7 +2502,7 @@ public static class IndexRuleTrades
             // A trade kept under an exit of the menu is benchmarked under the same exit, its trail its stop's distance as
             // the breakout's is.
             var (average, members) = ExitMenu.Of(trade.Exit) is { } exit
-                ? ExitMenu.Benchmark(closes, inputs.Members.Names[session], inputs.Members.Bars[session], (name, bar) => inputs.Series[name].Atr[bar], moves, trade.Trail is null ? trade.RewardToRisk ?? 0 : null, trade.Trail is null ? null : 1, trade.Cap, exit)
+                ? ExitMenu.Benchmark(closes, inputs.Members.Names[session], inputs.Members.Bars[session], (name, bar) => inputs.Series[name].Atr[bar], moves, trade.Trail is null ? trade.RewardToRisk ?? 0 : null, trade.Trail is null ? null : 1, trade.Cap, exit, EquityBrief.Worker.Loop.SeriesPrices.Opens(inputs.Series), EquityBrief.Worker.Loop.SeriesPrices.Highs(inputs.Series))
                 : trade.Trail is not null
                     ? BreakoutSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, trade.Cap)
                     : DriftSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, trade.RewardToRisk ?? 0, trade.Cap);
@@ -2537,7 +2537,7 @@ public static class IndexRuleTrades
         int exitNumber = 0,
         double? riskMoves = null)
     {
-        var bars = new List<(DateOnly Session, decimal Close, decimal Raw)>();
+        var bars = new List<(DateOnly Session, decimal Close, decimal Raw, decimal Open, decimal High)>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -2551,7 +2551,7 @@ public static class IndexRuleTrades
 
             while (await reader.ReadAsync(cancellation))
             {
-                bars.Add((Date(reader.GetString(0)), Money.FromStorage(reader.GetString(1)), reader.IsDBNull(2) ? 0m : Money.FromStorage(reader.GetString(2))));
+                bars.Add((Date(reader.GetString(0)), Money.FromStorage(reader.GetString(1)), reader.IsDBNull(2) ? 0m : Money.FromStorage(reader.GetString(2)), Money.FromStorage(reader.GetString(3)), Money.FromStorage(reader.GetString(4))));
             }
         }
 
@@ -2572,7 +2572,7 @@ public static class IndexRuleTrades
         if (ExitMenu.Of(exitNumber) is { } exit)
         {
             var anchor = new SetupAnchor(listed, entry, stop, storedTrail is null ? Statistic.FromPrice(storedTarget ?? storedEntry) * scale : null, storedTrail is { } trailing ? Statistic.FromPrice(trailing) * scale : null, cap, riskMoves);
-            var outcome = ExitMenu.Replay(closes, 0, anchor, riskMoves is > 0 ? (entry - stop) / riskMoves.Value : double.NaN, exit);
+            var outcome = ExitMenu.Replay(closes, 0, anchor, riskMoves is > 0 ? (entry - stop) / riskMoves.Value : double.NaN, exit, [.. bars.Select(bar => Statistic.FromPrice(bar.Open))], [.. bars.Select(bar => Statistic.FromPrice(bar.High))]);
 
             (result, sessions) = (outcome.Result, outcome.Sessions);
         }

@@ -100,7 +100,7 @@ public partial class FixtureExpectations
         Assert.False(RuleHooks.IsHook("also_no_such_reading_above"));
         Assert.False(RuleHooks.IsHook("highSessions"));
         Assert.Equal(["highSessions", "volumeMultiple"], RuleHooks.Without(hooked).Keys.Order(StringComparer.Ordinal));
-        Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["exit"] = 31 }));
+        Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["exit"] = ExitMenu.Swing.Count + 1 }));
 
         // A member meets the conditions at 1.02 over its average and 0.03 of its close a move; 0.98 fails the first, 0.06
         // the second, and a reading not held fails whatever its level.
@@ -292,7 +292,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(CandidateRegistrar.Registered, hooked.Outcome);
 
-        parameters["exit"] = 31;
+        parameters["exit"] = ExitMenu.Swing.Count + 1;
 
         var refused = await registrar.RegisterAsync("the breakout at an exit the menu lacks", "a breakout", "the edge", BreakoutCandidate.EvaluatorName, parameters, "hooks-refused");
 
@@ -314,7 +314,7 @@ public partial class FixtureExpectations
 
         Assert.Null(IndexRules.Refusal(drift, swing));
         Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("the S&P 400 drift at an exit", "a drift", "the edge", drift.Name, swing, "hooks-drift")).Outcome);
-        Assert.Contains("menu numbers its exits", IndexRules.Refusal(drift, new Dictionary<string, double>(swing, StringComparer.Ordinal) { ["exit"] = 31 }), StringComparison.Ordinal);
+        Assert.Contains("menu numbers its exits", IndexRules.Refusal(drift, new Dictionary<string, double>(swing, StringComparer.Ordinal) { ["exit"] = ExitMenu.Swing.Count + 1 }), StringComparison.Ordinal);
 
         // From 21.4 the dip's rule states the hooks as a swing rule does, its sell dial no longer named exit, and a book's
         // rule states conditions and a score alone: an exit beside a quality rule's parameters is refused.
@@ -502,7 +502,7 @@ public partial class FixtureExpectations
             }
         }
 
-        var series = sessions.Select((session, at) => (session, MenuPath[at])).ToArray();
+        var series = sessions.Select((session, at) => (session, MenuPath[at], MenuPath[at], MenuPath[at])).ToArray();
         var at = sessions.Select((session, index) => (session, index)).ToDictionary(pair => pair.session, pair => pair.index);
 
         // Its own exit, the target at 110, sells at the thirteenth session at 2.2 risks; under the second exit of the

@@ -90,6 +90,12 @@ public static class RegisterVerb
     // see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version
     public const string WithoutFlag = "--without-flag";
 
+    // From 21.18 the flag that registers a pullback's or a drift's variant at the target standing as a sell order beside its
+    // live rule on the S&P 400 or 600, refused where the family holds nine, sets no target or its live rule stands at an exit
+    // of the menu already.
+    // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+    public const string Standing = "--standing";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -106,6 +112,7 @@ public static class RegisterVerb
         new(Exposed, [Exposed, "--index"], [], []),
         new(Ordered, [Ordered, "--index"], [], []),
         new(WithoutFlag, [WithoutFlag, "--evidence"], [], []),
+        new(Standing, [Standing, "--index"], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -359,6 +366,15 @@ public static class RegisterVerb
                 : await Said(await registrar.RegisterAsync(exposure.Candidate, exposure.Rule, exposure.Test, exposure.Evaluator, exposure.Parameters, runId), output, error);
         }
 
+        if (form.Flag == Standing)
+        {
+            var (standing, refusedStanding) = StandingVariant(Given(Standing), Given("--index"), await registrar.RowsAsync(), at);
+
+            return standing is null
+                ? await RefusedAsync(registrar, runId, refusedStanding!, error)
+                : await Said(await registrar.RegisterAsync(standing.Candidate, standing.Rule, standing.Test, standing.Evaluator, standing.Parameters, runId), output, error);
+        }
+
         if (form.Flag == Ordered)
         {
             var (ordered, refusedOrder) = OrderedVariant(Given(Ordered), Given("--index"), await registrar.RowsAsync(), at);
@@ -498,6 +514,42 @@ public static class RegisterVerb
         var words = Core.Loop.RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { [Core.Loop.RuleHooks.ExpectedOrderParameter] = 1 }).Words()!;
 
         return (new Registration("the " + live.Candidate[Core.Candidates.FamilyRecords.LivePrefix.Length..] + ", " + words, live.Rule, live.Test, live.Evaluator, parameters), null);
+    }
+
+    // From 21.18 a family's variant at the target standing as a sell order on an index: its live rule's name without the
+    // word live and the exit's words after it, its words and its test, its evaluator and its setting with the menu's
+    // standing exit; or why none can be registered: an index or a family the standing target does not reach, no live
+    // rule, or a live rule already standing at an exit of the menu. A family at nine is refused by the register.
+    // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+    public static (Registration? Registration, string? Refusal) StandingVariant(string family, string index, IReadOnlyList<Core.Candidates.RegisterRow> register, DateTimeOffset at)
+    {
+        if (index == Loop.WalkForwardTester.LargeIndex)
+        {
+            return (null, "the S&P 500's pullback and drift hold nine rules and its breakout trails, so the per-rule test walks the standing target beside them unregistered.");
+        }
+
+        if (!Loop.ExitProcedures.StandsFor(index, family))
+        {
+            return (null, $"the {family} sets no target the standing order could rest at, so none is registered; it is offered to the pullback and the drift.");
+        }
+
+        if (LiveOn(register, family, index, at) is not { } live)
+        {
+            return (null, $"no live {family} rule stands registered on the {Cards.DecisionCards.NameOf(index)}, so there is no rule to stand the target of.");
+        }
+
+        var parameters = new Dictionary<string, double>(Core.Candidates.CandidateEvaluator.Read(live.Parameters), StringComparer.Ordinal);
+
+        if (parameters.GetValueOrDefault(Core.Loop.RuleHooks.ExitParameter) > 0)
+        {
+            return (null, $"the live {family} rule on the {Cards.DecisionCards.NameOf(index)} stands at an exit of the menu already, which the standing target would replace, so none is registered.");
+        }
+
+        var standing = Core.Loop.ExitMenu.Swing.Single(choice => choice.Kind == Core.Loop.ExitKind.Standing);
+
+        parameters[Core.Loop.RuleHooks.ExitParameter] = standing.Number;
+
+        return (new Registration("the " + live.Candidate[Core.Candidates.FamilyRecords.LivePrefix.Length..] + ", " + standing.Words, live.Rule, live.Test, live.Evaluator, parameters), null);
     }
 
     // What each replayed rule's record does, a line a rule.

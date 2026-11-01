@@ -64,6 +64,14 @@ public static class ExitProcedures
         ];
     }
 
+    // From 21.18 the families the target standing as a sell order reaches: the drift on every index and the pullback on
+    // the S&P 400 and 600, each of which sets a target. The breakout trails and the dip and the books set none, so it
+    // would sell them as their own exits do, and the S&P 500's pullback is the swing filter, whose page list's plans are
+    // read on closes alone; none of those is walked under it or proposed it.
+    // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+    public static bool StandsFor(string index, string family) =>
+        family == DriftRule.Name || (family == SetupFamilies.Pullback && index != IndexFamilies.LargeIndex);
+
     // The proposals and the autopsy's figures for one family's rule on an index: the breakout, the drift and the pullback
     // on every index, the S&P 500's pullback the swing filter at its open version's settings from 17.14.
     // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
@@ -71,7 +79,7 @@ public static class ExitProcedures
     {
         progress(FormattableString.Invariant($"walking the {rule.Family} on the {DecisionCards.NameOf(read.Index)} under its own exit and the menu's {ExitMenu.Swing.Count}"));
 
-        IReadOnlyList<IReadOnlyList<Walked>> walks = [.. ExitMenu.Swing.Select(rule.Under)];
+        IReadOnlyList<IReadOnlyList<Walked>> walks = [.. ExitMenu.Swing.Select(exit => exit.Kind != ExitKind.Standing || StandsFor(read.Index, rule.Family) ? rule.Under(exit) : [])];
         // From 21.16 every family's night reads the exit of the menu its rule names, the short-term dip's among them, so each
         // exit the autopsy finds states its change to put.
         // see: Every change the engines propose is one its family's night reads, so each is put to the operator
@@ -223,7 +231,7 @@ public static class ExitProcedures
                 return walked;
             }
 
-            var outcome = Replayed(closes, listing, exit);
+            var outcome = Replayed(read.Series, closes, listing, exit);
 
             ended[(listing.Name, listing.Session)] = (outcome.Sessions, outcome.End);
 
@@ -253,14 +261,17 @@ public static class ExitProcedures
         ];
     }
 
-    // A listing's trade replayed under an exit of the menu from its plan's own prices.
-    public static SetupOutcome Replayed(double[][] closes, FamilyListing listing, ExitChoice exit) =>
+    // A listing's trade replayed under an exit of the menu from its plan's own prices, from 21.18 each session's open and
+    // high beside its close for the standing target.
+    public static SetupOutcome Replayed(IReadOnlyList<SweepSeries> series, double[][] closes, FamilyListing listing, ExitChoice exit) =>
         ExitMenu.Replay(
             closes[listing.Name],
             listing.Bar,
             new SetupAnchor(DateOnly.MinValue, listing.Entry, listing.Stop, listing.Trails ? null : listing.Target, listing.Trails ? listing.Trail : null, listing.Cap, listing.Move > 0 ? (listing.Entry - listing.Stop) / listing.Move : null),
             listing.Move,
-            exit);
+            exit,
+            SeriesPrices.Opens(series)[listing.Name],
+            SeriesPrices.Highs(series)[listing.Name]);
 
     // The same plan entered on every member that session under the same exit of the menu.
     public static double MenuBenchmark(LoopRead read, double[][] closes, FamilyListing listing, ExitChoice exit) =>
@@ -273,7 +284,9 @@ public static class ExitProcedures
             listing.Trails ? null : (listing.Target - listing.Entry) / (listing.Entry - listing.Stop),
             listing.Trails ? listing.Trail / (listing.Entry - listing.Stop) : null,
             listing.Cap,
-            exit).Average;
+            exit,
+            SeriesPrices.Opens(read.Series),
+            SeriesPrices.Highs(read.Series)).Average;
 
     // A finished trade's closes from its buy to its end, its stop read as where it ended where the walk named none.
     internal static TradePath Path(LoopRead read, double[][] closes, Walked trade)

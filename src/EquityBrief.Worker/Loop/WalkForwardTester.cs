@@ -905,6 +905,14 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             output.WriteLine(RuleTests.ExposureLine(one.Rule, InTestYears));
         }
 
+        // From 21.18 each live rule the standing target reaches with no rule of its family at it, walked under it beside its
+        // own, unregistered and written nowhere.
+        // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+        foreach (var one in tested.Where(one => one.Rule.StandingTarget is not null))
+        {
+            output.WriteLine(RuleTests.StandingLine(one.Rule, InTestYears));
+        }
+
         // From 21.14, on the operator's ruling of 2026-10-30, each graded exposure, a rule's own or the one walked beside a
         // live rule, walked again with the VIX's direction reversed, unregistered and written nowhere, for their word.
         // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
