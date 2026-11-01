@@ -13777,3 +13777,24 @@ Mutation:   chosen before the runs by this rule, the property the correction add
             s2 an amount under a tenth kept to one place, predicted red at RGEN's $0.04M, red there; each reverted, green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: a next report no report a year earlier can estimate says why, and the day the company started reporting as its own where every report the page knows is recent   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the fifth phase 18 sign-off review's proof over the night of 2026-10-30: FDXF, a spin-off whose stored
+            quarters carry no report day and whose newest fetch says its quarter to 2026-08-31 was reported on 2026-10-28,
+            drew its next report as not announced with no estimate and no reason, and the proof failed it with none stated.
+Corrected:  where no report a year before is stored, the snapshot's next report row and the line beneath the numbers say
+            "No report a year earlier is stored to estimate it from", and where every report the page knows a day for, the
+            stored quarters' and the one reported, falls in the year before the night, add ": it started reporting as its
+            own company on" the first of them, so FDXF's reads 2026-10-28; a company knowing an older report says no
+            first day. The proof passes a not-announced next report drawn with its estimate or with that line, and fails
+            one drawing neither, naming why. The architecture's sentence, with its prior text in the changelog.
+Tests:      none new; the estimate's test holds the line with its first day, the line alone where an older report is
+            known, the year's edge at 363 and 364 days, and the proof failing a page drawing neither; the reported row's
+            test reads the row with its line.
+Mutation:   chosen before the runs by this rule, the property the correction adds: f1 the line never naming the first day,
+            predicted red at the estimate's test, red there; f2 the proof passing a row with no estimate and no line,
+            predicted red at its failing case, red there; each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

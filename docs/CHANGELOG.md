@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - a next report no report a year earlier can estimate says why
+Corrects: FDXF, a spin-off holding no report a year back, drew its next report as not announced with no estimate and no reason, and the report page's proof failed it, found by the fifth phase 18 sign-off review on 2026-11-01.
+Was:
+> (section 4, the report page's rules) a next report the night has passed is said as reported with the one after it not announced, and with the day it is estimated at, from the company's own report of the same quarter a year before, marked estimated (see: ...);
+Now:
+> a next report the night has passed is said as reported with the one after it not announced, and with the day it is estimated at, from the company's own report of the same quarter a year before, marked estimated, or where no such report is stored with a line saying so and, where every report the page knows falls in the year before the night, the day the company started reporting as its own (see: ...);
+Why: a page that cannot estimate the next report says why, in the operator's words of 2026-11-01.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - a segment table whose smallest amount reads under a million drawn in millions to two places beside a larger amount
 Authorised by: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not
 Was:

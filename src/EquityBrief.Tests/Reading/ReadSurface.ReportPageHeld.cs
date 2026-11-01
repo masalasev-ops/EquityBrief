@@ -170,8 +170,10 @@ public partial class ReadSurface
     }
 
     // A next report the night has passed reads as not announced with the day it is estimated at, from the company's own
-    // report of the same quarter a year before, marked estimated in the snapshot and in the line beneath the numbers; the
-    // proof fails a page drawing it as not announced with no estimate.
+    // report of the same quarter a year before, marked estimated in the snapshot and in the line beneath the numbers.
+    // Where no report a year before is stored it says so, and where every report the page knows falls in the year before
+    // the night, as FDXF's first report as its own company did, that its first is the day it started reporting; the proof
+    // fails a page drawing it as not announced with no estimate and no line saying why.
     // see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated
     [Fact]
     public async Task ANextReportNotOnFileIsDrawnWithTheDayItIsEstimatedAtMarkedEstimated()
@@ -192,7 +194,28 @@ public partial class ReadSurface
         Assert.Contains(FormattableString.Invariant($"and the next report is not announced; estimated about {estimated:yyyy-MM-dd} from its report of {from:yyyy-MM-dd} a year on."), drawn, StringComparison.Ordinal);
 
         Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate(Name, drawn), "next-report-estimated"));
-        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate(Name, bare), "next-report-estimated"));
+
+        // No report a year before: the first report the page knows, the one reported, is the day it started reporting.
+        var started = FormattableString.Invariant($"No report a year earlier is stored to estimate it from: it started reporting as its own company on {reportDate:yyyy-MM-dd}");
+
+        Assert.Contains("<dd data-reportDate=\"reported\" data-estimated=\"none\"><b>not announced</b><small class=\"estimated-none\">" + started + "</small>", bare, StringComparison.Ordinal);
+        Assert.Contains("and the next report is not announced. " + started + ".</p>", bare, StringComparison.Ordinal);
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate(Name, bare), "next-report-estimated"));
+
+        // A report older than the year before the night is known, so the company is not new: the line says only that no
+        // report a year earlier is stored, and names no first day.
+        var older = NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null), null, null, [reportDate.AddDays(-400)]);
+
+        Assert.Contains("<small class=\"estimated-none\">" + NameScreen.NoYearEarlier + "</small>", older, StringComparison.Ordinal);
+        Assert.DoesNotContain("started reporting", older, StringComparison.Ordinal);
+        Assert.Equal(
+            FormattableString.Invariant($"{NameScreen.NoYearEarlier}: it started reporting as its own company on {reportDate.AddDays(-90):yyyy-MM-dd}"),
+            NameScreen.NotEstimated(reportDate, [reportDate.AddDays(-90)], reportDate));
+        Assert.Equal(NameScreen.NoYearEarlier, NameScreen.NotEstimated(reportDate, [reportDate.AddDays(-364)], reportDate));
+        Assert.Equal(FormattableString.Invariant($"{NameScreen.NoYearEarlier}: it started reporting as its own company on {reportDate.AddDays(-363):yyyy-MM-dd}"), NameScreen.NotEstimated(reportDate, [reportDate.AddDays(-363)], reportDate));
+
+        // Neither an estimate nor the line saying why fails.
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate(Name, bare.Replace("<small class=\"estimated-none\">" + started + "</small>", string.Empty, StringComparison.Ordinal)), "next-report-estimated"));
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate(Name, NameScreen.Numbers(filings, new ConceptFigures(null, reportDate.AddDays(-1), null, null))), "next-report-estimated"));
     }
 

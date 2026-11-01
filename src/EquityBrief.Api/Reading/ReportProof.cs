@@ -213,7 +213,14 @@ public static partial class ReportProof
 
         var notAnnounced = page.Contains("data-reportDate=\"reported\"", StringComparison.Ordinal);
 
-        Add("next-report-estimated", notAnnounced ? page.Contains("data-reportDate=\"reported\" data-estimated=", StringComparison.Ordinal) : null, notAnnounced ? null : "the next report is not drawn as not announced");
+        // A next report not on file passes with the day it is estimated at, or with the line saying no report a year earlier
+        // is stored to estimate it from.
+        var estimatedNone = page.Contains("data-reportDate=\"reported\" data-estimated=\"none\"", StringComparison.Ordinal);
+
+        Add(
+            "next-report-estimated",
+            notAnnounced ? estimatedNone ? page.Contains("<small class=\"estimated-none\">" + NameScreen.NoYearEarlier, StringComparison.Ordinal) : page.Contains("data-reportDate=\"reported\" data-estimated=", StringComparison.Ordinal) : null,
+            notAnnounced ? estimatedNone && !page.Contains("<small class=\"estimated-none\">" + NameScreen.NoYearEarlier, StringComparison.Ordinal) ? "no estimate is drawn and no line says why" : null : "the next report is not drawn as not announced");
         Add("rules-family", picked ? RulesOpenOnTheFamily().IsMatch(page) : null, picked ? null : "no family picked it");
 
         var trendFailed = page.Contains("not an uptrend", StringComparison.Ordinal);
