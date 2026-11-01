@@ -340,10 +340,10 @@ public partial class FixtureExpectations
 
         PinFor(store, settings);
 
-        var model = new LocalAnswers(null, TimeSpan.Zero, Answered(LabelAnswer("results", "positive", "Sales rose by 5 percent.")), Answered(Good), Answered(Good));
+        var model = new LocalAnswers(null, TimeSpan.Zero, Answered(LabelAnswer("results", "positive", "Sales rose by 5 percent.")), Answered(Good), Answered(Good), Answered(Good));
         var outcome = await Labeller(store, model, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-whole");
 
-        Assert.Equal((3, 2, 1), (model.Requests, outcome.Labelled, outcome.UnreadableCount));
+        Assert.Equal((4, 3, 1), (model.Requests, outcome.Labelled, outcome.UnreadableCount));
         Assert.Equal(NewsInstruction.DigitInTheReason, Text(store, "SELECT cause FROM news_label WHERE article_id = 'b1' AND profile = 'gemma-4';"));
         Assert.Equal(1, LabellerRow(store, "label-news-whole").GetProperty("unreadable").GetProperty(NewsInstruction.DigitInTheReason).GetInt32());
     }
@@ -534,18 +534,18 @@ public partial class FixtureExpectations
         PinFor(store, settings);
 
         var nightRows = Scalar(store, "SELECT COUNT(*) FROM run_log;");
-        var refusing = new LocalAnswers(null, TimeSpan.Zero, null, null, Answered(Good), Answered(Good));
+        var refusing = new LocalAnswers(null, TimeSpan.Zero, null, null, Answered(Good), Answered(Good), Answered(Good));
         var first = await Labeller(store, refusing, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-refusing");
 
-        Assert.Equal((4, 2, 1, NewsLabeller.Finished), (refusing.Requests, first.Labelled, first.NotAnswered, first.Stop));
-        Assert.Equal(["b2", "c1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
+        Assert.Equal((5, 3, 1, NewsLabeller.Finished), (refusing.Requests, first.Labelled, first.NotAnswered, first.Stop));
+        Assert.Equal(["b2", "c1", "d1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
         Assert.Equal(1, LabellerRow(store, "label-news-refusing").GetProperty("notAnswered").GetInt32());
 
         var next = new LocalAnswers(null, TimeSpan.Zero, Answered(Good));
         var second = await Labeller(store, next, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-taken-up");
 
         Assert.Equal((1, 1), (next.Requests, second.Labelled));
-        Assert.Equal(["b1", "b2", "c1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
+        Assert.Equal(["b1", "b2", "c1", "d1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
 
         var gone = new LocalAnswers(null, TimeSpan.Zero) { Gone = new ReadingRuntimeUnavailable(ReadingRuntimeUnavailable.NotRunning, "nothing answered at the runtime's address") };
         var stopped = await Labeller(store, gone, settings).RunAsync(new DateOnly(2026, 9, 9), "label-news-gone");

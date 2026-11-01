@@ -13920,9 +13920,11 @@ Corrected:  after tonight's list and each name a report is written for, the labe
             its list", and is rewritten to it, the roster's row with it. The dip's buys, which draw no counts on any index,
             stand as they were. The 4,924 stories waiting are labelled by the off-peak runs, about 77 minutes of the local
             model at 0.94 seconds a story over the first runs' 20 minutes each, or at once by hand with `label-news`.
-Tests:      one new, the labeller over ZZD, ZZE, QQM, ZZF and ZZG worked by hand; three rewritten: the labeller's first run
-            reaching ZZD after the list, its month limit's four labels, and the S&P 400 night's buys saying no label and M1
-            drawing one good story's count; 3042 in all.
+Tests:      one new, the labeller over ZZD, ZZE, QQM, ZZF and ZZG worked by hand; five rewritten for ZZD, a member off the
+            list its store holds a story for, now reached after the list: the labeller's first run, its month limit's
+            four labels, an unreadable answer among four asks and a story the runtime does not answer among five, and the
+            S&P 400 night's buys saying no label and M1 drawing one good story's count; the check holding every membership
+            read to its two forms names the labeller among the member form's readers; 3042 in all.
 Claims:     none new; the nightly run's step 23, the labeller's catalogue row and section 17's window amended in place, the
             step's key in the harness written as the architecture now reads.
 Pins:       none move; the labeller and the Tonight screen are read by no rule's version, the filter or a readings pin, and
