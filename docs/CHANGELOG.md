@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - the drift's trade step in the reader's words as room for its stop
+Corrects: 15.23's table named the drift's trade step "a reward worth the risk", which it does not test: the step sets the stop and the target and passes whenever a stop sits below the close, so a pick's card ticked a reward worth the risk beside a reward of 0.92, LHX's on the S&P 500 on the night of 2026-10-30; seen on BX's card gathering the phase 18 sign-off on 2026-10-26 and checked on 2026-11-01.
+Was:
+> (15.23, the steps) drift | trade | a reward worth the risk | reward not worth the risk
+Now:
+> (15.23, the steps) drift | trade | room for its stop | no room for its stop
+Why: a step's words say what the step tests, as the breakout's trade step's do.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - what to watch for on a chart page reads the Fundamentals family's own hold
 Corrects: the chart page measured the next report of a stock the Fundamentals family keeps a trade in against the typical 21-session hold rather than its own, found with the quality book's gap gathering the phase 18 sign-off on 2026-10-26 and carried beside it.
 Was:

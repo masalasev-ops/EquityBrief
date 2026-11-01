@@ -79,6 +79,26 @@ public partial class FixtureExpectations
     static FamilyResult DriftAt(DriftSettings settings, int back = 2, decimal close = 104m, long reactionVolume = 2000, double? moveBefore = 3.0, double? typicalMove = 2.0) =>
         DriftRule.Evaluate(new DriftInputs("DR", OpenMarket, DriftSessions(back, close, reactionVolume), PrintAt(back), moveBefore, 1000, typicalMove, [], []), settings);
 
+    // From the 22.5 correction of 2026-11-01: the drift's trade step sets the stop and the target and tests no reward against
+    // the risk, so it passes at a reward under one, and the reader's words name it for the stop it sets. They said a reward
+    // worth the risk, ticked beside LHX's reward of 0.92 on the S&P 500 on the night of 2026-10-30.
+    [Fact]
+    public void TheDriftsTradeStepPassesWhateverItsRewardAndIsNamedForTheStopItSets()
+    {
+        // The close at 104 and the stop at the reaction's low of 100.5, a risk of 3.5; a typical move of 1, so a band at 106 is
+        // 2 typical moves above and nearer than 2.5 times the risk at 112.75: the target 106 and the reward 2 over 3.5, 0.5714.
+        var under = Drift(typicalMove: 1.0, bands: [106m]);
+        var trade = GateOf(under, FamilyRule.Trade);
+
+        Assert.True(trade.Passed);
+        Assert.Equal((106m, "0.5714"), (under.Target!.Value, trade.Values[FamilyRule.RewardToRiskValue]));
+
+        var words = EquityBrief.Web.Marks.ReaderWords.Steps.Single(step => step.Setup == DriftRule.Name && step.Step == FamilyRule.Trade);
+
+        Assert.Equal(("room for its stop", "no room for its stop"), (words.Passed, words.Missed));
+        Assert.DoesNotContain("reward", words.Passed + " " + words.Missed, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Fact]
     public void EachOfTheDriftsGatesIsWorkedByHandOnBothSidesOfItsThresholdAndAtIt()
     {

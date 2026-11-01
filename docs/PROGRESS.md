@@ -13679,6 +13679,23 @@ Mutation:   chosen before the run by this rule, the property the correction adds
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the entry below, on whose
             branch this is recorded.
 
+### 22.5 - correction: the drift's trade step in the reader's words as room for its stop, where they said a reward worth the risk beside a reward under one   2026-11-01
+
+Corrects:   the reader's words named the drift's trade step "a reward worth the risk", which it does not test: it sets the
+            stop at the report day's low and the target at the nearer of a band two typical moves up and 2.5 times the
+            risk, and passes wherever a stop sits below the close, so LHX's card on the S&P 500 on the night of 2026-10-30
+            ticked a reward worth the risk beside a reward of 0.92. Seen on BX's card gathering phase 18's sign-off on
+            2026-10-26 and left unchecked, and checked on 2026-11-01.
+Built:      the step's words as the breakout's trade step's are, "room for its stop" and "no room for its stop"; 15.23's
+            table and the changelog. No rule changes, and no source a rule's version pins is one this writes.
+Tests:      one added, the step passing at a reward of 0.5714 over a constructed reaction and its words naming no reward.
+Mutation:   chosen before the run by this rule, the property the correction adds, the step's words naming what it tests:
+            the old words put back in the code's list alone, predicted red at the added test and at the list held to
+            15.23's table word for word; both red and the other 19 tests of the drift's gates and the plain words green,
+            reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the entry below, on whose
+            branch this is recorded.
+
 ### 22.13 - correction: what to watch for on a chart page measures a Fundamentals holding's next report against its own hold   2026-11-01
 
 Corrects:   the chart page's line of what to watch for measured a stock's next report against the typical 21-session
@@ -13690,14 +13707,15 @@ Built:      the last session a Fundamentals trade can be held to at its rule's s
             and the line reading a report inside it as falling inside the Fundamentals hold, with the hold's last day,
             where that family keeps a trade in the stock and no swing rule lists it, and the typical hold otherwise.
             15.22's row, the guide and the changelog.
-Tests:      3038, from 3036: this correction's one, the hold's last day worked by hand over the exchange's calendar and
-            the line over a report 60 sessions after the night with and without the hold, and the entry above's one.
+Tests:      3039, from 3036: this correction's one, the hold's last day worked by hand over the exchange's calendar and
+            the line over a report 60 sessions after the night with and without the hold, and the two entries above's
+            one each.
 Claims:     1491, none new; the rows amended in place; 1506 placements.
 Mutation:   chosen before the run by this rule, the property the correction adds, a Fundamentals holding's report
             measured against its own hold: the line made to read the typical hold always, predicted red at the added
             test alone; it red and the other 25 tests of the same pages green, reverted, green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
-            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3038 of 3038 tests ran
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3039 of 3039 tests ran
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
