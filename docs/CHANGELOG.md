@@ -26,6 +26,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - the target standing as a sell order an exit of the menu, its print and its variant, and section 20's phase 21 row names 21.18
+Authorised by: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+Was:
+> (17, The exit menu) for the swing families 30 exits: ... and half sold at the first close 1 risk up, the stop raised to the buy on the rest and the rest sold as the plan sells it. For the sector heavyweights two: ...
+> (Setup ledger) ... in-time check alike (see: ...)
+> (Walk-forward tester) ... its evidence over every test year kept to print beside it (see: ...)
+> (15.18, the plan) ... the target where the rule sets one, each sold at the next day's open from 21.14, or the rising stop ...
+> (15.21, What the variants did differently) ... with its result (see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight)
+> (20, phase 21) ... and the VIX's direction kept | ... | the build plan's phase 21 checkpoints, 21.0 to 21.17
+Now:
+> (17, The exit menu) for the swing families 31 exits: ... the rest sold as the plan sells it; and the plan's own target standing as a sell order from the buy, sold at the target on any session whose high reaches it and at a later session's open above it, its stop and its cap as the plan's (see: ...). For the sector heavyweights two: ...
+> (Setup ledger) ... (see: ...); and from 21.18 by hand ledger-exits --index <index> --standing, printing for every settled swing setup the mean edge after costs a trade with its target standing as a sell order beside the edge as it is sold now, ... and writing nothing (see: ...)
+> (Walk-forward tester) ... (see: ...); and from 21.18 the menu's target standing as a sell order walked with each session's open and high for the drift on every index and the pullback on the S&P 400 and 600 and proposed where it passes, and the per-rule test walking it beside the S&P 500's drift unregistered and written nowhere (see: ...)
+> (15.18, the plan) ... each sold at the next day's open from 21.14 and from 21.18 the target of a rule standing at it as a sell order in the operator's sentence on how it sells, or the rising stop ...
+> (15.21, What the variants did differently) ... (see: ...); and from 21.18 a variant at the target standing as a sell order carrying beneath its words the operator's sentence on how it sells (see: ...)
+> (20, phase 21) ... and the VIX's direction kept; and the target as a standing sell order as a variant | ... | the build plan's phase 21 checkpoints, 21.0 to 21.18
+Why: the operator ruled on 2026-11-01, word for word in `prompts/2026-11-01-21.18-operator-ruling.md`, that the target as a standing sell order is a variant, and answered that day that it is built as an exit of the menu with every rule pinning the menu registered again; 21.18 builds it.
+
+### 2026-11-01 - docs/RUNBOOK.md - the standing target's register form, its print and 21.18's remedy
+Authorised by: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+Was:
+> (added) the register form `--standing`, the print `ledger-exits --standing` and 21.18's remedy block
+Now:
+> (added) as written
+Why: 21.18 builds the operator's ruling of 2026-11-01 and its remedy runs from the runbook's lines.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - the rule scorecard's variant reading a release reading says its verdict reads the years from the cutoff alone
 Corrects: 21.17 drew the label on the history half of a family's live rule alone, and after its remedy no live rule reads a release reading, so no scorecard drew it; found reading the S&P 400's paper trading page back after the remedy.
 Was:

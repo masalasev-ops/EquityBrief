@@ -79,7 +79,7 @@ public sealed class FamilyRecorder : IComponent
     const string SessionsFrom = "SELECT DISTINCT session_date FROM bar WHERE session_date >= $from ORDER BY session_date;";
 
     const string ClosesFrom = @"
-        SELECT ticker, session_date, close
+        SELECT ticker, session_date, close, open, high
         FROM bar
         WHERE session_date >= $from
         ORDER BY ticker, session_date;
@@ -444,7 +444,7 @@ public sealed class FamilyRecorder : IComponent
     // its cap's sessions have passed with the stock's closes run out before it; and still open otherwise. The
     // plan is read at the scale of the closes as they are stored now, so an adjustment since the night moves
     // the buy, the stop and the target together.
-    static (DateOnly On, double? Result)? Walk(Kept trade, IReadOnlyList<(DateOnly Session, double Close)>? series, IReadOnlyList<DateOnly> calendar, IReadOnlyDictionary<DateOnly, int> at) =>
+    static (DateOnly On, double? Result)? Walk(Kept trade, IReadOnlyList<(DateOnly Session, double Close, double Open, double High)>? series, IReadOnlyList<DateOnly> calendar, IReadOnlyDictionary<DateOnly, int> at) =>
         Walk(trade.Session, trade.Entry, trade.Stop, trade.Target, trade.Cap, series, calendar, at, trade.Exit, trade.RiskMoves);
 
     // A trade kept under an exit of the menu is walked under it, its trail counted in the typical moves its stop's
@@ -455,7 +455,7 @@ public sealed class FamilyRecorder : IComponent
         decimal stopAt,
         decimal? targetAt,
         int cap,
-        IReadOnlyList<(DateOnly Session, double Close)>? series,
+        IReadOnlyList<(DateOnly Session, double Close, double Open, double High)>? series,
         IReadOnlyList<DateOnly> calendar,
         IReadOnlyDictionary<DateOnly, int> at,
         int exit = 0,
@@ -475,7 +475,7 @@ public sealed class FamilyRecorder : IComponent
             if (ExitMenu.Of(exit) is { } choice)
             {
                 var anchor = new SetupAnchor(session, entry, stop, targetAt is { } aimed ? Statistic.FromPrice(aimed) * scale : null, targetAt is null ? entry - stop : null, cap, riskMoves);
-                var outcome = ExitMenu.Replay(closes, index, anchor, riskMoves is > 0 ? (entry - stop) / riskMoves.Value : double.NaN, choice);
+                var outcome = ExitMenu.Replay(closes, index, anchor, riskMoves is > 0 ? (entry - stop) / riskMoves.Value : double.NaN, choice, [.. series.Select(bar => bar.Open)], [.. series.Select(bar => bar.High)]);
 
                 (result, sessions) = (outcome.Result, outcome.Sessions);
             }
@@ -503,7 +503,7 @@ public sealed class FamilyRecorder : IComponent
     // typical move: the stop the trade's distance in each member's own typical moves beneath, and the target
     // the trade's reward to risk above, or the stop trailing at that distance where the plan names no target;
     // the average result of those whose trade the stored closes reach the end of.
-    static (double? Benchmark, int Members) Benchmark(Kept trade, IReadOnlySet<string> members, IReadOnlyDictionary<string, double> moves, IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Close)>> closes)
+    static (double? Benchmark, int Members) Benchmark(Kept trade, IReadOnlySet<string> members, IReadOnlyDictionary<string, double> moves, IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Close, double Open, double High)>> closes)
     {
         if (trade.RiskMoves is not { } riskMoves || riskMoves <= 0)
         {
@@ -543,7 +543,7 @@ public sealed class FamilyRecorder : IComponent
             {
                 var anchor = new SetupAnchor(trade.Session, entry, entry - risk, trade.Target is not null && trade.RewardToRisk is { } aimed ? entry + (aimed * risk) : null, trade.Target is null ? risk : null, trade.Cap, riskMoves);
 
-                result = trade.Target is not null && trade.RewardToRisk is null ? null : ExitMenu.Replay(held, index, anchor, move, choice).Result;
+                result = trade.Target is not null && trade.RewardToRisk is null ? null : ExitMenu.Replay(held, index, anchor, move, choice, [.. series.Select(bar => bar.Open)], [.. series.Select(bar => bar.High)]).Result;
             }
             else
             {
@@ -564,7 +564,7 @@ public sealed class FamilyRecorder : IComponent
         return (count > 0 ? sum / count : null, count);
     }
 
-    static int IndexOf(IReadOnlyList<(DateOnly Session, double Close)> series, DateOnly session)
+    static int IndexOf(IReadOnlyList<(DateOnly Session, double Close, double Open, double High)> series, DateOnly session)
     {
         for (var index = 0; index < series.Count; index++)
         {
@@ -673,14 +673,14 @@ public sealed class FamilyRecorder : IComponent
         return sessions;
     }
 
-    internal static async Task<IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Close)>>> ClosesAsync(SqliteConnection connection, DateOnly from, CancellationToken cancellation)
+    internal static async Task<IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Close, double Open, double High)>>> ClosesAsync(SqliteConnection connection, DateOnly from, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = ClosesFrom;
         command.Parameters.AddWithValue("$from", Stamp(from));
 
-        var closes = new Dictionary<string, List<(DateOnly Session, double Close)>>(StringComparer.Ordinal);
+        var closes = new Dictionary<string, List<(DateOnly Session, double Close, double Open, double High)>>(StringComparer.Ordinal);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -693,10 +693,10 @@ public sealed class FamilyRecorder : IComponent
                 closes[ticker] = held = [];
             }
 
-            held.Add((Date(reader.GetString(1)), Statistic.FromPrice(Money.FromStorage(reader.GetString(2)))));
+            held.Add((Date(reader.GetString(1)), Statistic.FromPrice(Money.FromStorage(reader.GetString(2))), Statistic.FromPrice(Money.FromStorage(reader.GetString(3))), Statistic.FromPrice(Money.FromStorage(reader.GetString(4)))));
         }
 
-        return closes.ToDictionary(entry => entry.Key, entry => (IReadOnlyList<(DateOnly Session, double Close)>)entry.Value, StringComparer.Ordinal);
+        return closes.ToDictionary(entry => entry.Key, entry => (IReadOnlyList<(DateOnly Session, double Close, double Open, double High)>)entry.Value, StringComparer.Ordinal);
     }
 
     static async Task<IReadOnlyDictionary<string, double>> TypicalMovesAsync(SqliteConnection connection, DateOnly session, CancellationToken cancellation)

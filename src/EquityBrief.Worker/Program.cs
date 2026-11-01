@@ -870,7 +870,12 @@ static async Task<int> LedgerExitsRun(string[] args)
         return 1;
     }
 
-    return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).ExitsAsync(index, Console.Out);
+    var ledger = new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile);
+
+    // From 21.18 the target as a standing sell order beside the sale as now, printed and nothing written.
+    return args.Contains(EquityBrief.Worker.Ledger.SetupLedger.StandingFlag, StringComparer.Ordinal)
+        ? await ledger.StandingAsync(index, Console.Out)
+        : await ledger.ExitsAsync(index, Console.Out);
 }
 
 // 21.3's score bucket audit by hand, over one index's settled swing setups and the stored models, reading the store and

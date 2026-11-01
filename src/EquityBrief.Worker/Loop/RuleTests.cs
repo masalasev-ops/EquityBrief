@@ -41,6 +41,10 @@ public sealed record RuleUnderTest(
 
     // From 21.14 whether the rule's own walk reads the graded exposure as its registration states it.
     public bool Graded { get; init; }
+
+    // From 21.18 the rule's walk under the target standing as a sell order, walked beside it unregistered where its family
+    // on the index registers none; none elsewhere.
+    public IReadOnlyList<(int Entry, double? Edge)>? StandingTarget { get; init; }
 }
 
 // From 21.1 a tone variant's walk and its opposite's over the same history, each trade by the session it was listed on,
@@ -990,6 +994,15 @@ public static class RuleTests
             exposure = (Units(RuleWalk.Swing(inputs.Read, family, large, change with { Hooks = ExposureProcedures.Exposed(hooks, exposureFloor) }, inputs.Readings, inputs.Trees).Own), exposureFloor);
         }
 
+        // From 21.18 a live or provisional rule the standing target reaches whose family on the index registers no rule at
+        // it, the S&P 500's drift, which holds nine, has its walk under the standing target walked beside it unregistered.
+        // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+        var standingExit = ExitMenu.Swing.Single(choice => choice.Kind == ExitKind.Standing);
+        var standingUnits = StandingOf(row) != Variant && ExitProcedures.StandsFor(inputs.Read.Index, family) && RuleHooks.Of(hooks).Exit == 0
+            && !inputs.Standing.Any(other => other.Evaluator == row.Evaluator && RuleHooks.Of(CandidateEvaluator.Read(other.Parameters)).Exit == standingExit.Number)
+                ? Units(walk.Under(standingExit))
+                : null;
+
         bool Open(int at)
         {
             var session = walk.Listings[at].Session;
@@ -1031,10 +1044,10 @@ public static class RuleTests
                     return leaves;
                 });
 
-            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, OpenFloor: Units(floored), Skipped: skipped, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor);
+            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, OpenFloor: Units(floored), Skipped: skipped, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor) { StandingTarget = standingUnits };
         }
 
-        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor);
+        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor) { StandingTarget = standingUnits };
     }
 
     // From 21.9 whether a rule of the family registered on the same index states the graded exposure.
@@ -1236,6 +1249,23 @@ public static class RuleTests
         }
 
         return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: its exposure graded at the breadth floor {rule.ExposureFloor:0.00}, walked unregistered and written nowhere, {Side(rule.Exposure!, inTestYears)} over the test years, against its own {Side(rule.Trades ?? [], inTestYears)}");
+    }
+
+    // From 21.18 a live rule's walk under the target standing as a sell order beside its own over the test years, walked
+    // unregistered and written nowhere.
+    public static string StandingLine(RuleUnderTest rule, Func<int, bool> inTestYears)
+    {
+        static string Side(IReadOnlyList<(int Entry, double? Edge)> units, Func<int, bool> on)
+        {
+            var kept = units.Where(unit => on(unit.Entry)).ToArray();
+            var edged = kept.Where(unit => unit.Edge is not null).ToArray();
+
+            return edged.Length == 0
+                ? FormattableString.Invariant($"{kept.Length} trade(s), none ended")
+                : FormattableString.Invariant($"{kept.Length} trade(s) at {edged.Average(unit => unit.Edge!.Value):+0.000;-0.000} risks");
+        }
+
+        return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: its target standing as a sell order, walked unregistered and written nowhere, {Side(rule.StandingTarget!, inTestYears)} over the test years, against its own {Side(rule.Trades ?? [], inTestYears)}");
     }
 
     // From 21.7 why a rule ordered by the expected value of the setups like each listing is not walked: the run holds no

@@ -654,7 +654,8 @@ public sealed partial class MarkRenderer
     // From 21.14 the line an account's rule carries beneath its words, the tone variant's that its history before the local
     // model's cutoff does not count; none for any other.
     static string AccountNote(PaperAccountView account) =>
-        account.Note is { } note ? Formatted($"<span class=\"pv-note\" data-note=\"tone\">{Escaped(note)}</span>") : string.Empty;
+        (account.Note is { } note ? Formatted($"<span class=\"pv-note\" data-note=\"tone\">{Escaped(note)}</span>") : string.Empty)
+        + (StandsAtTheTarget(account.Words) ? Formatted($"<span class=\"pv-note\" data-note=\"standing\">{Escaped(EquityBrief.Core.Loop.ExitMenu.StandingWords)}</span>") : string.Empty);
 
     // From 21.17 the words beside a variant's years better where its rule reads a release reading: its verdict reads the
     // years from the local model's cutoff's year alone, the years before read by a model trained after them; none for any

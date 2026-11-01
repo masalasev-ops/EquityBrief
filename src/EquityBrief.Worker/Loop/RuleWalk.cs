@@ -154,7 +154,7 @@ public sealed class RuleWalk(
 
         (double? Result, int Sessions) Menu(FamilyListing listing)
         {
-            var outcome = ExitProcedures.Replayed(closes, listing, exit!);
+            var outcome = ExitProcedures.Replayed(read.Series, closes, listing, exit!);
 
             return (outcome.Result, outcome.Sessions);
         }
@@ -228,7 +228,7 @@ public sealed class RuleWalk(
 
         (double? Result, int Sessions) Menu(FamilyListing listing)
         {
-            var outcome = ExitProcedures.Replayed(closes, listing, exit!);
+            var outcome = ExitProcedures.Replayed(read.Series, closes, listing, exit!);
 
             return (outcome.Result, outcome.Sessions);
         }
@@ -614,10 +614,10 @@ public sealed class RuleWalk(
             var entry = closes[name][bar];
             var risk = listing.StopMoves * move;
             var anchor = new SetupAnchor(DateOnly.MinValue, entry, entry - risk, entry + (listing.RewardToRisk * risk), null, SweepIdeas.Cap, listing.StopMoves);
-            var outcome = ExitMenu.Replay(closes[name], bar, anchor, move, exit);
+            var outcome = ExitMenu.Replay(closes[name], bar, anchor, move, exit, SeriesPrices.Opens(series)[name], SeriesPrices.Highs(series)[name]);
             var sessionAt = series[name].SessionAt;
             var sessions = bar + outcome.Sessions < sessionAt.Length ? sessionAt[bar + outcome.Sessions] - sessionAt[bar] : outcome.Sessions;
-            var benchmark = ExitMenu.Benchmark(closes, read.Members.Names[listing.Session], read.Members.Bars[listing.Session], (member, at) => series[member].Atr[at], listing.StopMoves, listing.RewardToRisk, null, SweepIdeas.Cap, exit).Average;
+            var benchmark = ExitMenu.Benchmark(closes, read.Members.Names[listing.Session], read.Members.Bars[listing.Session], (member, at) => series[member].Atr[at], listing.StopMoves, listing.RewardToRisk, null, SweepIdeas.Cap, exit, SeriesPrices.Opens(series), SeriesPrices.Highs(series)).Average;
             var bought = outcome with { Result = fills.Result(outcome.Result, name, bar, entry, risk) };
 
             return (

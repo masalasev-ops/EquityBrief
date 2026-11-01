@@ -17,10 +17,11 @@ public partial class FixtureExpectations
     [Fact]
     public void EveryExitOfTheMenuIsReplayedByHandOverAConstructedPath()
     {
-        // Thirty exits, numbered from one, a rule's own exit being nought: the twenty-six of 17.5 and from 21.4 the
-        // time stop at three lengths and half sold at a risk.
-        Assert.Equal(30, ExitMenu.Swing.Count);
-        Assert.Equal(Enumerable.Range(1, 30), ExitMenu.Swing.Select(choice => choice.Number));
+        // Thirty-one exits, numbered from one, a rule's own exit being nought: the twenty-six of 17.5, from 21.4 the time
+        // stop at three lengths and half sold at a risk, and from 21.18 the target standing as a sell order, worked by hand
+        // in 21.18's own test since it reads each session's open and high.
+        Assert.Equal(31, ExitMenu.Swing.Count);
+        Assert.Equal(Enumerable.Range(1, 31), ExitMenu.Swing.Select(choice => choice.Number));
         Assert.Null(ExitMenu.Of(0));
 
         // The plan's own exit: nothing under 95 and nothing at 110 until the thirteenth session's 111, 2.2 risks.

@@ -190,7 +190,7 @@ public class PinnedConstants
             new("The tester's floors", "300", EquityBrief.Worker.Sweep.FamilySweep.TradeFloor, "FamilySweep.TradeFloor, read in proportion"),
             new("The tester's floors", "6", EquityBrief.Worker.Sweep.FamilySweep.YearsBeating, "FamilySweep.YearsBeating, read in proportion"),
             new("The tester's floors", "8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
-            new("The exit menu", "30", Core.Loop.ExitMenu.Swing.Count, "ExitMenu.Swing's count"),
+            new("The exit menu", "31", Core.Loop.ExitMenu.Swing.Count, "ExitMenu.Swing's count"),
             new("The exit menu", "0.5", (decimal)Core.Loop.ExitMenu.BreakEvenRisks[0], "ExitMenu.BreakEvenRisks[0]"),
             new("The exit menu", "1", (decimal)Core.Loop.ExitMenu.BreakEvenRisks[1], "ExitMenu.BreakEvenRisks[1]"),
             new("The exit menu", "1.5", (decimal)Core.Loop.ExitMenu.BreakEvenRisks[2], "ExitMenu.BreakEvenRisks[2]"),
