@@ -154,6 +154,11 @@ public partial class FixtureExpectations
             Assert.Equal(["|0|0"], Query(store, $"SELECT ifnull(status, '') || '|' || first_read || '|' || flagged FROM improving_result WHERE index_code = 'GSPC' AND session_date = '{day}' AND ticker = '{ticker}';"));
             Assert.Equal(["0"], Query(store, $"SELECT COUNT(*) FROM improving_trade WHERE ticker = '{ticker}';"));
 
+            // From the 22.9 correction of 2026-11-01 Quality at a fair price's chip last: the fixture's night stored the
+            // family's night and holds none of these names.
+            Assert.Equal(["1"], Query(store, $"SELECT COUNT(*) FROM quality_night WHERE index_code = 'GSPC' AND session_date = '{day}' AND rule = 'provisional';"));
+            Assert.Equal(["0"], Query(store, $"SELECT COUNT(*) FROM quality_holding WHERE ticker = '{ticker}';"));
+
             Assert.Equal(
                 new Dictionary<string, string>(StringComparer.Ordinal)
                 {
@@ -163,6 +168,7 @@ public partial class FixtureExpectations
                     [ImprovingRule.Name] = BriefStates.NotHeld,
                     [DipRule.Name] = closest is null ? BriefStates.NotClose : BriefStates.Short,
                     [SetupFamilies.SectorHeavyweights.Name] = BriefStates.NotHeld,
+                    [QualityRule.Name] = BriefStates.NotHeld,
                 },
                 chips);
 

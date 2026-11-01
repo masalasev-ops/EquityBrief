@@ -13671,7 +13671,9 @@ Built:      the stock page's line beneath the Fundamentals family's, held by Qua
             holdings, not in its holdings, or not read where the night stored no night of the family. 15.9's and 15.22's
             rows, the guide and the changelog.
 Tests:      one added, the two pages read back over the universes store: M1 and M2 held, M3 chosen, and a stock it holds
-            nothing of saying nothing. One amended: the S&P 500's brief's chips ending on the quality chip, not read.
+            nothing of saying nothing. Two amended, each brief's chips ending on the quality chip: the S&P 500's
+            constructed night, which stored no night of the family, not read; and each fixture name's, whose night
+            stored one holding none of them, not in its holdings.
 Mutation:   chosen before the run by this rule, the property the correction adds first, a held stock's page naming the
             family: the line for a bought holding made to say nothing, predicted red at the added test alone; it red and
             the other 25 tests of the brief's, the Fundamentals family's, the quality family's and the heavyweights' pages
