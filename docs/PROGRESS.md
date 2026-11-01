@@ -13456,3 +13456,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    21.17's remedy record, with the three ledger histories built again; the sign-offs of phases 18, 20, 21 and 22.
+
+### 21.17 - the remedy run from main: the S&P 400's and 600's Fundamentals live rules registered again without their flag, and the three ledger histories built again and checked   2026-11-01
+
+Not a checkpoint entry: it records 21.17's remedy and the histories built after it, and lands nothing.
+Ran:        `tools/remedies/2026-11-01-21.17-the-three-findings.txt` from main's 34b3f949, PR 610's merge, from 02:06 to
+            02:07 UTC on 2026-11-01, with no night, drain, labeller, local run or monthly run writing; then each index's
+            history built again with `--again` over 2019-01-02 to 2026-10-30 from its clean copy and checked: the S&P
+            500's build from 02:07 to 02:34 and its check to 02:46, the S&P 400's to 03:09 and its check to 03:21, and the
+            S&P 600's to 03:57 and its check to 04:26, the off-peak run starting beside that check at 04:10 from its own
+            copy. No request and no model call.
+Measured:   the answers recorded at the unflagged settings, the S&P 400's 1,635 trades and the S&P 600's 186 from their
+            history tests of 2026-10-27; each family swapped at one instant, retiring 2 and registering 2 at nine of nine:
+            the live S&P 400 Fundamentals rule at buy at 7 in 9, no flag first, the rise asked, the growth not asked, held
+            at 7, 63 sessions, and the live S&P 600 Fundamentals rule at buy at 9 in 9, no flag first, the rise asked, the
+            growth asked, held at 6, 252 sessions, each flagged rule standing beside it as a version. The four rules'
+            records restart at the swap, the two live rules' having counted from 2026-10-31. The S&P 500's build wrote
+            385,072 setups over 1,953 sessions, 61,622 passing the live rule; the S&P 400's 280,720, 45,110 passing; the
+            S&P 600's 384,355, 51,055 passing; each left the 16 sessions holding the night's own rows, 2026-10-09 to
+            2026-10-30, to the night. Each check rebuilt 200 of 200 sampled history setups with every reading the same.
+            The stored mean edge after costs a settled setup afterwards, against the benchmark sold as the setup is:
+            the S&P 500's pullback +0.024 over 30,252, breakout -0.015 over 22,472, drift -0.010 over 5,898; the S&P
+            400's +0.008 over 22,742, -0.026 over 15,462, +0.026 over 4,358; the S&P 600's +0.061 over 31,901, -0.025
+            over 20,013, -0.104 over 5,701, each within 0.002 of 21.17's entry's figure after.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the correction's entry above,
+            on whose branch this is recorded; records alone change in this entry.
