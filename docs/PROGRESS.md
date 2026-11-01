@@ -13897,3 +13897,44 @@ Stopped:    the operator's word, "If it would drop pages that are plainly about 
             correction of 2026-10-28 holds them, and no count is switched on. Put to the operator.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: the news labeller labels every other member holding a story it has not labelled after the list and the names a report is written for, and every index's buys draw their counts   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source on the operator's answer of 2026-11-01, and
+lands nothing.
+Found:      the fifth phase 18 sign-off review's proof over the night of 2026-10-30: the report page's rule that every story
+            a page keeps that admissibility admitted is labelled failed on 436 of the S&P 500's 503 pages, 247 of the S&P
+            400's 400 and 286 of the S&P 600's 602, 4,924 stories, the labeller reading tonight's list and the names a
+            report is written for alone three nights after every stored story was labelled once.
+Corrected:  after tonight's list and each name a report is written for, the labeller reads every other member of the three
+            indices on the night holding an admitted story of the window it has not labelled, the S&P 500's first and then
+            the 400's and the 600's, each in ticker order and once, and labels each one's own stories whole; a member
+            holding none is not read, and its time limit, its stop before the local run's next slot, its lock and its month
+            limit stand. The decision is superseded by one naming it, its prior text under Previously decided, every
+            citation moved, and CLAUDE.md's nightly hard rule, the architecture's step, catalogue row and window, the
+            runbook and the guide say it, their prior text in the changelog. Its consequence on Tonight: an S&P 400's or
+            600's family pick draws its stories' counts read off the night's labels as an S&P 500 pick's are, and a buy
+            holding no label reads no label on every index, which supersedes the words the 19.3 correction of 2026-10-26
+            gave it, "News labels cover S&P 500 picks only", whose premise, the labeller reading the S&P 500's list alone,
+            this ends; that correction's own test foresaw it, "as the labeller would count them were the operator to widen
+            its list", and is rewritten to it, the roster's row with it. The dip's buys, which draw no counts on any index,
+            stand as they were. The 4,924 stories waiting are labelled by the off-peak runs, about 77 minutes of the local
+            model at 0.94 seconds a story over the first runs' 20 minutes each, or at once by hand with `label-news`.
+Tests:      one new, the labeller over ZZD, ZZE, QQM, ZZF and ZZG worked by hand; three rewritten: the labeller's first run
+            reaching ZZD after the list, its month limit's four labels, and the S&P 400 night's buys saying no label and M1
+            drawing one good story's count; 3042 in all.
+Claims:     none new; the nightly run's step 23, the labeller's catalogue row and section 17's window amended in place, the
+            step's key in the harness written as the architecture now reads.
+Pins:       none move; the labeller and the Tonight screen are read by no rule's version, the filter or a readings pin, and
+            the news labels stay read by no component that decides a pick.
+Mutation:   chosen before the runs by this rule, the property the correction adds, each filtered to the labeller's tests and
+            the Tonight test: l1 the members after the list never read, predicted red at the labeller's first run and the new
+            test, red at both and at the month limit's; l2 the members ordered by ticker alone, predicted red at the new
+            test, red there; l3 a member holding no story to label read as well, predicted red at the new test's names
+            count, red there; t1 an S&P 400 pick's counts dropped, predicted red at the Tonight test, red there; each reverted,
+            green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3042 of 3042 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.

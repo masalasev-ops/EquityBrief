@@ -26,6 +26,44 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - CLAUDE.md - the nightly hard rule's labeller carve-out labels every other member holding a story it has not labelled
+Authorised by: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
+Was:
+> ... which labels the stored articles of the names on the newest night's list and of the names a report is written for through the local model ... on the operator's rulings of 2026-09-29, 2026-10-12 and 2026-10-28, ... (see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run) ...
+Now:
+> ... which labels the stored articles of the names on the newest night's list, of the names a report is written for and then of every other member holding one it has not labelled through the local model ... on the operator's rulings of 2026-09-29, 2026-10-12, 2026-10-28 and 2026-11-01, ... (see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled) ...
+Why: the operator's answer of 2026-11-01, "Label every member"; the carve-out stays off the night, on the local model and bounded by the labeller's own limits.
+
+### 2026-11-01 - docs/ARCHITECTURE.html - the news labeller reads every other member holding a story it has not labelled, in the nightly run's step, the catalogue and section 17
+Authorised by: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
+Was:
+> (the nightly run, step 23) ... a process of its own that labels the stored admitted articles of the names on the newest night's list and of every name a report is written for, each name's own newest first ... (see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run).
+> (the catalogue, News labeller) reads tonight's list in the order it is drawn and then each name a report is written for, and, for each name, its own stored admitted articles ...
+> (section 17, News labelling window) ... (see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run) ...
+Now:
+> ... a process of its own that labels the stored admitted articles of the names on the newest night's list, of every name a report is written for and then of every other member holding one it has not labelled, each name's own newest first ... (see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled).
+> reads tonight's list in the order it is drawn, then each name a report is written for and then every other member of the three indices holding an admitted article of the window it has not labelled, the S&P 500's first, and, for each name, its own stored admitted articles ...
+> ... (see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled) ...
+Why: the report page's rule that the labeller labels every story a page keeps failed on 969 of 1,505 pages of the night of 2026-10-30 under the old bound; the operator ruled every member labelled on 2026-11-01.
+
+### 2026-11-01 - docs/RUNBOOK.md - label-news and the off-peak run label every other member holding a story not labelled
+Authorised by: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
+Was:
+> The off-peak run starts the labeller before the drain, five minutes after each peak window ends, over the newest night's list and the names a report is written for, as a process of its own ...
+> ... reads its list in the order it is drawn and then each name a report is written for, a request asked since that night's session began and written or still to be written, on any of the three indices, and for each name asks ... (see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run).
+Now:
+> ... over the newest night's list, the names a report is written for and then every other member holding a story it has not labelled, as a process of its own ...
+> ... reads its list in the order it is drawn, then each name a report is written for, a request asked since that night's session began and written or still to be written, on any of the three indices, and then every other member of the three indices on that night holding an admitted article of the window it has not labelled, the S&P 500's first, and for each name asks ... (see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled).
+Why: the same answer of the operator.
+
+### 2026-11-01 - .claude/rules/checks.md - read-surface holds a buy holding no label saying no label on every index's night
+Authorised by: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
+Was:
+> read-surface: ... and from the 19.3 correction of 2026-10-26 a buy holding no label saying the news labels cover S&P 500 picks only on an S&P 400 night, each of its three rows, and no label on an S&P 500 night, a pick holding labels drawing its counts on either; ...
+Now:
+> read-surface: ... and from the 18.4 correction of 2026-11-01, the labeller labelling every member, a buy holding no label saying no label on every index's night, each of an S&P 400 night's three rows among them, and a pick holding labels drawing its counts on either, an S&P 400 pick's read off its night's labels; ...
+Why: the 19.3 correction's words held while the labeller read the S&P 500's list alone; with every member labelled an S&P 400 or 600 pick's counts are read off its night's labels as an S&P 500 pick's are, and its test, which foresaw the widening, is rewritten to it.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - a next report no report a year earlier can estimate says why
 Corrects: FDXF, a spin-off holding no report a year back, drew its next report as not announced with no estimate and no reason, and the report page's proof failed it, found by the fifth phase 18 sign-off review on 2026-11-01.
 Was:

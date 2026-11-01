@@ -54,7 +54,8 @@ public sealed record LabelPin(
     DateTimeOffset WrittenAt);
 
 // The news labeller. A process of its own the off-peak run starts, and run by hand: it reads tonight's list in the order
-// it is drawn and then each name a report is written for, for each name its own stored, admitted articles of the thirty
+// it is drawn, then each name a report is written for and then every other member of the three indices holding a story it
+// has not labelled, for each name its own stored, admitted articles of the thirty
 // days before the night, newest first and every one of them, not yet labelled by the local profile under the
 // instruction's version, and asks the local model for a label one article at a time under the labeller's own pin, the
 // answer held by the runtime's structured output to the instruction's keys and to a reason with no digit. No paid
@@ -129,7 +130,7 @@ public sealed class NewsLabeller : IComponent
     // page's order, on a night the families drew it; and on a night before them the members whose live
     // result passed, improving businesses first where the night stored its readings and the filter's own
     // order within a state. A replayed result is none of the night's. The S&P 400's and 600's lists are none of it.
-    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+    // see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     static readonly string ListedOnNight = @"
@@ -145,13 +146,31 @@ public sealed class NewsLabeller : IComponent
     // Each name a report is written for, on any index, in the order it was asked: a request asked since the night's
     // session began, written or still to be written, so the night's own requests are labelled at the off-peak run
     // before the drain writes them and a press at the run after it. A request refused or withdrawn writes no report.
-    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+    // see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
     const string ReportsAsked = @"
         SELECT r.ticker, COALESCE((SELECT m.name FROM membership m WHERE m.ticker = r.ticker AND m.name IS NOT NULL ORDER BY m.joined DESC LIMIT 1), r.ticker)
         FROM research_request r
         WHERE r.asked_at >= $since AND r.state IN ('outstanding', 'writing', 'written')
         GROUP BY r.ticker
         ORDER BY MIN(r.asked_at), r.ticker;
+    ";
+
+    // Every other member of the three indices on the night, the S&P 500's first and then the 400's and the 600's, each in
+    // ticker order and once whatever index it is in, that holds an admitted article of the window not yet labelled under
+    // the local profile and version, so every story a page keeps is labelled; a member holding none is not read.
+    // see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
+    const string MembersToLabel = @"
+        SELECT m.ticker, COALESCE((SELECT n.name FROM membership n WHERE n.ticker = m.ticker AND n.name IS NOT NULL ORDER BY n.joined DESC LIMIT 1), m.ticker)
+        FROM membership m
+        WHERE (m.joined IS NULL OR m.joined <= $session) AND (m.left IS NULL OR m.left > $session)
+          AND EXISTS (
+              SELECT 1 FROM news_article a
+              WHERE a.ticker = m.ticker AND a.admissibility = $accepted AND a.published_at >= $from AND a.published_at < $to
+                AND NOT EXISTS (
+                    SELECT 1 FROM news_label b
+                    WHERE b.ticker = a.ticker AND b.article_id = a.article_id AND b.profile = $profile AND b.instruction_version = $version))
+        GROUP BY m.ticker
+        ORDER BY MIN(CASE m.index_code WHEN 'GSPC' THEN 0 WHEN 'MID' THEN 1 ELSE 2 END), m.ticker;
     ";
 
     // A member's admitted articles of the window not yet labelled under the local profile and version, newest first,
@@ -253,16 +272,24 @@ public sealed class NewsLabeller : IComponent
         this.wait = wait ?? Task.Delay;
     }
 
-    // One night's labels: the list and the names a report is written for, each name's own stories of the window.
+    // One night's labels: the list, the names a report is written for and then every other member holding a story not
+    // yet labelled, each name's own stories of the window.
     public async Task<NewsLabelOutcome> RunAsync(DateOnly session, string runId, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var listed = await ListedAsync(connection, session, cancellation);
-        var names = listed.Concat((await ReportedAsync(connection, session, cancellation)).Where(reported => !listed.Any(name => name.Ticker == reported.Ticker))).ToList();
         var from = session.AddDays(-WindowDays).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var to = session.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var names = (await ListedAsync(connection, session, cancellation)).ToList();
+
+        foreach (var more in (await ReportedAsync(connection, session, cancellation)).Concat(await MembersAsync(connection, session, from, to, cancellation)))
+        {
+            if (!names.Any(name => name.Ticker == more.Ticker))
+            {
+                names.Add(more);
+            }
+        }
         var slot = NewsLabelling.NextLocalSlotStart(clock.UtcNow);
 
         return await LabelAsync(
@@ -281,7 +308,7 @@ public sealed class NewsLabeller : IComponent
                     // The member's own stories alone, newest first and every one of them in the run: a story the feed
                     // tagged with another company's listing of the same ticker is never sent.
                     // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
-                    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+                    // see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
                     var own = (await ArticlesAsync(connection, ticker, from, to, cancellation))
                         .Where(article => StoryMatch.IsAbout(article.Title, article.Text, ticker, company))
                         .ToList();
@@ -728,6 +755,30 @@ public sealed class NewsLabeller : IComponent
 
         command.CommandText = ReportsAsked;
         command.Parameters.AddWithValue("$since", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "T00:00:00Z");
+
+        var names = new List<(string, string)>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            names.Add((reader.GetString(0), reader.GetString(1)));
+        }
+
+        return names;
+    }
+
+    async Task<IReadOnlyList<(string Ticker, string Company)>> MembersAsync(SqliteConnection connection, DateOnly session, string from, string to, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = MembersToLabel;
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$accepted", Admissibility.Accepted);
+        command.Parameters.AddWithValue("$from", from);
+        command.Parameters.AddWithValue("$to", to);
+        command.Parameters.AddWithValue("$profile", settings.Profile);
+        command.Parameters.AddWithValue("$version", NewsInstruction.Version);
 
         var names = new List<(string, string)>();
 
