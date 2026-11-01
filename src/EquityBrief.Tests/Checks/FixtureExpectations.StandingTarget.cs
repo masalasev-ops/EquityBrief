@@ -2,6 +2,7 @@ using System.Net;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
+using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Fills;
@@ -148,6 +149,19 @@ public partial class FixtureExpectations
             [true, true, false, true, true, false, false, false, false],
             new[] { ("MID", "pullback"), ("SML", "drift"), ("GSPC", "pullback"), ("GSPC", "drift"), ("MID", "drift"), ("MID", "breakout"), ("SML", "dip"), ("GSPC", "quality"), ("SML", "improving") }
                 .Select(pair => ExitProcedures.StandsFor(pair.Item1, pair.Item2)));
+    }
+
+    [Fact]
+    public void TheRemedysLinesRegisterEveryMovedRuleAgainAndThenTheFourVariants()
+    {
+        string[] lines = [.. File.ReadAllLines(Path.Combine(Repository.Root, "tools", "remedies", "2026-11-01-21.18-the-standing-target.txt")).Where(line => line.Length > 0 && !line.StartsWith('#'))];
+
+        Assert.Equal(5, lines.Length);
+        Assert.Equal(["register", "--moved", "--evidence"], Arguments(lines[0])[..3]);
+        Assert.Equal(
+            [("pullback", "MID"), ("drift", "MID"), ("pullback", "SML"), ("drift", "SML")],
+            lines[1..].Select(line => Arguments(line)).Select(words => (words[2], words[4])));
+        Assert.All(lines[1..], line => Assert.Equal(["register", RegisterVerb.Standing], Arguments(line)[..2]));
     }
 
     [Fact]

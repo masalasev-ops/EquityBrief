@@ -1,0 +1,15 @@
+# The remedy of 21.18, the target as a standing sell order as a variant, on the operator's ruling of 2026-11-01 and their
+# answer of the same day, "Menu exit, 111 restart". The menu's thirty-first exit and its walk sit in the hooks' sources,
+# which every rule reading the hooks pins, so one command registers again every standing candidate whose evaluator the
+# code no longer carries at the version it was registered with: the S&P 500's breakout and drift, replayed first and
+# keeping their records where every trade reproduces, and every dip, Fundamentals, Quality and S&P 400 and 600 swing and
+# heavyweights rule, each record restarting at this instant, its count printed before it restarts. The S&P 500's pullback
+# and heavyweights read no hook and stand as they are. Then the variant at the standing target beside each live S&P 400
+# and 600 pullback and drift, each family having room. No migration, no request to the provider and no model call. Run from
+# main after the merge, when no night, local run, drain, labeller, ledger build or monthly run is writing, read the output
+# for "remedy done", the count registered again and the four registrations, and restart the read surface after it.
+register --moved --evidence "21.18: the menu's target standing as a sell order on the operator's ruling and answer of 2026-11-01, every rule reading the hooks registered again at its new version"
+register --standing pullback --index MID
+register --standing drift --index MID
+register --standing pullback --index SML
+register --standing drift --index SML

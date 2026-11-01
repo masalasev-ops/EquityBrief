@@ -13481,3 +13481,79 @@ Measured:   the answers recorded at the unflagged settings, the S&P 400's 1,635 
             over 20,013, -0.104 over 5,701, each within 0.002 of 21.17's entry's figure after.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the correction's entry above,
             on whose branch this is recorded; records alone change in this entry.
+
+### 21.18 ruling - the target as a standing sell order as a variant, built as an exit of the menu with every rule reading the hooks registered again   2026-11-01
+
+Not a checkpoint entry: it records the operator's ruling and answer of 2026-11-01, which add 21.18 to the phase, and lands
+nothing.
+Ruled:      word for word in `prompts/2026-11-01-21.18-operator-ruling.md`: the target, and a half exit's level, treated as
+            a limit sell order resting from the entry, a day's high reaching it selling at the target and a session
+            opening above it at that open, the entry's own open never; the variant's benchmark sold the same way; a
+            read-only print first; the variant registered beside each live pullback, breakout and drift where the family
+            holds fewer than nine and walked unregistered where it holds nine, the tester proposing it; and "No live
+            rule's version moves and no record restarts. If adding this would move any source a rule pins, stop and tell
+            me which rules would restart before building anything beyond the read-only print." Put to them after the
+            print, that a menu exit moves the hooks' sources, which 111 of the 133 standing rules pin; answered, word for
+            word in `prompts/2026-11-01-21.18-operator-answer.md`: "Menu exit, 111 restart".
+Written:    21.18's text and its done condition in the build plan, and section 20's phase 21 row, its prior text in the
+            changelog; the decision with 21.18's entry.
+Verified:   `tools/ci.ps1` green over the tree carrying the correction's entry above, which states that run's figures;
+            documents alone change after it.
+
+### 21.18 - the target as a standing sell order: the read-only print, the menu's thirty-first exit walked with each session's open and high, its variant's register form, and the operator's sentence on the screens   2026-11-01
+
+Built:      on the operator's ruling and answer of 2026-11-01. The print, `ledger-exits --index <index> --standing`,
+            writing nothing. The menu's standing exit: a session whose high reaches the target sold at the target
+            whatever its close, the buy's own session among them; a later session opening at or above it at that open;
+            the buy's own open never; a close under the stop the stop's, sold at the next open; the cap's close; a
+            trailing plan walking as its own, and a walk handed no highs refused (see: The target as a sell order standing
+            from the buy is an exit of the menu, and its variant registers where its family has room). The night on every
+            index, the fill step, the monthly tests' walks and the benchmark's members each read the session's open and
+            high beside its close; the fill step sells such a trade at the target or that open on that session. It
+            reaches the drift on every index and the pullback on the S&P 400 and 600. It cannot reach the breakout, which
+            trails on every index; the dip and the books, which set no target; or the S&P 500's pullback, the swing filter,
+            whose page list's plans are read on closes alone. None of those is walked under it, proposed it or registered
+            at it. A half exit is a menu choice of its own, so a rule at the standing target takes no half. `register
+            --standing <family> --index <MID or SML>` registers the variant where the family has room; the per-rule test
+            walks it beside the S&P 500's drift, which holds nine, unregistered; the tester proposes it as every exit of
+            the menu. A variant's row on paper trading and each of its picks' cards say the operator's sentence. The
+            decision, 13.10, 13.11, 15.18, 15.21, section 17's exit menu, section 20's row, the runbook, the guide and the
+            changelog.
+Measured:   the print, read-only over the operator's store on 2026-11-01 between 04:40 and 04:47 UTC from this branch's
+            build, every settled swing setup bought at the open after its session, the mean edge after costs a trade sold
+            as now and with the target standing, each against the benchmark sold the same way, and the share whose exit
+            moves. The S&P 500's pullback before 2025, 24,126 setups, +0.019 and +0.018, 48.0 per cent moved; from 2025,
+            6,126, +0.042 and +0.014, 46.0; breakout, 18,173 and 4,299, -0.021 and +0.011 either way, none moved; drift
+            before 2025, 4,589, +0.001 and +0.038, 42.2; from 2025, 1,309, -0.041 and -0.104, 41.4. The S&P 400's pullback
+            before 2025, 18,100, +0.021 and +0.002, 45.0; from 2025, 4,642, -0.042 and -0.014, 46.2; breakout, 12,168 and
+            3,294, -0.027 and -0.025 either way, none moved; drift before 2025, 3,387, +0.032 and +0.061, 41.1; from 2025,
+            971, +0.017 and +0.036, 39.2. The S&P 600's pullback before 2025, 25,187, +0.052 and +0.026, 44.2; from 2025,
+            6,714, +0.088 and +0.066, 46.9; breakout, 15,342 and 4,671, -0.051 and +0.061 either way, none moved; drift
+            before 2025, 4,391, -0.149 and -0.081, 37.2; from 2025, 1,310, +0.046 and -0.043, 39.8.
+Pins:       moved, as the operator answered: the menu's exit and its walk are in the hooks' sources, so every evaluator
+            reading the hooks carries a new version, asserted by the register's version check. Standing on 2026-11-01:
+            the S&P 500's breakout 9 and drift 9; the dip 16, 5, 5 and 6; Fundamentals 27; Quality 24; and the S&P 400's
+            and 600's breakout 4 and 6, drift 7 and 4, pullback 4 and 4 and heavyweights 2 and 4: 111 rules. The S&P 500's
+            breakout and drift are replayed by the remedy and keep their records where every trade reproduces; the other
+            93 restart at the remedy, each having registered on 2026-10-30, 2026-10-31 or 2026-11-01. The S&P 500's
+            pullback, 9, and heavyweights, 4, stand unmoved.
+Decisions:  one written: The target as a sell order standing from the buy is an exit of the menu, and its variant
+            registers where its family has room.
+Tests:      3027, from 3021: six added, the standing exit worked by hand over constructed paths at each of its ends, the
+            print's walk agreeing with the menu's, the fill step's sale at the target, the register form's reach and its
+            refusals, the remedy's lines, and the operator's sentence read back off a rendered card. Four amended: the
+            exit outside the menu now the thirty-second, and the fill step's and the recorder's paths carrying each
+            session's high.
+Claims:     1491, none new; the rows amended in place; 1506 placements.
+Remedy:     `tools/remedies/2026-11-01-21.18-the-standing-target.txt`, from main after the merge while no other writer
+            runs: every moved rule registered again, then the four variants.
+Mutation:   chosen before the run by this rule, the property 21.18 adds first, a session whose high reaches the target
+            selling at the target: the menu's standing walk made to read no high, predicted red at the hand-worked exit,
+            the print's agreement with the menu and the fill step's sale; those three red, reverted, green. Not mutated:
+            the register form's refusals and the screens' words.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3027 of 3027 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy, read off its output after the merge; the sign-offs of phases 18, 20, 21 and 22 by fresh sessions.

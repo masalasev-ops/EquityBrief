@@ -1689,6 +1689,20 @@ It is refused for a family whose walk reads no exposure, from 21.16 any but the 
 dotnet run --project src/EquityBrief.Worker -- register --ordered drift --index MID
 ```
 
+**A pullback's or a drift's variant at the target standing as a sell order** is registered beside its live rule on the S&P 400 or 600 by one command, from 21.18: its live rule's setting with the menu's standing exit, which sells at the target the moment a session's high reaches it or at a later session's open above it, its stop still sold at the next open after a close below it (see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room).
+
+```
+dotnet run --project src/EquityBrief.Worker -- register --standing drift --index MID
+```
+
+It is refused on the S&P 500, whose pullback and drift hold nine and whose breakout trails, the per-rule test walking it beside the S&P 500's drift unregistered; for a family setting no target, the breakout, the dip and the books; where no live rule of the family stands; and where the live rule stands at an exit of the menu already. Before it, `ledger-exits --index <GSPC, MID or SML> --standing` prints each family's edge with the target standing beside the edge as now, each against the benchmark sold the same way, before 2025 and from it, and writes nothing. 21.18's remedy, from main after the merge while nothing else writes:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-11-01-21.18-the-standing-target.txt
+```
+
+It registers again every rule reading the hooks, the S&P 500's breakout and drift replayed first, and then the four variants.
+
 **The Fundamentals family's live rule without its flag** is registered on one index by one command, from 21.17 on the operator's ruling of 2026-10-31: the live rule and the version standing at its setting without the flag are retired and registered again as each other at one instant, the unflagged setting the live rule and the flagged one a version, the family keeping its nine rules (see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version).
 
 ```
