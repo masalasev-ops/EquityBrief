@@ -13657,3 +13657,67 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the sign-offs of phases 18, 20, 21 and 22 by fresh sessions, their handoffs written after this merges.
+
+### 22.9 - correction: a stock Quality at a fair price holds names the family on its page and among its chart page's chips   2026-11-01
+
+Corrects:   a stock Quality at a fair price holds never had the family named on its page or among its chart page's
+            chips, where the heavyweights' and the Fundamentals family's holdings are named; found gathering phase 18's
+            sign-off on 2026-10-26, carried in its fourth handoff and not corrected since, and read again on 2026-11-01
+            gathering the sign-off handoffs: FSLR, held by the S&P 500's live quality rule, read only that it was not on
+            tonight's list.
+Built:      the stock page's line beneath the Fundamentals family's, held by Quality at a fair price since the day it
+            was bought while it qualifies at each month's reshuffle, or chosen and bought at the next open, under the rule
+            its card draws; and the chart page's chip after the sector heavyweights', bought at tomorrow's open, in its
+            holdings, not in its holdings, or not read where the night stored no night of the family. 15.9's and 15.22's
+            rows, the guide and the changelog.
+Tests:      one added, the two pages read back over the universes store: M1 and M2 held, M3 chosen, and a stock it holds
+            nothing of saying nothing. Two amended, each brief's chips ending on the quality chip: the S&P 500's
+            constructed night, which stored no night of the family, not read; and each fixture name's, whose night
+            stored one holding none of them, not in its holdings.
+Mutation:   chosen before the run by this rule, the property the correction adds first, a held stock's page naming the
+            family: the line for a bought holding made to say nothing, predicted red at the added test alone; it red and
+            the other 25 tests of the brief's, the Fundamentals family's, the quality family's and the heavyweights' pages
+            green, reverted, green. Not mutated: the chip's states.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the entry below, on whose
+            branch this is recorded.
+
+### 22.5 - correction: the drift's trade step in the reader's words as room for its stop, where they said a reward worth the risk beside a reward under one   2026-11-01
+
+Corrects:   the reader's words named the drift's trade step "a reward worth the risk", which it does not test: it sets the
+            stop at the report day's low and the target at the nearer of a band two typical moves up and 2.5 times the
+            risk, and passes wherever a stop sits below the close, so LHX's card on the S&P 500 on the night of 2026-10-30
+            ticked a reward worth the risk beside a reward of 0.92. Seen on BX's card gathering phase 18's sign-off on
+            2026-10-26 and left unchecked, and checked on 2026-11-01.
+Built:      the step's words as the breakout's trade step's are, "room for its stop" and "no room for its stop"; 15.23's
+            table and the changelog. No rule changes, and no source a rule's version pins is one this writes.
+Tests:      one added, the step passing at a reward of 0.5714 over a constructed reaction and its words naming no reward.
+Mutation:   chosen before the run by this rule, the property the correction adds, the step's words naming what it tests:
+            the old words put back in the code's list alone, predicted red at the added test and at the list held to
+            15.23's table word for word; both red and the other 19 tests of the drift's gates and the plain words green,
+            reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the entry below, on whose
+            branch this is recorded.
+
+### 22.13 - correction: what to watch for on a chart page measures a Fundamentals holding's next report against its own hold   2026-11-01
+
+Corrects:   the chart page's line of what to watch for measured a stock's next report against the typical 21-session
+            hold where the Fundamentals family keeps a trade in it, which its live rule holds for 126 sessions on the S&P
+            500, 63 on the S&P 400 and 252 on the S&P 600; found with the quality book's gap gathering phase 18's sign-off
+            and carried beside it.
+Built:      the last session a Fundamentals trade can be held to at its rule's sessions, counted from its buy as the
+            family's step counts them, the buy the first, or from the next open where it is chosen and not yet bought;
+            and the line reading a report inside it as falling inside the Fundamentals hold, with the hold's last day,
+            where that family keeps a trade in the stock and no swing rule lists it, and the typical hold otherwise.
+            15.22's row, the guide and the changelog.
+Tests:      3039, from 3036: this correction's one, the hold's last day worked by hand over the exchange's calendar and
+            the line over a report 60 sessions after the night with and without the hold, and the two entries above's
+            one each.
+Claims:     1491, none new; the rows amended in place; 1506 placements.
+Mutation:   chosen before the run by this rule, the property the correction adds, a Fundamentals holding's report
+            measured against its own hold: the line made to read the typical hold always, predicted red at the added
+            test alone; it red and the other 25 tests of the same pages green, reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3039 of 3039 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.

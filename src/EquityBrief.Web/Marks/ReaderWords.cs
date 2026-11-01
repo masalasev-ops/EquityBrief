@@ -88,7 +88,7 @@ public static class ReaderWords
         ("drift", "reaction", "jumped on the report day", "did not jump on the report day"),
         ("drift", "volume", "on heavy volume", "volume too light"),
         ("drift", "held", "still above the report day's low", "fell below the report day's low"),
-        ("drift", "trade", "a reward worth the risk", "reward not worth the risk"),
+        ("drift", "trade", "room for its stop", "no room for its stop"),
         ("drift", "floors", "price and trading high enough", "price or trading too low"),
         ("drift", "profit", "profitable over its last four quarters", "not profitable over its last four quarters"),
         ("drift", "revenue", "sales up on a year earlier", "no quarter read with sales up on a year earlier"),

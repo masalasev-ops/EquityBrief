@@ -1410,6 +1410,9 @@ public sealed partial class SinglePageApp : IComponent
         double? filedMultiple = null,
         // Where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it, from 22.13.
         string? improving = null,
+        // Where Quality at a fair price holds the name at the night's close or chose it to buy at the next open, from the
+        // 22.9 correction of 2026-11-01.
+        string? quality = null,
         // The models the run log names on a priced call, which tell a paid model from a local one where no profile names it.
         IReadOnlySet<string>? paidModels = null,
         // The model profiles the settings name, and the profile each section is written under, which each job's lane is
@@ -2383,6 +2386,13 @@ public sealed partial class SinglePageApp : IComponent
         if (improving is not null)
         {
             region.Append(Invariant($"<p class=\"listed-under improving-held\">{Escaped(improving)}</p>"));
+        }
+
+        // Where Quality at a fair price holds the name at the night's close or chose it to buy at the next open.
+        // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+        if (quality is not null)
+        {
+            region.Append(Invariant($"<p class=\"listed-under quality-held\">{Escaped(quality)}</p>"));
         }
 
         // Every concept the page drew with two different values, said above the cards where any is, read back off the

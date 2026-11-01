@@ -303,7 +303,8 @@ public partial class ReadSurface
 
         // K3: two of the pullback's gates missed, one step short of the breakout at its volume; the drift, from 22.13 the
         // Fundamentals family in the fundamentals-first family's place, and the dip stored no answer for it, and the
-        // heavyweights' book holds nothing.
+        // heavyweights' book holds nothing; from the 22.9 correction Quality at a fair price last, which the night did not
+        // read.
         var k3 = await Brief("K3");
 
         Assert.Equal(
@@ -314,6 +315,7 @@ public partial class ReadSurface
                 $"improving|not-read|{ImprovingRule.Label}: not read tonight",
                 $"dip|not-read|{SetupFamilies.Dips.Label}: not read tonight",
                 $"heavyweight|not-held|{SetupFamilies.SectorHeavyweights.Label}: not in its holdings",
+                $"quality|not-read|{QualityRule.Label}: not read tonight",
             ],
             k3.Chips);
         Assert.EndsWith($"Tonight the closest setup is {breakout}, one step short: volume too light.", k3.Summary, StringComparison.Ordinal);
@@ -344,6 +346,31 @@ public partial class ReadSurface
         Assert.Equal("Not among tonight's picks, and no plan is stored for the night, the plan being read for the S&P 500's members alone.", ia.Lines["buy"]);
         Assert.Equal("No stop is stored.", ia.Lines["stop"]);
         Assert.DoesNotContain(ia.Lines.Values, line => line.Contains("its row", StringComparison.Ordinal) || line.Contains("its card", StringComparison.Ordinal));
+    }
+
+    // From the 22.13 correction of 2026-11-01: a stock the Fundamentals family keeps a trade in has its next report measured
+    // against that family's own hold, and not the typical 21-session hold a swing trade's card reads. Found gathering the
+    // phase 18 sign-off, the chart page of a stock the family bought measuring the 21 sessions where it holds 126.
+    [Fact]
+    public void TheBriefsWatchForMeasuresAFundamentalsHoldingsReportAgainstItsOwnHold()
+    {
+        // Worked by hand over the exchange's calendar: bought Friday 30 October at three sessions, that day the first, so
+        // held through Tuesday 3 November; chosen that night and not yet bought, bought at Monday's open, through Wednesday.
+        Assert.Equal(new DateOnly(2026, 11, 3), BriefScreen.FundamentalsHeldThrough(new DateOnly(2026, 10, 30), new DateOnly(2026, 10, 30), 3));
+        Assert.Equal(new DateOnly(2026, 11, 4), BriefScreen.FundamentalsHeldThrough(new DateOnly(2026, 10, 30), null, 3));
+
+        var night = new DateOnly(2026, 10, 30);
+        var report = new DateOnly(2027, 1, 28);
+
+        string? WatchFor(DateOnly? heldThrough) =>
+            BriefScreen.Of(new BriefInputs("EQT", "S&P 500", night, null, new Dictionary<string, double?>(), null, null, null, null, [], false, null, [], report, [], null, FundamentalsHeldThrough: heldThrough)).WatchFor;
+
+        // The report 60 sessions after the night, past the 21 a typical hold reads and inside a hold through 30 April.
+        Assert.Null(WatchFor(null));
+        Assert.Equal("Watch for: its report on 2027-01-28 falls inside the Fundamentals hold, which ends by 2027-04-30.", WatchFor(new DateOnly(2027, 4, 30)));
+
+        // A hold ending before the report says nothing of it.
+        Assert.Null(WatchFor(new DateOnly(2027, 1, 27)));
     }
 
     // The sources 22.4 writes.

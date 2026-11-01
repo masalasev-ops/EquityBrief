@@ -130,6 +130,17 @@ public static partial class TonightScreen
                 figures.TesterPassed)
             : null;
 
+    // What a stock's page says where Quality at a fair price holds it at its night's close or chose it to buy at the next
+    // open, and nothing where it does neither, as the page says of the heavyweights' and the Fundamentals family's.
+    // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+    public static string? HeldInTheQualityBook(string ticker, IReadOnlyList<QualityHoldingRow> holdings) =>
+        holdings.FirstOrDefault(holding => holding.Ticker == ticker && holding.EndedOn is null) switch
+        {
+            { BoughtOn: { } bought } => FormattableString.Invariant($"Held by {QualityRule.Label} since {bought:yyyy-MM-dd}, while it qualifies at each month's reshuffle."),
+            { } chosen => FormattableString.Invariant($"{QualityRule.Label} chose it on {chosen.ChosenOn:yyyy-MM-dd} and buys it at the next open."),
+            null => null,
+        };
+
     // A holding's line tonight in the reader's words: chosen tonight, waiting for its buy, still qualifying, or what it fell
     // short of and what happens at the next reshuffle, its score's fall said where its score stood higher at the
     // reshuffle before.
