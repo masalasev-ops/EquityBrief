@@ -40,8 +40,8 @@ Was:
 > (15.9, The setup the page lists the name under) ... with the filing and the scores it was read on (see: ...)
 > (15.22, In brief) ... at its last close in the index (see: A Fundamentals trade is held while its score stays at seven in nine, and judged against an equal-weighted hold of its index's members after its round trip)
 Now:
-> (15.9, The setup the page lists the name under) ... (see: ...); and beneath that from the 22.9 correction of 2026-11-01 a line naming Quality at a fair price where it holds the stock at the night's close, with the session it bought it on, or chose it to buy at the next open (see: ...)
-> (15.22, In brief) ... (see: ...); and from the 22.9 correction of 2026-11-01 Quality at a fair price's chip last, after the sector heavyweights' as its card follows theirs on Tonight, reading bought at tomorrow's open or in its holdings or not in its holdings, or not read where the night stored no night of the family
+> (15.9, The setup the page lists the name under) ... (see: ...); and beneath that from the 22.9 correction of 2026-11-01 a line naming Quality at a fair price where it holds the stock at the night's close with the session it bought it on or where it chose the stock to buy at the next open (see: ...)
+> (15.22, In brief) ... (see: ...); and from the 22.9 correction of 2026-11-01 Quality at a fair price's chip last after the sector heavyweights' as its card follows theirs on Tonight; that chip reading bought at tomorrow's open or in its holdings or not in its holdings or not read where the night stored no night of the family
 Why: the page names every family that holds the stock.
 
 ### 2026-11-01 - docs/RUNBOOK.md - measuring the theme search's tool
