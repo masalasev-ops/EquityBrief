@@ -639,7 +639,7 @@ public sealed partial class MarkRenderer
                 html.Append(Invariant, $"<tr data-account=\"{Escaped(variant.Key)}\" data-verdict=\"{Escaped(variant.Verdict)}\" data-better=\"{(variant.Better is { } better ? better.ToString(Invariant) : "none")}\">");
                 html.Append(Invariant, $"<td><b>{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{AccountNote(variant)}</td>");
                 html.Append(Invariant, $"<td><span class=\"pill\"{(variant.Adjusted is { } p ? Formatted($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span></td>");
-                html.Append(Invariant, $"<td class=\"r num\">{(variant.Better is { } of && variant.Counted is { } counted ? Formatted($"{of} of {counted}") : "<span class=\"degraded\">not read</span>")}</td>");
+                html.Append(Invariant, $"<td class=\"r num\">{(variant.Better is { } of && variant.Counted is { } counted ? Formatted($"{of} of {counted}") : "<span class=\"degraded\">not read</span>")}{JudgedFromNote(variant)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Progressed(variant.Progress, variant.Standing)}</td></tr>");
             }
 
@@ -655,6 +655,15 @@ public sealed partial class MarkRenderer
     // model's cutoff does not count; none for any other.
     static string AccountNote(PaperAccountView account) =>
         account.Note is { } note ? Formatted($"<span class=\"pv-note\" data-note=\"tone\">{Escaped(note)}</span>") : string.Empty;
+
+    // From 21.17 the words beside a variant's years better where its rule reads a release reading: its verdict reads the
+    // years from the local model's cutoff's year alone, the years before read by a model trained after them; none for any
+    // other.
+    // see: A rule or a change reading a release reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside it
+    static string JudgedFromNote(PaperAccountView account) =>
+        account.JudgedFrom is { } from
+            ? Formatted($"<span class=\"pv-note\" data-judged-from=\"{from}\">from {from} alone; the years before {Escaped(CutoffLabel)}</span>")
+            : string.Empty;
 
     // A record's progress in words: decided trades or a book's months of the count a verdict reads.
     static string Progressed(PaperProgress? progress, string standing) =>
