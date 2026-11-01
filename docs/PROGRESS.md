@@ -13940,3 +13940,33 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 6.8 - correction: a research pass's lock file and a theme pass's are removed as their handles close, where every name and theme ever researched left one beside the store   2026-11-01
+
+Not a checkpoint entry: it corrects what 6.8 built and 6.9 took from it, and lands nothing.
+Found:      130 lock files beside the operator's store, 94 `.research-<ticker>.lock` and 36 `.theme-<id>.lock`, one for every
+            name and theme a pass has run for. The lock is the open handle and the file held nothing, but neither runner
+            removed it, where the night's lock removes its own as it closes. The night's removal was itself read by no
+            check: `store-never-deleted` read the calls that remove a file and not a stream opened to remove its file
+            when it closes.
+Corrected:  each runner opens its pass's lock with delete-on-close, as the night's lock does, and reads an open refused as
+            access denied as busy as well. The removal is set only on the handle that won, so an open refused never
+            removes the holder's file. `store-never-deleted` reads a stream opened to delete on close as a site with the
+            path it is handed, and states the three: the night's lock and the two pass locks, none the store's path.
+Tests:      one new, a theme pass refused while another holds its lock, then run to its end leaving no lock file, the
+            theme lock's first test; the research pass refused while another runs now also reads its lock file standing
+            while held and gone after; the check's constructed source carries a store opened to delete on close and finds
+            it; 3043 in all.
+Claims:     none new.
+Pins:       none move; neither runner is read by any rule's version, the filter or a readings pin.
+Mutation:   chosen before the runs by this rule, the property the correction adds and the reader it adds: m1 both locks
+            opened without delete-on-close, predicted red at the research test, the theme test and the check's list of
+            sites; red at all three; m2 the new reader matching nothing, predicted red at the check's list and its
+            constructed proof; red at both, its first edit not applying and run again made with the Edit tool; each
+            reverted, green.
+Carried:    an operating step after the merge, with no worker running: the 130 leftover lock files removed by hand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3043 of 3043 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.

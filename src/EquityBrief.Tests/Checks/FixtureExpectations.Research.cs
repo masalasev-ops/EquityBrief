@@ -529,6 +529,10 @@ public partial class FixtureExpectations
 
         await held.Entered.WaitAsync(TimeSpan.FromMinutes(1));
 
+        var lockFile = store.DatabaseFile + ".research-KEYS.lock";
+
+        Assert.True(File.Exists(lockFile));
+
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var news = new NoArticles();
         var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: news).RunAsync("KEYS", "research-while-running");
@@ -537,14 +541,12 @@ public partial class FixtureExpectations
         Assert.Equal(0, paid.Probes + paid.Requests + news.Requests);
         Assert.Equal([$"research|{ResearchRunner.AlreadyRunning}"], Query(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'research-while-running';"));
 
-        // Released with the pass: the first runs to its end, and the lock goes with it.
+        // Released with the pass: the first runs to its end, and the lock goes with it, its file removed with it
+        // rather than left beside the store for every name ever researched.
         held.Release();
 
         Assert.Equal(ResearchRunner.Written, (await first).Outcome);
-
-        using (new FileStream(store.DatabaseFile + ".research-KEYS.lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-        {
-        }
+        Assert.False(File.Exists(lockFile));
     }
 
     [Fact]

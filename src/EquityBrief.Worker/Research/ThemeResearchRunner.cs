@@ -423,15 +423,16 @@ public sealed class ThemeResearchRunner(
         return null;
     }
 
+    // The per-name runner's lock, its file going with the handle as that one's does.
     FileStream? Hold(string theme)
     {
         var path = databaseFile + ".theme-" + SourceDocuments.Id(theme) + ".lock";
 
         try
         {
-            return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
         }
-        catch (IOException)
+        catch (Exception busy) when (busy is IOException or UnauthorizedAccessException)
         {
             return null;
         }
