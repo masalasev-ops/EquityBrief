@@ -121,6 +121,13 @@ public sealed partial class MarkRenderer
     // The section a page's own account of the business is read from.
     public const string WhatItSells = "What the company sells";
 
+    // The heading over the industry's members the valuation reads the stock against, naming whether the industry is the
+    // provider's or the one set for the stock, its possessive written as English writes a name ending in s: Software's,
+    // Banks'.
+    // see: The valuation reads a stock against its own quarters and its industry's S&P 500 members from the night's readings alone
+    public static string PeerHeading(string industry, string? provided) =>
+        Formatted($"<div class=\"sub\">Against {Escaped(industry)}{(industry.EndsWith('s') ? "'" : "'s")} S&amp;P 500 members on the night, {(provided is { } named && !string.Equals(named, industry, StringComparison.Ordinal) ? Formatted($"the industry set for the stock in place of the provider's {Escaped(named)}") : "the provider's classification")}</div>");
+
     // The line flagging an industry group that names none of the business the company's own segments and revenue lines
     // report, with the share of the quarter's revenue they carry, none where they agree or either is not read.
     // see: A stock's industry group is checked against the company's own segments and revenue lines and not its description

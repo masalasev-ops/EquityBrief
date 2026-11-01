@@ -124,6 +124,14 @@ public partial class ReadSurface
 
         Assert.Contains("<span class=\"copy-asof\">As of the close of 27 Oct.</span> <span class=\"m-when\">", marked, StringComparison.Ordinal);
         Assert.Contains("<h3>The analysts</h3><p class=\"copy-asof\">The analysts as of the close of 27 Oct, as the store held them when this copy was made; nothing here asks for them again.</p>", marked, StringComparison.Ordinal);
+
+        // The masthead says the night's close once: the page's own sentence saying so goes beside the copy's mark, the rest
+        // of its line kept; a page whose last close is older than the night keeps its own date.
+        const string Closed = "<span class=\"m-when\">As of the close of 2026-10-27, the last stored price. Levels and the plan come from completed sessions to 2026-10-27</span>";
+        const string Older = "<span class=\"m-when\">As of the close of 2026-10-23, the last stored price. Prices may be out of date; see below. Levels and the plan come from completed sessions to 2026-10-23</span>";
+
+        Assert.Equal("<span class=\"copy-asof\">As of the close of 27 Oct.</span> <span class=\"m-when\">Levels and the plan come from completed sessions to 2026-10-27</span>", SiteCopy.MarkedAtTheClose(Closed, CopyNight));
+        Assert.Equal("<span class=\"copy-asof\">As of the close of 27 Oct.</span> " + Older, SiteCopy.MarkedAtTheClose(Older, CopyNight));
     }
 
     [Fact]

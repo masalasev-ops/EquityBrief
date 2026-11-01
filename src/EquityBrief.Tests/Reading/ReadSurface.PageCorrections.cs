@@ -99,36 +99,41 @@ public partial class ReadSurface
         Assert.Empty(Checks.PlainWords.FaultsOn(Checks.PlainWords.TonightPage, page, Checks.PlainWords.Terms()));
     }
 
-    // From the 19.3 correction of 2026-10-26 a buy holding no label says why on an S&P 400 or 600 night, the labeller
-    // reading the S&P 500's list alone, and says no label on the S&P 500's; a pick holding labels draws its counts on
-    // either, as the labeller would count them were the operator to widen its list.
+    // From the 18.4 correction of 2026-11-01 the labeller labels every member, so a buy holding no label says no label on
+    // every index's night, where from the 19.3 correction of 2026-10-26 an S&P 400 or 600 night said the labels covered S&P
+    // 500 picks only, and an S&P 400 pick holding a labelled story draws its counts read off the night's labels as an S&P
+    // 500 pick's are.
+    // see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
     [Fact]
-    public async Task ABuyHoldingNoLabelSaysTheLabelsCoverSAndP500PicksOnlyOffTheSAndP500AndNoLabelOnIt()
+    public async Task ABuyHoldingNoLabelSaysNoLabelOnEveryIndexAndAnSAndP400PickHoldingLabelsDrawsItsCounts()
     {
-        const string Covers = "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">News labels cover S&amp;P 500 picks only</span></td>";
         const string None = "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>";
 
-        using (var store = EachKindStore())
-        {
-            using var host = new Host(store.Root);
-            using var client = host.CreateClient();
+        using var store = EachKindStore();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
 
-            var page = await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400");
+        static string Buys(string page) => Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
 
-            Assert.Equal(3, Regex.Matches(Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), Regex.Escape(Covers)).Count);
-            Assert.DoesNotContain(">no label<", page, StringComparison.Ordinal);
-        }
+        var before = Buys(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-        // Drawn by the page's own renderer for an S&P 500 night and for an S&P 400 one: a pick holding no label and one
-        // holding two good and one bad.
-        static string Drawn(bool labelled, int? good, int? bad) => new MarkRenderer().TomorrowsBuys(
-            [new BuyPointView(DriftRule.Name, "Earnings drift", new FamilyPickCell(new ListingCell("X1", new DateOnly(2026, 10, 2), 0, 0, 50m, [], NewsPositive: good, NewsNegative: bad), 1, 50m, 47m, 56m, false, 2m, "its report beat", []))],
-            null,
-            labelled: labelled);
+        Assert.Equal(3, Regex.Matches(before, Regex.Escape(None)).Count);
+        Assert.DoesNotContain("News labels cover", before, StringComparison.Ordinal);
 
-        Assert.Contains(None, Drawn(true, null, null), StringComparison.Ordinal);
-        Assert.Contains(Covers, Drawn(false, null, null), StringComparison.Ordinal);
-        Assert.All(new[] { Drawn(true, 2, 1), Drawn(false, 2, 1) }, drawn => Assert.Contains("<td class=\"news-counts\" data-positive=\"2\" data-negative=\"1\"><span class=\"np gain\">2 good</span> · <span class=\"nn loss\">1 bad</span></td>", drawn, StringComparison.Ordinal));
+        // One good story of the window naming Mid One, labelled for the first pick, M1: its row draws one good and none bad.
+        var ticker = Regex.Match(before, "<tr data-ticker=\"([^\"]+)\"").Groups[1].Value;
+
+        Assert.Equal("M1", ticker);
+        store.Execute(
+            "INSERT INTO news_article (ticker, article_id, link, title, source, published_at, text, length, admissibility, session_date) VALUES " +
+            $"('{ticker}', 'g1', 'https://example.invalid/g1', 'Mid One beats', 'wire', '2026-09-30T12:00:00Z', 'The company said so in a statement.', 36, '{EquityBrief.Core.Research.Admissibility.Accepted}', '2026-09-30');");
+        store.Execute(
+            "INSERT INTO news_label (ticker, article_id, profile, instruction_version, model, outcome, cause, kind, direction, reason, labelled_at, run_id) VALUES " +
+            $"('{ticker}', 'g1', 'gemma-4', 2, 'google/gemma-4-26b-a4b-qat', 'labelled', NULL, 'results', 'positive', 'The company beat.', '2026-10-01T04:10:00Z', 'label-news-test');");
+
+        var row = Regex.Match(Buys(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), $"<tr data-ticker=\"{Regex.Escape(ticker)}\".*?</tr>", RegexOptions.Singleline).Value;
+
+        Assert.Contains("<td class=\"news-counts\" data-positive=\"1\" data-negative=\"0\"><span class=\"np gain\">1 good</span> · <span class=\"nn flat\">0 bad</span></td>", row, StringComparison.Ordinal);
     }
 
     // The night of 2026-10-02 run again at noon on 2026-10-04 with the register as it stood, after a freeze registered

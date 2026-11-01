@@ -1274,13 +1274,12 @@ public sealed partial class MarkRenderer
             : $"<td class=\"business-cell\">{BusinessWord(pick.Row.Business)}</td>";
 
     // A pick's stories over the thirty days before the night as the labeller counted them, in words: so many good and so
-    // many bad. Where it holds no label, an S&P 500 pick says so and an S&P 400's or 600's says why, the labeller reading
-    // the S&P 500's list alone of the three.
-    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
-    static string PickNewsCell(FamilyPickCell pick, bool labelled) =>
+    // many bad, on every index, the labeller labelling every member; a pick holding no label says so.
+    // see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
+    static string PickNewsCell(FamilyPickCell pick) =>
         pick.Row.NewsPositive is { } positive && pick.Row.NewsNegative is { } negative
             ? Formatted($"<td class=\"news-counts\" data-positive=\"{positive}\" data-negative=\"{negative}\"><span class=\"np {(positive > 0 ? "gain" : "flat")}\">{positive} good</span> · <span class=\"nn {(negative > 0 ? "loss" : "flat")}\">{negative} bad</span></td>")
-            : $"<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">{(labelled ? "no label" : "News labels cover S&amp;P 500 picks only")}</span></td>";
+            : "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>";
 
     // A label's family with its article, as "also a sector leader" reads.
     static string Article(string label) =>

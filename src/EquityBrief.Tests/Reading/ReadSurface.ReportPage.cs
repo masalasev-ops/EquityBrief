@@ -382,7 +382,7 @@ public partial class ReadSurface
         // The peer group is read against the company's own segments: ROP's software segments, most of its revenue, in a group
         // of electronic equipment makers are flagged, and a page drawing the flag where the group names the business fails as
         // one drawing none where it does not.
-        const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components's S&amp;P 500 members on the night, the provider's classification</div>";
+        const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components' S&amp;P 500 members on the night, the provider's classification</div>";
         var ropSegments = new EquityBrief.Core.Report.SegmentReading(
             "release",
             new DateOnly(2026, 9, 30),
@@ -555,7 +555,7 @@ public partial class ReadSurface
         var after = NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null));
 
         Assert.DoesNotContain("data-reportDate=\"reported\"", before, StringComparison.Ordinal);
-        Assert.Contains(FormattableString.Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"><b>not announced</b><small>the quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}</small></dd></div>"), after, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\" data-estimated=\"none\"><b>not announced</b><small class=\"estimated-none\">{NameScreen.NoYearEarlier}: it started reporting as its own company on {reportDate:yyyy-MM-dd}</small><small>the quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}</small></dd></div>"), after, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"The quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}, and the next report is not announced."), after, StringComparison.Ordinal);
 
         // A release a year after the guidance's opens the box on its sentence saying what the company reported; one before

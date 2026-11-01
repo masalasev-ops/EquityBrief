@@ -242,9 +242,10 @@ public partial class FixtureExpectations
             "INSERT INTO news_label (ticker, article_id, profile, instruction_version, model, outcome, cause, kind, direction, reason, labelled_at, run_id) VALUES " +
             "('ZZB', 'b1', 'deepseek', 1, 'deepseek-flash', 'labelled', NULL, 'results', 'positive', 'A paid label.', '2026-09-08T04:00:00Z', 'label-news-paid');");
 
-        // Worked by hand: ZZB's two admitted articles of the window newest first, then ZZC's one; b3 is refused by
-        // admissibility and b4 is outside the window, so neither is sent, and ZZD is not on the list. b1 is read first
-        // time, b2 after an empty answer, and c1 is cut off at the budget twice.
+        // Worked by hand: ZZB's two admitted articles of the window newest first, then ZZC's one, and then ZZD's, a member
+        // off the list holding a story the labeller has not labelled; b3 is refused by admissibility and b4 is outside the
+        // window, so neither is sent. b1 is read first time, b2 after an empty answer, c1 is cut off at the budget twice
+        // and d1 is read first time.
         var model = new LocalAnswers(
             null,
             TimeSpan.Zero,
@@ -252,12 +253,13 @@ public partial class FixtureExpectations
             Answered(string.Empty),
             Answered(LabelAnswer("guidance", "negative", "The company lowered what it expects for the year.")),
             Answered("{\"kind\":\"other\",\"direction\":\"neutral\",\"reason\":\"The company", ReleaseAnswers.BudgetReached),
-            Answered("{\"kind\":\"other\",\"direction\":\"neutral\",\"reason\":\"The company", ReleaseAnswers.BudgetReached));
+            Answered("{\"kind\":\"other\",\"direction\":\"neutral\",\"reason\":\"The company", ReleaseAnswers.BudgetReached),
+            Answered(Good));
 
         var outcome = await Labeller(store, model, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-one");
 
-        Assert.Equal((3, 3, 2, 1, 1, 0, 0, NewsLabeller.Finished), (outcome.Names, outcome.NamesReached, outcome.Labelled, outcome.UnreadableCount, outcome.RefusedByAdmissibility, outcome.AlreadyLabelled, outcome.NotAnswered, outcome.Stop));
-        Assert.Equal(["b1", "b2", "b2", "c1", "c1"], model.Asked.Select(request => request.Text.Split('\n')[1]["Title: ".Length..]).Select(title => title switch { "ZZB beats" => "b1", "ZZB guides" => "b2", _ => "c1" }));
+        Assert.Equal((4, 4, 3, 1, 1, 0, 0, NewsLabeller.Finished), (outcome.Names, outcome.NamesReached, outcome.Labelled, outcome.UnreadableCount, outcome.RefusedByAdmissibility, outcome.AlreadyLabelled, outcome.NotAnswered, outcome.Stop));
+        Assert.Equal(["b1", "b2", "b2", "c1", "c1", "d1"], model.Asked.Select(request => request.Text.Split('\n')[1]["Title: ".Length..]).Select(title => title switch { "ZZB beats" => "b1", "ZZB guides" => "b2", "ZZD is not on the list" => "d1", _ => "c1" }));
         Assert.True(model.Prepared && model.ReleasedLoaded == true);
 
         // Each request asks the profile's model under the pin's seed and budget, the instruction's own words, and the
@@ -267,7 +269,7 @@ public partial class FixtureExpectations
         Assert.StartsWith("Company: ZZB (ZZB)\nTitle: ZZB beats", model.Asked[0].Text, StringComparison.Ordinal);
 
         Assert.Equal(
-            ["b1|labelled|results|positive|google/gemma-4-26b-a4b-qat", "b2|labelled|guidance|negative|google/gemma-4-26b-a4b-qat", "c1|unreadable|||google/gemma-4-26b-a4b-qat"],
+            ["b1|labelled|results|positive|google/gemma-4-26b-a4b-qat", "b2|labelled|guidance|negative|google/gemma-4-26b-a4b-qat", "c1|unreadable|||google/gemma-4-26b-a4b-qat", "d1|labelled|results|positive|google/gemma-4-26b-a4b-qat"],
             TextRows(store, "SELECT article_id || '|' || outcome || '|' || COALESCE(kind, '') || '|' || COALESCE(direction, '') || '|' || model FROM news_label WHERE profile = 'gemma-4' AND instruction_version = 2 ORDER BY ticker, article_id;"));
         Assert.Equal(NewsInstruction.CutOff, Text(store, "SELECT cause FROM news_label WHERE article_id = 'c1' AND profile = 'gemma-4';"));
         Assert.Equal("A paid label.", Text(store, "SELECT reason FROM news_label WHERE article_id = 'b1' AND profile = 'deepseek';"));
@@ -278,13 +280,53 @@ public partial class FixtureExpectations
         Assert.Equal(("gemma-4", LabellerModel, true, "0", NewsLabeller.Finished), (row.GetProperty("profile").GetString(), row.GetProperty("model").GetString(), row.GetProperty("local").GetBoolean(), row.GetProperty("cost").GetString(), row.GetProperty("stop").GetString()));
         Assert.Equal(1, row.GetProperty("pin").GetInt64());
         Assert.Equal("0", Text(store, "SELECT spend FROM run_log WHERE run_id = 'label-news-one' AND stage = 'news-labels';"));
-        Assert.Equal(5, Scalar(store, "SELECT model_calls FROM run_log WHERE run_id = 'label-news-one' AND stage = 'news-labels';"));
+        Assert.Equal(6, Scalar(store, "SELECT model_calls FROM run_log WHERE run_id = 'label-news-one' AND stage = 'news-labels';"));
 
         // Run again, nothing is asked: every article of the window is labelled or unreadable under the profile.
         var again = new LocalAnswers(null, TimeSpan.Zero);
         var second = await Labeller(store, again, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-two");
 
         Assert.Equal((0, 0, 3), (again.Requests, second.Labelled, second.AlreadyLabelled));
+    }
+
+    // From the 18.4 correction of 2026-11-01 the labeller reads, after the list and the names a report is written for,
+    // every other member of the three indices on the night holding a story of the window it has not labelled: the S&P
+    // 500's in ticker order and then the 400's, so QQM on the S&P 400 comes after ZZD and ZZE on the S&P 500 though its
+    // ticker sorts first. ZZF, whose one story is labelled already, is not read, and ZZG, which left before the night, is
+    // not either. Worked by hand: b1, b2 and c1 of the list, then d1, e1 and q1.
+    // see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
+    [Fact]
+    public async Task TheLabellerLabelsEveryOtherMemberHoldingAStoryItHasNotLabelledTheSAndP500First()
+    {
+        using var store = await NewsStore();
+
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
+        store.Execute(
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES " +
+            "('GSPC', 'ZZE', NULL, NULL, '2026-09-01T00:00:00Z'), ('MID', 'QQM', NULL, NULL, '2026-09-01T00:00:00Z'), " +
+            "('GSPC', 'ZZF', NULL, NULL, '2026-09-01T00:00:00Z'), ('GSPC', 'ZZG', NULL, '2026-09-02', '2026-09-01T00:00:00Z');");
+
+        foreach (var (ticker, id) in new[] { ("ZZE", "e1"), ("QQM", "q1"), ("ZZF", "f1"), ("ZZG", "g1") })
+        {
+            store.Execute(
+                "INSERT INTO news_article (ticker, article_id, link, title, source, published_at, text, length, admissibility, session_date) VALUES " +
+                $"('{ticker}', '{id}', 'https://example.invalid/{id}', '{ticker} reports', 'wire', '2026-09-07T09:00:00Z', 'The company said so in a statement.', 36, '{Admissibility.Accepted}', '2026-09-07');");
+        }
+
+        store.Execute(
+            "INSERT INTO news_label (ticker, article_id, profile, instruction_version, model, outcome, cause, kind, direction, reason, labelled_at, run_id) VALUES " +
+            $"('ZZF', 'f1', 'gemma-4', {NewsInstruction.Version}, '{LabellerModel}', 'labelled', NULL, 'results', 'positive', 'The company beat.', '2026-09-07T10:00:00Z', 'label-news-earlier');");
+
+        var model = new LocalAnswers(null, TimeSpan.Zero, Answered(Good), Answered(Good), Answered(Good), Answered(Good), Answered(Good), Answered(Good));
+        var outcome = await Labeller(store, model, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-members");
+
+        Assert.Equal(
+            ["ZZB", "ZZB", "ZZC", "ZZD", "ZZE", "QQM"],
+            model.Asked.Select(request => request.Text.Split('\n')[1]["Title: ".Length..].Split(' ')[0]));
+        Assert.Equal((6, 6, NewsLabeller.Finished), (outcome.Names, outcome.Labelled, outcome.Stop));
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label WHERE ticker IN ('ZZF', 'ZZG') AND run_id = 'label-news-members';"));
     }
 
     // An answer that arrives whole and fails a check is kept as unreadable with its cause after the one ask, since the
@@ -298,10 +340,10 @@ public partial class FixtureExpectations
 
         PinFor(store, settings);
 
-        var model = new LocalAnswers(null, TimeSpan.Zero, Answered(LabelAnswer("results", "positive", "Sales rose by 5 percent.")), Answered(Good), Answered(Good));
+        var model = new LocalAnswers(null, TimeSpan.Zero, Answered(LabelAnswer("results", "positive", "Sales rose by 5 percent.")), Answered(Good), Answered(Good), Answered(Good));
         var outcome = await Labeller(store, model, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-whole");
 
-        Assert.Equal((3, 2, 1), (model.Requests, outcome.Labelled, outcome.UnreadableCount));
+        Assert.Equal((4, 3, 1), (model.Requests, outcome.Labelled, outcome.UnreadableCount));
         Assert.Equal(NewsInstruction.DigitInTheReason, Text(store, "SELECT cause FROM news_label WHERE article_id = 'b1' AND profile = 'gemma-4';"));
         Assert.Equal(1, LabellerRow(store, "label-news-whole").GetProperty("unreadable").GetProperty(NewsInstruction.DigitInTheReason).GetInt32());
     }
@@ -311,7 +353,7 @@ public partial class FixtureExpectations
     // own request asked inside its session and is labelled after the list; ZZC's request names a name the list holds,
     // labelled once in the list's place; ZZE's request was asked the day before the session and ZZF's was refused, so
     // neither names a report and neither's story is sent.
-    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+    // see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
     [Fact]
     public async Task TheLabellerLabelsEachNameAReportIsWrittenForAfterTheListAndEveryOneOfANamesOwnStoriesInOneRun()
     {
@@ -492,18 +534,18 @@ public partial class FixtureExpectations
         PinFor(store, settings);
 
         var nightRows = Scalar(store, "SELECT COUNT(*) FROM run_log;");
-        var refusing = new LocalAnswers(null, TimeSpan.Zero, null, null, Answered(Good), Answered(Good));
+        var refusing = new LocalAnswers(null, TimeSpan.Zero, null, null, Answered(Good), Answered(Good), Answered(Good));
         var first = await Labeller(store, refusing, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-refusing");
 
-        Assert.Equal((4, 2, 1, NewsLabeller.Finished), (refusing.Requests, first.Labelled, first.NotAnswered, first.Stop));
-        Assert.Equal(["b2", "c1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
+        Assert.Equal((5, 3, 1, NewsLabeller.Finished), (refusing.Requests, first.Labelled, first.NotAnswered, first.Stop));
+        Assert.Equal(["b2", "c1", "d1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
         Assert.Equal(1, LabellerRow(store, "label-news-refusing").GetProperty("notAnswered").GetInt32());
 
         var next = new LocalAnswers(null, TimeSpan.Zero, Answered(Good));
         var second = await Labeller(store, next, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-taken-up");
 
         Assert.Equal((1, 1), (next.Requests, second.Labelled));
-        Assert.Equal(["b1", "b2", "c1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
+        Assert.Equal(["b1", "b2", "c1", "d1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
 
         var gone = new LocalAnswers(null, TimeSpan.Zero) { Gone = new ReadingRuntimeUnavailable(ReadingRuntimeUnavailable.NotRunning, "nothing answered at the runtime's address") };
         var stopped = await Labeller(store, gone, settings).RunAsync(new DateOnly(2026, 9, 9), "label-news-gone");
@@ -524,10 +566,10 @@ public partial class FixtureExpectations
 
         PinFor(store, settings);
 
-        var labels = new LocalAnswers(null, TimeSpan.Zero, Answered(Good), Answered(Good), Answered(Good));
+        var labels = new LocalAnswers(null, TimeSpan.Zero, Answered(Good), Answered(Good), Answered(Good), Answered(Good));
         var ran = await Labeller(store, labels, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-month");
 
-        Assert.Equal((3, 0m, 0m), (ran.Labelled, ran.Cost, ran.MonthCost));
+        Assert.Equal((4, 0m, 0m), (ran.Labelled, ran.Cost, ran.MonthCost));
 
         store.Execute(
             "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +

@@ -13721,3 +13721,222 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 18.5 ruling - the defects the fifth phase 18 sign-off review found corrected before a sixth review signs, every member's stories labelled   2026-11-01
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-01 and lands nothing.
+Found:      the fifth phase 18 sign-off review, by a session that had committed no code, over main 1fc5dc0e: both gates
+            green and its twelve mutations red, then the report page's proof read over every member's page of the three
+            indices for the night of 2026-10-30, read-only on the operator's read surface. Three rules failed: every
+            admitted story labelled, on 436 of the S&P 500's 503 pages, 247 of the S&P 400's 400 and 286 of the S&P 600's
+            602, 4,924 stories, the labeller labelling tonight's list and the names a report is written for where the
+            architecture's report page section says it labels every story a page keeps; a next report estimated, on FDXF,
+            a spin-off holding no report a year back, drawn as not announced with no estimate and no reason; and a
+            segment table in one scale, on ESNT, RGEN, CURB, EZPW, GSHD, IIPR, PECO and VCYT, a table whose smallest amount
+            reads under a million given no scale and each amount drawn in its own. A mutation drawing no stale note beside a
+            provider's figure survived the read surface's 829 tests: the page draws it and no test reads it. Four
+            judgement items: "Its group, by price" naming the provider's industry where the valuation reads ROP's
+            override, "Banks's" in the valuation's heading, the industry cycle's sources passing the relevance test while
+            plainly about something else, and the read-only copy's masthead saying "as of the close" twice. Nothing was
+            signed.
+Ruled:      word for word in `prompts/2026-11-01-18.5-phase-18-signoff-fifth-findings-and-answers.md`: this session
+            builds the corrections and a sixth fresh session signs; "Label every member", the labeller labelling every
+            member's stories on the local model in the off-peak run, no paid call; the missing test added now; all four
+            judgement items changed. Then, giving the go: "Segment scale: not thousands. Where the largest amount is a
+            million or more, every amount reads in millions with up to two decimals, so RGEN shows "$209.3M" beside
+            "$0.04M"; an amount under $5,000 reads "under $0.01M". Thousands only where every amount is under a
+            million"; the industry cycle's test counted over every stored theme pass before it is switched on, "If it
+            would drop pages that are plainly about the industry, say so and stop on this item"; and FDXF's line saying
+            "No report a year earlier is stored to estimate it from: it started reporting as its own company on <date>."
+Labelled:   read off the record: the labeller's scope, the segment table's scale, the estimated next report, the one value
+            a concept's test, the peer group's override read by its group by price, the industry cycle's relevance and the
+            copy's masthead under 18.4, whose corrections built each; the valuation heading's possessive under 18.2, which
+            built the industry table.
+Queue:      done, PR 615 and the fifth review; in progress, this pull request; next, the sixth phase 18 sign-off review
+            by a fresh session after it merges, then the sign-offs of phases 20, 21 and 22 by their own fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a segment table whose smallest amount reads under a million is drawn in millions to two places beside a larger amount, where each amount was drawn in a scale of its own   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the fifth phase 18 sign-off review's proof over the night of 2026-10-30: the one-scale rule failed on ESNT and
+            RGEN on the S&P 400 and CURB, EZPW, GSHD, IIPR, PECO and VCYT on the S&P 600, the table's scale given as none
+            where its smallest amount reads under a million, so each amount fell back to a scale of its own: RGEN's royalty
+            line of $44,000 beside its product line of $209.3M.
+Corrected:  a table whose smallest amount reads at one or more in a scale keeps that scale, ROP's millions and a table of
+            billions its billions; one whose smallest reads under a million beside an amount of a million or more is read
+            in millions, one place kept and two where one would read under a tenth, an amount two places would read as
+            none said to be under a hundredth, so RGEN's reads $209.3M beside $0.04M and $4,000 reads under $0.01M; one
+            whose every amount is under a million is read in thousands. The decision is superseded by one stating it, its
+            prior text under Previously decided, and the architecture's sentence with its prior text in the changelog.
+Tests:      none new; the segment table's test holds RGEN's table worked by hand, the edges at $5,000, $4,000, a loss of
+            $4,000 and $95,000, and the thousands where every amount is under a million.
+Mutation:   chosen before the runs by this rule, the property the correction adds: s1 a table whose smallest reads under
+            a million beside a larger amount given no scale again, predicted red at the segment table's test, red there;
+            s2 an amount under a tenth kept to one place, predicted red at RGEN's $0.04M, red there; each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a next report no report a year earlier can estimate says why, and the day the company started reporting as its own where every report the page knows is recent   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the fifth phase 18 sign-off review's proof over the night of 2026-10-30: FDXF, a spin-off whose stored
+            quarters carry no report day and whose newest fetch says its quarter to 2026-08-31 was reported on 2026-10-28,
+            drew its next report as not announced with no estimate and no reason, and the proof failed it with none stated.
+Corrected:  where no report a year before is stored, the snapshot's next report row and the line beneath the numbers say
+            "No report a year earlier is stored to estimate it from", and where every report the page knows a day for, the
+            stored quarters' and the one reported, falls in the year before the night, add ": it started reporting as its
+            own company on" the first of them, so FDXF's reads 2026-10-28; a company knowing an older report says no
+            first day. The proof passes a not-announced next report drawn with its estimate or with that line, and fails
+            one drawing neither, naming why. The architecture's sentence, with its prior text in the changelog.
+Tests:      none new; the estimate's test holds the line with its first day, the line alone where an older report is
+            known, the year's edge at 363 and 364 days, and the proof failing a page drawing neither; the reported row's
+            test reads the row with its line.
+Mutation:   chosen before the runs by this rule, the property the correction adds: f1 the line never naming the first day,
+            predicted red at the estimate's test, red there; f2 the proof passing a row with no estimate and no line,
+            predicted red at its failing case, red there; each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a test reads the stale note a page draws beside a provider's figure struck far from the close, where only its arithmetic was held   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into its tests, and lands nothing.
+Found:      the fifth phase 18 sign-off review's m10b: the page drawing no stale note beside a provider's figure, the
+            arithmetic marking it stale untouched, survived the read surface's 829 tests, the one value a concept's test
+            holding the figure's price and its mark and no test reading the note the page draws. A missing property: the
+            pages drew it, ROP's five times on the night of 2026-10-30.
+Corrected:  no shipped source changes. One test draws the fixture name's snapshot at a close of 100 with the company's value
+            at 1.3 times the provider's, so the provider's price stands at 76.92, worked by hand, and reads the market value
+            row naming the provider's figure, that price and that it is stale and not drawn; at the provider's own value the
+            row draws no note.
+Tests:      one new.
+Mutation:   chosen before the run by this rule, the property the test adds: m10b again, the note never drawn, predicted red
+            at the new test alone; red there, reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.5 ruling - a sign-off lists every pull request since the phase's last signed point and shows each correction still stands, and three items held to the rulings before them   2026-11-01
+
+Not a checkpoint entry: it records the operator's question and answers of 2026-11-01 and lands nothing.
+Asked:      "There has been numerous corrections to phase 18. Have you gone through all the PR to verify that what you are
+            suggesting are not overwriting some correction ?" Each line this pull request had edited was traced through the
+            history: the segment table's scale and its test to the 18.4 correction of 2026-10-28 that wrote them, whose
+            assertion that a table of $400,000 beside $2,000,000 takes no scale stated no purpose and contradicted the
+            scale's own comment, LRCX's misread held apart by its reader's own test; the next report's row to the 18.4
+            corrections of 2026-10-27 and 2026-10-28, kept and added to; the valuation's heading to 18.2 and the override's
+            words to the 18.4 correction of 2026-10-28, kept word for word. Three planned items went against what stood: the
+            industry cycle's sources held to their opening, where the ruling of 2026-10-28 holds every written section's
+            to its whole text (see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text); group by price reading the override, where its decision reads the provider's
+            industry first (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely); and the copy dropping its own "as of the close" mark, which the
+            ruling of 2026-10-28 on the read-only copy asks for.
+Ruled:      word for word in `prompts/2026-11-01-18.5-phase-18-signoff-fifth-findings-and-answers.md`: the industry cycle
+            "Count terms, keep whole text", a cycle source naming the industry's own words several times over its whole
+            text, its drops counted over every stored theme pass before it is switched on; group by price "Drop this item",
+            kept on the provider's industry; the copy "Drop the page's sentence", its ruled mark kept and the page's own
+            "As of the close of" sentence beside it dropped on a closed day. Then, for every sign-off: "the sign-off must
+            list every pull request since the phase's last signed point that changed a file the phase built, and for each
+            correction the phase carries, state the commit that made it and confirm by reading the current code and its
+            test that no later pull request undid or contradicted it. A sign-off without that table signs nothing." The
+            handoffs of phases 20, 21 and 22 carry it, and the sixth phase 18 handoff will.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.2 - correction: the valuation's heading writes an industry's possessive as a name is written, Banks' and not Banks's   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Found:      the fifth phase 18 sign-off review reading the pages of the night of 2026-10-30: the valuation's heading over
+            the industry's members read "Banks's" and "Diversified REITs's", an apostrophe and s after every industry, and
+            about forty of the S&P 500's industries end in s; put to the operator as a judgement, who chose to change it.
+Corrected:  the heading is one function writing an apostrophe alone after a name ending in s, Software's and Banks', its
+            words otherwise as the 18.4 correction of 2026-10-28 left them, the industry set for the stock in place of the
+            provider's named where one is; the proof reads the industry under either form. The constructed headings the
+            proof's tests read are written as the page now draws them.
+Tests:      one new, the heading for Banks, for an industry ending in Components with none set and for Software set in
+            place of the provider's, and the proof's industry label reading the first and the last.
+Mutation:   chosen before the run by this rule, the property the correction adds: p1 an apostrophe and s after every name
+            again, predicted red at the new test on Banks', red there, reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: the read-only copy's masthead says the night's close once, its ruled mark kept and the page's own sentence saying the same dropped beside it   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the fifth phase 18 sign-off review reading the copy uploaded for the night of 2026-10-30 against the pages it
+            copies: each stock's masthead read "As of the close of 30 Oct. As of the close of 2026-10-30, the last stored
+            price.", the copy's own mark beside the page's sentence; put to the operator as a judgement, who chose to drop
+            the page's sentence and keep the mark the ruling on the copy of 2026-10-28 asks for.
+Corrected:  the copy drops the page's "As of the close of" the night's date ", the last stored price." where it puts its
+            mark, the rest of the page's line kept, and a page whose last close is older than the night keeps its own
+            date and its warning. The decision on the copy stands as written: a stock's price is marked as of the night's
+            close.
+Tests:      none new; the copy's control test reads a closed masthead saying the close once and an older one kept whole.
+Mutation:   chosen before the run by this rule, the property the correction adds: c1 the page's sentence kept beside the
+            mark, predicted red at the copy's control test, red there, reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - record: the industry cycle's count of its industry's words measured over every stored theme pass, and not switched on   2026-11-01
+
+Not a checkpoint entry: it records a measurement made read-only on the live store, and lands nothing.
+Measured:   on the operator's answer of 2026-11-01, before any test is switched on: over the 42 stored theme passes, their
+            328 cited pages, 209 of them distinct, the industry's own words counted over each page's whole title and text
+            as the theme search counts them. Under each theme's own words the theme pass had admitted every page at 5
+            mentions in 10,000 characters, so a density up to that drops none of the 328; a count of at least 3 drops 16,
+            of at least 4 drops 31 over 17 themes, 21 distinct pages, and of at least 5 drops 46. ROP's Census Research
+            Exploration and Analysis Tool page counts 14 under its theme's words, Software - Application, "application"
+            being a word most pages use, so no count under the theme's own words drops it; under the Software group set for
+            ROP it counts 2 and the chip design story 3, so dropping both takes a count of at least 4, which drops 7 of
+            the theme's 9 pages. A count of 3 under each theme's own words already drops pages plainly about their
+            industry, each counting 2: "Nvidia pitches factory-built AI data centers and hardware-enforced agent control"
+            under Computer Hardware, "Qiagen revenue 2025" under Diagnostics & Research, "The silicon ceiling: Why SiC
+            and GaN are rewiring the EV powertrain" under Semiconductors and the American Chemistry Council's news and
+            trends under Specialty Chemicals.
+Stopped:    the operator's word, "If it would drop pages that are plainly about the industry, say so and stop on this
+            item": the cycle's sources stay held to the company or its industry over their whole text as the 18.4
+            correction of 2026-10-28 holds them, and no count is switched on. Put to the operator.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: the news labeller labels every other member holding a story it has not labelled after the list and the names a report is written for, and every index's buys draw their counts   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source on the operator's answer of 2026-11-01, and
+lands nothing.
+Found:      the fifth phase 18 sign-off review's proof over the night of 2026-10-30: the report page's rule that every story
+            a page keeps that admissibility admitted is labelled failed on 436 of the S&P 500's 503 pages, 247 of the S&P
+            400's 400 and 286 of the S&P 600's 602, 4,924 stories, the labeller reading tonight's list and the names a
+            report is written for alone three nights after every stored story was labelled once.
+Corrected:  after tonight's list and each name a report is written for, the labeller reads every other member of the three
+            indices on the night holding an admitted story of the window it has not labelled, the S&P 500's first and then
+            the 400's and the 600's, each in ticker order and once, and labels each one's own stories whole; a member
+            holding none is not read, and its time limit, its stop before the local run's next slot, its lock and its month
+            limit stand. The decision is superseded by one naming it, its prior text under Previously decided, every
+            citation moved, and CLAUDE.md's nightly hard rule, the architecture's step, catalogue row and window, the
+            runbook and the guide say it, their prior text in the changelog. Its consequence on Tonight: an S&P 400's or
+            600's family pick draws its stories' counts read off the night's labels as an S&P 500 pick's are, and a buy
+            holding no label reads no label on every index, which supersedes the words the 19.3 correction of 2026-10-26
+            gave it, "News labels cover S&P 500 picks only", whose premise, the labeller reading the S&P 500's list alone,
+            this ends; that correction's own test foresaw it, "as the labeller would count them were the operator to widen
+            its list", and is rewritten to it, the roster's row with it. The dip's buys, which draw no counts on any index,
+            stand as they were. The 4,924 stories waiting are labelled by the off-peak runs, about 77 minutes of the local
+            model at 0.94 seconds a story over the first runs' 20 minutes each, or at once by hand with `label-news`.
+Tests:      one new, the labeller over ZZD, ZZE, QQM, ZZF and ZZG worked by hand; five rewritten for ZZD, a member off the
+            list its store holds a story for, now reached after the list: the labeller's first run, its month limit's
+            four labels, an unreadable answer among four asks and a story the runtime does not answer among five, and the
+            S&P 400 night's buys saying no label and M1 drawing one good story's count; the check holding every membership
+            read to its two forms names the labeller among the member form's readers; 3042 in all.
+Claims:     none new; the nightly run's step 23, the labeller's catalogue row and section 17's window amended in place, the
+            step's key in the harness written as the architecture now reads.
+Pins:       none move; the labeller and the Tonight screen are read by no rule's version, the filter or a readings pin, and
+            the news labels stay read by no component that decides a pick.
+Mutation:   chosen before the runs by this rule, the property the correction adds, each filtered to the labeller's tests and
+            the Tonight test: l1 the members after the list never read, predicted red at the labeller's first run and the new
+            test, red at both and at the month limit's; l2 the members ordered by ticker alone, predicted red at the new
+            test, red there; l3 a member holding no story to label read as well, predicted red at the new test's names
+            count, red there; t1 an S&P 400 pick's counts dropped, predicted red at the Tonight test, red there; each reverted,
+            green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3042 of 3042 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.

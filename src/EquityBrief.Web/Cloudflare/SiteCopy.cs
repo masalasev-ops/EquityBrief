@@ -363,7 +363,12 @@ public static partial class SiteCopy
     public static string MarkedAtTheClose(string fragment, DateOnly night)
     {
         var words = AsOfTheClose(night);
-        var marked = fragment.Replace("<span class=\"m-when\">", "<span class=\"copy-asof\">" + char.ToUpperInvariant(words[0]) + words[1..] + ".</span> <span class=\"m-when\">", StringComparison.Ordinal);
+
+        // The page's own sentence saying its price is the night's close goes where the copy's mark says it, so the masthead
+        // says it once; a page whose last close is older than the night keeps its own.
+        var marked = fragment
+            .Replace(FormattableString.Invariant($"<span class=\"m-when\">As of the close of {night:yyyy-MM-dd}, the last stored price. "), "<span class=\"m-when\">", StringComparison.Ordinal)
+            .Replace("<span class=\"m-when\">", "<span class=\"copy-asof\">" + char.ToUpperInvariant(words[0]) + words[1..] + ".</span> <span class=\"m-when\">", StringComparison.Ordinal);
 
         return Regex.Replace(
             marked,

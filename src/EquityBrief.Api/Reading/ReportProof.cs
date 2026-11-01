@@ -213,7 +213,14 @@ public static partial class ReportProof
 
         var notAnnounced = page.Contains("data-reportDate=\"reported\"", StringComparison.Ordinal);
 
-        Add("next-report-estimated", notAnnounced ? page.Contains("data-reportDate=\"reported\" data-estimated=", StringComparison.Ordinal) : null, notAnnounced ? null : "the next report is not drawn as not announced");
+        // A next report not on file passes with the day it is estimated at, or with the line saying no report a year earlier
+        // is stored to estimate it from.
+        var estimatedNone = page.Contains("data-reportDate=\"reported\" data-estimated=\"none\"", StringComparison.Ordinal);
+
+        Add(
+            "next-report-estimated",
+            notAnnounced ? estimatedNone ? page.Contains("<small class=\"estimated-none\">" + NameScreen.NoYearEarlier, StringComparison.Ordinal) : page.Contains("data-reportDate=\"reported\" data-estimated=", StringComparison.Ordinal) : null,
+            notAnnounced ? estimatedNone && !page.Contains("<small class=\"estimated-none\">" + NameScreen.NoYearEarlier, StringComparison.Ordinal) ? "no estimate is drawn and no line says why" : null : "the next report is not drawn as not announced");
         Add("rules-family", picked ? RulesOpenOnTheFamily().IsMatch(page) : null, picked ? null : "no family picked it");
 
         var trendFailed = page.Contains("not an uptrend", StringComparison.Ordinal);
@@ -345,7 +352,7 @@ public static partial class ReportProof
         }
 
         // Each segment table draws every amount in one scale.
-        // see: A segment table draws every amount in one scale, the one its smallest amount reads in
+        // see: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not
         var scales = SegmentTableOf().Matches(page)
             .Select(table => SegmentRow().Matches(table.Groups["rows"].Value).Select(row => Suffix(row.Groups["drawn"].Value)).Concat(TotalRow().Matches(table.Groups["rows"].Value).Select(total => Suffix(total.Groups[1].Value))).Distinct().Count())
             .ToArray();
@@ -669,7 +676,7 @@ public static partial class ReportProof
     private static partial Regex NewsRegion();
 
     // The peer group's label: the group and what the page says it is.
-    [GeneratedRegex("<div class=\"sub\">Against (.+?)'s S&amp;P 500 members on the night, ([^<]*)</div>")]
+    [GeneratedRegex("<div class=\"sub\">Against (.+?)'s? S&amp;P 500 members on the night, ([^<]*)</div>")]
     private static partial Regex PeerGroup();
 
     // Each section the research region draws as left out or not written.

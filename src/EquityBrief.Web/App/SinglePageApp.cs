@@ -2254,7 +2254,7 @@ public sealed partial class SinglePageApp : IComponent
 
             if (valuation.Peers is { } peerValues)
             {
-                valued.Append(Invariant($"<div class=\"sub\">Against {Escaped(peerValues.Industry)}'s S&amp;P 500 members on the night, {(mast?.Industry is { } provided && !string.Equals(provided, peerValues.Industry, StringComparison.Ordinal) ? Invariant($"the industry set for the stock in place of the provider's {Escaped(provided)}") : "the provider's classification")}</div><div class=\"fig\">")).Append(marks.PeerDots(ticker, peerValues)).Append("</div>");
+                valued.Append(MarkRenderer.PeerHeading(peerValues.Industry, mast?.Industry)).Append("<div class=\"fig\">").Append(marks.PeerDots(ticker, peerValues)).Append("</div>");
                 valued.Append(MarkRenderer.IndustryMismatch(peerValues.Industry, report?.BusinessLines ?? []));
                 valued.Append(marks.PeerTable(peerValues));
             }

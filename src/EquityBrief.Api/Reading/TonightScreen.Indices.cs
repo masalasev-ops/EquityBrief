@@ -27,7 +27,8 @@ public static partial class TonightScreen
         IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members,
         IReadOnlyList<ResearchedRow> researched,
         IReadOnlyDictionary<string, QueueState> queue,
-        IReadOnlyList<FundamentalReadingRow>? readings = null)
+        IReadOnlyList<FundamentalReadingRow>? readings = null,
+        IReadOnlyDictionary<string, (int Positive, int Negative)>? news = null)
     {
         var settings = IndexRuleSettings.Read(night.Settings);
 
@@ -61,6 +62,10 @@ public static partial class TonightScreen
                     {
                         var answer = passedBy[(family.Name, pick.Ticker)];
                         var member = memberBy.GetValueOrDefault(pick.Ticker);
+
+                        // The pick's stories as the labeller counted them, which it labels for every member.
+                        // see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
+                        (int Positive, int Negative)? told = news is not null && news.TryGetValue(pick.Ticker, out var counted) ? counted : null;
                         var row = new ListingCell(
                             pick.Ticker,
                             night.Session,
@@ -71,7 +76,9 @@ public static partial class TonightScreen
                             Distance: new UniverseCell(pick.Ticker, string.Empty, member.Close, null, null, null, null, null, null, Name: member.Company),
                             ResearchedOn: writtenOn.TryGetValue(pick.Ticker, out var written) ? written : null,
                             Queue: queue.GetValueOrDefault(pick.Ticker),
-                            Business: Business(readingBy.GetValueOrDefault(pick.Ticker)));
+                            Business: Business(readingBy.GetValueOrDefault(pick.Ticker)),
+                            NewsPositive: told?.Positive,
+                            NewsNegative: told?.Negative);
 
                         // The pullback's ratio as its night stored it, and every other plan holding an entry, a stop and a
                         // target worked from them, since no other family's night stores one.
