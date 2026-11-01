@@ -111,8 +111,9 @@ public partial class ReadSurface
     }
 
     // A segment table draws every amount in the one scale its smallest reads in, so ROP's release reads $1,239.7M beside
-    // $446.1M and not $1.2B; and a commentary written from the filing's segments says so above its text.
-    // see: A segment table draws every amount in one scale, the one its smallest amount reads in
+    // $446.1M and not $1.2B; where its smallest reads under a million beside a larger amount, in millions to two places,
+    // so RGEN's reads $209.3M beside $0.04M; and a commentary written from the filing's segments says so above its text.
+    // see: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not
     [Fact]
     public void ASegmentTableDrawsEveryAmountInOneScaleAndTheProofReadsItBack()
     {
@@ -142,7 +143,38 @@ public partial class ReadSurface
 
         Assert.Equal([("Systems revenue", 5_732_907_000m), ("Customer support-related revenue and other", 2_486_511_000m)], lrcx.Rows.Select(row => (row.Segment, row.Revenue)));
         Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("LRCX", new MarkRenderer().SegmentsTable(lrcx, "USD")), "segments-scale"));
-        Assert.Null(Figures.ScaleOf([400_000m, 2_000_000m]));
+        Assert.Equal(("M"), Figures.ScaleOf([400_000m, 2_000_000m])?.Suffix);
+        Assert.Equal(("K"), Figures.ScaleOf([400_000m, 900_000m])?.Suffix);
+        Assert.Null(Figures.ScaleOf([0m]));
+
+        // RGEN's release, worked by hand: its royalty line of $44,000 beside its product line of $209.3M read in millions,
+        // $0.044M kept to two places, where it drew $44,000 in a scale of its own; $5,000 reads $0.01M, the half rounding
+        // away from nought, and $4,000 under a hundredth.
+        SegmentReading rgen = new(
+            "release",
+            new DateOnly(2026, 9, 30),
+            3,
+            209_344_000m,
+            209_344_000m,
+            [
+                new("Product", 209_300_000m, null, 10.9, null, null, null, 100.0),
+                new("Royalty and other revenue", 44_000m, null, 12.8, null, null, null, 0.0),
+            ],
+            null);
+        var rgenTable = new MarkRenderer().SegmentsTable(rgen, "USD");
+
+        foreach (var amount in new[] { "$209.3M", "$0.04M" })
+        {
+            Assert.Contains(">" + amount + "</td>", rgenTable, StringComparison.Ordinal);
+        }
+
+        Assert.DoesNotContain("$44,000", rgenTable, StringComparison.Ordinal);
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("RGEN", rgenTable), "segments-scale"));
+        Assert.Equal("$0.01M", Figures.MoneyIn(5_000m, (1_000_000m, "M")));
+        Assert.Equal("under $0.01M", Figures.MoneyIn(4_000m, (1_000_000m, "M")));
+        Assert.Equal("a loss under $0.01M", Figures.MoneyIn(-4_000m, (1_000_000m, "M")));
+        Assert.Equal("$0.1M", Figures.MoneyIn(95_000m, (1_000_000m, "M")));
+        Assert.Equal("$44.0K", Figures.MoneyIn(44_000m, (1_000m, "K")));
         Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", table), "segments-scale"));
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", table.Replace(">$1,239.7M</td>", ">$1.2B</td>", StringComparison.Ordinal)), "segments-scale"));
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", "<p>none</p>"), "segments-scale"));

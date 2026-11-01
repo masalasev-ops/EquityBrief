@@ -345,7 +345,7 @@ public static partial class ReportProof
         }
 
         // Each segment table draws every amount in one scale.
-        // see: A segment table draws every amount in one scale, the one its smallest amount reads in
+        // see: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not
         var scales = SegmentTableOf().Matches(page)
             .Select(table => SegmentRow().Matches(table.Groups["rows"].Value).Select(row => Suffix(row.Groups["drawn"].Value)).Concat(TotalRow().Matches(table.Groups["rows"].Value).Select(total => Suffix(total.Groups[1].Value))).Distinct().Count())
             .ToArray();

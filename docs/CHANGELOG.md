@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - a segment table whose smallest amount reads under a million drawn in millions to two places beside a larger amount
+Authorised by: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not
+Was:
+> (section 4, the report page's rules) every amount of a segment table is drawn in the one scale its smallest amount reads in, its thousands marked (see: A segment table draws every amount in one scale, the one its smallest amount reads in);
+Now:
+> every amount of a segment table is drawn in one scale, the one its smallest amount reads in where that reads at one or more, and otherwise in millions where its largest amount is a million or more, kept to two places where one would read under a tenth and said to be under a hundredth where two would read as none, and in thousands where every amount is under a million, its thousands marked (see: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not);
+Why: a table whose smallest amount read under a million was given no scale, so each amount fell back to its own and eight pages of the night of 2026-10-30 drew two scales, RGEN's $44,000 beside $209.3M among them; the operator's answer of 2026-11-01 reads them in millions.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - the drift's trade step in the reader's words as room for its stop
 Corrects: 15.23's table named the drift's trade step "a reward worth the risk", which it does not test: the step sets the stop and the target and passes whenever a stop sits below the close, so a pick's card ticked a reward worth the risk beside a reward of 0.92, LHX's on the S&P 500 on the night of 2026-10-30; seen on BX's card gathering the phase 18 sign-off on 2026-10-26 and checked on 2026-11-01.
 Was:

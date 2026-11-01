@@ -13756,3 +13756,24 @@ Queue:      done, PR 615 and the fifth review; in progress, this pull request; n
             by a fresh session after it merges, then the sign-offs of phases 20, 21 and 22 by their own fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: a segment table whose smallest amount reads under a million is drawn in millions to two places beside a larger amount, where each amount was drawn in a scale of its own   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the fifth phase 18 sign-off review's proof over the night of 2026-10-30: the one-scale rule failed on ESNT and
+            RGEN on the S&P 400 and CURB, EZPW, GSHD, IIPR, PECO and VCYT on the S&P 600, the table's scale given as none
+            where its smallest amount reads under a million, so each amount fell back to a scale of its own: RGEN's royalty
+            line of $44,000 beside its product line of $209.3M.
+Corrected:  a table whose smallest amount reads at one or more in a scale keeps that scale, ROP's millions and a table of
+            billions its billions; one whose smallest reads under a million beside an amount of a million or more is read
+            in millions, one place kept and two where one would read under a tenth, an amount two places would read as
+            none said to be under a hundredth, so RGEN's reads $209.3M beside $0.04M and $4,000 reads under $0.01M; one
+            whose every amount is under a million is read in thousands. The decision is superseded by one stating it, its
+            prior text under Previously decided, and the architecture's sentence with its prior text in the changelog.
+Tests:      none new; the segment table's test holds RGEN's table worked by hand, the edges at $5,000, $4,000, a loss of
+            $4,000 and $95,000, and the thousands where every amount is under a million.
+Mutation:   chosen before the runs by this rule, the property the correction adds: s1 a table whose smallest reads under
+            a million beside a larger amount given no scale again, predicted red at the segment table's test, red there;
+            s2 an amount under a tenth kept to one place, predicted red at RGEN's $0.04M, red there; each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
