@@ -13557,3 +13557,25 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the remedy, read off its output after the merge; the sign-offs of phases 18, 20, 21 and 22 by fresh sessions.
+
+### 21.18 - the remedy run from main: every rule reading the hooks registered again at its new version, and the four standing target variants registered   2026-11-01
+
+Not a checkpoint entry: it records 21.18's remedy and corrects two figures of 21.18's entries, and lands nothing.
+Ran:        `tools/remedies/2026-11-01-21.18-the-standing-target.txt` from main's 1550f3e1, PR 613's merge, from 06:49 to
+            06:51 UTC on 2026-11-01, with no night, drain, labeller, local run, ledger build or monthly run writing, after
+            the read-only copy's publish, which reads the store and writes none, had finished at 06:49. No request and no
+            model call. The read surface restarted from main's Release after it.
+Measured:   120 rules retired and registered again at one instant, each unchanged at its new version: the S&P 500's
+            breakout 9 and drift 9; the dip 5, 5 and 6; Fundamentals 9, 9 and 9; Quality 8, 8 and 8; and the S&P 400's
+            and 600's breakout 4 and 6, drift 7 and 4, pullback 4 and 4 and heavyweights 2 and 4. Of the 18 replayed, 16
+            carry their records on, every trade reproduced; two restart, the breakout ordered by the expected value of the
+            setups like each, its record keeping GDDY on 2026-10-30 where the replay keeps none, and the drift on nights
+            the VIX closes under its close 10 sessions before, STZ on 2026-10-07 having its target at another distance
+            from its buy in the replay. The other 102 restart at the registration. Then the variants at the standing
+            target: 1408 on the S&P 400's pullback, its family at 5 of 9; 1409 on its drift, 8 of 9; 1410 on the S&P 600's
+            pullback, 5 of 9; and 1411 on its drift, 5 of 9.
+Corrects:   21.18's entry's 111 rules and its other 93, and the ruling's entry's 111 of the 133 standing rules, a slip
+            of addition: the families each entry lists stand as listed and come to 120, of which 102 restart without a
+            replay. The 13 unmoved are the S&P 500's pullback, 9, and heavyweights, 4, as stated.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.19's entry below, on whose
+            branch this is recorded; records alone change in this entry.
