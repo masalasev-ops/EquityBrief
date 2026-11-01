@@ -13798,3 +13798,20 @@ Mutation:   chosen before the runs by this rule, the property the correction add
             predicted red at its failing case, red there; each reverted, green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: a test reads the stale note a page draws beside a provider's figure struck far from the close, where only its arithmetic was held   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into its tests, and lands nothing.
+Found:      the fifth phase 18 sign-off review's m10b: the page drawing no stale note beside a provider's figure, the
+            arithmetic marking it stale untouched, survived the read surface's 829 tests, the one value a concept's test
+            holding the figure's price and its mark and no test reading the note the page draws. A missing property: the
+            pages drew it, ROP's five times on the night of 2026-10-30.
+Corrected:  no shipped source changes. One test draws the fixture name's snapshot at a close of 100 with the company's value
+            at 1.3 times the provider's, so the provider's price stands at 76.92, worked by hand, and reads the market value
+            row naming the provider's figure, that price and that it is stale and not drawn; at the provider's own value the
+            row draws no note.
+Tests:      one new.
+Mutation:   chosen before the run by this rule, the property the test adds: m10b again, the note never drawn, predicted red
+            at the new test alone; red there, reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

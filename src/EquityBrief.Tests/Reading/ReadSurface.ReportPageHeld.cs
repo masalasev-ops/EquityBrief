@@ -219,6 +219,30 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate(Name, NameScreen.Numbers(filings, new ConceptFigures(null, reportDate.AddDays(-1), null, null))), "next-report-estimated"));
     }
 
+    // A provider's figure read back to a price far from the close is drawn beside the worked value, named the provider's,
+    // with the price it was struck at and that it is stale and not drawn: the company's value worked at 1.3 times the
+    // provider's at a close of 100 puts the provider's price at 100 over 1.3, 76.92, worked by hand. At the provider's own
+    // value its price is the close and no note is drawn.
+    // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+    [Fact]
+    public async Task AProvidersFigureStruckFarFromTheCloseIsDrawnBesideTheWorkedValueMarkedStale()
+    {
+        using var store = await WithFundamentals(withTheArchive: true);
+
+        var filings = await Api(store).FundamentalsAsync(Name);
+
+        using var payload = System.Text.Json.JsonDocument.Parse(StoredPayload(store, Name));
+
+        var stated = decimal.Parse(payload.RootElement.GetProperty("marketCapitalisation").ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture);
+        var night = new DateOnly(2026, 10, 30);
+        var far = NameScreen.Numbers(filings, new ConceptFigures(100m, night, stated * 1.3m, null));
+        var near = NameScreen.Numbers(filings, new ConceptFigures(100m, night, stated, null));
+
+        Assert.Contains($"<b>{Figures.Money(stated * 1.3m)}</b><small>the shares filed before the night times the close of 2026-10-30; the provider states {Figures.Money(stated)}, struck at a price of about 76.92, stale against the close and not drawn</small>", far, StringComparison.Ordinal);
+        Assert.DoesNotContain("stale against the close", System.Text.RegularExpressions.Regex.Match(near, "<dd data-marketCapitalisation=\"worked\".*?</dd>").Value, StringComparison.Ordinal);
+        Assert.Contains($"<b>{Figures.Money(stated)}</b><small>the shares filed before the night times the close of 2026-10-30</small>", near, StringComparison.Ordinal);
+    }
+
     // The sources list keeps the documents naming the company or its industry in their title, address or whole text and
     // folds the rest beneath it, saying where fewer than two remain: ROP's Roche releases name neither, and a market roundup
     // naming Roper past its opening does, its whole text read. The proof fails a list that keeps too few without saying so.
