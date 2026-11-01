@@ -13435,3 +13435,49 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the remedy and the three ledger histories, read off their output after the merge; the sign-offs of phases
             18, 20, 21 and 22 by fresh sessions; the hosted runners swept once at the phase's end.
+
+### 21.17 - correction: the scorecard says beside a variant's years better that its verdict reads the years from the model's cutoff's year alone, where 21.17 drew it on the live rule's half alone   2026-11-01
+
+Corrects:   21.17 drew the label on the history half of a family's live rule alone. After its remedy no live rule
+            reads a release reading, the S&P 400's and 600's Fundamentals live rules asking no flag, so no scorecard drew
+            it; found reading the S&P 400's paper trading page back from main's Release after the remedy.
+Built:      beside each variant's years better on the rule scorecard, a variant reading a release reading, the drift's
+            tone variant and a Fundamentals rule asking a flag first, says "from 2025 alone; the years before read by a
+            model trained after them", the year read off the newest complete reading version's cutoff; the live rule's
+            half keeps its line; the tone variant's sentence stays its own. 15.21's rule scorecard row and the changelog.
+Tests:      3021, from 3020: one added, the label read back off the rendered scorecard over a constructed register beside
+            the flagged version alone, none beside a version asking no flag and the tone sentence on neither.
+Claims:     1491, none new; the row amended in place; 1506 placements.
+Mutation:   chosen before the run by this rule, the one property the correction adds, the label drawn beside such a
+            variant: the note made to draw nothing, predicted red at the new test; red, reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3021 of 3021 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    21.17's remedy record, with the three ledger histories built again; the sign-offs of phases 18, 20, 21 and 22.
+
+### 21.17 - the remedy run from main: the S&P 400's and 600's Fundamentals live rules registered again without their flag, and the three ledger histories built again and checked   2026-11-01
+
+Not a checkpoint entry: it records 21.17's remedy and the histories built after it, and lands nothing.
+Ran:        `tools/remedies/2026-11-01-21.17-the-three-findings.txt` from main's 34b3f949, PR 610's merge, from 02:06 to
+            02:07 UTC on 2026-11-01, with no night, drain, labeller, local run or monthly run writing; then each index's
+            history built again with `--again` over 2019-01-02 to 2026-10-30 from its clean copy and checked: the S&P
+            500's build from 02:07 to 02:34 and its check to 02:46, the S&P 400's to 03:09 and its check to 03:21, and the
+            S&P 600's to 03:57 and its check to 04:26, the off-peak run starting beside that check at 04:10 from its own
+            copy. No request and no model call.
+Measured:   the answers recorded at the unflagged settings, the S&P 400's 1,635 trades and the S&P 600's 186 from their
+            history tests of 2026-10-27; each family swapped at one instant, retiring 2 and registering 2 at nine of nine:
+            the live S&P 400 Fundamentals rule at buy at 7 in 9, no flag first, the rise asked, the growth not asked, held
+            at 7, 63 sessions, and the live S&P 600 Fundamentals rule at buy at 9 in 9, no flag first, the rise asked, the
+            growth asked, held at 6, 252 sessions, each flagged rule standing beside it as a version. The four rules'
+            records restart at the swap, the two live rules' having counted from 2026-10-31. The S&P 500's build wrote
+            385,072 setups over 1,953 sessions, 61,622 passing the live rule; the S&P 400's 280,720, 45,110 passing; the
+            S&P 600's 384,355, 51,055 passing; each left the 16 sessions holding the night's own rows, 2026-10-09 to
+            2026-10-30, to the night. Each check rebuilt 200 of 200 sampled history setups with every reading the same.
+            The stored mean edge after costs a settled setup afterwards, against the benchmark sold as the setup is:
+            the S&P 500's pullback +0.024 over 30,252, breakout -0.015 over 22,472, drift -0.010 over 5,898; the S&P
+            400's +0.008 over 22,742, -0.026 over 15,462, +0.026 over 4,358; the S&P 600's +0.061 over 31,901, -0.025
+            over 20,013, -0.104 over 5,701, each within 0.002 of 21.17's entry's figure after.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the correction's entry above,
+            on whose branch this is recorded; records alone change in this entry.
