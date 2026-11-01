@@ -105,10 +105,24 @@ public sealed partial class IndexSweepRunner
 
             SweepBenchmark.Fill(pool, series, laid.Members, parallelism);
 
+            // From 21.17 each plan's members sold as the plan is, worked once a session and plan beside the benchmark the
+            // sweep fills, in parallel as it fills it.
+            Parallel.ForEach(pool, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, candidate =>
+            {
+                foreach (var plan in candidate.Plans)
+                {
+                    if (plan is not null)
+                    {
+                        fills.PullbackSales(candidate.Session, plan.StopMoves, plan.RewardToRisk);
+                    }
+                }
+            });
+
             // From 19.10 a plan bought at the close is bought at the open after it: each exit's result moved by the stock's
             // own gap over the risk its close put up and its benchmark by the members' gaps, none where no open is held
             // after it; a stepped plan, bought at its own fill on a later session, stands as it was. From 21.14 every plan,
-            // a stepped one among them, is sold at the open after the close its stop or its target ended it on.
+            // a stepped one among them, is sold at the open after the close its stop or its target ended it on, and from 21.17
+            // its benchmark's members are sold the same way.
             var exits = SweepAxes.Exits;
             var (atOpen, stepped, noOpen) = (0L, 0L, 0L);
 
@@ -142,6 +156,7 @@ public sealed partial class IndexSweepRunner
                             var steppedSold = fills.Pullback(plan.Multiple[exit], candidate.Name, bar, plan, exit, risk);
 
                             plan.Multiple[exit] = steppedSold is { } kept ? (float)kept : float.NaN;
+                            plan.Benchmark[exit] = (float)(plan.Benchmark[exit] + fills.PullbackSale(candidate.Session, plan.StopMoves, plan.RewardToRisk, exit));
 
                             continue;
                         }
@@ -149,7 +164,7 @@ public sealed partial class IndexSweepRunner
                         var restated = fills.Pullback(open is { } price ? TradeFills.AtOpen(plan.Multiple[exit], close, risk, price) : null, candidate.Name, bar, plan, exit, risk);
 
                         plan.Multiple[exit] = restated is { } moved ? (float)moved : float.NaN;
-                        plan.Benchmark[exit] = (float)fills.Benchmark(plan.Benchmark[exit], candidate.Session, plan.StopMoves);
+                        plan.Benchmark[exit] = (float)fills.Benchmark(plan.Benchmark[exit], candidate.Session, plan.StopMoves, plan.RewardToRisk, exit);
                         atOpen += restated is null ? 0 : 1;
                         noOpen += restated is null ? 1 : 0;
                     }

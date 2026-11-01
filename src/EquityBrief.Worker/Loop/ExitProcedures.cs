@@ -208,8 +208,8 @@ public static class ExitProcedures
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var ended = new Dictionary<(int Name, int Session), (int Sessions, string End)>();
 
-        // From 19.10 each trade and its benchmark are bought at the next session's open, and from 21.14 each trade a
-        // close's signal ends is sold at the open after that close.
+        // From 19.10 each trade and its benchmark are bought at the next session's open, from 21.14 each trade a close's
+        // signal ends is sold at the open after that close, and from 21.17 the benchmark's members are sold the same way.
         var fills = new OpenFills(read.Series, read.Members);
 
         (double? Result, int Sessions) Exit(FamilyListing listing)
@@ -230,7 +230,7 @@ public static class ExitProcedures
             return fills.Exit((outcome.Result, outcome.Sessions), listing, outcome.End, exit);
         }
 
-        double Benchmark(FamilyListing listing) => fills.Benchmark(exit is null ? adapter.Benchmark(listing) : MenuBenchmark(read, closes, listing, exit), listing);
+        double Benchmark(FamilyListing listing) => fills.Benchmark(exit is null ? adapter.Benchmark(listing) : MenuBenchmark(read, closes, listing, exit), listing, exit);
 
         int YearOf(int session) => read.Calendar[session].Year - SweepColumns.FirstScored.Year;
 

@@ -132,9 +132,9 @@ public partial class ReadSurface
         // draws none.
         Assert.Single(Regex.Matches(page, "class=\"loop-cutoff\""));
         Assert.Contains(
-            "<p class=\"loop-cutoff\" data-cutoff=\"2025-01-31\" data-before=\"1.5\" data-after=\"2.5\"><b>Before and after the local model's cutoff of 2025-01-31.</b> It reads what the local model read of the results releases. "
-            + "The total less the rule's in the test years before the cutoff, which the model may have known the outcome of: 2022 to 2024, <span class=\"gain\">+1.50</span> per $1 risked over 30 trade(s). "
-            + "In the years from it, the ones relied on: 2025 to 2026, <span class=\"gain\">+2.50</span> per $1 risked over 26 trade(s).</p>",
+            "<p class=\"loop-cutoff\" data-cutoff=\"2025-01-31\" data-before=\"1.5\" data-after=\"2.5\"><b>Judged from the local model's cutoff of 2025-01-31.</b> It reads what the local model read of the results releases, so its verdict reads the test years from 2025 alone. "
+            + "The total less the rule's in those years: 2025 to 2026, <span class=\"gain\">+2.50</span> per $1 risked over 26 trade(s). "
+            + "Beside it, the years before, read by a model trained after them: 2022 to 2024, <span class=\"gain\">+1.50</span> per $1 risked over 30 trade(s).</p>",
             page,
             StringComparison.Ordinal);
 

@@ -79,9 +79,12 @@ public static class SetupBenchmark
 
     // The same benchmark with each member entered beside it as the pricing at the next open reads it: whether its path
     // ended, its close, the risk its plan put up there and the open of its next session, none where the store holds
-    // none; the members not entered are not listed.
+    // none; the members not entered are not listed. From 21.17, where `sold` is given, each member's result is moved by its
+    // own sale at the open after the close that ended it, as the trade's is, and a member whose sale's open is not held
+    // yet has not ended, so the benchmark waits on it as the trade waits on its own.
     // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
-    public static (BenchmarkReading Reading, IReadOnlyList<FillMember> Members) WithMembers(IReadOnlyList<(double[] Closes, double[] Opens, int Bar, double Move, bool Stopped)> members, DateOnly session, SetupPlan plan)
+    // see: Every swing trade is judged against a benchmark whose members are sold as the trade is, and no rule's version moves because of it
+    public static (BenchmarkReading Reading, IReadOnlyList<FillMember> Members) WithMembers(IReadOnlyList<(double[] Closes, double[] Opens, int Bar, double Move, bool Stopped)> members, DateOnly session, SetupPlan plan, bool sold = false)
     {
         var sum = 0.0;
         var ended = 0;
@@ -99,6 +102,13 @@ public static class SetupBenchmark
             entered++;
 
             var outcome = SetupReplay.Replay(closes, bar, anchor);
+
+            if (sold && outcome.Result is not null)
+            {
+                var sale = ExitFills.SaleMove(outcome, at => closes[at], at => at + 1 < closes.Length && at + 1 < opens.Length && opens[at + 1] > 0 ? opens[at + 1] : null, bar, anchor.Risk);
+
+                outcome = sale is { } moved ? outcome with { Result = outcome.Result + moved } : new SetupOutcome(null, outcome.Sessions, SetupEnds.Open);
+            }
 
             if (outcome.Result is { } result)
             {

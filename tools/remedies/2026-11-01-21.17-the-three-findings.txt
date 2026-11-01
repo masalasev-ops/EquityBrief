@@ -1,0 +1,19 @@
+# The remedy of 21.17, the operator's word of 2026-10-31 on the three findings 21.14 put. Every swing trade is judged
+# against a benchmark whose members are sold as the trade is, in the fill step, the ledger and the monthly tests, and no
+# source a rule's version pins changed, so no rule is registered again for it; the fill step prices each swing trade's
+# benchmark that way as it arrives, none being stored before the remedy. The Fundamentals family's live rule on the S&P
+# 400 and on the S&P 600 is registered again at its own setting without the flag: each index's answer is first recorded at
+# that setting from its history test of 2026-10-27, so its card draws that setting's figures, and then the live rule and
+# the version standing at that setting are retired and registered again at one instant as each other, the unflagged
+# setting the live rule and the flagged one a version, each family keeping its nine rules and those two records restarting
+# at this instant. The S&P 500's live rule asks no flag already and is not touched. Each index's ledger history is then
+# built again by hand with tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through <the night
+# before> --again, which builds main's own commit from a clean copy and so is not a worker command this file can run, so
+# every history setup's benchmark sells its members as the setup is, each index checked after its build with ledger-check
+# --index <GSPC, MID or SML> by hand. No migration, no request to the provider and no model call. Run from main after the
+# merge, when no night, local run, drain, labeller, history read, ledger build or monthly run is writing, read the output
+# for "remedy done" and the two registrations, and restart the read surface after it.
+sweep-answer --run 20261027T182542Z --ruled 2026-10-31 --setting "buy=7|flag=off|rise=on|faster=off|hold=7|limit=63"
+register --without-flag MID --evidence "21.17: the S&P 400's Fundamentals live rule registered again at its setting without the flag on the operator's ruling of 2026-10-31, the flagged rule standing beside it as a version"
+sweep-answer --run 20261027T182701Z --ruled 2026-10-31 --setting "buy=9|flag=off|rise=on|faster=on|hold=6|limit=252"
+register --without-flag SML --evidence "21.17: the S&P 600's Fundamentals live rule registered again at its setting without the flag on the operator's ruling of 2026-10-31, the flagged rule standing beside it as a version"

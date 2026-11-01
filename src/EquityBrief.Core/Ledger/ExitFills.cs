@@ -11,9 +11,10 @@ public sealed record ExitSale(bool AtOpen, int Bar, double? Result);
 // half exit sells at the first close reaching its level. The cap's close and a time exit's sell at that close as before.
 // Each sale moves the result by the gap from its close to that open over the risk the buy's close set, a half's by half
 // of it, so a trade's walk, its sessions and its exits stay where the plan put them. A trade whose sale's open is not
-// held yet waits and has no result until it is. The benchmark stays as the entry's fill priced it, each member sold at
-// its own closes.
+// held yet waits and has no result until it is. From 21.17 the benchmark's members are sold the same way, each moved by
+// its own sale's gap over its own risk.
 // see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
+// see: Every swing trade is judged against a benchmark whose members are sold as the trade is, and no rule's version moves because of it
 public static class ExitFills
 {
     // Whether an end is sold at the next session's open rather than at its own close.
@@ -122,10 +123,43 @@ public static class ExitFills
             : new ExitSale(true, end + 1, null);
     }
 
-    // What the benchmark would read were its members sold as the trade is, which no rule, record or page reads: the same
-    // plan entered on every member that session, each bought at its own next open and sold at its own open after the close
-    // that ended it, the mean over the members whose path ended with both opens held; none where no member's did. 21.14's
-    // exits check measures it beside the benchmark the fill step keeps, for the operator.
+    // What a member's sale moves its result by, in the risk its plan put up at its close: the gap from the close that
+    // signalled its end to the open after it where its end calls for one, a half's at half weight, and nothing where the
+    // cap's or a time exit's close sells it; none for a path still open or while that open is not held.
+    public static double? SaleMove(SetupOutcome outcome, Func<int, double> close, Func<int, double?> openAfter, int from, double risk, int? halfOn = null) =>
+        outcome.Result is null ? null : Sold(outcome with { Result = 0 }, close, openAfter, from, risk, halfOn).Result;
+
+    // The benchmark's members sold as the trade is: the mean of the moves their sales make over the members whose path
+    // ended, with how many that is and how many wait on their sale's open; nought where none ended.
+    public static (double Mean, int Members, int Waiting) SaleMoves(IEnumerable<(SetupOutcome Outcome, double? Move)> members)
+    {
+        var (sum, count, waiting) = (0.0, 0, 0);
+
+        foreach (var (outcome, move) in members)
+        {
+            if (outcome.Result is null)
+            {
+                continue;
+            }
+
+            if (move is { } moved)
+            {
+                sum += moved;
+                count++;
+            }
+            else
+            {
+                waiting++;
+            }
+        }
+
+        return (count > 0 ? sum / count : 0, count, waiting);
+    }
+
+    // The benchmark with its members sold as the trade is, worked from nothing: the same plan entered on every member that
+    // session, each bought at its own next open and sold at its own open after the close that ended it, the mean over the
+    // members whose path ended with both opens held; none where no member's did. 21.14's exits check measured it beside
+    // the benchmark its members sold at their closes, and from 21.17 it is the benchmark every swing trade is judged by.
     public static double? Benchmark(IReadOnlyList<(double[] Closes, double[] Opens, int Bar, double Move, bool Stopped)> members, DateOnly session, SetupPlan plan)
     {
         var sum = 0.0;

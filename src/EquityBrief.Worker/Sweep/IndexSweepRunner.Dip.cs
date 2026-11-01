@@ -432,7 +432,7 @@ public sealed partial class IndexSweepRunner
 
                     return Fills.Bought((atTrigger ? walked.AtTrigger : walked.AtClose, walked.Held), listing);
                 },
-                listing => Fills.Benchmark(BenchmarkAtClose(listing.Session, exit, limit, stop), listing));
+                listing => Fills.BenchmarkBought(BenchmarkAtClose(listing.Session, exit, limit, stop), listing));
         }
 
         // From 21.5 one walk of a listing under an exit of the menu, sold as the dip sells: the menu's own replay of its path
@@ -544,7 +544,7 @@ public sealed partial class IndexSweepRunner
 
                     return Fills.Bought((walked.AtClose, walked.Held), listing);
                 },
-                listing => Fills.Benchmark(MenuBenchmarkAtClose(listing.Session, exit, limit, stop), listing));
+                listing => Fills.BenchmarkBought(MenuBenchmarkAtClose(listing.Session, exit, limit, stop), listing));
         }
 
         // Each trade's result after its round trip at a multiple of the published table, the benchmark paying none.

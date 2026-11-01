@@ -942,14 +942,16 @@ public sealed partial class SetupLedger : IComponent
             members.Add((closes[member], opens[member], memberBar, inputs.Series[member].Atr[memberBar], stopped is not null && stopped[member]));
         }
 
-        var (benchmark, listed) = SetupBenchmark.WithMembers(members, anchor.Session, plan);
+        // From 21.17 the benchmark's members sold as the setup is.
+        // see: Every swing trade is judged against a benchmark whose members are sold as the trade is, and no rule's version moves because of it
+        var (benchmark, listed) = SetupBenchmark.WithMembers(members, anchor.Session, plan, sold: true);
 
         return Sold(AtOpen(anchor, outcome, benchmark, listed, OpenAfter(closes[name], opens[name], bar), book: false), closes[name], opens[name], bar, anchor);
     }
 
     // From 21.14 a swing setup a close's signal ended, its stop, its target or its trail, sold at the open after that
     // close, its result moved by that gap over the risk its close set; one whose open after it is not stored yet is open
-    // until it is. The cap's close stands, and the benchmark stays as its entry's fill priced it.
+    // until it is. The cap's close stands, and from 21.17 the benchmark's members are sold the same way.
     // see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
     static SetupRead Sold(SetupRead read, double[] closes, double[] opens, int bar, SetupAnchor anchor)
     {

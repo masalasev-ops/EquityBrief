@@ -570,8 +570,8 @@ public sealed class RuleWalk(
         var hooks = standing?.Hooks ?? LoopChange.NoHooks;
         var standingExit = RuleHooks.Of(hooks).ExitChoice;
 
-        // From 19.10 each trade and its benchmark are bought at the next session's open, and from 21.14 each trade a
-        // close's signal ends is sold at the open after that close.
+        // From 19.10 each trade and its benchmark are bought at the next session's open, from 21.14 each trade a close's
+        // signal ends is sold at the open after that close, and from 21.17 the benchmark's members are sold the same way.
         var fills = new OpenFills(series, read.Members);
 
         // A listing as the family's walk states one.
@@ -603,7 +603,7 @@ public sealed class RuleWalk(
             return (
                 fills.Pullback(fills.Result(result, listing.Name, listing.Bar, entry, risk), listing.Name, listing.Bar, plan, ownExit, risk),
                 plan.Ends[ownExit],
-                fills.Benchmark(plan.Benchmark[ownExit], listing.Session, listing.StopMoves));
+                fills.Benchmark(plan.Benchmark[ownExit], listing.Session, listing.StopMoves, listing.RewardToRisk, ownExit));
         }
 
         // A listing's trade under an exit of the menu and the same plan under it on every member that session.
@@ -620,7 +620,11 @@ public sealed class RuleWalk(
             var benchmark = ExitMenu.Benchmark(closes, read.Members.Names[listing.Session], read.Members.Bars[listing.Session], (member, at) => series[member].Atr[at], listing.StopMoves, listing.RewardToRisk, null, SweepIdeas.Cap, exit).Average;
             var bought = outcome with { Result = fills.Result(outcome.Result, name, bar, entry, risk) };
 
-            return (fills.Sold(bought, name, bar, risk, ExitFills.HalfSoldOn(at => closes[name][at], bar, anchor, exit, outcome)), sessions, outcome.End, fills.Benchmark(benchmark, listing.Session, listing.StopMoves));
+            return (
+                fills.Sold(bought, name, bar, risk, ExitFills.HalfSoldOn(at => closes[name][at], bar, anchor, exit, outcome)),
+                sessions,
+                outcome.End,
+                fills.Benchmark(benchmark, listing.Session, listing.StopMoves) + fills.Sale(listing.Session, listing.StopMoves, listing.RewardToRisk, null, SweepIdeas.Cap, exit));
         }
 
         // A listing's trade under the exit the rule stands at, its own or the menu's an approval set.

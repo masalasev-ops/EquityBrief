@@ -157,10 +157,10 @@ public partial class FixtureExpectations
         Assert.Equal([2025, 2026], sides.AfterYears);
         Assert.Equal((26, 3.75, 1.25), (sides.AfterUnits, sides.AfterProposed, sides.AfterCurrent));
         Assert.Equal(
-            "Before the local model's cutoff of 2025-01-31, which it may have known the outcome of: 2022 to 2024, +1.500 risks over 30 units; from it, the years relied on: 2025 to 2026, +2.500 risks over 26 units.",
+            "Judged on the test years from the local model's cutoff of 2025-01-31 alone: 2025 to 2026, +2.500 risks over 26 units; beside it, the years before, read by a model trained after them: 2022 to 2024, +1.500 risks over 30 units.",
             MonthlyRun.CutoffLine(sides, ReleaseCutoff, "risks"));
         Assert.Equal(
-            "Before the local model's cutoff of 2025-01-31, which it may have known the outcome of: no test year; from it, the years relied on: 2025, +2.000 points over 20 units.",
+            "Judged on the test years from the local model's cutoff of 2025-01-31 alone: 2025, +2.000 points over 20 units; beside it, the years before, read by a model trained after them: no test year.",
             MonthlyRun.CutoffLine(LedgerReleases.Split([(2025, 20, 3.0, 1.0)], ReleaseCutoff), ReleaseCutoff, "points"));
 
         // A condition or a weight naming a release reading, a tree model fitted over the whole catalogue and the tone
@@ -468,11 +468,11 @@ public partial class FixtureExpectations
         Assert.Contains(
             "  drift: put to you, winners against losers, ranked 1: also requires release_results at or above 1; its adjusted p 0.001 against 0.0042"
             + ", better in 3 of 4 counted years, over 56 units in 19 blocks." + Environment.NewLine
-            + "    Before the local model's cutoff of 2025-01-31, which it may have known the outcome of: 2022 to 2024, +1.500 risks over 30 units; from it, the years relied on: 2025 to 2026, +2.500 risks over 26 units.",
+            + "    Judged on the test years from the local model's cutoff of 2025-01-31 alone: 2025 to 2026, +2.500 risks over 26 units; beside it, the years before, read by a model trained after them: 2022 to 2024, +1.500 risks over 30 units.",
             text,
             StringComparison.Ordinal);
         Assert.Contains(
-            "  drift, the tone variant: reads the release readings; its per-rule test did not pass. Before the local model's cutoff of 2025-01-31, which it may have known the outcome of: 2023 to 2024, +0.500 risks over 20 units; from it, the years relied on: 2025 to 2026, +0.000 risks over 20 units.",
+            "  drift, the tone variant: reads the release readings; its per-rule test did not pass. Judged on the test years from the local model's cutoff of 2025-01-31 alone: 2025 to 2026, +0.000 risks over 20 units; beside it, the years before, read by a model trained after them: 2023 to 2024, +0.500 risks over 20 units.",
             text,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -544,7 +544,7 @@ public partial class FixtureExpectations
         Assert.Contains("  drift: put to you, winners against losers, ranked 2: also requires rsi at or above 61.5;", text, StringComparison.Ordinal);
         Assert.Contains(
             "  drift: winners against losers, ranked 1: also requires release_results at or above 1. Held back: it reads a release reading, and its total less the rule's over the test years from the cutoff's year, 2025, is not above nothing, so it is not put to you." + Environment.NewLine
-            + "    Before the local model's cutoff of 2025-01-31, which it may have known the outcome of: 2022 to 2024, +1.500 risks over 30 units; from it, the years relied on: 2025 to 2026, -2.500 risks over 26 units.",
+            + "    Judged on the test years from the local model's cutoff of 2025-01-31 alone: 2025 to 2026, -2.500 risks over 26 units; beside it, the years before, read by a model trained after them: 2022 to 2024, +1.500 risks over 30 units.",
             text,
             StringComparison.Ordinal);
 

@@ -189,11 +189,22 @@ public static class RuleTests
 
     public static string HeadUnwalked(RuleUnderTest head) => $"its {head.Standing} rule cannot be walked: {head.Why}";
 
+    // From 21.17 the local model's cutoff a rule reading a release reading is judged from: the drift's tone variant's,
+    // its reading version's, and any other whose words read one, a Fundamentals rule asking a flag first among them, the
+    // newest complete version's; none for a rule reading none, which is judged on every test year as before.
+    // see: A rule or a change reading a release reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside it
+    public static DateOnly? CutoffOf(RuleUnderTest rule, DateOnly? newest) =>
+        rule.Tone is { } tone ? tone.Cutoff : ReleaseJudging.Reads(rule.Words) ? newest : null;
+
     // Every rule's verdict, a family at a time in the order given: its live or provisional rule against its benchmark,
-    // then its variants against it together.
-    public static IReadOnlyList<RuleTested> Judge(LoopRead read, IReadOnlyList<RuleUnderTest> rules)
+    // then its variants against it together; from 21.17 one reading a release reading judged on the test years from the
+    // local model's cutoff's year alone, its evidence over every test year kept to be printed beside its verdict.
+    public static IReadOnlyList<RuleTested> Judge(LoopRead read, IReadOnlyList<RuleUnderTest> rules, DateOnly? newest = null)
     {
         var tested = new List<RuleTested>();
+
+        LoopEvidence Judged(RuleUnderTest rule, LoopEvidence evidence) =>
+            CutoffOf(rule, newest) is { } cutoff ? LoopJudge.From(evidence, read.Calendar, cutoff.Year) : evidence;
 
         foreach (var family in rules.GroupBy(rule => rule.Family, StringComparer.Ordinal))
         {
@@ -209,14 +220,14 @@ public static class RuleTests
                 {
                     var evidence = Against(read, head, null);
 
-                    tested.Add(new RuleTested(head, Benchmark, evidence, LoopJudge.Judge([evidence], read.Opens, read.Newest, head.Cap)[0], null));
+                    tested.Add(new RuleTested(head, Benchmark, evidence, LoopJudge.Judge([Judged(head, evidence)], read.Opens, read.Newest, head.Cap)[0], null));
                 }
             }
 
             var variants = family.Where(rule => rule.Standing == Variant).ToArray();
             RuleUnderTest[] walked = head is { Why: null } ? [.. variants.Where(variant => variant.Why is null)] : [];
             LoopEvidence[] evidences = [.. walked.Select(variant => Against(read, variant, head))];
-            var verdicts = evidences.Length == 0 ? [] : LoopJudge.Judge(evidences, read.Opens, read.Newest, walked.Append(head!).Max(rule => rule.Cap));
+            var verdicts = evidences.Length == 0 ? [] : LoopJudge.Judge([.. walked.Select((variant, at) => Judged(variant, evidences[at]))], read.Opens, read.Newest, walked.Append(head!).Max(rule => rule.Cap));
 
             foreach (var variant in variants)
             {

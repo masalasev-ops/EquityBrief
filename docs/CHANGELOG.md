@@ -26,6 +26,44 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-31 - docs/ARCHITECTURE.html - every trade's benchmark sold as the trade is, the release readings judged from the cutoff's year, the Fundamentals live rule without its flag, and section 20's phase 21 row names 21.17
+Authorised by: Every swing trade is judged against a benchmark whose members are sold as the trade is, and no rule's version moves because of it
+Was:
+> (Walk-forward tester) ... and beside each Fundamentals rule requiring a flag first its months on each side of the local model's cutoff's year with the same settings without the flag, each walked unregistered and written nowhere, for the operator's rulings
+> (Trade filler) ... a trade whose sale's open is not stored yet holding no result until it is, and the benchmark as the entry's fill priced it (see: ...)
+> (13.10, the setup's anchor) ... the cap's close stands, and the benchmark stays bought at each member's own next open and sold at its own closes (see: ...).
+> (13.11, the per-rule test) ... it is what each account's test years verdict on paper trading reads, and the live rule's reads high against its variants, its setting having been chosen on these years.
+> (The Fundamentals family) ... (see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions) (see: ...).
+> (15.21, An account's test years verdict) ... names what judges it instead)
+> (15.20, A change reading a release reading) ... its total less the rule's over the test years before the local model's cutoff's year and over those from it side by side with their units; the years from it named as the ones relied on; the pass rule unchanged; the month's report stating ...
+> (20, phase 21) ... plain words on paper trading, the Loop page and the Ledger; and the rulings on the exits' pricing and the tone versions on the operator's word | ... | the build plan's phase 21 checkpoints, 21.0 to 21.16
+Now:
+> (Walk-forward tester) ... for the operator's rulings; and from 21.17 every benchmark of its walks with each member sold as the trade is (see: ...), and every rule and proposal reading a release reading judged on the test years from the local model's cutoff's year alone, its evidence over every test year kept to print beside it (see: ...)
+> (Trade filler) ... a trade whose sale's open is not stored yet holding no result until it is (see: ...); and from 21.17 a swing trade's benchmark with each member sold as the trade is, its walk under the trade's plan and exit read again from its stored bars and sold at its own open after the close that ended it or at its close for the cap or a time exit, the benchmark holding none while any member's sale's open is not stored yet (see: ...)
+> (13.10, the setup's anchor) ... the cap's close stands, and the benchmark is bought at each member's own next open (see: ...). From 21.17 each member of the benchmark is sold as the setup is, at its own open after the close its stop, its target or its trail ended it on and at its own close for the cap, a member whose sale's open is not stored yet leaving the benchmark unsettled until it is (see: ...).
+> (13.11, the per-rule test) ... having been chosen on these years. From 21.17 a rule reading a release reading, the drift's tone variant and a Fundamentals rule asking a flag first among them, is judged on the test years from the local model's cutoff's year alone, as a proposal reading one is, and its years before are kept and printed beside its verdict as read by a model trained after them (see: ...).
+> (The Fundamentals family) ... (see: ...). From 21.17 the live rule on the S&P 400 and 600 asks no flag: each is registered again at its setting without the flag, and the flagged rule stands beside it as a version, each family keeping its nine rules; the S&P 500's asks none already. The flag still reads on every member and every pick and buys nothing (see: ...).
+> (15.21, An account's test years verdict) ... names what judges it instead); and from 21.17 a rule reading a release reading saying its verdict reads the years from the local model's cutoff's year alone and that the years before are shown beside them as read by a model trained after them; each of those years' boxes marked so; the drift's tone variant and a Fundamentals rule asking a flag first among them (see: ...)
+> (15.20, A change reading a release reading) ... side by side with their units; from 21.17 the years from it drawn first and its verdict judged on them alone; the years before drawn beside them as read by a model trained after them; a Fundamentals setting asking a flag first read as reading one (see: ...); the month's report stating ...
+> (20, phase 21) ... plain words on paper trading, the Loop page and the Ledger; the rulings on the exits' pricing and the tone versions on the operator's word; and the operator's word on what 21.14 put, every trade judged against a benchmark sold as it is, the release readings judged from the model's cutoff's year with the Fundamentals family's live rule asking no flag, and the VIX's direction kept | ... | the build plan's phase 21 checkpoints, 21.0 to 21.17
+Why: the operator ruled on 2026-10-31 on the three findings 21.14 put, word for word in `prompts/2026-10-31-21.17-operator-ruling.md`, which also writes the decisions that a rule or a change reading a release reading is judged on the test years from the model's cutoff's year alone and that the Fundamentals family's live rule on the S&P 400 and 600 asks no flag; 21.17 builds each.
+
+### 2026-10-31 - docs/SCHEMA.md - trade_fill's benchmark sells its members as the trade is
+Authorised by: Every swing trade is judged against a benchmark whose members are sold as the trade is, and no rule's version moves because of it
+Was:
+> ... a trade whose sale's open is not stored yet holds no result until it is, and is priced again once it is; the benchmark stays as the entry's fill priced it (see: ...). The fill and the sale are the money columns, ...
+Now:
+> ... and is priced again once it is (see: ...). From 21.17 a swing trade's benchmark has each member sold as the trade is, at its own open after the close that ended it or its close for the cap or a time exit, and holds none while any member's sale's open is not stored yet, so the row is priced again once it is (see: ...). The fill and the sale are the money columns, ...
+Why: the operator ruled on 2026-10-31 that every trade is judged against a benchmark sold the same way the trade is, the fill step among the places it is read.
+
+### 2026-10-31 - docs/RUNBOOK.md - 21.17's remedy and the register form for the Fundamentals live rule without its flag
+Authorised by: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version
+Was:
+> (added) the paragraph on the benchmark sold as the trade is with 21.17's remedy block, and the register form `--without-flag`
+Now:
+> (added) as written
+Why: 21.17 builds the operator's ruling of 2026-10-31 and its remedy runs from the runbook's lines.
+
 ### 2026-10-31 - docs/ARCHITECTURE.html - Tonight's buy points name the session their picks are bought at
 Authorised by: Tonight names the session its picks are bought at, tomorrow only where the exchange trades the next day
 Was:

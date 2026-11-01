@@ -227,7 +227,8 @@ public sealed partial class IndexSweepRunner
 
     // A replayed pullback's trade bought at the next open and, from 21.14, sold at the open after the close its stop or its
     // target ended it on, under the base's own exit: its result restated over the risk its close put up, its benchmark
-    // each member's own gap over its own typical moves, and its round trip taken off its result.
+    // each member's own gap over its own typical moves and, from 21.17, each member's own sale, and its round trip taken
+    // off its result.
     static IdeaTrade AtOpenAfterCosts(IdeaTrade trade, IReadOnlyList<SweepSeries> series, OpenFills fills, HeavyweightHistory companies)
     {
         var listing = trade.Listing;
@@ -239,7 +240,7 @@ public sealed partial class IndexSweepRunner
         return trade with
         {
             Result = result is { } made ? made - CostInRisk(one, listing.Bar, close, close - risk, made, companies, 1) : null,
-            Benchmark = fills.Benchmark(trade.Benchmark, listing.Session, listing.StopMoves),
+            Benchmark = fills.Benchmark(trade.Benchmark, listing.Session, listing.StopMoves, listing.RewardToRisk, SweepAxes.ExitIndex(SweepIdeas.Cap, breakEven: false)),
         };
     }
 
