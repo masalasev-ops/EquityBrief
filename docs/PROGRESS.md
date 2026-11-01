@@ -13858,3 +13858,20 @@ Mutation:   chosen before the run by this rule, the property the correction adds
             again, predicted red at the new test on Banks', red there, reverted, green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: the read-only copy's masthead says the night's close once, its ruled mark kept and the page's own sentence saying the same dropped beside it   2026-11-01
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the fifth phase 18 sign-off review reading the copy uploaded for the night of 2026-10-30 against the pages it
+            copies: each stock's masthead read "As of the close of 30 Oct. As of the close of 2026-10-30, the last stored
+            price.", the copy's own mark beside the page's sentence; put to the operator as a judgement, who chose to drop
+            the page's sentence and keep the mark the ruling on the copy of 2026-10-28 asks for.
+Corrected:  the copy drops the page's "As of the close of" the night's date ", the last stored price." where it puts its
+            mark, the rest of the page's line kept, and a page whose last close is older than the night keeps its own
+            date and its warning. The decision on the copy stands as written: a stock's price is marked as of the night's
+            close.
+Tests:      none new; the copy's control test reads a closed masthead saying the close once and an older one kept whole.
+Mutation:   chosen before the run by this rule, the property the correction adds: c1 the page's sentence kept beside the
+            mark, predicted red at the copy's control test, red there, reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
