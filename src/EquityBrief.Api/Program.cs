@@ -710,6 +710,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         improving: night is { } improvedOn && await read.IndexOfAsync(ticker, improvedOn) is { } improvingIndex && await read.ImprovingCardRuleAsync(improvingIndex, improvedOn) is { } improvingRule
             ? TonightScreen.OnTheFundamentalsCard(ticker, improvedOn, await read.ImprovingResultsAsync(improvingIndex, improvedOn, improvingRule), await read.ImprovingTradesAsync(improvingIndex, improvedOn, improvingRule))
             : null,
+        // From the 22.9 correction of 2026-11-01 where Quality at a fair price holds the name at the night's close or chose
+        // it to buy at the next open, under the rule its card draws.
+        quality: night is { } qualityOn && await read.IndexOfAsync(ticker, qualityOn) is { } qualityIndex
+            ? TonightScreen.HeldInTheQualityBook(ticker, await read.QualityHoldingsAsync(qualityIndex, qualityOn, qualityOn, await read.QualityCardRuleAsync(qualityIndex, qualityOn)))
+            : null,
         // The profile each job ran under from the settings' profiles, and the models the spend cap priced for a model no
         // profile names now, so each job's model is named paid or local.
         paidModels: await read.PaidModelsAsync(),
@@ -1442,6 +1447,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         }
 
         var improvingRule = await read.ImprovingCardRuleAsync(index, night);
+        var qualityRule = await read.QualityCardRuleAsync(index, night);
+        var improvingTrades = await read.ImprovingTradesAsync(index, night, improvingRule);
 
         standing = BriefScreen.Standing(new BriefAnswers(
             ticker,
@@ -1455,7 +1462,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
             await read.DipPicksAsync(index, night),
             held,
             await read.ImprovingResultsAsync(index, night, improvingRule),
-            await read.ImprovingTradesAsync(index, night, improvingRule)));
+            improvingTrades,
+            await read.QualityNightAsync(index, night, qualityRule) is null ? null : await read.QualityHoldingsAsync(index, night, night, qualityRule)));
         readings = await read.LedgerReadingsAsync(index, night);
     }
 

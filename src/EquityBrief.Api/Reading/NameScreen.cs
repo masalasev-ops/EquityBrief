@@ -1509,6 +1509,8 @@ public static partial class NameScreen
         // What the page says where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it,
         // from 22.13.
         string? improving = null,
+        // What the page says where Quality at a fair price holds the name or chose it to buy, from the 22.9 correction.
+        string? quality = null,
         // The models the run log names on a priced call, which tell a paid model from a local one where no profile names it.
         IReadOnlySet<string>? paidModels = null,
         // The model profiles the settings name and the profile each section is written under.
@@ -1808,6 +1810,7 @@ public static partial class NameScreen
             fundamentals: FundamentalsScreen.Of(score, Universes.ByCode(indexCode ?? string.Empty)?.Name, scoreReadings, reportView?.Analysts, reportView?.Insiders),
             filedMultiple: score?.Multiple,
             improving: improving,
+            quality: quality,
             paidModels: paidModels,
             profiles: profiles,
             sectionProfiles: sectionProfiles,

@@ -39,7 +39,8 @@ public sealed record BriefListed(string Family, DecisionCardRow? Card, int? DipE
 // The answers the night stored that a stock's standing under each setup is read from: on the S&P 500 the swing filter's
 // row and the family evaluator's results with the night's picks; on the S&P 400 and 600 the index families' results and
 // picks, from 22.13 the fundamentals-first family's on no index; the dip's results and picks; whether the heavyweights'
-// book holds the stock, none where the night kept no book; and from 22.13 the Fundamentals family's answers and trades.
+// book holds the stock, none where the night kept no book; from 22.13 the Fundamentals family's answers and trades; and
+// from the 22.9 correction of 2026-11-01 Quality at a fair price's holdings as of the night, none where none were read.
 public sealed record BriefAnswers(
     string Ticker,
     bool Large,
@@ -52,7 +53,8 @@ public sealed record BriefAnswers(
     IReadOnlyList<DipPickRow> DipPicks,
     bool? Held,
     IReadOnlyList<ImprovingResultRow>? ImprovingResults = null,
-    IReadOnlyList<ImprovingTradeRow>? ImprovingTrades = null);
+    IReadOnlyList<ImprovingTradeRow>? ImprovingTrades = null,
+    IReadOnlyList<QualityHoldingRow>? QualityHoldings = null);
 
 // What a stock's brief read is written from, each read as the full page or the decision card reads it: the stock's
 // membership row with its trend and nearest bands, the newest value of each indicator series, its reported quarters'
@@ -181,6 +183,19 @@ public static class BriefScreen
                 false => BriefStates.NotHeld,
                 null => BriefStates.NotRead,
             }));
+
+        // From the 22.9 correction of 2026-11-01 Quality at a fair price's, after the heavyweights' as its card follows
+        // theirs on Tonight: bought at the next open where it chose the stock and has not bought it, held where it holds it,
+        // and not read where the night read no holdings.
+        // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+        var quality = answers.QualityHoldings?.FirstOrDefault(one => one.Ticker == ticker && one.EndedOn is null);
+
+        standing.Add(new BriefStanding(
+            QualityRule.Name,
+            answers.QualityHoldings is null ? BriefStates.NotRead
+            : quality is { BoughtOn: null } ? BriefStates.Bought
+            : quality is not null ? BriefStates.Held
+            : BriefStates.NotHeld));
 
         return standing;
     }
@@ -578,6 +593,7 @@ public static class BriefScreen
         SetupFamilies.Named(family)?.Label
         ?? (family == SetupFamilies.SectorHeavyweights.Name ? SetupFamilies.SectorHeavyweights.Label
             : family == ImprovingRule.Name ? ImprovingRule.Label
+            : family == QualityRule.Name ? QualityRule.Label
             : family);
 
     // One step short, naming the step missed in the reader's words where the word list holds it.

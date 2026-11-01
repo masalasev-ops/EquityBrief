@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - a stock's page and its chart page name Quality at a fair price where it holds the stock
+Corrects: a stock Quality at a fair price holds never had the family named on its page or among its chart page's chips, where the heavyweights' and the Fundamentals family's holdings are named; found gathering the phase 18 sign-off on 2026-10-26 and carried until now, 29 of the 30 live holdings' pages reading only that the stock was not on tonight's list.
+Was:
+> (15.9, The setup the page lists the name under) ... with the filing and the scores it was read on (see: ...)
+> (15.22, In brief) ... at its last close in the index (see: A Fundamentals trade is held while its score stays at seven in nine, and judged against an equal-weighted hold of its index's members after its round trip)
+Now:
+> (15.9, The setup the page lists the name under) ... (see: ...); and beneath that from the 22.9 correction of 2026-11-01 a line naming Quality at a fair price where it holds the stock at the night's close, with the session it bought it on, or chose it to buy at the next open (see: ...)
+> (15.22, In brief) ... (see: ...); and from the 22.9 correction of 2026-11-01 Quality at a fair price's chip last, after the sector heavyweights' as its card follows theirs on Tonight, reading bought at tomorrow's open or in its holdings or not in its holdings, or not read where the night stored no night of the family
+Why: the page names every family that holds the stock.
+
 ### 2026-11-01 - docs/RUNBOOK.md - measuring the theme search's tool
 Authorised by: Theme material comes from a search tool, and per-name material never does
 Was:

@@ -303,7 +303,8 @@ public partial class ReadSurface
 
         // K3: two of the pullback's gates missed, one step short of the breakout at its volume; the drift, from 22.13 the
         // Fundamentals family in the fundamentals-first family's place, and the dip stored no answer for it, and the
-        // heavyweights' book holds nothing.
+        // heavyweights' book holds nothing; from the 22.9 correction Quality at a fair price last, which the night did not
+        // read.
         var k3 = await Brief("K3");
 
         Assert.Equal(
@@ -314,6 +315,7 @@ public partial class ReadSurface
                 $"improving|not-read|{ImprovingRule.Label}: not read tonight",
                 $"dip|not-read|{SetupFamilies.Dips.Label}: not read tonight",
                 $"heavyweight|not-held|{SetupFamilies.SectorHeavyweights.Label}: not in its holdings",
+                $"quality|not-read|{QualityRule.Label}: not read tonight",
             ],
             k3.Chips);
         Assert.EndsWith($"Tonight the closest setup is {breakout}, one step short: volume too light.", k3.Summary, StringComparison.Ordinal);

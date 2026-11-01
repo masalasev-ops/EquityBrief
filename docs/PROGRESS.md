@@ -13657,3 +13657,24 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the sign-offs of phases 18, 20, 21 and 22 by fresh sessions, their handoffs written after this merges.
+
+### 22.9 - correction: a stock Quality at a fair price holds names the family on its page and among its chart page's chips   2026-11-01
+
+Corrects:   a stock Quality at a fair price holds never had the family named on its page or among its chart page's
+            chips, where the heavyweights' and the Fundamentals family's holdings are named; found gathering phase 18's
+            sign-off on 2026-10-26, carried in its fourth handoff and not corrected since, and read again on 2026-11-01
+            gathering the sign-off handoffs: FSLR, held by the S&P 500's live quality rule, read only that it was not on
+            tonight's list.
+Built:      the stock page's line beneath the Fundamentals family's, held by Quality at a fair price since the day it
+            was bought while it qualifies at each month's reshuffle, or chosen and bought at the next open, under the rule
+            its card draws; and the chart page's chip after the sector heavyweights', bought at tomorrow's open, in its
+            holdings, not in its holdings, or not read where the night stored no night of the family. 15.9's and 15.22's
+            rows, the guide and the changelog.
+Tests:      one added, the two pages read back over the universes store: M1 and M2 held, M3 chosen, and a stock it holds
+            nothing of saying nothing. One amended: the S&P 500's brief's chips ending on the quality chip, not read.
+Mutation:   chosen before the run by this rule, the property the correction adds first, a held stock's page naming the
+            family: the line for a bought holding made to say nothing, predicted red at the added test alone; it red and
+            the other 25 tests of the brief's, the Fundamentals family's, the quality family's and the heavyweights' pages
+            green, reverted, green. Not mutated: the chip's states.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the entry below, on whose
+            branch this is recorded.

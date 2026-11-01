@@ -114,6 +114,36 @@ public partial class ReadSurface
         Assert.DoesNotContain("quality-sold", section, StringComparison.Ordinal);
     }
 
+    // From the 22.9 correction of 2026-11-01 the stock page and the chart page name Quality at a fair price where it holds a
+    // stock or chose it to buy, as they name the heavyweights and the Fundamentals family: M1 and M2 bought on 2 Oct, M3
+    // chosen tonight for tomorrow's open, and a stock it holds nothing of saying nothing. Found gathering the phase 18
+    // sign-off, where 29 of the 30 live holdings' pages read only that the stock was not on tonight's list.
+    [Fact]
+    public async Task TheStockAndChartPagesNameQualityAtAFairPriceWhereItHoldsOrChoseAStock()
+    {
+        using var store = UniversesStore();
+
+        QualityNightsOn(store);
+        store.Execute(
+            "INSERT INTO quality_holding (rule, index_code, ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, ended_on, sale, end_reason, result, benchmark, cost, edge) VALUES " +
+            $"('{QualityFamily.ProvisionalRule}', 'MID', 'M3', '{IndexNight}', '30', NULL, NULL, NULL, NULL, 3, 1.0, '{IndexNight}', NULL, NULL, 'open', NULL, NULL, NULL, NULL);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        async Task<string> Name(string ticker) => WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}/{IndexNight}"));
+        async Task<IReadOnlyList<string>> Chips(string ticker) => BriefOfPage(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/chart/{ticker}"))).Chips;
+
+        Assert.Contains("<p class=\"listed-under quality-held\">Held by Quality at a fair price since 2026-10-02, while it qualifies at each month's reshuffle.</p>", await Name("M1"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under quality-held\">Held by Quality at a fair price since 2026-10-02, while it qualifies at each month's reshuffle.</p>", await Name("M2"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under quality-held\">Quality at a fair price chose it on 2026-10-02 and buys it at the next open.</p>", await Name("M3"), StringComparison.Ordinal);
+        Assert.DoesNotContain("quality-held", await Name("S1"), StringComparison.Ordinal);
+
+        // The chart page's chip, last as its card is on Tonight.
+        Assert.Equal($"quality|held|{QualityRule.Label}: in its holdings", (await Chips("M1"))[^1]);
+        Assert.Equal($"quality|bought|{QualityRule.Label}: bought at the next trading day's open", (await Chips("M3"))[^1]);
+    }
+
     [Fact]
     public async Task QualityAtAFairPricesCardSaysItsPartFailedAndBeforeItsFirstNightThatItHasReadNone()
     {
