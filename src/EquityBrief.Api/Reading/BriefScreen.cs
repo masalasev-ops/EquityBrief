@@ -60,7 +60,8 @@ public sealed record BriefAnswers(
 // membership row with its trend and nearest bands, the newest value of each indicator series, its reported quarters'
 // readings, its six-month return's place among its index's members, the analysts' newest reading, the rule listing it
 // tonight, the night's levels plan, the account, each setup's standing, its next report, its stored report moves, its
-// insiders' open-market trades, and the reward to risk the trade step read on the levels plan's first tranche.
+// insiders' open-market trades, the reward to risk the trade step read on the levels plan's first tranche, and from the
+// 22.13 correction of 2026-11-01 the last session the Fundamentals family's open trade in the stock can be held to.
 public sealed record BriefInputs(
     string Ticker,
     string? IndexName,
@@ -79,7 +80,8 @@ public sealed record BriefInputs(
     IReadOnlyList<double> ReportMoves,
     EquityBrief.Core.Insiders.InsiderView? Insiders,
     double? LevelsRewardToRisk = null,
-    FundamentalScoreRow? Score = null);
+    FundamentalScoreRow? Score = null,
+    DateOnly? FundamentalsHeldThrough = null);
 
 // A stock's brief read, written by code from templates over the figures the full page and the decision card already
 // work: each through the same core function, none worked out a second way, and a figure not stored said so in its line.
@@ -563,15 +565,34 @@ public static class BriefScreen
 
     // ---- what to watch for ----
 
-    // A report inside a typical hold, the hold the decision card reads; report moves past the first stop's distance by
-    // the card's own reading of them; and insiders' open-market selling over 90 days. None where none applies.
+    // From the 22.13 correction of 2026-11-01 the last session the Fundamentals family's open trade can be held to at its
+    // rule's sessions: counted from its buy, the buy being the first as its step counts it, or from the next open where it
+    // is chosen and not yet bought.
+    // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+    public static DateOnly FundamentalsHeldThrough(DateOnly night, DateOnly? boughtOn, int sessions) =>
+        boughtOn is { } bought ? CardHitsReading.HoldThrough(bought, sessions - 1) : CardHitsReading.HoldThrough(night, sessions);
+
+    // A report inside a typical hold, the hold the decision card reads, or from the 22.13 correction of 2026-11-01 inside
+    // the Fundamentals family's own hold where that family keeps a trade in the stock and no swing rule lists it; report
+    // moves past the first stop's distance by the card's own reading of them; and insiders' open-market selling over 90
+    // days. None where none applies.
     static string? WatchFor(BriefInputs inputs, WayInPlan? plan, decimal? close)
     {
         var said = new List<string>();
 
-        if (inputs.Night is { } night && inputs.NextReport is { } report && report > night && report <= CardHitsReading.HoldThrough(night, plan?.Cap))
+        if (inputs.Night is { } night && inputs.NextReport is { } report && report > night)
         {
-            said.Add(Invariant($"its report on {report:yyyy-MM-dd} falls inside a typical hold"));
+            if (plan?.Cap is null && inputs.FundamentalsHeldThrough is { } through)
+            {
+                if (report <= through)
+                {
+                    said.Add(Invariant($"its report on {report:yyyy-MM-dd} falls inside the {ImprovingRule.Label} hold, which ends by {through:yyyy-MM-dd}"));
+                }
+            }
+            else if (report <= CardHitsReading.HoldThrough(night, plan?.Cap))
+            {
+                said.Add(Invariant($"its report on {report:yyyy-MM-dd} falls inside a typical hold"));
+            }
         }
 
         if (plan is { Stop: { } stop } && CardHitsReading.Reactions(inputs.ReportMoves, close, inputs.Member?.TypicalMove, plan.Buy, stop) is { MedianRisks: > 1 } moves)

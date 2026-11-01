@@ -13678,3 +13678,26 @@ Mutation:   chosen before the run by this rule, the property the correction adds
             green, reverted, green. Not mutated: the chip's states.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the entry below, on whose
             branch this is recorded.
+
+### 22.13 - correction: what to watch for on a chart page measures a Fundamentals holding's next report against its own hold   2026-11-01
+
+Corrects:   the chart page's line of what to watch for measured a stock's next report against the typical 21-session
+            hold where the Fundamentals family keeps a trade in it, which its live rule holds for 126 sessions on the S&P
+            500, 63 on the S&P 400 and 252 on the S&P 600; found with the quality book's gap gathering phase 18's sign-off
+            and carried beside it.
+Built:      the last session a Fundamentals trade can be held to at its rule's sessions, counted from its buy as the
+            family's step counts them, the buy the first, or from the next open where it is chosen and not yet bought;
+            and the line reading a report inside it as falling inside the Fundamentals hold, with the hold's last day,
+            where that family keeps a trade in the stock and no swing rule lists it, and the typical hold otherwise.
+            15.22's row, the guide and the changelog.
+Tests:      3038, from 3036: this correction's one, the hold's last day worked by hand over the exchange's calendar and
+            the line over a report 60 sessions after the night with and without the hold, and the entry above's one.
+Claims:     1491, none new; the rows amended in place; 1506 placements.
+Mutation:   chosen before the run by this rule, the property the correction adds, a Fundamentals holding's report
+            measured against its own hold: the line made to read the typical hold always, predicted red at the added
+            test alone; it red and the other 25 tests of the same pages green, reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3038 of 3038 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.

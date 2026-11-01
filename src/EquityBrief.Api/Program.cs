@@ -1427,6 +1427,7 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
     var gate = large ? await read.GateResultAsync(ticker, night) : null;
     IReadOnlyList<BriefStanding> standing = [];
     IReadOnlyDictionary<string, IReadOnlyList<double?>>? readings = null;
+    DateOnly? fundamentalsHeldThrough = null;
 
     if (indexCode is { } index)
     {
@@ -1449,6 +1450,16 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         var improvingRule = await read.ImprovingCardRuleAsync(index, night);
         var qualityRule = await read.QualityCardRuleAsync(index, night);
         var improvingTrades = await read.ImprovingTradesAsync(index, night, improvingRule);
+
+        // From the 22.13 correction of 2026-11-01 the last session the Fundamentals family's open trade in the stock can be
+        // held to at its rule's own sessions.
+        if (improvingTrades.FirstOrDefault(trade => trade.Ticker == ticker && trade.EndReason == EquityBrief.Core.Families.ImprovingRule.Open) is { } kept)
+        {
+            fundamentalsHeldThrough = BriefScreen.FundamentalsHeldThrough(
+                night,
+                kept.BoughtOn,
+                TonightScreen.SettingOf((await read.ImprovingNightAsync(index, night, improvingRule))?.Settings).Sessions);
+        }
 
         standing = BriefScreen.Standing(new BriefAnswers(
             ticker,
@@ -1502,7 +1513,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         [.. reactions.Select(row => row.MovePct)],
         report.Insiders,
         gate?.LadderRewardToRisk,
-        score));
+        score,
+        fundamentalsHeldThrough));
 }
 
 // A heavyweights card with its standing tonight, read off tonight's closes once: each holding's and each sector fund's

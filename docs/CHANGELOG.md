@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - what to watch for on a chart page reads the Fundamentals family's own hold
+Corrects: the chart page measured the next report of a stock the Fundamentals family keeps a trade in against the typical 21-session hold rather than its own, found with the quality book's gap gathering the phase 18 sign-off on 2026-10-26 and carried beside it.
+Was:
+> (15.22, In brief) ... (see: A Fundamentals trade is held while its score stays at seven in nine, and judged against an equal-weighted hold of its index's members after its round trip); and from the 22.9 correction ...
+Now:
+> (15.22, In brief) ... (see: ...); from the 22.13 correction of 2026-11-01 the line of what to watch for measuring a report against the Fundamentals family's own hold, through the last session its rule's time allows, where that family keeps a trade in the stock and no swing rule lists it, and against the typical hold otherwise; and from the 22.9 correction ...
+Why: a holding's next report is measured against the hold it is in.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - a stock's page and its chart page name Quality at a fair price where it holds the stock
 Corrects: a stock Quality at a fair price holds never had the family named on its page or among its chart page's chips, where the heavyweights' and the Fundamentals family's holdings are named; found gathering the phase 18 sign-off on 2026-10-26 and carried until now, 29 of the 30 live holdings' pages reading only that the stock was not on tonight's list.
 Was:
