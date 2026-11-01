@@ -13721,3 +13721,38 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 18.5 ruling - the defects the fifth phase 18 sign-off review found corrected before a sixth review signs, every member's stories labelled   2026-11-01
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-01 and lands nothing.
+Found:      the fifth phase 18 sign-off review, by a session that had committed no code, over main 1fc5dc0e: both gates
+            green and its twelve mutations red, then the report page's proof read over every member's page of the three
+            indices for the night of 2026-10-30, read-only on the operator's read surface. Three rules failed: every
+            admitted story labelled, on 436 of the S&P 500's 503 pages, 247 of the S&P 400's 400 and 286 of the S&P 600's
+            602, 4,924 stories, the labeller labelling tonight's list and the names a report is written for where the
+            architecture's report page section says it labels every story a page keeps; a next report estimated, on FDXF,
+            a spin-off holding no report a year back, drawn as not announced with no estimate and no reason; and a
+            segment table in one scale, on ESNT, RGEN, CURB, EZPW, GSHD, IIPR, PECO and VCYT, a table whose smallest amount
+            reads under a million given no scale and each amount drawn in its own. A mutation drawing no stale note beside a
+            provider's figure survived the read surface's 829 tests: the page draws it and no test reads it. Four
+            judgement items: "Its group, by price" naming the provider's industry where the valuation reads ROP's
+            override, "Banks's" in the valuation's heading, the industry cycle's sources passing the relevance test while
+            plainly about something else, and the read-only copy's masthead saying "as of the close" twice. Nothing was
+            signed.
+Ruled:      word for word in `prompts/2026-11-01-18.5-phase-18-signoff-fifth-findings-and-answers.md`: this session
+            builds the corrections and a sixth fresh session signs; "Label every member", the labeller labelling every
+            member's stories on the local model in the off-peak run, no paid call; the missing test added now; all four
+            judgement items changed. Then, giving the go: "Segment scale: not thousands. Where the largest amount is a
+            million or more, every amount reads in millions with up to two decimals, so RGEN shows "$209.3M" beside
+            "$0.04M"; an amount under $5,000 reads "under $0.01M". Thousands only where every amount is under a
+            million"; the industry cycle's test counted over every stored theme pass before it is switched on, "If it
+            would drop pages that are plainly about the industry, say so and stop on this item"; and FDXF's line saying
+            "No report a year earlier is stored to estimate it from: it started reporting as its own company on <date>."
+Labelled:   read off the record: the labeller's scope, the segment table's scale, the estimated next report, the one value
+            a concept's test, the peer group's override read by its group by price, the industry cycle's relevance and the
+            copy's masthead under 18.4, whose corrections built each; the valuation heading's possessive under 18.2, which
+            built the industry table.
+Queue:      done, PR 615 and the fifth review; in progress, this pull request; next, the sixth phase 18 sign-off review
+            by a fresh session after it merges, then the sign-offs of phases 20, 21 and 22 by their own fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
