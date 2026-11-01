@@ -382,7 +382,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
     // One stock's sessions from the first listing night a due trade's benchmark reads, oldest first, each one's open and
     // close as the bars hold them now.
-    public sealed record MemberPath(DateOnly[] Sessions, double[] Opens, double[] Closes);
+    public sealed record MemberPath(DateOnly[] Sessions, double[] Opens, double[] Closes, double[]? Highs = null);
 
     // From 21.17 what the members' sales move a swing trade's benchmark by, in each member's own risk: the same plan on
     // every member the index held that night with a bar and a typical move, its stop the trade's typical moves under the
@@ -422,7 +422,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             }
 
             var anchor = new SetupAnchor(trade.Session, entry, entry - memberRisk, reward is { } r ? entry + (r * memberRisk) : null, trailRisks is { } t ? t * memberRisk : null, cap, riskMoves);
-            var outcome = EquityBrief.Core.Loop.ExitMenu.Replay(path.Closes, bar, anchor, move, choice);
+            var outcome = EquityBrief.Core.Loop.ExitMenu.Replay(path.Closes, bar, anchor, move, choice, path.Opens, path.Highs ?? []);
             double Close(int at) => path.Closes[at];
             double? OpenAfter(int at) => at + 1 < path.Opens.Length && path.Opens[at + 1] > 0 ? path.Opens[at + 1] : null;
 
@@ -438,11 +438,11 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
     // night prices.
     public static async Task<IReadOnlyDictionary<string, MemberPath>> MemberPathsAsync(SqliteConnection connection, DateOnly from, CancellationToken cancellation)
     {
-        var rows = new Dictionary<string, SortedDictionary<DateOnly, (double Open, double Close)>>(StringComparer.Ordinal);
+        var rows = new Dictionary<string, SortedDictionary<DateOnly, (double Open, double Close, double High)>>(StringComparer.Ordinal);
 
         foreach (var table in new[] { "kept_bar", "bar" })
         {
-            await using var command = Command(connection, null, $"SELECT ticker, session_date, open, close FROM {table} WHERE session_date >= $from;", [("$from", Stamp(from))]);
+            await using var command = Command(connection, null, $"SELECT ticker, session_date, open, close, high FROM {table} WHERE session_date >= $from;", [("$from", Stamp(from))]);
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 
             while (await reader.ReadAsync(cancellation))
@@ -452,13 +452,13 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
                     rows[reader.GetString(0)] = path = [];
                 }
 
-                path[Date(reader.GetString(1))] = (Price(reader, 2) ?? 0, Price(reader, 3) ?? 0);
+                path[Date(reader.GetString(1))] = (Price(reader, 2) ?? 0, Price(reader, 3) ?? 0, Price(reader, 4) ?? 0);
             }
         }
 
         return rows.ToDictionary(
             pair => pair.Key,
-            pair => new MemberPath([.. pair.Value.Keys], [.. pair.Value.Values.Select(one => one.Open)], [.. pair.Value.Values.Select(one => one.Close)]),
+            pair => new MemberPath([.. pair.Value.Keys], [.. pair.Value.Values.Select(one => one.Open)], [.. pair.Value.Values.Select(one => one.Close)], [.. pair.Value.Values.Select(one => one.High)]),
             StringComparer.Ordinal);
     }
 
@@ -622,33 +622,35 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
     static DateOnly? DateOf(SqliteDataReader reader, int at) => reader.IsDBNull(at) ? null : Date(reader.GetString(at));
 
     // A stock's sessions from a listing night to the session after the one its trade ended on, each session's open and
-    // close as the bars hold them now, the kept bars' first.
-    public static async Task<IReadOnlyList<(DateOnly Session, double Open, double Close)>> PathAsync(SqliteConnection connection, SqliteTransaction? transaction, string ticker, DateOnly from, DateOnly through, CancellationToken cancellation)
+    // close as the bars hold them now, the kept bars' first, and from 21.18 its high.
+    public static async Task<IReadOnlyList<(DateOnly Session, double Open, double Close, double High)>> PathAsync(SqliteConnection connection, SqliteTransaction? transaction, string ticker, DateOnly from, DateOnly through, CancellationToken cancellation)
     {
-        var path = new SortedDictionary<DateOnly, (double Open, double Close)>();
+        var path = new SortedDictionary<DateOnly, (double Open, double Close, double High)>();
 
         foreach (var table in new[] { "kept_bar", "bar" })
         {
-            await using var command = Command(connection, transaction, $"SELECT session_date, open, close FROM {table} WHERE ticker = $ticker AND session_date BETWEEN $from AND $through;",
+            await using var command = Command(connection, transaction, $"SELECT session_date, open, close, high FROM {table} WHERE ticker = $ticker AND session_date BETWEEN $from AND $through;",
                 [("$ticker", ticker), ("$from", Stamp(from)), ("$through", Stamp(through))]);
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 
             while (await reader.ReadAsync(cancellation))
             {
-                path[Date(reader.GetString(0))] = (Price(reader, 1) ?? 0, Price(reader, 2) ?? 0);
+                path[Date(reader.GetString(0))] = (Price(reader, 1) ?? 0, Price(reader, 2) ?? 0, Price(reader, 3) ?? 0);
             }
         }
 
-        return [.. path.Select(pair => (pair.Key, pair.Value.Open, pair.Value.Close))];
+        return [.. path.Select(pair => (pair.Key, pair.Value.Open, pair.Value.Close, pair.Value.High))];
     }
 
     // From 21.14 a swing trade's sale, its result bought at the open moved by the gap from the close that signalled its end
     // to the next session's open, over the risk its close set, at the trade's own scale, the bars as stored now over its
     // listing night's close: a scored plan's end read off the outcome its filler stored, a trade walked under an exit of
     // the menu replayed under it over the same closes, and any other read off its closes as the family's walk reads them.
-    // A trade whose sessions the path does not hold is left sold at its close.
+    // A trade whose sessions the path does not hold is left sold at its close. From 21.18 a trade the target standing as a
+    // sell order sold is sold on that session at the price its walk sold at, the target or the session's open above it.
     // see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
-    public static TradeSale Sold(StoredTrade trade, double result, IReadOnlyList<(DateOnly Session, double Open, double Close)> path)
+    // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+    public static TradeSale Sold(StoredTrade trade, double result, IReadOnlyList<(DateOnly Session, double Open, double Close, double High)> path)
     {
         var ended = path.Select(one => one.Session).ToList().IndexOf(trade.EndedOn ?? DateOnly.MinValue);
 
@@ -665,11 +667,24 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
         var risk = entry - stop;
         var anchor = new SetupAnchor(trade.Session, entry, stop, target, target is null ? trade.Trail : null, trade.Cap ?? ended, null);
         var choice = EquityBrief.Core.Loop.ExitMenu.Of(trade.Exit);
+        var replayed = trade.Outcome is null && choice is not null && trade.RiskMoves is > 0
+            ? EquityBrief.Core.Loop.ExitMenu.Replay(
+                [.. path.Take(ended + 1).Select(one => one.Close * scale)],
+                0,
+                anchor,
+                risk / trade.RiskMoves.Value,
+                choice,
+                [.. path.Take(ended + 1).Select(one => one.Open * scale)],
+                [.. path.Take(ended + 1).Select(one => one.High * scale)])
+            : null;
         var end = trade.Outcome is { } outcome
             ? outcome == ForwardReturnSeries.Unresolved ? SetupEnds.Cap : SetupEnds.Stop
-            : choice is not null && trade.RiskMoves is > 0
-                ? EquityBrief.Core.Loop.ExitMenu.Replay([.. path.Take(ended + 1).Select(one => one.Close * scale)], 0, anchor, risk / trade.RiskMoves.Value, choice).End
-                : ExitFills.EndOf(Close, 0, entry, stop, target, anchor.Trail, ended, anchor.Cap);
+            : replayed?.End ?? ExitFills.EndOf(Close, 0, entry, stop, target, anchor.Trail, ended, anchor.Cap);
+
+        if (replayed is { End: EquityBrief.Core.Loop.ExitMenu.StandingEnd, Result: { } standing })
+        {
+            return new TradeSale(path[ended].Session, entry + (standing * risk), result);
+        }
         var walked = new SetupOutcome(result, ended, end);
         var sale = ExitFills.Sold(walked, Close, OpenAfter, 0, risk, ExitFills.HalfSoldOn(Close, 0, anchor, choice, walked));
 

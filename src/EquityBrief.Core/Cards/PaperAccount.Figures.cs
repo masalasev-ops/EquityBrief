@@ -220,7 +220,21 @@ public static partial class PaperAccount
             trade.Trail is { } trail ? Statistic.FromPrice(trail) : null,
             cap,
             trade.RiskMoves);
-        var outcome = ExitMenu.Replay(closes, 0, anchor, trade.RiskMoves is > 0 ? anchor.Risk / trade.RiskMoves.Value : 0, ExitMenu.Of(trade.Exit ?? 0));
+        // From 21.18 a trade the target standing as a sell order sold was sold at the target or at a session's open above
+        // it, which its sale says; any other end of it is the plan's own, which its closes replay.
+        var choice = ExitMenu.Of(trade.Exit ?? 0);
+
+        if (choice is { Kind: ExitKind.Standing })
+        {
+            if (trade.Target is { } aimed && trade.Sale is { } sold && sold >= aimed)
+            {
+                return ReachedTarget;
+            }
+
+            choice = null;
+        }
+
+        var outcome = ExitMenu.Replay(closes, 0, anchor, trade.RiskMoves is > 0 ? anchor.Risk / trade.RiskMoves.Value : 0, choice);
 
         return outcome.Sessions != after.Length ? null : outcome.End switch
         {

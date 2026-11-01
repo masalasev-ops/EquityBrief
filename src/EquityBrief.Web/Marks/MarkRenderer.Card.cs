@@ -406,6 +406,10 @@ public sealed partial class MarkRenderer
     // close below it; and the line saying the trade is sold by these exits alone and where the stock's entry and exit plan
     // stands.
     // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
+    // From 21.18 whether a rule stands at the target as a sell order, read off the words its name carries.
+    public static bool StandsAtTheTarget(string? rule) =>
+        rule is not null && rule.Contains(EquityBrief.Core.Loop.ExitMenu.Swing.Single(choice => choice.Kind == EquityBrief.Core.Loop.ExitKind.Standing).Words, StringComparison.Ordinal);
+
     static string ThePlan(DecisionCardView card, string setup, FamilyPickCell? pick, bool levelsBelow = false)
     {
         var heavyweights = card.Family == EquityBrief.Core.Families.HeavyweightRule.Name;
@@ -417,8 +421,10 @@ public sealed partial class MarkRenderer
         body.Append(card.Stop is { } stop
             ? PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null ? "raised after each higher close, never lowered, and sold at the next day's open" : "sold at the next day's open", "loss")
             : PlanTile("stop", "Stop", "None", heavyweights ? "nothing sells it at a price set in advance" : "no stop stored"));
+        // From 21.18 a pick of a rule at the target standing as a sell order says how that order sells, in the operator's words.
+        // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
         body.Append(card.Target is { } target
-            ? PlanTile("target", "Sell if it reaches", Price(target), "on a close at or above it, sold at the next day's open", "gain")
+            ? PlanTile("target", "Sell if it reaches", Price(target), StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open", "gain")
             : card.Trail is not null || pick?.Trailing == true
                 ? PlanTile("target", "No target", "Rising stop", "the stop follows the price up")
                 : dip

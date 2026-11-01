@@ -16,6 +16,7 @@ public enum ExitKind
     HalfTarget,
     TimeStop,
     HalfBreakEven,
+    Standing,
 }
 
 // One exit of the menu: its number, its kind and its figures, and its words. K is risks for a break-even, a target
@@ -35,6 +36,7 @@ public sealed record ExitChoice(int Number, ExitKind Kind, double K, double J, i
             : FormattableString.Invariant($"sold at the close {N} sessions in unless it is above the buy"),
         ExitKind.TimeStop => FormattableString.Invariant($"sold at the close {N} sessions in, whatever the trade stands at"),
         ExitKind.HalfBreakEven => FormattableString.Invariant($"half sold once a close is {K:0.##} risks up, the stop raised to the buy on the rest"),
+        ExitKind.Standing => "the target standing as a sell order from the buy",
         _ => FormattableString.Invariant($"half sold at the target and the rest trailed {K:0.##} typical moves under the highest close"),
     };
 }
@@ -116,8 +118,19 @@ public static class ExitMenu
 
         Add(ExitKind.HalfBreakEven, HalfBreakEvenRisk);
 
+        // From 21.18 the plan's own target standing as a sell order from the buy.
+        Add(ExitKind.Standing);
+
         return menu;
     }
+
+    // From 21.18 how a trade the standing target sold ended: at the target or at a session's open above it, on that
+    // session and never at the next one's open.
+    public const string StandingEnd = "standing";
+
+    // From 21.18 the words a variant at the standing target and its picks' cards say, in the operator's words of
+    // 2026-11-01.
+    public const string StandingWords = "Sells at the target the moment the price touches it during the day, or at the open if the stock opens above it. Stops still sell at the next open after a close below them.";
 
     // The exit a number names, none for a rule's own.
     public static ExitChoice? Of(int number) => number <= 0 ? null : Swing.FirstOrDefault(choice => choice.Number == number);
@@ -134,7 +147,9 @@ public static class ExitMenu
         double? rewardToRisk,
         double? trailRisks,
         int cap,
-        ExitChoice? exit)
+        ExitChoice? exit,
+        IReadOnlyList<double[]>? opens = null,
+        IReadOnlyList<double[]>? highs = null)
     {
         var sum = 0.0;
         var count = 0;
@@ -153,7 +168,7 @@ public static class ExitMenu
 
             var anchor = new SetupAnchor(DateOnly.MinValue, entry, entry - risk, rewardToRisk is { } reward ? entry + (reward * risk) : null, trailRisks is { } trail ? trail * risk : null, cap, riskMoves);
 
-            if (Replay(closes[name], bar, anchor, move, exit).Result is { } result)
+            if (Replay(closes[name], bar, anchor, move, exit, opens is null ? default : opens[name], highs is null ? default : highs[name]).Result is { } result)
             {
                 sum += result;
                 count++;
@@ -163,12 +178,19 @@ public static class ExitMenu
         return (count > 0 ? sum / count : double.NaN, count);
     }
 
-    // A setup's path under an exit, or under its own where none is given; the typical move a trail is counted in.
-    public static SetupOutcome Replay(ReadOnlySpan<double> closes, int from, SetupAnchor anchor, double move, ExitChoice? choice)
+    // A setup's path under an exit, or under its own where none is given; the typical move a trail is counted in. From
+    // 21.18 the standing target reads each session's open and high beside its close, which every caller that may walk
+    // it hands in.
+    public static SetupOutcome Replay(ReadOnlySpan<double> closes, int from, SetupAnchor anchor, double move, ExitChoice? choice, ReadOnlySpan<double> opens = default, ReadOnlySpan<double> highs = default)
     {
         if (choice is null)
         {
             return SetupReplay.Replay(closes, from, anchor);
+        }
+
+        if (choice.Kind == ExitKind.Standing)
+        {
+            return Standing(closes, opens, highs, from, anchor);
         }
 
         var risk = anchor.Risk;
@@ -317,6 +339,67 @@ public static class ExitMenu
             if (half is not null)
             {
                 floor = Math.Max(floor, highest - trail);
+            }
+        }
+
+        return new SetupOutcome(null, anchor.Cap, SetupEnds.Open);
+    }
+
+    // From 21.18 the plan's target standing as a sell order from the buy, which is at the open of the session after
+    // `from`: a later session opening at or above the target sold at that open, and any session whose high reaches it,
+    // the buy's own among them, sold at the target before its close is read, whatever that close does; a close under the
+    // stop sold as the plan's own walk sells it, and the cap's close ending what neither reached. Each result is over the
+    // buy's close and its risk, as every exit's is. A plan whose stop trails names no target and stands no order, so it
+    // walks as its own; one handed no opens or highs is refused, so no caller prices it from closes alone.
+    // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+    static SetupOutcome Standing(ReadOnlySpan<double> closes, ReadOnlySpan<double> opens, ReadOnlySpan<double> highs, int from, SetupAnchor anchor)
+    {
+        if (anchor.Trails || anchor.Target is not { } target)
+        {
+            return SetupReplay.Replay(closes, from, anchor);
+        }
+
+        if (opens.Length < closes.Length || highs.Length < closes.Length)
+        {
+            throw new InvalidOperationException("The standing target reads each session's open and high beside its close, and they were not handed in.");
+        }
+
+        var (entry, risk) = (anchor.Entry, anchor.Risk);
+
+        if (!(risk > 0) || !(target > entry))
+        {
+            return new SetupOutcome(null, 0, SetupEnds.None);
+        }
+
+        for (var session = 1; session <= anchor.Cap; session++)
+        {
+            var at = from + session;
+
+            if (at >= closes.Length)
+            {
+                return new SetupOutcome(null, Math.Max(0, closes.Length - 1 - from), SetupEnds.Open);
+            }
+
+            if (session > 1 && opens[at] >= target)
+            {
+                return new SetupOutcome((opens[at] - entry) / risk, session, StandingEnd);
+            }
+
+            if (highs[at] >= target)
+            {
+                return new SetupOutcome((target - entry) / risk, session, StandingEnd);
+            }
+
+            var close = closes[at];
+
+            if (close < anchor.Stop)
+            {
+                return new SetupOutcome((close - entry) / risk, session, SetupEnds.Stop);
+            }
+
+            if (session == anchor.Cap)
+            {
+                return new SetupOutcome((close - entry) / risk, session, SetupEnds.Cap);
             }
         }
 

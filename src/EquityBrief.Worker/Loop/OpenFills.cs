@@ -174,7 +174,7 @@ public sealed class OpenFills(IReadOnlyList<SweepSeries> series, SweepBenchmark.
             }
 
             var anchor = new SetupAnchor(DateOnly.MinValue, entry, entry - risk, rewardToRisk is { } reward ? entry + (reward * risk) : null, trailRisks is { } trail ? trail * risk : null, cap, stopMoves);
-            var outcome = ExitMenu.Replay(closes.Value[name], bar, anchor, move, exit);
+            var outcome = ExitMenu.Replay(closes.Value[name], bar, anchor, move, exit, SeriesPrices.Opens(series)[name], SeriesPrices.Highs(series)[name]);
             double Close(int at) => closes.Value[name][at];
 
             read.Add((outcome, ExitFills.SaleMove(outcome, Close, at => OpenAfter(one, at), bar, risk, ExitFills.HalfSoldOn(Close, bar, anchor, exit, outcome))));

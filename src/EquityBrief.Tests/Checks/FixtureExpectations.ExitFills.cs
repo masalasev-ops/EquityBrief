@@ -125,7 +125,7 @@ public partial class FixtureExpectations
 
         // Bought at 99 the session after, the close's -1.2 is -1.0 at the open; it closed through its stop at 94 on its
         // second session and is sold at the third's open, 93: -1.2 again, sold on that session at 93.
-        IReadOnlyList<(DateOnly, double, double)> path = [(night, 100, 100), (night.AddDays(1), 99, 98), (night.AddDays(2), 96, 94), (night.AddDays(3), 93, 93)];
+        IReadOnlyList<(DateOnly, double, double, double)> path = [(night, 100, 100, 100), (night.AddDays(1), 99, 98, 99), (night.AddDays(2), 96, 94, 96), (night.AddDays(3), 93, 93, 93)];
         var sold = TradeFiller.Sold(trade, -1.0, path);
 
         Assert.Equal((night.AddDays(3), 93.0, -1.2), (sold.On, sold.Price, Math.Round(sold.Result!.Value, 12)));
@@ -141,7 +141,7 @@ public partial class FixtureExpectations
             EndedOn = night.AddDays(2),
             Outcome = "unresolved",
         };
-        var capped = TradeFiller.Sold(plan, 0.6, [(night, 100, 100), (night.AddDays(1), 99, 101), (night.AddDays(2), 102, 102), (night.AddDays(3), 105, 104)]);
+        var capped = TradeFiller.Sold(plan, 0.6, [(night, 100, 100, 100), (night.AddDays(1), 99, 101, 101), (night.AddDays(2), 102, 102, 102), (night.AddDays(3), 105, 104, 105)]);
 
         Assert.Equal((night.AddDays(2), 102.0, 0.6), (capped.On, capped.Price, capped.Result));
     }

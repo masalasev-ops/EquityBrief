@@ -597,6 +597,14 @@ public sealed class ForwardReturnFiller : IComponent
     // and none where the plan cannot be walked under the exit.
     public static ForwardReturn? Menu(IReadOnlyList<ReturnBar> after, decimal entry, decimal stop, decimal? target, double? riskMoves, string horizon, int cap, EquityBrief.Core.Loop.ExitChoice exit)
     {
+        // From 21.18 the target standing as a sell order reads each session's high, which the page list's plans are not
+        // read with, so none is walked under it; the S&P 500's pullback is not proposed it.
+        // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+        if (exit.Kind == EquityBrief.Core.Loop.ExitKind.Standing)
+        {
+            return null;
+        }
+
         var buy = Statistic.FromPrice(entry);
         var floor = Statistic.FromPrice(stop);
         double[] closes = [buy, .. after.Take(cap).Select(one => Statistic.FromPrice(one.Close))];
