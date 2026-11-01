@@ -392,6 +392,43 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task AThemePassHeldByAnotherIsRefusedAndAPassLeavesNoLockFileBehind()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var folder = new TemporaryDirectory();
+
+        Answered(folder.Path, FixtureReplay.RecordedTheme, """{"results":[]}""");
+
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
+        var cap = new SpendCap(paid, Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
+        var lockFile = store.DatabaseFile + ".theme-" + SourceDocuments.Id(FixtureReplay.RecordedTheme) + ".lock";
+
+        ThemeResearchRunner Themer(RecordedSearchFeed search) =>
+            FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile), search);
+
+        // Another pass holding the theme's lock: this one is refused by name and searches nothing.
+        var refusedSearch = new RecordedSearchFeed(folder.Path);
+
+        using (new FileStream(lockFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+        {
+            var refused = await Themer(refusedSearch).RunAsync(FixtureReplay.RecordedTheme, "theme-held");
+
+            Assert.Equal(ThemeResearchRunner.AlreadyRunning, refused.Outcome);
+            Assert.Equal(0, refusedSearch.Requests);
+        }
+
+        // Let go, a pass runs to its end and its lock file goes with it.
+        var search = new RecordedSearchFeed(folder.Path);
+
+        Assert.Equal(ThemeResearchRunner.Written, (await Themer(search).RunAsync(FixtureReplay.RecordedTheme, "theme-released")).Outcome);
+        Assert.True(search.Requests > 0);
+        Assert.False(File.Exists(lockFile));
+        Assert.Equal(
+            [$"theme-held|{ThemeResearchRunner.AlreadyRunning}", $"theme-released|{ThemeResearchRunner.Written}"],
+            Query(store, "SELECT run_id, outcome FROM run_log WHERE stage = 'theme research' ORDER BY rowid;"));
+    }
+
+    [Fact]
     public async Task EveryPageAThemeSearchStoresComesFromTheListThatGovernsIt()
     {
         using var store = await FixtureReplay.ReplayedWholeAsync();

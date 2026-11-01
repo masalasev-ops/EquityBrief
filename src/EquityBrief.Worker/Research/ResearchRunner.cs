@@ -968,16 +968,18 @@ public sealed class ResearchRunner(
     // A lock held for as long as the pass runs, and released when the process ends
     // however it ends, because an open handle is what holds it rather than a file
     // someone has to remember to delete. Beside the store, since that is the one place
-    // every process asking about this store can find.
+    // every process asking about this store can find. The file goes with the handle, so
+    // a name researched once leaves no file behind; an open refused never removes the
+    // holder's, since the removal is set only on the handle that won.
     FileStream? Hold(string ticker)
     {
         var path = databaseFile + ".research-" + ticker.ToUpperInvariant() + ".lock";
 
         try
         {
-            return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
         }
-        catch (IOException)
+        catch (Exception busy) when (busy is IOException or UnauthorizedAccessException)
         {
             return null;
         }

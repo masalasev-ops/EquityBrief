@@ -21,6 +21,9 @@ public class StoreNeverDeleted
     // A stream opened so that it empties what was there.
     static readonly Regex Truncating = new(@"\bFileMode\.(?:Create|Truncate)\b", RegexOptions.Compiled);
 
+    // A stream opened so that its file is removed when it closes, with the path it is handed.
+    static readonly Regex DeletingOnClose = new(@"\bnew\s+FileStream\(\s*(?<on>[^,]+),[^\n]*\bFileOptions\.DeleteOnClose\b", RegexOptions.Compiled);
+
     // What a line would have to say to act on the store itself.
     static readonly string[] NamesTheStore = [StoreLocation.DatabaseFileName, "DatabaseFile", "databaseFile", "StoreLocation"];
 
@@ -35,14 +38,15 @@ public class StoreNeverDeleted
         [
             .. text.Split('\n').SelectMany(line =>
                 Removal.Matches(line).Select(match => $"{name}: {match.Groups["call"].Value}({match.Groups["on"].Value.Trim()})")
-                    .Concat(Truncating.Matches(line).Select(match => $"{name}: {match.Value}"))),
+                    .Concat(Truncating.Matches(line).Select(match => $"{name}: {match.Value}"))
+                    .Concat(DeletingOnClose.Matches(line).Select(match => $"{name}: FileOptions.DeleteOnClose({match.Groups["on"].Value.Trim()})"))),
         ];
     }
 
     internal static IReadOnlyList<string> NamingTheStore(string text, string file) =>
     [
         .. text.Split('\n')
-            .Where(line => Removal.IsMatch(line) || Truncating.IsMatch(line))
+            .Where(line => Removal.IsMatch(line) || Truncating.IsMatch(line) || DeletingOnClose.IsMatch(line))
             .Where(line => NamesTheStore.Any(word => line.Contains(word, StringComparison.Ordinal)))
             .Select(line => $"{Path.GetFileName(file)}: {line.Trim()}"),
     ];
@@ -81,7 +85,9 @@ public class StoreNeverDeleted
         // accession, and their list into a folder the operator names; from 20.5 its comparison writes its figures into the
         // data root's folder of comparisons, a file named by its instant. MonthlyRun writes its month's report into the
         // month's folder under the loop's folder of the data root, a run again writing it over the one before. NightLock
-        // writes and removes the night's lock file. The read-only copy's own rewrite: SitePublisher removes the data root's
+        // writes and removes the night's lock file and its holder's name, and ResearchRunner and ThemeResearchRunner open a
+        // pass's lock file beside the store, at the store's path with a name's or a theme's suffix after it, removed as
+        // its handle closes. The read-only copy's own rewrite: SitePublisher removes the data root's
         // folder for the copy whole and SiteCopyCommand writes each of its files into it again, and SitePublisher writes the
         // copy's report beside that folder; none of them is the store or under it.
         // SweepPointInTime removes the scratch stores it built under the machine's temporary folder, which
@@ -120,6 +126,8 @@ public class StoreNeverDeleted
                 "MonthlyRun.cs: File.WriteAllText(report)",
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",
+                "NightLock.cs: FileOptions.DeleteOnClose(path)",
+                "ResearchRunner.cs: FileOptions.DeleteOnClose(path)",
                 "SearchMeasurementRun.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
                 "SearchMeasurementRun.cs: File.WriteAllTextAsync(file)",
                 "SiteCopyCommand.cs: File.WriteAllBytes(target)",
@@ -133,6 +141,7 @@ public class StoreNeverDeleted
                 "SweepIdeasRunner.cs: File.WriteAllText(report)",
                 "SweepPointInTime.cs: Directory.Delete(scratchRoot)",
                 "SweepPointInTime.cs: File.Delete(file)",
+                "ThemeResearchRunner.cs: FileOptions.DeleteOnClose(path)",
                 "WiderUniverseRunner.cs: File.WriteAllText(figures)",
                 "WiderUniverseRunner.cs: File.WriteAllText(report)",
             ],
@@ -340,7 +349,8 @@ public class StoreNeverDeleted
             "File.Delete(location.DatabaseFile);\n" +
             "File.Move(databaseFile, databaseFile + \".old\", overwrite: true);\n" +
             "using var stream = new FileStream(path, FileMode.Create);\n" +
-            "Directory.Delete(Path.Combine(root, \"nights\"), recursive: true);\n";
+            "Directory.Delete(Path.Combine(root, \"nights\"), recursive: true);\n" +
+            "using var gone = new FileStream(databaseFile, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.DeleteOnClose);\n";
 
         Assert.Equal(
             [
@@ -348,10 +358,15 @@ public class StoreNeverDeleted
                 "Reset.cs: File.Move(databaseFile)",
                 "Reset.cs: FileMode.Create",
                 "Reset.cs: Directory.Delete(Path.Combine(root, \"nights\"))",
+                "Reset.cs: FileOptions.DeleteOnClose(databaseFile)",
             ],
             RemovalsIn(Source, "Reset.cs"));
         Assert.Equal(
-            ["Reset.cs: File.Delete(location.DatabaseFile);", "Reset.cs: File.Move(databaseFile, databaseFile + \".old\", overwrite: true);"],
+            [
+                "Reset.cs: File.Delete(location.DatabaseFile);",
+                "Reset.cs: File.Move(databaseFile, databaseFile + \".old\", overwrite: true);",
+                "Reset.cs: using var gone = new FileStream(databaseFile, FileMode.Open, FileAccess.Read, FileShare.None, 4096, FileOptions.DeleteOnClose);",
+            ],
             NamingTheStore(Source, "Reset.cs"));
 
         const string Script =
