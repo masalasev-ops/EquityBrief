@@ -2450,6 +2450,25 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             accounts.Combined)
         : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
 
+    // From 21.20 the variants registered after the newest night, which no night has read yet.
+    // see: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it
+    if (night is { } newest)
+    {
+        var indexNight = await read.IndexNightAsync(reading.Code, newest);
+
+        drawn = drawn with
+        {
+            Coming = PaperScreen.Coming(
+                reading == Universes.Large,
+                reading.Name,
+                newest,
+                await read.RegisteredCandidatesAsync(),
+                indexNight is null ? null : IndexRuleSettings.Read(indexNight.Settings),
+                EquityBrief.Core.Time.NightTime.Usual(await read.NightRunIdsAsync()),
+                TonightScreen.ReadAsOf(indexNight, newest)),
+        };
+    }
+
     return Results.Content(
         page.PaperRegion(
             marks,
