@@ -13875,3 +13875,25 @@ Mutation:   chosen before the run by this rule, the property the correction adds
             mark, predicted red at the copy's control test, red there, reverted, green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - record: the industry cycle's count of its industry's words measured over every stored theme pass, and not switched on   2026-11-01
+
+Not a checkpoint entry: it records a measurement made read-only on the live store, and lands nothing.
+Measured:   on the operator's answer of 2026-11-01, before any test is switched on: over the 42 stored theme passes, their
+            328 cited pages, 209 of them distinct, the industry's own words counted over each page's whole title and text
+            as the theme search counts them. Under each theme's own words the theme pass had admitted every page at 5
+            mentions in 10,000 characters, so a density up to that drops none of the 328; a count of at least 3 drops 16,
+            of at least 4 drops 31 over 17 themes, 21 distinct pages, and of at least 5 drops 46. ROP's Census Research
+            Exploration and Analysis Tool page counts 14 under its theme's words, Software - Application, "application"
+            being a word most pages use, so no count under the theme's own words drops it; under the Software group set for
+            ROP it counts 2 and the chip design story 3, so dropping both takes a count of at least 4, which drops 7 of
+            the theme's 9 pages. A count of 3 under each theme's own words already drops pages plainly about their
+            industry, each counting 2: "Nvidia pitches factory-built AI data centers and hardware-enforced agent control"
+            under Computer Hardware, "Qiagen revenue 2025" under Diagnostics & Research, "The silicon ceiling: Why SiC
+            and GaN are rewiring the EV powertrain" under Semiconductors and the American Chemistry Council's news and
+            trends under Specialty Chemicals.
+Stopped:    the operator's word, "If it would drop pages that are plainly about the industry, say so and stop on this
+            item": the cycle's sources stay held to the company or its industry over their whole text as the 18.4
+            correction of 2026-10-28 holds them, and no count is switched on. Put to the operator.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
