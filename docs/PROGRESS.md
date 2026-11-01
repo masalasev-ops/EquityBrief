@@ -13401,7 +13401,10 @@ Measured:   each family's mean edge after costs a trade on each index, `ledger-e
             setups, +0.039 before and +0.024 after; breakout, 22,472, -0.002 and -0.015; drift, 5,901, +0.001 and -0.008.
             The S&P 400's pullback, 22,757, +0.022 and +0.007; breakout, 15,462, -0.018 and -0.026; drift, 4,372, +0.088
             and +0.028. The S&P 600's pullback, 31,923, +0.076 and +0.060; breakout, 20,013, -0.016 and -0.025; drift,
-            5,730, -0.084 and -0.105. The stored figures move once the remedy builds each history again.
+            5,730, -0.084 and -0.105. The stored figures move once the remedy builds each history again. The per-rule
+            test's time, `loop-rules --index MID --print` read-only over the same store on 2026-11-01, each a Release
+            build: main's 0388c74d 18 minutes 42 seconds, this branch's 20 minutes 6 seconds, 34 rules and 18 version
+            choices walked by each; the Fundamentals versions asking a flag first judged on their 21 months from 2025.
 Decisions:  three written, each narrowing one that stands: Every swing trade is judged against a benchmark whose members
             are sold as the trade is, and no rule's version moves because of it; A rule or a change reading a release
             reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside
