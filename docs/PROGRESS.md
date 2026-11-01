@@ -13815,3 +13815,29 @@ Mutation:   chosen before the run by this rule, the property the test adds: m10b
             at the new test alone; red there, reverted, green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.5 ruling - a sign-off lists every pull request since the phase's last signed point and shows each correction still stands, and three items held to the rulings before them   2026-11-01
+
+Not a checkpoint entry: it records the operator's question and answers of 2026-11-01 and lands nothing.
+Asked:      "There has been numerous corrections to phase 18. Have you gone through all the PR to verify that what you are
+            suggesting are not overwriting some correction ?" Each line this pull request had edited was traced through the
+            history: the segment table's scale and its test to the 18.4 correction of 2026-10-28 that wrote them, whose
+            assertion that a table of $400,000 beside $2,000,000 takes no scale stated no purpose and contradicted the
+            scale's own comment, LRCX's misread held apart by its reader's own test; the next report's row to the 18.4
+            corrections of 2026-10-27 and 2026-10-28, kept and added to; the valuation's heading to 18.2 and the override's
+            words to the 18.4 correction of 2026-10-28, kept word for word. Three planned items went against what stood: the
+            industry cycle's sources held to their opening, where the ruling of 2026-10-28 holds every written section's
+            to its whole text (see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text); group by price reading the override, where its decision reads the provider's
+            industry first (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely); and the copy dropping its own "as of the close" mark, which the
+            ruling of 2026-10-28 on the read-only copy asks for.
+Ruled:      word for word in `prompts/2026-11-01-18.5-phase-18-signoff-fifth-findings-and-answers.md`: the industry cycle
+            "Count terms, keep whole text", a cycle source naming the industry's own words several times over its whole
+            text, its drops counted over every stored theme pass before it is switched on; group by price "Drop this item",
+            kept on the provider's industry; the copy "Drop the page's sentence", its ruled mark kept and the page's own
+            "As of the close of" sentence beside it dropped on a closed day. Then, for every sign-off: "the sign-off must
+            list every pull request since the phase's last signed point that changed a file the phase built, and for each
+            correction the phase carries, state the commit that made it and confirm by reading the current code and its
+            test that no later pull request undid or contradicted it. A sign-off without that table signs nothing." The
+            handoffs of phases 20, 21 and 22 carry it, and the sixth phase 18 handoff will.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
