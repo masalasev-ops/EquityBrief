@@ -39,7 +39,7 @@ Authorised by: A variant registered after the newest night is shown on Paper tra
 Was:
 > ... carrying beneath its words the operator's sentence on how it sells (see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room)</td></tr>
 Now:
-> ... (see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room); and from 21.20 a variant registered after the newest night drawn at once beneath its family's rows by its number with what it changes, no trades and no return, and the line saying the day it was registered and its first night, until a night reads it (see: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it)</td></tr>
+> ... (see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room); and from 21.20 a variant registered after the newest night drawn at once beneath its family's rows by its number with what it changes and no trades or return, its line saying the day it was registered and its first night until a night reads it (see: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it)</td></tr>
 Why: the operator's ruling of 2026-11-01, built at 21.20.
 
 ### 2026-11-01 - docs/BUILD_PLAN.md - phase 21 gains 21.20, a variant registered after the newest night on Paper trading
