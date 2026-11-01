@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - section 20's phase 21 row names 21.19
+Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+Was:
+> (20, phase 21) ... and the VIX's direction kept; and the target as a standing sell order as a variant | ... | the build plan's phase 21 checkpoints, 21.0 to 21.18
+Now:
+> (20, phase 21) ... and the VIX's direction kept; and the target as a standing sell order as a variant; and DeepSeek's search measured against Tavily's for the theme search, used only where it admits more pages | ... | the build plan's phase 21 checkpoints, 21.0 to 21.19
+Why: the operator ruled on 2026-11-01, word for word in `prompts/2026-11-01-21.19-operator-ruling.md`, that one checkpoint after 21.18 tries DeepSeek's search for the theme search and switches to it only where it measures better than Tavily.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - the target standing as a sell order an exit of the menu, its print and its variant, and section 20's phase 21 row names 21.18
 Authorised by: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
 Was:

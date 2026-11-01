@@ -13579,3 +13579,26 @@ Corrects:   21.18's entry's 111 rules and its other 93, and the ruling's entry's
             replay. The 13 unmoved are the S&P 500's pullback, 9, and heavyweights, 4, as stated.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.19's entry below, on whose
             branch this is recorded; records alone change in this entry.
+
+### 21.19 ruling - DeepSeek's search measured against Tavily's for the theme search, and used only where it admits more pages   2026-11-01
+
+Not a checkpoint entry: it records the operator's ruling of 2026-11-01 on the theme search's tool, which adds 21.19 to the
+phase, and lands nothing.
+Ruled:      word for word in `prompts/2026-11-01-21.19-operator-ruling.md`: "Try DeepSeek's search API for the theme
+            search, and switch to it only if it measures better than Tavily." Money: DeepSeek search spend at $0.75 a
+            1,000 successful searches inside the existing spend cap, and up to $1 for the measurement; nothing else paid.
+            The measurement as 6.11's, the fixture's four industries and Semiconductors, each site of the industry list
+            alone on both tools, DeepSeek with "site:<domain>" in the query and need_content true, and once more on
+            DeepSeek with every site of the list in one query, run twice a quarter of an hour apart; "DeepSeek replaces
+            Tavily only if its best form admits more pages than Tavily in both runs, over the five industries together.
+            If it doesn't, build the feed and leave it unused, keep Tavily, report the figures and stop." Where it passes,
+            the feed behind the search interface, "The key comes from the secrets file and never appears in a shell
+            command, a log, the store or the read-only copy", under 5 requests a second, a successful search $0.00075 in
+            the spend cap, each result stored as Tavily's are with its authority and rerank score beside it, the setting
+            naming DeepSeek with Tavily as the fallback, the page naming the tool, and a decision superseding the one
+            that theme material comes from a search tool. "Either way: per-name material still never comes from search,
+            and the research model never searches for itself; code fetches and stores."
+Written:    21.19's text and its done condition in the build plan, and section 20's phase 21 row, its prior text in the
+            changelog.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.19's entry below, which
+            states that run's figures; documents alone change in this entry.
