@@ -82,9 +82,11 @@ public partial class NightlyCost
     // over the four would have passed over the one model client it exists to find.
     // A path a client cannot avoid sending is the shape rather than a guess at a
     // name, which is the repair 6.2 made to the provider reader for the same reason.
+    const string ModelsProvider = "deepseek";
+
     static readonly string[] Model =
     [
-        "deepseek",
+        ModelsProvider,
         "ChatCompletion",
         "CompletionRequest",
         "IModelClient",
@@ -116,6 +118,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/AnthropicMessagesFeed.cs",
         "src/EquityBrief.Core/Providers/BlackRockFundHoldingsFeed.cs",
         "src/EquityBrief.Core/Providers/CloudflarePagesFeed.cs",
+        "src/EquityBrief.Core/Providers/DeepSeekSearchFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdDividendCalendarFeed.cs",
@@ -144,6 +147,14 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/YahooMarketSeriesFeed.cs",
         "src/EquityBrief.Core/Providers/YahooNasdaqBarFeed.cs",
         "src/EquityBrief.Core/Providers/YahooSparkFeed.cs",
+    ];
+
+    // From 21.19 the shipped files that name DeepSeek for its search tool and reach no model: its feed first, then the
+    // measurement's run, which constructs it by hand and no night does.
+    internal static readonly string[] MayNameTheSearchTool =
+    [
+        "src/EquityBrief.Core/Providers/DeepSeekSearchFeed.cs",
+        "src/EquityBrief.Worker/Research/SearchMeasurementRun.cs",
     ];
 
     // The shipped files permitted to reach a model, each by its path, which is the
@@ -205,7 +216,8 @@ public partial class NightlyCost
     internal static IReadOnlyList<string> Offences(
         IReadOnlyDictionary<string, string> sources,
         IReadOnlyCollection<string> mayHoldAClient,
-        IReadOnlyCollection<string>? mayHoldAModel = null)
+        IReadOnlyCollection<string>? mayHoldAModel = null,
+        IReadOnlyCollection<string>? mayNameTheSearchTool = null)
     {
         var offences = new List<string>();
 
@@ -229,7 +241,10 @@ public partial class NightlyCost
             // carved by its own list instead, naming the model feeds alone.
             if (!(mayHoldAModel ?? []).Contains(name, StringComparer.Ordinal))
             {
+                var namesTheSearchTool = (mayNameTheSearchTool ?? []).Contains(name, StringComparer.Ordinal);
+
                 offences.AddRange(Model
+                    .Where(pattern => !(namesTheSearchTool && pattern == ModelsProvider))
                     .Where(pattern => text.Contains(pattern, StringComparison.OrdinalIgnoreCase))
                     .Select(pattern => $"{name} carries {pattern}"));
             }
@@ -330,11 +345,12 @@ public partial class NightlyCost
         // provider's trends, which the night asks a page of symbols a request, and FINRA's short interest, which the
         // off-peak run's step asks and no night does, and thirty-one from 21.13, Yahoo's chart of WTI crude, one request a
         // night in the fetch step, and Yahoo's spark of the market strip, which Tonight opened in the session asks and no
-        // night does.
+        // night does, and thirty-two from 21.19, DeepSeek's search tool, which the measurement asks by hand and no night
+        // does.
         Assert.True(
-            MayHoldAClient.Length <= 31,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirty-one feed " +
-            "implementations. A thirty-second is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 32,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirty-two feed " +
+            "implementations. A thirty-third is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: four files, the local lane's client, the local
         // run's reading feed and the paid model's live feed in each of its two formats.
@@ -360,7 +376,16 @@ public partial class NightlyCost
 
         Assert.Equal(live, MayHoldAClient.OrderBy(file => file, StringComparer.Ordinal));
 
-        Assert.Empty(Offences(sources, MayHoldAClient, MayHoldAModel));
+        // From 21.19 two files name DeepSeek for its search tool, which is no model: the feed, which implements the search
+        // interface and no model feed, and the measurement's run, which holds no client of its own. The provider's name is
+        // the one model pattern they are let pass; every other model pattern is read in both, and every outward type in
+        // the run, which the client list does not carry.
+        Assert.Equal(2, MayNameTheSearchTool.Length);
+        Assert.Contains(": ISearchFeed", SourceStatements.WithoutComments(sources[MayNameTheSearchTool[0]]), StringComparison.Ordinal);
+        Assert.DoesNotContain("ModelFeed", SourceStatements.WithoutComments(sources[MayNameTheSearchTool[0]]), StringComparison.Ordinal);
+        Assert.DoesNotContain(MayNameTheSearchTool[1], MayHoldAClient);
+
+        Assert.Empty(Offences(sources, MayHoldAClient, MayHoldAModel, MayNameTheSearchTool));
 
         // And the model list holds model feeds and nothing else.
         Assert.Empty(NotModelFeeds(sources, MayHoldAModel));

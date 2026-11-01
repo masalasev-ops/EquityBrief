@@ -330,6 +330,27 @@
       "trimmedTo": "nothing. The whole body of the refusal, status 401, which is where the tool puts its own words: under detail, as an error string, rather than at the top level."
     },
     {
+      "file": "deepseek-search-trendforce.json",
+      "endpoint": "DeepSeek's search tool at https://api.deepseek.com/v1/tools/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST {\"query\":\"Semiconductors industry site:trendforce.com after:2026-08-01 before:2026-11-02\",\"count\":3,\"need_content\":true}, one of the twelve searches 21.19's trial run made a site at a time for Semiconductors over the quarter to 2026-11-01",
+      "fetchedAt": "2026-11-01T07:03:53Z",
+      "trimmedTo": "nothing. The whole answer, captured before its reader was tested: three results, each with its page's text under content, a date written in UTC at 16:00, which is midnight in Beijing, an authority tier and a rerank score."
+    },
+    {
+      "file": "deepseek-search-empty.json",
+      "endpoint": "DeepSeek's search tool at https://api.deepseek.com/v1/tools/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST {\"query\":\"Semiconductors industry site:eia.gov after:2026-08-01 before:2026-11-02\",\"count\":3,\"need_content\":true}, the same trial run's search of eia.gov",
+      "fetchedAt": "2026-11-01T07:03:48Z",
+      "trimmedTo": "nothing. The whole answer to a search that found nothing, an empty list of results, which the tool does not bill."
+    },
+    {
+      "file": "deepseek-search-refusal-400.json",
+      "endpoint": "DeepSeek's search tool at https://api.deepseek.com/v1/tools/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST the search for 'Semiconductors industry' with all twelve sites of the industry list as site: clauses joined by OR and the window, 308 characters, count 10 and need_content true, the same trial run's search of the list in one query",
+      "fetchedAt": "2026-11-01T07:03:57Z",
+      "trimmedTo": "nothing. The whole body of the refusal, status 400, the tool's own words under error.message in the OpenAI error format: a query is at most 128 characters."
+    },
+    {
       "file": "search-6d47836c4a103ea12716f38fb8509f22.json",
       "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
       "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains spglobal.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 6d47836c4a103ea12716f38fb8509f22",

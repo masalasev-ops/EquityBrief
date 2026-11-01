@@ -231,11 +231,13 @@ public static class ThemeSearch
             }
             else
             {
+                // The publish date is the day in the offset the tool dated the page at: Tavily's in UTC, and DeepSeek's in
+                // Beijing's, where its every date falls at midnight.
                 fetched.Add(new FetchedDocument(
                     DocumentChannel.SearchTool,
                     result.Url,
                     result.Title,
-                    result.Published is { } published ? DateOnly.FromDateTime(published.UtcDateTime) : null,
+                    result.Published is { } published ? DateOnly.FromDateTime(published.DateTime) : null,
                     result.Text));
             }
         }

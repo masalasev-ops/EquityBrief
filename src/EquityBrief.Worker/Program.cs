@@ -44,6 +44,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "members" => await MembersRun(args),
     "index-families" => await IndexFamiliesRun(args),
     "measure-sources" => await MeasureSources(args),
+    "measure-search" => await MeasureSearch(args),
     "sweep" => await SweepRun(args),
     "sweep-family" => await SweepFamilyRun(args),
     "sweep-index" => await SweepIndexRun(args),
@@ -94,7 +95,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 59 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 60 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -145,7 +146,11 @@ static int NoVerb()
         "the session it was sold, its round trip from that close, " +
         "'history-pull --index-funds' pulls SPY's, IJH's, IJR's and HYG's daily series, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
-        "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store. '--live' " +
+        "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store, " +
+        "'measure-search' searches the theme search's five measured industries on both search tools the runbook names, a site " +
+        "at a time and the whole list together, counting what each form returned and would admit, writing a report and nothing " +
+        "to the store, '--industries <x,y>' naming others and '--capture' keeping the second tool's requests and answers beside " +
+        "it. '--live' " +
         "'sweep' replays the swing filter over the stored history across its designs and settings, reading the store and " +
         "writing nothing to it, and writes its report in a run folder of its own beside it, '--run <name>' going on with a " +
         "run started before from its last saved chunk, " +
@@ -518,6 +523,16 @@ static async Task<int> MeasureSources(string[] args)
     Console.WriteLine("measure-sources: " + search.Requests.ToString(CultureInfo.InvariantCulture) + " search(es), report " + file);
 
     return 0;
+}
+
+// The theme search's tool measured, as 21.19's ruling asks. The verb's work, both tools and the key read for each, is
+// in `SearchMeasurementRun`; nothing is written to the store.
+// see: Theme material comes from a search tool, and per-name material never does
+static Task<int> MeasureSearch(string[] args)
+{
+    var configuration = Configuration();
+
+    return SearchMeasurementRun.VerbAsync(args, key => configuration[key], SystemClock.ForUnitedStatesSessions());
 }
 
 // The quarters step run by hand, outside the night, the fourth carve-out's own asks taken when the

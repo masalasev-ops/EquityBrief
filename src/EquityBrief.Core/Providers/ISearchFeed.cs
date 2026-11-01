@@ -28,8 +28,15 @@ public sealed record SearchQuery(string Query, DateOnly From, DateOnly To, IRead
 
 // One result as the tool returned it. `Text` is the page's full text where the tool
 // returned one and null where it returned only the snippet, and `Published` is null where
-// it named no publish date, which the admissibility test refuses.
-public sealed record SearchResult(string Url, string Title, string Snippet, string? Text, DateTimeOffset? Published);
+// it named no publish date, which the admissibility test refuses. `Authority` and `Rerank`
+// are the tool's own ratings of the result, where it gives them: DeepSeek's does, Tavily's
+// does not.
+public sealed record SearchResult(string Url, string Title, string Snippet, string? Text, DateTimeOffset? Published)
+{
+    public int? Authority { get; init; }
+
+    public double? Rerank { get; init; }
+}
 
 public sealed record SearchAnswer(IReadOnlyList<SearchResult> Results);
 
