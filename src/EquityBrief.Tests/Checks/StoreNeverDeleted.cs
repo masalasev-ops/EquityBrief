@@ -68,7 +68,9 @@ public class StoreNeverDeleted
         //
         // AccountPlan writes the account settings to a file beside their own under the data root and moves it over
         // theirs, so a write that fails leaves the settings as they were; neither file is the store.
-        // ComparisonCommand and SourceMeasurementRun write a report file into a folder the operator names.
+        // ComparisonCommand and SourceMeasurementRun write a report file into a folder the operator names, and from
+        // 21.19 SearchMeasurementRun its report there and, asked, each DeepSeek request and answer into a folder of
+        // the run's own beside it.
         // DrainLauncher copies the worker's build into a fresh partial folder, with no overwrite, moves the
         // finished copy into place and removes a partial or an old one, under the data root's own folder
         // of builds. FamilySweepRunner, FamilyIdeasRunner, SweepIdeasRunner, ContextIdeasRunner, HeavyweightSweepRunner and
@@ -118,6 +120,8 @@ public class StoreNeverDeleted
                 "MonthlyRun.cs: File.WriteAllText(report)",
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",
+                "SearchMeasurementRun.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
+                "SearchMeasurementRun.cs: File.WriteAllTextAsync(file)",
                 "SiteCopyCommand.cs: File.WriteAllBytes(target)",
                 "SitePublisher.cs: Directory.Delete(folder)",
                 "SitePublisher.cs: File.WriteAllText(report)",

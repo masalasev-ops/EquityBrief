@@ -13602,3 +13602,56 @@ Written:    21.19's text and its done condition in the build plan, and section 2
             changelog.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.19's entry below, which
             states that run's figures; documents alone change in this entry.
+
+### 21.19 - DeepSeek's search measured against Tavily's for the theme search: its feed built and left unused, and Tavily kept   2026-11-01
+
+Built:      on the operator's ruling of 2026-11-01. DeepSeek's search tool as a feed behind the search interface: the
+            industry, each site as `site:` clauses joined by OR and the window as `after:` and `before:` in its query,
+            the page's text asked for, the key the secrets file holds for the deepseek model profile sent in the
+            authorisation header alone, a quarter of a second before every request but the first, each result's
+            authority tier and rerank score read beside it, and its date read in Beijing's offset, since every date the
+            tool sent was 16:00 UTC, midnight there, and the day a page gives itself is that day. The theme search takes
+            a result's publish date as its day in the offset the tool dated it at, UTC for Tavily's, which changes none
+            of Tavily's. The measurement, `measure-search`, writing nothing to the store; the runbook's section; three
+            captured answers declared in the fixture's manifest. The feed is reached by the measurement alone.
+Measured:   two runs from this branch's build over the quarter to 2026-11-01, A from 07:08 UTC and B from 07:23,
+            Tavily at its basic depth asking 3 results a site and DeepSeek 3 a site and 10 a query of the list together.
+            The whole list in one query is 308 characters, past the 128 the tool reads, so it refused all five in its
+            own words, "'query' must be at most 128 characters", and the list was searched as well in the fewest
+            queries the tool takes, 4 to 6 an industry. The searches and those returning nothing count searches; the
+            pages from the site asked, from other sites, with text and with a publish date count every result
+            returned; the pages admitted and those about the industry count the distinct pages a pass would keep. Over
+            the five industries together, A then B: Tavily a site at a time, 60 searches, 4 and 4 returning nothing,
+            159 and 159 pages from the site asked, none from others, 137 and 137 with text, 132 and 132 with a date, 124
+            and 124 admitted, 51 and 51 about the industry. DeepSeek a site at a time, 60, 40 and 42 returning nothing,
+            43 and 41 from the site, none from others, 43 and 41 with text and with a date, 42 and 41 admitted, 34 and
+            33 about the industry. DeepSeek the list in one query, 5, all refused. DeepSeek the list packed, 24, 8 and 8
+            returning nothing, 75 and 78 from the sites asked, none from others, 75 and 78 with text and with a date, 73
+            and 77 admitted, 51 and 55 about the industry. Admitted by industry, Tavily against the packed form, A then
+            B: Consumer Electronics 29 and 30 against 22 and 22; Scientific & Technical Instruments 24 and 24 against 6
+            and 6; Software - Infrastructure 24 and 23 against 20 and 22; Entertainment 22 and 22 against 4 and 4;
+            Semiconductors 25 and 25 against 21 and 23. So DeepSeek's form admitting the most admitted fewer pages than
+            Tavily in both runs, and by the ruling's test the feed stands unused and Tavily stays. Of the pages about
+            the industry, of which a theme call is handed ten at most, the packed form held 51 and 55 against Tavily's
+            51 and 51. Not counted: a trial over Semiconductors alone at 07:03, which captured the answers the tests
+            read, and a run at 07:04 on the build before the date was read in Beijing's offset, 124 against 41 and 77
+            admitted. DeepSeek's searches cost $0.00825, $0.02625, $0.02700 and $0.02550, $0.087 in all, against the $1
+            approved; Tavily's 192 against its free allowance. The key was in no command, log line, store row or report.
+Decisions:  none written; the decision that theme material comes from a search tool stands, Tavily's.
+Tests:      3036, from 3027: nine added, the request built over a constructed query, the captured answers read, a
+            result with no text and a date in a form nobody captured, the refusal and a tool not answering, the pause
+            before every request but the first, the list packed, the key read where the profile names it, the
+            measurement's counts worked by hand, and the theme search answered by Tavily alone. One amended: the store
+            check's list of the sites that write a file, the measurement's two among them.
+Claims:     1491, none new; 1506 placements.
+Mutation:   chosen before the run by this rule, the property 21.19 adds first, DeepSeek's query carrying the site it
+            searches: the site clauses dropped from the query, predicted red at the request's test, the packing's and
+            the refusal's, which reads the whole list's query; those three red and the other 70 search and theme tests
+            green, reverted, green. Not mutated: the pause, the key's reading, the date's offset, the measurement's
+            counts and the theme search answered by Tavily alone.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3036 of 3036 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the sign-offs of phases 18, 20, 21 and 22 by fresh sessions, their handoffs written after this merges.

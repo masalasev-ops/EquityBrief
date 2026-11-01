@@ -419,6 +419,16 @@ dotnet run --project src/EquityBrief.Worker -- measure-sources --sector "Healthc
 
 It searches each site for each industry as a theme pass does, one search a site and an industry over the quarter to the day, judges each page by admissibility and the density rule, and says which sites join: a site joins where, for at least one of the industries, it returned at least one page admissibility admitted and the density rule reads as about that industry. It writes nothing to the store; the report is `artifacts/measure-sources-<sector>-<date>.json`, one search per site and industry against the search tool's free allowance. A site that joins is added under its sector in `source-lists.json`'s `industry.sectors`, with the measured result in `sectorsNote` and the file's review date moved to the day, and a site that does not stays out with its result noted (see: A theme search adds its sector's sites, and a site joins the list only where a measurement found industry material on it).
 
+### Measuring the theme search's tool
+
+The theme search reads Tavily's search tool. DeepSeek's search tool is built as a feed beside it and measured against it, on the operator's ruling of 2026-11-01, from the repository root:
+
+```
+dotnet run --project src/EquityBrief.Worker -- measure-search
+```
+
+It searches the five industries the measurement was ruled over, Consumer Electronics, Scientific & Technical Instruments, Software - Infrastructure, Entertainment and Semiconductors, over the quarter to the day: each site of the industry list alone on Tavily as a theme pass searches it and on DeepSeek with the site and the window in the query and the page's text asked for, then the whole list together on DeepSeek, once in one query, which the tool refuses past 128 characters, and once in the fewest queries it takes. For each tool and form it counts the searches refused and returning nothing, the pages from the site asked and from other sites, those with text and with a publish date, and the distinct pages a pass would admit and those about the industry, a line each on the output and the whole in `artifacts/measure-search-<instant>.json`. It writes nothing to the store. DeepSeek's key is the one the secrets file holds for the `deepseek` model profile, read by the feed and sent in its header alone. A run makes 60 Tavily searches against that tool's free allowance and 89 DeepSeek searches at most, $0.00075 each where the tool answers with a result, and refuses to start where they could cost more than $0.50. `--industries "<x,y>"` measures others, and `--capture` keeps each DeepSeek request and answer in a folder of the run's own under `artifacts/`.
+
 ### Draining the queue
 
 A press asks for a report and starts the drain, which writes it. The drain is also run by hand, which is how a request is taken where no press started one, as one left outstanding because the drain could not be started:

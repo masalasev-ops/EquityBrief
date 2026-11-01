@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/RUNBOOK.md - measuring the theme search's tool
+Authorised by: Theme material comes from a search tool, and per-name material never does
+Was:
+> (added) the section measuring the theme search's tool with `measure-search`
+Now:
+> (added) as written
+Why: 21.19 builds DeepSeek's search as a feed and measures it against Tavily's, on the operator's ruling of 2026-11-01, and the verb that does it runs from the runbook's lines.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - section 20's phase 21 row names 21.19
 Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
 Was:
