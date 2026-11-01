@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - the rule scorecard's variant reading a release reading says its verdict reads the years from the cutoff alone
+Corrects: 21.17 drew the label on the history half of a family's live rule alone, and after its remedy no live rule reads a release reading, so no scorecard drew it; found reading the S&P 400's paper trading page back after the remedy.
+Was:
+> (15.21, Rule scorecard) ... and its progress since it went live (see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together)
+Now:
+> (15.21, Rule scorecard) ... (see: ...); and from the 21.17 correction a variant reading a release reading saying beside its years better that its verdict reads the years from the local model's cutoff's year alone and the years before were read by a model trained after them (see: A rule or a change reading a release reading is judged on the test years from the model's cutoff's year alone, the earlier years printed beside it)
+Why: the operator's ruling of 2026-10-31 asks the scorecard to print the earlier years beside a release-reading rule's verdict, labelled as read by a model trained after them, and the rules reading one now stand as variants.
+
 ### 2026-10-31 - docs/ARCHITECTURE.html - every trade's benchmark sold as the trade is, the release readings judged from the cutoff's year, the Fundamentals live rule without its flag, and section 20's phase 21 row names 21.17
 Authorised by: Every swing trade is judged against a benchmark whose members are sold as the trade is, and no rule's version moves because of it
 Was:
