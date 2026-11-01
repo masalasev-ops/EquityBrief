@@ -13970,3 +13970,50 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 21.20 ruling - a variant registered after the newest night shown on Paper trading at once, page only   2026-11-01
+
+Not a checkpoint entry: it records the operator's ruling of 2026-11-01, which adds 21.20 to the phase, and lands nothing.
+Ruled:      at 13:11Z, word for word: "Paper trading: a version registered after the newest night shows in "What the
+            versions did differently" at once, with its "What it changes" and the line "Registered <date>. Its first
+            night is <next trading day>." until a night includes it. Page only; no night code and no rule's version
+            moves." and "Only after phase 18 sign off is done". At about 22:30Z, the sign-off still open: "You can also
+            continue with 21.20 . Phase 18 needs more corrections than anticipated. I want to get these quick things done".
+Read:       a night reads the register rows set before it starts, so a variant registered on a trading day before that
+            day's night starts is first read that evening; the line names that night, and the next trading day's only
+            where the night had begun or the day is no session.
+Written:    21.20's text and its done condition in the build plan, and section 20's phase 21 row, its prior text in the
+            changelog; the decision with 21.20's entry.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.20's entry below, which
+            states that run's figures.
+
+### 21.20 - a variant registered after the newest night drawn on Paper trading's variants part at once, with the day it was registered and its first night   2026-11-01
+
+Built:      What the variants did differently draws each variant registered after the register was read for the newest
+            night beneath its family's rows, numbered and named by what it changes as its card will number it, with no
+            trades and no return, and the line "Registered <date>. Its first night is <weekday> <date>."; the family's
+            select counts it. Its first night is the day it was registered where the exchange trades it and the newest
+            seven nights' usual start had not passed, at the start's own second already passed, and the next trading
+            day's otherwise; with no usual start, the next trading day's; past the closure table, the line says the next
+            night the exchange trades. Once a night past its registration is read it is an account like any other. No
+            account is walked for it and no tile, chart, scorecard or combined account counts it. The decision, the
+            architecture's row, section 20's phase 21 row and the guide say it, their prior text in the changelog.
+Tests:      two new: the page over a constructed store, a breakout variant registered on Saturday 2026-10-03 after the
+            night of Friday 2 October drawn as V2 with its tab's words, three zeros, no return and "Registered 2026-10-03.
+            Its first night is Monday 2026-10-05.", the walked V1's row unchanged, and none coming once the night of 5
+            October is read; and the first night worked by hand for a Thursday before the 23:00 start, at it and after
+            it, a Friday after its night, a Saturday, the Wednesday before Thanksgiving, no usual start, and a day past the
+            closure table; 3045 in all.
+Claims:     none new; the variants part's row and section 20's phase 21 row amended in place.
+Pins:       none move; the paper page is read by no rule's version, the filter or a readings pin, and no night code
+            changes.
+Mutation:   chosen before the runs by this rule, each property the checkpoint adds, filtered to the two new tests: c1 no
+            variant ever coming, predicted red at the page test, red there alone; c2 the usual start ignored, predicted
+            red at the first night's test, red there alone; c3 the start's own second read as before it, predicted red at
+            the first night's test, red there on 2026-10-29 read where 2026-10-30 was expected, its first edit not
+            applying and made again; each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3045 of 3045 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.

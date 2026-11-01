@@ -426,6 +426,67 @@ public static class PaperScreen
         return accounts;
     }
 
+    // From 21.20 each variant registered after the register was read for the night, which no night has read yet, in the
+    // families' page order: numbered and named by what it changes as its card will number it once the register is read past
+    // its registration, with the day it was registered and its first night. A night reads the rows registered before it
+    // starts, so a variant registered on a trading day before that day's night starts is first read that evening, and one
+    // registered later by the next trading day's night; with no usual start to read it is placed on the next trading day.
+    // see: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it
+    public static IReadOnlyList<PaperComingView> Coming(
+        bool large,
+        string indexName,
+        DateOnly night,
+        IReadOnlyList<CandidateRow> register,
+        IndexRuleSettings? provisional,
+        TimeOnly? nightStarts,
+        DateTimeOffset? asOf = null)
+    {
+        var read = asOf ?? TonightScreen.PastTheNight(night);
+        var families = SetupFamilies.PageOrder.Where(family => family != FundamentalsRule.Name).Append(QualityRule.Name).Append(ImprovingRule.Name);
+        var coming = new List<PaperComingView>();
+
+        foreach (var family in families)
+        {
+            var settings = large || family == DipRule.Name ? null : provisional;
+            var standing = RuleScreen.Accounts(family, large, indexName, register, night, settings, read).Variants.Select(one => one.Row.Candidate).ToHashSet(StringComparer.Ordinal);
+            var (_, variants) = RuleScreen.Accounts(family, large, indexName, register, night, settings, DateTimeOffset.MaxValue);
+
+            foreach (var (row, tab) in variants.Where(one => !standing.Contains(one.Row.Candidate) && one.Row.RegisteredAt >= read))
+            {
+                coming.Add(new PaperComingView(family, TabShort(tab), TabChanges(tab), row.Candidate, DateOnly.FromDateTime(row.RegisteredAt.UtcDateTime), FirstNight(row.RegisteredAt, nightStarts)));
+            }
+        }
+
+        return coming;
+    }
+
+    // The night that first reads a row registered at an instant: that day's where the exchange trades it and its night has
+    // not started, the next trading day's otherwise, none where the closure table cannot place the day.
+    public static DateOnly? FirstNight(DateTimeOffset registered, TimeOnly? nightStarts)
+    {
+        var day = DateOnly.FromDateTime(registered.UtcDateTime);
+
+        try
+        {
+            if (nightStarts is { } starts && TimeOnly.FromDateTime(registered.UtcDateTime) < starts &&EquityBrief.Core.Bars.ExchangeClosures.IsSession(day))
+            {
+                return day;
+            }
+
+            do
+            {
+                day = day.AddDays(1);
+            }
+            while (!EquityBrief.Core.Bars.ExchangeClosures.IsSession(day));
+
+            return day;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
     // A trade is bought at its fill on the session after its night, sized from the close its plan was set at; one still
     // waiting on that session, or holding none, is bought by no account. A trade with no target whose family trails reads
     // the distance it trails as its close less its stop where its table stores none, as its walk does.

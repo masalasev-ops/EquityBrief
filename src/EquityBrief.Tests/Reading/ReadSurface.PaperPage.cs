@@ -609,6 +609,77 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task AVariantRegisteredAfterTheNewestNightIsDrawnAtOnceWithItsFirstNightUntilANightReadsIt()
+    {
+        using var store = await PaperVariantsStore();
+
+        // A second breakout variant registered on the Saturday after the night of Friday 2 October, which no night has read.
+        RegisteredRule(store, 203, TheSetupFamilies.Breakouts[1], "2026-10-03T15:00:00Z");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?variants=breakout"));
+        var register = await new ReadApi(store.DatabaseFile, EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 3, 16, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates)).RegisteredCandidatesAsync();
+
+        // Numbered and named as its card will number it once a night reads it: V2, after V1, what it changes its tab's words.
+        var (_, after) = RuleScreen.Accounts("breakout", true, "S&P 500", register, new DateOnly(2026, 10, 5));
+        var tab = after.Single(one => one.Row.Candidate == NeighbourBreakout).Tab;
+
+        Assert.StartsWith("V2 · ", tab, StringComparison.Ordinal);
+
+        // Drawn beneath the family's rows at once: its number, what it changes, no trades and no return, and the line naming
+        // the Saturday it was registered and Monday's night as its first, the weekend between.
+        var coming = PaperRowOf(page, "<tr data-standing=\"coming\"");
+
+        Assert.StartsWith("<tr data-standing=\"coming\" data-registered=\"2026-10-03\" data-first-night=\"2026-10-05\">", coming, StringComparison.Ordinal);
+        Assert.Contains(">V2</span></td>", coming, StringComparison.Ordinal);
+        Assert.Contains($"<td>{ReaderText.Words(tab["V2 · ".Length..])}<span class=\"pv-note\" data-note=\"coming\">Registered 2026-10-03. Its first night is Monday 2026-10-05.</span></td>", coming, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">0</td><td class=\"r num\">0</td><td class=\"r num\">0</td><td class=\"r num\" data-return=\"none\">", coming, StringComparison.Ordinal);
+        Assert.Contains("data-rows=\"3\"", Regex.Match(page, "<table class=\"paper-variants\"[^>]*>").Value, StringComparison.Ordinal);
+        Assert.Contains("<option value=\"breakout\" selected>Breakout · live setup and 2 versions</option>", page, StringComparison.Ordinal);
+
+        // It is an account of no other part: the walked variant's row stands as it was.
+        Assert.DoesNotContain($"data-account=\"{RunScreen.Slug(NeighbourBreakout)}\"", page, StringComparison.Ordinal);
+        Assert.StartsWith($"<tr data-account=\"{RunScreen.Slug(ProvisionalBreakout)}\" data-standing=\"variant\" data-trades=\"4\"", PaperRowOf(page, $"<tr data-account=\"{RunScreen.Slug(ProvisionalBreakout)}\""), StringComparison.Ordinal);
+
+        // Once a night past its registration is read it is no longer coming, and the variants that night reads carry it.
+        Assert.Empty(PaperScreen.Coming(true, "S&P 500", new DateOnly(2026, 10, 5), register, null, new TimeOnly(23, 0)));
+        Assert.Single(PaperScreen.Coming(true, "S&P 500", new DateOnly(2026, 10, 2), register, null, new TimeOnly(23, 0)));
+    }
+
+    [Fact]
+    public void AVariantsFirstNightIsTheDayItWasRegisteredBeforeTheNightStartsAndTheNextTradingDayOtherwise()
+    {
+        var starts = new TimeOnly(23, 0);
+
+        static DateTimeOffset At(int month, int day, int hour, int minute = 0) => new(2026, month, day, hour, minute, 0, TimeSpan.Zero);
+
+        // A Thursday before the night's usual start: that evening's night reads it.
+        Assert.Equal(new DateOnly(2026, 10, 29), PaperScreen.FirstNight(At(10, 29, 14), starts));
+
+        // At the start's own second, or after it, the night has begun without it: Friday's.
+        Assert.Equal(new DateOnly(2026, 10, 30), PaperScreen.FirstNight(At(10, 29, 23), starts));
+        Assert.Equal(new DateOnly(2026, 10, 30), PaperScreen.FirstNight(At(10, 29, 23, 30), starts));
+
+        // A Friday after its night and a Saturday: Monday's.
+        Assert.Equal(new DateOnly(2026, 11, 2), PaperScreen.FirstNight(At(10, 30, 23, 30), starts));
+        Assert.Equal(new DateOnly(2026, 11, 2), PaperScreen.FirstNight(At(10, 31, 12), starts));
+
+        // The Wednesday before Thanksgiving after its night: the Friday after, the holiday between.
+        Assert.Equal(new DateOnly(2026, 11, 27), PaperScreen.FirstNight(At(11, 25, 23, 30), starts));
+
+        // No usual start to read: the next trading day, whatever the hour.
+        Assert.Equal(new DateOnly(2026, 10, 30), PaperScreen.FirstNight(At(10, 29, 14), null));
+
+        // Past the closure table's reach: none, and the line says the next night the exchange trades.
+        Assert.Null(PaperScreen.FirstNight(new DateTimeOffset(2030, 1, 7, 12, 0, 0, TimeSpan.Zero), starts));
+        Assert.Equal(
+            "Registered 2030-01-07. Its first night is the next night the exchange trades.",
+            MarkRenderer.ComingLine(new PaperComingView("breakout", "V2", null, "words", new DateOnly(2030, 1, 7), null)));
+    }
+
+    [Fact]
     public async Task TheRuleScorecardDrawsItsHistoryAndItsRecordSinceItWentLiveAsTwoHalvesAndItsVariantsBeneath()
     {
         using var store = await PaperVariantsStore();

@@ -111,7 +111,13 @@ public sealed record PaperPageView(
     PaperNotBought NotBought,
     IReadOnlyList<PaperOnlyView> OnlyVariants,
     PaperFundView? Fund,
-    PaperCombinedView? Combined = null);
+    PaperCombinedView? Combined = null,
+    IReadOnlyList<PaperComingView>? Coming = null);
+
+// From 21.20 a variant registered after the newest night, which no night has read yet: its family, its number and what it
+// changes as its card will number it, the day it was registered and the night that first reads it, none where the closure
+// table cannot place one.
+public sealed record PaperComingView(string Family, string Short, string? Changes, string Words, DateOnly Registered, DateOnly? FirstNight);
 
 // From 21.11 the combined account as its page draws it: its walk, the day it counts from, the trades it holds open and
 // has closed, how many it skipped as already held, for a sector at its cap and for the free cash, and each trade it was
@@ -516,20 +522,23 @@ public sealed partial class MarkRenderer
     // What a family's variants did differently: the family chosen in the link, one at a time; a row its live or provisional
     // rule and a row a variant, each with what it changes in words, its trades, those shared and those its alone, and its
     // return so far with its record's label, its verdict beside it; the trades only a variant took beneath; and the line
-    // saying how a variant is adopted. A family with no variant says so.
+    // saying how a variant is adopted. From 21.20 a variant registered after the newest night follows them at once, with
+    // what it changes and the day it was registered and its first night, and no trades until a night reads it. A family
+    // with no variant says so.
     public string PaperVariants(PaperPageView page, PaperLink link, string family)
     {
         var html = new StringBuilder();
         var families = page.Accounts.Where(account => account.Head).OrderBy(account => SetupFamilies.OrderOf(account.Family)).ToArray();
         var rows = page.Accounts.Where(account => account.Family == family && account.Standing != PaperAccountView.You).OrderBy(account => account.Head ? 0 : 1).ToArray();
-        var variants = rows.Count(account => !account.Head);
+        var coming = (page.Coming ?? []).Where(one => one.Family == family).ToArray();
+        var variants = rows.Count(account => !account.Head) + coming.Length;
 
         html.Append(FamilyPick(
             PaperLink.VariantsKey,
             "The setup whose variants are drawn",
             [.. families.Select(head =>
             {
-                var count = page.Accounts.Count(account => account.Family == head.Family && account.Standing == PaperAccountView.Variant);
+                var count = page.Accounts.Count(account => account.Family == head.Family && account.Standing == PaperAccountView.Variant) + (page.Coming ?? []).Count(one => one.Family == head.Family);
 
                 return (head.Family, Formatted($"{FamilyName(head.Family)} · {(head.Standing == PaperAccountView.Live ? "live" : "provisional")} rule{(count == 0 ? ", no variant" : Formatted($" and {count} {(count == 1 ? "variant" : "variants")}"))}"));
             })],
@@ -540,7 +549,7 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<p class=\"degraded\" data-variants=\"none\">No variant is registered for {Escaped(FamilyName(family))} on this index, so its rule alone trades.</p>");
         }
 
-        html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-variants\" data-family=\"{Escaped(family)}\" data-rows=\"{rows.Length}\"><thead><tr>");
+        html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-variants\" data-family=\"{Escaped(family)}\" data-rows=\"{rows.Length + coming.Length}\"><thead><tr>");
         html.Append(TippedHeading("Rule", "the live or provisional rule first and each variant by its number, its verdict in the newest monthly test beside it and its full words under the pointer"));
         html.Append(TippedHeading("What it changes", "the live rule's settings in short words, and each variant's settings that differ from them"));
         html.Append(TippedHeading("Trades", "the trades its own list or book kept since its account started", "r"));
@@ -558,9 +567,17 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<td class=\"r num\" data-return=\"{(account.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\">{(account.Walk?.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">none yet</span>")}{(account.TooFew is { } few ? Formatted($"<span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}</td></tr>");
         }
 
+        foreach (var one in coming)
+        {
+            html.Append(Invariant, $"<tr data-standing=\"coming\" data-registered=\"{DayOf(one.Registered)}\" data-first-night=\"{(one.FirstNight is { } first ? DayOf(first) : "none")}\">");
+            html.Append(Invariant, $"<td class=\"pv-rule\"><span title=\"{Escaped(Capitalised(one.Words))}\">{Escaped(one.Short)}</span></td>");
+            html.Append(Invariant, $"<td>{Escaped(one.Changes ?? string.Empty)}<span class=\"pv-note\" data-note=\"coming\">{Escaped(ComingLine(one))}</span></td>");
+            html.Append("<td class=\"r num\">0</td><td class=\"r num\">0</td><td class=\"r num\">0</td><td class=\"r num\" data-return=\"none\"><span class=\"degraded\">none yet</span></td></tr>");
+        }
+
         html.Append("</tbody></table></div>");
 
-        if (variants > 0)
+        if (variants > coming.Length)
         {
             html.Append("<h3 class=\"pv-only-h\">Bought only by a variant</h3>");
 
@@ -653,6 +670,10 @@ public sealed partial class MarkRenderer
 
     // From 21.14 the line an account's rule carries beneath its words, the tone variant's that its history before the local
     // model's cutoff does not count; none for any other.
+    // A variant no night has read yet: the day it was registered and the night that first reads it, by its weekday and day.
+    public static string ComingLine(PaperComingView one) =>
+        Formatted($"Registered {DayOf(one.Registered)}. Its first night is {(one.FirstNight is { } first ? first.DayOfWeek + " " + DayOf(first) : "the next night the exchange trades")}.");
+
     static string AccountNote(PaperAccountView account) =>
         (account.Note is { } note ? Formatted($"<span class=\"pv-note\" data-note=\"tone\">{Escaped(note)}</span>") : string.Empty)
         + (StandsAtTheTarget(account.Words) ? Formatted($"<span class=\"pv-note\" data-note=\"standing\">{Escaped(EquityBrief.Core.Loop.ExitMenu.StandingWords)}</span>") : string.Empty);

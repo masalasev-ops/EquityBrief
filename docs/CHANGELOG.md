@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - section 20's phase 21 row names 21.20
+Authorised by: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it
+Was:
+> ... and DeepSeek's search measured against Tavily's for the theme search, used only where it admits more pages</td> ... <td>the build plan's phase 21 checkpoints, 21.0 to 21.19</td></tr>
+Now:
+> ... and DeepSeek's search measured against Tavily's for the theme search, used only where it admits more pages; and a variant registered after the newest night shown on paper trading at once with its first night</td> ... <td>the build plan's phase 21 checkpoints, 21.0 to 21.20</td></tr>
+Why: the operator's ruling of 2026-11-01 is built inside phase 21 as 21.20.
+
+### 2026-11-01 - docs/ARCHITECTURE.html - Paper trading's variants part draws a variant registered after the newest night at once
+Authorised by: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it
+Was:
+> ... carrying beneath its words the operator's sentence on how it sells (see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room)</td></tr>
+Now:
+> ... (see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room); and from 21.20 a variant registered after the newest night drawn at once beneath its family's rows by its number with what it changes and no trades or return, its line saying the day it was registered and its first night until a night reads it (see: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it)</td></tr>
+Why: the operator's ruling of 2026-11-01, built at 21.20.
+
+### 2026-11-01 - docs/BUILD_PLAN.md - phase 21 gains 21.20, a variant registered after the newest night on Paper trading
+Authorised by: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it
+Was:
+> (no 21.20 section)
+Now:
+> ### 21.20 On the operator's word of 2026-11-01: a variant registered after the newest night shown on Paper trading at once
+Why: the operator's ruling of 2026-11-01, built inside phase 21 as its own checkpoint.
+
 ### 2026-11-01 - CLAUDE.md - the nightly hard rule's labeller carve-out labels every other member holding a story it has not labelled
 Authorised by: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled
 Was:
