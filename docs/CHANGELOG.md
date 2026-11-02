@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a page for an earlier night says the calendar is today's, and the next dated event is the first after the night
+Authorised by: A page for an earlier night draws the next report and the calendar as the calendar holds them today, and says so
+Was:
+> the day the company started reporting as its own (see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints)
+Now:
+> the day the company started reporting as its own (see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints), a page for an earlier night saying of each day the calendar dates that it is as the calendar holds it today (see: A page for an earlier night draws the next report and the calendar as the calendar holds them today, and says so), and the fact strip's next dated event and the chart page's next report the first after the night (see: A name's next dated event is the first after the night, and the earnings soon reason alone counts the night's own)
+Why: the calendar keeps no history, so a dated page could not read it as it stood and did not say so; and the strip asked from the night itself, so 56 pages drew the night's own day as next. The eighth phase 18 sign-off review found both, the operator's answer ruling the first and the report's wording standing for the second.
+
+### 2026-11-02 - docs/HOW_IT_WORKS.html - the guide says an earlier evening's calendar is today's
+Authorised by: A page for an earlier night draws the next report and the calendar as the calendar holds them today, and says so
+Was:
+> so the estimate skips to the quarter after it.
+Now:
+> so the estimate skips to the quarter after it. The page for an earlier evening keeps that evening's figures, but the calendar keeps no history, so its next results and its dates say they are as the calendar holds them today.
+Why: the guide states what the architecture's report page section states.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a next report estimated from the first report a year back falling clear of the newest report known, with section 17's row
 Authorised by: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
 Was:

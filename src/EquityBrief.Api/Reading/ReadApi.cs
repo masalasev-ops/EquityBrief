@@ -1275,9 +1275,8 @@ public sealed partial class ReadApi : IComponent
               AND as_of = (SELECT MAX(as_of) FROM volume_profile WHERE ticker = $ticker AND as_of <= $on);
     ";
 
-    // The next event on or after a date, which is what the fact strip states and
-    // what the earnings-soon condition reads. A name with no row answers with
-    // nothing, and nothing is what the strip says rather than a guessed date.
+    // The next event on or after a date, which the fact strip and the chart page ask from the day after the night. A name
+    // with no row answers with nothing, and nothing is what the strip says rather than a guessed date.
     const string NextEventForName = @"
         SELECT ticker, event_date, kind, timing, detail
         FROM calendar

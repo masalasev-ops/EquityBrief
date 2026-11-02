@@ -14379,9 +14379,9 @@ Ruled:      word for word in `prompts/2026-11-02-18.5-phase-18-signoff-eighth-an
             if they hold; equitybrief-94 builds; "Skip that quarter", 45 days; "Say it is today's"; "Guard, and fix the filer",
             200 days; "Say why it stopped"; "Use the filing's date"; and D2 and D4 to D7 as stated in the report and not
             overruled, with the three tests the mutations left wanting.
-Labelled:   read off the record: the estimate and the dated page's calendar under 18.4; the segment tables, the old
-            filings, the raises, the signed nought and the filing's date under 18.2; the next dated event and the filed
-            table's figures under 18.2; the fundamentals card's words under 22.8, which built them.
+Labelled:   read off the record: the estimate, the dated page's calendar and the next dated event under 18.4; the segment
+            tables, the old filings, the raises, the signed nought, the filing's date and the filed table's figures under
+            18.2; the fundamentals card's words under 22.8, which built them.
 Queue:      done, PR 622 and the eighth review; in progress, this pull request; next, a fresh session's review of these fixes
             and the corrections table and its sign-off of phase 18, then the sign-offs of phases 20, 21 and 22 by their own
             fresh sessions.
@@ -14398,6 +14398,21 @@ Corrected:  `CardLines.EstimatedReport` takes the first report a year back whose
             The decision is superseded with its prior text under Previously decided and every citation moved; the
             architecture's sentences and the guide's, with prior text in the changelog.
 Tests:      two new, and DASH's reports, the edge at 45 and 46 days and its card worked by hand in the card's test.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a page for an earlier night says its next report and calendar are as the calendar holds them today, and a name's next dated event is the first after the night   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Corrected:  on a page for an earlier night the numbers' next report row and line, the fact strip's next dated event, the plan's
+            block around the next report and the calendar region say "as the calendar holds it today"; a day from the
+            filing's payload says nothing of the kind, and tonight's page does not change. The fact strip and the chart page
+            ask for the next event from the day after the night, so 56 pages stop drawing the night's own day as next; the
+            earnings soon reason and its stored value do not move. Two decisions, the first amending the earlier night's;
+            the architecture's sentence and the guide's, with prior text in the changelog.
+Tests:      four new, and the review's x2 in the reading's test: x6 a dated page's calendar row read, x5 the ex-dividend days
+            kept out of the report days, and x2 two calendar days after a quarter's end taking the latest.
 Mutation:   stated in the last entry of this pull request.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.

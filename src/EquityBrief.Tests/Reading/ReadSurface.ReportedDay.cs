@@ -71,6 +71,9 @@ public partial class ReadSurface
         Assert.Equal(new ReportedDay(null, null, new DateOnly(2026, 11, 4)), ReportedDay.Of(null, "2026-11-04", night, [], []));
         Assert.Equal(new ReportedDay(null, null, null), ReportedDay.Of(null, "2026-10-29", night, [], []));
 
+        // Two calendar days after the quarter's end and on or before the night: the latest is the day it reported.
+        Assert.Equal(new ReportedDay(september, new DateOnly(2026, 10, 28), null), ReportedDay.Of("2026-09-30", null, night, [], [new DateOnly(2026, 10, 7), new DateOnly(2026, 10, 28)]));
+
         // No night known: the provider's day as it stands.
         Assert.Equal(new ReportedDay(null, null, new DateOnly(2026, 11, 4)), ReportedDay.Of("2026-09-30", "2026-11-04", null, [Row(september, new DateOnly(2026, 10, 28))], [new DateOnly(2027, 1, 20)]));
     }

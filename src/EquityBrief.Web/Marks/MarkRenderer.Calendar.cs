@@ -16,6 +16,10 @@ public sealed record CalendarView(DateOnly Night, DateOnly Through, IReadOnlyLis
     // carries is read beside where the two differ.
     public (DateOnly From, DateOnly Estimated)? Estimate { get; init; }
 
+    // Whether the page is for an earlier night, whose dated events are the calendar's as it holds them today.
+    // see: A page for an earlier night draws the next report and the calendar as the calendar holds them today, and says so
+    public bool EarlierNight { get; init; }
+
     // The estimate's words beside a next report the calendar dates on another day, none where they agree or none is held.
     public string EstimateBeside(CalendarItem next) =>
         next.Declared && Estimate is { } estimate && estimate.Estimated != next.Date
@@ -101,11 +105,14 @@ public sealed partial class MarkRenderer
 
     // The calendar region: the timeline, the table of the next ninety days' events with each one's days after the night, a
     // line for each kind of the market events table that ends inside them, and the dated items the research read.
+    public const string CalendarToday = "as the calendar holds it today";
+
     public string TheCalendar(string ticker, CalendarView view, WrittenCell? items, IReadOnlyList<SourceCell> documents, Func<SourceCell, bool>? relevant = null)
     {
         var region = new StringBuilder();
 
         region.Append(Formatted($"<section class=\"page-calendar\" data-ticker=\"{Escaped(ticker)}\" data-night=\"{DayOf(view.Night)}\" data-through=\"{DayOf(view.Through)}\" data-events=\"{view.Items.Count}\">"));
+        region.Append(view.EarlierNight ? Formatted($"<p class=\"calendar-today\" data-night=\"{DayOf(view.Night)}\">The dates here are {CalendarToday}, which keeps no record of what it held on {DayOf(view.Night)}.</p>") : string.Empty);
         region.Append("<div class=\"fig\">").Append(CalendarTimeline(ticker, view)).Append("</div>");
 
         if (view.Items.Count > 0)
@@ -165,7 +172,7 @@ public sealed partial class MarkRenderer
         }
 
         var said = next.Declared
-            ? FormattableString.Invariant($"The next report is on {next.Date:d MMM yyyy}, as the calendar dates it{view.EstimateBeside(next)}")
+            ? FormattableString.Invariant($"The next report is on {next.Date:d MMM yyyy}, {(view.EarlierNight ? CalendarToday : "as the calendar dates it")}{view.EstimateBeside(next)}")
             : FormattableString.Invariant($"The next report is not announced: it is estimated about {next.Date:d MMM yyyy}, {next.Words.Replace("Results, estimated ", string.Empty, StringComparison.Ordinal)}");
         var hold = view.HoldThrough is { } through
             ? next.Date <= through
