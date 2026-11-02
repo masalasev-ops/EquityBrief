@@ -794,6 +794,28 @@ public partial class FixtureExpectations
         Assert.Empty(FactsAssembler.Segments(document.RootElement));
     }
 
+    // A table or guidance older than the row's own filing by more than the limit reaches no facts file, and none at the limit
+    // is held back: a table ended on 2026-01-17 is 200 days before a filing of 2026-08-05 and one ended on 2026-01-16 is 201.
+    // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+    [Theory]
+    [InlineData("2026-01-17", true)]
+    [InlineData("2026-01-16", false)]
+    public void APartOlderThanItsFilingReachesNoFactsFile(string ended, bool carried)
+    {
+        var table = $$$"""{"report":"R2.htm","title":"Revenue by market (Details) - USD ($)","scale":1,"periods":[{"months":3,"ended":"{{{ended}}}"}],"consolidated":[{"concept":"us-gaap_Revenues","lineItem":"Revenue","unit":null,"months":3,"ended":"{{{ended}}}","value":"1000"}],"groups":[]}""";
+        var payload = $$$"""{"segments":{{{table}}},"revenueTables":[{{{table}}}],"tableGrowth":[{"report":"R2.htm","group":0,"label":"total","lineItem":"Revenue","months":3,"ended":"{{{ended}}}","value":"0.5"}],"guidance":{"document":"ex99.htm","filedOn":"{{{ended}}}","heading":"Outlook","passage":"We expect revenue of $7.5 billion.","located":true}}""";
+
+        var facts = FactsAssembler.Filed("2026-08-05", payload);
+
+        foreach (var named in new[] { "segment total Revenue", "growth on a year earlier", FactOwners.GuidanceFigure })
+        {
+            Assert.Equal(carried, facts.Any(fact => fact.Name.Contains(named, StringComparison.Ordinal)));
+        }
+
+        Assert.Equal(carried, facts.Any(fact => fact.Name.StartsWith("segment ", StringComparison.Ordinal) && !fact.Name.StartsWith("segment total ", StringComparison.Ordinal)));
+        Assert.Contains(facts, fact => fact.Name == "latest filing date" && fact.Value == "2026-08-05");
+    }
+
     [Fact]
     public void TwoOfAFilingsOtherTablesWhoseTitlesSayNothingOfTheirGroupingNameNoFigureTwice()
     {

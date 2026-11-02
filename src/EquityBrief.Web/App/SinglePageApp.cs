@@ -2113,7 +2113,7 @@ public sealed partial class SinglePageApp : IComponent
                 filedTable.Append(marks.SegmentsTable(segments, report.Currency));
 
                 filedTable.Append(segments.Clean ? "<div class=\"fig\">" + marks.ShareBars(segments) + "</div>" : string.Empty);
-                filedTable.Append(Cards.Key(
+                filedTable.Append(segments.LeftOut ? string.Empty : Cards.Key(
                     "How to read it.",
                     "Each segment the filing reports, its revenue for the quarter and its change on the same quarter a year earlier, its operating income where the filing states one, and its share of the company's revenue. The table stands only where the segments' revenue sums to the company's within rounding, totals, eliminations and corporate amounts left out; otherwise the filing's own table is drawn as filed with what the rows summed to.",
                     "A segment growing faster than the company is where the growth is coming from, and one shrinking is what is holding it back."));

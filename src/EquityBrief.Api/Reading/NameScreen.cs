@@ -512,7 +512,9 @@ public static partial class NameScreen
             html.Append(Invariant($"<blockquote class=\"guidance release-opening\" data-exhibit=\"{Escaped(release.Exhibit)}\" data-accepted=\"{release.AcceptedOn:yyyy-MM-dd}\"><p class=\"guidance-heading\">The newest results release, accepted {release.AcceptedOn:yyyy-MM-dd}, opens</p><p>{Escaped(release.Line)}</p><p class=\"guidance-source\">From {Escaped(release.Exhibit)}, the exhibit to that day's results announcement. Management's own words, not a figure this report computed.</p></blockquote>"));
         }
 
-        html.Append(Guidance(newest.RootElement, Attribution(filings[0].Source)));
+        html.Append(EquityBrief.Core.Report.OldFilings.GuidanceFiled(newest.RootElement) is { } guidanceOn && EquityBrief.Core.Report.OldFilings.TooOld(guidanceOn, filings[0].FilingDate)
+            ? Invariant($"<p class=\"degraded\" data-absent=\"guidance\" data-old-filed=\"{guidanceOn:yyyy-MM-dd}\">What management said is left out: {EquityBrief.Core.Report.OldFilings.Why("the release stored with this filing was filed on", guidanceOn, filings[0].FilingDate)}.</p>")
+            : Guidance(newest.RootElement, Attribution(filings[0].Source)));
 
         // Every other figure the filing carries, closed beneath the snapshot, which states the
         // ones a reader wants first.
@@ -570,7 +572,9 @@ public static partial class NameScreen
 
         using var newest = JsonDocument.Parse(filings[0].Payload);
 
-        return Segments(newest.RootElement, Attribution(filings[0].Source), Text(newest.RootElement, "currency") ?? string.Empty);
+        return newest.RootElement.TryGetProperty("segments", out var table) && EquityBrief.Core.Report.OldFilings.TableTooOld(table, filings[0].FilingDate)
+            ? null
+            : Segments(newest.RootElement, Attribution(filings[0].Source), Text(newest.RootElement, "currency") ?? string.Empty);
     }
 
     // What the regions between the card and the earnings reactions draw, each worked by the core's function for it from
@@ -598,7 +602,11 @@ public static partial class NameScreen
 
             currency = Text(newest.RootElement, "currency") is { Length: > 0 } stated ? stated : currency;
 
-            if (newest.RootElement.TryGetProperty("segments", out var table) && table.ValueKind == JsonValueKind.Object)
+            if (newest.RootElement.TryGetProperty("segments", out var old) && EquityBrief.Core.Report.OldFilings.TableEnded(old) is { } oldEnded && EquityBrief.Core.Report.OldFilings.TooOld(oldEnded, filings[0].FilingDate))
+            {
+                segments = new EquityBrief.Core.Report.SegmentReading(Text(old, "report") ?? string.Empty, oldEnded, 0, null, null, [], EquityBrief.Core.Report.OldFilings.Why("the table stored with this filing ends on", oldEnded, filings[0].FilingDate)) { LeftOut = true };
+            }
+            else if (newest.RootElement.TryGetProperty("segments", out var table) && table.ValueKind == JsonValueKind.Object)
             {
                 var breakdown = EquityBrief.Core.Report.SegmentTable.FromStored(table);
                 var shortest = EquityBrief.Core.Report.SegmentTable.ShortestMonths(breakdown.Periods.Select(period => period.Months));

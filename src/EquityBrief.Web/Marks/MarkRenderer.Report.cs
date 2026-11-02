@@ -307,6 +307,11 @@ public sealed partial class MarkRenderer
     // table drawn beneath stands instead.
     public string SegmentsTable(SegmentReading segments, string currency)
     {
+        if (segments.LeftOut)
+        {
+            return Formatted($"<p class=\"degraded\" data-segments=\"old\" data-report=\"{Escaped(segments.Report)}\" data-ended=\"{(segments.Quarter is { } ended ? DayOf(ended) : "none")}\">The filing's segment table is left out: {Escaped(segments.Raw!)}.</p>");
+        }
+
         if (!segments.Clean)
         {
             return Formatted($"<p class=\"degraded\" data-segments=\"raw\" data-report=\"{Escaped(segments.Report)}\" data-total=\"{(segments.Total is { } total ? total.ToString(Invariant) : "none")}\" data-sum=\"{(segments.Sum is { } sum ? sum.ToString(Invariant) : "none")}\">The filing's segment table is drawn as filed beneath, because {Escaped(segments.Raw!)}{(segments.Total is { } whole && segments.Sum is { } summed ? Formatted($": its segments' revenue sums to {Figures.Money(summed, currency)} against the company's {Figures.Money(whole, currency)}") : string.Empty)}.</p>");

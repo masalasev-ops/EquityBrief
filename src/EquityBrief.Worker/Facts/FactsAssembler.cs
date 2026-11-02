@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Facts;
 using EquityBrief.Core.Quarters;
+using EquityBrief.Core.Report;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -635,7 +636,11 @@ public sealed class FactsAssembler : IComponent
         {
             using var before = JsonDocument.Parse(reader.GetString(0));
 
-            facts.AddRange(Guided(before.RootElement, FactOwners.GuidanceBefore));
+            // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+            if (filedOn is null || !OldFilings.GuidanceTooOld(before.RootElement, DateOnly.ParseExact(filedOn, "yyyy-MM-dd", CultureInfo.InvariantCulture)))
+            {
+                facts.AddRange(Guided(before.RootElement, FactOwners.GuidanceBefore));
+            }
         });
 
         // The night's readings of the member's reported quarters, for a member holding quarters, so a
@@ -803,7 +808,7 @@ public sealed class FactsAssembler : IComponent
     // what a written section may quote, since a number in prose has to exist in
     // this file, and section 4's numbers row is what names them.
     // see: Every number in written prose must exist in the facts file
-    internal static IReadOnlyList<Fact> Filed(string filingDate, string payload)
+    public static IReadOnlyList<Fact> Filed(string filingDate, string payload)
     {
         var facts = new List<Fact> { new("latest filing date", filingDate, FromFundamentals) };
 
@@ -867,10 +872,14 @@ public sealed class FactsAssembler : IComponent
             Add(facts, "dividend pay date", Text(dividend, "payDate"));
         }
 
-        facts.AddRange(Segments(root));
-        facts.AddRange(RevenueTables(root));
-        facts.AddRange(TableGrowth(root));
-        facts.AddRange(Guided(root));
+        // A part older than the row's own filing by more than the limit is another filing's, and no writer is handed it.
+        // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+        var filed = DateOnly.ParseExact(filingDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        facts.AddRange(Segments(root, filed));
+        facts.AddRange(RevenueTables(root, filed));
+        facts.AddRange(TableGrowth(root, filed));
+        facts.AddRange(OldFilings.GuidanceTooOld(root, filed) ? [] : Guided(root));
 
         return facts;
     }
@@ -883,21 +892,21 @@ public sealed class FactsAssembler : IComponent
     // the archive does for one filer the fixture holds, and a facts file names each
     // fact once, so a repeated name carries the group's position in the table.
     // owes: The facts file carries the figures a local lane section quotes
-    public static IReadOnlyList<Fact> Segments(JsonElement root) =>
-        root.TryGetProperty("segments", out var segments) && segments.ValueKind == JsonValueKind.Object
+    public static IReadOnlyList<Fact> Segments(JsonElement root, DateOnly? filed = null) =>
+        root.TryGetProperty("segments", out var segments) && segments.ValueKind == JsonValueKind.Object && !(filed is { } on && OldFilings.TableTooOld(segments, on))
             ? Table(segments, SegmentPeriods.Prefix)
             : [];
 
     // The filing's other tables of revenue by a grouping, each named by what its title says it
     // groups by, so a figure by market platform is not read as a segment's.
     // see: The facts file carries a quarter's growth, its earnings against the estimate and the filing's own tables with their year-earlier columns
-    public static IReadOnlyList<Fact> RevenueTables(JsonElement root) =>
-        [.. Prefixes(root).SelectMany(named => Table(named.Table, named.Prefix))];
+    public static IReadOnlyList<Fact> RevenueTables(JsonElement root, DateOnly? filed = null) =>
+        [.. Prefixes(root).Where(named => !(filed is { } on && OldFilings.TableTooOld(named.Table, on))).SelectMany(named => Table(named.Table, named.Prefix))];
 
     // Each group's growth on the same months a year before, in the segment table and the other
     // tables, as the fetcher computed it from each table's own columns, named as the table's own
     // figures are, a repeated label by its position.
-    public static IReadOnlyList<Fact> TableGrowth(JsonElement root)
+    public static IReadOnlyList<Fact> TableGrowth(JsonElement root, DateOnly? filed = null)
     {
         if (!root.TryGetProperty("tableGrowth", out var grown) || grown.ValueKind != JsonValueKind.Array)
         {
@@ -905,10 +914,21 @@ public sealed class FactsAssembler : IComponent
         }
 
         var prefixes = new Dictionary<string, string>(StringComparer.Ordinal);
+        var old = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var (table, prefix) in Prefixes(root))
         {
             prefixes.TryAdd(table.GetProperty("report").GetString()!, prefix);
+
+            if (filed is { } on && OldFilings.TableTooOld(table, on))
+            {
+                old.Add(table.GetProperty("report").GetString()!);
+            }
+        }
+
+        if (filed is { } rowFiled && root.TryGetProperty("segments", out var segments) && segments.ValueKind == JsonValueKind.Object && OldFilings.TableTooOld(segments, rowFiled))
+        {
+            old.Add(segments.GetProperty("report").GetString()!);
         }
 
         var facts = new List<Fact>();
@@ -916,6 +936,11 @@ public sealed class FactsAssembler : IComponent
 
         foreach (var figure in grown.EnumerateArray())
         {
+            if (old.Contains(figure.GetProperty("report").GetString()!))
+            {
+                continue;
+            }
+
             var prefix = prefixes.GetValueOrDefault(figure.GetProperty("report").GetString()!, SegmentPeriods.Prefix);
             var label = figure.GetProperty("label").GetString();
             var line = figure.GetProperty("lineItem").GetString() + " growth on a year earlier "

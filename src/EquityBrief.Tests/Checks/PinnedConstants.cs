@@ -894,6 +894,7 @@ public class PinnedConstants
             new("Correction notice age", "30", Web.App.SinglePageApp.CorrectionAgeDays, "SinglePageApp.CorrectionAgeDays"),
             new("Queue window", "14", Api.Reading.QueueScreen.Window, "QueueScreen.Window"),
             new("Report page's day limits", "45", Core.Cards.CardLines.ClearOfTheNewest, "CardLines.ClearOfTheNewest"),
+            new("Report page's day limits", "200", Core.Report.OldFilings.MostDays, "OldFilings.MostDays"),
         ];
     }
 

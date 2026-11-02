@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a part older than its filing is left out, a fetch takes the SEC's filer, with section 17's row and the fetcher's catalogue row
+Authorised by: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+Was:
+> (section 4, the report page) (see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so); a segment table's quarter is its shortest period over months,
+>
+> (the catalogue) Fundamentals fetcher: company financials feed, filings archive, fundamentals
+>
+> (section 17, Report page's day limits) a next report not on file is estimated ... once the open prints)
+Now:
+> (see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so); a segment table, revenue table or guidance filed more than 200 days before the row's own filing is another filing's, neither drawn nor handed to a writer and the page saying why, and a fetch takes the filer the SEC's own ticker file names (see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names); a segment table's quarter is its shortest period over months,
+>
+> Fundamentals fetcher: company financials feed, filings archive, fundamentals, SEC tickers
+>
+> a next report not on file is estimated ... once the open prints); a part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer (see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names)
+Why: the fetch took the provider's filer and that filer's newest filing with no check against the row's quarter, so seven tables and 14 guidance rows read years old unsaid; the eighth phase 18 sign-off review found it and the operator's answer of 2026-11-02 guards the page and fixes the filer.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - the dividend's row says where two years paying a different number of payments stopped its run
 Authorised by: A dividend's run of raises says where it stopped because two years pay a different number of payments
 Was:

@@ -14450,3 +14450,17 @@ Tests:      two new, ARES worked by hand.
 Mutation:   stated in the last entry of this pull request.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.2 - correction: a part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Corrected:  `OldFilings` holds the 200 days, read against the row's filing date. A segment table, a revenue table and its
+            growth and guidance older than that are not drawn and reach no facts file, the page saying why, and a results
+            release a research pass reads is handed to no section and named as unread. `FundamentalsFetcher` reads
+            `sec_ticker` for the filer, the provider's CIK only where it names none, and writes it on the newest row. A
+            decision; section 17's row, the fetcher's catalogue row and the architecture's sentence, with prior text in the
+            changelog. No remedy and no fetch: a table comes back as its company next files.
+Tests:      four new: the limit at 200 and 201 days, the page, the facts file and the filer asked.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

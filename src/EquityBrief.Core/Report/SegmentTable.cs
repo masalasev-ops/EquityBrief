@@ -29,6 +29,10 @@ public sealed record SegmentReading(
     string? Raw)
 {
     public bool Clean => Raw is null;
+
+    // Whether the table is another filing's, left out with Raw saying why, and no raw table is drawn beneath it.
+    // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+    public bool LeftOut { get; init; }
 }
 
 // The segment table built from a filing's segment report by a stated rule, worked by one function so the page and its
