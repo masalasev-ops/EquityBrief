@@ -69,8 +69,8 @@ public sealed record CardScoreView(int? Rank, EquityBrief.Core.Cards.CardSimilar
 // page draws them, the plan in the operator's money or that the account is not set, the rule's management of the trade,
 // the trades taken from it and whether its presses are drawn, which an export never does; for a family a learned score
 // reaches, the score's part; the words of a change an approval set on the rule, whose stored record replays the
-// setting before it and is drawn as no record of this rule; and the plan's time limit and its rising stop's distance, as
-// the night stored them.
+// setting before it and is drawn as no record of this rule; the plan's time limit and its rising stop's distance, as
+// the night stored them; and from 22.18 its rule's winning trades, which a plan selling on a rising stop draws.
 public sealed record DecisionCardView(
     string Index,
     DateOnly Night,
@@ -95,7 +95,8 @@ public sealed record DecisionCardView(
     int? Cap = null,
     decimal? Trail = null,
     string? Fill = null,
-    CardOpenFloorView? OpenFloor = null)
+    CardOpenFloorView? OpenFloor = null,
+    EquityBrief.Core.Cards.PaperWinners? Winners = null)
 {
     // The id the card's row and the control opening it share.
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
@@ -179,6 +180,11 @@ public sealed partial class MarkRenderer
     // page.
     public string DecisionCard(DecisionCardView card, FamilyPickCell? pick = null, bool linked = false, string? levels = null)
     {
+        if (Copying)
+        {
+            return PlainCard(card, pick, linked);
+        }
+
         var body = new StringBuilder();
         var setup = SetupOf(card.Family);
 
@@ -199,6 +205,28 @@ public sealed partial class MarkRenderer
         body.Append("</div>");
 
         return body.ToString();
+    }
+
+    // From 22.17 a pick's card on the read-only copy: its sentence and its three prices, the buy, the close that sells it at
+    // a loss and the target or why it has none, with no tick, reading, floor or threshold; and beneath a row the link to the
+    // stock's full page.
+    // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+    string PlainCard(DecisionCardView card, FamilyPickCell? pick, bool linked)
+    {
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<div class=\"decision-card plain\" data-index=\"{Escaped(card.Index)}\" data-family=\"{Escaped(card.Family)}\" data-ticker=\"{Escaped(card.Ticker)}\" data-night=\"{DayOf(card.Night)}\">");
+        body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(CardSummary(card, SetupOf(card.Family)))}</p>");
+        body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\"><h5>The plan</h5><div class=\"plan-tiles\">");
+        body.Append(PlanTile("buy", "Buy at about", card.Entry is { } entry ? Price(entry) : "Not stored", "at the next day's open"));
+        body.Append(card.Stop is { } stop && TrailOf(card, pick) is null ? PlanTile("stop", "Sell if it closes below", Price(stop), null, "loss") : StopTile(card, pick));
+        body.Append(card.Target is { } target ? PlanTile("target", "Sell if it reaches", Price(target), null, "gain") : TargetTile(card, pick));
+        body.Append("</div>");
+        body.Append(TrailLines(card, pick));
+        body.Append("</section>");
+        body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"#/name/{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
+
+        return body.Append("</div>").ToString();
     }
 
     // A setup's name as a sentence carries it: the earnings drift, the sector heavyweights.
@@ -410,28 +438,92 @@ public sealed partial class MarkRenderer
     public static bool StandsAtTheTarget(string? rule) =>
         rule is not null && rule.Contains(EquityBrief.Core.Loop.ExitMenu.Swing.Single(choice => choice.Kind == EquityBrief.Core.Loop.ExitKind.Standing).Words, StringComparison.Ordinal);
 
+    // From 22.18 what an idea selling on a rising give-up price with no target says, in the operator's words.
+    // see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
+    public const string NoFixedTarget = "No fixed target";
+
+    public const string RunsWords = "Breakouts earn most from the few that keep running, so the rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.";
+
+    public const string RisingWords = "rising as the stock makes new highs; it never moves down.";
+
+    public const string NotTheStocksChance = "That is the rule's record, not this stock's chance.";
+
+    // A price as the operator's sentences name it, in dollars.
+    public static string Usd(decimal price) => "$" + Figures.Price(price);
+
+    // The line naming the close at which the trade can no longer lose, worked from the buy and the rule's own trail.
+    public static string NoLossLine(decimal buy, decimal trail) =>
+        $"The trade can no longer lose once the stock reaches about {Usd(EquityBrief.Core.Families.TrailingExit.NoLossAt(buy, trail))}.";
+
+    // The rule's record under its own name: below the count its record needs only how many have finished, and once it holds
+    // them what its winning trades made for each dollar risked, said to be the rule's and not the stock's.
+    public static string WinnersLine(string family, EquityBrief.Core.Cards.PaperWinners winners)
+    {
+        var rule = "The " + (EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family).ToLowerInvariant() + " rule";
+
+        return winners.Finished < winners.Needed
+            ? FormattableString.Invariant($"{rule} has {winners.Finished:#,0} of the {winners.Needed:#,0} finished trades its record needs.")
+            : winners.Average is { } made
+                ? FormattableString.Invariant($"{rule}'s winning trades have made about ${made:0.00} per $1 risked so far, over its {winners.Finished:#,0} finished trades. {NotTheStocksChance}")
+                : FormattableString.Invariant($"{rule} has made no winning trade over its {winners.Finished:#,0} finished trades. {NotTheStocksChance}");
+    }
+
+    // Whether a card's plan sells on a rising give-up price with no target, and the distance it rises behind the highest
+    // close at, the night's stored distance or the buy less the stop.
+    static decimal? TrailOf(DecisionCardView card, FamilyPickCell? pick) =>
+        card.Target is null && (card.Trail is not null || pick?.Trailing == true) && card.Entry is { } entry && card.Stop is { } stop && entry > stop
+            ? card.Trail ?? entry - stop
+            : null;
+
+    // From 22.18 the lines beneath the tiles of a plan selling on a rising give-up price: the close past which it can no
+    // longer lose, and its rule's record under the rule's name.
+    static string TrailLines(DecisionCardView card, FamilyPickCell? pick)
+    {
+        if (TrailOf(card, pick) is not { } trail || card.Entry is not { } entry)
+        {
+            return string.Empty;
+        }
+
+        var noLoss = EquityBrief.Core.Families.TrailingExit.NoLossAt(entry, trail);
+        var lines = Formatted($"<p class=\"card-noloss\" data-no-loss=\"{noLoss.ToString(Invariant)}\">{Escaped(NoLossLine(entry, trail))}</p>");
+
+        return lines + (card.Winners is { } winners
+            ? Formatted($"<p class=\"card-winners\" data-finished=\"{winners.Finished}\" data-needed=\"{winners.Needed}\">{Escaped(WinnersLine(card.Family, winners))}</p>")
+            : string.Empty);
+    }
+
+    // The plan's stop tile: a close below the stop, from 22.18 a rising give-up price in the operator's words where the plan
+    // sells on one with no target, or none.
+    static string StopTile(DecisionCardView card, FamilyPickCell? pick = null) =>
+        card.Stop is { } stop
+            ? TrailOf(card, pick) is not null
+                ? PlanTile("stop", "Sell if it falls to", Usd(stop), RisingWords, "loss")
+                : PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null ? "raised after each higher close, never lowered, and sold at the next day's open" : "sold at the next day's open", "loss")
+            : PlanTile("stop", "Stop", "None", card.Family == EquityBrief.Core.Families.HeavyweightRule.Name ? "nothing sells it at a price set in advance" : "no stop stored");
+
+    // The plan's target tile: the target, or from 22.18 no fixed target and why for a plan selling on a rising give-up price,
+    // the dip's exit or the heavyweights' reshuffle where the rule sets none.
+    static string TargetTile(DecisionCardView card, FamilyPickCell? pick) =>
+        // From 21.18 a pick of a rule at the target standing as a sell order says how that order sells, in the operator's words.
+        // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
+        card.Target is { } target
+            ? PlanTile("target", "Sell if it reaches", Price(target), StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open", "gain")
+            : card.Trail is not null || pick?.Trailing == true
+                ? PlanTile("target", "Aim to sell at", NoFixedTarget, RunsWords)
+                : card.Family == EquityBrief.Core.Families.DipRule.Name
+                    ? PlanTile("target", "No target", "Its exit", pick?.Exit is { } exit ? ReaderWords.Plain(exit) : "a close back above its short average")
+                    : card.Family == EquityBrief.Core.Families.HeavyweightRule.Name
+                        ? PlanTile("target", "No target", "Kept while it leads", "sold at a month's reshuffle once it stops leading")
+                        : PlanTile("target", "Target", "None", "no target stored");
+
     static string ThePlan(DecisionCardView card, string setup, FamilyPickCell? pick, bool levelsBelow = false)
     {
-        var heavyweights = card.Family == EquityBrief.Core.Families.HeavyweightRule.Name;
-        var dip = card.Family == EquityBrief.Core.Families.DipRule.Name;
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\"><h5>The plan</h5><div class=\"plan-tiles\">");
         body.Append(PlanTile("buy", "Buy", "At the next day's open", card.Entry is { } entry ? Formatted($"at about {Price(entry)}") : "no buy price stored"));
-        body.Append(card.Stop is { } stop
-            ? PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null ? "raised after each higher close, never lowered, and sold at the next day's open" : "sold at the next day's open", "loss")
-            : PlanTile("stop", "Stop", "None", heavyweights ? "nothing sells it at a price set in advance" : "no stop stored"));
-        // From 21.18 a pick of a rule at the target standing as a sell order says how that order sells, in the operator's words.
-        // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
-        body.Append(card.Target is { } target
-            ? PlanTile("target", "Sell if it reaches", Price(target), StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open", "gain")
-            : card.Trail is not null || pick?.Trailing == true
-                ? PlanTile("target", "No target", "Rising stop", "the stop follows the price up")
-                : dip
-                    ? PlanTile("target", "No target", "Its exit", pick?.Exit is { } exit ? ReaderWords.Plain(exit) : "a close back above its short average")
-                    : heavyweights
-                        ? PlanTile("target", "No target", "Kept while it leads", "sold at a month's reshuffle once it stops leading")
-                        : PlanTile("target", "Target", "None", "no target stored"));
+        body.Append(StopTile(card, pick));
+        body.Append(TargetTile(card, pick));
 
         if (card.Cap is { } cap)
         {
@@ -444,6 +536,8 @@ public sealed partial class MarkRenderer
         {
             body.Append(Invariant, $"<p class=\"card-reward\" data-reward=\"{reward.ToString(Invariant)}\">You risk $1 to make ${Figures.Ratio(reward)}.</p>");
         }
+
+        body.Append(TrailLines(card, pick));
 
         if (card.Money is { } money)
         {

@@ -236,7 +236,7 @@ public sealed partial class MarkRenderer
 
         foreach (var account in drawn)
         {
-            svg.Append(Invariant, $"<button type=\"button\" class=\"paper-key\" data-line=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" aria-pressed=\"true\" title=\"{Escaped(account.Words)}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(account.Standing == PaperCombinedView.Key ? account.Name : FamilyName(account.Family) + " · " + account.Name)}</button>");
+            svg.Append(Invariant, $"<button type=\"button\" class=\"paper-key\" data-line=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" aria-pressed=\"true\" title=\"{Escaped(Copying ? FamilyName(account.Family) : account.Words)}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(account.Standing == PaperCombinedView.Key ? account.Name : FamilyName(account.Family) + " · " + account.Name)}</button>");
         }
 
         svg.Append("</figcaption></figure>");
@@ -274,7 +274,7 @@ public sealed partial class MarkRenderer
         {
             var made = head.Walk?.Return;
 
-            html.Append(Invariant, $"<div class=\"paper-tile\" data-family=\"{Escaped(head.Family)}\" data-standing=\"{head.Standing}\" data-return=\"{(made is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{head.Open}\" data-closed=\"{head.Closed}\" data-since=\"{(head.Since is { } since ? DayOf(since) : "none")}\" title=\"{Escaped(Capitalised(head.Words) + (head.Version is { } version ? "; counts " + version : string.Empty))}\">");
+            html.Append(Invariant, $"<div class=\"paper-tile\" data-family=\"{Escaped(head.Family)}\" data-standing=\"{head.Standing}\" data-return=\"{(made is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{head.Open}\" data-closed=\"{head.Closed}\" data-since=\"{(head.Since is { } since ? DayOf(since) : "none")}\" title=\"{Escaped(Copying ? FamilyName(head.Family) : Capitalised(head.Words) + (head.Version is { } version ? "; counts " + version : string.Empty))}\">");
             html.Append(Invariant, $"<div class=\"pt-name\"><span class=\"fam-swatch\" data-family=\"{Escaped(head.Family)}\"></span>{Escaped(FamilyName(head.Family))} <span class=\"status-pill {head.Standing}\">{Escaped(head.Name)}</span></div>");
             html.Append(made is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
             html.Append(Invariant, $"<div class=\"pt-sub\">{Escaped(TileSaid(made, head.Since, size, head.Open))}{(head.Since is null || made is null ? string.Empty : Formatted($" {head.Closed} closed."))}</div></div>");
@@ -341,7 +341,7 @@ public sealed partial class MarkRenderer
         html.Append(link.Closed ? ClosedTrades(page.Closed) : OpenTrades(page.Open));
         html.Append(NotBought(page.NotBought));
 
-        if (page.Earlier.Count > 0)
+        if (page.Earlier.Count > 0 && !Copying)
         {
             html.Append(Invariant, $"<details class=\"paper-earlier\" data-earlier=\"{page.Earlier.Count}\"><summary>Earlier versions: {page.Earlier.Count} {(page.Earlier.Count == 1 ? "trade" : "trades")} a rule's earlier versions listed, left out of every figure on this page</summary>");
             html.Append("<div class=\"tbl-wrap\"><table class=\"paper-bought\"><thead><tr><th>Stock</th><th>Setup</th><th>Listed by</th><th class=\"r\">Bought</th><th>Open or how it ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
@@ -414,7 +414,7 @@ public sealed partial class MarkRenderer
             var book = trade.Stop is null;
 
             html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-family=\"{Escaped(trade.Family)}\" data-account=\"{Escaped(trade.Account)}\" data-bought=\"{DayOf(trade.Bought)}\" data-standing=\"{Escaped(open?.Standing ?? string.Empty)}\">");
-            html.Append(StockCell(trade.Ticker, trade.Company, AlsoHeld(trade.AlsoHeld)));
+            html.Append(StockCell(trade.Ticker, trade.Company, Copying ? null : AlsoHeld(trade.AlsoHeld)));
             html.Append(FamilyCell(trade.Family));
             html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
             html.Append(book
@@ -666,6 +666,31 @@ public sealed partial class MarkRenderer
         html.Append("</div>");
 
         return html.ToString();
+    }
+
+    // From 22.17 the read-only copy's scorecard: each family's live or provisional rule by its family, the trades its account
+    // has closed and its return so far, never a setting, a test year or a variant.
+    // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+    public string PlainScorecard(PaperPageView page)
+    {
+        var heads = page.Accounts.Where(account => account.Head).OrderBy(account => SetupFamilies.OrderOf(account.Family)).ToArray();
+
+        if (heads.Length == 0)
+        {
+            return "<p class=\"degraded\" data-score=\"none\">No rule stands on this index yet.</p>";
+        }
+
+        var html = new StringBuilder("<div class=\"tbl-wrap\"><table class=\"paper-bought plain-score\"><thead><tr><th>Setup</th><th class=\"r\">Trades closed</th><th class=\"r\">Return so far</th></tr></thead><tbody>");
+
+        foreach (var head in heads)
+        {
+            html.Append(Invariant, $"<tr data-family=\"{Escaped(head.Family)}\" data-closed=\"{head.Closed}\">");
+            html.Append(FamilyCell(head.Family));
+            html.Append(Invariant, $"<td class=\"r num\">{head.Closed}</td>");
+            html.Append(Invariant, $"<td class=\"r num\">{(head.Walk?.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">none yet</span>")}</td></tr>");
+        }
+
+        return html.Append("</tbody></table></div>").ToString();
     }
 
     // From 21.14 the line an account's rule carries beneath its words, the tone variant's that its history before the local

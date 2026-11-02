@@ -238,6 +238,15 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"{Escaped(ended.Ticker)} was sold at the close of {ended.EndedOn:d MMM yyyy}: {Escaped(ReaderWords.Plain(ended.Reason))}.</p>");
         }
 
+        // From 22.17 the read-only copy keeps the record's line alone: no sector's reading, rule, setting or version.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        if (Copying)
+        {
+            body.Append(Invariant, $"<p class=\"record-said\">{(card.LiveSince is { } went ? FormattableString.Invariant($"It went live on {went:d MMM yyyy}; its holdings since then are on <a href=\"#/paper\">Paper trading</a>.") : "It has not been tested yet; its holdings are on <a href=\"#/paper\">Paper trading</a>.")}</p>");
+
+            return body.Append("</section>").ToString();
+        }
+
         // The folds, closed: why each sector holding nothing holds nothing, and the full rule with how its settings were
         // chosen, its versions and its record.
         if (empties.Length > 0)

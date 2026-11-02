@@ -40,6 +40,10 @@ public sealed record PaperLuck(string Zone, string Words, double Place);
 // of it held, and the mean edge of its decided trades with how many held one.
 public sealed record PaperProgress(int Counted, int Needed, double Share, double? MeanEdge, int Edged);
 
+// From 22.18 a rule's finished trades as a breakout idea's record reads them: how many finished, the count its record
+// needs, and once it holds that count the mean result in risks of those that made money, none where none did.
+public sealed record PaperWinners(int Finished, int Needed, double? Average);
+
 // The figures paper trading draws beside each account's walk, worked here as the walk is, so the read surface and the page
 // work none of them out: an open trade's standing tonight, a closed trade's ending, the stocks not bought, a rule's trades
 // against its variants', each test year, the chance a rule picking at random would do as well, and a record's progress.
@@ -324,6 +328,17 @@ public static partial class PaperAccount
         double[] edges = [.. trades.Where(trade => trade.Ended is not null && trade.Edge is not null).Select(trade => trade.Edge!.Value)];
 
         return new PaperProgress(counted, needed, Math.Min(1.0, counted * 1.0 / needed), edges.Length > 0 ? edges.Average() : null, edges.Length);
+    }
+
+    // From 22.18 a rule's winning trades as its record reads them: its finished trades, counted as its progress counts them,
+    // against the count a verdict needs, and the mean result of those that made money only once it holds that count.
+    // see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
+    public static PaperWinners Winners(IReadOnlyList<(PaperTrade Trade, double? Result)> trades)
+    {
+        var finished = trades.Where(one => one.Trade.Ended is not null).ToArray();
+        double[] won = [.. finished.Where(one => one.Result is > 0).Select(one => one.Result!.Value)];
+
+        return new PaperWinners(finished.Length, LoopScreens.SwingTrades, finished.Length >= LoopScreens.SwingTrades && won.Length > 0 ? won.Average() : null);
     }
 
     // An account's trades its walk bought, those open on the night and those ended.

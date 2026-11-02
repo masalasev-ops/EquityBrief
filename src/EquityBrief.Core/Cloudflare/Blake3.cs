@@ -5,7 +5,7 @@ namespace EquityBrief.Core.Cloudflare;
 
 // BLAKE3's 32-byte hash, written from the function's own reference implementation, since Cloudflare Pages names each
 // uploaded file by the BLAKE3 hash of its contents in base64 followed by its extension and the framework carries none.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 public static class Blake3
 {
     const int BlockLength = 64;

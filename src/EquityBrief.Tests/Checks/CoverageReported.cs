@@ -69,6 +69,7 @@ public class CoverageReported
         ["candidate-conditions"] = "CandidateConditions",
         ["trend-versions"] = "TrendVersions",
         ["plain-words"] = "PlainWords",
+        ["copy-method-leak"] = "CopyMethodLeak",
     };
 
     internal static IReadOnlyList<RosterRow> Roster()

@@ -419,7 +419,8 @@ public sealed partial class MarkRenderer
                 : "The share of stocks above their 200-day average could not be read tonight. ";
         }
 
-        var dipSaid = line.Dip is { } dip ? ReaderWords.Plain(dip) : null;
+        // From 22.17 the read-only copy says nothing of the market setting the dip reads, which states its threshold.
+        var dipSaid = line.Dip is { } dip && !Copying ? ReaderWords.Plain(dip) : null;
 
         said += dipSaid is { Length: > 0 } ? char.ToUpperInvariant(dipSaid[0]) + dipSaid[1..] + "." : string.Empty;
 
@@ -573,7 +574,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $" <span class=\"fam-count\">{Escaped(count)}</span></header>");
         body.Append(Invariant, $"<p class=\"setup-about\">{Escaped(about ?? WordsOf(card.Family, card.Label).About)}</p>");
 
-        if (card.RuleChoice is { } rule)
+        if (card.RuleChoice is { } rule && !Copying)
         {
             body.Append(RuleTabs(card.Family, rule));
         }
@@ -610,6 +611,24 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"data-state=\"{(provisional ? "provisional" : "live")}\" data-live-since=\"{(card.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{card.Variants}\" ");
         body.Append(Invariant, $"data-rule=\"{Escaped(card.RuleChoice?.Chosen.Slug ?? RuleScreenWords.LiveSlug)}\" data-variant=\"{(variant is null ? "none" : variant.Chosen.Variant!.Value.ToString(Invariant))}\" data-folded=\"{Flag(folded)}\">");
 
+        // From 22.17 the read-only copy's card: what the setup buys, tonight's picks and how the setup has done, and none of
+        // its rule's settings, versions or the stocks it narrowed to.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        if (Copying)
+        {
+            body.Append(Formatted($"<p class=\"card-summary\" data-summary>{(card.Picks.Count > 0 ? Escaped(PickedSaid(card with { RuleChoice = null })) : PlainEmptyLine(card))}</p>"));
+            body.Append(card.Picks.Count > 0 ? LivePicks(card.Picks, card.Family) : string.Empty);
+
+            foreach (var note in card.Notes)
+            {
+                body.Append(Invariant, $"<p class=\"family-note\">{WithSignedFigures(ReaderWords.Plain(note))}</p>");
+            }
+
+            body.Append(SetupRecord(card));
+
+            return body.Append("</section>").ToString();
+        }
+
         // The summary, then the picks: a chosen version's own under its banner, or the live setup's with the notes on the
         // stocks it held back and its quiet nights.
         body.Append(CardSummary(card, variant));
@@ -622,7 +641,7 @@ public sealed partial class MarkRenderer
         }
         else if (card.Picks.Count > 0)
         {
-            body.Append(LivePicks(card.Picks));
+            body.Append(LivePicks(card.Picks, card.Family));
         }
 
         // The notes beneath the live setup's picks alone: a chosen version is drawn as that version saw the night.
@@ -776,7 +795,7 @@ public sealed partial class MarkRenderer
                 body.Append(Invariant, $"<p class=\"record-said\" data-rule-mean=\"{usual.ToString("R", Invariant)}\">Against the same plan on any stock that day, its {similar.RuleSetups ?? 0:#,0} finished setups came to {PerHundred(usual)} for every $100 risked, before costs.</p>");
             }
         }
-        else if (card.Frozen is { } frozen)
+        else if (card.Frozen is { } frozen && !Copying)
         {
             body.Append(Invariant, $"<p class=\"record-said\">{Escaped(FrozenRecordSaid(frozen))}</p>");
         }
@@ -809,7 +828,7 @@ public sealed partial class MarkRenderer
     // setup's own order with its ticker opening the stock's chart page, its business state and its plan, read from the
     // same pick cells the buy points draw so the two tables state the same figures.
     // see: A setup's card draws its live picks as rows of its own, each ticker opening its chart page
-    string LivePicks(IReadOnlyList<FamilyPickCell> picks)
+    string LivePicks(IReadOnlyList<FamilyPickCell> picks, string family)
     {
         var body = new StringBuilder();
 
@@ -833,7 +852,7 @@ public sealed partial class MarkRenderer
 
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-card-pick=\"true\"><td class=\"place\" data-place=\"{place}\">{place}</td>");
             body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Distance?.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
-            body.Append(Invariant, $"<td class=\"why\">{Escaped(ReaderWords.Plain(StoredWords(pick.Why)))}</td>");
+            body.Append(Invariant, $"<td class=\"why\">{Escaped(WhyWords(family, pick.Why))}</td>");
             body.Append(PriceCell("buy", pick.Buy, null));
             body.Append(PriceCell("stop", pick.Stop, null));
             body.Append(PriceCell("target", pick.Target, pick.Trailing ? "rising stop, no target" : pick.Exit is { } exit ? ReaderWords.Plain(exit) : null));
@@ -849,6 +868,16 @@ public sealed partial class MarkRenderer
     // A card listing nothing tonight in one line: why it lists nothing, the gate that stopped the most of the members
     // reaching it, and its empty stretch against its usual longest, or that no usual stretch is read yet under the floors.
     // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
+    // A plain card's line where it lists none: that it found none, that its part of the night was not computed or that the
+    // market check closed its list, and the stocks a trade still open holds back, with no step any stock missed.
+    static string PlainEmptyLine(FamilyCardView card) =>
+        EmptyLine(card with
+        {
+            RuleChoice = null,
+            Close = null,
+            Empty = card.NotComputed || card.Empty?.StartsWith("The market check closed", StringComparison.Ordinal) == true ? card.Empty : null,
+        });
+
     static string EmptyLine(FamilyCardView card)
     {
         // Where the market check closed the list the line says so, its figures standing in tonight in one minute above.

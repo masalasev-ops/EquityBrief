@@ -16,7 +16,7 @@ namespace EquityBrief.Tests.Reading;
 // press header, scripts, secrets, paths and the account's settings before anything leaves the machine; the folder sent to
 // its own Cloudflare Pages project by direct upload, keyed by the BLAKE3 hash the host's own tool keys a file by, with the
 // token in a header alone; and the verb writing the copy through the read surface's build, its report beside the folder.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 public partial class ReadSurface
 {
     // BLAKE3's published test inputs, each byte its position modulo 251, and their hashes, with the empty input's and
@@ -333,6 +333,9 @@ public partial class ReadSurface
         Assert.Contains("Nothing the check reads refuses the upload.", said);
         Assert.Equal(before, StoreBytesHash(store.DatabaseFile));
 
+        // From 22.17 the surface read every file it wrote for the method and found none, the copy's pages drawn plain.
+        Assert.Contains(said, line => line.Contains("read every file for the method against", StringComparison.Ordinal) && line.EndsWith(": none found", StringComparison.Ordinal));
+
         var folder = SitePublisher.FolderIn(store.Root);
         var pages = Directory.EnumerateFiles(folder, "*.html", SearchOption.AllDirectories).Select(File.ReadAllText).ToArray();
 
@@ -343,7 +346,10 @@ public partial class ReadSurface
             Assert.DoesNotContain("123457", page, StringComparison.Ordinal);
             Assert.DoesNotContain("data-account=\"set\"", page, StringComparison.Ordinal);
             Assert.DoesNotContain("<form", page, StringComparison.Ordinal);
+            Assert.Contains(EquityBrief.Web.Cloudflare.SiteCopy.NoIndex, page, StringComparison.Ordinal);
         });
         Assert.Contains(PublishedSite.Name, File.ReadAllText(Path.Combine(folder, "index.html")), StringComparison.Ordinal);
+        Assert.Equal(EquityBrief.Web.Cloudflare.SiteCopy.Robots, File.ReadAllText(Path.Combine(folder, EquityBrief.Web.Cloudflare.SiteCopy.RobotsFile)));
+        Assert.DoesNotContain(Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories), file => Path.GetFileName(file).StartsWith("loop", StringComparison.Ordinal) || Path.GetFileName(file).StartsWith("ledger", StringComparison.Ordinal));
     }
 }

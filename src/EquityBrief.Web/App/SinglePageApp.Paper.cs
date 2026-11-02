@@ -16,6 +16,12 @@ public sealed partial class SinglePageApp
     public const string PaperGuide =
         "Each account takes one rule's trades: a family's live or provisional rule takes the page's own list, each registered variant its own list or book, and You the trades you took from the cards. Each trade is bought at the open of the session after the night that listed it and sized off the account's value at its buy by the card's own sizing, the trades ending on a session sold before any is bought, and one the free cash cannot buy is skipped and counted; each pays its round trip, half at its buy and half at its sale. The tiles draw each family's live or provisional account's return since its record began beside the index's fund over the same days, and the chart draws each account's return session by session, a chosen family's variants dashed; a key's press hides or shows its line. An account is evidence about one unchanged rule, so a registered rule's account counts only the trades of its current version, from where the Run page's record of the rule starts, and starts again when the rule is registered again; the trades of earlier versions stay folded and left out of every figure. A provisional account and yours count every trade from the first. A rule's scorecard puts two things beside each other and never adds them together: how the rule did on the test years in the newest monthly test, and its own record since it went live, which is not evidence until it holds the test's count of trades or months.";
 
+    // From 22.17 how the read-only copy's paper trading is read, and what it is, which name no variant and no version.
+    public const string PlainPaperGuide =
+        "Each account takes one family's live rule's trades, the page's own list. Each trade is bought at the open of the session after the night that listed it and sized off the account's value at its buy, one the free cash cannot buy is skipped and counted, and each pays its round trip, half at its buy and half at its sale. The tiles draw each family's account's return since its record began beside the index's fund over the same days, and the chart draws each account's return session by session; a key's press hides or shows its line.";
+
+    public const string PlainPaperWhat = "Every stock a rule lists is bought on paper at the open of the session after the night that listed it, in a copy of the account each rule keeps, so you can see what each rule bought and how each trade stands.";
+
     // The one sentence saying what the page is.
     public const string PaperWhat = "Every stock a rule lists is bought on paper at the open of the session after the night that listed it, in a copy of your account each rule keeps, so you can see what each rule bought, how each trade stands, what its variants did differently and how the rule scores.";
 
@@ -56,17 +62,22 @@ public sealed partial class SinglePageApp
             ? Invariant($"<p class=\"paper-line\" data-size=\"{(settings is null ? "example" : "kept")}\"><span>Account <b>${used.Size:#,0}</b></span><span>Risk a trade <b>{used.Risk:0.##}%</b></span><span>Most in one stock <b>{used.Cap * 100:0.##}%</b></span><span>Each rule trades its own copy of this account.</span></p>")
             : "<p class=\"paper-line degraded\">No account is kept: set the three to walk the accounts.</p>";
 
+        // From 22.17 the read-only copy draws each family's live or provisional account alone: no variant, no earlier
+        // version, no setting and no trade of the operator's.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        var plain = marks.Copying;
+
         region.Append(Cards.Computed(
             "Paper trading",
-            MarkRenderer.CardSummary(MarkRenderer.PaperAccountSaid(settings, example)) + Invariant($"<p class=\"paper-what\">{Escaped(PaperWhat)}</p>") + line
+            MarkRenderer.CardSummary(MarkRenderer.PaperAccountSaid(settings, example)) + Invariant($"<p class=\"paper-what\">{Escaped(plain ? PlainPaperWhat : PaperWhat)}</p>") + line
                 + Invariant($"<details class=\"paper-change\"{(walked is null ? " open" : string.Empty)}><summary>Change the account</summary>{AccountForm(settings?.Size, settings?.Risk, settings?.Cap, proposedCap)}</details>"),
             title: "Each rule's trades, in your money",
             region: "account"));
 
         region.Append(Cards.Computed(
             "Paper trading",
-            MarkRenderer.CardSummary(MarkRenderer.PaperChartSaid(accounts, page.Fund, walked is not null)) + Guide(PaperGuide) + marks.PaperTiles(accounts, page.Fund, page.Combined, walked?.Size) + MarkRenderer.PaperFamilies(accounts, link)
-                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, link.Family, page.Combined)),
+            MarkRenderer.CardSummary(MarkRenderer.PaperChartSaid(accounts, page.Fund, walked is not null)) + Guide(plain ? PlainPaperGuide : PaperGuide) + marks.PaperTiles(accounts, page.Fund, page.Combined, walked?.Size) + (plain ? string.Empty : MarkRenderer.PaperFamilies(accounts, link))
+                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, plain ? null : link.Family, page.Combined)),
             title: "Each rule since its record began",
             lede: "Each family's live or provisional rule, its return on your size beside the index's fund over the same days, and beneath, each account's return in per cent of its size, session by session.",
             stamp: Cards.Night(night),
@@ -89,6 +100,20 @@ public sealed partial class SinglePageApp
             lede: "The live and provisional rules' trades, newest first, each bought at the open after the night that listed it and sized from that night's close and stop.",
             stamp: Cards.Night(night),
             region: "paper-bought"));
+
+        if (plain)
+        {
+            region.Append(Cards.Computed(
+                "Paper trading",
+                marks.PlainScorecard(page),
+                title: "Rule scorecard",
+                lede: "Each family's live rule: the trades it has finished since it went live and its account's return so far.",
+                stamp: Cards.Night(night),
+                region: "paper-scorecard"));
+            region.Append("</section>");
+
+            return ReaderText.Page(region.ToString());
+        }
 
         region.Append(Cards.Computed(
             "Paper trading",

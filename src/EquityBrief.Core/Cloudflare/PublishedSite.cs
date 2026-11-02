@@ -5,10 +5,14 @@ namespace EquityBrief.Core.Cloudflare;
 // the copy is written into, the report on it written beside that folder and never inside it, the Cloudflare Pages project it
 // is uploaded to, and the two settings in the secrets file the upload is gated on. Everything the copy is made by sits under
 // a folder of this name in each project, apart from the read surface the operator runs.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 public static class PublishedSite
 {
     public const string Verb = "publish-site";
+
+    // From 22.17 what the read surface's verb ends with where a file it wrote carries the method, each named in its lines,
+    // which the worker reads as a refusal of the upload.
+    public const int Leaked = 2;
 
     public const string Folder = "site";
 

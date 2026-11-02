@@ -74,7 +74,7 @@ if (args.Length > 0 && args[0] == ComparisonFiles.Verb)
 
 // Started with the read-only copy's verb, the surface draws every screen as an export draws a report: no account
 // setting, none of the operator's own trades, no live quote and no TipRanks ratings, and no control asking for any.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 var copying = args.Length > 0 && args[0] == PublishedSite.Verb;
 var copyServer = copying ? new InProcessServer() : null;
 
@@ -111,7 +111,7 @@ builder.Services.AddSingleton(services => new ReadApi(
         .Where(entry => entry.Value is { Length: > 0 })
         .ToDictionary(entry => entry.Key, entry => entry.Value!, StringComparer.Ordinal),
 });
-builder.Services.AddSingleton<MarkRenderer>();
+builder.Services.AddSingleton(new MarkRenderer { Copying = copying });
 
 // The two spend caps, read once at startup so a cap that is not an amount of money
 // refuses the surface rather than a page, and handed to the screens that state them.
@@ -387,7 +387,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
 
         view = view with
         {
-            Brief = await BriefAsync(read, store, ticker, indexCode, briefed, member, indicators, report, reactions, cards, score, sized: !copying),
+            Brief = await BriefAsync(read, store, ticker, indexCode, briefed, member, indicators, report, reactions, cards, score, sized: !copying, copying: copying),
             Fundamentals = FundamentalsScreen.Of(
                 score,
                 Universes.ByCode(indexCode ?? string.Empty)?.Name,
@@ -1421,7 +1421,9 @@ static async Task<IReadOnlyList<FamilyCardView>> WithNumbersAsync(ReadApi read, 
 // quarters' readings, its six-month return's place among its index's members off the ledger's readings of the night, and
 // its next report after the night.
 // see: The chart page opens on a brief read written by code from stored figures, and no rule reads it
-static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, string ticker, string? indexCode, DateOnly night, UniverseRow? member, IReadOnlyList<IndicatorRow> indicators, ReportView report, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<DecisionCardRow> cards, FundamentalScoreRow? score = null, bool sized = true)
+// From 22.17 the read-only copy's brief names no setup a stock is a step short of, since that names the step and its reading.
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, string ticker, string? indexCode, DateOnly night, UniverseRow? member, IReadOnlyList<IndicatorRow> indicators, ReportView report, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<DecisionCardRow> cards, FundamentalScoreRow? score = null, bool sized = true, bool copying = false)
 {
     var large = indexCode == Universes.Large.Code;
     var gate = large ? await read.GateResultAsync(ticker, night) : null;
@@ -1508,7 +1510,7 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         large ? NameScreen.PlanRows(await read.LadderAsync(ticker, night)) : [],
         large,
         sized ? EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot) : null,
-        standing,
+        copying ? [.. standing.Where(one => one.State is not BriefStates.Short)] : standing,
         await read.NextReportAsync(ticker, night),
         [.. reactions.Select(row => row.MovePct)],
         report.Insiders,
@@ -1813,9 +1815,7 @@ async Task<IResult> TonightScreenAsync(
         indexCards = TonightScreen.WithDipFreeze(indexCards, reading.Code, indexRegister, indexAnswers, indexDipNight, indexAsOf);
 
         // Each setup's record so far as Paper trading counts it, its finished trades against what a verdict needs.
-        var indexProgress = await PaperProgressAsync(read, reading, dated);
-
-        indexCards = [.. indexCards.Select(card => card with { Progress = indexProgress.GetValueOrDefault(card.Family) })];
+        indexCards = WithRecords(indexCards, await PaperProgressAsync(read, reading, dated));
 
         // The fundamentals-first family's card, passes and trades are drawn no more, its rule running out of sight, and the
         // cards left are numbered in the page's order.
@@ -2185,9 +2185,7 @@ async Task<IResult> TonightScreenAsync(
         cards = TonightScreen.WithDipLabels(cards, dipPicks);
 
         // Each setup's record so far as Paper trading counts it, its finished trades against what a verdict needs.
-        var progress = await PaperProgressAsync(read, reading, dated);
-
-        cards = [.. cards.Select(card => card with { Progress = progress.GetValueOrDefault(card.Family) })];
+        cards = WithRecords(cards, await PaperProgressAsync(read, reading, dated));
     }
 
     // A plan and its bands as the night shown stored them, drawn against that night's close.
@@ -2704,7 +2702,11 @@ async Task<IResult> HomeAsync(
             _ => "A strong stock that dipped to a price where buyers have stepped in before, and turned back up today.",
         };
 
-        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk);
+        // From 22.18 a plan selling on a rising give-up price carries its distance, the night's or the buy less the stop, and
+        // its rule's winning trades off its card.
+        decimal? trail = pick.Trailing && pick.Target is null && pick.Buy is { } buy && pick.Stop is { } stop && buy > stop ? pick.Card?.Trail ?? buy - stop : null;
+
+        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners);
     }
 
     HomeIdea[] fundamentals =
@@ -2758,7 +2760,7 @@ async Task<IResult> HomeAsync(
             combined.Trades.Count(trade => !trade.Open && trade.Skipped is null && trade.Return > 0),
             combined.Walk.Return,
             index,
-            progress.Values.Any(one => one.Counted < one.Needed));
+            progress.Values.Any(one => one.Progress.Counted < one.Progress.Needed));
     }
 
     // On the S&P 400 and 600 each rule checks its own market level, a rule reading none counted open.
@@ -2789,8 +2791,9 @@ async Task<IResult> HomeAsync(
 }
 
 // Each family's live or provisional rule's record so far on an index as of a night, as Paper trading counts it off the
-// same accounts: its finished trades against the count a verdict needs, a book's months against its own.
-async Task<IReadOnlyDictionary<string, EquityBrief.Core.Cards.PaperProgress>> PaperProgressAsync(ReadApi read, UniverseChoice reading, DateOnly night)
+// same accounts: its finished trades against the count a verdict needs, a book's months against its own, and from 22.18
+// its winning trades as a breakout idea's record reads them.
+async Task<IReadOnlyDictionary<string, (EquityBrief.Core.Cards.PaperProgress Progress, EquityBrief.Core.Cards.PaperWinners Winners)>> PaperProgressAsync(ReadApi read, UniverseChoice reading, DateOnly night)
 {
     var large = reading == Universes.Large;
     var indexNight = await read.IndexNightAsync(reading.Code, night);
@@ -2811,9 +2814,23 @@ async Task<IReadOnlyDictionary<string, EquityBrief.Core.Cards.PaperProgress>> Pa
         .GroupBy(account => account.Family, StringComparer.Ordinal)
         .ToDictionary(
             group => group.Key,
-            group => EquityBrief.Core.Cards.PaperAccount.Progress(group.First().Book, [.. group.First().Trades.Select(one => one.Trade)], group.First().Since, night),
+            group => (
+                EquityBrief.Core.Cards.PaperAccount.Progress(group.First().Book, [.. group.First().Trades.Select(one => one.Trade)], group.First().Since, night),
+                EquityBrief.Core.Cards.PaperAccount.Winners(group.First().Trades)),
             StringComparer.Ordinal);
 }
+
+// From 22.18 each family's cards with its progress, and each pick's card with its rule's winning trades.
+static IReadOnlyList<FamilyCardView> WithRecords(IReadOnlyList<FamilyCardView> cards, IReadOnlyDictionary<string, (EquityBrief.Core.Cards.PaperProgress Progress, EquityBrief.Core.Cards.PaperWinners Winners)> records) =>
+[
+    .. cards.Select(card => records.TryGetValue(card.Family, out var record)
+        ? card with
+        {
+            Progress = record.Progress,
+            Picks = [.. card.Picks.Select(pick => pick.Card is { } held ? pick with { Card = held with { Winners = record.Winners } } : pick)],
+        }
+        : card with { Progress = null }),
+];
 
 // An index's paper accounts as of a night: its stored trades in one shape, each costed, walked and judged, with the
 // sessions they were walked over, each stock's company and night readings, the fund's closes and each open holding's
@@ -3210,7 +3227,8 @@ app.MapGet("/screens/universe", async (
             night,
             reading,
             night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.UniverseRoute) : string.Empty,
-            view),
+            view,
+            listedTonight),
         "text/html; charset=utf-8");
 });
 
@@ -3256,7 +3274,9 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
             "text/html; charset=utf-8");
     }
 
-    selector += paper is null ? string.Empty : SinglePageApp.AccountSelector(paper.Views, null) + SinglePageApp.ListsVerdicts(paper.Views);
+    // From 22.17 the read-only copy draws neither, since both name every variant and the test years' verdicts.
+    // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+    selector += paper is null || copying ? string.Empty : SinglePageApp.AccountSelector(paper.Views, null) + SinglePageApp.ListsVerdicts(paper.Views);
 
     if (reading != Universes.Large)
     {
@@ -3882,7 +3902,7 @@ app.MapGet("/screens/run/{night?}", async (
 // The read-only copy: started with its verb and the folder to write, the surface runs on a server inside its own process
 // with no socket, asks itself for each screen the copy holds as the live shell does, writes the copy into the folder and
 // stops, recording no start and writing nothing to the store. Each line it prints is one the worker's report carries.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 if (copyServer is not null)
 {
     if (args.Length < 2 || string.IsNullOrWhiteSpace(args[1]))
@@ -3909,8 +3929,15 @@ if (copyServer is not null)
         Console.WriteLine($"{PublishedSite.Verb}: reports: {index}: {reports} reports, {versions} versions");
     }
 
+    // From 22.17 each leak of the method by its file and its text, and the ending the worker refuses the upload on.
+    // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+    foreach (var leak in copied.Leaks ?? [])
+    {
+        Console.WriteLine($"{PublishedSite.Verb}: leaks the method: {leak}");
+    }
+
     Console.WriteLine(FormattableString.Invariant($"{PublishedSite.Verb}: night {copied.Night:yyyy-MM-dd}, {copied.Files.Count} screens held"));
-    Environment.ExitCode = copied.Files.Count == 0 ? 1 : 0;
+    Environment.ExitCode = copied.Files.Count == 0 ? 1 : copied.Leaks is { Count: > 0 } ? PublishedSite.Leaked : 0;
 
     return;
 }

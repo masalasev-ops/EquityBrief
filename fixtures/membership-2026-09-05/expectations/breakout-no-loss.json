@@ -1,0 +1,13 @@
+{
+  "stage": "breakout-no-loss",
+  "derivation": "derived",
+  "derivedFrom": "22.18's ruling and the breakout's rule, not a run. The breakout is bought at the night's close with its give-up price 1.5 typical moves beneath, raised after each higher close to that close less the same distance and never lowered, as the rule's trailing exit walks it. The fixture's night of 2026-09-08 lists no stock, as setup-cards.json derives, so the price is worked by hand over a constructed plan: a close of 182.40 and a typical move of 3.20 put the give-up price 4.80 beneath, at 177.60, and the distance it trails at 4.80, fixed at the buy. The give-up price reaches the buy once a close reaches 182.40 + 4.80 = 187.20, so the trade can no longer lose once the stock reaches about 187.20. Walked over closes of 183.10, 185.00, 184.20, 187.19 and 187.20 the give-up price stands at 178.30, 180.20, 180.20, 182.39 and 182.40: it does not move down after the close of 184.20, it stands a cent under the buy after a close a cent short of 187.20, and at the buy after the close of 187.20.",
+  "tables": ["gate_result"],
+  "buy": "182.40",
+  "typicalMove": "3.20",
+  "stopMoves": 1.5,
+  "stop": "177.60",
+  "noLossAt": "187.20",
+  "closes": ["183.10", "185.00", "184.20", "187.19", "187.20"],
+  "stops": ["178.30", "180.20", "180.20", "182.39", "182.40"]
+}

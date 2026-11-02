@@ -14085,3 +14085,110 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 22.17 ruling - the read-only copy shows no part of the method, and its upload refuses a page that leaks one   2026-11-02
+
+Not a checkpoint entry: it records the operator's ruling and answers of 2026-11-02, which add 22.17 to the phase, and lands
+nothing.
+Ruled:      about 01:00 UTC, word for word in `prompts/2026-11-02-read-only-copy-strip-method-ruling.md`: "The read-only
+            copy shows my method. Strip it, and make the upload refuse any page that leaks it." No Loop page or Ledger
+            in the copy or its menu; no version, variant or setting on any page it holds, a pick's card its plain reason
+            and its three prices, paper trading each family's live account alone, the universe list each stock's name,
+            sector, price, move on the day and pick tonight, Tonight's setups their description, picks and record; the
+            robots meta on every page and a robots file; a check before every upload refusing a leak and naming the file
+            and the text, on the roster with a test planting each kind; the copy rebuilt locally with no upload and shown
+            before the next upload. "The live app on 5152 is unchanged. Nothing about the rules, the night or the store
+            changes."
+Answered:   asked about the scheduled upload, the prompt file and the label: "Leave it running", "Force-add the file" and
+            "22.17". Then, with the breakout addendum to Home: "In addition to the addendum i gave, do in the same PR",
+            which files that addendum as 22.18 in this pull request.
+Written:    22.17's text and its done condition in the build plan, the decision superseding the copy's with the old moved
+            to Previously decided, the copy's paragraph in section 15.4 and section 20's phase 22 row, the runbook, the
+            roster's new row and the guide, their prior text in the changelog.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.18's entry below, which
+            states that run's figures.
+
+### 22.17 - the read-only copy drawn with no part of the method, kept out of search, and refused on a leak of it   2026-11-02
+
+Built:      the read surface draws every screen of the copy plain on a switch the copy's verb alone sets: Tonight's setups
+            their description, picks with each setup's plain sentence for why, any notes and their record, with no
+            versions choice, settings, narrowing, stocks one step short or close to breaking out, and the book families
+            their holdings and record alone; a pick's card its sentence and its buy, stop and target; paper trading each
+            family's live or provisional account, no variant, earlier version, chart key or tile naming a rule's words,
+            its scorecard each rule's closed trades and return; Past picks with no account choice or test verdicts; the
+            universe list name, sector, price, move on the day and pick tonight; a stock's page with no part of how the
+            rules read it, its brief naming no setup it is short of. The copy holds no Loop page or Ledger, carries the
+            robots meta on every file, a robots file and the host's noindex and nofollow, and says a target's close as
+            "at 22.13 or higher". Every file it wrote is read for the method before the upload, the threshold phrases
+            outside a report's written prose, and a leak ends the verb on a code the worker refuses the upload on. The
+            decision superseded, the roster's `copy-method-leak`, section 15.4, section 20's row, the runbook and the
+            guide say it.
+Read back:  the copy written locally over the live store, night of 2026-10-30, uploading nothing: the first pass found 1,024
+            leaks, the paper pages' chart keys and tiles naming each rule's registration, the S&P 400's and 600's
+            heavyweights folds and the code's exit sentences among them, and the written reports' prose using the two
+            threshold phrases of companies' figures; the last pass 402 screens against 1,104 before and none of 207 needles
+            found. Tonight, a pick's card, Paper trading and a chart page shown to the operator from it.
+Tests:      six new in `copy-method-leak`: each kind of leak planted and named with its file and text, a clean page and
+            the threshold phrases in written prose passing, a registration's settings read part by part, the upload
+            refused on the surface's leak and not without one, a pick's card for the copy carrying none of what the app's
+            card draws of its rule, and the copy's routes, menu, robots meta and headers; the real build's copy over the
+            fixture's store found to hold no leak, every page the robots meta and the robots file written.
+Claims:     none new; the roster gains its forty-fifth check.
+Pins:       none move; the switch is read by no rule's version, the filter or a readings pin.
+Mutation:   chosen before the runs by this rule, the properties the ruling's check exists for, filtered to the check's
+            tests and the real build's: m1 the worker ignoring the surface's leak code, predicted red at the upload's test
+            alone, red there alone; m2 the pick's card drawn whole for the copy, predicted red at the card's test alone,
+            red there alone; run together, each reverted, green.
+Carried:    the operator reads the local copy before the next upload; the scheduled upload runs from main and carries the
+            old copy until this merges.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.18's entry below, on whose
+            branch this is recorded.
+
+### 22.18 ruling - a breakout idea's sell lines on Home and on its card, an addition to the Home ruling   2026-11-02
+
+Not a checkpoint entry: it records the operator's addition to the Home ruling of 2026-11-02, which adds 22.18 to the
+phase, and lands nothing.
+Ruled:      word for word in `prompts/2026-11-02-home-breakout-sell-addendum.md`: "Addition to the Home ruling, for every
+            idea whose rule sells on a rising give-up price instead of a target (the breakout today)." On Home, app and
+            copy, and on that pick's card on Tonight: "Aim to sell at": "No fixed target" with the line "Breakouts earn
+            most from the few that keep running, so the rule lets a winner run and sells only when the price closes below
+            a give-up price that rises behind it."; "Sell if it falls to": "$<tonight's give-up price>, rising as the
+            stock makes new highs; it never moves down."; "The trade can no longer lose once the stock reaches about
+            $<price>.", worked from the rule's own trail and the buy price; the rule's record under its own name, "<Rule
+            name>'s winning trades have made about $<n> per $1 risked so far, over its <n> finished trades. That is the
+            rule's record, not this stock's chance.", and below the minimum "<Rule name> has <n> of the <minimum>
+            finished trades its record needs."; no bar for the card. "Every figure from the store, code-written; add the
+            trade-can-no-longer-lose price to the fixture with one case worked by hand."
+Answered:   "In addition to the addendum i gave, do in the same PR", so it is built with 22.17 in its pull request, filed
+            as 22.18.
+Written:    22.18's text and its done condition in the build plan, the decision, section 15.24's ideas row, the card's
+            paragraph in section 15 and section 20's phase 22 row, their prior text in the changelog, and the guide.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.18's entry below, which
+            states that run's figures.
+
+### 22.18 - a breakout idea says it has no fixed target, how its give-up price rises, when it can no longer lose and its rule's record   2026-11-02
+
+Built:      the card's stop and target tiles and Home's idea for a plan selling on a rising give-up price with no target,
+            in the operator's words; the close at which the trade can no longer lose, the buy and the distance the
+            give-up price trails by, the night's stored distance or the buy less the stop, worked by one function beside
+            the trailing exit; and the rule's record under the rule's name, read off the paper account Paper trading
+            walks for the family's live or provisional rule on the index, its finished trades against the 300 a verdict
+            needs and past them its winning trades' mean result in risks. The trail is fixed at the buy, so the price
+            needs no future day and "about" stands for a close reached. No bar on such a card, and the copy's plain card
+            draws the same lines. The decision, sections 15.24, 15's card paragraph and 20, and the guide say it.
+Read back:  tonight's one breakout on the S&P 500, GDDY bought at about 117.24 with its give-up price at 109.98, can no
+            longer lose once it reaches about $124.50; its rule holds none of the 300 finished trades.
+Tests:      three new: the card's tiles and lines with no bar and the copy's card saying the same, the record's two forms
+            and its count and mean worked by hand off constructed paper trades, and the fixture's no-loss case against
+            the trailing exit walked over the same closes; Home's region test reading the breakout's lines; 3060 in all.
+Claims:     none new; the rows edited keep their verdicts.
+Pins:       none move; the breakout's rule, its trailing exit's walk and the readings pin are untouched.
+Mutation:   chosen before the runs by this rule, the property the addition rests on, filtered to its tests: n1 the
+            no-loss price as the buy plus twice the trail, predicted red at the fixture's case, the card's test and
+            Home's region test, red at those three alone; reverted, green.
+Carried:    after the merge, 5152 restarted from main and the breakout's card and Home read back there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3060 of 3060 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
+            placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
