@@ -155,7 +155,7 @@ public static class FundamentalsScreen
     {
         var year = analysts?.Revisions.FirstOrDefault(row => row.Period == EstimatePeriod.CurrentYear);
         var estimates = year is { Up30: { } up, Down30: { } down }
-            ? Invariant($"Over 30 days {up} analysts raised and {down} cut their estimate for the year")
+            ? Invariant($"Over 30 days {up} {(up == 1 ? "analyst" : "analysts")} raised and {down} cut their estimate for the year")
             : "The analysts' changes to their estimates over 30 days are not stored";
         var trades = insiders is null
             ? "insiders' open-market trades over 90 days are not read"
