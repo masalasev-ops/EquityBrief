@@ -131,6 +131,12 @@ public sealed partial class SinglePageApp : IComponent
     // and its blank matrix cells.
     public static ComponentAccess Access => ComponentAccess.Nothing;
 
+    // From 22.16 Home is the landing page at "#/", and Tonight sits one click away at a route of its own.
+    // see: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
+    public const string HomeRoute = "#/";
+
+    public const string TonightRoute = "#/tonight";
+
     public const string NameRoute = "#/name/";
 
     // The universe route, section 15.3's second. Filters live in the hash so a
@@ -425,10 +431,11 @@ public sealed partial class SinglePageApp : IComponent
     static string MenuGroup(string key, string name, string links) =>
         $"<div class=\"m-group\" data-group=\"{key}\"><button type=\"button\" class=\"m-group-btn\" aria-expanded=\"false\">{name}</button><div class=\"m-drop\">{links}</div></div>";
 
-    // The bar's links: the four screens read most, then the two menus.
+    // The bar's links: Home, the four screens read most, then the two menus.
     string Nav(string lane) =>
         "<nav class=\"m-nav\" aria-label=\"Screens\">"
-        + "<a href=\"#/\" data-view=\"tonight\">Tonight</a>"
+        + $"<a href=\"{HomeRoute}\" data-view=\"home\">Home</a>"
+        + $"<a href=\"{TonightRoute}\" data-view=\"tonight\">Tonight</a>"
         + $"<a href=\"{UniverseRoute}\" data-view=\"universe\">Universe</a>"
         + $"<a href=\"{PaperRoute}\" data-view=\"paper\">Paper trading</a>"
         + $"<a href=\"{LoopRoute}\" data-view=\"loop\">Loop<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a>"
@@ -477,7 +484,11 @@ public sealed partial class SinglePageApp : IComponent
           const path = cut < 0 ? hash : hash.slice(0, cut);
           const query = cut < 0 ? '' : hash.slice(cut + 1);
           let view = 'tonight';
-          if (path === '' || path === '#/' || path.startsWith('{{{NightRoute}}}')) {
+          if (path === '' || path === '{{{HomeRoute}}}') {
+            view = 'home';
+            const home = await fetch('/screens/home' + (query ? '?' + query : ''));
+            screen.innerHTML = await home.text();
+          } else if (path === '{{{TonightRoute}}}' || path.startsWith('{{{NightRoute}}}')) {
             const date = path.startsWith('{{{NightRoute}}}') ? path.slice('{{{NightRoute}}}'.length) : '';
             const night = date === '' ? '' : '/' + encodeURIComponent(date);
             const tonight = await fetch('/screens/tonight' + night + (query ? '?' + query : ''));
@@ -581,6 +592,7 @@ public sealed partial class SinglePageApp : IComponent
           else if (query.get('name') && document.getElementById('selected')) { document.getElementById('selected').scrollIntoView({ block: 'start' }); }
           else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { screen.querySelector('.buy-points tr.sel[data-fold]').scrollIntoView({ block: 'start' }); }
           else if (reasonRow) { reasonRow.scrollIntoView({ block: 'center' }); }
+          else if (query.get('{{{HomeSetupKey}}}') && document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}'))) { document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')).scrollIntoView({ block: 'start' }); }
           else { scrollTo(0, 0); }
           keptPlace = null;
           fresh = false;
@@ -2871,7 +2883,7 @@ public sealed partial class SinglePageApp : IComponent
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"<span class=\"asof-words\">Night of {night:yyyy-MM-dd}, computed after the close{due}</span>") + Cards.NightPicker(night, held ?? [], NightRoute, "#/")));
+            Invariant($"<span class=\"asof-words\">Night of {night:yyyy-MM-dd}, computed after the close{due}</span>") + Cards.NightPicker(night, held ?? [], NightRoute, TonightRoute)));
 
         region.Append(selector);
 
@@ -3053,7 +3065,7 @@ public sealed partial class SinglePageApp : IComponent
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"<span class=\"asof-words\">Night of {night:yyyy-MM-dd}, computed after the close{due}</span>") + Cards.NightPicker(night, held, NightRoute, "#/" + query, query)));
+            Invariant($"<span class=\"asof-words\">Night of {night:yyyy-MM-dd}, computed after the close{due}</span>") + Cards.NightPicker(night, held, NightRoute, TonightRoute + query, query)));
 
         region.Append(selector);
 

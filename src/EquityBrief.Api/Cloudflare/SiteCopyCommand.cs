@@ -30,9 +30,9 @@ public static class SiteCopyCommand
     // How many pages of the universe list, its own and its sectors', the copy holds on one index at most.
     public const int ListPages = 80;
 
-    // The screens each index draws, as first drawn.
+    // The screens each index draws, as first drawn, Home first from 22.16.
     public static readonly IReadOnlyList<string> IndexScreens =
-        ["#/", SinglePageApp.PicksRoute, SinglePageApp.PaperRoute, SinglePageApp.LedgerRoute, SinglePageApp.ResearchedRoute, SinglePageApp.UniverseRoute, SinglePageApp.LoopRoute];
+        [SinglePageApp.HomeRoute, SinglePageApp.TonightRoute, SinglePageApp.PicksRoute, SinglePageApp.PaperRoute, SinglePageApp.LedgerRoute, SinglePageApp.ResearchedRoute, SinglePageApp.UniverseRoute, SinglePageApp.LoopRoute];
 
     // The screens whose own links to other views of themselves the copy follows.
     static readonly string[] Followed = [SinglePageApp.PicksRoute, SinglePageApp.PaperRoute, SinglePageApp.LedgerRoute, SinglePageApp.ResearchedRoute];
@@ -153,7 +153,7 @@ public static class SiteCopyCommand
 
         foreach (var index in Universes.Offered)
         {
-            foreach (var screen in new[] { "#/", SinglePageApp.PaperRoute })
+            foreach (var screen in new[] { SinglePageApp.HomeRoute, SinglePageApp.TonightRoute, SinglePageApp.PaperRoute })
             {
                 if (drawn.TryGetValue(OnIndex(screen, index), out var shown))
                 {
@@ -218,6 +218,11 @@ public static class SiteCopyCommand
             if (path.StartsWith("#/chart/", StringComparison.Ordinal) || path.StartsWith("#/name/", StringComparison.Ordinal))
             {
                 markup = SiteCopy.MarkedAtTheClose(markup, night);
+            }
+
+            if (path == SinglePageApp.HomeRoute)
+            {
+                markup = SiteCopy.HomeMarked(markup, night);
             }
 
             if (path.StartsWith("#/name/", StringComparison.Ordinal) && versions.TryGetValue(path["#/name/".Length..].Split('/')[0], out var listed))

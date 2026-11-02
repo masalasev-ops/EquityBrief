@@ -74,6 +74,9 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.HousekeepingClaims,
         .. FixtureExpectations.ExitFillRows,
         .. Reading.ReadSurface.ToneLineClaims,
+
+        // 22.16's Home, after phase 21's report as well.
+        .. Reading.ReadSurface.HomeRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

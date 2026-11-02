@@ -4131,6 +4131,30 @@ internal static class Scope
             Verdict.Pass,
             "a trade whose stock holds no bar on the session after its choice left unbought and counted waiting on the step's row, then bought at the open of the first session the store holds after it",
             ByExpectations),
+        [CheckReach.Key("15.24 Home", "The day")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page over constructed stores: each headline's branch, healthy, shaky, weak and on the S&P 400 mixed, worked by hand from the share, the floor, the index's move and the rules open; the bar with the floor marked on the S&P 500 and none on the S&P 400; the three tiles with their dots and words; and a figure not stored saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.24 Home", "Tonight's ideas")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page over a constructed store: the count and the session, each card in Tonight's order with its tag, sentence, prices and bar worked by hand from the stored plan, a trailing plan's line in the target's place, the link to its chart page and to Tonight, the note beneath, and a night with no buys saying so and why",
+            ByReadSurface),
+        [CheckReach.Key("15.24 Home", "How past ideas have done")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page over a constructed store: the combined account's day, its closed ideas and those that made money, its return and the equal-weight hold of the index's stocks worked by hand from their closes, the line about 300 finished trades and the link to Past picks",
+            ByReadSurface),
+        [CheckReach.Key("15.24 Home", "How it works")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page: the four tiles with their titles and sentences, each linking Tonight at its family's card",
+            ByReadSurface),
+        [CheckReach.Key("15.24 Home", "The foot")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page: the line and the press opening Tonight on the index read, and the disclaimer beneath everything",
+            ByReadSurface),
+        [CheckReach.Key("15.24 Home", "On the read-only copy")] = new Scoped(
+            Verdict.Pass,
+            "the copy's route list, its masthead's Home before Tonight, its server route for Home and for Tonight, and Home's head marked as of the close, each read off the copy's own functions",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The Fundamentals family's card")] = new Scoped(
             Verdict.Pass,
             "read back off the rendered page over a constructed store's night: the card in the fundamentals-first family's place with its tile in that slot, its sentence, its four tiles, the two tabs with each improver's score, what changed and its status, the strongest scores with the quality book's words, and its rule a click away; a night its part failed saying so, a store whose step read no night saying so, and the fundamentals-first family's card and tile drawn nowhere",
@@ -7076,6 +7100,13 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Quality at a fair price's card")] = "22.9",
         // 22.13's one, which the plan names as the Fundamentals family's card in the fundamentals-first family's place.
         [CheckReach.Key("15.7 Tonight", "The Fundamentals family's card")] = "22.13",
+        // 22.16's six, Home on the operator's ruling of 2026-11-01.
+        [CheckReach.Key("15.24 Home", "The day")] = "22.16",
+        [CheckReach.Key("15.24 Home", "Tonight's ideas")] = "22.16",
+        [CheckReach.Key("15.24 Home", "How past ideas have done")] = "22.16",
+        [CheckReach.Key("15.24 Home", "How it works")] = "22.16",
+        [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
+        [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
     };
 
@@ -7723,6 +7754,7 @@ internal static class Scope
         "15.20 The Loop page",
         "15.21 Paper trading",
         "15.22 Chart",
+        "15.24 Home",
         "15.11 How a reason's record is displayed",
     ];
 

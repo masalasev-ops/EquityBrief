@@ -45,8 +45,9 @@ public partial class ArchitectureConformance
         ("21.15", [], []),
     ];
 
-    // The rows the document gains after phase 21's report, named beside the pair and never counted in it: none yet.
-    internal static string[] AfterPhaseTwentyOne => [];
+    // The rows the document gains after phase 21's report, named beside the pair and never counted in it: from 22.16 Home's
+    // six regions.
+    internal static string[] AfterPhaseTwentyOne => [.. Reading.ReadSurface.HomeRows];
 
     // The rows the document loses after phase 21's report: none.
     internal static string[] TakenOutAfterPhaseTwentyOne => [];
@@ -118,9 +119,9 @@ public partial class ArchitectureConformance
         Assert.Equal(counted.Select((count, at) => count + PhaseTwentyOneMore[at].More), landed.Select(Net));
 
         // The figure the pair starts from: phase 22's actual and the rows 22.13 and 22.14 landed after phase 22's report,
-        // which are the rows phase 22's pair named after it less phase 21's own.
+        // which are the rows phase 22's pair named after it less phase 21's own and those after phase 21's report.
         var rows = landed.SelectMany(part => part.Added).ToArray();
-        var lateTwentyTwo = AfterPhaseTwentyTwo.Except(rows, StringComparer.Ordinal).ToArray();
+        var lateTwentyTwo = AfterPhaseTwentyTwo.Except(rows, StringComparer.Ordinal).Except(AfterPhaseTwentyOne, StringComparer.Ordinal).ToArray();
 
         Assert.Equal(1444 + lateTwentyTwo.Length, before);
         Assert.Equal(

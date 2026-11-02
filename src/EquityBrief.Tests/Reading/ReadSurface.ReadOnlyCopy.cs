@@ -53,8 +53,9 @@ public partial class ReadSurface
     [Fact]
     public void EveryHeldRouteHasAFileOfItsOwnUnderTheScreensFolder()
     {
-        Assert.Equal("screens/tonight.html", SiteCopy.FileOf("#/"));
-        Assert.Equal("screens/tonight~universe-400.html", SiteCopy.FileOf("#/?universe=400"));
+        Assert.Equal("screens/home.html", SiteCopy.FileOf("#/"));
+        Assert.Equal("screens/home~universe-400.html", SiteCopy.FileOf("#/?universe=400"));
+        Assert.Equal("screens/tonight~universe-400.html", SiteCopy.FileOf("#/tonight?universe=400"));
         Assert.Equal("screens/researched~sort-stale~universe-600.html", SiteCopy.FileOf("#/researched?sort=stale&universe=600"));
         Assert.Equal("screens/chart/BRK.B.html", SiteCopy.FileOf("#/chart/BRK.B"));
         Assert.Equal("screens/name/AAPL/2026-10-11.html", SiteCopy.FileOf("#/name/AAPL/2026-10-11"));
@@ -76,7 +77,8 @@ public partial class ReadSurface
         Assert.Equal(routes.Length, routes.Select(SiteCopy.FileOf).Distinct(StringComparer.OrdinalIgnoreCase).Count());
 
         // And each is read from the route the live shell asks the surface for.
-        Assert.Equal("/screens/tonight?universe=400", SiteCopy.ServerRoute("#/?universe=400"));
+        Assert.Equal("/screens/home?universe=400", SiteCopy.ServerRoute("#/?universe=400"));
+        Assert.Equal("/screens/tonight?universe=400", SiteCopy.ServerRoute("#/tonight?universe=400"));
         Assert.Equal("/screens/name/AAPL/2026-10-11", SiteCopy.ServerRoute("#/name/AAPL/2026-10-11"));
         Assert.Equal("/screens/paper?universe=600", SiteCopy.ServerRoute("#/paper?universe=600"));
         Assert.Null(SiteCopy.ServerRoute("#/run/2026-10-27"));
