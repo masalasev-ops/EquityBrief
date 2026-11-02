@@ -314,7 +314,7 @@ public sealed partial class MarkRenderer
 
         var table = new StringBuilder();
 
-        // Every amount in the table is read in one scale, the smallest's, so no two rows are read in different units.
+        // Every amount in the table is read in one scale, so no two rows are read in different units.
         // see: A segment table draws every amount in one scale, billions where every amount is a billion or more and millions or thousands by its largest amount
         var scale = Figures.ScaleOf([.. segments.Rows.Select(row => row.Revenue), .. segments.Rows.Select(row => row.Earnings).OfType<decimal>(), segments.Total!.Value]);
 

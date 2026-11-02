@@ -2030,7 +2030,7 @@ public sealed partial class SinglePageApp : IComponent
 
         // A quarter reported after the newest filing the store holds is the results release's, and is labelled so until its
         // filing is stored, where it read as the older filing's.
-        // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+        // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
         var releasedFirst = report?.Quarter is { Reported: { } reportedOn } && (filedOn is null || reportedOn > filedOn) ? report.Quarter.Reported : null;
 
         Card("quarter", "quarter", "The latest quarter", Cards.Dated(

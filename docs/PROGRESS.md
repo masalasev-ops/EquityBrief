@@ -14316,3 +14316,32 @@ Queue:      done, PRs 617 to 621 and the seventh review; in progress, this pull 
             review by a fresh session after it merges, then the sign-offs of phases 20, 21 and 22 by their own fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: a quarter's reported day and its next report are read from its stored row and then the calendar, where the day the filing's payload expected was read against the night alone   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Corrected:  `ReportedDay.Of` reads the quarter the payload expects, or a later one, as reported on its stored row's day on or
+            before the night, then on the calendar's latest day after the quarter's end and on or before the night, and the
+            next report as the calendar's first day after the night; the payload's day only where neither says. The
+            numbers' row and line draw it, and a filing naming no next report draws the calendar's day or the estimate, and
+            not filed only where neither is held. The page hands the numbers its stored quarters and the calendar's days. The
+            proof gains `report-day`; its `next-report-estimated` reads the new row. The decision is superseded with its prior
+            text under Previously decided and every citation moved; the architecture's sentence and the guide's, with prior
+            text in the changelog. A comment naming the smallest's scale goes.
+Measured:   read-only on the live store by a debug build of this tree, over the night of 2026-10-30: the proof's `report-day`
+            passes 500, 19 and 24 pages of the S&P 500, 400 and 600, fails none and leaves 3, 381 and 578 unexamined, each
+            drawing no such row; `next-report-estimated` passes 280, 12 and 13, fails none. Over 503 of the 543 members
+            holding a filing, 40 refused a connection and read by the proof alone: 0 name a next report for a reported
+            quarter, 0 say not announced beside a calendar date, 0 say not filed, and 0 give a reported day other than the
+            latest quarter's.
+Tests:      four new, 3065: the reading worked by hand for MSFT, TSLA, KEY, AME, WY, DLR and RLI and at its edges; the numbers'
+            row and line; the page reading the store's calendar and quarters; and the proof failing each shape.
+Mutation:   chosen before the runs by this rule, each property the correction adds, over the 41 tests of the report page
+            files and the new one: d1 no stored row read, d2 no calendar day reported, d3 no calendar day next, d4 a passed
+            expected day over a later calendar day, d5 only the expected quarter's row, d6 the quarter's last day counted, d7 a
+            row on the night not counted, d8 to d11 each of the proof's four shapes unread, d12 the page handing no calendar
+            days, d14 no estimate on an unfiled row, d15 the estimated rule not reading it. Each red where predicted. d13, the
+            page handing no stored quarters, survived as predicted, a missing property; the page test now reads them, and
+            it is red there. Each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

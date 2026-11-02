@@ -2916,7 +2916,7 @@ public sealed partial class ReadApi : IComponent
 
     // The filer's newest results release accepted by the end of a night, its exhibit, the day the SEC accepted it and its
     // stored text, whose opening line the page's management box quotes, with the member's name the line is read by.
-    // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+    // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
     const string NewestReleaseText = @"
         SELECT d.exhibit, d.accepted_at, d.url, d.text_gzip,
                COALESCE((SELECT m.name FROM membership m WHERE m.ticker = $ticker AND m.name IS NOT NULL ORDER BY m.joined DESC LIMIT 1), $ticker)
@@ -6128,6 +6128,27 @@ public sealed partial class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    // Every report day the calendar holds for one name, oldest first.
+    public async Task<IReadOnlyList<DateOnly>> ReportDaysOnTheCalendarAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = EarningsForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var days = new List<DateOnly>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            days.Add(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        return days;
     }
 
     // Every dated event the calendar holds for one name on or after a date.

@@ -525,7 +525,7 @@ public partial class ReadSurface
     // A quarter reported after the newest filing the store holds is dated by its report and labelled as the results
     // release's, and its segments say they are the older filing's: MSFT's newest filing taken out of a replayed store, as
     // a release stands before its filing is stored.
-    // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+    // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
     [Fact]
     public async Task AQuarterReportedAfterTheNewestStoredFilingIsDatedByItsReportAndLabelledAsTheReleases()
     {
@@ -549,7 +549,7 @@ public partial class ReadSurface
     // A next report the night has passed is said as reported, with the one after it not announced, in the snapshot and in
     // the estimate's line beneath the numbers; and a results release newer than the one the guidance was read from opens
     // the box management speaks in on its sentence saying what the company reported.
-    // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+    // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
     [Fact]
     public async Task AReportTheNightHasPassedIsSaidAsReportedAndANewerReleaseOpensTheBoxManagementSpeaksIn()
     {
@@ -591,7 +591,7 @@ public partial class ReadSurface
     // name, its ticker or its listing past a headline, its bullets and its dateline: each line below read by hand off the
     // stored release it is cut from, as the store held each on 2026-10-28, where the dateline the box read before found no
     // line in a release whose city is written in capitals and quoted a conference call's day in others.
-    // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+    // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
     [Fact]
     public void TheBoxManagementSpeaksInQuotesTheSentenceInWhichTheReleaseSaysWhatTheCompanyReported()
     {

@@ -75,7 +75,8 @@ public static partial class ReportProof
         ("levels-cover", "A picked or held stock's bands, stored and older, reach out as far as its target and its stop, or the page says no band the history read reaches one."),
         ("pick-exit", "A picked stock's plan opens on the pick's own exit, and where the levels' plan places none its exits line names the pick's."),
         ("next-report", "A picked stock's card states its next report, estimated where none is on file."),
-        ("next-report-estimated", "A next report not on file is drawn with the day it is estimated at, marked estimated."),
+        ("next-report-estimated", "A next report not on file is drawn with the day it is estimated at, marked estimated, or with a line saying why none is."),
+        ("report-day", "The next report the numbers draw is the calendar's where it dates one, names no quarter the page draws as reported, and the day a quarter was reported is the one the latest quarter draws."),
         ("rules-family", "How the rules read it opens on the checks of the family that picked the stock."),
         ("trend-words", "A trend gate that failed is said in plain words."),
         ("news-matched", "The news region states how many stories it left out as another company's, and its counts add up over the stories it kept."),
@@ -211,7 +212,8 @@ public static partial class ReportProof
             : null);
         Add("next-report", picked ? !page.Contains("No report date is on file for it, so a report inside the hold cannot be ruled out.", StringComparison.Ordinal) : null, picked ? null : "no family picked it");
 
-        var notAnnounced = page.Contains("data-reportDate=\"reported\"", StringComparison.Ordinal);
+        var unfiled = page.Contains("data-reportDate=\"unfiled\"", StringComparison.Ordinal);
+        var notAnnounced = unfiled || page.Contains("data-reportDate=\"reported\"", StringComparison.Ordinal);
 
         // A next report not on file passes with the day it is estimated at, or with the line saying no report a year earlier
         // is stored to estimate it from.
@@ -219,7 +221,7 @@ public static partial class ReportProof
 
         Add(
             "next-report-estimated",
-            notAnnounced ? estimatedNone ? page.Contains("<small class=\"estimated-none\">" + NameScreen.NoYearEarlier, StringComparison.Ordinal) : page.Contains("data-reportDate=\"reported\" data-estimated=", StringComparison.Ordinal) : null,
+            notAnnounced ? estimatedNone ? page.Contains("<small class=\"estimated-none\">" + NameScreen.NoYearEarlier, StringComparison.Ordinal) : unfiled || page.Contains("data-reportDate=\"reported\" data-estimated=", StringComparison.Ordinal) : null,
             notAnnounced ? estimatedNone && !page.Contains("<small class=\"estimated-none\">" + NameScreen.NoYearEarlier, StringComparison.Ordinal) ? "no estimate is drawn and no line says why" : null : "the next report is not drawn as not announced");
         Add("rules-family", picked ? RulesOpenOnTheFamily().IsMatch(page) : null, picked ? null : "no family picked it");
 
@@ -329,6 +331,26 @@ public static partial class ReportProof
             : !wait.Success ? "the page names no quarter it awaits"
             : wait.Groups["awaiting"].Value != following ? "the page awaits the quarter to " + wait.Groups["awaiting"].Value + " where its release reports the quarter to " + following
             : null);
+
+        // The numbers' next report and reported day against what the latest quarter draws and the calendar's date beside the
+        // plan, read where the page draws the row.
+        // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
+        var nextRow = NextReportRow().Match(page);
+        var around = NextReportAround().Match(page);
+        var saidReported = ReportedLine().Match(page);
+        var quarterDrawn = QuarterTitle().Match(page);
+        var dated = around.Success && around.Groups["declared"].Value == "yes" ? around.Groups["date"].Value : null;
+        var named = nextRow.Success ? nextRow.Groups["quarter"].Value : string.Empty;
+        var nextDay = nextRow.Success ? nextRow.Groups["day"].Value : string.Empty;
+        var drawnReported = quarterCard.Success && quarterCard.Groups[1].Value == "Reported" && quarterDrawn.Success;
+        var wrong = !nextRow.Success ? "the numbers draw no next report"
+            : drawnReported && named.Length > 0 && string.CompareOrdinal(named, quarterDrawn.Groups[1].Value) <= 0 ? "the next report names the quarter to " + named + ", which the latest quarter draws as reported"
+            : drawnReported && saidReported.Success && saidReported.Groups["quarter"].Value == quarterDrawn.Groups[1].Value && saidReported.Groups["day"].Value != quarterCard.Groups[2].Value ? "the numbers say the quarter was reported on " + saidReported.Groups["day"].Value + " where the latest quarter draws " + quarterCard.Groups[2].Value
+            : dated is not null && nextDay != dated ? "the numbers draw " + nextDay + " where the calendar dates the next report " + dated
+            : nextDay == "absent" && around.Success ? "the numbers say no next report is filed where the calendar lists one"
+            : null;
+
+        Add("report-day", nextRow.Success ? wrong is null : null, wrong);
 
         // A quarter reported before its filing is stored draws the release's own segment table first where it reads, and a
         // segment commentary beneath it written from the filing's segments says so above its text; one whose release states
@@ -686,6 +708,18 @@ public static partial class ReportProof
     // The quarter the latest quarter's card reads.
     [GeneratedRegex("<h2>The quarter to (\\d{4}-\\d{2}-\\d{2}), line by line</h2>")]
     private static partial Regex QuarterTitle();
+
+    // The numbers' next report: the day or word its row stores, and the quarter its consensus names.
+    [GeneratedRegex("<dt>Next report</dt><dd(?: class=\"degraded\")? data-reportDate=\"(?<day>[^\"]+)\"(?:(?!</dd>).)*?(?:, for the quarter to (?<quarter>\\d{4}-\\d{2}-\\d{2})(?:(?!</dd>).)*)?</dd>", RegexOptions.Singleline)]
+    private static partial Regex NextReportRow();
+
+    // The plan's block around the next report: its day and whether the calendar dates it or it is estimated.
+    [GeneratedRegex("<p class=\"next-report-around\" data-date=\"(?<date>\\d{4}-\\d{2}-\\d{2})\" data-declared=\"(?<declared>yes|no)\"")]
+    private static partial Regex NextReportAround();
+
+    // The line beneath the numbers saying a quarter was reported.
+    [GeneratedRegex("<p class=\"estimate\" data-estimated-quarter=\"(?<quarter>\\d{4}-\\d{2}-\\d{2})\" data-reported=\"(?<day>\\d{4}-\\d{2}-\\d{2})\"")]
+    private static partial Regex ReportedLine();
 
     // The line naming the quarter a newer release reports that the page cannot draw yet, with the days it reads.
     [GeneratedRegex("<p class=\"degraded quarter-wait\" data-awaiting=\"(?<awaiting>[^\"]+)\" data-released=\"(?<released>[^\"]+)\" data-next-ask=\"(?<ask>[^\"]+)\" data-filing-expected=\"(?<expected>[^\"]+)\" data-filing-due=\"(?<due>[^\"]+)\" data-clears=\"(?<clears>[^\"]+)\">")]
