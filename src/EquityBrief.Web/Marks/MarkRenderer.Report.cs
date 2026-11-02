@@ -35,6 +35,10 @@ public sealed record ReportView(
 
     // The industry the page reads the stock under: an override set for it, or the provider's classification.
     public string? Industry { get; init; }
+
+    // The quarter ends the name's filings state, for the words of a part the page builds apart from this view.
+    // see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
+    public StatedQuarters? Stated { get; init; }
 }
 
 // From 20.3 the newest results release's reading a name's page draws under what management said: the day the SEC accepted
@@ -89,7 +93,7 @@ public sealed partial class MarkRenderer
 
         table.Append(Formatted($"<div class=\"tbl-wrap\"><table class=\"quarter-table\" data-quarter=\"{DayOf(quarter.Quarter)}\" data-year-earlier=\"{(quarter.YearEarlier is { } earlier ? DayOf(earlier) : "none")}\">"));
         table.Append("<tr><th>Line</th><th class=\"num\">Reported</th><th class=\"num\">Estimate before the report</th><th class=\"num\">Difference</th>");
-        table.Append(Formatted($"<th class=\"num\">{(quarter.YearEarlier is { } before ? "Quarter to " + DayOf(before) : "A year earlier")}</th><th class=\"num\">Change on a year</th><th class=\"num\">Margin, then a year earlier</th></tr>"));
+        table.Append(Formatted($"<th class=\"num\">{(quarter.DrawnYearEarlier is { } before ? "Quarter to " + DayOf(before) : "A year earlier")}</th><th class=\"num\">Change on a year</th><th class=\"num\">Margin, then a year earlier</th></tr>"));
 
         foreach (var line in quarter.Lines)
         {

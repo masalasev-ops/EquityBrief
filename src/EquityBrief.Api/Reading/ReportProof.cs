@@ -300,7 +300,7 @@ public static partial class ReportProof
         var newestRelease = ReleaseDay().Matches(page).Select(match => match.Groups[1].Value).DefaultIfEmpty(string.Empty).Max(StringComparer.Ordinal)!;
         string? following = null;
 
-        if (QuarterTitle().Match(page) is { Success: true } titled)
+        if (DrawnQuarter(page) is { Success: true } titled)
         {
             var next = DateOnly.ParseExact(titled.Groups[1].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture).AddMonths(3);
 
@@ -339,7 +339,7 @@ public static partial class ReportProof
         var nextRow = NextReportRow().Match(page);
         var around = NextReportAround().Match(page);
         var saidReported = ReportedLine().Match(page);
-        var quarterDrawn = QuarterTitle().Match(page);
+        var quarterDrawn = DrawnQuarter(page);
         var dated = around.Success && around.Groups["declared"].Value == "yes" ? around.Groups["date"].Value : null;
         var named = nextRow.Success ? nextRow.Groups["quarter"].Value : string.Empty;
         var nextDay = nextRow.Success ? nextRow.Groups["day"].Value : string.Empty;
@@ -723,7 +723,14 @@ public static partial class ReportProof
     [GeneratedRegex("<p class=\"(?:left-out|not-written)\" data-section=\"([^\"]+)\">")]
     private static partial Regex Unwritten();
 
-    // The quarter the latest quarter's card reads.
+    // The quarter the latest quarter's card reads: its table's stored label, which every other date here is matched on, the
+    // title drawing the filing's date, and the title alone where no table is drawn.
+    // see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
+    static Match DrawnQuarter(string page) => QuarterTable().Match(page) is { Success: true } table ? table : QuarterTitle().Match(page);
+
+    [GeneratedRegex("<table class=\"quarter-table\" data-quarter=\"(\\d{4}-\\d{2}-\\d{2})\"")]
+    private static partial Regex QuarterTable();
+
     [GeneratedRegex("<h2>The quarter to (\\d{4}-\\d{2}-\\d{2}), line by line</h2>")]
     private static partial Regex QuarterTitle();
 

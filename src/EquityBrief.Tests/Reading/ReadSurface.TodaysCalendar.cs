@@ -80,7 +80,8 @@ public partial class ReadSurface
 
         Assert.Contains("<dt>Next dated event</dt><dd>2026-09-20</dd>", page, StringComparison.Ordinal);
         Assert.Contains("data-next-event=\"2026-09-20\"", page, StringComparison.Ordinal);
-        Assert.Contains("2026-09-20", chart, StringComparison.Ordinal);
+        Assert.Matches("<dt>Next report</dt>(?:(?!</dd>).)*2026-09-20", chart);
+        Assert.DoesNotMatch($"<dt>Next report</dt>(?:(?!</dd>).)*{FixtureNight}", chart);
         Assert.DoesNotContain($"<dt>Next dated event</dt><dd>{FixtureNight}", page, StringComparison.Ordinal);
         Assert.Equal(new DateOnly(2026, 9, 4), (await Api(store).NextEventAsync(Name, new DateOnly(2026, 9, 4)))!.EventDate);
     }

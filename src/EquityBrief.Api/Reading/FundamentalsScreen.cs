@@ -30,7 +30,7 @@ public static class FundamentalsScreen
         [9] = "Sales against assets",
     };
 
-    public static FundamentalsView Of(FundamentalScoreRow? score, string? indexName, IReadOnlyList<double?>? readings, AnalystReading? analysts, InsiderView? insiders)
+    public static FundamentalsView Of(FundamentalScoreRow? score, string? indexName, IReadOnlyList<double?>? readings, AnalystReading? analysts, InsiderView? insiders, EquityBrief.Core.Report.StatedQuarters? stated = null)
     {
         var index = indexName ?? "index";
 
@@ -39,7 +39,7 @@ public static class FundamentalsScreen
             score?.Word,
             score is null ? [] : [.. score.Checks.Select(Check)],
             score is { Awaited: { } awaited, Quarter: { } quarter }
-                ? Invariant($"Its quarter to {awaited:yyyy-MM-dd} has been reported, but its filing is not stored yet; these checks read the quarter to {quarter:yyyy-MM-dd}.")
+                ? Invariant($"Its quarter to {awaited:yyyy-MM-dd} has been reported, but its filing is not stored yet; these checks read the quarter to {stated?.Of(quarter) ?? quarter:yyyy-MM-dd}.")
                 : null,
             [Sales(readings), Gross(score, index), Price(score, readings, index), Estimates(analysts, insiders)]);
     }

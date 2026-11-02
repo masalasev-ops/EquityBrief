@@ -61,7 +61,14 @@ public sealed record QuarterLine(
     string? YearEarlierAbsent = null);
 
 // The latest quarter: its end, the day it was reported, the quarter a year earlier it is read against, and its lines.
-public sealed record LatestQuarter(DateOnly Quarter, DateOnly? Reported, DateOnly? YearEarlier, IReadOnlyList<QuarterLine> Lines);
+public sealed record LatestQuarter(DateOnly Quarter, DateOnly? Reported, DateOnly? YearEarlier, IReadOnlyList<QuarterLine> Lines)
+{
+    // The two ends as the page draws them, each as its filing states it; Quarter and YearEarlier stay what quarters match on.
+    // see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
+    public DateOnly DrawnQuarter { get; init; } = Quarter;
+
+    public DateOnly? DrawnYearEarlier { get; init; } = YearEarlier;
+}
 
 // One quarter's growth on the same quarter a year earlier, in per cent: revenue's and earnings a share's.
 public sealed record QuarterGrowth(DateOnly Quarter, double? Revenue, double? Eps);

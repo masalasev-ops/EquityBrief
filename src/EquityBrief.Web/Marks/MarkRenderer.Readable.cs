@@ -189,7 +189,7 @@ public sealed partial class MarkRenderer
 
             if (said.Count > 0)
             {
-                lead.Append(FormattableString.Invariant($"<p class=\"short-part\" data-part=\"quarter\"><b>The quarter.</b> In the quarter to {latest.Quarter:yyyy-MM-dd}{(latest.Reported is { } reported ? FormattableString.Invariant($", reported {reported:yyyy-MM-dd}") : string.Empty)}: {Escaped(string.Join("; ", said))}.</p>"));
+                lead.Append(FormattableString.Invariant($"<p class=\"short-part\" data-part=\"quarter\"><b>The quarter.</b> In the quarter to {latest.DrawnQuarter:yyyy-MM-dd}{(latest.Reported is { } reported ? FormattableString.Invariant($", reported {reported:yyyy-MM-dd}") : string.Empty)}: {Escaped(string.Join("; ", said))}.</p>"));
             }
         }
 

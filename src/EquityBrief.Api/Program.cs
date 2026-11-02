@@ -394,7 +394,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
                 Universes.ByCode(indexCode ?? string.Empty)?.Name,
                 indexCode is { } code ? await read.OwnLedgerReadingsAsync(code, briefed, ticker) : null,
                 report.Analysts,
-                report.Insiders),
+                report.Insiders,
+                report.Stated),
             Grid = ChartScreen.WithFiledMultiple(view.Grid, score),
         };
     }
@@ -1504,7 +1505,7 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         night,
         member,
         indicators.GroupBy(row => row.Name, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.OrderBy(row => row.SessionDate).Last().Value, StringComparer.Ordinal),
-        fundamental is null ? null : EquityBrief.Core.Quarters.Readings.FromJson(fundamental.Readings),
+        fundamental is null ? null : report.Stated is { } stated ? NameScreen.DrawnDates(EquityBrief.Core.Quarters.Readings.FromJson(fundamental.Readings), stated) : EquityBrief.Core.Quarters.Readings.FromJson(fundamental.Readings),
         halfYear,
         report.Analysts,
         listed,

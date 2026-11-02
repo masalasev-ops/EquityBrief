@@ -2043,7 +2043,7 @@ public sealed partial class SinglePageApp : IComponent
                     ? "Each figure is from the company's own filing, dated as the filing is, as the newest fetch of its quarters stored it. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated."
                     : "Each figure is from the results release, as the newest fetch of its quarters stored it, the filing of the quarter not stored yet; once it is, the figures checked under the sources set the filing's against these. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated.",
                 "These are the company's reported results. Nothing in the plan is computed from them."),
-            title: report?.Quarter is { } latest ? "The quarter to " + Cards.Day(latest.Quarter) + ", line by line" : "The latest quarter, line by line",
+            title: report?.Quarter is { } latest ? "The quarter to " + Cards.Day(latest.DrawnQuarter) + ", line by line" : "The latest quarter, line by line",
             filed: true,
             note: releasedFirst is null ? "from the filing" : "from the results release, filing not stored yet",
             id: "quarter"),

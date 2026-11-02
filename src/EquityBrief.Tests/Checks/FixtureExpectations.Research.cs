@@ -632,6 +632,36 @@ public partial class FixtureExpectations
             published => Assert.Contains(news.Asked, window => string.CompareOrdinal(Iso(window.From), published) <= 0 && string.CompareOrdinal(published, Iso(window.To)) <= 0));
     }
 
+    // A results release older than the row's own filing by more than the limit is another filing's: it is named unread and
+    // stored for no section, and the release before a release the limit lets through is held to the limit too.
+    // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+    [Fact]
+    public async Task AReleaseOlderThanTheFilingIsNamedUnreadAndHandedToNoSection()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        var ownFiled = DateOnly.ParseExact(Query(store, "SELECT filing_date FROM fundamentals WHERE ticker = 'KEYS' ORDER BY filing_date DESC LIMIT 1;").Single(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var limit = EquityBrief.Core.Report.OldFilings.MostDays;
+        var paid = new ScriptedModel([.. Enumerable.Repeat("The section, in words and citing its document [D1].", 40)]);
+
+        var old = new HoldsReleases(new FiledRelease("https://www.sec.gov/old.htm", "old.htm", ownFiled.AddDays(-limit - 1), "Revenue was reported."));
+        var refused = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: old, news: new NoArticles(), search: new NoResults()).RunAsync("KEYS", "research-old-release");
+
+        Assert.Contains("the newest results release it holds was filed on " + ownFiled.AddDays(-limit - 1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), refused.Reason, StringComparison.Ordinal);
+        Assert.Empty(Query(store, "SELECT id FROM source_document WHERE url = 'https://www.sec.gov/old.htm';"));
+
+        using var second = await FixtureReplay.ReplayedForResearchAsync();
+
+        var within = new HoldsReleases(
+            new FiledRelease("https://www.sec.gov/within.htm", "within.htm", ownFiled, "Revenue was reported."),
+            new FiledRelease("https://www.sec.gov/earlier.htm", "earlier.htm", ownFiled.AddDays(-limit - 1), "Revenue was reported before."));
+        var read = await FixtureReplay.Researcher(second, ResearchClock, lane: [], paid: paid, archive: within, news: new NoArticles(), search: new NoResults()).RunAsync("KEYS", "research-release-within");
+
+        Assert.DoesNotContain("the newest results release it holds", read.Reason ?? "", StringComparison.Ordinal);
+        Assert.Single(Query(second, "SELECT id FROM source_document WHERE url = 'https://www.sec.gov/within.htm';"));
+        Assert.Empty(Query(second, "SELECT id FROM source_document WHERE url = 'https://www.sec.gov/earlier.htm';"));
+    }
+
     [Fact]
     public async Task AWindowTheProviderHasMoreOfIsNamedUnreadAndThePassWritesFromTheRest()
     {
@@ -1391,6 +1421,22 @@ public partial class FixtureExpectations
 
             return Task.FromResult(new ArchiveFilings(ticker, cik, [], [], null, null, [], null, [], 0));
         }
+    }
+
+    // An archive holding a newest results release and the one before it.
+    internal sealed class HoldsReleases(FiledRelease newest, FiledRelease? before = null) : IFilingsArchiveFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<ArchiveFilings> FilingsAsync(string ticker, string cik, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult(new ArchiveFilings(ticker, cik, [], [], null, null, [], null, [], 0, newest));
+        }
+
+        public Task<FiledRelease?> PreviousReleaseAsync(string ticker, string cik, IReadOnlyList<IndexedFiling> results, CancellationToken cancellation = default) =>
+            Task.FromResult(before);
     }
 
     // A local runtime with nothing listening, as the transport reports it.
