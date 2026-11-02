@@ -55,10 +55,6 @@ public static partial class NameScreen
             ? Invariant($"; the provider states {Escaped(drawn)}, struck at a price of about {Figures.Price(stale.StruckAt)}, stale against the close and not drawn")
             : string.Empty;
 
-    // A stored report day the night has reached, none where it is ahead of the night, not a day or no night is known.
-    static DateOnly? ReportedBy(string? reportDate, DateOnly? night) =>
-        night is { } on && DateOnly.TryParseExact(reportDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) && day <= on ? day : null;
-
     // A stored figure as a number, none where it is none or not a number.
     static decimal? Number(string? stored) =>
         stored is not null && decimal.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : null;
@@ -438,7 +434,7 @@ public static partial class NameScreen
     // consensus estimate is drawn beside it and named for what it is: what analysts
     // expect rather than what management said.
     // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
-    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null, EquityBrief.Core.Report.ReleaseOpening? newestRelease = null, (DateOnly From, DateOnly Estimated)? nextEstimated = null, IReadOnlyList<DateOnly>? reportedDays = null)
+    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null, EquityBrief.Core.Report.ReleaseOpening? newestRelease = null, (DateOnly From, DateOnly Estimated)? nextEstimated = null, IReadOnlyList<QuarterDatesRow>? storedQuarters = null, IReadOnlyList<DateOnly>? calendarReports = null)
     {
         var html = new System.Text.StringBuilder();
 
@@ -472,7 +468,10 @@ public static partial class NameScreen
                 $"{filings.Count} {(filings.Count == 1 ? "filing" : "filings")}, fewer than the {QuartersShown} quarters this section states.</p>");
         }
 
-        html.Append(Snapshot(newest.RootElement, currency, figures, nextEstimated, reportedDays));
+        DateOnly[] reportedDays = [.. (storedQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()];
+        var reportedDay = ReportedDayOf(newest.RootElement, figures?.CloseOn, storedQuarters, calendarReports);
+
+        html.Append(Snapshot(newest.RootElement, currency, figures, nextEstimated, reportedDays, reportedDay));
 
         html.Append(Invariant($"<div class=\"sub\">The last {shown} quarters</div><div class=\"tbl-wrap\">"));
         html.Append("<table class=\"numbers-quarters\"><tr><th>Quarter</th><th>Revenue</th>");
@@ -498,7 +497,7 @@ public static partial class NameScreen
 
         // The newest results release's opening line, where the release is newer than the one the guidance was read from, so
         // the box management speaks in opens on the newest quarter's words.
-        // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+        // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
         if (newestRelease is { } release
             && (!newest.RootElement.TryGetProperty("guidance", out var guided) || guided.ValueKind != JsonValueKind.Object
                 || !DateOnly.TryParseExact(Text(guided, "filedOn"), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var guidedOn)
@@ -513,23 +512,22 @@ public static partial class NameScreen
         // ones a reader wants first.
         html.Append("<details class=\"numbers-detail\"><summary>Every figure from the filing</summary>");
 
-        if (newest.RootElement.TryGetProperty("estimated", out var reported)
-            && reported.ValueKind == JsonValueKind.Object
-            && ReportedBy(Text(reported, "reportDate"), figures?.CloseOn) is { } reportedOn)
+        if (reportedDay is { Quarter: { } quarterReported, On: { } reportedOn })
         {
-            // A report the night has passed is said as reported, and the next as not announced, with the day it is estimated at
-            // from the company's own report a year before.
-            // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+            // A quarter reported is said as reported, and the next as the calendar dates it, or as not announced with the day it
+            // is estimated at from the company's own report a year before.
+            // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
             // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
-            html.Append(Invariant($"<p class=\"estimate\" data-estimated-quarter=\"{Text(reported, "periodEnd")}\" data-reported=\"{reportedOn:yyyy-MM-dd}\">The quarter to {Text(reported, "periodEnd")} was reported on {reportedOn:yyyy-MM-dd}, and the next report is not announced{EstimatedWords(nextEstimated)}.{(nextEstimated is null ? " " + NotEstimated(reportedOn, reportedDays, figures?.CloseOn) + "." : string.Empty)}</p>"));
+            html.Append(Invariant($"<p class=\"estimate\" data-estimated-quarter=\"{quarterReported:yyyy-MM-dd}\" data-reported=\"{reportedOn:yyyy-MM-dd}\">The quarter to {quarterReported:yyyy-MM-dd} was reported on {reportedOn:yyyy-MM-dd}, and the next report is {(reportedDay.NextOn is { } dated ? Invariant($"on {dated:yyyy-MM-dd}, as the calendar dates it.") : Invariant($"not announced{EstimatedWords(nextEstimated)}.{(nextEstimated is null ? " " + NotEstimated(reportedOn, reportedDays, figures?.CloseOn) + "." : string.Empty)}"))}</p>"));
         }
-        else if (newest.RootElement.TryGetProperty("estimated", out var estimated)
+        else if (reportedDay.NextOn is { } nextOn
+            && newest.RootElement.TryGetProperty("estimated", out var estimated)
             && estimated.ValueKind == JsonValueKind.Object)
         {
             html.Append(CultureInfo.InvariantCulture,
                 $"<p class=\"estimate\" data-estimated-quarter=\"{Text(estimated, "periodEnd")}\"" +
                 $" data-eps-estimate=\"{Text(estimated, "epsEstimate")}\">The next quarter ends " +
-                $"{Text(estimated, "periodEnd")} and is expected on {Text(estimated, "reportDate")}, " +
+                $"{Text(estimated, "periodEnd")} and is expected on {nextOn:yyyy-MM-dd}, " +
                 $"with a consensus estimate of {Drawn(Text(estimated, "epsEstimate"), Figures.PerShare)} per share.</p>");
         }
         else
@@ -685,7 +683,22 @@ public static partial class NameScreen
             : NoYearEarlier;
     }
 
-    static string Snapshot(JsonElement payload, string currency, ConceptFigures? figures = null, (DateOnly From, DateOnly Estimated)? nextEstimated = null, IReadOnlyList<DateOnly>? reportedDays = null)
+    // Where the company's reports stand on the page's night, the newest filing's expected quarter and day read after the
+    // stored quarters and the calendar.
+    // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
+    static EquityBrief.Core.Cards.ReportedDay ReportedDayOf(JsonElement payload, DateOnly? night, IReadOnlyList<QuarterDatesRow>? storedQuarters, IReadOnlyList<DateOnly>? calendarReports)
+    {
+        var expected = payload.TryGetProperty("estimated", out var part) && part.ValueKind == JsonValueKind.Object ? part : default;
+
+        return EquityBrief.Core.Cards.ReportedDay.Of(
+            Text(expected, "periodEnd"),
+            Text(expected, "reportDate"),
+            night,
+            (storedQuarters ?? []).Select(quarter => (quarter.PeriodEnd, quarter.ReportDate)),
+            calendarReports ?? []);
+    }
+
+    static string Snapshot(JsonElement payload, string currency, ConceptFigures? figures, (DateOnly From, DateOnly Estimated)? nextEstimated, IReadOnlyList<DateOnly> reportedDays, EquityBrief.Core.Cards.ReportedDay reportedDay)
     {
         JsonElement Part(string name) =>
             payload.TryGetProperty(name, out var part) && part.ValueKind == JsonValueKind.Object ? part : default;
@@ -732,20 +745,30 @@ public static partial class NameScreen
             Text(earnings, "epsActual"),
             Figures.PerShare,
             Text(earnings, "epsEstimate") is { } expected ? "against an estimate of " + Drawn(expected, Figures.PerShare) : null);
-        // A report the night has passed is no longer the next: the row says the quarter was reported and that the one after
-        // it is not announced.
-        // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
-        if (ReportedBy(Text(estimated, "reportDate"), figures?.CloseOn) is { } reportedOn)
+        // A quarter reported is no longer the next: the row says it was reported, and the one after it as the calendar dates
+        // it or as not announced. A report the filing does not date reads the calendar's day, or the day it is estimated at.
+        // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
+        if (reportedDay is { Quarter: { } quarterReported, On: { } reportedOn })
         {
-            html.Append(Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"{(nextEstimated is { } next ? Invariant($" data-estimated=\"{next.Estimated:yyyy-MM-dd}\"") : " data-estimated=\"none\"")}><b>not announced</b>{(nextEstimated is { } shown ? Invariant($"<small class=\"estimated\">estimated about {shown.Estimated:yyyy-MM-dd}, from its report of {shown.From:yyyy-MM-dd} a year on</small>") : Invariant($"<small class=\"estimated-none\">{NotEstimated(reportedOn, reportedDays, figures?.CloseOn)}</small>"))}<small>the quarter to {Escaped(Text(estimated, "periodEnd") ?? "its end")} was reported on {reportedOn:yyyy-MM-dd}</small></dd></div>"));
+            var said = Invariant($"<small>the quarter to {quarterReported:yyyy-MM-dd} was reported on {reportedOn:yyyy-MM-dd}</small>");
+
+            html.Append(reportedDay.NextOn is { } dated
+                ? Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"{dated:yyyy-MM-dd}\"><b>{dated:yyyy-MM-dd}</b><small>as the calendar dates it</small>{said}</dd></div>")
+                : Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"{(nextEstimated is { } next ? Invariant($" data-estimated=\"{next.Estimated:yyyy-MM-dd}\"") : " data-estimated=\"none\"")}><b>not announced</b>{(nextEstimated is { } shown ? Invariant($"<small class=\"estimated\">estimated about {shown.Estimated:yyyy-MM-dd}, from its report of {shown.From:yyyy-MM-dd} a year on</small>") : Invariant($"<small class=\"estimated-none\">{NotEstimated(reportedOn, reportedDays, figures?.CloseOn)}</small>"))}{said}</dd></div>"));
+        }
+        else if (reportedDay.NextOn is null && nextEstimated is { } unfiled)
+        {
+            html.Append(Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"unfiled\" data-estimated=\"{unfiled.Estimated:yyyy-MM-dd}\"><b>not announced</b><small class=\"estimated\">estimated about {unfiled.Estimated:yyyy-MM-dd}, from its report of {unfiled.From:yyyy-MM-dd} a year on</small></dd></div>"));
         }
         else
         {
+            var day = reportedDay.NextOn is { } nextOn ? Invariant($"{nextOn:yyyy-MM-dd}") : null;
+
             Row(
                 "Next report",
                 "reportDate",
-                Text(estimated, "reportDate"),
-                _ => Text(estimated, "reportDate")!,
+                day,
+                _ => day!,
                 Text(estimated, "epsEstimate") is { } consensus
                     ? "consensus " + Drawn(consensus, Figures.PerShare) + " a share" + (Text(estimated, "periodEnd") is { } next ? ", for the quarter to " + next : string.Empty)
                     : null);
@@ -1528,6 +1551,9 @@ public static partial class NameScreen
         string? quality = null,
         // The models the run log names on a priced call, which tell a paid model from a local one where no profile names it.
         IReadOnlySet<string>? paidModels = null,
+        // Every report day the calendar holds for the name, which the reported day and the next report read after its stored
+        // quarters.
+        IReadOnlyList<DateOnly>? calendarReports = null,
         // The model profiles the settings name and the profile each section is written under.
         IReadOnlyList<JobProfile>? profiles = null,
         IReadOnlyDictionary<string, string>? sectionProfiles = null,
@@ -1767,7 +1793,7 @@ public static partial class NameScreen
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            says is null ? Numbers(filings, concepts, newestRelease, nextEstimated, reportedDays) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease, nextEstimated, reportedDays)),
+            says is null ? Numbers(filings, concepts, newestRelease, nextEstimated, readQuarters, calendarReports) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease, nextEstimated, readQuarters, calendarReports)),
             cells,
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
             previousOnTheList,
@@ -2078,7 +2104,7 @@ public static partial class NameScreen
             .ToHashSet();
 
         // The awaited quarter's line moves on once the quarter is reported, its filing not stored yet.
-        // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+        // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
         var reported = readings.Awaited is { } awaited && readings.ReadFrom is { } readFrom
             && quarters.FirstOrDefault(quarter => quarter.PeriodEnd == awaited && quarter.FilingDate is null) is { ReportDate: { } reportedOn }
                 ? EquityBrief.Core.Quarters.NumbersSay.Reported(awaited, reportedOn, readFrom)

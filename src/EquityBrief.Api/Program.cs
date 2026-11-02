@@ -718,6 +718,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // The profile each job ran under from the settings' profiles, and the models the spend cap priced for a model no
         // profile names now, so each job's model is named paid or local.
         paidModels: await read.PaidModelsAsync(),
+        calendarReports: await read.ReportDaysOnTheCalendarAsync(ticker),
         profiles: read.ModelProfiles,
         sectionProfiles: read.SectionProfiles,
         // Every research pass's cost as the run page's table counts it, and the seven nights that table reads.

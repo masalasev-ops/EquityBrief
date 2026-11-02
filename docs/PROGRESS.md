@@ -14292,3 +14292,75 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
             placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
+
+### 18.5 ruling - the two defects the seventh phase 18 sign-off review found corrected before an eighth review signs, the next report's day and the copy's dated versions   2026-11-02
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-02 and lands nothing.
+Found:      the seventh phase 18 sign-off review, by a session that had committed no code, over main 5b53f12b: `tools/ci.ps1`
+            green 12:08:20 to 12:44:41 UTC, 3060 of 3060, and `tools/verify-phase.ps1` green, 1497 claims, 1497 passing;
+            23 mutations predicted first, 20 red and 3 surviving where predicted, each survivor no test reading a stock's
+            mark on the copy; the table the sign-off rule asks for, 200 pull requests and 91 correction commits traced with
+            none undone or contradicted by a later one. Two defects. The numbers read the day the filing's payload expected
+            against the night alone: over the 543 current members holding a filing on the night of 2026-10-30, 42 named a
+            next report for a quarter they drew as reported, 57 said another reported day than the stored one, 35 said a
+            day the calendar does not hold, 19 of them with the calendar dating the report after the night, and 32 said not
+            announced beside a calendar date. The copy marked its 105 dated versions with its own night, each reading that
+            its prices may be out of date. One judgement: 59 pages said not filed where their calendar lists the report.
+            Nothing was signed. The findings are in `prompts/2026-11-02-18.5-phase-18-signoff-seventh-findings.md`.
+Ruled:      word for word in `prompts/2026-11-02-18.5-phase-18-signoff-seventh-answers.md`: this session builds and an
+            eighth fresh session signs; "Stored, then calendar"; "Their own night"; and "Show the date", the proof checking
+            it.
+Labelled:   read off the record: the reported day under 18.4, whose correction of 2026-10-27 built it; the copy's mark
+            under 18.4, whose correction of 2026-10-28 built it.
+Queue:      done, PRs 617 to 621 and the seventh review; in progress, this pull request; next, the eighth phase 18 sign-off
+            review by a fresh session after it merges, then the sign-offs of phases 20, 21 and 22 by their own fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a quarter's reported day and its next report are read from its stored row and then the calendar, where the day the filing's payload expected was read against the night alone   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Corrected:  `ReportedDay.Of` reads the quarter the payload expects, or a later one, as reported on its stored row's day on or
+            before the night, then on the calendar's latest day after the quarter's end and on or before the night, and the
+            next report as the calendar's first day after the night; the payload's day only where neither says. The
+            numbers' row and line draw it, and a filing naming no next report draws the calendar's day or the estimate, and
+            not filed only where neither is held. The page hands the numbers its stored quarters and the calendar's days. The
+            proof gains `report-day`; its `next-report-estimated` reads the new row. The decision is superseded with its prior
+            text under Previously decided and every citation moved; the architecture's sentence and the guide's, with prior
+            text in the changelog. A comment naming the smallest's scale goes.
+Measured:   read-only on the live store by a debug build of this tree, over the night of 2026-10-30: the proof's `report-day`
+            passes 500, 19 and 24 pages of the S&P 500, 400 and 600, fails none and leaves 3, 381 and 578 unexamined, each
+            drawing no such row; `next-report-estimated` passes 280, 12 and 13, fails none. Over 503 of the 543 members
+            holding a filing, 40 refused a connection and read by the proof alone: 0 name a next report for a reported
+            quarter, 0 say not announced beside a calendar date, 0 say not filed, and 0 give a reported day other than the
+            latest quarter's.
+Tests:      four new, 3065: the reading worked by hand for MSFT, TSLA, KEY, AME, WY, DLR and RLI and at its edges; the numbers'
+            row and line; the page reading the store's calendar and quarters; and the proof failing each shape.
+Mutation:   chosen before the runs by this rule, each property the correction adds, over the 41 tests of the report page
+            files and the new one: d1 no stored row read, d2 no calendar day reported, d3 no calendar day next, d4 a passed
+            expected day over a later calendar day, d5 only the expected quarter's row, d6 the quarter's last day counted, d7 a
+            row on the night not counted, d8 to d11 each of the proof's four shapes unread, d12 the page handing no calendar
+            days, d14 no estimate on an unfiled row, d15 the estimated rule not reading it. Each red where predicted. d13, the
+            page handing no stored quarters, survived as predicted, a missing property; the page test now reads them, and
+            it is red there. Each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a report's dated version on the read-only copy is marked by its own night, where each said it was of the copy's night and that its prices may be out of date   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Corrected:  `SiteCopy.NightOf` reads a dated route's own night, and the copy marks a stock's page by it, so AAPL's version of
+            28 Sep reads "As of the close of 28 Sep." and no more of its prices; the one sentence stands on a page whose close
+            is older than its own night. A chart page and every other stock's page keep the copy's night. A decision states
+            it.
+Tests:      one new; the copy holding a dated version, read off its file, every stock's page and chart held to its mark, and
+            an older close a day before the night.
+Mutation:   chosen before the runs by this rule, each property the correction adds and the two the review's v3 and v4 left
+            with no test, over the 27 tests naming the copy: e1 every page the copy's night, e2 chart pages not marked, e3 a
+            close a day older dropped, e4 the command marking by the copy's night; each red at the new test alone, reverted,
+            green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3065 of 3065 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
+            placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.

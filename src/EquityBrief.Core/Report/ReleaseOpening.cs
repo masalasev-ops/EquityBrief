@@ -8,7 +8,7 @@ namespace EquityBrief.Core.Report;
 // capitals runs into its dateline's city with nothing between: the sentence's subject is read after the last full stop,
 // bullet, dash, run of capitals or day written with its month's name before its verb, and a present tense, which a
 // headline is written in, only where no past tense says it and straight after a dateline's day.
-// see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+// see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
 public sealed partial record ReleaseOpening(string Exhibit, DateOnly AcceptedOn, string Url, string Line)
 {
     // The text read, how far back from its verb a sentence's subject is looked for, the longest sentence drawn whole and

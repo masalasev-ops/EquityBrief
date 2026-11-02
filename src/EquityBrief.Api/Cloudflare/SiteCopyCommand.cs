@@ -220,7 +220,7 @@ public static class SiteCopyCommand
 
             if (path.StartsWith("#/chart/", StringComparison.Ordinal) || path.StartsWith("#/name/", StringComparison.Ordinal))
             {
-                markup = SiteCopy.MarkedAtTheClose(markup, night);
+                markup = SiteCopy.MarkedAtTheClose(markup, SiteCopy.NightOf(path, night));
             }
 
             if (path == SinglePageApp.HomeRoute)

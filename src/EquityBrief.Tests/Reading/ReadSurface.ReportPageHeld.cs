@@ -204,7 +204,7 @@ public partial class ReadSurface
 
         // A report older than the year before the night is known, so the company is not new: the line says only that no
         // report a year earlier is stored, and names no first day.
-        var older = NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null), null, null, [reportDate.AddDays(-400)]);
+        var older = NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null), null, null, [new QuarterDatesRow(reportDate.AddDays(-430), null, reportDate.AddDays(-400))]);
 
         Assert.Contains("<small class=\"estimated-none\">" + NameScreen.NoYearEarlier + "</small>", older, StringComparison.Ordinal);
         Assert.DoesNotContain("started reporting", older, StringComparison.Ordinal);

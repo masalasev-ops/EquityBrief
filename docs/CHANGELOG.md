@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a quarter's reported day and its next report read from its stored row and then the calendar
+Authorised by: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
+Was:
+> (section 4, the report page) a next report the night has passed is said as reported with the one after it not announced, and with the day it is estimated at, from the company's own report of the same quarter a year before, marked estimated, where a report fifty-two weeks or more before the night is stored, or otherwise with a line saying no report a year earlier is stored and, where every report the page knows falls in the year before the night, the day the company started reporting as its own (see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints); what the numbers say no longer awaits a quarter its release has reported, and the box management speaks in opens on the sentence in which the newest results release says what the company reported, where that release is newer than the one the guidance was read from (see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported).
+Now:
+> a quarter's reported day is its stored row's, then the calendar's latest report day after the quarter's end and on or before the night, and the day the filing's payload expected only where neither says, and its next report the calendar's first day after the night, or with none the payload's where it is still ahead; a quarter reported is said so with the next as the calendar dates it or not announced, and not announced with the day it is estimated at, from the company's own report of the same quarter a year before, marked estimated, where a report fifty-two weeks or more before the night is stored, or otherwise with a line saying no report a year earlier is stored and, where every report the page knows falls in the year before the night, the day the company started reporting as its own (see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints); a filing naming no next report draws the calendar's day or the estimate, and not filed only where neither is held; what the numbers say no longer awaits a quarter its release has reported, and the box management speaks in opens on the sentence in which the newest results release says what the company reported, where that release is newer than the one the guidance was read from (see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported).
+Why: the page read the day the filing's payload expected against the night alone, so MSFT named a next report for a quarter it drew as reported and AME said it had reported while the calendar dated its report after the night; the seventh phase 18 sign-off review found it and the operator's answers of 2026-11-02 read the stored row and then the calendar.
+
+### 2026-11-02 - docs/HOW_IT_WORKS.html - the guide's reported day read from what EquityBrief stored or the calendar dates
+Authorised by: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
+Was:
+> and a report date already passed is said as reported, never as the next;
+Now:
+> and a quarter reported is said as reported on the day EquityBrief stored or the calendar dates, never as the next;
+Why: the guide states what the architecture's report page section states.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a segment table's one scale read off its amounts, billions where every amount is a billion or more
 Authorised by: A segment table draws every amount in one scale, billions where every amount is a billion or more and millions or thousands by its largest amount
 Was:
