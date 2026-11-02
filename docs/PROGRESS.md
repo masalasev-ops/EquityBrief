@@ -14364,3 +14364,26 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
             placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
+
+### 18.5 ruling - every defect the eighth phase 18 sign-off review found corrected in one pull request before a fresh session reviews those fixes and signs   2026-11-02
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-02 and lands nothing.
+Found:      the eighth phase 18 sign-off review, by a session that committed no code, over main 6d14d844: `tools/ci.ps1` green
+            19:53:02 to 20:37:18 UTC, 3065 of 3065, and `tools/verify-phase.ps1` green, 1497 claims, 1497 passing; 57 mutations
+            predicted first, 54 red and 3 surviving as predicted; the table the sign-off rule asks for, 201 pull requests and 93
+            correction commits traced with none undone or contradicted by a later one; all 1,505 members' pages read against
+            the store. Seven defects and three judgements, nothing signed. The findings are in
+            `prompts/2026-11-02-18.5-phase-18-signoff-eighth-findings.md`.
+Ruled:      word for word in `prompts/2026-11-02-18.5-phase-18-signoff-eighth-answers.md`: finish the review and fix every
+            defect in one pull request, a fresh session then reviewing only those fixes and the corrections table and signing
+            if they hold; equitybrief-94 builds; "Skip that quarter", 45 days; "Say it is today's"; "Guard, and fix the filer",
+            200 days; "Say why it stopped"; "Use the filing's date"; and D2 and D4 to D7 as stated in the report and not
+            overruled, with the three tests the mutations left wanting.
+Labelled:   read off the record: the estimate and the dated page's calendar under 18.4; the segment tables, the old
+            filings, the raises, the signed nought and the filing's date under 18.2; the next dated event and the filed
+            table's figures under 18.2; the fundamentals card's words under 22.8, which built them.
+Queue:      done, PR 622 and the eighth review; in progress, this pull request; next, a fresh session's review of these fixes
+            and the corrections table and its sign-off of phase 18, then the sign-offs of phases 20, 21 and 22 by their own
+            fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
