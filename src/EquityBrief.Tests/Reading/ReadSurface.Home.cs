@@ -89,7 +89,8 @@ public partial class ReadSurface
         {
             // A plan buying at 100 with its give-up price at 90 and its target at 125: it risks 10 to make 25, $2.50 a dollar.
             new(SetupFamilies.Pullback, "AAA", "Alpha Inc", "A strong stock that dipped.", 100m, 90m, 125m, false, null),
-            new(BreakoutRule.Name, "BBB", null, "Closed above its highest price of the last 6 months.", 50m, 46m, null, true, null),
+            // From 22.18 a breakout buying at 50 with its give-up price 4 beneath: it can no longer lose once a close reaches 54.
+            new(BreakoutRule.Name, "BBB", null, "Closed above its highest price of the last 6 months.", 50m, 46m, null, true, null, 4m, new EquityBrief.Core.Cards.PaperWinners(3, 300, null)),
             new(ImprovingRule.Name, "CCC", "Gamma Co", "Its newest filing shows the business getting stronger: 8 of 9 checks, up from 6.", 20m, null, null, true, null),
         };
         var view = Day() with
@@ -126,7 +127,14 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"home-rr\" role=\"img\" aria-label=\"Risks $1 to make about $2.50\"><div class=\"risk\" style=\"flex:10\"></div><div class=\"reward\" style=\"flex:25\"></div></div>", page, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(page, "class=\"home-rr\""));
         Assert.Contains("<b class=\"aim\">No fixed target</b>", page, StringComparison.Ordinal);
-        Assert.Equal(2, Regex.Matches(text, Regex.Escape(SinglePageApp.RisesLine)).Count);
+        Assert.Single(Regex.Matches(text, Regex.Escape(SinglePageApp.RisesLine)));
+
+        // From 22.18 the breakout's give-up price rising beneath its price, why it has no target, the close past which it
+        // can no longer lose, 50 and its distance of 4, and its rule's record below the count it needs.
+        Assert.Contains("<b class=\"stop\">$46.00</b></div><p class=\"home-rising\">rising as the stock makes new highs; it never moves down.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("Breakouts earn most from the few that keep running, so the rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.", text, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"home-odds home-noloss\" data-no-loss=\"54\">The trade can no longer lose once the stock reaches about $54.00.</div>", page, StringComparison.Ordinal);
+        Assert.Contains("The breakout rule has 3 of the 300 finished trades its record needs.", text, StringComparison.Ordinal);
         Assert.Contains("<b class=\"stop\">below its 200-day average</b>", page, StringComparison.Ordinal);
         Assert.Contains("<a href=\"#/chart/AAA\">See the plan</a>", page, StringComparison.Ordinal);
         Assert.Contains("<a href=\"#/tonight\">See all 7 with their full plans</a>", page, StringComparison.Ordinal);

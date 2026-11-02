@@ -8,8 +8,9 @@ namespace EquityBrief.Web.App;
 
 // One idea Home draws: its family, its stock and company, the sentence saying why in the reader's words, the three prices
 // its plan set tonight, none where the plan sets none, whether its give-up price rises with the stock in place of a
-// target, and what it risks against what it aims for.
-public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk);
+// target, and what it risks against what it aims for; and from 22.18, for a plan selling on a rising give-up price with no
+// target, the distance it rises behind the highest close at and its rule's winning trades.
+public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null);
 
 // How past ideas have done on Home: the day the combined paper account counts from, the ideas it bought and sold and how
 // many made money, its return and an equal-weight hold of the index's stocks over the same days, and whether a live rule
@@ -298,10 +299,20 @@ public sealed partial class SinglePageApp
         card.Append("<div class=\"home-prices\">");
         card.Append(Invariant($"<div><span>Buy at about</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
         card.Append(Invariant($"<div><span>Sell if it falls to</span><b class=\"stop\">{(idea.Stop is { } stop ? Dollars(stop) : idea.Rises ? "below its 200-day average" : NoFigure)}</b></div>"));
-        card.Append(Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? "No fixed target" : Dollars(idea.Target.Value))}</b></div>"));
+
+        // From 22.18 a plan selling on a rising give-up price says how it rises beneath its price.
+        // see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
+        card.Append(idea.Trail is not null && idea.Stop is not null ? Invariant($"<p class=\"home-rising\">{Escaped(MarkRenderer.RisingWords)}</p>") : string.Empty);
+        card.Append(Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
         card.Append("</div>");
 
-        if (idea.Rises || idea.Target is null)
+        if (idea.Trail is { } trail && idea.Buy is { } entered && idea.Stop is not null)
+        {
+            card.Append(Invariant($"<div class=\"home-odds\">{Escaped(MarkRenderer.RunsWords)}</div>"));
+            card.Append(Invariant($"<div class=\"home-odds home-noloss\" data-no-loss=\"{EquityBrief.Core.Families.TrailingExit.NoLossAt(entered, trail).ToString(CultureInfo.InvariantCulture)}\">{Escaped(MarkRenderer.NoLossLine(entered, trail))}</div>"));
+            card.Append(idea.Record is { } record ? Invariant($"<div class=\"home-odds home-winners\" data-finished=\"{record.Finished}\">{Escaped(MarkRenderer.WinnersLine(idea.Family, record))}</div>") : string.Empty);
+        }
+        else if (idea.Rises || idea.Target is null)
         {
             card.Append(Invariant($"<div class=\"home-odds\">{Escaped(RisesLine)}</div>"));
         }

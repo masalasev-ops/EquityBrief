@@ -14143,3 +14143,52 @@ Carried:    the operator reads the local copy before the next upload; the schedu
             old copy until this merges.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.18's entry below, on whose
             branch this is recorded.
+
+### 22.18 ruling - a breakout idea's sell lines on Home and on its card, an addition to the Home ruling   2026-11-02
+
+Not a checkpoint entry: it records the operator's addition to the Home ruling of 2026-11-02, which adds 22.18 to the
+phase, and lands nothing.
+Ruled:      word for word in `prompts/2026-11-02-home-breakout-sell-addendum.md`: "Addition to the Home ruling, for every
+            idea whose rule sells on a rising give-up price instead of a target (the breakout today)." On Home, app and
+            copy, and on that pick's card on Tonight: "Aim to sell at": "No fixed target" with the line "Breakouts earn
+            most from the few that keep running, so the rule lets a winner run and sells only when the price closes below
+            a give-up price that rises behind it."; "Sell if it falls to": "$<tonight's give-up price>, rising as the
+            stock makes new highs; it never moves down."; "The trade can no longer lose once the stock reaches about
+            $<price>.", worked from the rule's own trail and the buy price; the rule's record under its own name, "<Rule
+            name>'s winning trades have made about $<n> per $1 risked so far, over its <n> finished trades. That is the
+            rule's record, not this stock's chance.", and below the minimum "<Rule name> has <n> of the <minimum>
+            finished trades its record needs."; no bar for the card. "Every figure from the store, code-written; add the
+            trade-can-no-longer-lose price to the fixture with one case worked by hand."
+Answered:   "In addition to the addendum i gave, do in the same PR", so it is built with 22.17 in its pull request, filed
+            as 22.18.
+Written:    22.18's text and its done condition in the build plan, the decision, section 15.24's ideas row, the card's
+            paragraph in section 15 and section 20's phase 22 row, their prior text in the changelog, and the guide.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.18's entry below, which
+            states that run's figures.
+
+### 22.18 - a breakout idea says it has no fixed target, how its give-up price rises, when it can no longer lose and its rule's record   2026-11-02
+
+Built:      the card's stop and target tiles and Home's idea for a plan selling on a rising give-up price with no target,
+            in the operator's words; the close at which the trade can no longer lose, the buy and the distance the
+            give-up price trails by, the night's stored distance or the buy less the stop, worked by one function beside
+            the trailing exit; and the rule's record under the rule's name, read off the paper account Paper trading
+            walks for the family's live or provisional rule on the index, its finished trades against the 300 a verdict
+            needs and past them its winning trades' mean result in risks. The trail is fixed at the buy, so the price
+            needs no future day and "about" stands for a close reached. No bar on such a card, and the copy's plain card
+            draws the same lines. The decision, sections 15.24, 15's card paragraph and 20, and the guide say it.
+Read back:  tonight's one breakout on the S&P 500, GDDY bought at about 117.24 with its give-up price at 109.98, can no
+            longer lose once it reaches about $124.50; its rule holds none of the 300 finished trades.
+Tests:      three new: the card's tiles and lines with no bar and the copy's card saying the same, the record's two forms
+            and its count and mean worked by hand off constructed paper trades, and the fixture's no-loss case against
+            the trailing exit walked over the same closes; Home's region test reading the breakout's lines; 3060 in all.
+Claims:     none new; the rows edited keep their verdicts.
+Pins:       none move; the breakout's rule, its trailing exit's walk and the readings pin are untouched.
+Mutation:   chosen before the runs by this rule, the property the addition rests on, filtered to its tests: n1 the
+            no-loss price as the buy plus twice the trail, predicted red at the fixture's case, the card's test and
+            Home's region test, red at those three alone; reverted, green.
+Carried:    after the merge, 5152 restarted from main and the breakout's card and Home read back there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3060 of 3060 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
+            placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.

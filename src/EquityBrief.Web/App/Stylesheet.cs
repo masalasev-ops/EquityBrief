@@ -835,6 +835,7 @@ details.fold>.fold-b{padding:0 0 8px}
 .plan-tile b{font:600 17px/1.25 var(--sans);font-variant-numeric:tabular-nums}
 .plan-tile b.loss{color:var(--down)} .plan-tile b.gain{color:var(--up)}
 .card-reward{margin:0 0 6px;font-weight:600}
+.card-noloss{margin:0 0 6px;font-weight:600} .card-winners{margin:0 0 6px;color:var(--ink-2)}
 .card-management{margin:6px 0;padding-left:18px;font-size:13px;color:var(--ink-2)}
 .card-note{margin:6px 0 0;font-size:12.5px;color:var(--soft)}
 .card-hits ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
@@ -1428,6 +1429,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .home-rr{display:flex;height:8px;border-radius:4px;overflow:hidden}
 .home-rr .risk{background:var(--down-fill);border:1px solid var(--down)} .home-rr .reward{background:var(--up-fill);border:1px solid var(--up)}
 .home-odds{font-size:14px;color:var(--ink-2)}
+.home-rising{margin:0;font-size:13px;color:var(--soft);text-align:right} .home-noloss{font-weight:600;color:var(--ink)}
 .home-note{margin:14px 0 0;padding:10px 14px;border-radius:8px;background:var(--warn-fill);font-size:14px;color:var(--ink)}
 .home-results{display:flex;flex-wrap:wrap;gap:24px}
 .home-results>div{flex:1 1 320px}

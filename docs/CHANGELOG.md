@@ -26,6 +26,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a breakout idea's sell lines in 15.24's ideas row and on the card, and section 20's phase 22 row names 22.18
+Authorised by: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
+Was:
+> ... its three prices with a trailing plan's line in the target's place; a bar sized ...
+> ... the reward against the risk where the pick's row states it; the plan in the operator's money or the line linking the account page; ...
+> ... and, on their ruling of 2026-11-02, the read-only copy drawn with no part of the method and its upload refused on a leak of it</td> ... <td>the build plan's phase 22 checkpoints, 22.0 to 22.17</td></tr>
+Now:
+> ... its three prices with a trailing plan's line in the target's place; from 22.18 for a plan selling on a rising give-up price no fixed target and why in the operator's words; how its give-up price rises; the close past which it can no longer lose; its rule's record under the rule's name; a bar sized ...
+> ... the reward against the risk where the pick's row states it; from 22.18 for a plan selling on a rising give-up price with no target, its stop's tile the give-up price rising ... with no bar; the plan in the operator's money ...
+> ... and, on their rulings of 2026-11-02, the read-only copy drawn with no part of the method and its upload refused on a leak of it, and the sell lines of a breakout idea on Home and on its card</td> ... <td>the build plan's phase 22 checkpoints, 22.0 to 22.18</td></tr>
+Why: the operator's addition to the Home ruling of 2026-11-02, built as 22.18.
+
+### 2026-11-02 - docs/BUILD_PLAN.md - phase 22 gains 22.18, a breakout idea's sell lines
+Authorised by: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
+Was:
+> (no 22.18 section)
+Now:
+> ### 22.18 On the operator's word of 2026-11-02: a breakout idea's sell lines on Home and on its card
+Why: the operator's addition, built in 22.17's pull request on their word.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - the read-only copy drawn with no part of the method, and section 20's phase 22 row names 22.17
 Authorised by: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 Was:

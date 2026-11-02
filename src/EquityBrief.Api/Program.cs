@@ -1815,9 +1815,7 @@ async Task<IResult> TonightScreenAsync(
         indexCards = TonightScreen.WithDipFreeze(indexCards, reading.Code, indexRegister, indexAnswers, indexDipNight, indexAsOf);
 
         // Each setup's record so far as Paper trading counts it, its finished trades against what a verdict needs.
-        var indexProgress = await PaperProgressAsync(read, reading, dated);
-
-        indexCards = [.. indexCards.Select(card => card with { Progress = indexProgress.GetValueOrDefault(card.Family) })];
+        indexCards = WithRecords(indexCards, await PaperProgressAsync(read, reading, dated));
 
         // The fundamentals-first family's card, passes and trades are drawn no more, its rule running out of sight, and the
         // cards left are numbered in the page's order.
@@ -2187,9 +2185,7 @@ async Task<IResult> TonightScreenAsync(
         cards = TonightScreen.WithDipLabels(cards, dipPicks);
 
         // Each setup's record so far as Paper trading counts it, its finished trades against what a verdict needs.
-        var progress = await PaperProgressAsync(read, reading, dated);
-
-        cards = [.. cards.Select(card => card with { Progress = progress.GetValueOrDefault(card.Family) })];
+        cards = WithRecords(cards, await PaperProgressAsync(read, reading, dated));
     }
 
     // A plan and its bands as the night shown stored them, drawn against that night's close.
@@ -2706,7 +2702,11 @@ async Task<IResult> HomeAsync(
             _ => "A strong stock that dipped to a price where buyers have stepped in before, and turned back up today.",
         };
 
-        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk);
+        // From 22.18 a plan selling on a rising give-up price carries its distance, the night's or the buy less the stop, and
+        // its rule's winning trades off its card.
+        decimal? trail = pick.Trailing && pick.Target is null && pick.Buy is { } buy && pick.Stop is { } stop && buy > stop ? pick.Card?.Trail ?? buy - stop : null;
+
+        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners);
     }
 
     HomeIdea[] fundamentals =
@@ -2760,7 +2760,7 @@ async Task<IResult> HomeAsync(
             combined.Trades.Count(trade => !trade.Open && trade.Skipped is null && trade.Return > 0),
             combined.Walk.Return,
             index,
-            progress.Values.Any(one => one.Counted < one.Needed));
+            progress.Values.Any(one => one.Progress.Counted < one.Progress.Needed));
     }
 
     // On the S&P 400 and 600 each rule checks its own market level, a rule reading none counted open.
@@ -2791,8 +2791,9 @@ async Task<IResult> HomeAsync(
 }
 
 // Each family's live or provisional rule's record so far on an index as of a night, as Paper trading counts it off the
-// same accounts: its finished trades against the count a verdict needs, a book's months against its own.
-async Task<IReadOnlyDictionary<string, EquityBrief.Core.Cards.PaperProgress>> PaperProgressAsync(ReadApi read, UniverseChoice reading, DateOnly night)
+// same accounts: its finished trades against the count a verdict needs, a book's months against its own, and from 22.18
+// its winning trades as a breakout idea's record reads them.
+async Task<IReadOnlyDictionary<string, (EquityBrief.Core.Cards.PaperProgress Progress, EquityBrief.Core.Cards.PaperWinners Winners)>> PaperProgressAsync(ReadApi read, UniverseChoice reading, DateOnly night)
 {
     var large = reading == Universes.Large;
     var indexNight = await read.IndexNightAsync(reading.Code, night);
@@ -2813,9 +2814,23 @@ async Task<IReadOnlyDictionary<string, EquityBrief.Core.Cards.PaperProgress>> Pa
         .GroupBy(account => account.Family, StringComparer.Ordinal)
         .ToDictionary(
             group => group.Key,
-            group => EquityBrief.Core.Cards.PaperAccount.Progress(group.First().Book, [.. group.First().Trades.Select(one => one.Trade)], group.First().Since, night),
+            group => (
+                EquityBrief.Core.Cards.PaperAccount.Progress(group.First().Book, [.. group.First().Trades.Select(one => one.Trade)], group.First().Since, night),
+                EquityBrief.Core.Cards.PaperAccount.Winners(group.First().Trades)),
             StringComparer.Ordinal);
 }
+
+// From 22.18 each family's cards with its progress, and each pick's card with its rule's winning trades.
+static IReadOnlyList<FamilyCardView> WithRecords(IReadOnlyList<FamilyCardView> cards, IReadOnlyDictionary<string, (EquityBrief.Core.Cards.PaperProgress Progress, EquityBrief.Core.Cards.PaperWinners Winners)> records) =>
+[
+    .. cards.Select(card => records.TryGetValue(card.Family, out var record)
+        ? card with
+        {
+            Progress = record.Progress,
+            Picks = [.. card.Picks.Select(pick => pick.Card is { } held ? pick with { Card = held with { Winners = record.Winners } } : pick)],
+        }
+        : card with { Progress = null }),
+];
 
 // An index's paper accounts as of a night: its stored trades in one shape, each costed, walked and judged, with the
 // sessions they were walked over, each stock's company and night readings, the fund's closes and each open holding's
