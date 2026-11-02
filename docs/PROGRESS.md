@@ -14292,3 +14292,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
             placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
+
+### 18.5 ruling - the two defects the seventh phase 18 sign-off review found corrected before an eighth review signs, the next report's day and the copy's dated versions   2026-11-02
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-02 and lands nothing.
+Found:      the seventh phase 18 sign-off review, by a session that had committed no code, over main 5b53f12b: `tools/ci.ps1`
+            green 12:08:20 to 12:44:41 UTC, 3060 of 3060, and `tools/verify-phase.ps1` green, 1497 claims, 1497 passing;
+            23 mutations predicted first, 20 red and 3 surviving where predicted, each survivor no test reading a stock's
+            mark on the copy; the table the sign-off rule asks for, 200 pull requests and 91 correction commits traced with
+            none undone or contradicted by a later one. Two defects. The numbers read the day the filing's payload expected
+            against the night alone: over the 543 current members holding a filing on the night of 2026-10-30, 42 named a
+            next report for a quarter they drew as reported, 57 said another reported day than the stored one, 35 said a
+            day the calendar does not hold, 19 of them with the calendar dating the report after the night, and 32 said not
+            announced beside a calendar date. The copy marked its 105 dated versions with its own night, each reading that
+            its prices may be out of date. One judgement: 59 pages said not filed where their calendar lists the report.
+            Nothing was signed. The findings are in `prompts/2026-11-02-18.5-phase-18-signoff-seventh-findings.md`.
+Ruled:      word for word in `prompts/2026-11-02-18.5-phase-18-signoff-seventh-answers.md`: this session builds and an
+            eighth fresh session signs; "Stored, then calendar"; "Their own night"; and "Show the date", the proof checking
+            it.
+Labelled:   read off the record: the reported day under 18.4, whose correction of 2026-10-27 built it; the copy's mark
+            under 18.4, whose correction of 2026-10-28 built it.
+Queue:      done, PRs 617 to 621 and the seventh review; in progress, this pull request; next, the eighth phase 18 sign-off
+            review by a fresh session after it merges, then the sign-offs of phases 20, 21 and 22 by their own fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
