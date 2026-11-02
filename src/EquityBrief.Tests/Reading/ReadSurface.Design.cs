@@ -585,9 +585,9 @@ public partial class ReadSurface
 
         var shell = await client.GetStringAsync("/");
 
-        // The four screens read most in the bar, then the two menus with their links, in that order.
+        // Home from 22.16, the four screens read most in the bar, then the two menus with their links, in that order.
         Assert.Contains(
-            $"<nav class=\"m-nav\" aria-label=\"Screens\"><a href=\"#/\" data-view=\"tonight\">Tonight</a><a href=\"{SinglePageApp.UniverseRoute}\" data-view=\"universe\">Universe</a><a href=\"{SinglePageApp.PaperRoute}\" data-view=\"paper\">Paper trading</a><a href=\"{SinglePageApp.LoopRoute}\" data-view=\"loop\">Loop<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a>"
+            $"<nav class=\"m-nav\" aria-label=\"Screens\"><a href=\"#/\" data-view=\"home\">Home</a><a href=\"{SinglePageApp.TonightRoute}\" data-view=\"tonight\">Tonight</a><a href=\"{SinglePageApp.UniverseRoute}\" data-view=\"universe\">Universe</a><a href=\"{SinglePageApp.PaperRoute}\" data-view=\"paper\">Paper trading</a><a href=\"{SinglePageApp.LoopRoute}\" data-view=\"loop\">Loop<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a>"
                 + $"<div class=\"m-group\" data-group=\"research\"><button type=\"button\" class=\"m-group-btn\" aria-expanded=\"false\">Research</button><div class=\"m-drop\"><a href=\"{SinglePageApp.ResearchedRoute}\" data-view=\"researched\">Researched</a><a href=\"{SinglePageApp.QueueRoute}\" data-view=\"queue\">Queue</a><a href=\"{SinglePageApp.WatchRoute}\" data-view=\"watch\">Watch list</a><div class=\"lane\" id=\"lane\"",
             shell,
             StringComparison.Ordinal);
