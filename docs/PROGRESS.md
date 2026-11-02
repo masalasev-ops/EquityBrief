@@ -14248,3 +14248,25 @@ Mutation:   chosen before the runs by this rule, the property the correction add
             card's estimate test, red there alone; each reverted, green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: a segment table's one scale is read off its amounts, billions where every amount is a billion or more, millions where the largest is a million or more and thousands otherwise, where it was read off the smallest amount's rounding   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source on the operator's answer of 2026-11-02, and
+lands nothing.
+Found:      the sixth phase 18 sign-off review: the 18.4 correction of 2026-11-01 kept a table whose smallest amount reads in
+            billions in billions, where the operator's words of that day read literally would draw it in millions; put to the
+            operator as a judgement, who kept the billions and restated the rule.
+Corrected:  `Figures.ScaleOf` reads billions where every amount is a billion or more, millions where the largest is a
+            million or more and thousands otherwise, the two places and the "under" kept, so a table moves only where its
+            smallest amount lies between $950 million and a billion, which had read as $1.0B, or every amount between
+            $950,000 and a million, which had read as $1.0M. The decision is superseded by
+            one in the operator's words, its prior text under Previously decided, and the architecture's sentence with its
+            prior text in the changelog.
+Tests:      none new; the segment table's test holds billions at every amount a billion or more, millions for $960 million
+            beside $3 billion and for a million beside $960,000, and thousands for $960,000 beside $990,000.
+Mutation:   chosen before the runs by this rule, the property the correction adds, each filtered to the 56 tests of the six
+            report page files: b1 billions read off the smallest amount's rounding again, predicted red at the segment
+            table's test, red there alone; b2 billions read off the largest amount, predicted red there, red there alone;
+            each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

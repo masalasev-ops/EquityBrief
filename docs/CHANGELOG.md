@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a segment table's one scale read off its amounts, billions where every amount is a billion or more
+Authorised by: A segment table draws every amount in one scale, billions where every amount is a billion or more and millions or thousands by its largest amount
+Was:
+> (section 4, the report page's rules) every amount of a segment table is drawn in one scale, the one its smallest amount reads in where that reads at one or more, and otherwise in millions where its largest amount is a million or more, kept to two places where one would read under a tenth and said to be under a hundredth where two would read as none, and in thousands where every amount is under a million, its thousands marked (see: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not)
+Now:
+> every amount of a segment table is drawn in one scale, billions where every amount is a billion or more, millions where its largest amount is a million or more, kept to two places where one would read under a tenth and said to be under a hundredth where two would read as none, and thousands otherwise, its thousands marked (see: A segment table draws every amount in one scale, billions where every amount is a billion or more and millions or thousands by its largest amount)
+Why: the operator's answer of 2026-11-02 at the sixth phase 18 sign-off review states the rule as one scale a table read off its amounts, where the sentence read it off the smallest amount's rounding.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a next report estimated only where a report fifty-two weeks or more before the night is stored, on the page and the card
 Authorised by: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
 Was:
