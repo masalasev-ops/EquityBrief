@@ -63,6 +63,9 @@ public sealed partial class SinglePageApp
 
     public const string FootLine = "Want every number, every rule and every version being tested?";
 
+    // From 22.17 the foot's line on the read-only copy, which draws no version.
+    public const string CopyFootLine = "Want every pick with its plan, and how each rule has done?";
+
     public const string Disclaimer = "Nothing on this site is financial advice. EquityBrief is a personal experiment: it tests fixed rules on paper, with no real money, and a rule's past results, on paper or over history, are no promise about what comes next. Make your own decisions, or ask a licensed adviser, before you invest.";
 
     // The family's tag and its sentence, in the reader's words.
@@ -273,7 +276,7 @@ public sealed partial class SinglePageApp
         region.Append("</div></section>");
 
         // The way to Tonight, and the disclaimer beneath everything.
-        region.Append(Invariant($"<div class=\"home-foot\"><span>{Escaped(FootLine)}</span><a class=\"go\" href=\"{TonightHref(view.Reading)}\">Open the full Tonight page</a></div>"));
+        region.Append(Invariant($"<div class=\"home-foot\"><span>{Escaped(marks.Copying ? CopyFootLine : FootLine)}</span><a class=\"go\" href=\"{TonightHref(view.Reading)}\">Open the full Tonight page</a></div>"));
         region.Append(Invariant($"<p class=\"home-disclaimer\">{Escaped(Disclaimer)}</p>"));
         region.Append("</section>");
 

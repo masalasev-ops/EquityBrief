@@ -1685,16 +1685,21 @@ public sealed partial class SinglePageApp : IComponent
             rules.Insert(0, marks.PickedBy(pickedBy));
         }
 
-        Card("rules", "rules", "How the rules read it", Cards.Computed(
-            "How the rules read it",
-            rules.ToString(),
-            title: "What the swing filter and the readings made of it",
-            lede: decision is null
-                ? "Each part folds open: why it is here, its gates, its swing readings and its member readings, as the night stored them."
-                : "First the checks of the setup that picked it; then each part folds open: why it is here, its gates, its swing readings and its member readings, as the night stored them.",
-            stamp: Cards.Night(gates?.Session ?? session),
-            id: "rules",
-            region: "rules"));
+        // From 22.17 the read-only copy holds none of it: the rules' gates, readings and floors are the method.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        if (!marks.Copying)
+        {
+            Card("rules", "rules", "How the rules read it", Cards.Computed(
+                "How the rules read it",
+                rules.ToString(),
+                title: "What the swing filter and the readings made of it",
+                lede: decision is null
+                    ? "Each part folds open: why it is here, its gates, its swing readings and its member readings, as the night stored them."
+                    : "First the checks of the setup that picked it; then each part folds open: why it is here, its gates, its swing readings and its member readings, as the night stored them.",
+                stamp: Cards.Night(gates?.Session ?? session),
+                id: "rules",
+                region: "rules"));
+        }
 
         // The short version, the first written region section 4 lists, with its date beside it. Where no
         // accepted one stands, code writes one from computed parts and its heading says why: the checker
@@ -2501,7 +2506,8 @@ public sealed partial class SinglePageApp : IComponent
         DateOnly? night = null,
         UniverseChoice? universe = null,
         string selector = "",
-        UniverseView? view = null)
+        UniverseView? view = null,
+        IReadOnlySet<string>? picked = null)
     {
         var reading = universe ?? Universes.Large;
         var heading = "The universe: " + reading.Titled;
@@ -2528,6 +2534,23 @@ public sealed partial class SinglePageApp : IComponent
             night is { } on ? Invariant($"Every {reading.Name} member on the night of {on:yyyy-MM-dd}") : Invariant($"Every {reading.Name} member")));
 
         region.Append(selector);
+
+        // From 22.17 the read-only copy's list: each stock's name, sector, price, the day's move and whether it is a pick
+        // tonight, with no reading, score or filter of the rules.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        if (marks.Copying)
+        {
+            region.Append(Cards.Computed(
+                "The index",
+                "<div class=\"tbl-wrap\">" + marks.PlainUniverseTable(drawn, picked ?? new HashSet<string>(StringComparer.Ordinal)) + "</div>"
+                    + marks.UniversePaging(shown.Count, at, pageSize > 0 ? pageSize : Math.Max(1, drawn.Count), trendFilter, sectorFilter, reading == Universes.Large ? null : reading.Word, state),
+                title: Invariant($"Every {reading.Name} member"),
+                lede: "Each stock's price and its move on the day at the night's close, and whether it is one of tonight's picks.",
+                stamp: Cards.Night(night),
+                region: "index"));
+
+            return region.Append("</section>").ToString();
+        }
 
         // The setup ledger of the same index, under Universe.
 

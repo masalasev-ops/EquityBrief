@@ -12,7 +12,7 @@ namespace EquityBrief.Worker.Cloudflare;
 // the copy's check; writes the report beside the folder and prints it; and only with the upload flag, a check that refused
 // nothing and the API token and account the secrets file holds, uploads that folder alone to Cloudflare Pages. The token
 // is read from the configuration, handed to the host in a header and printed nowhere.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 public sealed class SitePublisher(
     string dataRoot,
     string workerBuild,
@@ -97,7 +97,10 @@ public sealed class SitePublisher(
             Say("  " + line);
         }
 
-        if (exit != 0 || !Directory.Exists(folder))
+        // From 22.17 a copy the read surface found the method in is read as every copy is, and its upload refused.
+        var leaked = exit == PublishedSite.Leaked;
+
+        if ((exit != 0 && !leaked) || !Directory.Exists(folder))
         {
             Say("refused: the read surface did not write the copy, so nothing was uploaded.");
             Write(report);
@@ -105,7 +108,8 @@ public sealed class SitePublisher(
             return 1;
         }
 
-        var check = SiteChecks.Read(folder, SiteChecks.Needles(secretsFiles, roots, dataRoot));
+        var read = SiteChecks.Read(folder, SiteChecks.Needles(secretsFiles, roots, dataRoot));
+        var check = leaked ? read with { Refusals = [.. read.Refusals, SiteChecks.LeakedTheMethod] } : read;
 
         foreach (var line in check.Lines)
         {

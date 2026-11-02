@@ -14,7 +14,7 @@ namespace EquityBrief.Tests.Reading;
 // read-surface: the read-only copy of the site on Cloudflare Pages. The surface's own screens saved as files with every
 // control and every address of the surface taken out, every link resolved against what the copy holds, and a shell that
 // fetches only the copy's files and names itself a copy on every page.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 public partial class ReadSurface
 {
     static readonly DateOnly CopyNight = new(2026, 10, 27);
@@ -239,8 +239,8 @@ public partial class ReadSurface
         Assert.Empty(copied.Refused);
         Assert.Equal(before, StoreBytesHash(store.DatabaseFile));
 
-        // Tonight, Past picks, Paper trading, the Ledger, the reports index, the universe list and the Loop on each index,
-        // and the researched stock's own page.
+        // Home, Tonight, Past picks, Paper trading, the reports index and the universe list on each index, and the
+        // researched stock's own page.
         foreach (var index in new[] { string.Empty, "?universe=400", "?universe=600" })
         {
             foreach (var screen in SiteCopyCommand.IndexScreens)

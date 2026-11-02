@@ -6,7 +6,7 @@ namespace EquityBrief.Api.Cloudflare;
 // The server the read surface runs on when it writes the read-only copy: no socket and no port, each screen the copy holds
 // handed to the surface's own request pipeline inside its own process and its answer read back, so the copy is drawn by
 // the code that draws the live page and asks nothing of any network.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 public sealed class InProcessServer : IServer
 {
     Func<string, Task<(int Status, string Body)>>? answer;

@@ -5,22 +5,25 @@ using EquityBrief.Web.Cloudflare;
 
 namespace EquityBrief.Api.Cloudflare;
 
-// What a copy wrote: the night it is of, each route it holds with its file, and each index's reports and their versions.
+// What a copy wrote: the night it is of, each route it holds with its file, each index's reports and their versions, the
+// routes not held and from 22.17 each leak of the method its files carry, by file and text.
 public sealed record SiteCopyWritten(
     DateOnly Night,
     IReadOnlyDictionary<string, string> Files,
     IReadOnlyList<(string Index, int Reports, int Versions)> Reports,
-    IReadOnlyList<string> Refused);
+    IReadOnlyList<string> Refused,
+    IReadOnlyList<string>? Leaks = null);
 
-// The read-only copy on Cloudflare Pages, written by the read surface's own verb. Each screen the copy holds is asked of
-// the surface as the live shell asks for it, inside this process and over no network: Tonight, Past picks,
-// Paper trading, the Ledger, the reports index, the universe list and the Loop on each index, the views each of those links
-// on its own screen and every page of the universe list; a chart page for every stock Tonight or Paper trading links on any
-// index; a stock page for each of those and for every stock with a written report, with each earlier dated version of a
-// report on the page of the night that first drew it. Each is cleaned of its controls, its links resolved against the
-// routes the copy holds, and written as a file under the folder named, beside the copy's shell, the page a missing route is
-// answered with and the host's headers. It writes nothing to the store and asks no provider.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// The read-only copy on Cloudflare Pages, written by the read surface's own verb, every screen drawn plain from 22.17.
+// Each screen the copy holds is asked of the surface as the live shell asks for it, inside this process and over no
+// network: Home, Tonight, Past picks, Paper trading, the reports index and the universe list on each index, the views each
+// of those links on its own screen and every page of the universe list; a chart page for every stock Home, Tonight or Paper
+// trading links on any index; a stock page for each of those and for every stock with a written report, with each earlier
+// dated version of a report on the page of the night that first drew it. Each is cleaned of its controls, its links resolved
+// against the routes the copy holds, marked out of search and written as a file under the folder named, beside the copy's
+// shell, the page a missing route is answered with, the robots file and the host's headers; and every file is then read for
+// the method. It writes nothing to the store and asks no provider.
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 public static class SiteCopyCommand
 {
     // How many views of one screen beside its first the copy holds where the screen links them, so a screen whose links
@@ -30,12 +33,12 @@ public static class SiteCopyCommand
     // How many pages of the universe list, its own and its sectors', the copy holds on one index at most.
     public const int ListPages = 80;
 
-    // The screens each index draws, as first drawn, Home first from 22.16.
+    // The screens each index draws, as first drawn, Home first from 22.16, and from 22.17 no Loop and no Ledger.
     public static readonly IReadOnlyList<string> IndexScreens =
-        [SinglePageApp.HomeRoute, SinglePageApp.TonightRoute, SinglePageApp.PicksRoute, SinglePageApp.PaperRoute, SinglePageApp.LedgerRoute, SinglePageApp.ResearchedRoute, SinglePageApp.UniverseRoute, SinglePageApp.LoopRoute];
+        [SinglePageApp.HomeRoute, SinglePageApp.TonightRoute, SinglePageApp.PicksRoute, SinglePageApp.PaperRoute, SinglePageApp.ResearchedRoute, SinglePageApp.UniverseRoute];
 
     // The screens whose own links to other views of themselves the copy follows.
-    static readonly string[] Followed = [SinglePageApp.PicksRoute, SinglePageApp.PaperRoute, SinglePageApp.LedgerRoute, SinglePageApp.ResearchedRoute];
+    static readonly string[] Followed = [SinglePageApp.PicksRoute, SinglePageApp.PaperRoute, SinglePageApp.ResearchedRoute];
 
     // The headers the host serves every file with: no request to any address but the copy's own, no form sent anywhere,
     // no page framed elsewhere and no address of the copy handed to a source's site, and the copy kept out of search.
@@ -43,7 +46,7 @@ public static class SiteCopyCommand
         "/*\n"
         + "  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'\n"
         + "  Referrer-Policy: no-referrer\n"
-        + "  X-Robots-Tag: noindex\n";
+        + "  X-Robots-Tag: noindex, nofollow\n";
 
     public static async Task<SiteCopyWritten> WriteAsync(Func<string, Task<(int Status, string Body)>> surface, ReadApi read, string folder, Action<string> say)
     {
@@ -230,7 +233,7 @@ public static class SiteCopyCommand
                 markup = SiteCopy.Versions(path["#/name/".Length..].Split('/')[0], listed, route) + markup;
             }
 
-            markup = SiteCopy.Relink(markup, route, held, stockPagesFirst: path == SinglePageApp.ResearchedRoute);
+            markup = SiteCopy.NoIndex + SiteCopy.Worded(SiteCopy.Relink(markup, route, held, stockPagesFirst: path == SinglePageApp.ResearchedRoute));
 
             var file = SiteCopy.FileOf(route);
 
@@ -244,7 +247,34 @@ public static class SiteCopyCommand
 
         Write(folder, SiteCopy.ShellFile, SiteCopy.Shell(night, files, SiteCopy.Relink(strip, "#/", held, stockPagesFirst: false)));
         Write(folder, SiteCopy.MissingFile, SiteCopy.Missing(night));
+        Write(folder, SiteCopy.RobotsFile, SiteCopy.Robots);
         Write(folder, EquityBrief.Core.Cloudflare.PublishedSite.HeadersFile, Headers);
+
+        // Every file the copy wrote read for the method, against every name the register holds standing and the setting
+        // words of each live rule's registration.
+        var standing = new List<string>();
+
+        foreach (var row in (await read.RegisteredCandidatesAsync()).OrderBy(row => row.Id))
+        {
+            if (row.Event == EquityBrief.Core.Candidates.CandidateFamily.Registered)
+            {
+                standing.Remove(row.Candidate);
+                standing.Add(row.Candidate);
+            }
+            else if (row.Retires is { } retired)
+            {
+                standing.Remove(retired);
+            }
+        }
+
+        var needles = SiteCopy.MethodNeedles(standing, standing.Where(name => name.StartsWith(LiveRule, StringComparison.Ordinal)));
+        var leaks = Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories)
+            .Select(path => (Path: path, Name: Path.GetRelativePath(folder, path).Replace('\\', '/')))
+            .OrderBy(file => file.Name, StringComparer.Ordinal)
+            .SelectMany(file => SiteCopy.Leaks(file.Name, File.ReadAllText(file.Path, Encoding.UTF8), needles))
+            .ToArray();
+
+        say(FormattableString.Invariant($"read every file for the method against {needles.Count} needles: {(leaks.Length == 0 ? "none found" : $"{leaks.Length} found")}"));
 
         // Each index's reports, as its own reports index lists them, and the versions they hold.
         var counts = Universes.Offered
@@ -258,8 +288,11 @@ public static class SiteCopyCommand
             })
             .ToArray();
 
-        return new SiteCopyWritten(night, files, counts, refused);
+        return new SiteCopyWritten(night, files, counts, refused, leaks);
     }
+
+    // How a live rule's registration opens, the register naming every live rule so.
+    const string LiveRule = "the live ";
 
     // A link to the universe list naming nothing but a page, a sector and the index.
     static bool PagesAndSectors(string route) =>

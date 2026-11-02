@@ -85,7 +85,10 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"data-last-reshuffle=\"{(card.LastReshuffle is { } last ? DayOf(last) : "none")}\" data-next-reshuffle=\"{(card.NextReshuffle is { } next ? DayOf(next) : "none")}\">");
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(QualitySummary(card))}</p>");
 
-        if (card.Fixed is { } fixedOn)
+        // From 22.17 the read-only copy draws its holdings and what it bought and sold alone: no test, setting or name next
+        // in line.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        if (card.Fixed is { } fixedOn && !Copying)
         {
             body.Append(Invariant, $"<p class=\"family-frozen quality-fixed\" data-fixed=\"{DayOf(fixedOn.FixedOn)}\" data-holdings=\"{fixedOn.Holdings}\" data-edge=\"{(fixedOn.Edge is { } edge ? edge.ToString("R", Invariant) : "none")}\" ");
             body.Append(Invariant, $"data-years=\"{fixedOn.YearsWithHoldings}\" data-ahead=\"{fixedOn.YearsAhead}\" data-beat-luck=\"{(fixedOn.BeatLuck is { } beat ? Flag(beat) : "none")}\" data-tester-passed=\"{(fixedOn.TesterPassed is { } passed ? Flag(passed) : "none")}\">");
@@ -140,6 +143,11 @@ public sealed partial class MarkRenderer
         {
             body.Append(Invariant, $"<p class=\"family-note quality-sold\" data-ticker=\"{Escaped(sold.Ticker)}\" data-sold-on=\"{DayOf(sold.On)}\">");
             body.Append(Invariant, $"{Escaped(sold.Ticker)} was sold at the close of {sold.On:d MMM yyyy}: {Escaped(sold.Reason == "no longer qualifies" && sold.On != card.LastReshuffle ? "a filing dropped its score below its setting's bar" : SoldWords(sold.Reason))}.</p>");
+        }
+
+        if (Copying)
+        {
+            return body.Append("</section>").ToString();
         }
 
         if (card.Next.Count > 0)

@@ -50,7 +50,9 @@ public sealed partial class MarkRenderer
 
         html.Append("</div><p class=\"brief-chips\">");
 
-        foreach (var chip in view.Chips)
+        // From 22.17 the read-only copy draws no setup's standing, which names the step a stock missed and its reading.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        foreach (var chip in Copying ? Array.Empty<BriefChip>() : view.Chips)
         {
             html.Append(Formatted($"<span class=\"fam-tag brief-chip\" data-family=\"{Escaped(chip.Family)}\" data-state=\"{Escaped(chip.State)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(chip.Family)}\"></span>{Escaped(chip.Label)}: {Escaped(chip.Words)}</span>"));
         }

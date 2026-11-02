@@ -1271,6 +1271,11 @@ public sealed partial class MarkRenderer : IComponent
     // store of its own.
     public static ComponentAccess Access => ComponentAccess.Nothing;
 
+    // From 22.17 whether the pages are drawn for the read-only copy, plain: no version, variant or setting of the method,
+    // a pick's card its sentence and its prices alone. Set where the read surface runs the copy's verb, never for the app.
+    // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+    public bool Copying { get; init; }
+
     // Below this a chart says what it has rather than drawing through nothing.
     // Two, because one session has no range to scale against and a chart of one
     // candle is a picture of nothing. Section 15.5's note is the rule: a mark
@@ -3343,7 +3348,8 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var column in columns)
         {
-            list.Append(TippedHeading(column, ReasonSays(column), "rz", Head(column)));
+            // From 22.17 the read-only copy names each reason and not when it fires, which is the rule.
+            list.Append(TippedHeading(column, Copying ? char.ToUpperInvariant(column[0]) + column[1..] + "." : ReasonSays(column), "rz", Head(column)));
         }
 
         list.Append("</tr></thead><tbody>");
@@ -6412,6 +6418,33 @@ public sealed partial class MarkRenderer : IComponent
     // carries, being the evening a name was last on the list and the listing
     // strip, are absent rather than blank, and the table says so once rather
     // than in every row.
+    // From 22.17 the read-only copy's universe table: the stock with its company opening its chart, its sector, its close,
+    // its move on the day from its last two stored closes and whether it is one of tonight's picks, and nothing the rules
+    // read.
+    // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+    public string PlainUniverseTable(IReadOnlyList<UniverseCell> rows, IReadOnlySet<string> picked)
+    {
+        var table = new StringBuilder();
+
+        table.Append(Invariant, $"<table class=\"universe-table plain\" data-rows=\"{rows.Count}\"><tr><th>Name</th><th>Sector</th><th class=\"r\">Price</th><th class=\"r\">Today</th><th>Pick tonight</th></tr>");
+
+        foreach (var row in rows)
+        {
+            var closes = row.Year?.Closes;
+            var moved = closes is { Count: >= 2 } ? EquityBrief.Core.Returns.ForwardReturnSeries.ChangeFromEntry(closes[^2], closes[^1]) : null;
+
+            table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-sector=\"{Escaped(row.Sector)}\" data-picked=\"{Flag(picked.Contains(row.Ticker))}\">");
+            table.Append(Invariant, $"<td class=\"c-nm\"><a class=\"tk\" href=\"{ChartOf(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+            table.Append(Formatted($"<td>{Escaped(row.Sector)}</td>"));
+            table.Append(Invariant, $"<td class=\"num\">{(row.Close is { } close ? Price(close) : "not stored")}</td>");
+            table.Append(moved is { } change ? Formatted($"<td class=\"num\">{WithSignedFigures(change.ToString("+0.00;-0.00;0.00", Invariant) + "%")}</td>") : "<td class=\"num\"><span class=\"degraded\">not stored</span></td>");
+            table.Append(picked.Contains(row.Ticker) ? "<td><b>Pick tonight</b></td>" : "<td></td>");
+            table.Append("</tr>");
+        }
+
+        return table.Append("</table>").ToString();
+    }
+
     public string UniverseTable(IReadOnlyList<UniverseCell> rows, UniverseSorting? sorting = null)
     {
         var table = new StringBuilder();

@@ -26,6 +26,42 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - the read-only copy drawn with no part of the method, and section 20's phase 22 row names 22.17
+Authorised by: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+Was:
+> ... and nothing written to the store. It holds the newest night's screens on each index, a chart page for each stock the night's pages and paper trading link, ... and the copy's own shell, which names it a read-only copy and carries a banner above every page, fetches only the copy's files. The folder is read for forms, ... (see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text)</p>
+> ... with Tonight one click away</td> ... <td>the build plan's phase 22 checkpoints, 22.0 to 22.16</td></tr>
+Now:
+> ... and nothing written to the store. From 22.17 the surface draws every screen of the copy plain, with no version, variant or setting of the method: ... It holds the newest night's Home, Tonight, Past picks, Paper trading, the reports index and the universe list on each index and no Loop page or Ledger, ... every page carries the robots meta refusing search and the copy a robots file refusing every crawler; ... A target's close the code writes is said in the copy's words, and every file the copy wrote is read for the method, ... each leak named by its file and its text; and the folder is read for forms, ... (see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one)</p>
+> ... with Tonight one click away; and, on their ruling of 2026-11-02, the read-only copy drawn with no part of the method and its upload refused on a leak of it</td> ... <td>the build plan's phase 22 checkpoints, 22.0 to 22.17</td></tr>
+Why: the operator's ruling of 2026-11-02, built as 22.17.
+
+### 2026-11-02 - docs/RUNBOOK.md - the read-only copy holds no Loop page or Ledger, draws no part of the method and is refused on a leak of it
+Authorised by: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+Was:
+> The copy is the site's own screens saved as files, for friends to browse and read the written reports without reaching this machine, its store or any action (see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text). It holds the newest night's Tonight, Past picks, Paper trading, the Ledger, the reports index, the universe list and the Loop on each index; a chart page for every stock Tonight or Paper trading links; ... It holds no Run page, queue, watch list or account page, ... Every page names itself a read-only copy and carries the banner *A read-only copy as of the night of dd mmm yyyy. Paper trading only; nothing here is advice.* It is written to `data/site`, ...
+> ... and, where `account.json` holds settings other than the example every page draws without them, their size. Read it, ...
+Now:
+> The copy is the site's own screens saved as files and drawn plain, ... its store, any action or the method (see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one). It holds the newest night's Home, Tonight, Past picks, Paper trading, the reports index and the universe list on each index; ... It holds no Loop page, Ledger, Run page, queue, watch list or account page, ... From 22.17 no page draws a version, a variant or a setting: ... Every page names itself a read-only copy, carries the banner ... and the robots meta refusing search, and the copy carries a `robots.txt` refusing every crawler. ...
+> ... their size. From 22.17 it refuses it too where the read surface's lines name a leak of the method, each by its file and its text: ... or "floor of" or "at or above" outside a report's written prose. Read it, ...
+Why: the operator's ruling of 2026-11-02, built as 22.17.
+
+### 2026-11-02 - docs/BUILD_PLAN.md - phase 22 gains 22.17, the read-only copy with no part of the method
+Authorised by: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+Was:
+> (no 22.17 section)
+Now:
+> ### 22.17 On the operator's word of 2026-11-02: the read-only copy shows no part of the method, and its upload refuses a page that leaks one
+Why: the operator's ruling of 2026-11-02, built inside phase 22 as its own checkpoint on their answer of that hour.
+
+### 2026-11-02 - .claude/rules/checks.md - the roster gains copy-method-leak
+Authorised by: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+Was:
+> (no copy-method-leak row)
+Now:
+> | `copy-method-leak` | every CI run | From 22.17 the read-only copy carries no part of the method: ... |
+Why: the operator's ruling asks for the check before every upload added to the roster with a test planting each kind of leak.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - Home at #/ as section 15.24, Tonight at #/tonight, and section 20's phase 22 row names 22.16
 Authorised by: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
 Was:

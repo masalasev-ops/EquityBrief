@@ -16,7 +16,7 @@ public sealed record SiteCheck(IReadOnlyList<string> Lines, IReadOnlyList<string
 // absolute path of the machine and the account's settings, each named and never printed. A form, an address of a press,
 // a press header, a script loaded from anywhere, a request a script makes to another site, a secret, a path, an account
 // setting or a file past the host's limit refuses the upload, naming the file.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 public static partial class SiteChecks
 {
     // What Cloudflare Pages takes: a file to 25 MiB and 20,000 files a deployment.
@@ -35,6 +35,9 @@ public static partial class SiteChecks
 
     // The mark a card's plan carries where it was sized on the account's settings, which no page of the copy reads.
     public const string SizedOnTheAccount = "data-account=\"set\"";
+
+    // From 22.17 the refusal of a copy the read surface found the method in, each file and its text named in its lines.
+    public const string LeakedTheMethod = "the read surface found the method in the copy, each file and its text named in its lines above";
 
     public static SiteCheck Read(string folder, IReadOnlyList<Needle> needles)
     {

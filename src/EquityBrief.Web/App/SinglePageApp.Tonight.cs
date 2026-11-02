@@ -38,6 +38,10 @@ public sealed partial class SinglePageApp
         families = [.. families.Where(card => card.Family != EquityBrief.Core.Families.FundamentalsRule.Name)];
         closeToBuy = closeToBuy is null ? null : [.. closeToBuy.Where(row => row.Cell.Family != EquityBrief.Core.Families.FundamentalsRule.Name)];
 
+        // From 22.17 the read-only copy draws no stock one step short, on its card or in a tile's line.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        closeToBuy = marks.Copying ? null : closeToBuy;
+
         // The page's links: what ran tonight, and on the S&P 500 the watch list with how many it holds.
         region.Append(Invariant($"<p class=\"tonight-links\"><a class=\"market-run\" href=\"{Escaped(runHref)}\">What ran tonight</a>"));
         region.Append(watching is { } held ? Invariant($" · <a class=\"market-watch\" data-watching=\"{held}\" href=\"{WatchRoute}\">Your watch list ({held})</a>") : string.Empty);
@@ -50,7 +54,7 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night)), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
         region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
-        region.Append(marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
+        region.Append(marks.Copying ? string.Empty : marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
 
         // The setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or the
         // stock closest to it; from 22.9 Quality at a fair price's tile after the sector heavyweights', the card's title

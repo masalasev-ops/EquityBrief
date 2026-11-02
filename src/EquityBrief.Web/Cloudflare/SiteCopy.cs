@@ -10,7 +10,7 @@ namespace EquityBrief.Web.Cloudflare;
 // The read-only copy of the site on Cloudflare Pages: the read surface's own screens saved as files, each with every
 // control and every address of the surface taken out and every link resolved against the routes the copy holds, read
 // through a shell of its own that fetches only those files and names itself a copy on every page.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+// see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
 public static partial class SiteCopy
 {
     // The folder inside the copy holding the screens.
@@ -30,17 +30,16 @@ public static partial class SiteCopy
     // The screens a stock's own pages are, which read no index from their link.
     static readonly string[] StockScreens = ["#/chart/", "#/name/"];
 
-    // The routes each menu entry opens, in the bar's order, with the menu each sits in where it sits in one.
+    // The routes each menu entry opens, in the bar's order, with the menu each sits in where it sits in one; from 22.17 no
+    // Loop and no Ledger, which are the method.
     public static readonly IReadOnlyList<(string Route, string Words, string View, string? Menu)> Menu =
     [
         (SinglePageApp.HomeRoute, "Home", "home", null),
         (SinglePageApp.TonightRoute, "Tonight", "tonight", null),
         (SinglePageApp.UniverseRoute, "Universe", "universe", null),
         (SinglePageApp.PaperRoute, "Paper trading", "paper", null),
-        (SinglePageApp.LoopRoute, "Loop", "loop", null),
         (SinglePageApp.ResearchedRoute, "Reports", "researched", null),
-        (SinglePageApp.PicksRoute, "Past picks", "picks", "Records"),
-        (SinglePageApp.LedgerRoute, "Ledger", "ledger", "Records"),
+        (SinglePageApp.PicksRoute, "Past picks", "picks", null),
     ];
 
     // The day a night is named by on the copy, as "27 Oct 2026".
@@ -186,7 +185,7 @@ public static partial class SiteCopy
             }
         }
 
-        return path is SinglePageApp.UniverseRoute or SinglePageApp.LedgerRoute or SinglePageApp.LoopRoute or SinglePageApp.PicksRoute or SinglePageApp.ResearchedRoute or SinglePageApp.PaperRoute
+        return path is SinglePageApp.UniverseRoute or SinglePageApp.PicksRoute or SinglePageApp.ResearchedRoute or SinglePageApp.PaperRoute
             ? "/screens/" + path[2..] + query
             : null;
     }
@@ -438,7 +437,7 @@ public static partial class SiteCopy
     // The page a route the copy does not hold is answered with, which stops the host answering every missing file with the
     // shell.
     public static string Missing(DateOnly night) =>
-        "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>" + NotHeld + " · " + PublishedSite.Name + "</title>\n<style>\n"
+        "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n" + NoIndex + "\n<title>" + NotHeld + " · " + PublishedSite.Name + "</title>\n<style>\n"
         + Stylesheet.Css + CopyCss
         + "\n</style>\n</head>\n<body>\n<header class=\"mast\"><div class=\"wrap\"><a class=\"m-brand\" href=\"./\">" + Brand + "</a></div></header>\n" + Banner(night)
         + "\n<main class=\"wrap\"><p class=\"notice copy-missing\">" + NotHeld + ". <a href=\"./\">Tonight</a></p></main>\n</body>\n</html>\n";
@@ -473,6 +472,7 @@ public static partial class SiteCopy
             <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+            {{{NoIndex}}}
             <title>{{{PublishedSite.Name}}}</title>
             <style>
             {{{Stylesheet.Css}}}

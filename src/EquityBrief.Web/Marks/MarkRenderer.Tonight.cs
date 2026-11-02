@@ -51,6 +51,12 @@ public sealed partial class MarkRenderer
             "Holds the companies whose filings score strongest on nine checks and whose price over earnings is no higher than its own usual. It is reshuffled on the first trading day of each month, and a stock is sold when it no longer qualifies. No stop and no target."),
     };
 
+    // Why a pick is here as a row draws it: the night's stored words in the reader's words, or from 22.17 on the read-only
+    // copy its setup's plain sentence, which carries no reading, window or threshold.
+    // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+    string WhyWords(string family, string why) =>
+        Copying ? WordsOf(family, family).Plain : ReaderWords.Plain(StoredWords(why));
+
     // A setup's words, its own label's where the list holds none for it.
     public static SetupWordsView WordsOf(string family, string label) =>
         SetupWords.TryGetValue(family, out var words) ? words : new SetupWordsView(label + ".", label + ".");
@@ -187,8 +193,11 @@ public sealed partial class MarkRenderer
 
         body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>{Escaped(open + endedWords)}</b></p><p class=\"minute-said\">{Escaped(why)} {paper}</p></div>");
 
-        // The stocks one step from qualifying.
-        if (line.CloseRead)
+        // The stocks one step from qualifying, which from 22.17 the read-only copy draws none of.
+        if (Copying)
+        {
+        }
+        else if (line.CloseRead)
         {
             var near = line.Close == 0
                 ? "No stock is one step from qualifying."
@@ -341,7 +350,7 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-family=\"{Escaped(point.Family)}\" data-place=\"{number}\"{(folds ? Formatted($" data-fold=\"{Escaped(fold)}\"") : string.Empty)}{(opened ? " class=\"sel\"" : string.Empty)}>");
             body.Append(PickNameCell(pick, (folds ? FoldToggle(fold, opened) : string.Empty) + (links?.GetValueOrDefault(row.Ticker) ?? string.Empty)));
             body.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span></td>");
-            body.Append(Invariant, $"<td class=\"why\">{Escaped(ReaderWords.Plain(StoredWords(pick.Why)))}</td>");
+            body.Append(Invariant, $"<td class=\"why\">{Escaped(WhyWords(point.Family, pick.Why))}</td>");
             body.Append(PickBusinessCell(pick));
             body.Append(PriceCell("buy", pick.Buy, null));
             body.Append(PriceCell("stop", pick.Stop, null));
@@ -387,10 +396,13 @@ public sealed partial class MarkRenderer
     {
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<p class=\"card-summary\" data-summary>The {TonightWords.Count} words this page uses most, each with what it means here.</p>");
+        // From 22.17 the read-only copy's words leave out a version and a stock one step short, which it draws none of.
+        (string Term, string Meaning)[] words = [.. TonightWords.Where(word => !Copying || word.Term is not ("Version" or "One step short"))];
+
+        body.Append(Invariant, $"<p class=\"card-summary\" data-summary>The {words.Length} words this page uses most, each with what it means here.</p>");
         body.Append("<dl class=\"gloss tonight-words\">");
 
-        foreach (var (term, meaning) in TonightWords)
+        foreach (var (term, meaning) in words)
         {
             body.Append(Invariant, $"<div class=\"gloss-row\"><dt>{Escaped(term)}</dt><dd>{Escaped(meaning)}</dd></div>");
         }

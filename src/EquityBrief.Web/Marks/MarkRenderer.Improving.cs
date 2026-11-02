@@ -107,6 +107,17 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<section class=\"family-card improving-card\" data-family=\"improving\" data-index=\"{Escaped(card.Index)}\" data-bought=\"{card.Bought}\" data-flagged=\"{card.Flagged}\" data-improving=\"{card.Improving.Count}\" data-holding=\"{card.Holding}\">");
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(ImprovingSummary(card))}</p>");
 
+        // From 22.17 the read-only copy's card: tonight's buys alone, with no score list, setting or test.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        if (Copying)
+        {
+            var bought = card.Improving.Where(row => row.Status == BoughtWords).ToArray();
+
+            body.Append(bought.Length == 0 ? "<p class=\"degraded\" data-rows=\"none\">No company is bought tonight.</p>" : ImprovingTable(bought));
+
+            return body.Append("</section>").ToString();
+        }
+
         // From 22.15 a frozen card's line from its own recorded answer, as every frozen card draws it, and beneath it in
         // the same breath what its history was read with.
         // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions

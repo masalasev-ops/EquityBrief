@@ -14085,3 +14085,61 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 22.17 ruling - the read-only copy shows no part of the method, and its upload refuses a page that leaks one   2026-11-02
+
+Not a checkpoint entry: it records the operator's ruling and answers of 2026-11-02, which add 22.17 to the phase, and lands
+nothing.
+Ruled:      about 01:00 UTC, word for word in `prompts/2026-11-02-read-only-copy-strip-method-ruling.md`: "The read-only
+            copy shows my method. Strip it, and make the upload refuse any page that leaks it." No Loop page or Ledger
+            in the copy or its menu; no version, variant or setting on any page it holds, a pick's card its plain reason
+            and its three prices, paper trading each family's live account alone, the universe list each stock's name,
+            sector, price, move on the day and pick tonight, Tonight's setups their description, picks and record; the
+            robots meta on every page and a robots file; a check before every upload refusing a leak and naming the file
+            and the text, on the roster with a test planting each kind; the copy rebuilt locally with no upload and shown
+            before the next upload. "The live app on 5152 is unchanged. Nothing about the rules, the night or the store
+            changes."
+Answered:   asked about the scheduled upload, the prompt file and the label: "Leave it running", "Force-add the file" and
+            "22.17". Then, with the breakout addendum to Home: "In addition to the addendum i gave, do in the same PR",
+            which files that addendum as 22.18 in this pull request.
+Written:    22.17's text and its done condition in the build plan, the decision superseding the copy's with the old moved
+            to Previously decided, the copy's paragraph in section 15.4 and section 20's phase 22 row, the runbook, the
+            roster's new row and the guide, their prior text in the changelog.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.18's entry below, which
+            states that run's figures.
+
+### 22.17 - the read-only copy drawn with no part of the method, kept out of search, and refused on a leak of it   2026-11-02
+
+Built:      the read surface draws every screen of the copy plain on a switch the copy's verb alone sets: Tonight's setups
+            their description, picks with each setup's plain sentence for why, any notes and their record, with no
+            versions choice, settings, narrowing, stocks one step short or close to breaking out, and the book families
+            their holdings and record alone; a pick's card its sentence and its buy, stop and target; paper trading each
+            family's live or provisional account, no variant, earlier version, chart key or tile naming a rule's words,
+            its scorecard each rule's closed trades and return; Past picks with no account choice or test verdicts; the
+            universe list name, sector, price, move on the day and pick tonight; a stock's page with no part of how the
+            rules read it, its brief naming no setup it is short of. The copy holds no Loop page or Ledger, carries the
+            robots meta on every file, a robots file and the host's noindex and nofollow, and says a target's close as
+            "at 22.13 or higher". Every file it wrote is read for the method before the upload, the threshold phrases
+            outside a report's written prose, and a leak ends the verb on a code the worker refuses the upload on. The
+            decision superseded, the roster's `copy-method-leak`, section 15.4, section 20's row, the runbook and the
+            guide say it.
+Read back:  the copy written locally over the live store, night of 2026-10-30, uploading nothing: the first pass found 1,024
+            leaks, the paper pages' chart keys and tiles naming each rule's registration, the S&P 400's and 600's
+            heavyweights folds and the code's exit sentences among them, and the written reports' prose using the two
+            threshold phrases of companies' figures; the last pass 402 screens against 1,104 before and none of 207 needles
+            found. Tonight, a pick's card, Paper trading and a chart page shown to the operator from it.
+Tests:      six new in `copy-method-leak`: each kind of leak planted and named with its file and text, a clean page and
+            the threshold phrases in written prose passing, a registration's settings read part by part, the upload
+            refused on the surface's leak and not without one, a pick's card for the copy carrying none of what the app's
+            card draws of its rule, and the copy's routes, menu, robots meta and headers; the real build's copy over the
+            fixture's store found to hold no leak, every page the robots meta and the robots file written.
+Claims:     none new; the roster gains its forty-fifth check.
+Pins:       none move; the switch is read by no rule's version, the filter or a readings pin.
+Mutation:   chosen before the runs by this rule, the properties the ruling's check exists for, filtered to the check's
+            tests and the real build's: m1 the worker ignoring the surface's leak code, predicted red at the upload's test
+            alone, red there alone; m2 the pick's card drawn whole for the copy, predicted red at the card's test alone,
+            red there alone; run together, each reverted, green.
+Carried:    the operator reads the local copy before the next upload; the scheduled upload runs from main and carries the
+            old copy until this merges.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.18's entry below, on whose
+            branch this is recorded.
