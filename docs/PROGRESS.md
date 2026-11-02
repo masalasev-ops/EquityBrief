@@ -14192,3 +14192,33 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
             placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
+
+### 18.5 ruling - the defect the sixth phase 18 sign-off review found corrected before a seventh review signs, with the segment scale's words and the copy's line on an older close   2026-11-02
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-02 and lands nothing.
+Found:      the sixth phase 18 sign-off review, by a session that had committed no code, over main 397d3375: `tools/ci.ps1`
+            green 16:53:28 to 17:30:54 UTC on 2026-11-01, 3042 of 3042, and `tools/verify-phase.ps1` green, 1491 claims,
+            1491 passing; fifteen mutations predicted and red where predicted, PR 616's eleven and four new; the table the
+            sign-off rule asks for, 37 phase 18 corrections traced line by line and test by test on main with none undone or
+            contradicted by a later pull request; the report page's proof over the night of 2026-10-30 and nine stocks' pages
+            and exported files read back at 1440 and a true 390. One defect: the next report not on file is estimated a
+            year on from any stored report of the last year, so a company holding only that year's reports, ADIG, MBGL and
+            MFP with one each and HONA and VGNT with two, would be estimated a year on from a report of a later quarter, as
+            HONA's page would once it reports on 2026-11-04 with its next not announced, about 2027-08-04 where its next falls
+            about February 2027. Two judgement items: a segment table of billions kept in billions against the operator's
+            words of 2026-11-01, and the read-only copy's two marks on a stock whose last close is older than the night.
+            Nothing was signed.
+Ruled:      word for word in `prompts/2026-11-02-18.5-phase-18-signoff-sixth-findings-and-answers.md`: this session builds the
+            corrections and a seventh fresh session signs; "Need a year of reports", a next report estimated only where a
+            report at least a year before the night is stored, the page saying why where none is and the card keeping that
+            no report date is on file; the billions kept, "the rule is one scale per table: billions where every amount is a
+            billion or more, millions where the largest is a million or more, thousands otherwise. Amend the decision's words
+            to say that"; and on the copy, "don't show two "as of" lines with different dates. Keep the copy's mark and put
+            the stock's own date in one sentence beneath it: "This stock's last stored price is from <d Mon>, so its prices
+            may be out of date." Update the test to that."
+Labelled:   read off the record: the estimate under 18.4, whose corrections of 2026-10-27 and 2026-10-28 built it on the card
+            and the page; the segment scale and the copy's masthead under 18.4, whose corrections built each.
+Queue:      done, PRs 617 to 620 and the sixth review; in progress, this pull request; next, the seventh phase 18 sign-off
+            review by a fresh session after it merges, then the sign-offs of phases 20, 21 and 22 by their own fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
