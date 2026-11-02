@@ -14416,3 +14416,17 @@ Tests:      four new, and the review's x2 in the reading's test: x6 a dated page
 Mutation:   stated in the last entry of this pull request.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.2 - correction: a filed segment table's quarter is its shortest period over months, its figures read as money or a plain count, and a figure rounding to nothing carries no sign   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Corrected:  `SegmentTable.Read` and `NameScreen.Segments` take the shortest period over months, so a balance date no longer
+            stands for the quarter on the 100 pages that read it so; AME's table reads its Net Sales of 2,044,397,000. A clean
+            table from a filing names its quarter above it. The table as filed reads "$" as money and drops "Integer" and
+            "Reportable_segment". `Figures.Percent`, the numbers' change on a year, a segment's share, a peer median and the
+            short version's lead draw a change rounding to nothing with no sign, in ink. A decision amends the segment
+            table's; the architecture's sentence, with prior text in the changelog.
+Tests:      three new, worked by hand from AME's, CSCO's, DHI's, ESNT's, CPRI's and ECL's shapes.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

@@ -2106,7 +2106,11 @@ public sealed partial class SinglePageApp : IComponent
 
             if (report?.Segments is { } segments)
             {
-                var filedTable = new StringBuilder(marks.SegmentsTable(segments, report.Currency));
+                var filedTable = new StringBuilder(segments is { Clean: true, Quarter: { } filedQuarter }
+                    ? Invariant($"<div class=\"sub segments-filed-quarter\" data-quarter=\"{Cards.Day(filedQuarter)}\">{(segments.Months == EquityBrief.Core.Facts.SegmentPeriods.QuarterMonths ? "The quarter" : Invariant($"The {segments.Months} months"))} to {Cards.Day(filedQuarter)}, from the filing</div>")
+                    : string.Empty);
+
+                filedTable.Append(marks.SegmentsTable(segments, report.Currency));
 
                 filedTable.Append(segments.Clean ? "<div class=\"fig\">" + marks.ShareBars(segments) + "</div>" : string.Empty);
                 filedTable.Append(Cards.Key(

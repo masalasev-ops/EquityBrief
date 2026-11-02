@@ -328,7 +328,7 @@ public sealed partial class MarkRenderer
             table.Append(row.RevenueChange is { } revenue ? "<td class=\"num\">" + Signed(revenue, "revenue-change") + "</td>" : "<td class=\"num degraded\">none</td>");
             table.Append(row.Earnings is { } earnings ? Formatted($"<td class=\"num\" data-earnings=\"{earnings.ToString(Invariant)}\">{Figures.MoneyIn(earnings, scale, currency)}</td>") : "<td class=\"num degraded\" data-earnings=\"absent\">not filed</td>");
             table.Append(row.EarningsChange is { } change ? "<td class=\"num\">" + Signed(change, "earnings-change") + "</td>" : "<td class=\"num degraded\">none</td>");
-            table.Append(Formatted($"<td class=\"num\" data-share=\"{row.Share.ToString(Invariant)}\">{row.Share.ToString("0.0", Invariant)}%</td></tr>"));
+            table.Append(Formatted($"<td class=\"num\" data-share=\"{row.Share.ToString(Invariant)}\">{Tenth(row.Share)}%</td></tr>"));
         }
 
         table.Append(Formatted($"<tr class=\"key-row\"><td>The company</td><td class=\"num\">{Figures.MoneyIn(segments.Total!.Value, scale, currency)}</td><td class=\"num\"></td><td class=\"num\"></td><td class=\"num\"></td><td class=\"num\">100.0%</td></tr>"));
@@ -799,7 +799,7 @@ public sealed partial class MarkRenderer
         }
 
         string Median(double? value, int count, string format, string unit) =>
-            value is { } middle ? Formatted($"{middle.ToString(format, Invariant)}{unit} of {count}") : "none";
+            value is { } middle ? Formatted($"{Unsigned(middle, format.Length - 2).ToString(format, Invariant)}{unit} of {count}") : "none";
 
         table.Append(Formatted($"<tr class=\"group-row\" data-row=\"median\"><td>The median</td><td class=\"num\">{Median(peers.MedianMultiple, peers.Multiples, "0.0", string.Empty)}</td><td class=\"num\">{Median(peers.MedianYield, peers.Yields, "0.00", "%")}</td><td class=\"num\">{Median(peers.MedianGrowth, peers.Growths, "0.0", "%")}</td></tr>"));
 

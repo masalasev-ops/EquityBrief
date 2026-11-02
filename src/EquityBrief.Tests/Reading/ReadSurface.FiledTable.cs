@@ -1,0 +1,148 @@
+using System.Text.Json.Nodes;
+using EquityBrief.Api.Reading;
+using EquityBrief.Core.Providers;
+using EquityBrief.Core.Report;
+using EquityBrief.Web.Marks;
+
+namespace EquityBrief.Tests.Reading;
+
+// The filed segment table: a balance date is no quarter, its figures are drawn as money or as a plain count, and a figure
+// rounding to nothing carries no sign.
+// see: The segment table is the segments whose revenue sums to the company's total within rounding, and the raw table where none do
+public partial class ReadSurface
+{
+    static readonly ReportPeriod TheQuarter = new(3, new DateOnly(2026, 6, 30));
+    static readonly ReportPeriod TheYearEnd = new(0, new DateOnly(2025, 12, 31));
+    static readonly ReportPeriod TheBalanceDate = new(0, new DateOnly(2026, 6, 30));
+
+    static JsonObject FiledFigure(string concept, string line, string? unit, ReportPeriod period, string? value) => new()
+    {
+        ["concept"] = concept,
+        ["lineItem"] = line,
+        ["unit"] = unit,
+        ["months"] = period.Months,
+        ["ended"] = FormattableString.Invariant($"{period.Ended:yyyy-MM-dd}"),
+        ["value"] = value,
+    };
+
+    static JsonObject FiledSegments(ReportPeriod[] periods, params JsonObject[] figures) => new()
+    {
+        ["report"] = "R9.htm",
+        ["title"] = "Segments (Details) - USD ($)",
+        ["scale"] = 1,
+        ["periods"] = new JsonArray([.. periods.Select(period => (JsonNode)new JsonObject { ["months"] = period.Months, ["ended"] = FormattableString.Invariant($"{period.Ended:yyyy-MM-dd}") })]),
+        ["consolidated"] = new JsonArray([.. figures]),
+        ["groups"] = new JsonArray(),
+    };
+
+    static async Task<string> RawSegmentsOf(JsonObject segments)
+    {
+        using var store = await WithFundamentals(withTheArchive: true);
+
+        var filings = await Api(store).FundamentalsAsync(Name);
+        var payload = JsonNode.Parse(filings[0].Payload)!.AsObject();
+
+        payload["segments"] = segments;
+
+        return NameScreen.RawSegments([filings[0] with { Payload = payload.ToJsonString() }])!;
+    }
+
+    // AME's shape, by hand from the store: the quarter's Net Sales of 2,044,397,000 beside the balance date of the year's end
+    // and of the quarter's end. Both readers read the three months, and the balance date alone is "as at".
+    [Fact]
+    public async Task ABalanceDateIsNoQuarterToEitherReaderOfTheSegmentTable()
+    {
+        Assert.Equal(3, SegmentTable.ShortestMonths([0, 3, 6, 0]));
+        Assert.Equal(12, SegmentTable.ShortestMonths([0, 12]));
+        Assert.Equal(0, SegmentTable.ShortestMonths([0]));
+        Assert.Equal(0, SegmentTable.ShortestMonths([]));
+
+        var sales = new SegmentGroup("Electronic Instruments [Member]", "axis=x", [new SegmentFigure("us-gaap_Revenues", "Net Sales", null, TheQuarter, 1_300_000_000m), new SegmentFigure("us-gaap_Assets", "Assets", null, TheYearEnd, 9_000_000_000m)]);
+        var other = new SegmentGroup("Electromechanical [Member]", "axis=x", [new SegmentFigure("us-gaap_Revenues", "Net Sales", null, TheQuarter, 744_397_000m)]);
+        var read = SegmentTable.Read(new SegmentBreakdown("R9.htm", "Segments (Details) - USD ($)", 1, [TheYearEnd, TheBalanceDate, TheQuarter], [new SegmentFigure("us-gaap_Revenues", "Net Sales", null, TheQuarter, 2_044_397_000m)], [sales, other]));
+
+        Assert.True(read.Clean);
+        Assert.Equal((new DateOnly(2026, 6, 30), 3, 2_044_397_000m), (read.Quarter, read.Months, read.Sum));
+
+        var raw = await RawSegmentsOf(FiledSegments(
+            [TheYearEnd, TheBalanceDate, TheQuarter],
+            FiledFigure("us-gaap_Revenues", "Net Sales", null, TheQuarter, "2044397000"),
+            FiledFigure("us-gaap_Assets", "Assets", null, TheYearEnd, "16100000000")));
+
+        Assert.Contains("data-months=\"3\" data-period-end=\"2026-06-30\"", raw, StringComparison.Ordinal);
+        Assert.Contains("data-segment-figure=\"2044397000\"", raw, StringComparison.Ordinal);
+        Assert.Contains("The 3 months to 2026-06-30", raw, StringComparison.Ordinal);
+        Assert.DoesNotContain("As at", raw, StringComparison.Ordinal);
+        Assert.DoesNotContain("16100000000", raw, StringComparison.Ordinal);
+
+        Assert.Contains("As at 2025-12-31", await RawSegmentsOf(FiledSegments([TheYearEnd], FiledFigure("us-gaap_Assets", "Assets", null, TheYearEnd, "16100000000"))), StringComparison.Ordinal);
+    }
+
+    // CSCO's "Revenue 63325000000 $" reads as money, the XBRL's own names for a count go, and a unit a reader can read stays.
+    [Fact]
+    public async Task AFiledFiguresDollarUnitIsMoneyAndTheXbrlsOwnNamesForACountGo()
+    {
+        var raw = await RawSegmentsOf(FiledSegments(
+            [TheQuarter],
+            FiledFigure("us-gaap_Revenues", "Revenue", "$", TheQuarter, "63325000000"),
+            FiledFigure("x_Plain", "Unstated", null, TheQuarter, "2000000"),
+            FiledFigure("x_Count", "Number of operating segments", "Integer", TheQuarter, "3"),
+            FiledFigure("x_Reportable", "Number of reportable segments", "Reportable_segment", TheQuarter, "1"),
+            FiledFigure("x_Named", "Number of markets", "market", TheQuarter, "2")));
+
+        Assert.Contains("<td class=\"num\" data-segment-figure=\"63325000000\">$63.3B</td>", raw, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num\" data-segment-figure=\"2000000\">$2.0M</td>", raw, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num\" data-segment-figure=\"3\">3</td>", raw, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num\" data-segment-figure=\"1\">1</td>", raw, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num\" data-segment-figure=\"2\">2 market</td>", raw, StringComparison.Ordinal);
+    }
+
+    // A change rounding to nothing carries no sign and is drawn in ink: DHI's and LOW's change on a year, ESNT's share of
+    // revenue, CPRI's median and ECL's against its estimate, each to the places it is drawn at.
+    // see: A figure that rose or fell is drawn green or red with its sign on every page
+    [Fact]
+    public async Task AFigureRoundingToNothingCarriesNoSign()
+    {
+        Assert.Equal(("0.0%", "0.0%", "-0.1%", "0.1%", "75.0%"), (Figures.Percent(-0.0004m), Figures.Percent(0.0004m), Figures.Percent(-0.001m), Figures.Percent(0.0005m), Figures.Percent(0.749753m)));
+
+        using var store = await WithFundamentals(withTheArchive: true);
+
+        var filings = await Api(store).FundamentalsAsync(Name);
+        var payload = JsonNode.Parse(filings[0].Payload)!.AsObject();
+
+        payload["growth"]!["revenue"] = "0.0003";
+        payload["growth"]!["netIncome"] = "-0.0003";
+
+        var numbers = NameScreen.Numbers([filings[0] with { Payload = payload.ToJsonString() }]);
+
+        Assert.Contains("<span class=\"flat\">0.0%</span> on a year earlier", numbers, StringComparison.Ordinal);
+        Assert.DoesNotContain("+0.0%", numbers, StringComparison.Ordinal);
+        Assert.DoesNotContain("-0.0%", numbers, StringComparison.Ordinal);
+
+        var marks = new MarkRenderer();
+        var table = marks.SegmentsTable(
+            new SegmentReading("R9.htm", new DateOnly(2026, 6, 30), 3, 200_000_000m, 200_000_000m, [new SegmentRow("Gains", -80_000m, null, null, null, null, null, -0.04), new SegmentRow("Premiums", 200_080_000m, null, null, null, null, null, 100.04)], null),
+            "USD");
+
+        Assert.Contains(">0.0%</td></tr>", table, StringComparison.Ordinal);
+        Assert.DoesNotContain("-0.0%", table, StringComparison.Ordinal);
+
+        var peers = marks.PeerTable(PeerValuation.Of("Apparel", "OWN", [
+            new PeerValue("AAA", 10.0, 1.0, -0.04, false),
+            new PeerValue("BBB", 11.0, 1.0, -0.04, false),
+            new PeerValue("CCC", 12.0, 1.0, -0.04, false),
+            new PeerValue("OWN", 13.0, 1.0, -0.04, false),
+        ])!);
+
+        Assert.Contains("0.0% of 4", peers, StringComparison.Ordinal);
+        Assert.DoesNotContain("-0.0% of 4", peers, StringComparison.Ordinal);
+
+        var lead = MarkRenderer.ShortVersionLead(null, new LatestQuarter(
+            new DateOnly(2026, 6, 30),
+            null,
+            null,
+            [new QuarterLine(QuarterLines.Revenue, 1_000_000_000m, 1_000_000_000m, 0m, 0.04, 1_000_000_000m, -0.04, null, null, false, null, null, null)]));
+
+        Assert.Contains(", 0.0% against its estimate and 0.0% on a year earlier", lead, StringComparison.Ordinal);
+    }
+}

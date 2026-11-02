@@ -34,8 +34,8 @@ public sealed record SegmentReading(
 // The segment table built from a filing's segment report by a stated rule, worked by one function so the page and its
 // file draw the same rows.
 //
-// The quarter is the table's shortest period at its newest end, and a year earlier the same period ending within a
-// week of a year before. A segment is a group whose label, with the parts naming the consolidation's own axis taken
+// The quarter is the table's shortest period over months at its newest end, and a year earlier the same period ending
+// within a week of a year before. A segment is a group whose label, with the parts naming the consolidation's own axis taken
 // off, names something, and whose label names no total, elimination, intersegment amount, corporate amount,
 // reconciling item, unallocated amount or adjustment; groups the filing repeats under one name are one segment. Its
 // revenue is the first figure filed for the quarter under a revenue concept, and its earnings the operating income
@@ -57,10 +57,20 @@ public static class SegmentTable
 
     public const string OperatingIncomeConcept = "OperatingIncomeLoss";
 
+    // How many months the table's quarter covers: its shortest period over months, a balance date being filed at an instant,
+    // as no months, and no quarter; no months only where it files nothing else.
+    // see: The segment table is the segments whose revenue sums to the company's total within rounding, and the raw table where none do
+    public static int ShortestMonths(IEnumerable<int> months)
+    {
+        int[] stated = [.. months];
+
+        return stated.Any(month => month > 0) ? stated.Where(month => month > 0).Min() : 0;
+    }
+
     // The rule over a table read from its stored form, with the quarter's reported revenue where the table states no total.
     public static SegmentReading Read(SegmentBreakdown table, decimal? reportedRevenue = null)
     {
-        var shortest = table.Periods.Count == 0 ? 0 : table.Periods.Min(period => period.Months);
+        var shortest = ShortestMonths(table.Periods.Select(period => period.Months));
         DateOnly? quarter = table.Periods.Where(period => period.Months == shortest).Select(period => (DateOnly?)period.Ended).Max();
 
         if (quarter is not { } ended)

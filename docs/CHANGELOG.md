@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a segment table's quarter is its shortest period over months
+Authorised by: A filed segment table's quarter is its shortest period over months and its figures read as money or a plain count
+Was:
+> (section 4, the report page) (see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so); every amount of a segment table is drawn in one scale,
+Now:
+> (see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so); a segment table's quarter is its shortest period over months, a balance date being no quarter, a clean table drawn from a filing naming it above the table, and the table as filed reading a unit of the currency as money and a plain count alone (see: A filed segment table's quarter is its shortest period over months and its figures read as money or a plain count); every amount of a segment table is drawn in one scale,
+Why: a balance date is stored at no months and read as the quarter on 100 pages, 6,620 income lines saying not filed of figures the filing states; the eighth phase 18 sign-off review found it, and the raw figures, and its report stands.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a page for an earlier night says the calendar is today's, and the next dated event is the first after the night
 Authorised by: A page for an earlier night draws the next report and the calendar as the calendar holds them today, and says so
 Was:

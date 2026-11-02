@@ -601,7 +601,8 @@ public static partial class NameScreen
             if (newest.RootElement.TryGetProperty("segments", out var table) && table.ValueKind == JsonValueKind.Object)
             {
                 var breakdown = EquityBrief.Core.Report.SegmentTable.FromStored(table);
-                var ended = breakdown.Periods.Count == 0 ? (DateOnly?)null : breakdown.Periods.Max(period => period.Ended);
+                var shortest = EquityBrief.Core.Report.SegmentTable.ShortestMonths(breakdown.Periods.Select(period => period.Months));
+                var ended = breakdown.Periods.Where(period => period.Months == shortest).Select(period => (DateOnly?)period.Ended).Max();
                 var reported = ended is { } end
                     ? inputs.Quarters
                         .Where(quarter => Math.Abs(quarter.PeriodEnd.DayNumber - end.DayNumber) <= EquityBrief.Core.Quarters.QuarterFetch.NearDays)
@@ -743,7 +744,7 @@ public static partial class NameScreen
         string? OnAYearEarlier(string name) =>
             Text(growth, name) is not { } change ? null
             : decimal.TryParse(change, NumberStyles.Float, CultureInfo.InvariantCulture, out var fraction)
-                ? Invariant($"<span class=\"{(fraction > 0 ? "gain" : fraction < 0 ? "loss" : "flat")}\">{Escaped(Signed(fraction))}</span> on a year earlier")
+                ? Invariant($"<span class=\"{(Signed(fraction).StartsWith('+') ? "gain" : Signed(fraction).StartsWith('-') ? "loss" : "flat")}\">{Escaped(Signed(fraction))}</span> on a year earlier")
                 : Escaped(change) + " on a year earlier";
 
         var html = new System.Text.StringBuilder();
@@ -906,7 +907,8 @@ public static partial class NameScreen
     const string FoldHide = "<button type=\"button\" class=\"fold-hide\">Hide</button>";
 
     // A change as a signed percentage: 0.261794 is +26.2%, and a fall keeps its own sign.
-    static string Signed(decimal fraction) => (fraction > 0 ? "+" : string.Empty) + Figures.Percent(fraction);
+    // see: A figure that rose or fell is drawn green or red with its sign on every page
+    static string Signed(decimal fraction) => (fraction > 0 && Figures.Percent(fraction) != Figures.Percent(0m) ? "+" : string.Empty) + Figures.Percent(fraction);
 
     // Which provider each part of the row came from, read off the stored source
     // column. A screen that guessed would be a screen deciding what an absence
@@ -1093,12 +1095,11 @@ public static partial class NameScreen
         var report = Text(segments, "report") ?? string.Empty;
         var periods = segments.GetProperty("periods").EnumerateArray().ToArray();
 
-        // The shortest period the table states, which is the quarter. A table
+        // The shortest period over months the table states, which is the quarter. A table
         // carrying three months and nine months under the same end date would
-        // otherwise show three quarters of a year as one.
-        var shortest = periods.Length == 0
-            ? 0
-            : periods.Min(period => period.GetProperty("months").GetInt32());
+        // otherwise show three quarters of a year as one, and a balance date, at no months,
+        // would stand for the quarter and every income line read as not filed.
+        var shortest = EquityBrief.Core.Report.SegmentTable.ShortestMonths(periods.Select(period => period.GetProperty("months").GetInt32()));
 
         var ended = periods
             .Where(period => period.GetProperty("months").GetInt32() == shortest)
@@ -1185,12 +1186,16 @@ public static partial class NameScreen
         }
     }
 
-    // A figure in the table's currency in its scale, and one that is not carrying the unit it
-    // is in, as filed, which is how a count of two segments stops reading as two million of them.
+    // A figure in the table's currency in its scale, a unit of "$" or the currency's code being that money, and one that is
+    // not carrying the unit it is in, as filed, which is how a count of two segments stops reading as two million of them.
+    // The XBRL's own names for a plain count, "Integer" and a name written with an underscore, are no word to read, so the
+    // count stands alone.
     static string SegmentFigure(string stored, JsonElement figure, string currency) =>
-        figure.GetProperty("unit").ValueKind == JsonValueKind.String
-            ? stored + " " + figure.GetProperty("unit").GetString()
-            : Drawn(stored, value => Figures.Money(value, currency));
+        figure.GetProperty("unit").ValueKind != JsonValueKind.String || figure.GetProperty("unit").GetString() is "$" || figure.GetProperty("unit").GetString() == currency
+            ? Drawn(stored, value => Figures.Money(value, currency))
+            : figure.GetProperty("unit").GetString() is { } unit && !unit.Contains('_') && !string.Equals(unit, "Integer", StringComparison.Ordinal)
+                ? stored + " " + unit
+                : stored;
 
     // A part the archive supplies and this row does not carry, with the reason read
     // off the source column rather than assumed. A read that did not happen and a
