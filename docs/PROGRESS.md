@@ -14430,3 +14430,23 @@ Tests:      three new, worked by hand from AME's, CSCO's, DHI's, ESNT's, CPRI's 
 Mutation:   stated in the last entry of this pull request.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 22.8 - correction: the fundamentals card reads one analyst as one, where it drew "1 analysts"   2026-11-02
+
+Not a checkpoint entry: it corrects what 22.8 carried into shipped source, and lands nothing.
+Corrected:  `FundamentalsScreen.Estimates` writes "1 analyst raised", on the 316 pages the review counted drawing "1 analysts".
+Tests:      a case in the card's test.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.2 - correction: a dividend's run of raises says where it stopped because two years pay a different number of payments, and one story and one analyst read as one   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Corrected:  `DividendSafety.RunStopped` and the row beside the count, ARES reading "0 not compared past 2025: 5 payments
+            against 4"; the rule and every figure stay. The growth tile, TipRanks' spans and the jobs' line on the news read
+            one as one. A decision; the architecture's row, with prior text in the changelog.
+Tests:      two new, ARES worked by hand.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

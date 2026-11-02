@@ -57,7 +57,7 @@ public sealed partial class MarkRenderer
                 "Earnings a share this fiscal year, the analysts' consensus",
                 Signed(tile.Percent, "growth", "v"),
                 "on the year before, for the year to " + DayOf(tile.Through)
-                    + (tile.Analysts is { } count ? Formatted($", {count} analysts") : string.Empty)
+                    + (tile.Analysts is { } count ? Formatted($", {count} {(count == 1 ? "analyst" : "analysts")}") : string.Empty)
                     + (tile.FetchedOn is { } fetched ? ", as fetched on " + DayOf(fetched) : string.Empty)),
             { } tile => LeadTile(
                 "growth",

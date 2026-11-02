@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - the dividend's row says where two years paying a different number of payments stopped its run
+Authorised by: A dividend's run of raises says where it stopped because two years pay a different number of payments
+Was:
+> (section 4, Dividend safety) how many whole years in a row it raised, the dividends a share each year as bars, ... with every year it raised)
+Now:
+> how many whole years in a row it raised and where two years paying a different number of payments stopped that run, the dividends a share each year as bars, ... with every year it raised) (see: A dividend's run of raises says where it stopped because two years pay a different number of payments)
+Why: 147 of 984 payers drew a shorter run than their rising dividend with nothing saying why; the eighth phase 18 sign-off review found it and the operator's answer of 2026-11-02 keeps the count and adds the reason.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a segment table's quarter is its shortest period over months
 Authorised by: A filed segment table's quarter is its shortest period over months and its figures read as money or a plain count
 Was:

@@ -97,6 +97,66 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"num\" data-segment-figure=\"2\">2 market</td>", raw, StringComparison.Ordinal);
     }
 
+    // One is read as one: the jobs' line on the news, and the growth tile's analysts.
+    [Fact]
+    public void OneStoryAndOneAnalystReadAsOne()
+    {
+        var one = new NewsView(Name, new DateOnly(2026, 9, 4), [], 1, 1, 0, 0, 0, 0, "deepseek-flash", "deepseek", null, null);
+        JobProfile[] profiles = [new("deepseek", "deepseek-flash", false)];
+        var empty = new HashSet<string>(StringComparer.Ordinal);
+
+        Assert.Equal("labelled 1 of the 1 story the page draws", MarkRenderer.ModelJobs([], one, null, profiles, empty).Single().Detail);
+        Assert.Equal("no label stands for the 1 story the page draws", MarkRenderer.ModelJobs([], one with { Model = null, Unlabelled = 1 }, null, profiles, empty).Single().Detail);
+        Assert.Equal("labelled 0 of the 2 stories the page draws", MarkRenderer.ModelJobs([], one with { All = 2, Unlabelled = 2 }, null, profiles, empty).Single().Detail);
+
+        var through = new DateOnly(2026, 12, 31);
+        var tile = new EquityBrief.Core.Tiles.GrowthTile(EquityBrief.Core.Tiles.GrowthTile.Consensus, 5.0, through, 1, new DateOnly(2026, 9, 4));
+        var marks = new MarkRenderer();
+        var tiles = new EquityBrief.Web.App.TilesView(null, tile, null, null, null, false);
+
+        Assert.Contains("for the year to 2026-12-31, 1 analyst, as fetched on 2026-09-04", marks.LeadTiles(tiles), StringComparison.Ordinal);
+        Assert.Contains("for the year to 2026-12-31, 2 analysts, as fetched on 2026-09-04", marks.LeadTiles(tiles with { Growth = tile with { Analysts = 2 } }), StringComparison.Ordinal);
+    }
+
+    // ARES by hand: 1.88, 2.44, 3.08, 3.72 and 5.324 over 2021 to 2025, five payments in 2025 against four in 2024, so the run
+    // stops at 2025 with a count of 0 and says why; a year that fell or held says nothing, and no figure moves.
+    // see: A dividend's run of raises says where it stopped because two years pay a different number of payments
+    [Fact]
+    public void ARunOfRaisesStoppedByADifferentNumberOfPaymentsSaysSo()
+    {
+        var night = new DateOnly(2026, 10, 30);
+
+        static KeptDividend[] Paid(int year, decimal total, int payments) =>
+            [.. Enumerable.Range(1, payments).Select(month => new KeptDividend(new DateOnly(year, month * 2, 10), total / payments))];
+
+        KeptDividend[] ares = [.. Paid(2021, 1.88m, 4), .. Paid(2022, 2.44m, 4), .. Paid(2023, 3.08m, 4), .. Paid(2024, 3.72m, 4), .. Paid(2025, 5.324m, 5)];
+        var read = DividendSafety.Of(5.32m, 100m, 8.00m, [], ares, [], [], night)!;
+
+        Assert.Equal(0, read.RaisedInARow);
+        Assert.Equal("not compared past 2025: 5 payments against 4", DividendSafety.RunStopped(read.Years));
+
+        var row = new MarkRenderer().DividendTable(read, 100m, live: false, "USD");
+
+        Assert.Contains("<span data-raised=\"0\">0</span> <small class=\"raised-stopped\">not compared past 2025: 5 payments against 4</small>", row, StringComparison.Ordinal);
+
+        // The run counted back to a year paying otherwise, three raises before it, and one payment said as one.
+        KeptDividend[] counted = [.. Paid(2021, 1.00m, 1), .. Paid(2022, 2.00m, 4), .. Paid(2023, 3.00m, 4), .. Paid(2024, 4.00m, 4), .. Paid(2025, 5.00m, 4)];
+        var run = DividendSafety.Of(5.00m, 100m, 8.00m, [], counted, [], [], night)!;
+
+        Assert.Equal(3, run.RaisedInARow);
+        Assert.Equal("not compared past 2022: 4 payments against 1", DividendSafety.RunStopped(run.Years));
+        Assert.Equal("not compared past 2025: 1 payment against 4", DividendSafety.RunStopped([new(2024, 4m, 4, true, null), new(2025, 5m, 1, true, null)]));
+
+        // A year that fell, a year held level, a run reaching the first year kept and a gap between years say nothing.
+        KeptDividend[] fell = [.. Paid(2024, 4.00m, 4), .. Paid(2025, 3.00m, 4)];
+        KeptDividend[] whole = [.. Paid(2023, 3.00m, 4), .. Paid(2024, 4.00m, 4), .. Paid(2025, 5.00m, 4)];
+
+        Assert.Null(DividendSafety.RunStopped(DividendSafety.Of(3.00m, 100m, 8.00m, [], fell, [], [], night)!.Years));
+        Assert.Null(DividendSafety.RunStopped(DividendSafety.Of(5.00m, 100m, 8.00m, [], whole, [], [], night)!.Years));
+        Assert.Null(DividendSafety.RunStopped([new(2022, 4m, 4, true, null), new(2025, 5m, 5, true, null)]));
+        Assert.DoesNotContain("raised-stopped", new MarkRenderer().DividendTable(DividendSafety.Of(5.00m, 100m, 8.00m, [], whole, [], [], night)!, 100m, live: false, "USD"), StringComparison.Ordinal);
+    }
+
     // A change rounding to nothing carries no sign and is drawn in ink: DHI's and LOW's change on a year, ESNT's share of
     // revenue, CPRI's median and ECL's against its estimate, each to the places it is drawn at.
     // see: A figure that rose or fell is drawn green or red with its sign on every page

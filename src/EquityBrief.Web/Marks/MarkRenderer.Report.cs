@@ -582,7 +582,7 @@ public sealed partial class MarkRenderer
         Row(
             "Whole years in a row it raised the dividend",
             dividend.RaisedInARow is { } raised
-                ? Formatted($"<span data-raised=\"{raised}\">{raised}</span>")
+                ? Formatted($"<span data-raised=\"{raised}\">{raised}</span>") + (DividendSafety.RunStopped(dividend.Years) is { } stopped ? Formatted($" <small class=\"raised-stopped\">{Escaped(stopped)}</small>") : string.Empty)
                 : "<span class=\"degraded\" data-raised=\"absent\">not stored: fewer than two whole years of its dividends are kept to compare</span>",
             "raised");
 
