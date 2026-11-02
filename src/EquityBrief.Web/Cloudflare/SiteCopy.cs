@@ -301,6 +301,11 @@ public static partial class SiteCopy
     [GeneratedRegex(@" · tonight's night runs at <time class=""night-due""[^>]*>[^<]*</time>")]
     private static partial Regex NightDue();
 
+    // A masthead's sentence saying its price is the close of a session older than the night, with the page's warning
+    // where it marked the prices suspect.
+    [GeneratedRegex(@"<span class=""m-when"">As of the close of (?<day>\d{4}-\d{2}-\d{2}), the last stored price(?:\. Prices may be out of date; see below)?\. ")]
+    private static partial Regex OlderClose();
+
     // An attribute the copy carries none of: one whose value is an address of the surface, and the live quote's session,
     // its asking interval and the instant it last asked, a row's pick and the analysts' ask.
     [GeneratedRegex(@"\s(?:data-[A-Za-z-]+=""/[^""]*""|data-(?:session-open|session-close|interval-minutes|asked|select-href|ask)=""[^""]*"")")]
@@ -382,9 +387,12 @@ public static partial class SiteCopy
         var words = AsOfTheClose(night);
 
         // The page's own sentence saying its price is the night's close goes where the copy's mark says it, so the masthead
-        // says it once; a page whose last close is older than the night keeps its own.
-        var marked = fragment
-            .Replace(FormattableString.Invariant($"<span class=\"m-when\">As of the close of {night:yyyy-MM-dd}, the last stored price. "), "<span class=\"m-when\">", StringComparison.Ordinal)
+        // says it once; a page whose last close is older than the night says its own date in one sentence beneath the mark
+        // in place of a second "as of".
+        var marked = OlderClose()
+            .Replace(
+                fragment.Replace(FormattableString.Invariant($"<span class=\"m-when\">As of the close of {night:yyyy-MM-dd}, the last stored price. "), "<span class=\"m-when\">", StringComparison.Ordinal),
+                match => "<span class=\"m-when\">This stock's last stored price is from " + FormattableString.Invariant($"{DateOnly.ParseExact(match.Groups["day"].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture):d MMM}") + ", so its prices may be out of date. ")
             .Replace("<span class=\"m-when\">", "<span class=\"copy-asof\">" + char.ToUpperInvariant(words[0]) + words[1..] + ".</span> <span class=\"m-when\">", StringComparison.Ordinal);
 
         return Regex.Replace(

@@ -14270,3 +14270,25 @@ Mutation:   chosen before the runs by this rule, the property the correction add
             each reverted, green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: the read-only copy says a stock's older close in one sentence beneath its mark, where it drew a second "as of" with another date   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source on the operator's answer of 2026-11-02, and
+lands nothing.
+Found:      the sixth phase 18 sign-off review: on the read-only copy a stock whose last close is older than the night read
+            "As of the close of 27 Oct." beside "As of the close of 2026-10-23, the last stored price. Prices may be out of
+            date; see below.", two dates each said as of; put to the operator as a judgement, who chose to change it.
+Corrected:  `SiteCopy.MarkedAtTheClose` keeps the copy's mark and puts the page's older close, with or without its warning,
+            as one sentence beneath it, "This stock's last stored price is from 23 Oct, so its prices may be out of
+            date.", the rest of the line kept; a closed day reads as before. The decision on the copy stands: a stock's
+            price is marked as of the night's close.
+Tests:      none new; the copy's control test reads the older close with the page's warning and one without it, each said
+            in the one sentence, and the closed day as before.
+Mutation:   chosen before the runs by this rule, the property the correction adds, each filtered to the 47 tests naming the
+            copy: c2 the page's older sentence kept, predicted red at the copy's control test, red there alone; c3 a page
+            marked suspect left with its own sentence, predicted red there, red there alone; each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3060 of 3060 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
+            placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
