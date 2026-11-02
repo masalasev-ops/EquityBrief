@@ -380,6 +380,11 @@ public static partial class SiteCopy
             StringComparison.Ordinal);
     }
 
+    // The night a stock's page in the copy is of: a dated version's own, and the copy's for any other.
+    // see: A report's dated version on the read-only copy is marked by its own night, and only a close older than that night is said to be out of date
+    public static DateOnly NightOf(string path, DateOnly night) =>
+        path.Split('/') is ["#", "name", _, var day] && DateOnly.TryParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var own) ? own : night;
+
     // A stock's page or chart page with the price it drew marked as the store's at the night's close, before the line
     // saying when it was, and the analysts' section marked the same beneath its heading.
     public static string MarkedAtTheClose(string fragment, DateOnly night)

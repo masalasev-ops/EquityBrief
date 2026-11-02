@@ -280,4 +280,78 @@ public partial class ReadSurface
         // The researched stock's page lists its report's versions.
         Assert.Contains("class=\"copy-versions\"", File.ReadAllText(Path.Combine(folder.Path, copied.Files["#/name/KEYS"])), StringComparison.Ordinal);
     }
+
+    // A report's dated version is marked by its own night where a stock's page and chart page are marked by the copy's: its
+    // price is that night's, and it says nothing of its prices being out of date. Only a close older than the page's own
+    // night is said so, one a day older among them.
+    // see: A report's dated version on the read-only copy is marked by its own night, and only a close older than that night is said to be out of date
+    [Fact]
+    public async Task AReportsDatedVersionIsMarkedByItsOwnNightAndAStocksOtherPagesByTheCopys()
+    {
+        var night = new DateOnly(2026, 10, 30);
+
+        Assert.Equal(new DateOnly(2026, 9, 28), SiteCopy.NightOf("#/name/AAPL/2026-09-28", night));
+        Assert.Equal(new DateOnly(2026, 9, 28), SiteCopy.NightOf("#/name/BRK.B/2026-09-28", night));
+        Assert.Equal(night, SiteCopy.NightOf("#/name/AAPL", night));
+        Assert.Equal(night, SiteCopy.NightOf("#/chart/AAPL", night));
+
+        const string Masthead = "<span class=\"m-when\">As of the close of 2026-09-28, the last stored price. Levels and the plan come from completed sessions to 2026-09-28</span>";
+
+        Assert.Equal("<span class=\"copy-asof\">As of the close of 28 Sep.</span> <span class=\"m-when\">Levels and the plan come from completed sessions to 2026-09-28</span>", SiteCopy.MarkedAtTheClose(Masthead, SiteCopy.NightOf("#/name/AAPL/2026-09-28", night)));
+        Assert.Equal("<span class=\"copy-asof\">As of the close of 29 Sep.</span> <span class=\"m-when\">This stock's last stored price is from 28 Sep, so its prices may be out of date. Levels and the plan come from completed sessions to 2026-09-28</span>", SiteCopy.MarkedAtTheClose(Masthead, new DateOnly(2026, 9, 29)));
+
+        using var store = await FixtureReplay.ResearchedAsync();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+        using var folder = new TemporaryDirectory();
+
+        var read = new ReadApi(store.DatabaseFile, SystemClock.ForUnitedStatesSessions());
+        DateOnly earlier;
+
+        // A night before the newest with a section of the researched stock's report written on it, which makes that night's
+        // page a version of the report: the stock's session before its last stored bar.
+        using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            connection.Open();
+
+            using var before = connection.CreateCommand();
+
+            before.CommandText = "SELECT MAX(session_date) FROM bar WHERE ticker = 'KEYS' AND session_date < (SELECT MAX(session_date) FROM bar WHERE ticker = 'KEYS');";
+            earlier = DateOnly.ParseExact((string)before.ExecuteScalar()!, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+            using var command = connection.CreateCommand();
+
+            command.CommandText = "INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) VALUES ('KEYS', $earlier, '[]', 0, '{}', '[]');"
+                + "UPDATE research_section SET as_of = $earlier WHERE ticker = 'KEYS' AND section = (SELECT MIN(section) FROM research_section WHERE ticker = 'KEYS' AND status = 'accepted' AND prose <> '');";
+            command.Parameters.AddWithValue("$earlier", FormattableString.Invariant($"{earlier:yyyy-MM-dd}"));
+            command.ExecuteNonQuery();
+        }
+
+        async Task<(int, string)> Ask(string route)
+        {
+            using var answer = await client.GetAsync(route);
+
+            return ((int)answer.StatusCode, await answer.Content.ReadAsStringAsync());
+        }
+
+        var copied = await SiteCopyCommand.WriteAsync(Ask, read, folder.Path, _ => { });
+        var dated = FormattableString.Invariant($"#/name/KEYS/{earlier:yyyy-MM-dd}");
+
+        Assert.True(earlier < copied.Night, "The fixture holds one night, so no version is dated.");
+        Assert.True(copied.Files.ContainsKey(dated), dated + " is not held.");
+
+        var version = File.ReadAllText(Path.Combine(folder.Path, copied.Files[dated]));
+
+        Assert.Contains(FormattableString.Invariant($"<span class=\"copy-asof\">As of the close of {earlier:dd MMM}.</span>"), version, StringComparison.Ordinal);
+        Assert.DoesNotContain("last stored price is from", version, StringComparison.Ordinal);
+
+        // Every stock's own page and chart the copy holds is marked by the night it is of, the charts among them.
+        var stocks = copied.Files.Where(file => file.Key.StartsWith("#/name/", StringComparison.Ordinal) || file.Key.StartsWith("#/chart/", StringComparison.Ordinal)).ToArray();
+
+        Assert.Contains(stocks, file => file.Key.StartsWith("#/chart/", StringComparison.Ordinal));
+        Assert.All(stocks, file => Assert.Contains(
+            FormattableString.Invariant($"<span class=\"copy-asof\">As of the close of {SiteCopy.NightOf(SiteCopy.PathOf(file.Key), copied.Night):dd MMM}.</span>"),
+            File.ReadAllText(Path.Combine(folder.Path, file.Value)),
+            StringComparison.Ordinal));
+    }
 }

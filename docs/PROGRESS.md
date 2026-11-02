@@ -14345,3 +14345,22 @@ Mutation:   chosen before the runs by this rule, each property the correction ad
             it is red there. Each reverted, green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: a report's dated version on the read-only copy is marked by its own night, where each said it was of the copy's night and that its prices may be out of date   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Corrected:  `SiteCopy.NightOf` reads a dated route's own night, and the copy marks a stock's page by it, so AAPL's version of
+            28 Sep reads "As of the close of 28 Sep." and no more of its prices; the one sentence stands on a page whose close
+            is older than its own night. A chart page and every other stock's page keep the copy's night. A decision states
+            it.
+Tests:      one new; the copy holding a dated version, read off its file, every stock's page and chart held to its mark, and
+            an older close a day before the night.
+Mutation:   chosen before the runs by this rule, each property the correction adds and the two the review's v3 and v4 left
+            with no test, over the 27 tests naming the copy: e1 every page the copy's night, e2 chart pages not marked, e3 a
+            close a day older dropped, e4 the command marking by the copy's night; each red at the new test alone, reverted,
+            green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3065 of 3065 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
+            placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
