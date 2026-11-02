@@ -14387,3 +14387,17 @@ Queue:      done, PR 622 and the eighth review; in progress, this pull request; 
             fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: a next report is estimated from the first report a year back falling clear of the newest report known, where one was read days after the report just made   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing. It extends 4d67a1ba, which the seventh table holds as standing.
+Corrected:  `CardLines.EstimatedReport` takes the first report a year back whose day a year on falls more than 45 days after the
+            newest report known, stored or the day `ReportedDay.Of` gives, which the page and both cards now hand it. DASH on
+            2026-10-30 reads about 2027-02-17 from 2026-02-18, and its card's warning is a note. The proof gains
+            `next-report-clear`. The 45 is section 17's new row, pinned, its claim named after phases 21's and 22's reports.
+            The decision is superseded with its prior text under Previously decided and every citation moved; the
+            architecture's sentences and the guide's, with prior text in the changelog.
+Tests:      two new, and DASH's reports, the edge at 45 and 46 days and its card worked by hand in the card's test.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

@@ -26,6 +26,28 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a next report estimated from the first report a year back falling clear of the newest report known, with section 17's row
+Authorised by: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
+Was:
+> (section 4, the report page) from the company's own report of the same quarter a year before, marked estimated, where a report fifty-two weeks or more before the night is stored, ... (see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints)
+>
+> (section 4, a picked stock's page) and the card states the next report, estimated from the company's own report of the year before where none is on file and a report fifty-two weeks or more before the night is stored, and placed against the hold's cap, ... (see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints)
+Now:
+> from the company's own report of the same quarter a year before, the first whose day a year on falls more than 45 days after the newest report the page knows, stored or from the calendar, marked estimated, where a report fifty-two weeks or more before the night is stored, ... (see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints)
+>
+> and the card states the next report, estimated from the company's own report of the year before, clear of the newest report the page knows, where none is on file and a report fifty-two weeks or more before the night is stored, and placed against the hold's cap, ... (see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints)
+>
+> (section 17) a new row, Report page's day limits.
+Why: the estimate did not ask whether the company had already reported that quarter, so a company reporting earlier than a year ago read a next report days after the one it just made; the eighth phase 18 sign-off review found 17 pages and the operator's answer of 2026-11-02 skips that quarter, 45 days.
+
+### 2026-11-02 - docs/HOW_IT_WORKS.html - the guide's estimate skips a quarter already reported
+Authorised by: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
+Was:
+> marked estimated, wherever EquityBrief holds a year of the company's reports, and otherwise says no report a year earlier is stored to estimate it from.
+Now:
+> marked estimated, wherever EquityBrief holds a year of the company's reports, and otherwise says no report a year earlier is stored to estimate it from; a company that reported earlier than it did a year ago has already made that report, so the estimate skips to the quarter after it.
+Why: the guide states what the architecture's report page section states.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a quarter's reported day and its next report read from its stored row and then the calendar
 Authorised by: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
 Was:

@@ -1903,7 +1903,7 @@ public sealed partial class SinglePageApp : IComponent
 
         // A pick's own exit first, the family's target, stop and time limit, so the plan never reads as no exit for a stock
         // a family bought; the levels' plan beneath it is a buyer's without the pick.
-        // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+        // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
         if (decision is { } pick)
         {
             planned.Append(marks.PicksOwnExit(pick));

@@ -174,7 +174,7 @@ public partial class ReadSurface
     // Where no report a year before is stored it says so, and where every report the page knows falls in the year before
     // the night, as FDXF's first report as its own company did, that its first is the day it started reporting; the proof
     // fails a page drawing it as not announced with no estimate and no line saying why.
-    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+    // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
     [Fact]
     public async Task ANextReportNotOnFileIsDrawnWithTheDayItIsEstimatedAtMarkedEstimated()
     {

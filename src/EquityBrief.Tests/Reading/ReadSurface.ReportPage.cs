@@ -183,7 +183,7 @@ public partial class ReadSurface
     // the night of 2026-10-26 give 2026-01-27's, fifty-two weeks on, 2027-01-26, a Tuesday as the report was. Once the open
     // after the night prints, the fill and the reward against the risk at it are restated: a fill at 440.00 under a target
     // of 529.64 and a stop of 406.46 is (529.64 - 440.00) / (440.00 - 406.46) = 89.64 / 33.54 = 2.67.
-    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+    // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
     [Fact]
     public void APicksCardEstimatesItsNextReportAndRestatesTheFillOnceTheOpenPrints()
     {
@@ -206,6 +206,23 @@ public partial class ReadSurface
         Assert.Null(EquityBrief.Core.Cards.CardLines.EstimatedReport([new DateOnly(2026, 8, 14)], new DateOnly(2026, 10, 30)));
         Assert.Null(EquityBrief.Core.Cards.CardLines.EstimatedReport([new DateOnly(2026, 8, 5), new DateOnly(2026, 11, 4)], new DateOnly(2026, 11, 10)));
 
+        // A company reporting earlier than it did a year ago has reported that quarter already, so the quarter is skipped, by
+        // hand from the store. DASH reported on 2025-11-05, 2026-02-18, 2026-05-06 and 2026-08-05, and its report of
+        // 2026-10-29 reads off the calendar: on the night of 2026-10-30 a year on from 2025-11-05 is 2026-11-04, 6 days after
+        // it, so the estimate is a year on from 2026-02-18, 2027-02-17. Stored alone, FTNT's newest row does the same.
+        var dashNight = new DateOnly(2026, 10, 30);
+        DateOnly[] dash = [new(2025, 7, 30), new(2025, 11, 5), new(2026, 2, 18), new(2026, 5, 6), new(2026, 8, 5)];
+
+        Assert.Equal((new DateOnly(2025, 11, 5), new DateOnly(2026, 11, 4)), EquityBrief.Core.Cards.CardLines.EstimatedReport(dash, dashNight));
+        Assert.Equal((new DateOnly(2026, 2, 18), new DateOnly(2027, 2, 17)), EquityBrief.Core.Cards.CardLines.EstimatedReport(dash, dashNight, new DateOnly(2026, 10, 29)));
+        Assert.Equal((new DateOnly(2026, 2, 18), new DateOnly(2027, 2, 17)), EquityBrief.Core.Cards.CardLines.EstimatedReport([.. dash, new(2026, 10, 29)], dashNight));
+
+        // The edge: 45 days on from the newest is not clear of it, and 46 is. A reported day after the night is not known yet.
+        Assert.Equal(45, EquityBrief.Core.Cards.CardLines.ClearOfTheNewest);
+        Assert.Equal(new DateOnly(2027, 2, 17), EquityBrief.Core.Cards.CardLines.EstimatedReport(dash, dashNight, new DateOnly(2026, 9, 20))!.Value.Estimated);
+        Assert.Equal(new DateOnly(2026, 11, 4), EquityBrief.Core.Cards.CardLines.EstimatedReport(dash, dashNight, new DateOnly(2026, 9, 19))!.Value.Estimated);
+        Assert.Equal(new DateOnly(2026, 11, 4), EquityBrief.Core.Cards.CardLines.EstimatedReport(dash, dashNight, new DateOnly(2026, 10, 31))!.Value.Estimated);
+
         // Inside a hold of 90 sessions it warns; after one of 60 it notes; marked estimated either way.
         var inside = EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate.Value, night, 90);
         var after = EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate.Value, night, 60);
@@ -223,6 +240,18 @@ public partial class ReadSurface
 
         // A card whose company holds only the last year's reports keeps the line saying none is on file.
         Assert.Equal("No report date is on file for it, so a report inside the hold cannot be ruled out.", NameScreen.WithEstimatedReport(card, [new(2026, 8, 14)])!.Lines.Single().Words);
+
+        // DASH's card, a pick the drift rule took on 2026-10-30 with a hold's cap of 60 sessions: read without the day the
+        // calendar holds it warns of a report 3 sessions on, and with it the report is a note after the hold's cap.
+        var dashCard = card with { Night = dashNight, Cap = 60 };
+        var warned = NameScreen.WithEstimatedReport(dashCard, dash)!.Lines.Single();
+        var noted = NameScreen.WithEstimatedReport(dashCard, dash, _ => new DateOnly(2026, 10, 29))!.Lines.Single();
+
+        Assert.Equal("warning", warned.Verdict);
+        Assert.Contains("about 2026-11-04", warned.Words, StringComparison.Ordinal);
+        Assert.Equal("note", noted.Verdict);
+        Assert.StartsWith("No report date is on file for it; estimated from its report of 2026-02-18 a year on, its next is about 2027-02-17", noted.Words, StringComparison.Ordinal);
+        Assert.Contains("after the hold's cap of 60 sessions", noted.Words, StringComparison.Ordinal);
 
         // The fill once the open prints, and none before it.
         Assert.Null(EquityBrief.Core.Cards.CardLines.Filled(night, 441.65m, 406.46m, 529.64m, [(night, 441.65m)]));

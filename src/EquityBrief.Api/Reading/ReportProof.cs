@@ -77,6 +77,7 @@ public static partial class ReportProof
         ("next-report", "A picked stock's card states its next report, estimated where none is on file."),
         ("next-report-estimated", "A next report not on file is drawn with the day it is estimated at, marked estimated, or with a line saying why none is."),
         ("report-day", "The next report the numbers draw is the calendar's where it dates one, names no quarter the page draws as reported, and the day a quarter was reported is the one the latest quarter draws."),
+        ("next-report-clear", "A next report estimated falls more than 45 days after the newest report the page draws."),
         ("rules-family", "How the rules read it opens on the checks of the family that picked the stock."),
         ("trend-words", "A trend gate that failed is said in plain words."),
         ("news-matched", "The news region states how many stories it left out as another company's, and its counts add up over the stories it kept."),
@@ -351,6 +352,23 @@ public static partial class ReportProof
             : null;
 
         Add("report-day", nextRow.Success ? wrong is null : null, wrong);
+
+        // A next report estimated falls clear of the newest report the page draws, the numbers' line's or the latest quarter's.
+        // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
+        var estimatedRow = NextReportEstimated().Match(page);
+        DateOnly? estimatedOn = estimatedRow.Success ? DateOnly.ParseExact(estimatedRow.Groups["day"].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+        DateOnly? newestDrawn = new[] { saidReported.Success ? saidReported.Groups["day"].Value : null, quarterCard.Success ? quarterCard.Groups[2].Value : null }
+            .OfType<string>()
+            .Select(day => (DateOnly?)DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture))
+            .Max();
+
+        Add(
+            "next-report-clear",
+            estimatedOn is { } estimatedDay && newestDrawn is { } lastDrawn ? estimatedDay > lastDrawn.AddDays(EquityBrief.Core.Cards.CardLines.ClearOfTheNewest) : null,
+            estimatedOn is null ? "no next report is estimated"
+            : newestDrawn is null ? "the page draws no day the company reported"
+            : estimatedOn <= newestDrawn.Value.AddDays(EquityBrief.Core.Cards.CardLines.ClearOfTheNewest) ? FormattableString.Invariant($"the next report is estimated about {estimatedOn:yyyy-MM-dd}, within {EquityBrief.Core.Cards.CardLines.ClearOfTheNewest} days of the report of {newestDrawn:yyyy-MM-dd}")
+            : null);
 
         // A quarter reported before its filing is stored draws the release's own segment table first where it reads, and a
         // segment commentary beneath it written from the filing's segments says so above its text; one whose release states
@@ -712,6 +730,10 @@ public static partial class ReportProof
     // The numbers' next report: the day or word its row stores, and the quarter its consensus names.
     [GeneratedRegex("<dt>Next report</dt><dd(?: class=\"degraded\")? data-reportDate=\"(?<day>[^\"]+)\"(?:(?!</dd>).)*?(?:, for the quarter to (?<quarter>\\d{4}-\\d{2}-\\d{2})(?:(?!</dd>).)*)?</dd>", RegexOptions.Singleline)]
     private static partial Regex NextReportRow();
+
+    // The next report row's day estimated.
+    [GeneratedRegex("data-reportDate=\"(?:reported|unfiled)\" data-estimated=\"(?<day>\\d{4}-\\d{2}-\\d{2})\"")]
+    private static partial Regex NextReportEstimated();
 
     // The plan's block around the next report: its day and whether the calendar dates it or it is estimated.
     [GeneratedRegex("<p class=\"next-report-around\" data-date=\"(?<date>\\d{4}-\\d{2}-\\d{2})\" data-declared=\"(?<declared>yes|no)\"")]

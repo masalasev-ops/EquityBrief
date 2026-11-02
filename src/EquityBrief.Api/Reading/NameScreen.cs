@@ -517,7 +517,7 @@ public static partial class NameScreen
             // A quarter reported is said as reported, and the next as the calendar dates it, or as not announced with the day it
             // is estimated at from the company's own report a year before.
             // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
-            // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+            // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
             html.Append(Invariant($"<p class=\"estimate\" data-estimated-quarter=\"{quarterReported:yyyy-MM-dd}\" data-reported=\"{reportedOn:yyyy-MM-dd}\">The quarter to {quarterReported:yyyy-MM-dd} was reported on {reportedOn:yyyy-MM-dd}, and the next report is {(reportedDay.NextOn is { } dated ? Invariant($"on {dated:yyyy-MM-dd}, as the calendar dates it.") : Invariant($"not announced{EstimatedWords(nextEstimated)}.{(nextEstimated is null ? " " + NotEstimated(reportedOn, reportedDays, figures?.CloseOn) + "." : string.Empty)}"))}</p>"));
         }
         else if (reportedDay.NextOn is { } nextOn
@@ -664,7 +664,7 @@ public static partial class NameScreen
     // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
     // The day a next report not on file is estimated at, from the company's own report of the same quarter a year before,
     // in the words that follow "not announced", none where no such report is stored.
-    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+    // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
     static string EstimatedWords((DateOnly From, DateOnly Estimated)? estimate) =>
         estimate is { } next ? Invariant($"; estimated about {next.Estimated:yyyy-MM-dd} from its report of {next.From:yyyy-MM-dd} a year on") : string.Empty;
 
@@ -672,7 +672,7 @@ public static partial class NameScreen
 
     // Why a next report not on file is not estimated: no report a year before is stored, and where every report the page
     // knows a day for falls in the year before the night, the first of them is the company's first as its own.
-    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+    // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
     public static string NotEstimated(DateOnly reportedOn, IReadOnlyList<DateOnly>? reportedDays, DateOnly? night)
     {
         DateOnly[] known = [.. reportedDays ?? [], reportedOn];
@@ -696,6 +696,19 @@ public static partial class NameScreen
             night,
             (storedQuarters ?? []).Select(quarter => (quarter.PeriodEnd, quarter.ReportDate)),
             calendarReports ?? []);
+    }
+
+    // The day the page knows the company last reported on by a night, which an estimate of its next report must fall clear of.
+    static DateOnly? ReportedOnOf(IReadOnlyList<FilingRow> filings, DateOnly night, IReadOnlyList<QuarterDatesRow>? storedQuarters, IReadOnlyList<DateOnly>? calendarReports)
+    {
+        if (filings.Count == 0)
+        {
+            return null;
+        }
+
+        using var newest = JsonDocument.Parse(filings[0].Payload);
+
+        return ReportedDayOf(newest.RootElement, night, storedQuarters, calendarReports).On;
     }
 
     static string Snapshot(JsonElement payload, string currency, ConceptFigures? figures, (DateOnly From, DateOnly Estimated)? nextEstimated, IReadOnlyList<DateOnly> reportedDays, EquityBrief.Core.Cards.ReportedDay reportedDay)
@@ -1671,12 +1684,15 @@ public static partial class NameScreen
         // The price the masthead draws, the stored quote where the page is tonight's and drawn inside the session or after
         // a close the bars do not hold yet, and the last close otherwise, which the tiles are worked at.
         var live = SinglePageApp.QuoteDrawn(quote, quoteSession, night, bars.Count > 0 ? bars[^1].SessionDate : null);
+        DateOnly? ReportedOn(DateOnly at) => ReportedOnOf(filings, at, readQuarters, calendarReports);
+
         var cards = WithEstimatedReport(
             (decisionCards ?? [])
                 .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family))
                 .Select(card => CardScreen.View(card, cardContext))
                 .FirstOrDefault(),
-            [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()]);
+            [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()],
+            ReportedOn);
 
         // Once the open after the card's night prints, the fill and the reward against the risk at it.
         cards = cards is { } filled
@@ -1686,15 +1702,14 @@ public static partial class NameScreen
         // The trade a family holds the name on where the night lists it under none: the newest still open of the nights the
         // live list picked it before, with the card that night stored for its family, drawn as the pick's card is.
         // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
-        var heldTrade = HeldOf(cards, earlier, heldCards, [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()]);
+        var heldTrade = HeldOf(cards, earlier, heldCards, [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()], ReportedOn);
 
         // The next report estimated from the company's own report of the same quarter a year before, which the page draws
         // beside a next report not on file.
-        // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+        // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
         DateOnly[] reportedDays = [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()];
-        var nextEstimated = EquityBrief.Core.Cards.CardLines.EstimatedReport(
-            reportedDays,
-            night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue));
+        var estimatedAt = night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
+        var nextEstimated = EquityBrief.Core.Cards.CardLines.EstimatedReport(reportedDays, estimatedAt, ReportedOn(estimatedAt));
         decimal? shownPrice = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
         var quarters = tileQuarters ?? [];
         var tilesNight = night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
@@ -1871,7 +1886,7 @@ public static partial class NameScreen
     // The trade a family holds the name on: the newest of the earlier picks still open, with its card from the night it was
     // picked, its fill and its estimated report as a pick's card reads them; none where the night lists the name itself,
     // where no earlier pick is open, or where its night stored no card for its family.
-    public static HeldTradeView? HeldOf(DecisionCardView? tonight, IReadOnlyList<PickCell>? earlier, IReadOnlyList<DecisionCardRow>? heldCards, IReadOnlyList<DateOnly> reported)
+    public static HeldTradeView? HeldOf(DecisionCardView? tonight, IReadOnlyList<PickCell>? earlier, IReadOnlyList<DecisionCardRow>? heldCards, IReadOnlyList<DateOnly> reported, Func<DateOnly, DateOnly?>? reportedOn = null)
     {
         if (tonight is not null
             || (earlier ?? []).Where(pick => pick.Status == PickStatus.Open && pick.RepeatOf is null).OrderByDescending(pick => pick.Night).FirstOrDefault() is not { } open
@@ -1880,7 +1895,7 @@ public static partial class NameScreen
             return null;
         }
 
-        var card = WithEstimatedReport(CardScreen.View(row), reported)!;
+        var card = WithEstimatedReport(CardScreen.View(row), reported, reportedOn)!;
 
         return new HeldTradeView(card, open);
     }
@@ -1956,11 +1971,11 @@ public static partial class NameScreen
 
     // A card whose night found no report on file reads one estimated from the company's own report a year before, with
     // whether it falls inside the hold, in place of the line saying none is on file.
-    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
-    public static DecisionCardView? WithEstimatedReport(DecisionCardView? card, IReadOnlyList<DateOnly> reported) =>
+    // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
+    public static DecisionCardView? WithEstimatedReport(DecisionCardView? card, IReadOnlyList<DateOnly> reported, Func<DateOnly, DateOnly?>? reportedOn = null) =>
         card is { } drawn
         && drawn.Lines.FirstOrDefault(line => line.Name == EquityBrief.Core.Cards.CardLines.EarningsName && line.Words.StartsWith("No report date is on file for it, ", StringComparison.Ordinal)) is { } none
-        && EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, drawn.Night) is { } estimate
+        && EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, drawn.Night, reportedOn?.Invoke(drawn.Night)) is { } estimate
             ? drawn with
             {
                 Lines =

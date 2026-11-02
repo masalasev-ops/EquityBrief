@@ -77,6 +77,9 @@ public partial class ArchitectureConformance
 
         // 22.16's Home, after phase 21's report as well.
         .. Reading.ReadSurface.HomeRows,
+
+        // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits, after phase 21's as well.
+        .. Reading.ReadSurface.PageDayLimitRows,
     ];
 
     // The rows the document loses after phase 22's report: none.
