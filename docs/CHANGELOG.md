@@ -26,6 +26,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a segment table's one scale read off its amounts, billions where every amount is a billion or more
+Authorised by: A segment table draws every amount in one scale, billions where every amount is a billion or more and millions or thousands by its largest amount
+Was:
+> (section 4, the report page's rules) every amount of a segment table is drawn in one scale, the one its smallest amount reads in where that reads at one or more, and otherwise in millions where its largest amount is a million or more, kept to two places where one would read under a tenth and said to be under a hundredth where two would read as none, and in thousands where every amount is under a million, its thousands marked (see: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not)
+Now:
+> every amount of a segment table is drawn in one scale, billions where every amount is a billion or more, millions where its largest amount is a million or more, kept to two places where one would read under a tenth and said to be under a hundredth where two would read as none, and thousands otherwise, its thousands marked (see: A segment table draws every amount in one scale, billions where every amount is a billion or more and millions or thousands by its largest amount)
+Why: the operator's answer of 2026-11-02 at the sixth phase 18 sign-off review states the rule as one scale a table read off its amounts, where the sentence read it off the smallest amount's rounding.
+
+### 2026-11-02 - docs/ARCHITECTURE.html - a next report estimated only where a report fifty-two weeks or more before the night is stored, on the page and the card
+Authorised by: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+Was:
+> (section 4, the report page) and with the day it is estimated at, from the company's own report of the same quarter a year before, marked estimated, or where no such report is stored with a line saying so and, where every report the page knows falls in the year before the night, the day the company started reporting as its own (see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated)
+>
+> (section 4, a picked stock's page) and the card states the next report, estimated from the company's own report of the year before where none is on file and placed against the hold's cap, and once the open after its night prints, the fill and the reward against the risk at it (see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints)
+Now:
+> and with the day it is estimated at, from the company's own report of the same quarter a year before, marked estimated, where a report fifty-two weeks or more before the night is stored, or otherwise with a line saying no report a year earlier is stored and, where every report the page knows falls in the year before the night, the day the company started reporting as its own (see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints)
+>
+> and the card states the next report, estimated from the company's own report of the year before where none is on file and a report fifty-two weeks or more before the night is stored, and placed against the hold's cap, and once the open after its night prints, the fill and the reward against the risk at it (see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints)
+Why: the estimate read any report of the last year, so a company holding only that year's reports, ADIG, MBGL, MFP, HONA and VGNT on the night of 2026-10-30, would have its next report estimated a year on from a report of a later quarter; the sixth phase 18 sign-off review found it and the operator's answer of 2026-11-02 estimates only where a year of reports is stored.
+
+### 2026-11-02 - docs/HOW_IT_WORKS.html - the guide's next report estimated only where a year of the company's reports is held
+Authorised by: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+Was:
+> where the next is not announced, the page gives the day it is likely to come, a year on from the company's report of the same quarter, marked estimated.
+Now:
+> where the next is not announced, the page gives the day it is likely to come, a year on from the company's report of the same quarter, marked estimated, wherever EquityBrief holds a year of the company's reports, and otherwise says no report a year earlier is stored to estimate it from.
+Why: the guide states what the architecture's report page section states, which now estimates only where a year of reports is stored.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a breakout idea's sell lines in 15.24's ideas row and on the card, and section 20's phase 22 row names 22.18
 Authorised by: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
 Was:

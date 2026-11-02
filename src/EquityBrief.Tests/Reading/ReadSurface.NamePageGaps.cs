@@ -110,10 +110,10 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", "<p>no cost</p>", agreeing), "cost-figures"));
     }
 
-    // A segment table draws every amount in the one scale its smallest reads in, so ROP's release reads $1,239.7M beside
-    // $446.1M and not $1.2B; where its smallest reads under a million beside a larger amount, in millions to two places,
-    // so RGEN's reads $209.3M beside $0.04M; and a commentary written from the filing's segments says so above its text.
-    // see: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not
+    // A segment table draws every amount in one scale: billions where every amount is a billion or more, millions where
+    // the largest is a million or more, so ROP's release reads $1,239.7M beside $446.1M and not $1.2B and RGEN's $209.3M
+    // beside $0.04M, and thousands otherwise; and a commentary written from the filing's segments says so above its text.
+    // see: A segment table draws every amount in one scale, billions where every amount is a billion or more and millions or thousands by its largest amount
     [Fact]
     public void ASegmentTableDrawsEveryAmountInOneScaleAndTheProofReadsItBack()
     {
@@ -146,6 +146,13 @@ public partial class ReadSurface
         Assert.Equal(("M"), Figures.ScaleOf([400_000m, 2_000_000m])?.Suffix);
         Assert.Equal(("K"), Figures.ScaleOf([400_000m, 900_000m])?.Suffix);
         Assert.Null(Figures.ScaleOf([0m]));
+
+        // At the edges: every amount a billion or more keeps billions, and one amount under a billion reads millions, even
+        // where it would round to $1.0B; amounts under a million read thousands, even where they would round to $1.0M.
+        Assert.Equal(("B"), Figures.ScaleOf([1_000_000_000m, 3_000_000_000m])?.Suffix);
+        Assert.Equal(("M"), Figures.ScaleOf([960_000_000m, 3_000_000_000m])?.Suffix);
+        Assert.Equal(("M"), Figures.ScaleOf([1_000_000m, 960_000m])?.Suffix);
+        Assert.Equal(("K"), Figures.ScaleOf([960_000m, 990_000m])?.Suffix);
 
         // RGEN's release, worked by hand: its royalty line of $44,000 beside its product line of $209.3M read in millions,
         // $0.044M kept to two places, where it drew $44,000 in a scale of its own; $5,000 reads $0.01M, the half rounding

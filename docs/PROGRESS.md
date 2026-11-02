@@ -14192,3 +14192,103 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
             placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
+
+### 18.5 ruling - the defect the sixth phase 18 sign-off review found corrected before a seventh review signs, with the segment scale's words and the copy's line on an older close   2026-11-02
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-02 and lands nothing.
+Found:      the sixth phase 18 sign-off review, by a session that had committed no code, over main 397d3375: `tools/ci.ps1`
+            green 16:53:28 to 17:30:54 UTC on 2026-11-01, 3042 of 3042, and `tools/verify-phase.ps1` green, 1491 claims,
+            1491 passing; fifteen mutations predicted and red where predicted, PR 616's eleven and four new; the table the
+            sign-off rule asks for, 37 phase 18 corrections traced line by line and test by test on main with none undone or
+            contradicted by a later pull request; the report page's proof over the night of 2026-10-30 and nine stocks' pages
+            and exported files read back at 1440 and a true 390. One defect: the next report not on file is estimated a
+            year on from any stored report of the last year, so a company holding only that year's reports, ADIG, MBGL and
+            MFP with one each and HONA and VGNT with two, would be estimated a year on from a report of a later quarter, as
+            HONA's page would once it reports on 2026-11-04 with its next not announced, about 2027-08-04 where its next falls
+            about February 2027. Two judgement items: a segment table of billions kept in billions against the operator's
+            words of 2026-11-01, and the read-only copy's two marks on a stock whose last close is older than the night.
+            Nothing was signed.
+Ruled:      word for word in `prompts/2026-11-02-18.5-phase-18-signoff-sixth-findings-and-answers.md`: this session builds the
+            corrections and a seventh fresh session signs; "Need a year of reports", a next report estimated only where a
+            report at least a year before the night is stored, the page saying why where none is and the card keeping that
+            no report date is on file; the billions kept, "the rule is one scale per table: billions where every amount is a
+            billion or more, millions where the largest is a million or more, thousands otherwise. Amend the decision's words
+            to say that"; and on the copy, "don't show two "as of" lines with different dates. Keep the copy's mark and put
+            the stock's own date in one sentence beneath it: "This stock's last stored price is from <d Mon>, so its prices
+            may be out of date." Update the test to that."
+Labelled:   read off the record: the estimate under 18.4, whose corrections of 2026-10-27 and 2026-10-28 built it on the card
+            and the page; the segment scale and the copy's masthead under 18.4, whose corrections built each.
+Queue:      done, PRs 617 to 620 and the sixth review; in progress, this pull request; next, the seventh phase 18 sign-off
+            review by a fresh session after it merges, then the sign-offs of phases 20, 21 and 22 by their own fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a next report not on file is estimated only where a report fifty-two weeks or more before the night is stored, where any report of the last year was read as the year before's   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the sixth phase 18 sign-off review, read-only on the live store for the night of 2026-10-30: the card's and the
+            page's estimate read the company's oldest report of the last 364 days a year on, so a company holding only that
+            year's reports had none of the same quarter a year before to read and was estimated from a later quarter's:
+            ADIG, MBGL and MFP hold one report and HONA and VGNT two, and MFP's of 2026-08-14 would read about 2027-08-13. No
+            page drew one that night; HONA's would once it reports on 2026-11-04.
+Corrected:  `CardLines.EstimatedReport` estimates only where a report 364 days or more before the night is stored, the
+            rest of its reading unchanged, so every member holding a year of reports, ABBV's 2027-02-03 from 2026-02-04
+            among them, reads as before. A card with none keeps its line that no report date is on file, and a page says
+            no report a year earlier is stored to estimate it from and, its every report falling in the year before the
+            night, that it started reporting as its own company on the first. The two decisions are superseded by one
+            stating it, their prior text under Previously decided and every citation moved; the architecture's two
+            sentences and the guide's, with their prior text in the changelog.
+Tests:      none new; the card's estimate test holds ROP's set from a report 364 days before the night estimated and from
+            one 363 days before not, MFP's one report and HONA's two not estimated, and a card holding only a recent report
+            keeping its line; the page's estimate test holds HONA's two reports not estimated and its line naming
+            2026-08-05 as its first.
+Mutation:   chosen before the runs by this rule, the property the correction adds, each filtered to the 56 tests of the six
+            report page files: a1 the year of reports never required, predicted red at the card's and the page's estimate
+            tests, red at both alone; a2 a report exactly 364 days before the night not counted, predicted red at the
+            card's estimate test, red there alone; each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a segment table's one scale is read off its amounts, billions where every amount is a billion or more, millions where the largest is a million or more and thousands otherwise, where it was read off the smallest amount's rounding   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source on the operator's answer of 2026-11-02, and
+lands nothing.
+Found:      the sixth phase 18 sign-off review: the 18.4 correction of 2026-11-01 kept a table whose smallest amount reads in
+            billions in billions, where the operator's words of that day read literally would draw it in millions; put to the
+            operator as a judgement, who kept the billions and restated the rule.
+Corrected:  `Figures.ScaleOf` reads billions where every amount is a billion or more, millions where the largest is a
+            million or more and thousands otherwise, the two places and the "under" kept, so a table moves only where its
+            smallest amount lies between $950 million and a billion, which had read as $1.0B, or every amount between
+            $950,000 and a million, which had read as $1.0M. The decision is superseded by
+            one in the operator's words, its prior text under Previously decided, and the architecture's sentence with its
+            prior text in the changelog.
+Tests:      none new; the segment table's test holds billions at every amount a billion or more, millions for $960 million
+            beside $3 billion and for a million beside $960,000, and thousands for $960,000 beside $990,000.
+Mutation:   chosen before the runs by this rule, the property the correction adds, each filtered to the 56 tests of the six
+            report page files: b1 billions read off the smallest amount's rounding again, predicted red at the segment
+            table's test, red there alone; b2 billions read off the largest amount, predicted red there, red there alone;
+            each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: the read-only copy says a stock's older close in one sentence beneath its mark, where it drew a second "as of" with another date   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source on the operator's answer of 2026-11-02, and
+lands nothing.
+Found:      the sixth phase 18 sign-off review: on the read-only copy a stock whose last close is older than the night read
+            "As of the close of 27 Oct." beside "As of the close of 2026-10-23, the last stored price. Prices may be out of
+            date; see below.", two dates each said as of; put to the operator as a judgement, who chose to change it.
+Corrected:  `SiteCopy.MarkedAtTheClose` keeps the copy's mark and puts the page's older close, with or without its warning,
+            as one sentence beneath it, "This stock's last stored price is from 23 Oct, so its prices may be out of
+            date.", the rest of the line kept; a closed day reads as before. The decision on the copy stands: a stock's
+            price is marked as of the night's close.
+Tests:      none new; the copy's control test reads the older close with the page's warning and one without it, each said
+            in the one sentence, and the closed day as before.
+Mutation:   chosen before the runs by this rule, the property the correction adds, each filtered to the 47 tests naming the
+            copy: c2 the page's older sentence kept, predicted red at the copy's control test, red there alone; c3 a page
+            marked suspect left with its own sentence, predicted red there, red there alone; each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3060 of 3060 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
+            placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.

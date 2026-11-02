@@ -183,7 +183,7 @@ public partial class ReadSurface
     // the night of 2026-10-26 give 2026-01-27's, fifty-two weeks on, 2027-01-26, a Tuesday as the report was. Once the open
     // after the night prints, the fill and the reward against the risk at it are restated: a fill at 440.00 under a target
     // of 529.64 and a stop of 406.46 is (529.64 - 440.00) / (440.00 - 406.46) = 89.64 / 33.54 = 2.67.
-    // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
+    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
     [Fact]
     public void APicksCardEstimatesItsNextReportAndRestatesTheFillOnceTheOpenPrints()
     {
@@ -195,6 +195,16 @@ public partial class ReadSurface
         Assert.Equal((new DateOnly(2026, 1, 27), new DateOnly(2027, 1, 26)), estimate);
         Assert.Equal(DayOfWeek.Tuesday, estimate!.Value.Estimated.DayOfWeek);
         Assert.Null(EquityBrief.Core.Cards.CardLines.EstimatedReport([new DateOnly(2025, 1, 2)], night));
+
+        // Only a company holding a report fifty-two weeks or more before the night is estimated: ROP's set read from a
+        // report of 2025-10-27, 364 days before the night, still gives 2027-01-26, and from one of 2025-10-28, 363 days
+        // before, none. A company holding only the last year's reports holds no report of the same quarter a year before:
+        // MFP's one report of 2026-08-14 and HONA's two of 2026-08-05 and 2026-11-04 are not estimated, where a year on
+        // from their oldest would read 2027-08-13 and 2027-08-04, a year after a report of a later quarter.
+        Assert.Equal(new DateOnly(2027, 1, 26), EquityBrief.Core.Cards.CardLines.EstimatedReport([new(2025, 10, 27), .. reported[1..]], night)!.Value.Estimated);
+        Assert.Null(EquityBrief.Core.Cards.CardLines.EstimatedReport([new(2025, 10, 28), .. reported[1..]], night));
+        Assert.Null(EquityBrief.Core.Cards.CardLines.EstimatedReport([new DateOnly(2026, 8, 14)], new DateOnly(2026, 10, 30)));
+        Assert.Null(EquityBrief.Core.Cards.CardLines.EstimatedReport([new DateOnly(2026, 8, 5), new DateOnly(2026, 11, 4)], new DateOnly(2026, 11, 10)));
 
         // Inside a hold of 90 sessions it warns; after one of 60 it notes; marked estimated either way.
         var inside = EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate.Value, night, 90);
@@ -210,6 +220,9 @@ public partial class ReadSurface
         var estimated = NameScreen.WithEstimatedReport(card, reported)!;
 
         Assert.Equal(after.Words, estimated.Lines.Single().Words);
+
+        // A card whose company holds only the last year's reports keeps the line saying none is on file.
+        Assert.Equal("No report date is on file for it, so a report inside the hold cannot be ruled out.", NameScreen.WithEstimatedReport(card, [new(2026, 8, 14)])!.Lines.Single().Words);
 
         // The fill once the open prints, and none before it.
         Assert.Null(EquityBrief.Core.Cards.CardLines.Filled(night, 441.65m, 406.46m, 529.64m, [(night, 441.65m)]));

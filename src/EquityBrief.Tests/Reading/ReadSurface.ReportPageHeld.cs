@@ -174,7 +174,7 @@ public partial class ReadSurface
     // Where no report a year before is stored it says so, and where every report the page knows falls in the year before
     // the night, as FDXF's first report as its own company did, that its first is the day it started reporting; the proof
     // fails a page drawing it as not announced with no estimate and no line saying why.
-    // see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated
+    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
     [Fact]
     public async Task ANextReportNotOnFileIsDrawnWithTheDayItIsEstimatedAtMarkedEstimated()
     {
@@ -213,6 +213,13 @@ public partial class ReadSurface
             NameScreen.NotEstimated(reportDate, [reportDate.AddDays(-90)], reportDate));
         Assert.Equal(NameScreen.NoYearEarlier, NameScreen.NotEstimated(reportDate, [reportDate.AddDays(-364)], reportDate));
         Assert.Equal(FormattableString.Invariant($"{NameScreen.NoYearEarlier}: it started reporting as its own company on {reportDate.AddDays(-363):yyyy-MM-dd}"), NameScreen.NotEstimated(reportDate, [reportDate.AddDays(-363)], reportDate));
+
+        // A company holding only the last year's reports, as HONA will on the night of 2026-11-10 with its reports of
+        // 2026-08-05 and 2026-11-04, is not estimated, and its line names its first report as the day it started reporting.
+        Assert.Null(EquityBrief.Core.Cards.CardLines.EstimatedReport([new DateOnly(2026, 8, 5), new DateOnly(2026, 11, 4)], new DateOnly(2026, 11, 10)));
+        Assert.Equal(
+            NameScreen.NoYearEarlier + ": it started reporting as its own company on 2026-08-05",
+            NameScreen.NotEstimated(new DateOnly(2026, 11, 4), [new DateOnly(2026, 8, 5)], new DateOnly(2026, 11, 10)));
 
         // Neither an estimate nor the line saying why fails.
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate(Name, bare.Replace("<small class=\"estimated-none\">" + started + "</small>", string.Empty, StringComparison.Ordinal)), "next-report-estimated"));

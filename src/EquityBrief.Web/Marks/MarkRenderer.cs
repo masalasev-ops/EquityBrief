@@ -2706,7 +2706,7 @@ public sealed partial class MarkRenderer : IComponent
         // A pick's stop and target as rules across the pane, the stop in the stop's hue and the target in the gain's, each
         // named in the column like a band's edge; one the axis does not reach is named beneath the pane's own title, since
         // nothing is written inside the plot.
-        // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
+        // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
         var pickNames = new List<(double Y, string Text, string Kind)>();
 
         if (frame?.Pick is { } pick)

@@ -46,32 +46,22 @@ public static partial class Figures
         + (currency is null or "" or "USD" ? "$" : currency + " ")
         + Scaled(Math.Abs(value));
 
-    // The one scale a table's amounts are all read in: the largest at which its smallest amount still rounds to at least
-    // one, so $1,239.7M stands beside $446.1M rather than $1.2B; millions where the smallest is under a million and the
-    // largest is a million or more, so $209.3M stands beside $0.04M; thousands where every amount is under a million; and
-    // none where no amount is given.
-    // see: A segment table draws every amount in one scale, the smallest's where it reads at one or more and millions to two places beside a larger amount where it does not
+    // The one scale a table's amounts are all read in: billions where every amount is a billion or more, so $2.0B stands
+    // beside $3.5B; millions where the largest is a million or more, so $1,239.7M stands beside $446.1M rather than $1.2B
+    // and $209.3M beside $0.04M; thousands otherwise; and none where no amount is given.
+    // see: A segment table draws every amount in one scale, billions where every amount is a billion or more and millions or thousands by its largest amount
     public static (decimal Size, string Suffix)? ScaleOf(IEnumerable<decimal> amounts)
     {
         var given = amounts.Select(Math.Abs).Where(amount => amount > 0).ToArray();
 
-        if (given.Length == 0)
-        {
-            return null;
-        }
-
-        var smallest = given.Min();
-
-        foreach (var (size, suffix, _) in Scales)
-        {
-            if (Math.Round(smallest / size, 1, MidpointRounding.AwayFromZero) >= 1)
-            {
-                return (size, suffix);
-            }
-        }
-
-        return given.Max() >= Million ? (Million, "M") : (Thousand, "K");
+        return given.Length == 0
+            ? null
+            : given.Min() >= Billion
+                ? (Billion, "B")
+                : given.Max() >= Million ? (Million, "M") : (Thousand, "K");
     }
+
+    const decimal Billion = 1_000_000_000m;
 
     const decimal Million = 1_000_000m;
 
