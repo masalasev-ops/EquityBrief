@@ -26,6 +26,28 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-01 - docs/ARCHITECTURE.html - Home at #/ as section 15.24, Tonight at #/tonight, and section 20's phase 22 row names 22.16
+Authorised by: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
+Was:
+> Views are hash routes resolved in the browser: <code>#/</code>, <code>#/night/&lt;date&gt;</code>, ...
+> <p><b>Route:</b> <code>#/</code>, resolving to the newest night, and <code>#/night/&lt;date&gt;</code> for an earlier one.
+> ... with its history test and its freeze on the operator's word</td> ... <td>the build plan's phase 22 checkpoints, 22.0 to 22.15</td></tr>
+> (no section 15.24)
+Now:
+> Views are hash routes resolved in the browser: <code>#/</code>, Home from 22.16, <code>#/tonight</code>, <code>#/night/&lt;date&gt;</code>, ...
+> <p><b>Route:</b> <code>#/tonight</code>, resolving to the newest night, and <code>#/night/&lt;date&gt;</code> for an earlier one; it was <code>#/</code> until 22.16 made that Home.
+> ... with its history test and its freeze on the operator's word; and, on their ruling of 2026-11-01, Home, a landing page for a reader new to investing on the app and the read-only copy, with Tonight one click away</td> ... <td>the build plan's phase 22 checkpoints, 22.0 to 22.16</td></tr>
+> <h3>15.24 Home</h3> with its answers, route, reads and a table of six regions: the day, tonight's ideas, how past ideas have done, how it works, the foot, and on the read-only copy
+Why: the operator's ruling of 2026-11-01, built as 22.16.
+
+### 2026-11-01 - docs/BUILD_PLAN.md - phase 22 gains 22.16, Home
+Authorised by: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
+Was:
+> (no 22.16 section)
+Now:
+> ### 22.16 On the operator's word of 2026-11-01: Home, a landing page for a reader new to investing
+Why: the operator's ruling of 2026-11-01, built inside phase 22 as its own checkpoint on their answer of the same evening.
+
 ### 2026-11-01 - docs/ARCHITECTURE.html - section 20's phase 21 row names 21.20
 Authorised by: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it
 Was:

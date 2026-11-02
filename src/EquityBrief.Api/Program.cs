@@ -1647,8 +1647,14 @@ static bool Traded(DateOnly day)
 //
 // `/screens/tonight` resolves to the newest night the listings hold and
 // `/screens/tonight/<date>` to an earlier one, which is the pair 15.3's routes
-// name.
-app.MapGet("/screens/tonight/{night?}", async (
+// name. From 22.16 `/screens/home` is Home, drawn from the newest night by the same reads Tonight is drawn from.
+// see: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
+app.MapGet("/screens/tonight/{night?}", (string? night, HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store, StripQuotes stripQuotes) =>
+    TonightScreenAsync(night, request, read, marks, page, caps, clock, store, stripQuotes, false));
+app.MapGet("/screens/home", (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store, StripQuotes stripQuotes) =>
+    TonightScreenAsync(null, request, read, marks, page, caps, clock, store, stripQuotes, true));
+
+async Task<IResult> TonightScreenAsync(
     string? night,
     HttpRequest request,
     ReadApi read,
@@ -1657,7 +1663,8 @@ app.MapGet("/screens/tonight/{night?}", async (
     SpendCaps caps,
     IClock clock,
     StoreLocation store,
-    StripQuotes stripQuotes) =>
+    StripQuotes stripQuotes,
+    bool home)
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
@@ -1686,7 +1693,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     // The index the page reads, chosen under Universe and kept in the link, the S&P 500 where it names none.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
-    var selector = Cards.Universe(reading, await read.MembersByIndexAsync(dated), night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/");
+    var selector = Cards.Universe(reading, await read.MembersByIndexAsync(dated), night is { Length: > 0 } ? SinglePageApp.NightRoute + night : SinglePageApp.TonightRoute);
 
     // From 21.13 the market strip atop the page on every index: the night's closes, and on the newest night while the
     // regular session is open Yahoo's quotes, asked at most once every five minutes.
@@ -1708,6 +1715,11 @@ app.MapGet("/screens/tonight/{night?}", async (
 
         if (indexNight is null)
         {
+            if (home)
+            {
+                return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, null, [], null, new Dictionary<string, UniverseCell>(StringComparer.Ordinal), (_, _) => null);
+            }
+
             return Results.Content(
                 notice + strip + page.IndexTonightRegion(marks, dated, reading, selector, indexHeld, null, [], null, due: due),
                 "text/html; charset=utf-8");
@@ -1788,7 +1800,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         IReadOnlyList<EquityBrief.Web.Marks.CloseToBuyCell>? indexClose = TonightScreen.IndexCloseAcross(indexResults, members) is { } indexSwingClose
             ? [.. indexSwingClose, .. indexDipClose]
             : indexDipResults.Count > 0 ? indexDipClose : null;
-        var indexCloseHref = indexClose is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word);
+        var indexCloseHref = indexClose is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : SinglePageApp.TonightRoute, reading.Word);
 
         indexCards = await WithBehindAsync(read, indexCards, reading, dated);
         // A drift's numbers read off the setup the ledger stored on its report day, within the window its rule states.
@@ -1895,6 +1907,23 @@ app.MapGet("/screens/tonight/{night?}", async (
             RuleScreen.DesignB(indexHeavyweightVariant ?? heavyweightRule, indexRegister));
 
         var indexCells = UniverseScreen.Rows(await read.UniverseAsync(reading.Code, dated)).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
+        var indexLine = TonightScreen.IndexLine(reading, indexNight, indexCards, indexResults, indexOpen, indexClose) with
+        {
+            CloseHref = indexCloseHref,
+            // The members a setup passed, the dip's among them, as its buy points are among the line's.
+            Passed = TonightScreen.PassedWithDip(indexResults.Where(result => result.Passed).Select(result => result.Ticker), indexDipResults),
+            Dip = indexDipNight is null ? null : TonightScreen.DipSettingWords(indexDipNight),
+            DipOpen = indexDipNight?.MarketOpen ?? false,
+        };
+
+        if (home)
+        {
+            var indexGates = indexResults.Concat(indexDipResults).GroupBy(result => (result.Family, result.Ticker)).ToDictionary(group => group.Key, group => group.First().Gates);
+
+            var high = indexSettings.Breakout.GetValueOrDefault("high") is { } sessions && int.TryParse(sessions, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) ? parsed : (int?)null;
+
+            return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, indexLine, indexCards, await ImprovingCardAsync(read, reading.Code, dated, indexCells), indexCells, (family, ticker) => indexGates.GetValueOrDefault((family, ticker)), indexNight.Breadth, high);
+        }
 
         return Results.Content(
             notice + strip + page.IndexTonightRegion(
@@ -1903,14 +1932,7 @@ app.MapGet("/screens/tonight/{night?}", async (
                 reading,
                 selector,
                 indexHeld,
-                TonightScreen.IndexLine(reading, indexNight, indexCards, indexResults, indexOpen, indexClose) with
-                {
-                    CloseHref = indexCloseHref,
-                    // The members a setup passed, the dip's among them, as its buy points are among the line's.
-                    Passed = TonightScreen.PassedWithDip(indexResults.Where(result => result.Passed).Select(result => result.Ticker), indexDipResults),
-                    Dip = indexDipNight is null ? null : TonightScreen.DipSettingWords(indexDipNight),
-                    DipOpen = indexDipNight?.MarketOpen ?? false,
-                },
+                indexLine,
                 indexCards,
                 CardScreen.WithCards(
                     TonightScreen.WithSweepLine(
@@ -1935,10 +1957,15 @@ app.MapGet("/screens/tonight/{night?}", async (
     var first = await read.FirstFilterNightAsync();
     var held = (await read.NightsAsync()).Where(one => first is not { } from || one >= from).ToArray();
 
+    if (home && ((first is { } begins && dated < begins) || (await read.ListingsAsync(dated)).Count == 0))
+    {
+        return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, null, [], null, new Dictionary<string, UniverseCell>(StringComparer.Ordinal), (_, _) => null);
+    }
+
     if (first is { } start && dated < start)
     {
         return Results.Content(
-            notice + strip + SinglePageApp.BeforeTheRecord(dated, start, "Tonight", SinglePageApp.NightRoute, "#/", held),
+            notice + strip + SinglePageApp.BeforeTheRecord(dated, start, "Tonight", SinglePageApp.NightRoute, SinglePageApp.TonightRoute, held),
             "text/html; charset=utf-8");
     }
 
@@ -2278,6 +2305,23 @@ app.MapGet("/screens/tonight/{night?}", async (
             UniverseScreen.Rows(universe, null, await NextEventsAsync(read, dated), dated).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             watchedNames.Select(row => row.Ticker).ToHashSet(StringComparer.Ordinal));
 
+    if (home)
+    {
+        var homeGates = new Dictionary<(string Family, string Ticker), string?>();
+
+        foreach (var result in familyResults)
+        {
+            homeGates.TryAdd((result.Family, result.Ticker), result.Gates);
+        }
+
+        foreach (var result in largeIndexResults.Concat(dipResults))
+        {
+            homeGates.TryAdd((result.Family, result.Ticker), result.Gates);
+        }
+
+        return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, line, cards ?? [], cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells), cells, (family, ticker) => homeGates.GetValueOrDefault((family, ticker)));
+    }
+
     return Results.Content(
         notice + strip + page.TonightRegion(
             marks,
@@ -2305,13 +2349,13 @@ app.MapGet("/screens/tonight/{night?}", async (
             closeToBuy: closeToBuy,
             closeOpen: request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
             newest: await read.NewestNightAsync() == dated,
-            closeHref: closeToBuy is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word),
+            closeHref: closeToBuy is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : SinglePageApp.TonightRoute, reading.Word),
             ended: cards is null ? null : TonightScreen.EndedTonight(dated, PicksScreen.Cells(picks, dated), await read.DipTradesAsync(reading.Code, dated)),
             plans: plans,
             quality: cards is null ? null : await QualityCardAsync(read, reading.Code, dated, cells),
             improving: cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells)),
         "text/html; charset=utf-8");
-});
+}
 
 // The watch list page, section 15.16: the names the operator follows on the newest night, each drawn from
 // that night's own rows whether or not the list holds it, with what the swing filter said of it.
@@ -2587,6 +2631,161 @@ async Task<ImprovingCardView> ImprovingCardAsync(ReadApi read, string index, Dat
         await read.ImprovingReportsAsync(night, TonightScreen.ReportingThrough(night)),
         liveSince,
         fixedView);
+}
+
+// Home on an index as of the newest night, from 22.16: the figures Tonight's own reads produced, the line, the cards and
+// the Fundamentals card, with the strip's stored closes for each index's move and the VIX against its median of the 252
+// sessions before, tonight's buys in Tonight's order with the Fundamentals family's after the drift's and before the dip's,
+// and the combined paper account against an equal-weight hold of the index's stocks from the day it counts from.
+// see: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
+async Task<IResult> HomeAsync(
+    ReadApi read,
+    SinglePageApp page,
+    MarkRenderer marks,
+    StoreLocation store,
+    UniverseChoice reading,
+    DateOnly dated,
+    NightView aboutNight,
+    MarketLineView? line,
+    IReadOnlyList<FamilyCardView> families,
+    ImprovingCardView? improving,
+    IReadOnlyDictionary<string, UniverseCell> cells,
+    Func<string, string, string?> gatesOf,
+    double? ownShare = null,
+    int? highSessions = null)
+{
+    var running = aboutNight.Session > dated && aboutNight.State is NightStates.Running or NightStates.Waiting or NightStates.Unfinished;
+    var stored = await read.StripAsync(dated, MarketStripScreen.Series, MarketStripScreen.VixSessions);
+
+    double? Moved(string? series) =>
+        series is not null && stored.Closes.GetValueOrDefault(series) is { Before: > 0 } held
+            ? EquityBrief.Core.Prices.Statistic.FromRatio((held.Close - held.Before!.Value) / held.Before.Value) * 100
+            : null;
+
+    string? SeriesOf(UniverseChoice choice) =>
+        EquityBrief.Core.Quotes.MarketStrip.Tiles[Universes.Offered.ToList().IndexOf(choice)].Series;
+
+    var vix = stored.Closes.GetValueOrDefault(EquityBrief.Core.Families.MarketCloses.Vix);
+    var median = MarketStripScreen.Median(stored.VixYear);
+
+    // The buys in Tonight's order, the Fundamentals family's in its slot after the drift's and before the dip's.
+    var shown = families.Where(card => card.Family != EquityBrief.Core.Families.FundamentalsRule.Name).ToArray();
+    var (_, points) = SinglePageApp.TopOf(shown, null, line?.Open ?? false, dated, line?.Checks, line?.DipOpen);
+
+    // A drift's surprise and report day where its gates hold none, an S&P 400's or 600's, read off the newest earnings
+    // reaction stored on or before the night.
+    var reactions = new Dictionary<string, ReactionRow?>(StringComparer.Ordinal);
+
+    foreach (var point in points.Where(point => point.Family == EquityBrief.Core.Families.DriftRule.Name))
+    {
+        reactions[point.Pick.Row.Ticker] = (await read.ReactionsAsync(point.Pick.Row.Ticker, dated)).LastOrDefault();
+    }
+
+    HomeIdea IdeaOf(BuyPointView point)
+    {
+        var pick = point.Pick;
+        var (surprise, report, window) = TonightScreen.HomeFigures(gatesOf(point.Family, pick.Row.Ticker));
+
+        if (surprise is null && report is null && reactions.GetValueOrDefault(pick.Row.Ticker) is { } reaction)
+        {
+            (surprise, report) = (reaction.SurprisePct, reaction.ReportDate);
+        }
+
+        window ??= highSessions;
+        var why = point.Family switch
+        {
+            EquityBrief.Core.Families.BreakoutRule.Name => window is { } sessions
+                ? FormattableString.Invariant($"Closed above its highest price of the last {Math.Max(1, (int)Math.Round(sessions / 21.0))} months on heavy buying, after a quiet spell.")
+                : "Closed above its highest price of recent months on heavy buying, after a quiet spell.",
+            EquityBrief.Core.Families.DriftRule.Name => (surprise is { } by ? FormattableString.Invariant($"Beat what analysts expected by {by:0.#}%") : "Beat what analysts expected")
+                + (report is { } day ? " on " + day.ToString("d MMM", CultureInfo.InvariantCulture) : string.Empty)
+                + " and jumped on heavy buying. Stocks like this often keep rising for a few weeks.",
+            EquityBrief.Core.Families.DipRule.Name => "A rising stock that fell hard for a few days; bought for the bounce.",
+            _ => "A strong stock that dipped to a price where buyers have stepped in before, and turned back up today.",
+        };
+
+        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk);
+    }
+
+    HomeIdea[] fundamentals =
+    [
+        .. (improving?.Improving ?? []).Where(row => row.Status == MarkRenderer.BoughtWords).Select(row => new HomeIdea(
+            EquityBrief.Core.Families.ImprovingRule.Name,
+            row.Ticker,
+            row.Company ?? cells.GetValueOrDefault(row.Ticker)?.Name,
+            row.BeforePassed is { } before
+                ? FormattableString.Invariant($"Its newest filing shows the business getting stronger: {row.Passed} of {row.Applied} checks, up from {before}.")
+                : FormattableString.Invariant($"Its newest filing shows the business getting stronger: {row.Passed} of {row.Applied} checks."),
+            cells.GetValueOrDefault(row.Ticker)?.Close,
+            null,
+            null,
+            true,
+            null)),
+    ];
+    HomeIdea[] ideas =
+    [
+        .. points.Where(point => point.Family != EquityBrief.Core.Families.DipRule.Name).Select(IdeaOf),
+        .. fundamentals,
+        .. points.Where(point => point.Family == EquityBrief.Core.Families.DipRule.Name).Select(IdeaOf),
+    ];
+    var opens = MarkRenderer.OpenDay(dated);
+
+    // The combined paper account against an equal-weight hold of the index's stocks over the same days.
+    var held = copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
+    var paper = await PaperAccountsAsync(read, reading, dated, held ?? EquityBrief.Core.Cards.AccountSettings.Example);
+    HomePast? past = null;
+
+    if (paper.Combined is { } combined)
+    {
+        var closes = await read.ClosesAsync([.. cells.Keys], combined.Since);
+
+        double? Held(string ticker)
+        {
+            if (closes.TryGetValue((ticker, combined.Since), out var then) && closes.TryGetValue((ticker, dated), out var now) && then > 0)
+            {
+                return EquityBrief.Core.Prices.Statistic.FromRatio((now - then) / then);
+            }
+
+            return null;
+        }
+
+        var index = EquityBrief.Core.Families.HeavyweightStandings.MembersMean(cells.Keys.Select(Held));
+        var progress = await PaperProgressAsync(read, reading, dated);
+
+        past = new HomePast(
+            combined.Since,
+            combined.Closed,
+            combined.Trades.Count(trade => !trade.Open && trade.Skipped is null && trade.Return > 0),
+            combined.Walk.Return,
+            index,
+            progress.Values.Any(one => one.Counted < one.Needed));
+    }
+
+    // On the S&P 400 and 600 each rule checks its own market level, a rule reading none counted open.
+    var checks = ownShare is null ? null : line?.Checks;
+
+    var view = new HomeView(
+        reading,
+        dated,
+        running,
+        ownShare ?? line?.Breadth,
+        ownShare is null ? line?.Floor : null,
+        line?.Open ?? false,
+        Moved(SeriesOf(reading)),
+        [.. Universes.Offered.Where(choice => choice != reading).Select(choice => (choice.Name, Moved(SeriesOf(choice))))],
+        Moved(EquityBrief.Core.Families.MarketCloses.Vix),
+        vix is not null && median is { } middle ? vix.Close > middle : null,
+        [.. ideas.Take(SinglePageApp.HomeIdeas)],
+        ideas.Length,
+        opens.EndsWith("'s", StringComparison.Ordinal) ? opens[..^2] : opens,
+        (checks is { Count: > 0 } ? checks.All(check => !check.Open) : line is { Open: false }) ? "The market was too weak for the rules to buy tonight." : "No stock met every rule tonight.",
+        past,
+        checks is { Count: > 0 } ? checks.Count(check => check.Open) : null,
+        checks is { Count: > 0 } ? checks.Count : null);
+
+    return Results.Content(
+        page.HomeRegion(marks, view, Cards.Universe(reading, await read.MembersByIndexAsync(dated), SinglePageApp.HomeRoute)),
+        "text/html; charset=utf-8");
 }
 
 // Each family's live or provisional rule's record so far on an index as of a night, as Paper trading counts it off the

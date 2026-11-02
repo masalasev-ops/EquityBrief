@@ -14017,3 +14017,71 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 64 tables, 1491 claims, 1491 passing, none out of scope and none unexamined, 1506
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 22.16 ruling - Home, a landing page for a reader new to investing on the app and the read-only copy, with Tonight one click away   2026-11-01
+
+Not a checkpoint entry: it records the operator's ruling and answers of 2026-11-01, which add 22.16 to the phase, and lands
+nothing.
+Ruled:      word for word in `prompts/2026-11-01-home-page-ruling.md`, with its mockups
+            `prompts/2026-11-01-home-page-mockup.html` and `prompts/2026-11-01-home-page-copy-mockup.html`: "Build after
+            the items of my last ruling, as its own checkpoint. Family who tried Tonight found it far too dense as a
+            landing page. Tonight stays exactly as it is, one click away." Home at `#/` with the day, tonight's ideas, how
+            past ideas have done, how it works and a footer, every figure from the newest night's stored rows and every
+            sentence from templates, no model writing anything on the page, and the copy holding it as its landing route.
+Answered:   the same evening, asked the order and the label: "Lock file, 21.20, Home" and "22.16". Then, during the lock-file
+            correction: "once you are doing the landing page, i want disclaimer at the bottom that nothing on this project
+            is financial advice  and how this is just experiment. FInd the right words and  put the disclaimer". Asked
+            which word the footer uses, since the ruling bans "setup" on Home and its own footer said "every setup":
+            "every rule". Asked what the day card shows on the S&P 400 and 600, where each setup reads its own check: "Own
+            share, no single floor, and say how many rules are open. On the S&P 400 and 600 the bar draws the index's own
+            share with no floor mark, and the tile reads "<nn%> of these companies trade above their 200-day average." with
+            the line "Each rule here checks its own market level; tonight <n> of <m> are open to buy." A rule that reads no
+            check counts as open. The headline follows that count: all open, "A healthy market: our rules are buying.";
+            some open, "A mixed market: some of our rules are buying."; none open, "A weak market: our rules are staying
+            out tonight." The shaky version ("A shaky day, but still a market our rules will buy in.") replaces the first
+            two when the index fell 1% or more. The S&P 500 stays as ruled, with its one floor marked. Add the "mixed"
+            branch to the fixture's worked cases."
+Written:    22.16's text and its done condition in the build plan, section 15.24, the routes of 15.3 and 15.7 and section
+            20's phase 22 row, their prior text in the changelog; the decision with 22.16's entry.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.16's entry below, which
+            states that run's figures.
+
+### 22.16 - Home, the landing page for a reader new to investing, on the app and the read-only copy, with Tonight at its own route   2026-11-01
+
+Built:      Home at `#/` on every index, drawn by Tonight's own handler in the same request with a flag, so every figure is
+            what Tonight read: the day, its headline from the share above the 200-day average against the floor on the S&P
+            500 and from the rules open to buy on the S&P 400 and 600, with the mixed branch; tonight's ideas in Tonight's
+            order, the Fundamentals family's after the drift's; the combined paper account against an equal-weight hold of
+            the index's stocks; the four pictures; the foot; and the disclaimer: "Nothing on this site is financial
+            advice. EquityBrief is a personal experiment: it tests fixed rules on paper, with no real money, and a rule's
+            past results, on paper or over history, are no promise about what comes next. Make your own decisions, or ask
+            a licensed adviser, before you invest." Tonight moves to `#/tonight`, its night picker, Universe choice, close
+            link and the record's start pointing there, and opens at a family's card a Home picture names. The mockups'
+            new rules added to the stylesheet with one more for the disclaimer, every colour a token. The read-only copy
+            holds Home as its landing route and Tonight at its own, Home's head its own mark as of the close, its file
+            named home where both had been written to one name. Section 15.24, the routes of 15.3 and 15.7, section 20's
+            row, the decision, the guide and the changelog say it.
+Read back:  the branch on 127.0.0.1:5188 over the live store, night of 2026-10-30: the S&P 500 shaky, 61.6% against 45%,
+            down 1.8%, 7 ideas matching Tonight's buys, the combined account +0.3% since 2 Oct with none closed against the
+            hold's +4.4%; the S&P 400 shaky, 52% with 3 of 3 rules open, down 1.2% by its fund, 11 ideas, Tonight's 7 and
+            the Fundamentals family's 4; the S&P 600 shaky, 53.8% with 3 of 3 open, 5 ideas. No page wider than its screen
+            at 1440 or a true 390 in either palette. The copy written locally and read the same way, nothing refused,
+            nothing uploaded, no link on its Home drawn as plain text.
+Tests:      six new: the headline's branches with the mixed one and a fall of exactly 1% worked by hand, the summary's
+            sentences, every region off a rendered Home with its bar sized 10 to 25 and the past's bars at 3.1% and 1.2%,
+            no ideas and no figure stored, Home at its route on every index over a constructed store with the bar, and the
+            copy's routes, files and head; the screens' row counts, the phase pairs' rows after their reports and the
+            report's claim sources taking Home's six; 3051 in all.
+Claims:     six new, Home's regions, each passing on the read surface's tests.
+Pins:       none move; Home and Tonight's routes are read by no rule's version, the filter or a readings pin.
+Mutation:   chosen before the runs by this rule, the properties the operator's answers added, filtered to Home's tests:
+            h1 the mixed branch read as healthy, predicted red at the headline's test and the S&P 400's region, red at
+            both; h2 a fall of exactly 1% not shaky, predicted red at the headline's test, red there alone; each reverted,
+            green.
+Carried:    after the merge, 5152 restarted from main and Home read back there on each index in both palettes, and the
+            copy rewritten by the scheduled run from main.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3051 of 3051 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.

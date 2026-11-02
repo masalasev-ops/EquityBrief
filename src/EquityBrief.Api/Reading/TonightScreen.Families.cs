@@ -251,6 +251,25 @@ public static partial class TonightScreen
     static double? StoredFigure(string gates, string gate, string key) =>
         double.TryParse(Stored(gates, gate, key), NumberStyles.Float, CultureInfo.InvariantCulture, out var figure) ? figure : null;
 
+    // From 22.16 the figures Home's sentences read off a pick's stored gates, as the reasons above read them: the drift's
+    // surprise and its report's day, and the sessions the breakout's high was read over; none where its gates hold none.
+    // see: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
+    public static (double? Surprise, DateOnly? Report, int? Window) HomeFigures(string? gates)
+    {
+        if (gates is not { Length: > 0 })
+        {
+            return (null, null, null);
+        }
+
+        var report = Stored(gates, DriftRule.Print, "report");
+        var window = Stored(gates, BreakoutRule.NewHigh, BreakoutRule.WindowValue);
+
+        return (
+            StoredFigure(gates, DriftRule.Beat, "surprise"),
+            report is { Length: > 0 } && DateOnly.TryParseExact(report, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null,
+            int.TryParse(window, NumberStyles.Integer, CultureInfo.InvariantCulture, out var sessions) ? sessions : null);
+    }
+
     // Why the breakout lists a stock tonight, in the figures its gates stored, in the reader's words: the high it closed
     // above, its volume against its usual, and the quiet spell its daily ranges ran in before.
     public static string BreakoutWhy(FamilyResultRow result)

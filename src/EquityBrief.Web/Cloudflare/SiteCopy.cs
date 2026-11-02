@@ -25,7 +25,7 @@ public static partial class SiteCopy
 
     // The keys of a route's query that only open a fold, pick a row or light a reason: a link carrying one opens the screen
     // it names without it, since the copy holds a screen as it is first drawn.
-    public static readonly IReadOnlyList<string> PlaceKeys = ["close", "name", "reason"];
+    public static readonly IReadOnlyList<string> PlaceKeys = ["close", "name", "reason", SinglePageApp.HomeSetupKey];
 
     // The screens a stock's own pages are, which read no index from their link.
     static readonly string[] StockScreens = ["#/chart/", "#/name/"];
@@ -33,7 +33,8 @@ public static partial class SiteCopy
     // The routes each menu entry opens, in the bar's order, with the menu each sits in where it sits in one.
     public static readonly IReadOnlyList<(string Route, string Words, string View, string? Menu)> Menu =
     [
-        ("#/", "Tonight", "tonight", null),
+        (SinglePageApp.HomeRoute, "Home", "home", null),
+        (SinglePageApp.TonightRoute, "Tonight", "tonight", null),
         (SinglePageApp.UniverseRoute, "Universe", "universe", null),
         (SinglePageApp.PaperRoute, "Paper trading", "paper", null),
         (SinglePageApp.LoopRoute, "Loop", "loop", null),
@@ -107,12 +108,13 @@ public static partial class SiteCopy
     // The file a held route is written to: the screens folder, a folder for each segment of the route's path but the last,
     // and the last with each of the query's keys and values after a tilde, every character but a letter, a digit, a dot and
     // a hyphen written as an underscore and its code, so no two routes share a file. A name past the longest a file system
-    // takes keeps its opening and ends on the hash of its whole, which still names it alone.
+    // takes keeps its opening and ends on the hash of its whole, which still names it alone. Home's route, which has no
+    // segment, is written as home, Tonight having a route of its own from 22.16.
     public static string FileOf(string canonical)
     {
         var cut = canonical.IndexOf('?', StringComparison.Ordinal);
         var path = (cut < 0 ? canonical : canonical[..cut]).TrimStart('#').Trim('/');
-        var segments = path.Length == 0 ? ["tonight"] : path.Split('/').Select(Safe).ToArray();
+        var segments = path.Length == 0 ? ["home"] : path.Split('/').Select(Safe).ToArray();
 
         if (cut >= 0)
         {
@@ -166,7 +168,12 @@ public static partial class SiteCopy
         var path = PathOf(canonical);
         var query = canonical.Length > path.Length ? canonical[path.Length..] : string.Empty;
 
-        if (path == "#/")
+        if (path == SinglePageApp.HomeRoute)
+        {
+            return "/screens/home" + query;
+        }
+
+        if (path == SinglePageApp.TonightRoute)
         {
             return "/screens/tonight" + query;
         }
@@ -358,6 +365,17 @@ public static partial class SiteCopy
         return kept.Append(html, at, html.Length - at).ToString();
     }
 
+    // From 22.16 Home's head marked with the copy's own words, the close of the night, in the place of the app's night line.
+    public static string HomeMarked(string fragment, DateOnly night)
+    {
+        var words = AsOfTheClose(night);
+
+        return fragment.Replace(
+            FormattableString.Invariant($"<span class=\"m-asof\">Night of {night:yyyy-MM-dd}, computed after the close</span>"),
+            "<span class=\"m-asof\">" + char.ToUpperInvariant(words[0]) + words[1..] + "</span>",
+            StringComparison.Ordinal);
+    }
+
     // A stock's page or chart page with the price it drew marked as the store's at the night's close, before the line
     // saying when it was, and the analysts' section marked the same beneath its heading.
     public static string MarkedAtTheClose(string fragment, DateOnly night)
@@ -498,10 +516,10 @@ public static partial class SiteCopy
               if (file) {
                 try { const answer = await fetch(file); markup = answer.ok ? await answer.text() : null; } catch (error) { markup = null; }
               }
-              screen.innerHTML = markup !== null ? markup : '<p class="notice copy-missing" role="status">{{{NotHeld}}}. <a href="#/">Tonight</a></p>';
+              screen.innerHTML = markup !== null ? markup : '<p class="notice copy-missing" role="status">{{{NotHeld}}}. <a href="#/">Home</a></p>';
               const head = screen.querySelector('.screen-mast');
               identity.innerHTML = head ? head.innerHTML : '';
-              const view = route === '#/' || route.startsWith('#/?') ? 'tonight' : route.slice(2).split(/[/?]/)[0];
+              const view = route === '#/' || route.startsWith('#/?') ? 'home' : route.slice(2).split(/[/?]/)[0];
               for (const link of document.querySelectorAll('.m-nav a')) {
                 if (link.dataset.view === view) { link.setAttribute('aria-current', 'page'); } else { link.removeAttribute('aria-current'); }
               }
