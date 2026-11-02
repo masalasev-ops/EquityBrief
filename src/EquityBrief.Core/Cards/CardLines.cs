@@ -236,14 +236,21 @@ public static class CardLines
 
     // The next report estimated where none is on file, as an ex-dividend date is estimated from the last declared: the
     // company's report of the year before whose day a year on falls first after the night, a year on, marked as an
-    // estimate; none where no report of the last year and a little more is stored.
-    // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
-    public static (DateOnly From, DateOnly Estimated)? EstimatedReport(IEnumerable<DateOnly> reported, DateOnly night) =>
-        reported
-            .Where(day => day > night.AddDays(-EstimateReach) && day.AddDays(ReportYear) > night)
-            .OrderBy(day => day)
-            .Select(day => ((DateOnly, DateOnly)?)(day, day.AddDays(ReportYear)))
-            .FirstOrDefault();
+    // estimate; none where no report a year or more before the night is stored, since a company holding only the last
+    // year's reports has no report of the same quarter a year before to read it from.
+    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+    public static (DateOnly From, DateOnly Estimated)? EstimatedReport(IEnumerable<DateOnly> reported, DateOnly night)
+    {
+        DateOnly[] days = [.. reported];
+
+        return days.Any(day => day <= night.AddDays(-ReportYear))
+            ? days
+                .Where(day => day > night.AddDays(-EstimateReach) && day.AddDays(ReportYear) > night)
+                .OrderBy(day => day)
+                .Select(day => ((DateOnly, DateOnly)?)(day, day.AddDays(ReportYear)))
+                .FirstOrDefault()
+            : null;
+    }
 
     // Fifty-two weeks, which keeps a report on the weekday the company reported on a year before, and how far back a
     // report is read from, a year and a quarter.
@@ -253,7 +260,7 @@ public static class CardLines
     // The fill once the open after the night prints: the session and its open against the price the plan was worked at,
     // and the reward against the risk restated at it, the target's distance above the fill over the stop's below; none
     // until the open is stored.
-    // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
+    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
     public static string? Filled(DateOnly night, decimal? worked, decimal? stop, decimal? target, IEnumerable<(DateOnly Session, decimal Open)> sessions)
     {
         if (sessions.Where(session => session.Session > night).OrderBy(session => session.Session).Select(session => ((DateOnly Session, decimal Open)?)session).FirstOrDefault() is not { } first)

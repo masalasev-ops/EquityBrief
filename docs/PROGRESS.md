@@ -14222,3 +14222,29 @@ Queue:      done, PRs 617 to 620 and the sixth review; in progress, this pull re
             review by a fresh session after it merges, then the sign-offs of phases 20, 21 and 22 by their own fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: a next report not on file is estimated only where a report fifty-two weeks or more before the night is stored, where any report of the last year was read as the year before's   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the sixth phase 18 sign-off review, read-only on the live store for the night of 2026-10-30: the card's and the
+            page's estimate read the company's oldest report of the last 364 days a year on, so a company holding only that
+            year's reports had none of the same quarter a year before to read and was estimated from a later quarter's:
+            ADIG, MBGL and MFP hold one report and HONA and VGNT two, and MFP's of 2026-08-14 would read about 2027-08-13. No
+            page drew one that night; HONA's would once it reports on 2026-11-04.
+Corrected:  `CardLines.EstimatedReport` estimates only where a report 364 days or more before the night is stored, the
+            rest of its reading unchanged, so every member holding a year of reports, ABBV's 2027-02-03 from 2026-02-04
+            among them, reads as before. A card with none keeps its line that no report date is on file, and a page says
+            no report a year earlier is stored to estimate it from and, its every report falling in the year before the
+            night, that it started reporting as its own company on the first. The two decisions are superseded by one
+            stating it, their prior text under Previously decided and every citation moved; the architecture's two
+            sentences and the guide's, with their prior text in the changelog.
+Tests:      none new; the card's estimate test holds ROP's set from a report 364 days before the night estimated and from
+            one 363 days before not, MFP's one report and HONA's two not estimated, and a card holding only a recent report
+            keeping its line; the page's estimate test holds HONA's two reports not estimated and its line naming
+            2026-08-05 as its first.
+Mutation:   chosen before the runs by this rule, the property the correction adds, each filtered to the 56 tests of the six
+            report page files: a1 the year of reports never required, predicted red at the card's and the page's estimate
+            tests, red at both alone; a2 a report exactly 364 days before the night not counted, predicted red at the
+            card's estimate test, red there alone; each reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

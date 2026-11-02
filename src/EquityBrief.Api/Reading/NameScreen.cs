@@ -520,7 +520,7 @@ public static partial class NameScreen
             // A report the night has passed is said as reported, and the next as not announced, with the day it is estimated at
             // from the company's own report a year before.
             // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
-            // see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated
+            // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
             html.Append(Invariant($"<p class=\"estimate\" data-estimated-quarter=\"{Text(reported, "periodEnd")}\" data-reported=\"{reportedOn:yyyy-MM-dd}\">The quarter to {Text(reported, "periodEnd")} was reported on {reportedOn:yyyy-MM-dd}, and the next report is not announced{EstimatedWords(nextEstimated)}.{(nextEstimated is null ? " " + NotEstimated(reportedOn, reportedDays, figures?.CloseOn) + "." : string.Empty)}</p>"));
         }
         else if (newest.RootElement.TryGetProperty("estimated", out var estimated)
@@ -666,7 +666,7 @@ public static partial class NameScreen
     // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
     // The day a next report not on file is estimated at, from the company's own report of the same quarter a year before,
     // in the words that follow "not announced", none where no such report is stored.
-    // see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated
+    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
     static string EstimatedWords((DateOnly From, DateOnly Estimated)? estimate) =>
         estimate is { } next ? Invariant($"; estimated about {next.Estimated:yyyy-MM-dd} from its report of {next.From:yyyy-MM-dd} a year on") : string.Empty;
 
@@ -674,7 +674,7 @@ public static partial class NameScreen
 
     // Why a next report not on file is not estimated: no report a year before is stored, and where every report the page
     // knows a day for falls in the year before the night, the first of them is the company's first as its own.
-    // see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated
+    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
     public static string NotEstimated(DateOnly reportedOn, IReadOnlyList<DateOnly>? reportedDays, DateOnly? night)
     {
         DateOnly[] known = [.. reportedDays ?? [], reportedOn];
@@ -1664,7 +1664,7 @@ public static partial class NameScreen
 
         // The next report estimated from the company's own report of the same quarter a year before, which the page draws
         // beside a next report not on file.
-        // see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated
+        // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
         DateOnly[] reportedDays = [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()];
         var nextEstimated = EquityBrief.Core.Cards.CardLines.EstimatedReport(
             reportedDays,
@@ -1930,7 +1930,7 @@ public static partial class NameScreen
 
     // A card whose night found no report on file reads one estimated from the company's own report a year before, with
     // whether it falls inside the hold, in place of the line saying none is on file.
-    // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
+    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
     public static DecisionCardView? WithEstimatedReport(DecisionCardView? card, IReadOnlyList<DateOnly> reported) =>
         card is { } drawn
         && drawn.Lines.FirstOrDefault(line => line.Name == EquityBrief.Core.Cards.CardLines.EarningsName && line.Words.StartsWith("No report date is on file for it, ", StringComparison.Ordinal)) is { } none
