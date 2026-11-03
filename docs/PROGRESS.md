@@ -14586,3 +14586,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
             placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
+
+### 21.21 ruling - the operator's ten items built before the sign-offs, each its own checkpoint, and the drift's wording moved in the 16.3 remedy's restart   2026-11-03
+
+Not a checkpoint entry: it records the operator's ruling and answers of 2026-11-03 UTC and lands nothing.
+Ruled:      word for word in `prompts/2026-11-03-fix-ruling-before-the-sign-offs.md`, committed with this entry: the items
+            of their earlier fix ruling not yet built, after PR 624's merge and main's build and before phase 18's
+            sign-off, each its own checkpoint, remedies from main while no other writer runs, and fresh handoffs for phases
+            20, 21 and 22 after them. Asked after it, told that moving every rule's wording at once would move about 124 of
+            137 rules: "Split it. Tonight, in the same restart as the 16.3 remedy: move the wording out of every file whose
+            pinning rules all restart tonight anyway, plus the drift files item 3 needs, and nothing that would restart a
+            rule not already restarting tonight. List the files that still hold wording and the rules pinned to each, and
+            add a check that names them. Their wording moves at phase 23's single restart point, which the phase 23 plan
+            must include; until then, a wording fix on those rules waits for it instead of restarting a rule. If phase 23
+            restarts nothing, each file's wording moves the next time a rule pinned to it changes version for a real reason.
+            Item 10's rule applies: every earlier trade stays visible." And, while the branch was started: "Can you merge to
+            main first and then sync and remedy and whatever else was left and then do this in separate branch ?"
+Labelled:   item 3 is 21.21, since it answers 21.18's replay mismatches. The rest take phase 22's next numbers in the order
+            they are built: item 1 22.19, item 2 22.20, item 6 22.21, item 7 22.22, item 4 22.23, item 5 22.24, item 10 22.25.
+            Item 8 took no code: the branch `phase-21-18-the-standing-target` was deleted from GitHub on 2026-11-03 at about
+            05:20 UTC. Item 9 took none: read back at about 05:00 UTC off 5152 over the night of 2026-11-02, every one of the
+            12 tiles on Tonight on all three indexes draws a figure with none saying not stored, the store holding that session
+            for every one of its 21 market series and the Treasury's yields; Home draws the indexes' moves in a line and no
+            tile.
+Remedy:     16.3's ran from main's 239ee084 at 05:21 to 05:22 UTC on 2026-11-03, with no night, drain, labeller, local run,
+            ledger build or monthly run writing: all 17 steps, the 8 windows closed and opened and 66 of the 137 standing
+            candidates registered again, no request and no model call. Of the 57 records its replay read, 17 carried on with
+            every trade reproduced and 40 restarted: 39 of the S&P 400's and 600's, which are not replayed, and the S&P 500's
+            breakout at a 251-session high, which 21.21 explains. A second remedy follows 21.21's merge before the night of
+            2026-11-03, with no night between the two.
+Queue:      done, PR 624 and its remedy; in progress, 21.21, which must merge with its remedy run before the local run of
+            21:40 UTC and the night of 23:00 UTC; next, 22.19 to 22.25, then a fresh session's review of PRs 623 and 624 and
+            these items and its sign-off of phase 18, then the fresh handoffs for phases 20, 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
