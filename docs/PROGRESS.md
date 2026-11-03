@@ -14667,3 +14667,57 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
             placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
+
+### 22.19 - a brief's chip wraps, so a chart page drawing the long one fits a true 390 pixels   2026-11-03
+
+Built:      `.brief-chip` wraps inside its row, over the family tag's nowrap.
+Measured:   at a true 390 over the night of 2026-11-02, ALGN's chart page, which draws "one step short: did not jump on the report
+            day" as EQT's did: 395 wide with `fam-tag brief-chip` the wide part on main's build, 390 with none on this branch. EQT's
+            chart page, Tonight, Paper trading, Past picks and Home, 390 each with nothing wide.
+Tests:      one, the rule held and placed after the tag's.
+Mutation:   the rule removed, predicted red at it, red.
+Carried:    none.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.22's entry, with its figures.
+
+### 22.20 - the brief says a smaller fall is slower and sets a rise beside a fall with no pace   2026-11-03
+
+Built:      `BriefScreen.Pace`. The brief writes two comparison sentences, sales against the quarter before and the operating
+            margin against a year earlier: the sales line held the fault, comparing signed figures, and the margin compares two
+            levels, so "wider" and "narrower" stand. The two valuation and analyst lines state a figure beside another and no pace.
+Read back:  on the branch over the night of 2026-11-02, EQT: "Sales down 2.9% on a year in the quarter to 2026-09-30, slower than the
+            -29.2% of the quarter before."
+Tests:      ten cases worked by hand, each pairing of a rise, a fall, nothing and an equal pair.
+Mutation:   two falls compared by their signs again, predicted red at the two falls' cases, red.
+Carried:    none.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.22's entry, with its figures.
+
+### 22.21 - a stock that reported in the last 100 days with no date on file draws a note saying when, on its name page and on Tonight's cards   2026-11-03
+
+Built:      `CardLines.ReportedRecently`, read by the name page's card and, through the night's newest reports, by Tonight's. The
+            ruled sentence where thirteen weeks from the report falls after the hold, a week's grace on it. Two forms the ruling did
+            not word, since the sentence would be false there: inside the hold it gives that date and says so, and past thirteen
+            weeks it says one is due; both notes, on their word that only a stock with neither keeps the warning. A rule stating
+            no cap, as a heavyweight's, says when it reported and claims nothing of the hold.
+Read back:  on the branch over the night of 2026-11-02, before the no-cap form was added: 12 of Tonight's 18 such cards a note, 11
+            after the hold and 1 inside it; the 6 left were the heavyweights' holdings with no cap, each reporting in the last 15
+            days, which that form then takes.
+Tests:      the edges of the 100 days and of the hold worked by hand on the name page's card, Tonight's card over three cases, and the
+            estimate's test restated: DASH's card reads a note now in both its forms.
+Mutation:   the 100 days to 101, predicted red at the worked edges and Tonight's old report, red; the note drawn as a warning,
+            predicted red at the worked test and Tonight's note, red.
+Carried:    none.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.22's entry, with its figures.
+
+### 22.22 - the day's live quote cap settled at 500 asks on the operator's word   2026-11-03
+
+Built:      the cap was 500 and proposed; the ruling settles it. A decision written, section 17's row no longer says proposed, the
+            carried obligation discharged with its citations in code removed, and phase 18's count of operating rows now 1; prior
+            text in the changelog. Measured read-only on 2026-11-03: the most any session has asked is 12.
+Tests:      none added; `pinned-constants` holds the figure and `obligation-reconciles` the row.
+Mutation:   the constant to 600, predicted red at section 17's pin, red.
+Carried:    none.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3125 of 3125 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
+            placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.

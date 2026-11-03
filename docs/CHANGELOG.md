@@ -26,6 +26,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/BUILD_PLAN.md - 22.21's done condition names the edge it tests with no span of days
+Corrects: `done-condition-producible` read the span in 22.21's done condition as evidence the calendar produces, found at the checkpoint's gates.
+Was:
+> **Done when** the note's two forms, the warning and the estimate are each worked by hand over constructed reports at the edges of the 100 days and of a hold's cap,
+Now:
+> **Done when** the note's forms, the warning and the estimate are each worked by hand over constructed reports at the edges of the recent reach and of a hold's cap,
+Why: the condition tests a boundary and waits on nothing, so it says so with no span the check reads.
+
+### 2026-11-03 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - the day's live quote cap settled
+Authorised by: The day's live quotes are capped at 500 asks on the operator's word
+Was:
+> 500 delayed quotes in a regular session, proposed, read as the quotes the quote job stored inside it, the next ask at the cap asking nothing and saying so; settled on the Run page's row for the quote runs over the first five sessions after the quote job merges (see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap)
+> | **The day's live quotes stay under their cap on the first five sessions** | 18.0 | operating | 5 sessions after the 18.1 correction of 2026-10-19 merges, the first under which a quote asks the provider at all, read on the run page's row for the quote runs, which 18.1 builds. At the trigger the cap of 500 quote calls a day, proposed, is settled against the five sessions' counts and the delay each quote's own time showed |
+Now:
+> 500 delayed quotes in a regular session, read as the quotes the quote job stored inside it, the next ask at the cap asking nothing and saying so (see: The day's live quotes are capped at 500 asks on the operator's word)
+> | **The day's live quotes stay under their cap on the first five sessions** | 18.0 | 22.22, discharged | settled by the operator's ruling of 2026-11-03 at 500 asks a day, 22.22 recording it; the most any session has asked is 12 |
+Why: the operator ruled the figure, so nothing is left to settle against the sessions' counts.
+
 ### 2026-11-03 - docs/ARCHITECTURE.html, docs/SCHEMA.md - the family replay reads the kept bars and each member's year as it stood on the night
 Corrects: three replay mismatches, GDDY, STZ and REGN, read off the store on 2026-11-03: a replay measured a rescaled member against bands at the night's scale, and read a long high over a year that has since rolled past the sessions the night read.
 Was:

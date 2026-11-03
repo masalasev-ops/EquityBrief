@@ -1173,6 +1173,7 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .brief-panel ul{margin:0;padding-left:18px}
 .brief-panel li{margin:0 0 4px;overflow-wrap:anywhere}
 .brief-chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.brief-chip{white-space:normal;max-width:100%}
 .brief-watch{margin:10px 0 0}
 .brief-foot{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;color:var(--soft);font-size:13px}
 @media (max-width:760px){.brief-panels{grid-template-columns:1fr}}

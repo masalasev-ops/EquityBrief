@@ -352,13 +352,22 @@ public static class BriefScreen
         }
 
         var (newer, older) = (trajectory.Quarters[0], trajectory.Quarters[1]);
-        var pace = newer.SalesGrowth > older.SalesGrowth ? "faster than" : newer.SalesGrowth < older.SalesGrowth ? "slower than" : "the same as";
+        var pace = Pace(newer.SalesGrowth, older.SalesGrowth);
 
         return new BriefLine(
             "sales",
             Invariant($"Sales {Change(newer.SalesGrowth)} on a year in the quarter to {newer.Quarter:yyyy-MM-dd}, {pace} the {Signed(older.SalesGrowth)} of the quarter before."),
             newer.SalesGrowth.ToString(CultureInfo.InvariantCulture));
     }
+
+    // How a quarter's change on a year compares with the one before it, both rising or both falling: the pace of the rise or
+    // of the fall, so a smaller fall is slower. A rise beside a fall, or nothing beside either, has no pace to compare.
+    // see: The brief says a smaller fall is slower and sets a rise beside a fall with no pace
+    public static string Pace(decimal newer, decimal older) =>
+        newer == older ? "the same as"
+        : newer > 0m && older > 0m ? newer > older ? "faster than" : "slower than"
+        : newer < 0m && older < 0m ? newer < older ? "faster than" : "slower than"
+        : "against";
 
     static BriefLine Margin(Readings? business)
     {
