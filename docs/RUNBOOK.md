@@ -1116,6 +1116,12 @@ It records one run log row under `filings-whole`. Run without `--whole`, `filing
 From the 17.3 correction of 2026-10-27 a report the archive's facts answer carries no figure of is read from its own XBRL instance: the archive builds the facts answer from the filings after it disseminates them, and on 2026-10-27 it held none of 120 members' newest reports, 108 of them second-quarter 10-Qs filed from 2026-07-28 to 2026-08-06, though the archive lists every one (see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance). The night's refresh asks for the listing of such a report's documents and the instance it names, two requests at the archive's pace, and stores each figure filed with no dimension as first filed under the report. By hand, each member's report filed since a day that the store holds no fact of is read the same way, every weekday's index from that day through the newest the refresh has read asked again, refused while a night holds the store:
 
 ```
+dotnet run --project src/EquityBrief.Worker -- filings --join-predecessors
+```
+
+It copies under each company that re-filed under a new SEC number its predecessor's facts the store already holds, for periods ending before the day its new filer's first report starts, and prints each stock with the facts stored and the years gained, or why it was refused. It asks the archive for nothing, is refused while a night holds the store, and a second run stores nothing. It records one run log row under `filings-join` (see: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts). A rule's history reads the joined facts once the ledger's history is built again.
+
+```
 dotnet run --project src/EquityBrief.Worker -- filings --instances --from 2026-01-02
 ```
 

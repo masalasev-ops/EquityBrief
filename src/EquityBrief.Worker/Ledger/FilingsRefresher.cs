@@ -43,6 +43,15 @@ public sealed record FilingsOutcome(
     public bool Whole => Refusal is null && LeftAtTheLimit == 0 && InsidersLeftOn is null;
 }
 
+// What one company that re-filed under a new number took from its predecessor: the day its new filer's first report starts,
+// the facts stored, the earliest period among them and how many years before the new filer's own earliest it reaches.
+public sealed record PredecessorJoined(FilerSuccession Succession, DateOnly? Starts, int Facts, string? Earliest, double? YearsGained, string? Refused)
+{
+    public string Said => Refused is { } why
+        ? $"{Succession.Ticker}: not joined, {why}"
+        : FormattableString.Invariant($"{Succession.Ticker}: {Facts} fact(s) of {Succession.Predecessor} joined to {Succession.Successor}, before {Starts:yyyy-MM-dd}, from {Earliest ?? "none"}, {YearsGained:0.0} year(s) gained");
+}
+
 // The filings refresh. After the close and the quarters fetch, it reads the archive's daily index for each weekday
 // since the last one it read, through the night's own session where the archive has posted it, picks the members
 // whose filer filed a quarterly or annual report or an amendment to one, or a results announcement, an 8-K or its
@@ -80,6 +89,8 @@ public sealed class FilingsRefresher : IComponent
 
     public const string WholeStage = "filings-whole";
 
+    public const string JoinStage = "filings-join";
+
     public const string InstancesStage = "filings-instances";
 
     // The step's own limit: it asks no document once this has passed since it began.
@@ -110,8 +121,24 @@ public sealed class FilingsRefresher : IComponent
 
     const string EveryFiler = "SELECT DISTINCT cik FROM company WHERE cik IS NOT NULL UNION SELECT DISTINCT cik FROM pulled_company WHERE cik IS NOT NULL ORDER BY 1;";
 
+    // A stock's newest company row's filer, a filer's facts' periods, its earliest period ending before a day, and its
+    // predecessor's facts copied under it for the periods ending before that day.
+    const string NewestFiler = "SELECT cik FROM company WHERE ticker = $ticker ORDER BY fetched_at DESC LIMIT 1;";
+
+    const string PeriodsOfFiler = "SELECT accession, form, filed, period_start, period_end FROM filed_fact WHERE cik = $cik;";
+
+    const string EarliestPeriod = "SELECT MIN(period_end) FROM filed_fact WHERE cik = $cik AND period_end < $before;";
+
+    const string CopyPredecessor = @"
+        INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id)
+        SELECT $successor, concept, period_start, period_end, dollars, filed, form, accession, $run_id
+        FROM filed_fact
+        WHERE cik = $predecessor AND period_end < $before
+        ON CONFLICT (cik, concept, period_start, period_end) DO NOTHING;
+    ";
+
     // Whether the store holds a fact of one report.
-    const string Held = "SELECT 1 FROM filed_fact WHERE cik = $cik AND accession = $accession LIMIT 1;";
+    const string Held ="SELECT 1 FROM filed_fact WHERE cik = $cik AND accession = $accession LIMIT 1;";
 
     const string InsertFact = @"
         INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id)
@@ -631,6 +658,112 @@ public sealed class FilingsRefresher : IComponent
             cancellation);
 
         return outcome;
+    }
+
+    // Each company that re-filed under a new number has its predecessor's stored facts copied under its new filer, each with
+    // the day it was filed, for the periods ending before the day the new filer's first report starts, a fact the new filer
+    // states of itself standing as it is. By hand and once: it asks the archive for nothing, and a second run stores nothing.
+    // A stock whose newest company row names another filer is refused and named rather than joined to a number it left.
+    // see: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts
+    public async Task<IReadOnlyList<PredecessorJoined>> JoinPredecessorsAsync(string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var watch = Stopwatch.StartNew();
+        var joined = new List<PredecessorJoined>();
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var succession in FilerSuccessions.Stated)
+        {
+            joined.Add(await JoinOneAsync(connection, transaction, succession, runId, cancellation));
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        var outcome = new FilingsOutcome([], null, [], joined.Sum(one => one.Facts), 0, 0, 0, 0, null, watch.Elapsed.TotalSeconds);
+
+        await RecordAsync(
+            connection,
+            runId,
+            JoinStage,
+            startedAt,
+            outcome,
+            string.Join("; ", joined.Select(one => one.Said)),
+            cancellation);
+
+        return joined;
+    }
+
+    static async Task<PredecessorJoined> JoinOneAsync(SqliteConnection connection, SqliteTransaction transaction, FilerSuccession succession, string runId, CancellationToken cancellation)
+    {
+        async Task<object?> ScalarAsync(string sql, params (string Name, string Value)[] values)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.Transaction = transaction;
+            command.CommandText = sql;
+
+            foreach (var (name, value) in values)
+            {
+                command.Parameters.AddWithValue(name, value);
+            }
+
+            return await command.ExecuteScalarAsync(cancellation);
+        }
+
+        var filer = await ScalarAsync(NewestFiler, ("$ticker", succession.Ticker)) as string;
+
+        if (filer != succession.Successor)
+        {
+            return new PredecessorJoined(succession, null, 0, null, null, $"its newest company row names {filer ?? "no filer"}");
+        }
+
+        var periods = new List<FiledPeriod>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = PeriodsOfFiler;
+            command.Parameters.AddWithValue("$cik", succession.Successor);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                periods.Add(new FiledPeriod(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4)));
+            }
+        }
+
+        if (FilerSuccessions.FirstReportStarts(periods) is not { } starts)
+        {
+            return new PredecessorJoined(succession, null, 0, null, null, "its new filer has filed no report stating a period of flows");
+        }
+
+        var day = starts.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var own = await ScalarAsync(EarliestPeriod, ("$cik", succession.Successor), ("$before", "9999-12-31")) as string;
+        var earliest = await ScalarAsync(EarliestPeriod, ("$cik", succession.Predecessor), ("$before", day)) as string;
+
+        int stored;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = CopyPredecessor;
+            command.Parameters.AddWithValue("$successor", succession.Successor);
+            command.Parameters.AddWithValue("$predecessor", succession.Predecessor);
+            command.Parameters.AddWithValue("$before", day);
+            command.Parameters.AddWithValue("$run_id", runId);
+            stored = await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        var years = own is not null && earliest is not null && string.CompareOrdinal(earliest, own) < 0
+            ? (DateOnly.ParseExact(own, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayNumber - DateOnly.ParseExact(earliest, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayNumber) / 365.25
+            : 0;
+
+        return new PredecessorJoined(succession, starts, stored, earliest, years, null);
     }
 
     // What the run page reads of the step: the days read, the members refreshed, the facts stored and the documents

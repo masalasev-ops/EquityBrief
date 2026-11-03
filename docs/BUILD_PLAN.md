@@ -2349,6 +2349,11 @@ Item 4 of that ruling: every refusal since 2026-10-23 read and grouped, and the 
 
 **Done when** the refusals' groups and the pass rate before and after over those reports replayed through the local model are in the entry, the checker's source is unchanged but for a helper reading what it reads, the ask's limits are held to the checker's constants, a claim stating a tile's figure is shown not handed, every recording the ask moved is re-keyed whole with no paid call and names what it was, and one mutation is shown red, the rule stated before the run.
 
+### 22.24 On the operator's word of 2026-11-03: a company that re-filed under a new SEC number carries its predecessor's facts
+Item 5 of that ruling: each stock's predecessor filer named from the SEC's own records, its stored facts copied under the new filer for periods ending before the day the new filer's first report starts, and every stock listed with the years it gains. No request, and no source a rule's version pins moves (see: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts).
+
+**Done when** the first report's start is worked by hand over a constructed filer's report, cover page and balance; a predecessor's fact after that day is shown not copied and a fact the new filer states shown standing; a second run stores nothing; a stock whose company row names another filer is refused; every stock joined and left off is named with why; and one mutation is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

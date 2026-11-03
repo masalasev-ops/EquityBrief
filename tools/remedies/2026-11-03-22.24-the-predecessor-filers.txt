@@ -1,0 +1,6 @@
+# The remedy of 22.24 of 2026-11-03, on the operator's ruling of that day: each company that re-filed under a new SEC number
+# carries its predecessor's facts the store already holds, up to the day its new filer's first report starts. No request and
+# no model call, and no rule's version moves. Run on the operator's word, from main after the merge, when no night, local run,
+# drain, labeller, history read, ledger build or monthly run is writing, and read the output for "remedy done" and each stock's
+# facts and years. The nights after it read the joined facts; the setup ledger's history reads them once it is built again.
+filings --join-predecessors
