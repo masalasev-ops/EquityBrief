@@ -62,7 +62,7 @@ public partial class ReadSurface
         Assert.Contains("<header class=\"fam-head\" data-family=\"drift\"><span class=\"fam-tag\" data-family=\"drift\"><span class=\"fam-swatch\" data-family=\"drift\"></span>Earnings drift</span>", card, StringComparison.Ordinal);
         // Its rule in words, written from the settings it froze at: 3 sessions to buy, a reaction of 0.5 typical moves
         // on twice the volume and a target at 2.5 times the risk, from 22.6 in the reader's words behind its fold.
-        Assert.Contains("<p class=\"rule-words\">A company beats its estimate and the stock closes up at least 0.5 typical days' moves on 2 times its usual volume. Bought within 3 trading days while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"rule-words\">A company beats its estimate and the stock closes up at least 0.5 typical days' moves on 2 times its usual volume. Bought within 3 trading days while it holds above that day's low. Stop at that day's low, target the nearer of the next price band about two typical days' moves up, or 2.5 times the risk.</p>", card, StringComparison.Ordinal);
 
         // Its picks drawn as rows of its own, E1 and E2, each ticker opening its chart page, and among the buy points E1
         // sixth and E2 seventh.

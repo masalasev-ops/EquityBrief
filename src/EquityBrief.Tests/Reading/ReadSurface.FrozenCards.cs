@@ -500,7 +500,7 @@ public partial class ReadSurface
         };
 
         Assert.Equal(
-            ["within 10 sessions", "up 0.5 moves", "volume 1.25 times", "target 3 times the risk", "stop at least 1 move", "bought on its first lower close", "dollar floor 1 times", "close at least $5", "the profit gate", "market check on its own breadth at 45%"],
+            ["within 10 sessions", "up 0.5 moves", "volume 1.25 times", "target the nearer of the next price band about two typical moves up, or 3 times the risk", "stop at least 1 move", "bought on its first lower close", "dollar floor 1 times", "close at least $5", "the profit gate", "market check on its own breadth at 45%"],
             Chips(RuleKind.IndexDrift, midDrift));
 
         // The S&P 600 drift held 63 sessions with its revenue level and no check, and its market variant at 40 per cent,
@@ -516,7 +516,7 @@ public partial class ReadSurface
         var smallVariant = new Dictionary<string, double>(smallDrift) { [IndexRuleCandidate.LargeBreadthParameter] = 0, [IndexRuleCandidate.BreadthFloorParameter] = 0.40 };
 
         Assert.Equal(
-            ["within 10 sessions", "up 0.5 moves", "volume 1.25 times", "target 3 times the risk", "stop at least 1 move", "revenue above a year before", "dollar floor 1 times", "close at least $5", "the profit gate", "held 63 sessions", IndexRuleCandidate.MarketCheckOff],
+            ["within 10 sessions", "up 0.5 moves", "volume 1.25 times", "target the nearer of the next price band about two typical moves up, or 3 times the risk", "stop at least 1 move", "revenue above a year before", "dollar floor 1 times", "close at least $5", "the profit gate", "held 63 sessions", IndexRuleCandidate.MarketCheckOff],
             Chips(RuleKind.IndexDrift, smallDrift));
         Assert.Equal("V1 · market check on its own breadth at 40%", RuleChips.TabWords(1, RuleChips.Differing(RuleChips.Of(RuleKind.IndexDrift, smallDrift), RuleChips.Of(RuleKind.IndexDrift, smallVariant))));
 

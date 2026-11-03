@@ -160,6 +160,19 @@ public class RuleWordingOutOfThePins
         Assert.DoesNotContain(Pins(), pin => pin.Source == "src/EquityBrief.Core/Families/RuleWording.cs");
     }
 
+    // Drawn on the Loop page, as every page opening a line on a rule's name draws it: the words on the screen, and the key
+    // beneath them as the register stores it.
+    [Fact]
+    public void APageDrawsADriftRulesNameInItsWordsAndKeepsItsKey()
+    {
+        const string Registered = "the drift rule within 3 sessions, the target at 2.5 times the risk";
+
+        var drawn = new EquityBrief.Web.Marks.MarkRenderer().LoopRule(DriftRule.Name, Registered);
+
+        Assert.Contains($"data-rule=\"{Registered}\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("The drift rule within 3 sessions, the nearer of the next price band about two typical moves up, or 2.5 times the risk", drawn, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("the live drift rule within 3 sessions, up 0.5 typical moves on 2 times the volume, the target at 2.5 times the risk", "the live drift rule within 3 sessions, up 0.5 typical moves on 2 times the volume, the nearer of the next price band about two typical moves up, or 2.5 times the risk")]
     [InlineData("the drift rule within 3 sessions, the target at 3 times the risk, the stop at least 1 typical move beneath", "the drift rule within 3 sessions, the nearer of the next price band about two typical moves up, or 3 times the risk, the stop at least 1 typical move beneath")]
