@@ -185,6 +185,26 @@ public partial class ReadSurface
         Assert.Contains("href=\"#/tonight?universe=400&amp;setup=drift\"", mid, StringComparison.Ordinal);
     }
 
+    // A figure rounding to nought draws no sign and no hue, either side of nought and at nought, and any other its own.
+    [Theory]
+    [InlineData(0.05, "+5.0%", "up")]
+    [InlineData(-0.05, "-5.0%", "down")]
+    [InlineData(0.0004, "0.0%", null)]
+    [InlineData(-0.0004, "0.0%", null)]
+    [InlineData(0.0, "0.0%", null)]
+    public void AHomeBarDrawsNoSignOnANought(double value, string shown, string? hue)
+    {
+        var bar = SinglePageApp.Bar("ours", "Ours", value, 1);
+
+        Assert.Contains($">{shown}</b>", bar, StringComparison.Ordinal);
+        Assert.Equal(hue is null, !bar.Contains("color:var(--", StringComparison.Ordinal));
+
+        if (hue is not null)
+        {
+            Assert.Contains($"color:var(--{hue})", bar, StringComparison.Ordinal);
+        }
+    }
+
     [Fact]
     public async Task HomeIsDrawnAtItsRouteOnEveryIndexAndTheBarOpensItBeforeTonight()
     {
