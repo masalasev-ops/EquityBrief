@@ -27,7 +27,7 @@ public sealed record CardRecordView(
 // A pick's plan in the operator's money as the card's one function worked it: the shares, the dollars at risk, the
 // position's value and its share of the account, the round trip in dollars, whether the cap sized it, and whether the
 // whole position is at risk for a holding with no stop.
-public sealed record CardMoneyView(long Shares, decimal AtRisk, decimal Value, decimal ShareOfAccount, decimal? RoundTrip, bool Capped, bool WholeAtRisk, decimal RiskPercent);
+public sealed record CardMoneyView(long Shares, decimal AtRisk, decimal Value, decimal ShareOfAccount, decimal? RoundTrip, bool Capped, bool WholeAtRisk, decimal RiskPercent, decimal? ToTarget = null, bool Example = false);
 
 // A trade the operator took from the card: when, at what fill and for which session, whether the fill is still the
 // plan's buy, and its exit where one is recorded; removable only before a night has followed it.
@@ -84,7 +84,6 @@ public sealed record DecisionCardView(
     CardRecordView? Record,
     IReadOnlyList<string>? Management = null,
     CardMoneyView? Money = null,
-    bool AccountUnset = false,
     IReadOnlyList<CardTakenView>? Taken = null,
     bool Pressable = false,
     CardHitsView? Hits = null,
@@ -541,11 +540,11 @@ public sealed partial class MarkRenderer
 
         if (card.Money is { } money)
         {
-            body.Append(Invariant, $"<p class=\"card-money\" data-shares=\"{money.Shares}\" data-at-risk=\"{money.AtRisk.ToString("0.00", Invariant)}\">");
-            body.Append(Invariant, $"In your money: {money.Shares:N0} shares at {card.Entry?.ToString("0.00", Invariant)}, a position of ${money.Value.ToString("N2", Invariant)}, {money.ShareOfAccount:0.0%} of your account");
+            body.Append(Invariant, $"<p class=\"card-money\" data-shares=\"{money.Shares}\" data-at-risk=\"{money.AtRisk.ToString("0.00", Invariant)}\"{(money.ToTarget is { } reach ? $" data-to-target=\"{reach.ToString("0.00", Invariant)}\"" : string.Empty)}{(money.Example ? " data-account=\"example\"" : string.Empty)}>");
+            body.Append(Invariant, $"{(money.Example ? "On the example account" : "In your money")}: {money.Shares:N0} shares at {card.Entry?.ToString("0.00", Invariant)}, a position of ${money.Value.ToString("N2", Invariant)}, {money.ShareOfAccount:0.0%} of {(money.Example ? "the" : "your")} account");
             body.Append(money.WholeAtRisk
                 ? ". The whole position is at risk: nothing sells it at a price set in advance."
-                : Formatted($", with ${money.AtRisk.ToString("N2", Invariant)} at risk to the stop at {card.Stop?.ToString("0.00", Invariant)}, the {money.RiskPercent.ToString("0.##", Invariant)}% a trade your settings give."));
+                : Formatted($", with ${money.AtRisk.ToString("N2", Invariant)} at risk to the stop at {card.Stop?.ToString("0.00", Invariant)}, the {money.RiskPercent.ToString("0.##", Invariant)}% a trade {(money.Example ? "the example gives" : "your settings give")}{(money.ToTarget is { } toTarget ? Formatted($", and ${toTarget.ToString("N2", Invariant)} to the target at {card.Target?.ToString("0.00", Invariant)}") : string.Empty)}."));
 
             if (money.Capped)
             {
@@ -558,10 +557,11 @@ public sealed partial class MarkRenderer
             }
 
             body.Append("</p>");
-        }
-        else if (card.AccountUnset)
-        {
-            body.Append(Invariant, $"<p class=\"card-money degraded\" data-account=\"unset\">Your account is not set, so the plan is drawn in prices alone: <a href=\"{AccountRoute}\">set your account's size and risk</a> to see it in shares and dollars.</p>");
+
+            if (money.Example)
+            {
+                body.Append(Invariant, $"<p class=\"card-note\" data-account=\"example\">{Escaped(EquityBrief.Core.Cards.AccountSettings.ExampleSaid)} <a href=\"{AccountRoute}\">set your account's size and risk</a>.</p>");
+            }
         }
 
         if (card.Management is { Count: > 0 } steps)

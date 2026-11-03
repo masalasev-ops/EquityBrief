@@ -81,7 +81,9 @@ public sealed record BriefInputs(
     EquityBrief.Core.Insiders.InsiderView? Insiders,
     double? LevelsRewardToRisk = null,
     FundamentalScoreRow? Score = null,
-    DateOnly? FundamentalsHeldThrough = null);
+    DateOnly? FundamentalsHeldThrough = null,
+    bool SizedOnExample = false,
+    string? ShortHistoryWhy = null);
 
 // A stock's brief read, written by code from templates over the figures the full page and the decision card already
 // work: each through the same core function, none worked out a second way, and a figure not stored said so in its line.
@@ -437,17 +439,17 @@ public static class BriefScreen
 
     // The plan the way in reads: the listing rule's buy and stop, or the levels plan's first tranche; none where neither
     // is stored.
-    sealed record WayInPlan(decimal Buy, decimal? Stop, int? Cap, int? BookHoldings, decimal? RoundTrip);
+    sealed record WayInPlan(decimal Buy, decimal? Stop, int? Cap, int? BookHoldings, decimal? RoundTrip, decimal? Target = null);
 
     static WayInPlan? PlanOf(BriefInputs inputs)
     {
         if (inputs.Listed is { } listed)
         {
-            return listed.Card is { Entry: { } entry } card ? new WayInPlan(entry, card.Stop, card.Cap, card.BookHoldings, card.RoundTrip) : null;
+            return listed.Card is { Entry: { } entry } card ? new WayInPlan(entry, card.Stop, card.Cap, card.BookHoldings, card.RoundTrip, card.Target) : null;
         }
 
         return inputs.Levels.FirstOrDefault(row => row.Kind == PlanKind.Tranche && row.Traded) is { } tranche
-            ? new WayInPlan(tranche.HighEdge, tranche.Stop, null, null, null)
+            ? new WayInPlan(tranche.HighEdge, tranche.Stop, null, null, null, inputs.Levels.FirstOrDefault(row => row.Kind == PlanKind.Exit && row.Traded)?.LowEdge)
             : null;
     }
 
@@ -475,7 +477,7 @@ public static class BriefScreen
                 new BriefLine("buy", Invariant($"Picked tonight by {Label(listed.Family)}: buy at the next open, near tonight's close of {Price(entry)}."), entry.ToString(CultureInfo.InvariantCulture)),
                 new BriefLine("stop", steps.Count > 0 ? steps[0] : "No stop is stored."),
                 new BriefLine("exit", steps.Count > 1 ? string.Join(" ", steps.Skip(1)) : "No target or exit is stored."),
-                Size(inputs.Account, plan),
+                .. Size(inputs, plan),
             ];
         }
 
@@ -491,7 +493,7 @@ public static class BriefScreen
                 new BriefLine("buy", $"Picked tonight by {Label(bought.Family)}: buy at the next open."),
                 new BriefLine("stop", Invariant($"It sets no stop: it sells at the close when a new filing drops its score under {settings.HoldInNine} of 9.")),
                 new BriefLine("exit", Invariant($"Otherwise at the close of its {settings.Sessions}th trading day, or of its last day in the index.")),
-                Size(inputs.Account, null),
+                .. Size(inputs, null),
             ];
         }
 
@@ -513,7 +515,7 @@ public static class BriefScreen
         {
             return
             [
-                new BriefLine("buy", "Not among tonight's picks, and no levels plan is stored for the night."),
+                new BriefLine("buy", inputs.ShortHistoryWhy is { } tooShort ? "Not among tonight's picks. " + tooShort + "." : "Not among tonight's picks, and no levels plan is stored for the night."),
                 new BriefLine("stop", "No stop is stored."),
                 new BriefLine("exit", "No first sale is stored."),
                 new BriefLine("size", "No plan is stored to size."),
@@ -527,29 +529,43 @@ public static class BriefScreen
             new BriefLine("exit", sale is null
                 ? "No first sale is stored."
                 : "Its first sale at " + Zone(sale.LowEdge, sale.HighEdge) + (inputs.LevelsRewardToRisk is { } ratio ? Invariant($": risk $1 to make ${ratio:0.00}.") : ".")),
-            Size(inputs.Account, plan),
+            .. Size(inputs, plan),
         ];
     }
 
-    // The size through the decision card's own function, or the line to the settings where the account is not set.
-    static BriefLine Size(AccountSettings? account, WayInPlan? plan)
+    // The size through the decision card's own function, on the account saved or on the example until one is, which says
+    // so and links the settings. None is handed only to the read-only copy, whose reader never sees this line.
+    // see: A pick's plan is sized on the example account until the operator saves their own
+    static IReadOnlyList<BriefLine> Size(BriefInputs inputs, WayInPlan? plan)
     {
-        if (account is null)
+        if (inputs.Account is not { } account)
         {
-            return new BriefLine("size", "Your account is not set:", Href: MarkRenderer.AccountRoute, LinkWords: "set your account's size and risk", After: " to see a size.");
+            return [new BriefLine("size", "Your account is not set:", Href: MarkRenderer.AccountRoute, LinkWords: "set your account's size and risk", After: " to see a size.")];
         }
+
+        BriefLine[] saying = inputs.SizedOnExample
+            ? [new BriefLine("size-example", AccountSettings.ExampleSaid, Href: MarkRenderer.AccountRoute, LinkWords: "set your account's size and risk", After: ".")]
+            : [];
 
         if (plan is null || PositionSize.Of(account, plan.Buy, plan.Stop, plan.BookHoldings, plan.RoundTrip) is not { } size)
         {
-            return new BriefLine("size", "No size: the plan states no stop under its buy.");
+            return [new BriefLine("size", "No size: the plan states no stop under its buy."), .. saying];
         }
 
-        return new BriefLine(
-            "size",
-            Invariant($"Your size: {size.Shares:N0} shares, {size.Value.ToString("N2", CultureInfo.InvariantCulture)}, {size.ShareOfAccount:0.0%} of the account") + (size.WholeAtRisk
-                ? ", the whole position at risk."
-                : Invariant($", {size.AtRisk.ToString("N2", CultureInfo.InvariantCulture)} at risk to the stop.")),
-            size.Shares.ToString(CultureInfo.InvariantCulture));
+        var toTarget = plan.Target is { } target && target > plan.Buy && !size.WholeAtRisk
+            ? Invariant($", {(size.Shares * (target - plan.Buy)).ToString("N2", CultureInfo.InvariantCulture)} to the target")
+            : string.Empty;
+
+        return
+        [
+            new BriefLine(
+                "size",
+                Invariant($"{(inputs.SizedOnExample ? "On the example account" : "Your size")}: {size.Shares:N0} shares, {size.Value.ToString("N2", CultureInfo.InvariantCulture)}, {size.ShareOfAccount:0.0%} of the account") + (size.WholeAtRisk
+                    ? ", the whole position at risk."
+                    : Invariant($", {size.AtRisk.ToString("N2", CultureInfo.InvariantCulture)} at risk to the stop{toTarget}.")),
+                size.Shares.ToString(CultureInfo.InvariantCulture)),
+            .. saying,
+        ];
     }
 
     // ---- the chips ----

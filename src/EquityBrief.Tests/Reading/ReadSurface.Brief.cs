@@ -305,7 +305,8 @@ public partial class ReadSurface
         Assert.Equal($"Picked tonight by {pullback}: buy at the next open, near tonight's close of 100.00.", f1.Lines["buy"]);
         Assert.Equal("Sell at the next trading day's open after a day that closes below 96.00.", f1.Lines["stop"]);
         Assert.Equal("Sell at the next trading day's open after a day that closes at or above 110.00. Otherwise sell at the close 21 trading days after the buy.", f1.Lines["exit"]);
-        Assert.Equal("Your account is not set: set your account's size and risk to see a size.", f1.Lines["size"]);
+        Assert.Equal("On the example account: 200 shares, 20,000.00, 20.0% of the account, 800.00 at risk to the stop, 2,000.00 to the target.", f1.Lines["size"]);
+        Assert.Equal("Sized on the example account of $100,000 risking 1% a trade, as Paper trading uses, until you save your own: set your account's size and risk.", f1.Lines["size-example"]);
         Assert.Equal($"pullback|listed|{pullback}: picked tonight", f1.Chips[0]);
 
         var n1 = await Brief("N1");

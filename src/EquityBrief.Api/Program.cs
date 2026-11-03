@@ -476,7 +476,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
     var levels = await read.LevelsAsync(ticker, on);
     var profile = await read.ProfileAsync(ticker, on);
-    var ladder = await read.LadderAsync(ticker, on);
+    var ladder = await read.PlanLadderAsync(ticker, on);
     var moves = await read.MovesAsync(ticker, on);
 
     // The night's listing for this name, and its neighbours on the list, so the
@@ -1429,6 +1429,9 @@ static async Task<IReadOnlyList<FamilyCardView>> WithNumbersAsync(ReadApi read, 
 static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, string ticker, string? indexCode, DateOnly night, UniverseRow? member, IReadOnlyList<IndicatorRow> indicators, ReportView report, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<DecisionCardRow> cards, FundamentalScoreRow? score = null, bool sized = true, bool copying = false)
 {
     var large = indexCode == Universes.Large.Code;
+    var planned = await read.PlanLadderAsync(ticker, night);
+    var tooShort = planned is { ShortNote: not null } or { ShortWhy: not null };
+    var saved = sized ? EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot) : null;
     var gate = large ? await read.GateResultAsync(ticker, night) : null;
     IReadOnlyList<BriefStanding> standing = [];
     IReadOnlyDictionary<string, IReadOnlyList<double?>>? readings = null;
@@ -1510,16 +1513,18 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         halfYear,
         report.Analysts,
         listed,
-        large ? NameScreen.PlanRows(await read.LadderAsync(ticker, night)) : [],
-        large,
-        sized ? EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot) : null,
+        large || tooShort ? NameScreen.PlanRows(planned) : [],
+        large || tooShort,
+        sized ? saved ?? EquityBrief.Core.Cards.AccountSettings.Example : null,
         copying ? [.. standing.Where(one => one.State is not BriefStates.Short)] : standing,
         await read.NextReportAsync(ticker, night),
         [.. reactions.Select(row => row.MovePct)],
         report.Insiders,
         gate?.LadderRewardToRisk,
         score,
-        fundamentalsHeldThrough));
+        fundamentalsHeldThrough,
+        sized && saved is null,
+        planned?.ShortWhy));
 }
 
 // A heavyweights card with its standing tonight, read off tonight's closes once: each holding's and each sector fund's
@@ -2224,7 +2229,7 @@ async Task<IResult> TonightScreenAsync(
 
     foreach (var ticker in pointed)
     {
-        plans[ticker] = NameScreen.EntryAndExitPlan(marks, ticker, await read.LadderAsync(ticker, dated), universe.FirstOrDefault(row => row.Ticker == ticker)?.Close);
+        plans[ticker] = NameScreen.EntryAndExitPlan(marks, ticker, await read.PlanLadderAsync(ticker, dated), universe.FirstOrDefault(row => row.Ticker == ticker)?.Close);
     }
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the

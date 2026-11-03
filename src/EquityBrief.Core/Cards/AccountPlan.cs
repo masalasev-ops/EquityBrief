@@ -16,6 +16,12 @@ public sealed record AccountSettings(decimal Size, decimal RiskPercent, decimal 
     // and never written, so the file under the data root holds only what the operator saved.
     public static AccountSettings Example { get; } = new(100_000m, 1m, ProposedCap);
 
+    // What a plan sized on the example says, up to the link to the settings page.
+    // see: A pick's plan is sized on the example account until the operator saves their own
+    public static string ExampleSaid { get; } = string.Create(
+        CultureInfo.InvariantCulture,
+        $"Sized on the example account of ${Example.Size:N0} risking {Example.RiskPercent:0.##}% a trade, as Paper trading uses, until you save your own:");
+
     // Settings the page can keep: each above nothing, the risk under the whole account and the cap no more than it.
     public static string? Refusal(decimal size, decimal riskPercent, decimal positionCap) =>
         size <= 0m ? "The account's size must be above nothing."

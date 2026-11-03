@@ -1913,6 +1913,11 @@ public sealed partial class SinglePageApp : IComponent
             planned.Append(marks.PicksOwnExit(holding.Card, holding.Pick));
         }
 
+        if (history?.ShortHistory is { } tooShort)
+        {
+            planned.Append("<p class=\"card-note\" data-short-history=\"true\">").Append(System.Net.WebUtility.HtmlEncode(tooShort)).Append("</p>");
+        }
+
         if (plan.Count == 0)
         {
             planned.Append(marks.PlanColumn(ticker, close, plan, history?.NoPlan ?? history?.PlanReason, history?.PlanForms));

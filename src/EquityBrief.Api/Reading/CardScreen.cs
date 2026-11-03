@@ -60,7 +60,11 @@ public static class CardScreen
 
         var heavyweights = string.Equals(row.Family, EquityBrief.Core.Families.HeavyweightRule.Name, StringComparison.Ordinal);
         var dip = string.Equals(row.Family, EquityBrief.Core.Families.DipRule.Name, StringComparison.Ordinal);
-        var money = given.Account is { } account
+
+        // A page the operator reads sizes on the example until they save their own; an export and the read-only copy size on nothing.
+        // see: A pick's plan is sized on the example account until the operator saves their own
+        var sizedOn = given.Account ?? (given.Pressable ? EquityBrief.Core.Cards.AccountSettings.Example : null);
+        var money = sizedOn is { } account
             ? EquityBrief.Core.Cards.PositionSize.Of(account, row.Entry, row.Stop, heavyweights ? row.BookHoldings : null, row.RoundTrip)
             : null;
 
@@ -78,10 +82,19 @@ public static class CardScreen
             dip
                 ? EquityBrief.Core.Cards.Management.ForDip(row.Stop, (given.Dip ?? EquityBrief.Core.Families.DipRule.Provisional).ExitLevel, row.Cap)
                 : EquityBrief.Core.Cards.Management.For(row.Stop, row.Target, row.Trail, row.Cap, heavyweights),
-            money is { } plan && given.Account is { } held
-                ? new CardMoneyView(plan.Shares, plan.AtRisk, plan.Value, plan.ShareOfAccount, plan.RoundTrip, plan.Capped, plan.WholeAtRisk, held.RiskPercent)
+            money is { } plan && sizedOn is { } held
+                ? new CardMoneyView(
+                    plan.Shares,
+                    plan.AtRisk,
+                    plan.Value,
+                    plan.ShareOfAccount,
+                    plan.RoundTrip,
+                    plan.Capped,
+                    plan.WholeAtRisk,
+                    held.RiskPercent,
+                    row.Target is { } target && row.Entry is { } bought && target > bought ? plan.Shares * (target - bought) : null,
+                    given.Account is null)
                 : null,
-            given.Pressable && given.Account is null,
             [
                 .. given.Taken
                     .Where(trade => trade.Ticker == row.Ticker && trade.Index == row.Index && trade.Family == row.Family && trade.Night == row.Night)
