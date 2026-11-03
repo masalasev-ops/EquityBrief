@@ -79,6 +79,24 @@ public partial class ReadSurface
     static IReadOnlyList<string> LinesOf(BriefView view, string panel) =>
         [.. view.Panels.Single(one => one.Key == panel).Lines.Select(line => line.Words)];
 
+    // 22.20: two falls and two rises compare by size, so sales down 2.9% against down 29.2% is slower, and a rise beside a
+    // fall, or nothing beside either, has no pace.
+    [Theory]
+    [InlineData("12.0", "9.0", "faster than")]
+    [InlineData("9.0", "12.0", "slower than")]
+    [InlineData("-2.9", "-29.2", "slower than")]
+    [InlineData("-29.2", "-2.9", "faster than")]
+    [InlineData("3.0", "-2.0", "against")]
+    [InlineData("-2.0", "3.0", "against")]
+    [InlineData("0", "3.0", "against")]
+    [InlineData("-3.0", "0", "against")]
+    [InlineData("3.0", "3.0", "the same as")]
+    [InlineData("-3.0", "-3.0", "the same as")]
+    public void TheBriefsPaceReadsTheSizeOfTheChangeAndNotItsSign(string newer, string older, string said)
+    {
+        Assert.Equal(said, BriefScreen.Pace(decimal.Parse(newer, System.Globalization.CultureInfo.InvariantCulture), decimal.Parse(older, System.Globalization.CultureInfo.InvariantCulture)));
+    }
+
     [Fact]
     public void EveryLineOfTheBriefIsWrittenFromItsFigureAsWorkedByHand()
     {
