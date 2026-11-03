@@ -65,6 +65,7 @@ public partial class ReadSurface
         var quarters = labels.Take(4).Select((label, back) => FixtureExpectations.Quarter(back) with { PeriodEnd = label }).ToArray();
 
         FixtureExpectations.StoreReadings(store, FixtureNight, Name, QuarterReadings.Of(quarters, 80m, null));
+        store.Execute($"INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) VALUES ('{Name}', '{FixtureNight}', '[]', 0, '{{}}', '[]');");
 
         var page = await client.GetStringAsync($"/screens/name/{Name}");
         var chart = await client.GetStringAsync($"/screens/chart/{Name}");
@@ -83,6 +84,40 @@ public partial class ReadSurface
         Assert.Contains($"Read from the quarter to {Iso(stated[0])}.", page, StringComparison.Ordinal);
         Assert.Contains($"Quarter to {Iso(stated[0])}, earnings a share", page, StringComparison.Ordinal);
         Assert.Contains($"Latest quarter</dt><dd>ended <span class=\"nw\">{Iso(stated[0])}</span>", chart, StringComparison.Ordinal);
+        Assert.Contains($"in the quarter to {Iso(stated[1])}.", page, StringComparison.Ordinal);
+        Assert.Contains($"on a year in the quarter to {Iso(stated[0])},", Regex.Replace(chart, "</?span[^>]*>", string.Empty), StringComparison.Ordinal);
+    }
+
+    // Both of the numbers' reported lines say the filing's date, where the row's own expected quarter is the label; a
+    // reported day is matched on that label in its attribute.
+    [Fact]
+    public async Task TheReportedLinesDrawTheFilingsDateAndKeepTheLabelInTheirAttribute()
+    {
+        using var store = await WithFundamentals(withTheArchive: true);
+
+        var filings = await Api(store).FundamentalsAsync(Name);
+        var payload = System.Text.Json.Nodes.JsonNode.Parse(filings[0].Payload)!.AsObject();
+        var label = payload["estimated"]!["periodEnd"]!.GetValue<string>();
+        var reportDate = DateOnly.ParseExact(payload["estimated"]!["reportDate"]!.GetValue<string>(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var filed = Iso(DateOnly.ParseExact(label, "yyyy-MM-dd", CultureInfo.InvariantCulture).AddDays(-3));
+
+        payload["periodEnd"] = filed;
+
+        var numbers = NameScreen.Numbers([filings[0] with { Payload = payload.ToJsonString() }], new ConceptFigures(null, reportDate, null, null));
+
+        Assert.Contains($"data-estimated-quarter=\"{label}\"", numbers, StringComparison.Ordinal);
+        Assert.Contains($"The quarter to {filed} was reported on {Iso(reportDate)}", numbers, StringComparison.Ordinal);
+        Assert.Contains($"<small>the quarter to {filed} was reported on {Iso(reportDate)}</small>", numbers, StringComparison.Ordinal);
+    }
+
+    // The fundamentals card's note, the quarter awaited being still to file and so its label.
+    [Fact]
+    public void TheFundamentalsNoteDrawsTheQuarterItReadsAsItsFilingStatesIt()
+    {
+        var score = ScoreRowOf([], awaited: new DateOnly(2026, 9, 30));
+        var view = FundamentalsScreen.Of(score, "S&P 500", null, null, null, new StatedQuarters([new DateOnly(2026, 6, 27)]));
+
+        Assert.Equal("Its quarter to 2026-09-30 has been reported, but its filing is not stored yet; these checks read the quarter to 2026-06-27.", view.Awaited);
     }
 
     // The proof's dates are the label's, so a title drawing the filing's date moves none of them: a next report naming the

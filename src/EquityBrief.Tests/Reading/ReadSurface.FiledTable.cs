@@ -75,7 +75,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("As at", raw, StringComparison.Ordinal);
         Assert.DoesNotContain("16100000000", raw, StringComparison.Ordinal);
 
-        Assert.Contains("As at 2025-12-31", await RawSegmentsOf(FiledSegments([TheYearEnd], FiledFigure("us-gaap_Assets", "Assets", null, TheYearEnd, "16100000000"))), StringComparison.Ordinal);
+        Assert.Contains("As at 2026-06-30", await RawSegmentsOf(FiledSegments([TheBalanceDate], FiledFigure("us-gaap_Assets", "Assets", null, TheBalanceDate, "16100000000"))), StringComparison.Ordinal);
     }
 
     // CSCO's "Revenue 63325000000 $" reads as money, the XBRL's own names for a count go, and a unit a reader can read stays.

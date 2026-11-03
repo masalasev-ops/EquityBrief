@@ -86,4 +86,20 @@ public partial class ReadSurface
         Assert.Contains("data-segment-figure=\"74400000\"", NameScreen.RawSegments(atTheLimit)!, StringComparison.Ordinal);
         Assert.Contains("2008 OUTLOOK", NameScreen.Numbers(atTheLimit), StringComparison.Ordinal);
     }
+
+    // The page itself, through the view it reads: an old table is the region's notice, and none of its figures is drawn.
+    [Fact]
+    public async Task ThePageDrawsTheNoticeInPlaceOfATableOlderThanItsFiling()
+    {
+        using var store = await WithFundamentals(withTheArchive: true);
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        store.Execute($"UPDATE fundamentals SET payload = json_set(payload, '$.segments', json('{OldTable("2020-09-30").ToJsonString()}')) WHERE ticker = '{Name}';");
+
+        var page = await client.GetStringAsync($"/screens/name/{Name}");
+
+        Assert.Contains("data-segments=\"old\" data-report=\"R9.htm\" data-ended=\"2020-09-30\"", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-segment-figure=\"74400000\"", page, StringComparison.Ordinal);
+    }
 }
