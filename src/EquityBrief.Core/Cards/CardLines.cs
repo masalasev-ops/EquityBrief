@@ -265,7 +265,7 @@ public static class CardLines
     // The fill once the open after the night prints: the session and its open against the price the plan was worked at,
     // and the reward against the risk restated at it, the target's distance above the fill over the stop's below; none
     // until the open is stored.
-    // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+    // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
     public static string? Filled(DateOnly night, decimal? worked, decimal? stop, decimal? target, IEnumerable<(DateOnly Session, decimal Open)> sessions)
     {
         if (sessions.Where(session => session.Session > night).OrderBy(session => session.Session).Select(session => ((DateOnly Session, decimal Open)?)session).FirstOrDefault() is not { } first)

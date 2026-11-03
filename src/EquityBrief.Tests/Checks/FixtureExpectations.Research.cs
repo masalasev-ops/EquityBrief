@@ -640,7 +640,8 @@ public partial class FixtureExpectations
     {
         using var store = await FixtureReplay.ReplayedForResearchAsync();
 
-        var ownFiled = DateOnly.ParseExact(Query(store, "SELECT filing_date FROM fundamentals WHERE ticker = 'KEYS' ORDER BY filing_date DESC LIMIT 1;").Single(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var newestFiling = Query(store, "SELECT filing_date FROM fundamentals WHERE ticker = 'KEYS' ORDER BY filing_date DESC LIMIT 1;").Single();
+        var ownFiled = DateOnly.ParseExact(newestFiling, "yyyy-MM-dd", CultureInfo.InvariantCulture);
         var limit = EquityBrief.Core.Report.OldFilings.MostDays;
         var paid = new ScriptedModel([.. Enumerable.Repeat("The section, in words and citing its document [D1].", 40)]);
 
