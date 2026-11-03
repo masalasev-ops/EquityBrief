@@ -2337,7 +2337,7 @@ Item 2 of that ruling. A smaller fall is slower, a larger one faster, and a rise
 ### 22.21 On the operator's word of 2026-11-03: a stock that just reported draws a note
 Item 6 of that ruling. A card whose night found no next date, on a stock that reported in the last 100 days, says when it reported and draws a note; the warning stays only where a stock has neither (see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning).
 
-**Done when** the note's two forms, the warning and the estimate are each worked by hand over constructed reports at the edges of the 100 days and of a hold's cap, a stock's card is read back on the running page, and one mutation is shown red, the rule stated before the run.
+**Done when** the note's forms, the warning and the estimate are each worked by hand over constructed reports at the edges of the recent reach and of a hold's cap, a stock's card is read back on the running page, and one mutation is shown red, the rule stated before the run.
 
 ### 22.22 On the operator's word of 2026-11-03: the quote cap settled at 500 asks a day
 Item 7 of that ruling, recorded: the day's cap stands at 500 and is no longer proposed, which discharges a carried obligation (owes: The day's live quotes stay under their cap on the first five sessions) (see: The day's live quotes are capped at 500 asks on the operator's word).

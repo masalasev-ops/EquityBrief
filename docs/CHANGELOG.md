@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/BUILD_PLAN.md - 22.21's done condition names the edge it tests with no span of days
+Corrects: `done-condition-producible` read the span in 22.21's done condition as evidence the calendar produces, found at the checkpoint's gates.
+Was:
+> **Done when** the note's two forms, the warning and the estimate are each worked by hand over constructed reports at the edges of the 100 days and of a hold's cap,
+Now:
+> **Done when** the note's forms, the warning and the estimate are each worked by hand over constructed reports at the edges of the recent reach and of a hold's cap,
+Why: the condition tests a boundary and waits on nothing, so it says so with no span the check reads.
+
 ### 2026-11-03 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - the day's live quote cap settled
 Authorised by: The day's live quotes are capped at 500 asks on the operator's word
 Was:
