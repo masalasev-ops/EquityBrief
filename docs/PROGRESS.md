@@ -14774,3 +14774,41 @@ Carried:    the remedy's counts, recorded after the merge; the ledger's history 
             the operator with its time.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
             with the figures it states.
+
+### 22.25 - every count of trades names its group from one function, a trade open only once bought, and the proof reading each count off its page   2026-11-03
+
+Built:      `TradeGroups`, the one function over the accounts paper trading reads, and its words in one view; `CountsProof` at its own
+            route, reading each count back off the words its page draws and held to the function; Home's sentence and its fund
+            over the same days; the setup tiles' first live day and this version's; Past picks' to buy; Paper's summary, its line
+            above the fold; a stock an earlier version holds on its chart and name pages. Decision, runbook, guide, section 15.
+Findings:   the operator's twelve of 2 November, each read back on the three indexes on night 2026-11-02. S&P 500: Home 38 bought
+            and sold since 25 Sep, 15 made money, our account +1.0% since 2 Oct against SPY's -2.3%; Tonight 10 new picks, the
+            reshuffle 3 more, 46 of the system's trades open, 8 of them this version's; Paper 84 bought, 46 open, 14 at their
+            target, 18 at their stop, 6 by other exits; Past picks 34 open and 6 to buy in its table; Run's pullback 20 bought, 1
+            open, 19 decided, 1 to buy. PNR's chart names the earlier version holding it.
+Sweep:      changed beyond the twelve. Paper's target and stop counted the sale price, so a next open under the target or a risen
+            trailing stop read as neither, 13 and 16 against Past picks' 14 and 18, now the exit that sold it, and 6 sold by other exits
+            said. Tomorrow's buys drew 8 against the one-minute's 10, now 10 with the fundamentals' 2 named. Paper's waiting line says
+            the reshuffle's share. The S&P 400's and 600's Past picks counted tonight's listings open, now to buy, with the dip's
+            and the fundamentals-first cards and the Run rows of the index's families and its dip. A trade whose exit fired tonight
+            on those two indexes read ended on Past picks and open on Paper, now held until sold and said so, the one-minute with
+            it. Their tables say how many of the system's open they hold and how many came before a family went live. The S&P 500's
+            Past picks says the dip's table is apart, its chips 74 against its statuses' 72. An older night's page counted a
+            trade bought after it as open. The fold's "every figure on this page", no longer true, and three missing spaces.
+            The read-only copy draws these through the same functions and hides the fold, as 22.17 ruled.
+Measured:   `/proof/counts` read-only on the store, night 2026-11-02: S&P 500 20 of 20, S&P 400 16 of 16, S&P 600 16 of 16, under
+            a minute. Before the sweep's fixes it failed the S&P 400 by 29 against 31 and the S&P 600 by 13 against 12.
+Fixture:    a night after a constructed restart: the three groups worked by hand, and the proof failing a page for each of 13 counts
+            drawn from another group, a page drawing none unexamined.
+Tests:      3156, from 3132.
+Mutation:   chosen for the groups, the ending, the night, the proof and to buy; predicted first and each red at its test: the ending
+            read off the sale; a trade bought after the night counted; earlier versions out of the system's; the proof passing any
+            count; a page drawing none passed; a listing waiting counted open; a trade selling counted ended; other exits unsaid. The
+            proof's first mutation did not compile and its red came from the build before; made again so it built, red.
+Carried:    the read-only copy's own pages read after the merge from main; the S&P 500 counts a fired exit as ended while the S&P
+            400 and 600 count it held until sold, put to the operator.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3156 of 3156 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
+            placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
