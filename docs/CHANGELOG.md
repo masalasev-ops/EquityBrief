@@ -34,7 +34,7 @@ Was:
 > with each named by the version that listed it and left out of every figure (see: A paper account
 Now:
 > its badge reading "This version since" its day or "Not yet tested"
-> each tile holds the setup's name with "Live since" the day its family first went live or "Not yet tested", and from 22.25, where its rule was registered again since, "This version since" that day and "earlier trades kept" beneath;
+> each tile holds the setup's name with "Live since" the day its family first went live or "Not yet tested";
 > with each named by the version that listed it and left out of every account, from 22.25 the line above the fold counting them among the system's trades (see: A paper account
 Why: the "Live since" a restart moved showed the re-registration's day, and the line above the fold now counts what the fold holds.
 

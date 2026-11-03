@@ -254,6 +254,7 @@ public class PriceStorageForm
                 "SwingGates.cs: Moves",
                 "TradeCost.cs: InPercent",
                 "TradeCost.cs: InRisk",
+                "TradeGroups.cs: ReturnOf",
                 "TrailingExit.cs: RiskPct",
                 "UniverseScreen.cs: Distance",
                 "ValuationReading.cs: OverValue",

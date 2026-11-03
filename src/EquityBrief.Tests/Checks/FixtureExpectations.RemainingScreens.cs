@@ -38,7 +38,7 @@ public partial class FixtureExpectations
             var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{night}"));
 
             Assert.Contains(
-                FormattableString.Invariant($"<p class=\"run-trades\" data-listed=\"{trades.GetProperty("listed").GetInt32()}\" data-open=\"{trades.GetProperty("open").GetInt32()}\" data-decided=\"{trades.GetProperty("decided").GetInt32()}\" data-needed=\"{trades.GetProperty("needed").GetInt32()}\">The live list's trades: {trades.GetProperty("listed").GetInt32()} listed, {trades.GetProperty("open").GetInt32()} still open, {trades.GetProperty("decided").GetInt32()} decided of the {trades.GetProperty("needed").GetInt32()} a share waits on."),
+                FormattableString.Invariant($"<p class=\"run-trades\" data-listed=\"{trades.GetProperty("listed").GetInt32()}\" data-open=\"{trades.GetProperty("open").GetInt32()}\" data-decided=\"{trades.GetProperty("decided").GetInt32()}\" data-needed=\"{trades.GetProperty("needed").GetInt32()}\" data-to-buy=\"0\">The pullback's trades under every version, part of the system's trades: {trades.GetProperty("listed").GetInt32()} bought, {trades.GetProperty("open").GetInt32()} still open, {trades.GetProperty("decided").GetInt32()} decided of the {trades.GetProperty("needed").GetInt32()} a share waits on."),
                 run,
                 StringComparison.Ordinal);
             Assert.Equal("none", expected.GetProperty("monthly").GetString());
