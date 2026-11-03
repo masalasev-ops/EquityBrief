@@ -1285,22 +1285,21 @@ public sealed partial class ReadApi : IComponent
         LIMIT 1;
     ";
 
-    // The next event on or after a date for every name that has one, which is
+    // The next report on or after a date for every name that has one, which is
     // what the universe table's sessions-until-earnings column reads.
     //
-    // One query rather than one per name. The per-name form above answers the
-    // fact strip, which is about the one name a reader opened; this answers a
-    // column over five hundred rows, and five hundred round trips to draw one
-    // column is the shape that makes a page too slow to open. The window
-    // function picks each name's earliest event on or after the date, so the
-    // row this returns is the row the per-name query would return.
-    const string NextEventForEveryName = @"
+    // One query rather than one per name. This answers a column over five hundred
+    // rows, and five hundred round trips to draw one column is the shape that makes
+    // a page too slow to open. The window function picks each name's earliest
+    // report on or after the date.
+    // see: Earnings soon, the sessions to earnings and a page's next report read the calendar's earnings alone
+    const string NextReportForEveryName = @"
         SELECT ticker, event_date, kind, timing, detail
         FROM (
             SELECT ticker, event_date, kind, timing, detail,
                    ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY event_date) AS seen
             FROM calendar
-            WHERE event_date >= $on_or_after)
+            WHERE kind = 'earnings' AND event_date >= $on_or_after)
         WHERE seen = 1
         ORDER BY ticker;
     ";
@@ -5682,13 +5681,13 @@ public sealed partial class ReadApi : IComponent
             : null;
     }
 
-    // Every name's next event on or after a date, in one read.
-    public async Task<IReadOnlyList<CalendarRow>> NextEventsAsync(DateOnly onOrAfter)
+    // Every name's next report on or after a date, in one read.
+    public async Task<IReadOnlyList<CalendarRow>> NextReportsAsync(DateOnly onOrAfter)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = NextEventForEveryName;
+        command.CommandText = NextReportForEveryName;
         command.Parameters.AddWithValue("$on_or_after", onOrAfter.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var rows = new List<CalendarRow>();

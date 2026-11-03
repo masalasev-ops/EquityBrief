@@ -111,7 +111,7 @@ public sealed record PastPrint(
 // The two never merge. Holding a momentum entry through a print is the thing the
 // separation exists to prevent, so the setups are a list of their own rather
 // than tranches with a date on them.
-// see: The second book is keyed to a dated event, and an earnings print is the only kind on file
+// see: The second book is keyed to the next report the calendar holds, and an ex-dividend date beside it is no key
 public sealed record Ladder(
     IReadOnlyList<Tranche> Tranches,
     IReadOnlyList<Exit> Exits,
@@ -437,7 +437,7 @@ public static class LadderSeries
     //
     // A name with no date on file gets none of them and says so, rather than
     // producing them from a guessed date.
-    // see: The second book is keyed to a dated event, and an earnings print is the only kind on file
+    // see: The second book is keyed to the next report the calendar holds, and an ex-dividend date beside it is no key
     public static IReadOnlyList<EventSetup> EventsFor(
         IReadOnlyList<Level> bands,
         decimal close,
@@ -557,7 +557,7 @@ public static class LadderSeries
     // "so the reader decides what to carry through the date" is the whole of the
     // rule: it computes no decision and produces no verdict, it states two
     // measurements and the risk they are measured against.
-    // see: The second book is keyed to a dated event, and an earnings print is the only kind on file
+    // see: The second book is keyed to the next report the calendar holds, and an ex-dividend date beside it is no key
     public const int PrintsStated = 2;
 
     public static IReadOnlyList<PastPrint> EarningsRuleFor(

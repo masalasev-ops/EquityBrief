@@ -5636,7 +5636,7 @@ internal static class Scope
             ByGap),
                 [CheckReach.Key(LimitsTable, "Earnings horizon")] = new Scoped(
             Verdict.Pass,
-            "the second book is keyed to the next dated event the calendar holds, a name with none produces no setups and says why, and every setup carries a trigger, an entry, a stop and a target with each figure stated on the page as a proposal; and earnings soon fires on the sessions the exchange calendar counts to that event, asserted through the shipped builder over a store holding no bar after its night at the night itself, the twentieth session, the twenty-first, across the year-end closures, forty sessions out and past the closure table's end, with the fixture's two dated prints recomputed from the calendar against counts walked by hand",
+            "the second book is keyed to the next report the calendar holds, an ex-dividend date beside it no key, a name with none produces no setups and says why, and every setup carries a trigger, an entry, a stop and a target with each figure stated on the page as a proposal; and earnings soon fires on the sessions the exchange calendar counts to that event, asserted through the shipped builder over a store holding no bar after its night at the night itself, the twentieth session, the twenty-first, across the year-end closures, forty sessions out and past the closure table's end, with the fixture's two dated prints recomputed from the calendar against counts walked by hand",
             ByExpectations),
         // 8.1, the setup horizon counted from the entry.
         [CheckReach.Key(LimitsTable, "Setup resolution")] = new Scoped(

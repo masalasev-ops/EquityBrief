@@ -344,7 +344,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         await read.LongViewAsync(ticker),
         NameScreen.PickedPeers(ticker, await read.PeerReadingsAsync()),
         // see: A name's next dated event is the first after the night, and the earnings soon reason alone counts the night's own
-        await read.NextEventAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate.AddDays(1) : DateOnly.MinValue),
+        // see: Earnings soon, the sessions to earnings and a page's next report read the calendar's earnings alone
+        await read.NextReportAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
         member?.Researched,
         await read.ProviderSharesAsync(ticker),
         reactions,
@@ -1365,10 +1366,10 @@ static async Task<IReadOnlyList<FamilyCardView>> WithBehindAsync(ReadApi read, I
     return drawn;
 }
 
-// Every name's next dated event on or after a night in one read, which the sessions to a name's next report are counted
-// to on the Watch list and on Tonight's card of the stocks one gate short, as the universe's column counts them.
-static async Task<IReadOnlyDictionary<string, DateOnly>> NextEventsAsync(ReadApi read, DateOnly night) =>
-    (await read.NextEventsAsync(night)).ToDictionary(row => row.Ticker, row => row.EventDate, StringComparer.Ordinal);
+// Every name's next report on or after a night in one read, which the sessions to it are counted to on the Watch list
+// and on Tonight's card of the stocks one gate short, as the universe's column counts them.
+static async Task<IReadOnlyDictionary<string, DateOnly>> NextReportsAsync(ReadApi read, DateOnly night) =>
+    (await read.NextReportsAsync(night)).ToDictionary(row => row.Ticker, row => row.EventDate, StringComparer.Ordinal);
 
 // Each card with its own rows close to a buy point and the numbers its rows draw in place of sentences, for each stock a
 // chosen variant picks or that stands close to a buy point: on the S&P 500, whose family results are handed in, off the
@@ -1946,7 +1947,7 @@ async Task<IResult> TonightScreenAsync(
                 indexNight.Fault is null ? null : TonightScreen.NotComputed(reading),
                 due,
                 request.Query["name"].FirstOrDefault(),
-                indexClose is null ? null : TonightScreen.IndexCloseToBuy(indexClose, await NextEventsAsync(read, dated), dated),
+                indexClose is null ? null : TonightScreen.IndexCloseToBuy(indexClose, await NextReportsAsync(read, dated), dated),
                 request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
                 ended: TonightScreen.EndedTonight(dated, [], indexTrades),
                 quality: await QualityCardAsync(read, reading.Code, dated, indexCells),
@@ -2302,7 +2303,7 @@ async Task<IResult> TonightScreenAsync(
         ? null
         : TonightScreen.CloseToBuy(
             closeAcross,
-            UniverseScreen.Rows(universe, null, await NextEventsAsync(read, dated), dated).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            UniverseScreen.Rows(universe, null, await NextReportsAsync(read, dated), dated).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             watchedNames.Select(row => row.Ticker).ToHashSet(StringComparer.Ordinal));
 
     if (home)
@@ -2379,7 +2380,7 @@ app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page, MarkRender
                 night,
                 watched,
                 await read.ListingsAsync(night),
-                UniverseScreen.Rows(universe, null, await NextEventsAsync(read, night), night).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+                UniverseScreen.Rows(universe, null, await NextReportsAsync(read, night), night).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
                 await read.ClosesToTheNightAsync(night),
                 universe,
                 await read.GateResultsAsync(night),
@@ -3117,10 +3118,10 @@ app.MapGet("/screens/universe", async (
         history[member.Ticker] = reading == Universes.Large ? await read.ListingsAsync(member.Ticker, UniverseScreen.StripSessions) : [];
     }
 
-    // The night the column counts sessions from, and every name's next dated
-    // event in one read rather than five hundred.
+    // The night the column counts sessions from, and every name's next report in
+    // one read rather than five hundred.
     var night = await read.NewestNightAsync();
-    var events = (await read.NextEventsAsync(night ?? DateOnly.MinValue))
+    var events = (await read.NextReportsAsync(night ?? DateOnly.MinValue))
         .ToDictionary(row => row.Ticker, row => row.EventDate, StringComparer.Ordinal);
 
     // Every member's swing readings for the night, which the table's four swing columns draw.

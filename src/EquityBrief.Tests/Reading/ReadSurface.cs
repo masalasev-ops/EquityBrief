@@ -1653,7 +1653,7 @@ public partial class ReadSurface
         // table, which is the same rule the plan column follows.
         var absent = NameScreen.EventBook(await api.LadderAsync("KEYS"));
 
-        Assert.Contains("no dated event is on file", absent, StringComparison.Ordinal);
+        Assert.Contains("no report is dated on the calendar", absent, StringComparison.Ordinal);
         Assert.DoesNotContain("data-setup=", absent, StringComparison.Ordinal);
     }
 
@@ -4841,7 +4841,7 @@ public partial class ReadSurface
 
         var api = Api(store);
         var night = (await api.NewestNightAsync())!.Value;
-        var events = (await api.NextEventsAsync(night))
+        var events = (await api.NextReportsAsync(night))
             .ToDictionary(row => row.Ticker, row => row.EventDate, StringComparer.Ordinal);
 
         Assert.NotEmpty(events);
@@ -4849,13 +4849,11 @@ public partial class ReadSurface
         var cells = UniverseScreen.Rows(await api.UniverseAsync(Index, night), null, events, night);
         var table = new MarkRenderer().UniverseTable(cells);
 
-        // The date agrees with the per-name read the fact strip uses, so the
-        // column and the strip cannot name two different events for one name.
+        // The date agrees with the per-name read of a name's next report, so the
+        // column and the chart page cannot name two different reports for one name.
         foreach (var cell in cells)
         {
-            var perName = await api.NextEventAsync(cell.Ticker, night);
-
-            Assert.Equal(perName?.EventDate, cell.NextEvent);
+            Assert.Equal(await api.NextReportAsync(cell.Ticker, night.AddDays(-1)), cell.NextEvent);
 
             Assert.Contains(
                 $"data-sessions=\"{(cell.SessionsUntilEarnings is { } until ? until.ToString(CultureInfo.InvariantCulture) : "none")}\" " +
@@ -4906,7 +4904,7 @@ public partial class ReadSurface
 
         var stated = new MarkRenderer().UniverseTable([neither, beyond]);
 
-        Assert.Contains("no dated event", stated, StringComparison.Ordinal);
+        Assert.Contains("no report dated", stated, StringComparison.Ordinal);
         Assert.Contains("past the end of the closure table", stated, StringComparison.Ordinal);
         Assert.DoesNotContain("data-sessions=\"0\" data-next-event=\"none\"", stated, StringComparison.Ordinal);
     }

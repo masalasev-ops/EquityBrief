@@ -81,7 +81,7 @@ public sealed class SwingFilterRule : GateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "4ebfa325d33f";
+    public override string Version => "eabc33880ad6";
 
     // The settings' own names as a version stores them, then the trade gate's input, the market gate, the
     // deteriorating business, sector leadership, the most a night the list keeps, the raised estimates and, from

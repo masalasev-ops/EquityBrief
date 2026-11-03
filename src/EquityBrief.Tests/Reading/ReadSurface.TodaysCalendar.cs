@@ -86,6 +86,35 @@ public partial class ReadSurface
         Assert.Equal(new DateOnly(2026, 9, 4), (await Api(store).NextEventAsync(Name, new DateOnly(2026, 9, 4)))!.EventDate);
     }
 
+    // An ex-dividend date nearer than the report: the chart page's next report and the universe's sessions read the report,
+    // while the fact strip's next dated event, which names no kind, reads the nearer date. An ex-dividend date alone leaves
+    // the chart saying none is announced and the universe's read holding no row for the name.
+    // see: Earnings soon, the sessions to earnings and a page's next report read the calendar's earnings alone
+    [Fact]
+    public async Task TheChartsNextReportAndTheSessionsToItReadTheCalendarsEarningsAlone()
+    {
+        using var store = await WithFundamentals(withTheArchive: true);
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+        var api = Api(store);
+        var night = new DateOnly(2026, 9, 4);
+
+        CalendarOf(store, ("2026-09-10", "ex-dividend"), ("2026-09-20", "earnings"));
+
+        var page = await client.GetStringAsync($"/screens/name/{Name}");
+        var chart = await client.GetStringAsync($"/screens/chart/{Name}");
+
+        Assert.Matches("<dt>Next report</dt><dd[^>]*>(?:(?!</dd>).)*2026-09-20", chart);
+        Assert.DoesNotMatch("<dt>Next report</dt><dd[^>]*>(?:(?!</dd>).)*2026-09-10", chart);
+        Assert.Contains("<dt>Next dated event</dt><dd>2026-09-10</dd>", page, StringComparison.Ordinal);
+        Assert.Equal(new DateOnly(2026, 9, 20), (await api.NextReportsAsync(night)).Single(row => row.Ticker == Name).EventDate);
+
+        CalendarOf(store, ("2026-09-10", "ex-dividend"));
+
+        Assert.Matches("<dt>Next report</dt><dd[^>]*>(?:(?!</dd>).)*not announced", await client.GetStringAsync($"/screens/chart/{Name}"));
+        Assert.DoesNotContain(await api.NextReportsAsync(night), row => row.Ticker == Name);
+    }
+
     // The report days keep the calendar's ex-dividend days out, the query being the one the staleness verdict reads.
     [Fact]
     public async Task TheReportDaysOnTheCalendarLeaveItsExDividendDaysOut()
