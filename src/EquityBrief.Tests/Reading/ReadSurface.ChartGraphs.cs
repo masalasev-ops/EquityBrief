@@ -283,8 +283,11 @@ public partial class ReadSurface
             }
 
             // The income bars: the newest fetch's quarters holding a revenue, oldest first, each revenue and net income whole
-            // as stored, and the net margin to six places of the fraction.
-            var quarters = Rows(store, $"SELECT period_end, revenue, IFNULL(net_income, 'none') FROM reported_quarter WHERE ticker = '{ticker}' AND revenue IS NOT NULL AND fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = '{ticker}') ORDER BY period_end;");
+            // as stored, and the net margin to six places of the fraction, each quarter dated as its filing states it.
+            var stated = EquityBrief.Api.Reading.NameScreen.StatedOf(await Api(store).FundamentalsAsync(ticker));
+            var quarters = Rows(store, $"SELECT period_end, revenue, IFNULL(net_income, 'none') FROM reported_quarter WHERE ticker = '{ticker}' AND revenue IS NOT NULL AND fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = '{ticker}') ORDER BY period_end;")
+                .Select(row => new[] { Iso(stated.Of(DateOnly.ParseExact(row[0], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))), row[1], row[2] })
+                .ToList();
 
             if (quarters.Count >= 2)
             {

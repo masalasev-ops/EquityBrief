@@ -26,6 +26,84 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a quarter's end is drawn as the filing states it
+Authorised by: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
+Was:
+> (section 4, the report page) ... its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported).
+Now:
+> ... its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported). A quarter's end is drawn as the company's stored filing states it wherever one states an end within a week of the provider's label, and quarters go on being matched on that label, which a quarter no filing states keeps (see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label).
+Why: The operator's answer to the eighth phase 18 sign-off review: 54 pages titled their latest quarter with the provider's label above the filing's own date in their numbers.
+
+### 2026-11-02 - docs/ARCHITECTURE.html - a part older than its filing is left out, a fetch takes the SEC's filer, with section 17's row and the fetcher's catalogue row
+Authorised by: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+Was:
+> (section 4, the report page) (see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so); a segment table's quarter is its shortest period over months,
+>
+> (the catalogue) Fundamentals fetcher: company financials feed, filings archive, fundamentals
+>
+> (section 17, Report page's day limits) a next report not on file is estimated ... once the open prints)
+Now:
+> (see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so); a segment table, revenue table or guidance filed more than 200 days before the row's own filing is another filing's, neither drawn nor handed to a writer and the page saying why, and a fetch takes the filer the SEC's own ticker file names (see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names); a segment table's quarter is its shortest period over months,
+>
+> Fundamentals fetcher: company financials feed, filings archive, fundamentals, SEC tickers
+>
+> a next report not on file is estimated ... once the open prints); a part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer (see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names)
+Why: the fetch took the provider's filer and that filer's newest filing with no check against the row's quarter, so seven tables and 14 guidance rows read years old unsaid; the eighth phase 18 sign-off review found it and the operator's answer of 2026-11-02 guards the page and fixes the filer.
+
+### 2026-11-02 - docs/ARCHITECTURE.html - the dividend's row says where two years paying a different number of payments stopped its run
+Authorised by: A dividend's run of raises says where it stopped because two years pay a different number of payments
+Was:
+> (section 4, Dividend safety) how many whole years in a row it raised, the dividends a share each year as bars, ... with every year it raised)
+Now:
+> how many whole years in a row it raised and where two years paying a different number of payments stopped that run, the dividends a share each year as bars, ... with every year it raised) (see: A dividend's run of raises says where it stopped because two years pay a different number of payments)
+Why: 147 of 984 payers drew a shorter run than their rising dividend with nothing saying why; the eighth phase 18 sign-off review found it and the operator's answer of 2026-11-02 keeps the count and adds the reason.
+
+### 2026-11-02 - docs/ARCHITECTURE.html - a segment table's quarter is its shortest period over months
+Authorised by: A filed segment table's quarter is its shortest period over months and its figures read as money or a plain count
+Was:
+> (section 4, the report page) (see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so); every amount of a segment table is drawn in one scale,
+Now:
+> (see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so); a segment table's quarter is its shortest period over months, a balance date being no quarter, a clean table drawn from a filing naming it above the table, and the table as filed reading a unit of the currency as money and a plain count alone (see: A filed segment table's quarter is its shortest period over months and its figures read as money or a plain count); every amount of a segment table is drawn in one scale,
+Why: a balance date is stored at no months and read as the quarter on 100 pages, 6,620 income lines saying not filed of figures the filing states; the eighth phase 18 sign-off review found it, and the raw figures, and its report stands.
+
+### 2026-11-02 - docs/ARCHITECTURE.html - a page for an earlier night says the calendar is today's, and the next dated event is the first after the night
+Authorised by: A page for an earlier night draws the next report and the calendar as the calendar holds them today, and says so
+Was:
+> the day the company started reporting as its own (see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints)
+Now:
+> the day the company started reporting as its own (see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints), a page for an earlier night saying of each day the calendar dates that it is as the calendar holds it today (see: A page for an earlier night draws the next report and the calendar as the calendar holds them today, and says so), and the fact strip's next dated event and the chart page's next report the first after the night (see: A name's next dated event is the first after the night, and the earnings soon reason alone counts the night's own)
+Why: the calendar keeps no history, so a dated page could not read it as it stood and did not say so; and the strip asked from the night itself, so 56 pages drew the night's own day as next. The eighth phase 18 sign-off review found both, the operator's answer ruling the first and the report's wording standing for the second.
+
+### 2026-11-02 - docs/HOW_IT_WORKS.html - the guide says an earlier evening's calendar is today's
+Authorised by: A page for an earlier night draws the next report and the calendar as the calendar holds them today, and says so
+Was:
+> so the estimate skips to the quarter after it.
+Now:
+> so the estimate skips to the quarter after it. The page for an earlier evening keeps that evening's figures, but the calendar keeps no history, so its next results and its dates say they are as the calendar holds them today.
+Why: the guide states what the architecture's report page section states.
+
+### 2026-11-02 - docs/ARCHITECTURE.html - a next report estimated from the first report a year back falling clear of the newest report known, with section 17's row
+Authorised by: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
+Was:
+> (section 4, the report page) from the company's own report of the same quarter a year before, marked estimated, where a report fifty-two weeks or more before the night is stored, ... (see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints)
+>
+> (section 4, a picked stock's page) and the card states the next report, estimated from the company's own report of the year before where none is on file and a report fifty-two weeks or more before the night is stored, and placed against the hold's cap, ... (see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints)
+Now:
+> from the company's own report of the same quarter a year before, the first whose day a year on falls more than 45 days after the newest report the page knows, stored or from the calendar, marked estimated, where a report fifty-two weeks or more before the night is stored, ... (see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints)
+>
+> and the card states the next report, estimated from the company's own report of the year before, clear of the newest report the page knows, where none is on file and a report fifty-two weeks or more before the night is stored, and placed against the hold's cap, ... (see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints)
+>
+> (section 17) a new row, Report page's day limits.
+Why: the estimate did not ask whether the company had already reported that quarter, so a company reporting earlier than a year ago read a next report days after the one it just made; the eighth phase 18 sign-off review found 17 pages and the operator's answer of 2026-11-02 skips that quarter, 45 days.
+
+### 2026-11-02 - docs/HOW_IT_WORKS.html - the guide's estimate skips a quarter already reported
+Authorised by: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
+Was:
+> marked estimated, wherever EquityBrief holds a year of the company's reports, and otherwise says no report a year earlier is stored to estimate it from.
+Now:
+> marked estimated, wherever EquityBrief holds a year of the company's reports, and otherwise says no report a year earlier is stored to estimate it from; a company that reported earlier than it did a year ago has already made that report, so the estimate skips to the quarter after it.
+Why: the guide states what the architecture's report page section states.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a quarter's reported day and its next report read from its stored row and then the calendar
 Authorised by: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
 Was:

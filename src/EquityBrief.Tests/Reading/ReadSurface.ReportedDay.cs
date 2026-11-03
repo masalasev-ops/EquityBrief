@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Cards;
+using EquityBrief.Tests.Harness;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Reading;
@@ -10,6 +11,9 @@ namespace EquityBrief.Tests.Reading;
 // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
 public partial class ReadSurface
 {
+    // Section 17's row of the report page's day limits, which this check reaches.
+    internal static readonly string[] PageDayLimitRows = [CheckReach.Key(Scope.LimitsTable, "Report page's day limits")];
+
     // Each worked by hand from what the store held on the night of 2026-10-30, the name it came from beside it.
     [Fact]
     public void AQuartersReportedDayIsItsStoredRowsThenTheCalendarsAndTheProvidersOnlyWhereNeitherSays()
@@ -66,6 +70,9 @@ public partial class ReadSurface
         Assert.Equal(new ReportedDay(null, null, null), ReportedDay.Of(null, null, night, [Row(september, new DateOnly(2026, 10, 19))], []));
         Assert.Equal(new ReportedDay(null, null, new DateOnly(2026, 11, 4)), ReportedDay.Of(null, "2026-11-04", night, [], []));
         Assert.Equal(new ReportedDay(null, null, null), ReportedDay.Of(null, "2026-10-29", night, [], []));
+
+        // Two calendar days after the quarter's end and on or before the night: the latest is the day it reported.
+        Assert.Equal(new ReportedDay(september, new DateOnly(2026, 10, 28), null), ReportedDay.Of("2026-09-30", null, night, [], [new DateOnly(2026, 10, 7), new DateOnly(2026, 10, 28)]));
 
         // No night known: the provider's day as it stands.
         Assert.Equal(new ReportedDay(null, null, new DateOnly(2026, 11, 4)), ReportedDay.Of("2026-09-30", "2026-11-04", null, [Row(september, new DateOnly(2026, 10, 28))], [new DateOnly(2027, 1, 20)]));
@@ -137,6 +144,30 @@ public partial class ReadSurface
         Assert.Contains("data-absent=\"estimate\"", onTheCalendar, StringComparison.Ordinal);
     }
 
+    // The proof holds a next report estimated clear of the newest report the page draws, CRH's shape failing: reported on
+    // 2026-10-29 and estimated about 2026-11-04, 6 days on, where 46 days on passes and 45 does not.
+    // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
+    [Fact]
+    public void TheProofFailsANextReportEstimatedWithinFortyFiveDaysOfTheNewestReportThePageDraws()
+    {
+        static string Line(string reported) => $"<p class=\"estimate\" data-estimated-quarter=\"2026-09-30\" data-reported=\"{reported}\">";
+        static string Row(string estimated, string how = "reported") => $"<dd data-reportDate=\"{how}\" data-estimated=\"{estimated}\">";
+        static string Card(string day) => $"id=\"quarter\"><div class=\"spine\"><span class=\"dl-k\">Filed</span><b>{day}</b>";
+
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate(Name, Line("2026-10-29") + Row("2026-11-04")), "next-report-clear"));
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate(Name, Line("2026-10-29") + Row("2026-12-13")), "next-report-clear"));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate(Name, Line("2026-10-29") + Row("2026-12-14")), "next-report-clear"));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate(Name, Line("2026-10-29") + Row("2027-02-17")), "next-report-clear"));
+
+        // A row naming no reported line is read against the day the latest quarter draws, the newer of the two where both are drawn.
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate(Name, Card("2026-10-29") + Row("2026-11-04", "unfiled")), "next-report-clear"));
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate(Name, Card("2026-10-29") + Line("2026-07-30") + Row("2026-11-04")), "next-report-clear"));
+
+        // No estimate, or no day the company reported, leaves nothing to read.
+        Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate(Name, Line("2026-10-29")), "next-report-clear"));
+        Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate(Name, Row("2026-11-04")), "next-report-clear"));
+    }
+
     // The page reads the calendar's report days from the store and hands them to the numbers: the night of the fixture's store
     // is 2026-09-04, and the provider expects 2026-10-29, as the calendar's own next day does until an earlier one is stored.
     [Fact]
@@ -180,6 +211,45 @@ public partial class ReadSurface
         var reported = await client.GetStringAsync($"/screens/name/{Name}");
 
         Assert.Contains("<small>the quarter to 2026-09-30 was reported on 2026-09-03</small>", reported, StringComparison.Ordinal);
+    }
+
+    // The page hands the estimate the day the calendar says the company reported, which no stored quarter holds: by hand, on
+    // the fixture's night of 2026-09-04 a report of 2025-09-10 a year on is 2026-09-09, 8 days after the calendar's report of
+    // 2026-09-01, so the estimate is a year on from 2025-12-10, 2026-12-09. A day after the night is none the page knows.
+    // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
+    [Fact]
+    public async Task ThePageEstimatesTheNextReportClearOfTheDayTheCalendarSaysItReported()
+    {
+        using var store = await WithFundamentals(withTheArchive: true);
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        using (var connection = new SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+
+            var readings = EquityBrief.Core.Quarters.QuarterReadings.Of(EquityBrief.Tests.Checks.FixtureExpectations.Quarters(4), null, null);
+
+            command.CommandText =
+                $"DELETE FROM calendar WHERE ticker = '{Name}';"
+                + $"UPDATE fundamentals SET payload = json_set(payload, '$.estimated.periodEnd', '2026-06-30') WHERE ticker = '{Name}';"
+                + $"UPDATE fundamentals_snapshot SET payload = json_set(payload, '$.estimated.periodEnd', '2026-06-30') WHERE ticker = '{Name}';"
+                + $"INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('{Name}', '2026-09-01', 'earnings', 'before', '{{}}', '2026-10-01T21:00:00Z');"
+                + $"INSERT INTO fundamental_reading (ticker, session_date, state, read_from, fetched_at, awaited, readings) VALUES ('{Name}', '2026-09-04', '{readings.State}', NULL, '2026-09-04T21:00:00.000Z', NULL, $readings);"
+                + $"INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES ('{Name}', '2026-09-04T21:00:00.000Z', '2026-09-04', '2025-03-31', '2025-06-10', '1');"
+                + $"INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES ('{Name}', '2026-09-04T21:00:00.000Z', '2026-09-04', '2025-06-30', '2025-09-10', '1');"
+                + $"INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES ('{Name}', '2026-09-04T21:00:00.000Z', '2026-09-04', '2025-09-30', '2025-12-10', '1');";
+            command.Parameters.AddWithValue("$readings", readings.ToJson());
+            command.ExecuteNonQuery();
+        }
+
+        var page = await client.GetStringAsync($"/screens/name/{Name}");
+
+        Assert.Contains("data-reportDate=\"reported\" data-estimated=\"2026-12-09\"", page, StringComparison.Ordinal);
+        Assert.Contains("from its report of 2025-12-10 a year on", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("about 2026-09-09", page, StringComparison.Ordinal);
     }
 
     // The proof fails each shape the store showed on the night of 2026-10-30 and passes the same page as it is now drawn.

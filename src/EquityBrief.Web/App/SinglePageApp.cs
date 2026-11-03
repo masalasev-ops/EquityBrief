@@ -1903,7 +1903,7 @@ public sealed partial class SinglePageApp : IComponent
 
         // A pick's own exit first, the family's target, stop and time limit, so the plan never reads as no exit for a stock
         // a family bought; the levels' plan beneath it is a buyer's without the pick.
-        // see: A next report not on file is estimated a year on from the company's own report only where a year of its reports is stored, and a pick's card restates its fill once the open prints
+        // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
         if (decision is { } pick)
         {
             planned.Append(marks.PicksOwnExit(pick));
@@ -2043,7 +2043,7 @@ public sealed partial class SinglePageApp : IComponent
                     ? "Each figure is from the company's own filing, dated as the filing is, as the newest fetch of its quarters stored it. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated."
                     : "Each figure is from the results release, as the newest fetch of its quarters stored it, the filing of the quarter not stored yet; once it is, the figures checked under the sources set the filing's against these. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated.",
                 "These are the company's reported results. Nothing in the plan is computed from them."),
-            title: report?.Quarter is { } latest ? "The quarter to " + Cards.Day(latest.Quarter) + ", line by line" : "The latest quarter, line by line",
+            title: report?.Quarter is { } latest ? "The quarter to " + Cards.Day(latest.DrawnQuarter) + ", line by line" : "The latest quarter, line by line",
             filed: true,
             note: releasedFirst is null ? "from the filing" : "from the results release, filing not stored yet",
             id: "quarter"),
@@ -2106,10 +2106,14 @@ public sealed partial class SinglePageApp : IComponent
 
             if (report?.Segments is { } segments)
             {
-                var filedTable = new StringBuilder(marks.SegmentsTable(segments, report.Currency));
+                var filedTable = new StringBuilder(segments is { Clean: true, Quarter: { } filedQuarter }
+                    ? Invariant($"<div class=\"sub segments-filed-quarter\" data-quarter=\"{Cards.Day(filedQuarter)}\">{(segments.Months == EquityBrief.Core.Facts.SegmentPeriods.QuarterMonths ? "The quarter" : Invariant($"The {segments.Months} months"))} to {Cards.Day(filedQuarter)}, from the filing</div>")
+                    : string.Empty);
+
+                filedTable.Append(marks.SegmentsTable(segments, report.Currency));
 
                 filedTable.Append(segments.Clean ? "<div class=\"fig\">" + marks.ShareBars(segments) + "</div>" : string.Empty);
-                filedTable.Append(Cards.Key(
+                filedTable.Append(segments.LeftOut ? string.Empty : Cards.Key(
                     "How to read it.",
                     "Each segment the filing reports, its revenue for the quarter and its change on the same quarter a year earlier, its operating income where the filing states one, and its share of the company's revenue. The table stands only where the segments' revenue sums to the company's within rounding, totals, eliminations and corporate amounts left out; otherwise the filing's own table is drawn as filed with what the rows summed to.",
                     "A segment growing faster than the company is where the growth is coming from, and one shrinking is what is holding it back."));

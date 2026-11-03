@@ -189,15 +189,15 @@ public sealed partial class MarkRenderer
 
             if (said.Count > 0)
             {
-                lead.Append(FormattableString.Invariant($"<p class=\"short-part\" data-part=\"quarter\"><b>The quarter.</b> In the quarter to {latest.Quarter:yyyy-MM-dd}{(latest.Reported is { } reported ? FormattableString.Invariant($", reported {reported:yyyy-MM-dd}") : string.Empty)}: {Escaped(string.Join("; ", said))}.</p>"));
+                lead.Append(FormattableString.Invariant($"<p class=\"short-part\" data-part=\"quarter\"><b>The quarter.</b> In the quarter to {latest.DrawnQuarter:yyyy-MM-dd}{(latest.Reported is { } reported ? FormattableString.Invariant($", reported {reported:yyyy-MM-dd}") : string.Empty)}: {Escaped(string.Join("; ", said))}.</p>"));
             }
         }
 
         return lead.Length == "<div class=\"short-lead\">".Length ? string.Empty : lead.Append("</div>").ToString();
 
         static string Against(EquityBrief.Core.Report.QuarterLine line) =>
-            (line.AgainstEstimate is { } against ? Formatted($", {(against >= 0 ? "+" : string.Empty)}{against:0.0}% against its estimate") : string.Empty)
-            + (line.OnTheYear is { } year ? Formatted($" and {(year >= 0 ? "+" : string.Empty)}{year:0.0}% on a year earlier") : string.Empty);
+            (line.AgainstEstimate is { } against ? Formatted($", {against.ToString("+0.0;-0.0;0.0", Invariant)}% against its estimate") : string.Empty)
+            + (line.OnTheYear is { } year ? Formatted($" and {year.ToString("+0.0;-0.0;0.0", Invariant)}% on a year earlier") : string.Empty);
     }
 
     [GeneratedRegex(@"(?<=[.!?][""”']?)\s+(?=[A-Z""“])")]

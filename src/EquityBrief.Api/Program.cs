@@ -343,7 +343,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         await read.YearExtremesAsync(ticker),
         await read.LongViewAsync(ticker),
         NameScreen.PickedPeers(ticker, await read.PeerReadingsAsync()),
-        await read.NextEventAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
+        // see: A name's next dated event is the first after the night, and the earnings soon reason alone counts the night's own
+        await read.NextEventAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate.AddDays(1) : DateOnly.MinValue),
         member?.Researched,
         await read.ProviderSharesAsync(ticker),
         reactions,
@@ -393,7 +394,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
                 Universes.ByCode(indexCode ?? string.Empty)?.Name,
                 indexCode is { } code ? await read.OwnLedgerReadingsAsync(code, briefed, ticker) : null,
                 report.Analysts,
-                report.Insiders),
+                report.Insiders,
+                report.Stated),
             Grid = ChartScreen.WithFiledMultiple(view.Grid, score),
         };
     }
@@ -529,12 +531,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         .Select(pair => (int?)pair.position)
         .FirstOrDefault();
 
-    // On or after the last stored session, so the strip states what is coming
-    // rather than what has been. A night's own session is what the calendar
-    // window starts at.
+    // After the last stored session, so the strip states what is coming rather than what has been.
+    // see: A name's next dated event is the first after the night, and the earnings soon reason alone counts the night's own
     var nextEvent = await read.NextEventAsync(
         ticker,
-        bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
+        bars.Count > 0 ? bars[^1].SessionDate.AddDays(1) : DateOnly.MinValue);
 
     // Every filing this name holds, which the numbers section draws five of. A
     // name nobody has opened holds none and the section says so, because the
@@ -1504,7 +1505,7 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         night,
         member,
         indicators.GroupBy(row => row.Name, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.OrderBy(row => row.SessionDate).Last().Value, StringComparer.Ordinal),
-        fundamental is null ? null : EquityBrief.Core.Quarters.Readings.FromJson(fundamental.Readings),
+        fundamental is null ? null : report.Stated is { } stated ? NameScreen.DrawnDates(EquityBrief.Core.Quarters.Readings.FromJson(fundamental.Readings), stated) : EquityBrief.Core.Quarters.Readings.FromJson(fundamental.Readings),
         halfYear,
         report.Analysts,
         listed,

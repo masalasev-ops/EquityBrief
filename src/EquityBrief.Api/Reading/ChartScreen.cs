@@ -301,7 +301,7 @@ public static class ChartScreen
         return new GridGroup("earnings", "Earnings",
         [
             quarter is { } latest
-                ? new GridFigure("Latest quarter", FormattableString.Invariant($"ended {latest.Quarter:yyyy-MM-dd}") + (latest.Reported is { } reported ? FormattableString.Invariant($", reported {reported:yyyy-MM-dd}") : string.Empty))
+                ? new GridFigure("Latest quarter", FormattableString.Invariant($"ended {latest.DrawnQuarter:yyyy-MM-dd}") + (latest.Reported is { } reported ? FormattableString.Invariant($", reported {reported:yyyy-MM-dd}") : string.Empty))
                 : Missing("Latest quarter"),
             AgainstItsEstimate("Earnings a share", perShare, Figures.PerShare),
             perShare?.AgainstEstimate is { } surprise

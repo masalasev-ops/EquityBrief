@@ -162,6 +162,29 @@ public static class DividendSafety
             ? null
             : years.Where(year => year.Whole).Reverse().TakeWhile(year => year.Raised == true).Count();
 
+    // Why the run of raises stopped where the year it stopped at pays another number of payments than the year before, so the
+    // two are not compared, as "not compared past 2025: 5 payments against 4"; none where it stopped at a year that did not
+    // rise, or at the first year kept.
+    // see: A dividend's run of raises says where it stopped because two years pay a different number of payments
+    public static string? RunStopped(IReadOnlyList<DividendYear> years)
+    {
+        DividendYear[] whole = [.. years.Where(year => year.Whole)];
+
+        for (var at = whole.Length - 1; at > 0; at--)
+        {
+            if (whole[at].Raised == true)
+            {
+                continue;
+            }
+
+            return whole[at].Raised is null && whole[at - 1].Year == whole[at].Year - 1 && whole[at - 1].Payments != whole[at].Payments
+                ? FormattableString.Invariant($"not compared past {whole[at].Year}: {whole[at].Payments} {(whole[at].Payments == 1 ? "payment" : "payments")} against {whole[at - 1].Payments}")
+                : null;
+        }
+
+        return null;
+    }
+
     // Each session's trailing yield, read only where the kept dividends reach back a year before it, beside that session's
     // 10-year where one is held.
     static IReadOnlyList<YieldPoint> Series(

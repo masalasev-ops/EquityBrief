@@ -186,7 +186,7 @@ public sealed partial class MarkRenderer
         html.Append(Formatted($"<div class=\"tipranks-ratings\" data-mark=\"tipranks-ratings\" data-asked=\"{asked}\" data-ratings=\"{answer.Ratings.Count}\">"));
 
         var spans = answer.Counts
-            .Select(span => Formatted($"<span data-span=\"{Escaped(span.Span)}\" data-analysts=\"{span.Analysts}\">{SpanWords(span.Span)}: {span.Analysts} analysts, {span.Buy} buy, {span.Hold} hold, {span.Sell} sell</span>"))
+            .Select(span => Formatted($"<span data-span=\"{Escaped(span.Span)}\" data-analysts=\"{span.Analysts}\">{SpanWords(span.Span)}: {span.Analysts} {(span.Analysts == 1 ? "analyst" : "analysts")}, {span.Buy} buy, {span.Hold} hold, {span.Sell} sell</span>"))
             .ToArray();
 
         html.Append(Formatted($"<p class=\"muted\">As TipRanks answered on {asked}{(answer.AsOf is { } asOf ? Formatted($", as of {DayOf(asOf)}") : string.Empty)}. {string.Join("; ", spans)}.</p>"));

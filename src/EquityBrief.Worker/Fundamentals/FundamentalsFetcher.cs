@@ -59,6 +59,7 @@ public sealed class FundamentalsFetcher : IComponent
             // handed would rewrite eight rows on every open.
             new StoreTouch(Store.Fundamentals, Touch.Read | Touch.Insert),
             new StoreTouch(Store.FundamentalsSnapshot, Touch.Insert),
+            new StoreTouch(Store.SecTicker, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.CompanyFinancials, Feed.FilingsArchive]);
@@ -104,6 +105,8 @@ public sealed class FundamentalsFetcher : IComponent
     // Counted in filings rather than over a date range, so a company that missed a
     // filing does not silently get a shorter window than one that did not.
     public const int StoredFilings = 12;
+
+    const string SecFilerOf = "SELECT cik FROM sec_ticker WHERE ticker = $ticker ORDER BY read_at DESC LIMIT 1;";
 
     const string LatestHeld = @"
         SELECT MAX(filing_date) FROM fundamentals WHERE ticker = $ticker;
@@ -226,10 +229,12 @@ public sealed class FundamentalsFetcher : IComponent
 
         var fetched = await feed.FundamentalsAsync(ticker, cancellation).ConfigureAwait(false);
 
-        // After the fundamentals, because the archive is addressed by the CIK that
-        // payload carries, and before the write, because both providers' parts go
+        // After the fundamentals, because the archive is addressed by the filer the SEC's own ticker file names, and the
+        // CIK that payload carries only where the file names none, and before the write, because both providers' parts go
         // into one row and this table is never updated.
-        var filings = await ArchiveAsync(ticker, fetched.Cik, cancellation).ConfigureAwait(false);
+        // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+        var filer = await SecFilerAsync(connection, ticker, cancellation) ?? fetched.Cik;
+        var filings = await ArchiveAsync(ticker, filer, cancellation).ConfigureAwait(false);
 
         var alreadyHeld = await FilingsAsync(connection, ticker, cancellation);
 
@@ -265,7 +270,7 @@ public sealed class FundamentalsFetcher : IComponent
                 command.Parameters.AddWithValue("$ticker", ticker);
                 command.Parameters.AddWithValue("$filing_date", Stored(quarter.FilingDate));
                 command.Parameters.AddWithValue("$fetched_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
-                command.Parameters.AddWithValue("$payload", Payload(fetched, quarter, quarter.FilingDate == newest, filings));
+                command.Parameters.AddWithValue("$payload", Payload(fetched, quarter, quarter.FilingDate == newest, filings, filer));
                 command.Parameters.AddWithValue("$source", Source(fetched, filings, quarter));
 
                 await command.ExecuteNonQueryAsync(cancellation);
@@ -316,6 +321,16 @@ public sealed class FundamentalsFetcher : IComponent
     // leaves those two named as unread and the other eight stored. Section 18's own
     // row for this says the numbers section shows what the provider has and marks
     // the rest absent, which is a statement about a part and not about a section.
+    static async Task<string?> SecFilerAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SecFilerOf;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        return await command.ExecuteScalarAsync(cancellation) as string;
+    }
+
     async Task<ArchiveFilings?> ArchiveAsync(string ticker, string cik, CancellationToken cancellation)
     {
         if (archive is null || string.IsNullOrWhiteSpace(cik))
@@ -398,7 +413,8 @@ public sealed class FundamentalsFetcher : IComponent
         CompanyFundamentals fetched,
         FiledQuarter quarter,
         bool newest,
-        ArchiveFilings? filings = null) =>
+        ArchiveFilings? filings = null,
+        string? filer = null) =>
         JsonSerializer.Serialize(new
         {
             periodEnd = Stored(PeriodEnd(quarter, filings) ?? quarter.PeriodEnd),
@@ -407,7 +423,7 @@ public sealed class FundamentalsFetcher : IComponent
             // 6.8. The archive is addressed by it and nothing else, and a research pass
             // reads the company's own release from there without asking the company
             // financials endpoint for it a second time.
-            cik = newest ? fetched.Cik : null,
+            cik = newest ? filer ?? fetched.Cik : null,
             quarter = new
             {
                 revenue = Money(quarter.Figures.Revenue),

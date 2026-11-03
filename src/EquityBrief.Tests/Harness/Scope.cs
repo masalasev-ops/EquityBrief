@@ -4345,6 +4345,9 @@ internal static class Scope
             Verdict.Pass, "the press drawn on each outstanding request and on no other, carrying the window's end and the price's multiple only inside a peak window; refused without the page's header and for a stock holding no outstanding request, refused at peak without the confirmation naming the window's end and the multiple, and starting the drain on that one request at the peak price with it and at once off-peak, read back off the route over a constructed store and a clock at each side of a window; and the drain writing the named request alone ahead of an older one, waiting for the window's end without the confirmation", ByReadSurface),
         [CheckReach.Key(LimitsTable, "Queue window")] = new Scoped(
             Verdict.Pass, "a stock asked on the window's first New York day drawn and one asked the day before it behind the link, the link drawing both; the figure read off the document against the constant", ByReadSurface),
+        // The 18.4 correction of 2026-11-02, the report page's day limits.
+        [CheckReach.Key(LimitsTable, "Report page's day limits")] = new Scoped(
+            Verdict.Pass, "DASH's reports worked by hand and the edge at 45 and 46 days, its card a note after the hold, and the proof failing CRH's shape; the filing's limit at 200 and 201 days on the page and in the facts file; each figure read off the document against its constant", ByReadSurface),
         // 19.10, on the operator's rulings of 2026-10-15: the fill step's catalogue and matrix rows and its store.
         [CheckReach.Key(CatalogueTable, "Trade filler")] = new Scoped(
             Verdict.Pass,
@@ -8216,6 +8219,8 @@ internal static class Scope
         ["Correction notice age"] = "19.5",
         // 19.6's window, which the plan names as the Queue's window.
         ["Queue window"] = "19.6",
+        // The 18.4 correction of 2026-11-02's limits, which the plan does not name.
+        ["Report page's day limits"] = "18.4",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

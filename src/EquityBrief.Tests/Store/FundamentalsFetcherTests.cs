@@ -581,6 +581,61 @@ public class FundamentalsFetcherTests
 
     // An archive answering as the recorded one does, with other tables of revenue by a
     // grouping put on the read, which neither filer the recording holds files.
+    // An archive naming the filer it was asked for.
+    sealed class FilerAsked(IFilingsArchiveFeed inner) : IFilingsArchiveFeed
+    {
+        public List<string> Asked { get; } = [];
+
+        public int Requests => inner.Requests;
+
+        public Task<ArchiveFilings> FilingsAsync(string ticker, string cik, CancellationToken cancellation = default)
+        {
+            Asked.Add(cik);
+
+            return inner.FilingsAsync(ticker, cik, cancellation);
+        }
+    }
+
+    // A fetch addresses the archive by the filer the SEC's ticker file names at its newest read, the row's payload saying which
+    // for the research pass that reads it, and by the provider's CIK where the file names none.
+    // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+    [Fact]
+    public async Task AFetchAsksTheArchiveForTheFilerTheSecNamesAndTheProvidersOnlyWhereItNamesNone()
+    {
+        const string Provider = "0000320193";
+
+        using var unnamed = new TemporaryStore().Migrated();
+
+        var fallback = new FilerAsked(new RecordedFilingsArchiveFeed(Folder()));
+
+        await WithArchive(unnamed, Feed(), fallback).RunAsync("AAPL", null, "open-1");
+
+        Assert.Equal([Provider], fallback.Asked);
+
+        using var named = new TemporaryStore().Migrated();
+
+        named.Execute(
+            "INSERT INTO sec_ticker (ticker, cik, title, run_id, read_at) VALUES ('AAPL', '0000000002', 'an older read', 'read-1', '2026-09-01T00:00:00Z');"
+            + $"INSERT INTO sec_ticker (ticker, cik, title, run_id, read_at) VALUES ('AAPL', '{Provider}', 'the newest read', 'read-2', '2026-10-01T00:00:00Z');");
+
+        var asked = new FilerAsked(new RecordedFilingsArchiveFeed(Folder()));
+
+        await WithArchive(named, Feed(), asked).RunAsync("AAPL", null, "open-1");
+
+        Assert.Equal([Provider], asked.Asked);
+
+        using var other = new TemporaryStore().Migrated();
+
+        other.Execute("INSERT INTO sec_ticker (ticker, cik, title, run_id, read_at) VALUES ('AAPL', '0000000009', 'the filer now', 'read-1', '2026-10-01T00:00:00Z');");
+
+        var refused = new FilerAsked(new Refusing());
+
+        await WithArchive(other, Feed(), refused).RunAsync("AAPL", null, "open-1");
+
+        Assert.Equal(["0000000009"], refused.Asked);
+        Assert.Contains("\"cik\":\"0000000009\"", Rows(other, "AAPL").OrderByDescending(row => row.FilingDate, StringComparer.Ordinal).First().Payload, StringComparison.Ordinal);
+    }
+
     sealed class WithRevenueTables(IFilingsArchiveFeed inner, IReadOnlyList<SegmentBreakdown> tables) : IFilingsArchiveFeed
     {
         public int Requests => inner.Requests;

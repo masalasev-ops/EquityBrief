@@ -14364,3 +14364,137 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1497 claims, 1497 passing, none out of scope and none unexamined, 1512
             placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
+
+### 18.5 ruling - every defect the eighth phase 18 sign-off review found corrected in one pull request before a fresh session reviews those fixes and signs   2026-11-02
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-02 and lands nothing.
+Found:      the eighth phase 18 sign-off review, by a session that committed no code, over main 6d14d844: `tools/ci.ps1` green
+            19:53:02 to 20:37:18 UTC, 3065 of 3065, and `tools/verify-phase.ps1` green, 1497 claims, 1497 passing; 57 mutations
+            predicted first, 54 red and 3 surviving as predicted; the table the sign-off rule asks for, 201 pull requests and 93
+            correction commits traced with none undone or contradicted by a later one; all 1,505 members' pages read against
+            the store. Seven defects and three judgements, nothing signed. The findings are in
+            `prompts/2026-11-02-18.5-phase-18-signoff-eighth-findings.md`.
+Ruled:      word for word in `prompts/2026-11-02-18.5-phase-18-signoff-eighth-answers.md`: finish the review and fix every
+            defect in one pull request, a fresh session then reviewing only those fixes and the corrections table and signing
+            if they hold; equitybrief-94 builds; "Skip that quarter", 45 days; "Say it is today's"; "Guard, and fix the filer",
+            200 days; "Say why it stopped"; "Use the filing's date"; and D2 and D4 to D7 as stated in the report and not
+            overruled, with the three tests the mutations left wanting.
+Labelled:   read off the record: the estimate, the dated page's calendar and the next dated event under 18.4; the segment
+            tables, the old filings, the raises, the signed nought, the filing's date and the filed table's figures under
+            18.2; the fundamentals card's words under 22.8, which built them.
+Queue:      done, PR 622 and the eighth review; in progress, this pull request; next, a fresh session's review of these fixes
+            and the corrections table and its sign-off of phase 18, then the sign-offs of phases 20, 21 and 22 by their own
+            fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a next report is estimated from the first report a year back falling clear of the newest report known, where one was read days after the report just made   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing. It extends 4d67a1ba, which the seventh table holds as standing.
+Corrected:  `CardLines.EstimatedReport` takes the first report a year back whose day a year on falls more than 45 days after the
+            newest report known, stored or the day `ReportedDay.Of` gives, which the page and both cards now hand it. DASH on
+            2026-10-30 reads about 2027-02-17 from 2026-02-18, and its card's warning is a note. The proof gains
+            `next-report-clear`. The 45 is section 17's new row, pinned, its claim named after phases 21's and 22's reports.
+            The decision is superseded with its prior text under Previously decided and every citation moved; the
+            architecture's sentences and the guide's, with prior text in the changelog.
+Tests:      two new, and DASH's reports, the edge at 45 and 46 days and its card worked by hand in the card's test.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a page for an earlier night says its next report and calendar are as the calendar holds them today, and a name's next dated event is the first after the night   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Corrected:  on a page for an earlier night the numbers' next report row and line, the fact strip's next dated event, the plan's
+            block around the next report and the calendar region say "as the calendar holds it today"; a day from the
+            filing's payload says nothing of the kind, and tonight's page does not change. The fact strip and the chart page
+            ask for the next event from the day after the night, so 56 pages stop drawing the night's own day as next; the
+            earnings soon reason and its stored value do not move. Two decisions, the first amending the earlier night's;
+            the architecture's sentence and the guide's, with prior text in the changelog.
+Tests:      four new, and the review's x2 in the reading's test: x6 a dated page's calendar row read, x5 the ex-dividend days
+            kept out of the report days, and x2 two calendar days after a quarter's end taking the latest.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.2 - correction: a filed segment table's quarter is its shortest period over months, its figures read as money or a plain count, and a figure rounding to nothing carries no sign   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Corrected:  `SegmentTable.Read` and `NameScreen.Segments` take the shortest period over months, so a balance date no longer
+            stands for the quarter on the 100 pages that read it so; AME's table reads its Net Sales of 2,044,397,000. A clean
+            table from a filing names its quarter above it. The table as filed reads "$" as money and drops "Integer" and
+            "Reportable_segment". The numbers' change on a year, a segment's share, a peer median and the short version's
+            lead draw a change rounding to nothing with no sign, in ink. A decision amends the segment
+            table's; the architecture's sentence, with prior text in the changelog.
+Tests:      three new, worked by hand from AME's, CSCO's, DHI's, ESNT's, CPRI's and ECL's shapes.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 22.8 - correction: the fundamentals card reads one analyst as one, where it drew "1 analysts"   2026-11-02
+
+Not a checkpoint entry: it corrects what 22.8 carried into shipped source, and lands nothing.
+Corrected:  `FundamentalsScreen.Estimates` writes "1 analyst raised", on the 316 pages the review counted drawing "1 analysts".
+Tests:      a case in the card's test.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.2 - correction: a dividend's run of raises says where it stopped because two years pay a different number of payments, and one story and one analyst read as one   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Corrected:  `DividendSafety.RunStopped` and the row beside the count, ARES reading "0 not compared past 2025: 5 payments
+            against 4"; the rule and every figure stay. The growth tile, TipRanks' spans and the jobs' line on the news read
+            one as one. A decision; the architecture's row, with prior text in the changelog.
+Tests:      two new, ARES worked by hand.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.2 - correction: a part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Corrected:  `OldFilings` holds the 200 days, read against the row's filing date. A segment table, a revenue table and its
+            growth and guidance older than that are not drawn and reach no facts file, the page saying why, and a results
+            release a research pass reads is handed to no section and named as unread. `FundamentalsFetcher` reads
+            `sec_ticker` for the filer, the provider's CIK only where it names none, and writes it on the newest row. A
+            decision; section 17's row, the fetcher's catalogue row and the architecture's sentence, with prior text in the
+            changelog. No remedy and no fetch: a table comes back as its company next files.
+Tests:      four new: the limit at 200 and 201 days, the page, the facts file and the filer asked.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.2 - correction: a page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Corrected:  `StatedQuarters` holds the ends the filings state, within a week of the label. The title and year-earlier heading,
+            growth, margins, multiples and income, the boxes, the short version, the reported lines, what the numbers say,
+            the chart page's quarter, its brief read and the fundamentals note draw them. `LatestQuarter.Quarter`, the quarter
+            table's attribute and the proof's dates stay the label. A decision; the architecture's sentence with prior text in
+            the changelog; the guide. Also a test of a research pass's old release guard, and a stricter read of the chart
+            page's next report. A segment table of a balance date alone older than the limit is left out, so that case of
+            `ABalanceDateIsNoQuarterToEitherReaderOfTheSegmentTable` reads a balance date inside it.
+Tests:      nine new; a graph test's expected dates read through the filings.
+Mutation:   for this pull request, each predicted before its run by this rule, every property it states at one site each,
+            in filtered batches of disjoint tests, reverted, green. Red: D1 clear clause dropped, `>` to `>=` at 45 days,
+            the reported day ignored and not handed by the page, proof rule at no margin, `Max` to `Min` in the clearing
+            day. J1 tonight's page labelled, the region's line, the plan's block, the fact strip's line. D5 each next event
+            from the night. D2 `ShortestMonths` taking 0, the raw reader on the minimum. D3 limit `>=`, facts segments,
+            revenue tables and guidance, raw table, page's table, newest and previous release, filer, payload's cik, the
+            filed quarter's line. D4 the card, the tile, the stories, a TipRanks span. D6 "$", XBRL names. D7 `Signed`, the
+            share, the lead's third section. J2 the reason, the year's gap. J3 the week `<` and each of: title, year-earlier
+            heading, earnings box, growth, margins, multiples, income, short version, reported lines, sentences, chart grid,
+            brief read, fundamentals note, proof on the title. x2, x5 and x6 as the review's table defines them, each red.
+            Five survived first and were answered. The page's old table guard, the reported line, the note and the brief
+            read had no reach: tests added and each then red. The short version: test added, then red. Rounding added to
+            `Figures.Percent` and an extra round before the lead's format held nothing: both taken out, the format's own
+            third section carrying it. One predicted otherwise: tonight's page labelled went red at
+            `TheNumbersDrawTheStoredReportedDayAndTheCalendarsNextReportAndNotFiledOnlyWhereNeitherIsHeld`, not the block's.
+Carried:    to the operator, not built: the chart page's "Next report" reads the next event of any kind; `Home` draws a signed
+            nought; the chart grid's "Raised in a row" carries no reason.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3090 of 3090 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
+            placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.

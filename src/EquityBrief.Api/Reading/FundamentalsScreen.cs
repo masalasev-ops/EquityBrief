@@ -30,7 +30,7 @@ public static class FundamentalsScreen
         [9] = "Sales against assets",
     };
 
-    public static FundamentalsView Of(FundamentalScoreRow? score, string? indexName, IReadOnlyList<double?>? readings, AnalystReading? analysts, InsiderView? insiders)
+    public static FundamentalsView Of(FundamentalScoreRow? score, string? indexName, IReadOnlyList<double?>? readings, AnalystReading? analysts, InsiderView? insiders, EquityBrief.Core.Report.StatedQuarters? stated = null)
     {
         var index = indexName ?? "index";
 
@@ -39,7 +39,7 @@ public static class FundamentalsScreen
             score?.Word,
             score is null ? [] : [.. score.Checks.Select(Check)],
             score is { Awaited: { } awaited, Quarter: { } quarter }
-                ? Invariant($"Its quarter to {awaited:yyyy-MM-dd} has been reported, but its filing is not stored yet; these checks read the quarter to {quarter:yyyy-MM-dd}.")
+                ? Invariant($"Its quarter to {awaited:yyyy-MM-dd} has been reported, but its filing is not stored yet; these checks read the quarter to {stated?.Of(quarter) ?? quarter:yyyy-MM-dd}.")
                 : null,
             [Sales(readings), Gross(score, index), Price(score, readings, index), Estimates(analysts, insiders)]);
     }
@@ -155,7 +155,7 @@ public static class FundamentalsScreen
     {
         var year = analysts?.Revisions.FirstOrDefault(row => row.Period == EstimatePeriod.CurrentYear);
         var estimates = year is { Up30: { } up, Down30: { } down }
-            ? Invariant($"Over 30 days {up} analysts raised and {down} cut their estimate for the year")
+            ? Invariant($"Over 30 days {up} {(up == 1 ? "analyst" : "analysts")} raised and {down} cut their estimate for the year")
             : "The analysts' changes to their estimates over 30 days are not stored";
         var trades = insiders is null
             ? "insiders' open-market trades over 90 days are not read"

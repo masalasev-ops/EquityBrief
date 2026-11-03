@@ -161,6 +161,8 @@ public sealed class ResearchRunner(
         LIMIT 1;
     ";
 
+    const string NewestFilingDay = "SELECT filing_date FROM fundamentals WHERE ticker = $ticker ORDER BY filing_date DESC LIMIT 1;";
+
     const string NewestFiling = @"
         SELECT payload FROM fundamentals
         WHERE ticker = $ticker
@@ -455,14 +457,24 @@ public sealed class ResearchRunner(
             {
                 var filings = await archive.FilingsAsync(ticker, cik, cancellation);
 
-                if (filings.Release is { } release)
+                // A release older than the row's own filing by more than the limit is another filing's, and no section is handed it.
+                // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
+                var ownFiled = await NewestFiledOnAsync(connection, ticker, cancellation);
+
+                bool Old(EquityBrief.Core.Providers.FiledRelease read) => ownFiled is { } on && EquityBrief.Core.Report.OldFilings.TooOld(read.FiledOn, on);
+
+                if (filings.Release is { } tooOld && Old(tooOld))
+                {
+                    unread.Add("filings archive: " + EquityBrief.Core.Report.OldFilings.Why("the newest results release it holds was filed on", tooOld.FiledOn, ownFiled!.Value));
+                }
+                else if (filings.Release is { } release)
                 {
                     filing = (
                         new FetchedDocument(DocumentChannel.FilingsArchive, release.Url, "Results release, " + release.Document, release.FiledOn, release.Text),
                         Evidence.OwnFiling);
                     ownFiling = SourceDocuments.Id(release.Url);
 
-                    if (await archive.PreviousReleaseAsync(ticker, cik, filings.Results, cancellation) is { } earlierRelease)
+                    if (await archive.PreviousReleaseAsync(ticker, cik, filings.Results, cancellation) is { } earlierRelease && !Old(earlierRelease))
                     {
                         previous = (
                             new FetchedDocument(DocumentChannel.FilingsArchive, earlierRelease.Url, "Previous results release, " + earlierRelease.Document, earlierRelease.FiledOn, earlierRelease.Text),
@@ -1274,6 +1286,17 @@ public sealed class ResearchRunner(
         command.Parameters.AddWithValue("$review", ", " + TrialCalls.ReviewRound);
 
         return Convert.ToInt64(await command.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture) > 0;
+    }
+
+    // The day of the newest filing the store holds.
+    static async Task<DateOnly?> NewestFiledOnAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestFilingDay;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        return await command.ExecuteScalarAsync(cancellation) is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
     }
 
     // The company's identifier at the archive, off the newest filing the store holds.

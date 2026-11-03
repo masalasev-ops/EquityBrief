@@ -35,10 +35,11 @@ public sealed partial class MarkRenderer
         if (news is { } drawn)
         {
             var labelled = drawn.All - drawn.Unlabelled;
+            var stories = drawn.All == 1 ? "story" : "stories";
 
             jobs.Add(drawn.Model is { Length: > 0 } labeller
-                ? Job("News labels", labeller, Formatted($"labelled {labelled} of the {drawn.All} stories the page draws"), profiles.FirstOrDefault(profile => profile.Name == drawn.Profile && profile.Model == labeller) ?? (drawn.Local ? profiles.FirstOrDefault(profile => profile.Local && profile.Model == labeller) : ByModel(labeller, drawn.Profile)))
-                : new ModelJob("News labels", "none", false, Formatted($"no label stands for the {drawn.All} stories the page draws")));
+                ? Job("News labels", labeller, Formatted($"labelled {labelled} of the {drawn.All} {stories} the page draws"), profiles.FirstOrDefault(profile => profile.Name == drawn.Profile && profile.Model == labeller) ?? (drawn.Local ? profiles.FirstOrDefault(profile => profile.Local && profile.Model == labeller) : ByModel(labeller, drawn.Profile)))
+                : new ModelJob("News labels", "none", false, Formatted($"no label stands for the {drawn.All} {stories} the page draws")));
         }
 
         if (release is { } read)

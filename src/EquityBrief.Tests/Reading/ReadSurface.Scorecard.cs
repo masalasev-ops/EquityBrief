@@ -122,6 +122,12 @@ public partial class ReadSurface
             ],
             view.Context.Select(line => line.Words));
 
+        // One analyst reads as one.
+        Assert.StartsWith(
+            "Over 30 days 1 analyst raised and 2 cut their estimate for the year;",
+            FundamentalsScreen.Of(ScoreRowOf(EightOfNine()), "S&P 500", ScoreReadings(), ScoreAnalysts() with { Revisions = [new RevisionRow("0y", 1, 0, 1, 2, 1.5)] }, ScoreInsiders(250_000m)).Context[^1].Words,
+            StringComparison.Ordinal);
+
         // The brief read's line in its business panel.
         Assert.Equal("Fundamentals: strong, 8 of 9 checks on its filings to 2026-06-30, in the card below.", FundamentalsScreen.Line(ScoreRowOf(EightOfNine())).Words);
     }

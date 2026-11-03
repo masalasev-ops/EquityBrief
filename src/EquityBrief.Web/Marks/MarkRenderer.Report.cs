@@ -35,6 +35,10 @@ public sealed record ReportView(
 
     // The industry the page reads the stock under: an override set for it, or the provider's classification.
     public string? Industry { get; init; }
+
+    // The quarter ends the name's filings state, for the words of a part the page builds apart from this view.
+    // see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
+    public StatedQuarters? Stated { get; init; }
 }
 
 // From 20.3 the newest results release's reading a name's page draws under what management said: the day the SEC accepted
@@ -89,7 +93,7 @@ public sealed partial class MarkRenderer
 
         table.Append(Formatted($"<div class=\"tbl-wrap\"><table class=\"quarter-table\" data-quarter=\"{DayOf(quarter.Quarter)}\" data-year-earlier=\"{(quarter.YearEarlier is { } earlier ? DayOf(earlier) : "none")}\">"));
         table.Append("<tr><th>Line</th><th class=\"num\">Reported</th><th class=\"num\">Estimate before the report</th><th class=\"num\">Difference</th>");
-        table.Append(Formatted($"<th class=\"num\">{(quarter.YearEarlier is { } before ? "Quarter to " + DayOf(before) : "A year earlier")}</th><th class=\"num\">Change on a year</th><th class=\"num\">Margin, then a year earlier</th></tr>"));
+        table.Append(Formatted($"<th class=\"num\">{(quarter.DrawnYearEarlier is { } before ? "Quarter to " + DayOf(before) : "A year earlier")}</th><th class=\"num\">Change on a year</th><th class=\"num\">Margin, then a year earlier</th></tr>"));
 
         foreach (var line in quarter.Lines)
         {
@@ -307,6 +311,11 @@ public sealed partial class MarkRenderer
     // table drawn beneath stands instead.
     public string SegmentsTable(SegmentReading segments, string currency)
     {
+        if (segments.LeftOut)
+        {
+            return Formatted($"<p class=\"degraded\" data-segments=\"old\" data-report=\"{Escaped(segments.Report)}\" data-ended=\"{(segments.Quarter is { } ended ? DayOf(ended) : "none")}\">The filing's segment table is left out: {Escaped(segments.Raw!)}.</p>");
+        }
+
         if (!segments.Clean)
         {
             return Formatted($"<p class=\"degraded\" data-segments=\"raw\" data-report=\"{Escaped(segments.Report)}\" data-total=\"{(segments.Total is { } total ? total.ToString(Invariant) : "none")}\" data-sum=\"{(segments.Sum is { } sum ? sum.ToString(Invariant) : "none")}\">The filing's segment table is drawn as filed beneath, because {Escaped(segments.Raw!)}{(segments.Total is { } whole && segments.Sum is { } summed ? Formatted($": its segments' revenue sums to {Figures.Money(summed, currency)} against the company's {Figures.Money(whole, currency)}") : string.Empty)}.</p>");
@@ -328,7 +337,7 @@ public sealed partial class MarkRenderer
             table.Append(row.RevenueChange is { } revenue ? "<td class=\"num\">" + Signed(revenue, "revenue-change") + "</td>" : "<td class=\"num degraded\">none</td>");
             table.Append(row.Earnings is { } earnings ? Formatted($"<td class=\"num\" data-earnings=\"{earnings.ToString(Invariant)}\">{Figures.MoneyIn(earnings, scale, currency)}</td>") : "<td class=\"num degraded\" data-earnings=\"absent\">not filed</td>");
             table.Append(row.EarningsChange is { } change ? "<td class=\"num\">" + Signed(change, "earnings-change") + "</td>" : "<td class=\"num degraded\">none</td>");
-            table.Append(Formatted($"<td class=\"num\" data-share=\"{row.Share.ToString(Invariant)}\">{row.Share.ToString("0.0", Invariant)}%</td></tr>"));
+            table.Append(Formatted($"<td class=\"num\" data-share=\"{row.Share.ToString(Invariant)}\">{Tenth(row.Share)}%</td></tr>"));
         }
 
         table.Append(Formatted($"<tr class=\"key-row\"><td>The company</td><td class=\"num\">{Figures.MoneyIn(segments.Total!.Value, scale, currency)}</td><td class=\"num\"></td><td class=\"num\"></td><td class=\"num\"></td><td class=\"num\">100.0%</td></tr>"));
@@ -582,7 +591,7 @@ public sealed partial class MarkRenderer
         Row(
             "Whole years in a row it raised the dividend",
             dividend.RaisedInARow is { } raised
-                ? Formatted($"<span data-raised=\"{raised}\">{raised}</span>")
+                ? Formatted($"<span data-raised=\"{raised}\">{raised}</span>") + (DividendSafety.RunStopped(dividend.Years) is { } stopped ? Formatted($" <small class=\"raised-stopped\">{Escaped(stopped)}</small>") : string.Empty)
                 : "<span class=\"degraded\" data-raised=\"absent\">not stored: fewer than two whole years of its dividends are kept to compare</span>",
             "raised");
 
@@ -799,7 +808,7 @@ public sealed partial class MarkRenderer
         }
 
         string Median(double? value, int count, string format, string unit) =>
-            value is { } middle ? Formatted($"{middle.ToString(format, Invariant)}{unit} of {count}") : "none";
+            value is { } middle ? Formatted($"{Unsigned(middle, format.Length - 2).ToString(format, Invariant)}{unit} of {count}") : "none";
 
         table.Append(Formatted($"<tr class=\"group-row\" data-row=\"median\"><td>The median</td><td class=\"num\">{Median(peers.MedianMultiple, peers.Multiples, "0.0", string.Empty)}</td><td class=\"num\">{Median(peers.MedianYield, peers.Yields, "0.00", "%")}</td><td class=\"num\">{Median(peers.MedianGrowth, peers.Growths, "0.0", "%")}</td></tr>"));
 

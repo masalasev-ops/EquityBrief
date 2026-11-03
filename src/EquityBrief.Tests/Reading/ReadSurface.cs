@@ -210,6 +210,9 @@ public partial class ReadSurface
             // 22.16, Home.
             .. HomeRows,
 
+            // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
+            .. PageDayLimitRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

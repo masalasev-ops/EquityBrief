@@ -410,9 +410,10 @@ public partial class ArchitectureConformance
         // row of it, and 1485 from 21.11, paper trading's combined account, section 17's row of its settings and section
         // 18's row for a stock two families picked, and 1486 from 21.12, section 17's row of the monthly run's housekeeping
         // asks, and 1488 from 21.13, Tonight's market strip and the copy's, and 1491 from 21.14, the drift surprises check's
-        // catalogue and matrix rows and paper trading's tone variant's line, and 1497 from 22.16, Home's six regions.
+        // catalogue and matrix rows and paper trading's tone variant's line, and 1497 from 22.16, Home's six regions, and 1498
+        // from the 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1497),
+            (789, 853, 6, 4, 855, 876, 1498),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }
