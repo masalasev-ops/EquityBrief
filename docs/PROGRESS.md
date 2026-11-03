@@ -14620,3 +14620,50 @@ Queue:      done, PR 624 and its remedy; in progress, 21.21, which must merge wi
             these items and its sign-off of phase 18, then the fresh handoffs for phases 20, 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 21.21 - the drift's target named as it is on every page, the wording of the rules restarting moved out of what a version pins, and the replay's three mismatches explained and fixed   2026-11-03
+
+Built:      `RuleWording`, the one file no version pins, holding what a page or the run page draws for a rule, moved word for
+            word from the 13 pinned files all of whose pinning rules restart with the 16.3 remedy: the breakout's and the
+            drift's rules, the release tone, the estimate reading, both shadows, the family evaluator, the ladder builder, the
+            shortlist builder, the version scorer's stage line and the index rules' reasons. A registered name stays the
+            register's key, and every page draws it through `ScreenName`: "the nearer of the next price band about two
+            typical moves up, or 2.5 times the risk", each rule with its own multiple, as do the chips and the rule's sentence.
+            The check `rule-wording-out-of-pins`, on the roster. The replay's fixes. `tools/remedies/2026-11-03-21.21-the-drift-wording.txt`.
+            Decisions written, section 12's row and the schema's sentence on the kept bars, prior text in the changelog;
+            phase 23's restart point tabled in the plan.
+Causes:     21.18's and the 16.3 remedy's three replay mismatches, read off the store on 2026-11-03. None is a provider
+            revision of the kind FLEX's was. STZ on 2026-10-07, the VIX drift: a code fault. A dividend's refetch of 2026-10-30
+            rescaled STZ's bars, 118.39 to 117.4545 that session, and left the bands and typical moves the night stored at the
+            night's scale, so the replay measured a 125.22 target against the rescaled close. Fixed: the replay puts them on the
+            bars' scale. REGN on 2026-10-30, the 251-session breakout, found at the 16.3 remedy: a code fault. The store's year
+            rolled to open on 2025-11-03, so 251 sessions before that night no longer stand in the bars and the replay kept none of
+            that rule's 3 trades. Fixed: the replay reads the kept bars. That the two causes account for these two trades rests on
+            the stored figures and the constructed tests; both rules' records had restarted before the fix, so no replay over
+            the store reran them. GDDY on 2026-10-30, the breakout ordered by expected value: no fault in any trade. The replay
+            keeps none for a rule reading the ledger, which has moved since the night read it, so it said a trade was missing
+            where nothing can reproduce one. Fixed: its row says that, and it still restarts where it holds a trade.
+Wording:    still held, 35 files, each named by the check with the rules pinned to it read off the code: pinned by the dip alone,
+            RuleRows, DipRule, FamilyRule, SetupFamilies, OpenTrades, TrendSeries, SweepAxes, DipFamily, FamilyLister,
+            IndexFamilies, IndexNightRead and SweepIdeas; by the improving family alone, ImprovingGrid, ImprovingRule,
+            ReleaseAnswers, ReleaseReadings and ImprovingFamily; by quality alone, QualityRule and QualityFamily; by the S&P 500's
+            heavyweights alone, HeavyweightRule and HeavyweightBook; by the swing filter's versions alone, SwingFunnel,
+            LadderSeries, SeriesGapStop, SwingFilter and SwingReader; by the dip and those versions, SwingGates; by quality and
+            improving, FundamentalScorecard; by the dip, quality and improving, ShadowColumn, LedgerReadings, TradeFills,
+            ExitMenu, RuleHooks and TreeScore; and by those three and the heavyweights, CandidateEvaluator. SetupFamilies still
+            carries the drift's old sentence, read by no page, since editing it would restart the dip.
+Words:      on a page speaking in the reader's words the phrase reads "about two typical days' moves up", since section 15.23
+            holds that term on those pages; the Run page and a tooltip draw the operator's words as written.
+Tests:      3110, from 3097: 9 for the check and the name, 4 for the replay.
+Mutation:   chosen before any ran, one a property, each reverted, predictions in the session's file: the replay's rescale removed,
+            red at the two scale tests; its dropped sessions removed, red at the dropped sessions' test; the reading rule's
+            sentence removed, red at its test; `ScreenName` returning its input, red at two of the theory's three cases and
+            the page's test, the breakout's staying green as predicted; a sentence written back into DriftRule, red at the check
+            and the pin; SwingGates taken off the list, red at the check; DriftRule added to the list, red at the two list tests.
+            None survived. Not mutated: the sentences themselves, read word for word by the existing gate tests.
+Carried:    the remedy's counts and the read back on 5152, recorded after the merge; the 35 files, at phase 23's restart.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3110 of 3110 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
+            placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
