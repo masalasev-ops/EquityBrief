@@ -14423,8 +14423,8 @@ Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and l
 Corrected:  `SegmentTable.Read` and `NameScreen.Segments` take the shortest period over months, so a balance date no longer
             stands for the quarter on the 100 pages that read it so; AME's table reads its Net Sales of 2,044,397,000. A clean
             table from a filing names its quarter above it. The table as filed reads "$" as money and drops "Integer" and
-            "Reportable_segment". `Figures.Percent`, the numbers' change on a year, a segment's share, a peer median and the
-            short version's lead draw a change rounding to nothing with no sign, in ink. A decision amends the segment
+            "Reportable_segment". The numbers' change on a year, a segment's share, a peer median and the short version's
+            lead draw a change rounding to nothing with no sign, in ink. A decision amends the segment
             table's; the architecture's sentence, with prior text in the changelog.
 Tests:      three new, worked by hand from AME's, CSCO's, DHI's, ESNT's, CPRI's and ECL's shapes.
 Mutation:   stated in the last entry of this pull request.
@@ -14472,8 +14472,29 @@ Corrected:  `StatedQuarters` holds the ends the filings state, within a week of 
             growth, margins, multiples and income, the boxes, the short version, the reported lines, what the numbers say,
             the chart page's quarter, its brief read and the fundamentals note draw them. `LatestQuarter.Quarter`, the quarter
             table's attribute and the proof's dates stay the label. A decision; the architecture's sentence with prior text in
-            the changelog; the guide. Also a test of a research pass's old release guard.
-Tests:      four new; a graph test's expected dates read through the filings.
-Mutation:   stated in the last entry of this pull request.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
-            request, with the figures it states.
+            the changelog; the guide. Also a test of a research pass's old release guard, and a stricter read of the chart
+            page's next report. A segment table of a balance date alone older than the limit is left out, so that case of
+            `ABalanceDateIsNoQuarterToEitherReaderOfTheSegmentTable` reads a balance date inside it.
+Tests:      nine new; a graph test's expected dates read through the filings.
+Mutation:   for this pull request, each predicted before its run by this rule, every property it states at one site each,
+            in filtered batches of disjoint tests, reverted, green. Red: D1 clear clause dropped, `>` to `>=` at 45 days,
+            the reported day ignored and not handed by the page, proof rule at no margin, `Max` to `Min` in the clearing
+            day. J1 tonight's page labelled, the region's line, the plan's block, the fact strip's line. D5 each next event
+            from the night. D2 `ShortestMonths` taking 0, the raw reader on the minimum. D3 limit `>=`, facts segments,
+            revenue tables and guidance, raw table, page's table, newest and previous release, filer, payload's cik, the
+            filed quarter's line. D4 the card, the tile, the stories, a TipRanks span. D6 "$", XBRL names. D7 `Signed`, the
+            share, the lead's third section. J2 the reason, the year's gap. J3 the week `<` and each of: title, year-earlier
+            heading, earnings box, growth, margins, multiples, income, short version, reported lines, sentences, chart grid,
+            brief read, fundamentals note, proof on the title. x2, x5 and x6 as the review's table defines them, each red.
+            Five survived first and were answered. The page's old table guard, the reported line, the note and the brief
+            read had no reach: tests added and each then red. The short version: test added, then red. Rounding added to
+            `Figures.Percent` and an extra round before the lead's format held nothing: both taken out, the format's own
+            third section carrying it. One predicted otherwise: tonight's page labelled went red at
+            `TheNumbersDrawTheStoredReportedDayAndTheCalendarsNextReportAndNotFiledOnlyWhereNeitherIsHeld`, not the block's.
+Carried:    to the operator, not built: the chart page's "Next report" reads the next event of any kind; `Home` draws a signed
+            nought; the chart grid's "Raised in a row" carries no reason.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3090 of 3090 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
+            placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
