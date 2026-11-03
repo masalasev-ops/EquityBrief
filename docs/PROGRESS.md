@@ -14721,3 +14721,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
             placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
+
+### 22.23 - the short version's first draft told its limits, each claim naming its part of the page and none stating a tile's figure handed   2026-11-03
+
+Refusals:   every short version since 2026-10-23 read off the store, 95 rows over 47 passes, deepseek-flash all: 46 of the 47
+            first drafts refused, every one naming a paragraph of more than five sentences and one a figure a tile shows as well.
+            The ask told it to give each point its own sentence over about 53 claims, and named the limit only in a retry's brief.
+Built:      the ask states the two limits first and that most claims are left out, gives each paragraph its parts and keeps the
+            plan's to the plan's claims; each claim names its part of the page; a sentence stating a figure a tile shows is not
+            handed on, read by a helper over what the check reads. The check's rules are unchanged. Decision written, section's
+            row, the operating row read and re-aimed at ten reports after this merges, since the paid model's rate is its measure.
+Measured:   read-only over the store with a tool in the session's scratch folder and no paid call, the 47 passes' stored claims
+            through the local model at temperature 0, qwen/qwen3.5-9b, each answer through the shipped check. Old ask: 1 of 47
+            first drafts passes, 46 on the paragraph's length and 41 on a sentence naming no claim. This ask: 36 of 47; the 11
+            left, 5 a sentence naming no claim, 4 a paragraph's length, 2 a fourth paragraph, 1 a figure and 1 a quotation, some
+            naming two. 21 of the 47 hold no facts row at their date, so they read the stock's next row, which only the tiles and the
+            figures' check read. Gemma has a saved structured output and answers in JSON, so it writes no prose; qwen was loaded for
+            the runs and Gemma put back before the local run of 12:05 UTC, one model at a time. The card stood at 390 W, the operator's
+            250 W cap needing their admin prompt, under a guard holding each call at 72 degrees or more until it read 68.
+Fixture:    20 recordings the ask moved re-keyed whole with no paid call, 13 paid each naming in its note the file it was and 7
+            local in the manifest: their answers stand as they were, so they prove the pipeline's path and not the new ask's rate.
+Tests:      3128, from 3125: the limits held to the check's constants and the labels, a tile's figure not handed, and the re-keying.
+Mutation:   predicted first and each red: the filter removed, at its test; the limit out of the ask, at its test; the labels off, at
+            the ask's test and the handed claims' test.
+Carried:    the paid model's first drafts at ten reports after the merge, on the operating row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
