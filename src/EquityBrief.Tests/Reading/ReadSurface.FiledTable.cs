@@ -78,6 +78,27 @@ public partial class ReadSurface
         Assert.Contains("As at 2026-06-30", await RawSegmentsOf(FiledSegments([TheBalanceDate], FiledFigure("us-gaap_Assets", "Assets", null, TheBalanceDate, "16100000000"))), StringComparison.Ordinal);
     }
 
+    // A clean table drawn from a filing says which quarter it reports, on the page, AME's shape by hand summing to its total.
+    [Fact]
+    public async Task ACleanFiledTableNamesTheQuarterItReportsOnThePage()
+    {
+        using var store = await WithFundamentals(withTheArchive: true);
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var table = FiledSegments([TheBalanceDate, TheQuarter], FiledFigure("us-gaap_Revenues", "Net Sales", null, TheQuarter, "2044397000"));
+
+        table["groups"] = new JsonArray(
+            new JsonObject { ["label"] = "Electronic Instruments [Member]", ["dimension"] = "axis=x", ["figures"] = new JsonArray(FiledFigure("us-gaap_Revenues", "Net Sales", null, TheQuarter, "1300000000")) },
+            new JsonObject { ["label"] = "Electromechanical [Member]", ["dimension"] = "axis=x", ["figures"] = new JsonArray(FiledFigure("us-gaap_Revenues", "Net Sales", null, TheQuarter, "744397000")) });
+
+        store.Execute($"UPDATE fundamentals SET payload = json_set(payload, '$.segments', json('{table.ToJsonString()}')) WHERE ticker = '{Name}';");
+
+        var page = await client.GetStringAsync($"/screens/name/{Name}");
+
+        Assert.Contains("<div class=\"sub segments-filed-quarter\" data-quarter=\"2026-06-30\">The quarter to 2026-06-30, from the filing</div>", page, StringComparison.Ordinal);
+    }
+
     // CSCO's "Revenue 63325000000 $" reads as money, the XBRL's own names for a count go, and a unit a reader can read stays.
     [Fact]
     public async Task AFiledFiguresDollarUnitIsMoneyAndTheXbrlsOwnNamesForACountGo()
@@ -116,6 +137,10 @@ public partial class ReadSurface
 
         Assert.Contains("for the year to 2026-12-31, 1 analyst, as fetched on 2026-09-04", marks.LeadTiles(tiles), StringComparison.Ordinal);
         Assert.Contains("for the year to 2026-12-31, 2 analysts, as fetched on 2026-09-04", marks.LeadTiles(tiles with { Growth = tile with { Analysts = 2 } }), StringComparison.Ordinal);
+
+        var spans = marks.TipRanksRatings(Name, new EquityBrief.Core.Analysts.TipRanksView(DateTimeOffset.UnixEpoch, new TipRanksAnswer(null, 1, [new TipRanksCounts("last90Days", 1, 1, 0, 0)], [])));
+
+        Assert.Contains("data-analysts=\"1\">90 days: 1 analyst, 1 buy", spans, StringComparison.Ordinal);
     }
 
     // ARES by hand: 1.88, 2.44, 3.08, 3.72 and 5.324 over 2021 to 2025, five payments in 2025 against four in 2024, so the run
