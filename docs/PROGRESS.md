@@ -14965,11 +14965,14 @@ Read back:  on the branch's build over the night of 2026-11-02, no account saved
 Mutation:   one for each property, predicted first. Red: an export's card sized; the example left unsaid; a saved account ignored; the
             dollars to the target misworked. Survived: the saved account handed to the copy's way in, over all 61 copy tests, since
             the copy strips the size line as well, so a second guard stands and the copy test still finds no saved figure on any page.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
 
 ### 22.32 - a stock with too few sessions for its averages draws its plan from its levels   2026-11-03
 
 Built:      the plan worked as a page is read, the ladder's own rule over the stored levels read as a stock with no trend, in the stored
-            plan's shape, on the name page, its fold on Tonight and the chart page's way in, on every index. Never stored: the night's
+            plan's shape, on the name page, its fold on Tonight and the chart page's way in, on every index, for a stock under 200
+            sessions whose first bar falls after the store's first session and whose stored plan places nothing. Never stored: the night's
             plan, every rule's check on the 200-day average and every pinned source stand as they were. The decision that a screen works
             out two kinds of figure amended to three under its own name, its prior clause under Previously decided.
 Measured:   every member under 200 sessions on the night of 2026-11-02, read back off each page. S&P 500: FDXF 112 sessions, from 26 May 2026;
@@ -14981,7 +14984,9 @@ Noticed:    Tonight's pages reset the connection at times while the ledger write
 Tests:      3173, from 3169: the plan worked by hand over constructed bands, the 200 sessions' edge, a stock with no level or no support
             beneath its price, and the dollars to the target on both accounts.
 Mutation:   one for each property, predicted first and each red at its test: 200 sessions read as short; no plan worked from the
-            levels; the sentence left off.
+            levels; the sentence left off; a stock opening with the store read as new; a plan the night placed replaced.
+Found:      the suite's first run over this tree: a stock with few bars read as newly listed whatever its first bar, so a page would
+            state a false first day, and a placed plan could be replaced. The two conditions above answer both.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
             last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3173 of 3173 tests ran
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never

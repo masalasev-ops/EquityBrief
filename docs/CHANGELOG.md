@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/BUILD_PLAN.md - 22.32's done condition read as waiting on the calendar, and named two more guards
+Corrects: 22.32's done condition named a count of sessions in the words `done-condition-producible` reads as a wait, found by the suite's run over its first tree, and that run also found the two conditions it now names.
+Was:
+> **Done when** a plan is worked by hand over constructed bands; a stock at 200 sessions is shown to read its stored plan and one at 199 its levels; the words are read back
+Now:
+> **Done when** a plan is worked by hand over constructed bands; a stock at the average's need is shown to read its stored plan and one just short of it its levels, a stock whose bars open with the store's own and a plan the night placed each shown to stand; the words are read back
+Why: a check on what the suite builds waits on no calendar, and the condition must cover both guards.
+
 ### 2026-11-03 - docs/ARCHITECTURE.html - a stock with too few sessions for its averages draws its plan from its levels
 Authorised by: A stock with too few sessions for its averages draws its plan from its levels when a page is read and no rule reads it
 Was:

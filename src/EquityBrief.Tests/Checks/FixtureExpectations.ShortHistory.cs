@@ -15,9 +15,15 @@ public partial class FixtureExpectations
 {
     static readonly DateOnly ShortNight = new(2026, 11, 2);
 
-    static TemporaryStore ShortStore(int sessions, bool bands = true, bool below = true, bool typical = true)
+    static TemporaryStore ShortStore(int sessions, bool bands = true, bool below = true, bool typical = true, bool storeOlder = true)
     {
         var store = new TemporaryStore().Migrated();
+
+        // Another stock's bar a year back, so the store's first session falls before this stock's.
+        if (storeOlder)
+        {
+            store.Execute("INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('OLDCO', '2025-11-03', '100', '101', '99', '100', 1000, 'test', '2025-11-03T23:00:00Z', '100');");
+        }
 
         for (var back = 0; back < sessions; back++)
         {
@@ -107,6 +113,25 @@ public partial class FixtureExpectations
         using var one = ShortStore(ShortHistoryPlan.SessionsTheAverageNeeds - 1);
 
         Assert.Contains("199 of the 200 trading days", (await ShortRead(one).PlanLadderAsync("NEWCO", ShortNight))!.ShortNote, StringComparison.Ordinal);
+
+        // A stock whose bars open with the store's own did not start trading that day, so it reads its stored plan however few.
+        using var cut = ShortStore(50, storeOlder: false);
+
+        var uncut = await ShortRead(cut).PlanLadderAsync("NEWCO", ShortNight);
+
+        Assert.Null(uncut!.ShortNote);
+        Assert.Null(uncut.ShortWhy);
+        Assert.Contains("no 200-day average", uncut.Plan, StringComparison.Ordinal);
+
+        // A plan the night placed is never replaced, however few the sessions behind it.
+        using var placed = ShortStore(50);
+
+        placed.Execute("UPDATE ladder SET plan = '{\"tranches\":[{\"lowEdge\":\"70\",\"highEdge\":\"71\",\"condition\":\"ReachesTheZone\",\"stop\":null}],\"exits\":[],\"invalidation\":null,\"events\":[],\"arithmetic\":{},\"reason\":\"placed\"}';");
+
+        var kept = await ShortRead(placed).PlanLadderAsync("NEWCO", ShortNight);
+
+        Assert.Null(kept!.ShortNote);
+        Assert.Contains("\"reason\":\"placed\"", kept.Plan, StringComparison.Ordinal);
 
         // A stock with no bars at all reads what the night stored for it, here nothing.
         using var empty = new TemporaryStore().Migrated();
