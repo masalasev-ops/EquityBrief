@@ -916,7 +916,7 @@ public partial class FixtureExpectations
         Assert.NotEmpty(refused);
         Assert.NotEmpty(accepted);
         Assert.All(refused, sentence => Assert.DoesNotContain(sentence, summary, StringComparison.Ordinal));
-        Assert.All(accepted, sentence => Assert.Matches("\\n\\[C\\d+\\] " + Regex.Escape(sentence) + "\\n", summary));
+        Assert.All(accepted, sentence => Assert.Matches("\\n\\[C\\d+\\] \\([^)\\n]+\\) " + Regex.Escape(sentence) + "\\n", summary));
         Assert.All(
             Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND section = '{ClaimRules.HeadlineSection}';"),
             headline => Assert.DoesNotContain(ClaimRules.Unmarked(headline), summary, StringComparison.Ordinal));

@@ -511,8 +511,8 @@ public class ObligationReconciles
         // history's benchmarks, a history build replaying no path past its span's end once the bar store no longer
         // holds it, which the report's amendment names.
         ["17"] = 7,
-        // One still operating of the two the 18.0 planning pass opened: the short version's refusals read at ten reports
-        // written after 18.4, the day's live quotes under their cap settled by 22.22 on the operator's word.
+        // One still operating of the two the 18.0 planning pass opened: the short version's refusals, read again at ten reports
+        // written after 22.23, the day's live quotes under their cap settled by 22.22 on the operator's word.
         ["18"] = 1,
         // None: phase 19 opened no carried obligation of either form.
         ["19"] = 0,

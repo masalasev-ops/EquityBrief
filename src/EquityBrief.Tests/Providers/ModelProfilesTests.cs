@@ -185,8 +185,46 @@ public class ModelProfilesTests
         Assert.Contains("Write no em dash", SectionPrompt.FromClaims, StringComparison.Ordinal);
         Assert.Equal(SectionPrompt.FromClaims, SectionPrompt.System([], "The short version"));
         Assert.Equal(SectionPrompt.FromClaims, SectionPrompt.System([], "The headline"));
-        Assert.Contains("The third says what the plan does, in the words of the plan's claims.", SectionPrompt.Asks["The short version"], StringComparison.Ordinal);
+        Assert.Contains("The third paragraph says what the plan does, in at most three sentences, from the claims of The plan alone and in their words.", SectionPrompt.Asks["The short version"], StringComparison.Ordinal);
         Assert.DoesNotContain("plan therefore", SectionPrompt.Asks["The short version"], StringComparison.Ordinal);
+    }
+
+    // 22.23: a first draft is told the two limits the check refuses it on, where only a retry was, each as the check holds
+    // it, and every claim it is handed names its part of the page.
+    [Fact]
+    public void TheShortVersionsFirstDraftIsToldItsLimitsAndEachClaimsPartOfThePage()
+    {
+        var ask = SectionPrompt.Asks["The short version"];
+
+        Assert.Equal(3, ClaimRules.ShortVersionParagraphs);
+        Assert.Equal(5, ClaimRules.ShortVersionParagraphSentences);
+        Assert.Contains("exactly three paragraphs", ask, StringComparison.Ordinal);
+        Assert.Contains("each of at most five sentences", ask, StringComparison.Ordinal);
+
+        var prompt = SectionPrompt.ClaimsPrompt("XYZ", "The short version", [new EquityBrief.Core.Research.Claim("It raised its guidance.", AcceptedClaims.Management)], []);
+
+        Assert.Contains($"[C1] ({AcceptedClaims.Management}) It raised its guidance.\n", prompt, StringComparison.Ordinal);
+    }
+
+    // 22.23: a sentence stating a figure a tile shows is not handed on, and one stating none is; a figure read as the check
+    // on the written-last sections reads it, so the check's refusal of that figure stays as it was.
+    [Fact]
+    public void AClaimStatingAFigureTheTilesShowIsNotHandedToTheShortVersion()
+    {
+        var tile = new EquityBrief.Core.Facts.Fact("latest quarter earnings per share", "107.50", "fundamentals");
+
+        Assert.True(EquityBrief.Core.Research.FactOwners.IsTile(tile), "The constructed fact must be a tile's.");
+        Assert.True(ClaimRules.StatesATileFigure("The stock closed at 107.50 on the night.", [tile]));
+        Assert.False(ClaimRules.StatesATileFigure("The stock closed above its band on the night.", [tile]));
+        Assert.False(ClaimRules.StatesATileFigure("The stock closed at 107.50 on the night.", []));
+
+        var claims = AcceptedClaims.Of(
+            [(ClaimRules.ManagementSection, "The stock closed at 107.50 on the night [N]. Management raised its guidance [D1].")],
+            [tile],
+            null);
+
+        Assert.DoesNotContain(claims, claim => claim.Text.Contains("107.50", StringComparison.Ordinal));
+        Assert.Contains(claims, claim => claim.Text.Contains("raised its guidance", StringComparison.Ordinal));
     }
 
     [Fact]

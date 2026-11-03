@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - the short version's first draft told its limits and handed no claim stating a tile's figure
+Authorised by: A short version's first draft is told its limits and is handed no claim stating a tile's figure
+Was:
+> after every other section's last retry, the claims the checker accepted in each written section, their marks taken off and numbered, beside the business state's and the plan's claims in words; no document and no facts file
+> | **The short version's refusals after it is written from accepted claims** | 18.0 | operating | 10 reports written after 18.4 merges, read on the run page's rate for the short version written last, which 18.4 builds. At the trigger the short version's refusals over those reports are read against its rate over the ten reports before 18.4, and the way it is written stays or goes back on the operator's word |
+Now:
+> after every other section's last retry, the claims the checker accepted in each written section but any stating a figure the tiles show, their marks taken off and numbered, each naming its part of the page, beside the business state's and the plan's claims in words; no document and no facts file (see: A short version's first draft is told its limits and is handed no claim stating a tile's figure)
+> | **The short version's refusals after it is written from accepted claims** | 18.0 | operating | 10 reports written after 22.23 merges, read on the run page's rate for the short version written last, which 18.4 builds. Read on the operator's ruling of 2026-11-03 before it: 46 of the 47 first drafts since 2026-10-23 refused, nearly all on a paragraph of more than five sentences. At the trigger the paid model's first drafts over those reports are read against that rate, and the way it is written stays or goes back on the operator's word |
+Why: the ruling asked for the refusals read and the writing step fixed, measured on the local model, and the row now waits on the paid model's first drafts under that fix.
+
 ### 2026-11-03 - docs/BUILD_PLAN.md - 22.21's done condition names the edge it tests with no span of days
 Corrects: `done-condition-producible` read the span in 22.21's done condition as evidence the calendar produces, found at the checkpoint's gates.
 Was:

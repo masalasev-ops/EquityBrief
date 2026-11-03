@@ -229,10 +229,12 @@ public static class SectionPrompt
         // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
         // see: A written section describes the company and never proposes a trade, a holding or a plan for income
         ["The short version"] =
-            "Write three paragraphs. The first says what happened: the latest results and what the company and its management reported. "
-            + "The second says what matters for the stock over the next weeks: what is working, what is not, the risks and what the market is arguing about. "
-            + "The third says what the plan does, in the words of the plan's claims. "
-            + "Give each point its own sentence, and write no sentence that only introduces, joins or sums up the others.",
+            "Write exactly three paragraphs separated by one blank line, each of at most five sentences. A sixth sentence in a paragraph, or a fourth paragraph, is refused, so stop at five. "
+            + "You are handed far more claims than fifteen sentences can carry, and the sections beneath draw every one, so leave most out. Each claim names the part of the page it comes from. "
+            + "The first paragraph says what happened, in at most five sentences: the latest results and what the company and its management reported. "
+            + "The second paragraph says what matters for the stock over the next weeks, in at most five sentences: one on what is working, one on what is not, and the rest on the biggest risks and what the market is arguing about. "
+            + "The third paragraph says what the plan does, in at most three sentences, from the claims of The plan alone and in their words. "
+            + "Every sentence ends with the claims it rests on; write no sentence that only introduces, joins or sums up the others, and none that says what the plan does not do.",
         // One sentence carrying no figure: every figure stands in the tiles and the sections beneath it with its source.
         // see: The headline carries no figure and is written last from the accepted claims, and code writes it where none is accepted
         ["The headline"] =
@@ -433,7 +435,7 @@ public static class SectionPrompt
 
         for (var at = 0; at < claims.Count; at++)
         {
-            prompt.Append("[C").Append((at + 1).ToString(CultureInfo.InvariantCulture)).Append("] ").Append(claims[at].Text).Append('\n');
+            prompt.Append("[C").Append((at + 1).ToString(CultureInfo.InvariantCulture)).Append("] (").Append(claims[at].Region).Append(") ").Append(claims[at].Text).Append('\n');
         }
 
         var tiles = facts.Where(FactOwners.IsTile).ToArray();

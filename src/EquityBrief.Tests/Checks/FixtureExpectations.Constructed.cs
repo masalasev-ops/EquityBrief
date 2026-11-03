@@ -392,6 +392,27 @@ public partial class FixtureExpectations
 
     // An answer re-keyed for the group's GICS name says so where its provenance is written: a paid answer in its own note,
     // naming the file it was, and a local recording in its manifest entry, naming the key it was recorded under.
+    const string ReKeyedForTheShortVersion = "From 22.23 of 2026-11-03 re-keyed whole, from ";
+
+    // The answers to the requests 22.23's ask and the claims' labels moved, re-keyed whole with no paid call. Stated in
+    // advance: thirteen paid answers, each naming in its note the file it was, which no longer stands beside it.
+    [Fact]
+    public void EachAnswerTheShortVersionsAskMovedIsReKeyedWholeAndNamesTheFileItWas()
+    {
+        var paid = Constructed().Where(one => one.Node["constructed"]!.GetValue<string>().Contains(ReKeyedForTheShortVersion, StringComparison.Ordinal)).ToArray();
+
+        Assert.Equal(13, paid.Length);
+
+        foreach (var (file, node) in paid)
+        {
+            var was = Regex.Match(node["constructed"]!.GetValue<string>(), Regex.Escape(ReKeyedForTheShortVersion) + @"(research-call-[0-9a-f]{32}\.json)").Groups[1].Value;
+
+            Assert.NotEqual(string.Empty, was);
+            Assert.NotEqual(file, was);
+            Assert.False(File.Exists(Path.Combine(Folder(), was)), $"{file} names {was}, which still stands beside it.");
+        }
+    }
+
     const string ReKeyedForGics = "From the second 15.1 correction of 2026-10-21 re-keyed whole, from ";
 
     // The answers to the requests the group's GICS name moved, re-keyed whole with no paid call. Stated in advance:

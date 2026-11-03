@@ -841,21 +841,21 @@
       "trimmedTo": "nothing. The whole response to one section call, 18915 prompt tokens and 356 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-834d170f493c230de43d51d0428bb7e4.json",
+      "file": "model-section-c5c491d22dfef4666015bfec97cdc472.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
       "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, its first draft, handed no document, the accepted claims numbered as the request lists them: the request SectionPrompt builds from the accepted claims under the instructions of 18.4, which list the figures the tiles show that it never writes, keyed 834d170f493c230de43d51d0428bb7e4, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:26:04Z",
       "trimmedTo": "nothing. The whole response to one section call, 796 prompt tokens and 302 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-dd00635151087cfb511e75698c870392.json",
+      "file": "model-section-e034a7a636b4a83d9c5d7838d1beda2b.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
       "query": "POST http://127.0.0.1:1234/v1/chat/completions for The headline on KEYS in the local lane, its first draft, handed no document, the accepted claims numbered as the request lists them: the request SectionPrompt builds from the accepted claims under the instructions of 18.4, which list the figures the tiles show that it never writes, keyed dd00635151087cfb511e75698c870392, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:26:07Z",
       "trimmedTo": "nothing. The whole response to one section call, 689 prompt tokens and 32 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-6c8fbc71060ff22312ddf580cab468a7.json",
+      "file": "model-section-e4839404573385778c6b1fa6bc901963.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
       "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed no document, the accepted claims numbered as the request lists them: the request SectionPrompt builds from the accepted claims under the instructions of 18.4, which list the figures the tiles show that it never writes, keyed 6c8fbc71060ff22312ddf580cab468a7, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:34:47Z",
@@ -1736,28 +1736,28 @@
       "trimmedTo": "nothing. The whole response to one section call, 19467 prompt tokens and 222 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-96a64e0616440af594dcf99b799da1a3.json",
+      "file": "local-comparison/model-section-1f60118b7c19b545cb43c2486d04072c.json",
       "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
       "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The short version on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 96a64e0616440af594dcf99b799da1a3, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-19T13:56:23Z",
       "trimmedTo": "nothing. The whole response to one section call, 910 prompt tokens and 49 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-5527a61ba24427a19fd61a69558490f7.json",
+      "file": "local-comparison/model-section-04270bbef1418588aed1d2328cb0c003.json",
       "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
       "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The headline on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 5527a61ba24427a19fd61a69558490f7, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-19T13:56:25Z",
       "trimmedTo": "nothing. The whole response to one section call, 803 prompt tokens and 141 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-33bb85687da9071de812b5a12c4c19be.json",
+      "file": "local-comparison/model-section-49144d1fe94618d8847b4a9063b2df16.json",
       "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
       "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The short version on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 33bb85687da9071de812b5a12c4c19be, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-19T13:56:27Z",
       "trimmedTo": "nothing. The whole response to one section call, 998 prompt tokens and 57 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-e8f4bbd5a97b059cc3f920a1ec164e7c.json",
+      "file": "local-comparison/model-section-df7d23f2ddd5e6448c54caba58e8b70b.json",
       "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
       "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The headline on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed e8f4bbd5a97b059cc3f920a1ec164e7c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-19T13:56:28Z",

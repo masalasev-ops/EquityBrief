@@ -57,7 +57,9 @@ public static class AcceptedClaims
 
             foreach (var prose in accepted.Where(one => one.Section == section).Select(one => one.Prose))
             {
-                claims.AddRange(ClaimRules.Rows(prose).Select(ClaimRules.Unmarked).Where(text => text.Length > 0).Select(text => new Claim(text, region)));
+                // A sentence stating a figure the tiles show is not handed on: the short version may not repeat that figure, so
+                // the claim could only be cited by leaving out what it says, and a first draft that copied it was refused.
+                claims.AddRange(ClaimRules.Rows(prose).Select(ClaimRules.Unmarked).Where(text => text.Length > 0 && !ClaimRules.StatesATileFigure(text, facts)).Select(text => new Claim(text, region)));
             }
         }
 
