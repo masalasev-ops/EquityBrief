@@ -14933,3 +14933,57 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
             placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
+
+### 22.30 - correction: PR 629 reached main before the run over it ended, with two entries unrecorded and the plan's text shadowing a due point   2026-11-03
+
+Not a checkpoint entry: it corrects PR 629's record and lands nothing.
+Corrects:   22.30's Verified line above states a run over that tree. That run never ended: the operator merged PR 629 at 16:59 UTC with
+            the gates two minutes in, and I stopped them at 17:01 once the suite had failed twice. So 22.28's and 22.29's entries
+            state no run, 22.30's figures were never measured, and no gate ran over PR 629 whole.
+Found:      `two-platform`: 22.28's and 22.29's entries do not say `tools/ci.ps1` ran green. The due-point check: the plan's text
+            for 22.29 named the history pull, a component whose due point the plan supplies.
+Built:      the plan's sentence reworded, with its changelog entry. The two entries are left as they are, a record not being edited
+            after the fact: `two-platform` names them with why and fails if either stops being one its reader finds.
+Ran:        `tools/remedies/2026-11-03-22.28-the-filers-that-agree.txt` from main's b4492044 at 17:03 UTC: 447 facts taken out of QDEL
+            and 485 of VNOM, leaving 236 and 102 of their own; the 15 joined storing nothing, each as measured. The three indices'
+            ledger history built again from a copy of that commit from 17:03 UTC, through 2026-10-08.
+Carried:    the ledger's counts and checks, recorded when it ends; hosted CI on main, red on these two checks until this merges.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states, which covers PR 629's code.
+
+### 22.31 - a pick's plan is sized on the example account until the operator saves their own   2026-11-03
+
+Built:      a pick's card and the chart page's way in size on the example, showing the shares, the dollars at risk and the dollars
+            to the target, and say so in the operator's sentence with its link; the dollars to the target on a saved account too. A
+            file that cannot be read is read as none saved. A card on an export's or the read-only copy's context is sized on nothing
+            and handed no saved account. Home's cards draw no sizing, so nothing changes there.
+Choice:     on the copy "keeps showing the example" is read as its Paper trading, which walks the example, its cards staying a
+            sentence and prices as 22.17 ruled; put to the operator.
+Read back:  on the branch's build over the night of 2026-11-02, no account saved. Tonight: 10, 12 and 11 cards on the example on the three
+            indices, none saying the account is not set. FDXF's way in: 60 shares, 999.00 at risk, 1,249.20 to the target, worked
+            by hand from 1,000 over 16.65 and 20.82.
+Mutation:   one for each property, predicted first. Red: an export's card sized; the example left unsaid; a saved account ignored; the
+            dollars to the target misworked. Survived: the saved account handed to the copy's way in, over all 61 copy tests, since
+            the copy strips the size line as well, so a second guard stands and the copy test still finds no saved figure on any page.
+
+### 22.32 - a stock with too few sessions for its averages draws its plan from its levels   2026-11-03
+
+Built:      the plan worked as a page is read, the ladder's own rule over the stored levels read as a stock with no trend, in the stored
+            plan's shape, on the name page, its fold on Tonight and the chart page's way in, on every index. Never stored: the night's
+            plan, every rule's check on the 200-day average and every pinned source stand as they were. The decision that a screen works
+            out two kinds of figure amended to three under its own name, its prior clause under Previously decided.
+Measured:   every member under 200 sessions on the night of 2026-11-02, read back off each page. S&P 500: FDXF 112 sessions, from 26 May 2026;
+            HONA 98, from 15 Jun 2026; VYLR 23, from 1 Oct 2026, no level. S&P 400: none. S&P 600: VGNT 152, from 27 Mar 2026; VSXY 131, from
+            28 Apr 2026; MBGL 90, from 26 Jun 2026; MFP 89, from 29 Jun 2026; ADIG 67, from 30 Jul 2026; MSGR 9, from 21 Oct 2026, no level.
+            Seven draw a plan from their levels; VYLR and MSGR say no plan can be drawn, with why.
+Noticed:    Tonight's pages reset the connection at times while the ledger writes, as a name page did on 5152 earlier the same day; a
+            second request served each. The server stayed up.
+Tests:      3173, from 3169: the plan worked by hand over constructed bands, the 200 sessions' edge, a stock with no level or no support
+            beneath its price, and the dollars to the target on both accounts.
+Mutation:   one for each property, predicted first and each red at its test: 200 sessions read as short; no plan worked from the
+            levels; the sentence left off.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3173 of 3173 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
+            placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
