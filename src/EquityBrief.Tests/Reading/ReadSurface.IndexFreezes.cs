@@ -108,7 +108,7 @@ public partial class ReadSurface
         // adds no years and no figures line is drawn.
         var frozen = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: true);
 
-        Assert.Contains("<span class=\"status-pill live\">Live since 2 Oct 2026</span> <span class=\"fam-count\">1 pick tonight</span>", frozen.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">This version since 2 Oct 2026</span> <span class=\"fam-count\">1 pick tonight</span>", frozen.Card, StringComparison.Ordinal);
         Assert.Equal(3, Regex.Matches(frozen.Card, "<option ").Count);
         Assert.Contains(SweepLineDrawn, RuleFoldOf(frozen.Card), StringComparison.Ordinal);
         Assert.DoesNotContain("family-frozen", frozen.Card, StringComparison.Ordinal);
@@ -120,7 +120,7 @@ public partial class ReadSurface
         // A sweep recorded after the freeze that found none draws the line again beneath the live rule's standing.
         var answeredAfter = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: true, "2026-10-02T13:00:00Z");
 
-        Assert.Contains("<span class=\"status-pill live\">Live since 2 Oct 2026</span>", answeredAfter.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">This version since 2 Oct 2026</span>", answeredAfter.Card, StringComparison.Ordinal);
         Assert.Contains(SweepLineDrawn, RuleFoldOf(answeredAfter.Card), StringComparison.Ordinal);
     }
 
@@ -243,7 +243,7 @@ public partial class ReadSurface
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-03\"", card, StringComparison.Ordinal);
         Assert.Contains(SweepLineDrawn, card, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"status-pill live\">Live since 2 Oct 2026</span> <span class=\"fam-count\">1 holding</span>", card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">This version since 2 Oct 2026</span> <span class=\"fam-count\">1 holding</span>", card, StringComparison.Ordinal);
         Assert.Contains("<span class=\"tile-label\">Since the last reshuffle, 2 Oct</span>", card, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M1\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"M2\"", card, StringComparison.Ordinal);

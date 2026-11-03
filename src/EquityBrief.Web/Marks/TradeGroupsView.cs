@@ -17,7 +17,7 @@ public sealed record EarlierHoldingView(string Family, string Version, DateOnly 
 // went live; this version's trades, those of each rule as registered now, which alone count toward a verdict; the earlier
 // versions' trades; and the stocks to buy at tomorrow's open, which are in none of them until bought. The words each group
 // is named in are here, so that every page says the same.
-// see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+// see: Every count of trades names its group and one function works the three groups
 public sealed record TradeGroupsView(DateOnly? FirstLive, DateOnly? VersionSince, TradeCountView System, TradeCountView ThisVersion, TradeCountView EarlierVersions, int ToBuy, int ToBuyFromReshuffles = 0)
 {
     // The new picks among those to buy, the rest being the monthly books' reshuffle.
@@ -30,6 +30,10 @@ public sealed record TradeGroupsView(DateOnly? FirstLive, DateOnly? VersionSince
     public const string EarlierWords = "earlier versions' trades";
 
     public const string ToBuyWords = "to buy at tomorrow's open";
+
+    // Past picks' tables hold some of the system's trades: how many of its open trades a table holds, and where the rest are.
+    public string OpenHere(int here, string table) =>
+        FormattableString.Invariant($"Of {SystemWords}, {System.Open} {(System.Open == 1 ? "is" : "are")} open: {here} in {table} and {System.Open - here} under the other setups.");
 
     static string Day(DateOnly day) => day.ToString("d MMM", CultureInfo.InvariantCulture);
 

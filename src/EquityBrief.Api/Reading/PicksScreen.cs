@@ -101,7 +101,8 @@ public static class PicksScreen
                 trade.EndedOn,
                 trade.Result,
                 trade.Cost,
-                trade.Result is { } result && trade.Cost is { } cost ? result - cost : null)),
+                trade.Result is { } result && trade.Cost is { } cost ? result - cost : null,
+                trade.Fill is null ? trade.Unfilled ?? EquityBrief.Core.Ledger.TradeFills.Waiting : null)),
     ];
 
     public static IReadOnlyList<HeavyweightPickCell> IndexHeavyweights(IReadOnlyList<IndexHoldingRow> holdings) =>
@@ -226,10 +227,10 @@ public static class PicksScreen
         var finishedBy = row.ResolvedOn is { } resolved && resolved <= asOf;
 
         // A trade is open only once bought: a listing whose next session's open has not filled it yet is still to buy.
-        // see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+        // see: Every count of trades names its group and one function works the three groups
         var status = !row.OutcomeStored
             ? PickStatus.Missing
-            : row.Fill is null && row.Unfilled is null
+            : row.Fill is null && row.Unfilled is null && row.Outcome is null
                 ? PickStatus.ToBuy
                 : row.Outcome is null || !finishedBy
                 ? PickStatus.Open

@@ -4096,7 +4096,7 @@ public sealed partial class SinglePageApp : IComponent
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     // The counts and the rows are those of the setup the hash names, where it names one, and of every setup
     // where it names none; the setups are the ones the page has listed a trade under, each with its trades.
-    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null, string selector = "", IReadOnlyList<IndexTradeCell>? businessFirst = null, IReadOnlyList<IndexTradeCell>? dips = null)
+    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null, string selector = "", IReadOnlyList<IndexTradeCell>? businessFirst = null, IReadOnlyList<IndexTradeCell>? dips = null, TradeGroupsView? groups = null)
     {
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
@@ -4146,7 +4146,7 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append(Cards.Computed(
             "Past picks",
-            Invariant($"<p class=\"card-note picks-group\">These are {TradeGroupsView.SystemWords} of the pullback, the breakout and the earnings drift under every version, and each row says which. Paper trading's accounts count {TradeGroupsView.VersionWords} alone, on <a href=\"{PaperRoute}\">Paper trading</a>.</p>") + marks.PicksCounts(summary) + Cards.Key(
+            Invariant($"<p class=\"card-note picks-group\">These are {TradeGroupsView.SystemWords} of the pullback, the breakout and the earnings drift under every version, and each row says which. {(groups is { } counted && setup is null ? Escaped(counted.OpenHere(summary.Open, "this table")) + " " : string.Empty)}{(dips is { Count: > 0 } kept && setup is null ? Invariant($"The short-term dip's {kept.Count} sit in their own table below, which All setups counts and the status counts do not. ") : string.Empty)}Paper trading's accounts count {TradeGroupsView.VersionWords} alone, on <a href=\"{PaperRoute}\">Paper trading</a>.</p>") + marks.PicksCounts(summary) + Cards.Key(
                 "How to read it.",
                 Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its target, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions pass. A result is what the trade made in multiples of what it risked, so <span class=\"loss\">-1</span> is a full stop-out and <span class=\"gain\">+2</span> a target twice as far away as the stop."),
                 "Each trade is a fact and is always shown. A share over a handful of trades looks like evidence and is not, so it waits for the minimums, and it never appears without the share the trades needed to break even beside it."),
@@ -4204,11 +4204,12 @@ public sealed partial class SinglePageApp : IComponent
             return string.Empty;
         }
 
-        var open = kept.Count(trade => trade.EndedOn is null);
+        var open = kept.Count(trade => trade.Open);
+        var toBuy = kept.Count(trade => trade.ToBuy);
 
         return Cards.Computed(
             "Past picks",
-            Invariant($"<p class=\"list-count\" data-dip=\"{kept.Count}\" data-open=\"{open}\">{kept.Count} {Escaped(universe.Name)} short-term dip trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open</p>")
+            Invariant($"<p class=\"list-count\" data-dip=\"{kept.Count}\" data-open=\"{open}\" data-to-buy=\"{toBuy}\">{kept.Count} {Escaped(universe.Name)} short-term dip trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open{(toBuy == 0 ? string.Empty : Invariant($", {toBuy} {TradeGroupsView.ToBuyWords}"))}</p>")
                 + marks.IndexTrades(kept, universe.Name)
                 + Cards.Key(
                     "How to read it.",
@@ -4234,11 +4235,12 @@ public sealed partial class SinglePageApp : IComponent
             return string.Empty;
         }
 
-        var open = kept.Count(trade => trade.EndedOn is null);
+        var open = kept.Count(trade => trade.Open);
+        var toBuy = kept.Count(trade => trade.ToBuy);
 
         return Cards.Computed(
             "Past picks",
-            Invariant($"<p class=\"list-count\" data-business-first=\"{kept.Count}\" data-open=\"{open}\">{kept.Count} {Escaped(Universes.Large.Name)} fundamentals-first trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open</p>")
+            Invariant($"<p class=\"list-count\" data-business-first=\"{kept.Count}\" data-open=\"{open}\" data-to-buy=\"{toBuy}\">{kept.Count} {Escaped(Universes.Large.Name)} fundamentals-first trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open{(toBuy == 0 ? string.Empty : Invariant($", {toBuy} {TradeGroupsView.ToBuyWords}"))}</p>")
                 + marks.IndexTrades(kept, Universes.Large.Name)
                 + Cards.Key(
                     "How to read it.",
@@ -4366,7 +4368,7 @@ public sealed partial class SinglePageApp : IComponent
     // provisional.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
     // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
-    public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings, IReadOnlyList<(string Family, string Heading, DateOnly Since)>? frozen = null, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null)
+    public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings, IReadOnlyList<(string Family, string Heading, DateOnly Since)>? frozen = null, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, TradeGroupsView? groups = null, IReadOnlyDictionary<string, DateOnly?>? firstLive = null)
     {
         frozen ??= [];
 
@@ -4390,7 +4392,9 @@ public sealed partial class SinglePageApp : IComponent
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
         var heading = "Past picks: " + universe.Titled;
-        var open = trades.Count(trade => trade.EndedOn is null);
+        var open = trades.Count(trade => trade.Open);
+        var toBuy = trades.Count(trade => trade.ToBuy);
+        var beforeLive = trades.Count(trade => trade.Open && firstLive?.GetValueOrDefault(trade.Family) is { } live && trade.Listed < live);
 
         region.Append(Invariant($"<section class=\"picks\" data-night=\"{drawn}\" data-universe=\"{universe.Word}\" data-trades=\"{all}\" data-shown=\"{trades.Count}\" data-status=\"all\">"));
         region.Append(Cards.Masthead(
@@ -4402,7 +4406,7 @@ public sealed partial class SinglePageApp : IComponent
         var body = new StringBuilder();
 
         body.Append(marks.SetupChips(setup, setups, universe.Word));
-        body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{trades.Count}\" data-trades=\"{all}\" data-open=\"{open}\">Showing {trades.Count} of {all} {Escaped(universe.Name)} trade{(all == 1 ? string.Empty : "s")}, {open} open</p>"));
+        body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{trades.Count}\" data-trades=\"{all}\" data-open=\"{open}\" data-to-buy=\"{toBuy}\">Showing {trades.Count} of {all} {Escaped(universe.Name)} trade{(all == 1 ? string.Empty : "s")}, {open} open{(toBuy == 0 ? string.Empty : Invariant($", {toBuy} {TradeGroupsView.ToBuyWords}"))}. {(groups is { } counted && setup is null ? Escaped(counted.OpenHere(open - beforeLive, "this table")) + (beforeLive == 0 ? string.Empty : Invariant($" The table's other {beforeLive} open came before their setups went live.")) + Invariant($" Paper trading's accounts count {TradeGroupsView.VersionWords} alone, on <a href=\"{PaperRoute}?{Universes.Query}={universe.Word}\">Paper trading</a>.") : string.Empty)}</p>"));
         body.Append(trades.Count == 0
             ? Invariant($"<p class=\"degraded\" data-picks=\"none\">No trade has been listed on the {Escaped(universe.Possessive)} lists yet. Each night its families pass a stock, the first five a setup are listed and followed here from that close on.</p>")
             : marks.IndexTrades(trades, universe.Name));

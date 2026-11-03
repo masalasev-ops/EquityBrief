@@ -593,7 +593,7 @@ public static partial class TonightScreen
                 0,
                 picks.Count(pick => pick.Family == family.Name && pick.State == FamilyList.Listed),
                 own.Length,
-                own.Count(trade => trade.EndedOn is null),
+                own.Count(trade => trade.EndedOn is null && trade.Fill is not null),
                 own.Count(trade => trade.EndedOn is not null),
                 SetupFamilies.Provisional);
         }),

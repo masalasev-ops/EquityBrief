@@ -15,7 +15,7 @@ public sealed record HomeIdea(string Family, string Ticker, string? Company, str
 // How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
 // many made money; the combined paper account's return, the day it counts from and the index's fund over the same days; and
 // whether a live rule still holds fewer finished trades than a verdict needs.
-// see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+// see: Every count of trades names its group and one function works the three groups
 public sealed record HomePast(DateOnly Since, int Closed, int Won, double? Ours, double? Index, bool Early, string Fund = "", DateOnly? AccountSince = null);
 
 // Home as code draws it from the newest night: the index, the night drawn and whether a later night is still running; the
@@ -251,7 +251,7 @@ public sealed partial class SinglePageApp
 
         if (view.Past is { } past)
         {
-            region.Append(Invariant($"<div><p class=\"card-summary\">Since the rules went live on {past.Since.ToString("d MMM", CultureInfo.InvariantCulture)}, {past.Closed} {(past.Closed == 1 ? "idea has" : "ideas have")} been bought and sold on paper; {past.Won} made money.</p>"));
+            region.Append(Invariant($"<div><p class=\"card-summary\" data-system-closed=\"{past.Closed}\" data-made-money=\"{past.Won}\">Since the rules went live on {past.Since.ToString("d MMM", CultureInfo.InvariantCulture)}, {past.Closed} {(past.Closed == 1 ? "idea has" : "ideas have")} been bought and sold on paper; {past.Won} made money.</p>"));
             region.Append(past.Early ? Invariant($"<p style=\"margin:0;color:var(--soft);font-size:14px\">Still early: each rule needs about {FairVerdictTrades} finished trades for a fair verdict.</p>") : string.Empty);
             region.Append(Invariant($"<p style=\"margin:10px 0 0\"><a href=\"{PicksRoute}{(view.Reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + view.Reading.Word)}\">See every past idea</a></p></div>"));
 

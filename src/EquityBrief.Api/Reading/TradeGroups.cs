@@ -8,7 +8,7 @@ namespace EquityBrief.Api.Reading;
 // The one place a page's count of trades comes from: over every family's live or provisional account on an index, or one
 // family's, the system's trades, this version's trades and the earlier versions', and what waits to be bought. A trade is
 // open only once bought, so a listing waiting on the next open is in no group and counts as to buy.
-// see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+// see: Every count of trades names its group and one function works the three groups
 public static class TradeGroups
 {
     public static TradeGroupsView Of(
@@ -17,22 +17,30 @@ public static class TradeGroups
         Func<string, DateOnly, decimal?> close,
         IReadOnlyList<CandidateRow> register,
         string indexCode,
-        string? family = null)
+        string? family = null,
+        IReadOnlyList<DateOnly>? sessions = null)
     {
         var heads = sources.Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional && (family is null || account.Family == family)).ToArray();
 
-        (PaperTrade Trade, double? Result)[] version = [.. heads.SelectMany(head => head.Trades)];
-        (PaperTrade Trade, double? Result)[] earlier = [.. heads.SelectMany(head => (head.Earlier ?? []).Select(one => (one.Trade, one.Result)))];
+        // A night's page counts what stood on that night: a trade bought at a later session's open was still to buy.
+        (PaperTrade Trade, double? Result)[] version = [.. heads.SelectMany(head => head.Trades).Where(one => one.Trade.Bought <= night)];
+        (PaperTrade Trade, double? Result)[] earlier = [.. heads.SelectMany(head => (head.Earlier ?? []).Select(one => (one.Trade, one.Result))).Where(one => one.Trade.Bought <= night)];
+
+        int ToBuy(IEnumerable<PaperAccountSource> accounts) =>
+            accounts.Sum(head => (head.Unfilled ?? []).Count(one => one.Why == PaperAccount.Waiting)
+                + head.Trades.Count(one => one.Trade.Bought > night)
+                + (head.Earlier ?? []).Count(one => one.Trade.Bought > night));
+
         var since = heads.Select(head => head.Since).OfType<DateOnly>().ToArray();
 
         return new TradeGroupsView(
             FirstLive(register, indexCode, family),
             since.Length == 0 ? null : since.Max(),
-            Count([.. version, .. earlier], night, close),
-            Count(version, night, close),
-            Count(earlier, night, close),
-            heads.Sum(head => (head.Unfilled ?? []).Count(one => one.Why == PaperAccount.Waiting)),
-            heads.Where(head => head.Book && head.Family != Core.Families.ImprovingRule.Name).Sum(head => (head.Unfilled ?? []).Count(one => one.Why == PaperAccount.Waiting)));
+            Count([.. version, .. earlier], night, close, sessions),
+            Count(version, night, close, sessions),
+            Count(earlier, night, close, sessions),
+            ToBuy(heads),
+            ToBuy(heads.Where(head => head.Book && head.Family != Core.Families.ImprovingRule.Name)));
     }
 
     // The day each family first went live on an index, as a setup's tile draws it.
@@ -50,18 +58,21 @@ public static class TradeGroups
                 .Select(one => new EarlierHoldingView(account.Family, one.Version, one.Trade.Bought))),
     ];
 
-    public static TradeCountView Count(IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly night, Func<string, DateOnly, decimal?> close)
+    public static TradeCountView Count(IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly night, Func<string, DateOnly, decimal?> close, IReadOnlyList<DateOnly>? sessions = null)
     {
         var closed = trades.Where(one => one.Trade.Ended is { } end && end <= night).ToArray();
+        var endings = closed.Select(one => PaperAccount.Ended(one.Trade, one.Result, sessions, close).Ending).ToArray();
         var returns = trades.Select(one => ReturnOf(one.Trade, night, close)).OfType<double>().ToArray();
 
+        // A trade's ending is the words its row on Paper trading draws, read off the exit that sold it: the open after a close
+        // at its target can sell it under the target, and a trailing stop has risen past the stop it was bought with.
         return new TradeCountView(
             trades.Count,
             trades.Count - closed.Length,
             closed.Length,
             closed.Count(one => one.Result > 0 || (one.Result is null && one.Trade.Sale > one.Trade.Buy)),
-            closed.Count(one => one.Trade.Target is { } target && one.Trade.Sale >= target),
-            closed.Count(one => one.Trade.Stop is { } stop && one.Trade.Sale <= stop),
+            endings.Count(ending => ending is PaperAccount.ReachedTarget or PaperAccount.OpenedOverTarget),
+            endings.Count(ending => ending is PaperAccount.UnderStop or PaperAccount.UnderTrail or PaperAccount.OpenedUnderStop),
             returns.Length == 0 ? null : returns.Average());
     }
 

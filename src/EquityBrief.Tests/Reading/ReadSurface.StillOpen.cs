@@ -178,7 +178,7 @@ public partial class ReadSurface
         // trades over two nights: AG open, BS stopped out, CE reached its target and CE again open, DM with no
         // outcome row, EX open; three listed again, drawn and not counted.
         Assert.Contains("data-trades=\"6\" data-shown=\"9\" data-status=\"all\">", page, StringComparison.Ordinal);
-        Assert.Contains("<dl class=\"counts\" data-listed=\"6\" data-nights=\"2\" data-open=\"3\" data-finished=\"2\" data-target=\"1\" data-stopped=\"1\" data-time=\"0\" data-missing=\"1\">", page, StringComparison.Ordinal);
+        Assert.Contains("<dl class=\"counts\" data-listed=\"6\" data-nights=\"2\" data-open=\"3\" data-to-buy=\"0\" data-finished=\"2\" data-target=\"1\" data-stopped=\"1\" data-time=\"0\" data-missing=\"1\">", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"repeats\" data-repeats=\"3\">3 listings were made again while an earlier trade was open, drawn and not counted.</p>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"list-count\" data-shown=\"9\" data-trades=\"6\" data-repeats=\"3\">Showing 9 of 9 rows: 6 trades and 3 listed again while an earlier trade was open</p>", page, StringComparison.Ordinal);
 

@@ -53,7 +53,7 @@ public sealed partial class SinglePageApp
         var opens = MarkRenderer.OpenDay(night);
 
         region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night, line.Groups, improving?.Bought)), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
-        region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
+        region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night, improving?.Bought ?? 0, line.Groups?.ToBuyFromReshuffles ?? 0), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
         region.Append(marks.Copying ? string.Empty : marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
 
         // The setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or the
@@ -150,7 +150,7 @@ public sealed partial class SinglePageApp
     }
 
     // A book's holdings in words: those bought, and those chosen and to buy at tomorrow's open, which are held by nothing yet.
-    // see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+    // see: Every count of trades names its group and one function works the three groups
     static string HoldingsWords(int chosen, int toBuy)
     {
         var bought = chosen - toBuy;

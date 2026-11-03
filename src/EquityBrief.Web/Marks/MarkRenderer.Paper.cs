@@ -340,7 +340,7 @@ public sealed partial class MarkRenderer
 
         html.Append("</div>");
         html.Append(link.Closed ? ClosedTrades(page.Closed) : OpenTrades(page.Open));
-        html.Append(NotBought(page.NotBought));
+        html.Append(NotBought(page.NotBought, page.Groups?.ToBuyFromReshuffles ?? 0));
 
         if (page.Groups is { } groups)
         {
@@ -349,7 +349,7 @@ public sealed partial class MarkRenderer
 
         if (page.Earlier.Count > 0 && !Copying)
         {
-            html.Append(Invariant, $"<details class=\"paper-earlier\" data-earlier=\"{page.Earlier.Count}\"><summary>Earlier versions:{page.Earlier.Count} {(page.Earlier.Count == 1 ? "trade" : "trades")} a rule's earlier versions listed, left out of every figure on this page</summary>");
+            html.Append(Invariant, $"<details class=\"paper-earlier\" data-earlier=\"{page.Earlier.Count}\"><summary>Earlier versions: {page.Earlier.Count} {(page.Earlier.Count == 1 ? "trade" : "trades")} a rule's earlier versions listed, in the line above and left out of every account</summary>");
             html.Append("<div class=\"tbl-wrap\"><table class=\"paper-bought\"><thead><tr><th>Stock</th><th>Setup</th><th>Listed by</th><th class=\"r\">Bought</th><th>Open or how it ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
 
             foreach (var trade in page.Earlier)
@@ -507,11 +507,11 @@ public sealed partial class MarkRenderer
     }
 
     // The listed stocks not bought, in one line: how many, then each reason with its stocks, each linking to its chart.
-    static string NotBought(PaperNotBought unbought) =>
+    static string NotBought(PaperNotBought unbought, int reshuffled = 0) =>
         unbought.Count == 0
             ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>"
             : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\">Not bought: {unbought.Count} listed {(unbought.Count == 1 ? "stock" : "stocks")}. ")
-                + string.Join(" ", unbought.Reasons.Select(reason => Formatted($"<span class=\"pu-reason\" data-count=\"{reason.Stocks.Count}\">{Escaped(Capitalised(reason.Why))} ({reason.Stocks.Count}): {string.Join(", ", reason.Stocks.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>")))}.</span>")))
+                + string.Join(" ", unbought.Reasons.Select(reason => Formatted($"<span class=\"pu-reason\" data-count=\"{reason.Stocks.Count}\">{Escaped(Capitalised(reason.Why))} ({reason.Stocks.Count}{(reshuffled > 0 && reason.Why == EquityBrief.Core.Cards.PaperAccount.Waiting ? Formatted($", {reshuffled} of them the monthly books' reshuffle") : string.Empty)}): {string.Join(", ", reason.Stocks.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>")))}.</span>")))
                 + "</p>";
 
     // A family's choice for the variants' part or the scorecard, kept in the link under its key, its first family the key's

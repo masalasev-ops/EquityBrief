@@ -239,7 +239,7 @@ public partial class ReadSurface
         var line = WebUtility.HtmlDecode(new MarkRenderer().TradesLine(new PicksSummary(300, 70, 10, 140, 120, 30, 0, 260, 64, 250, 60, 53.8, 41.2, 0.21), "#/picks"));
 
         Assert.Equal(
-            "<p class=\"run-trades\" data-listed=\"300\" data-open=\"10\" data-decided=\"260\" data-needed=\"250\">The live list's trades: 300 listed, 10 still open, 260 decided of the 250 a share waits on. <a href=\"#/picks\">Open their trade log &#8594;</a></p>"
+            "<p class=\"run-trades\" data-listed=\"300\" data-open=\"10\" data-decided=\"260\" data-needed=\"250\" data-to-buy=\"0\">The pullback's trades under every version, part of the system's trades: 300 bought, 10 still open, 260 decided of the 250 a share waits on. <a href=\"#/picks\">Open their trade log &#8594;</a></p>"
                 .Replace("&#8594;", "→", StringComparison.Ordinal),
             line);
         Assert.DoesNotContain("53.8", line, StringComparison.Ordinal);

@@ -383,7 +383,7 @@ public partial class ReadSurface
         // on none of it; the heavyweights' card the live rule's own book, holding M1, live since that day.
         var (frozen, frozenBook) = await CardsReadAt("2026-10-03T11:05:00Z");
 
-        Assert.Contains("<span class=\"status-pill live\">Live since 3 Oct 2026</span>", frozen, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">This version since 3 Oct 2026</span>", frozen, StringComparison.Ordinal);
         Assert.Contains(SweepLineDrawn, RuleFoldOf(frozen), StringComparison.Ordinal);
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-03\"", frozenBook, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M1\"", frozenBook, StringComparison.Ordinal);

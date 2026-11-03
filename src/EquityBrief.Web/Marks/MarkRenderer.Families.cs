@@ -187,7 +187,17 @@ public sealed record IndexTradeCell(
     DateOnly? EndedOn,
     double? Result,
     double? Cost,
-    double? AfterCost);
+    double? AfterCost,
+    string? NotBought = null)
+{
+    // A trade is open only once bought: a listing still waiting on the next session's open is to buy.
+    public bool ToBuy => EndedOn is null && NotBought == EquityBrief.Core.Ledger.TradeFills.Waiting;
+
+    // A trade whose exit fired on a close is still held until the next session's open sells it, and its result is priced then.
+    public bool Selling => EndedOn is not null && NotBought is null && Result is null;
+
+    public bool Open => (EndedOn is null && NotBought is null) || Selling;
+}
 
 // How an S&P 400's or 600's night went, as its Run page states it: the members read, the index's own breadth against
 // the floor and whether its swing lists were open, the members a setup passed, those listed and held back, the trades
@@ -205,7 +215,7 @@ public sealed partial class MarkRenderer
         ("Buy", "The open it was bought at, the session after its night, or its plan's close while it buys at the next open."),
         ("Stop", "The price a close beneath ends it at a loss, sold at the next session's open, or the first level of a stop that trails."),
         ("Target", "The price a close at or above ends it at a gain, sold at the next session's open; a setup that trails its stop names none."),
-        ("Status", "Open, or the session it ended on."),
+        ("Status", "Open once bought, to buy at tomorrow's open until then, selling at tomorrow's open once its exit fired on a close, or the session it ended on."),
         ("Result", "What it made in multiples of what it risked, before its cost."),
         ("Cost", "Its round trip at the published spread for its size and price, in multiples of its risk."),
         ("After cost", "Its result less its cost, which is what the index's tests read."),
@@ -235,7 +245,13 @@ public sealed partial class MarkRenderer
             body.Append(PriceCell("buy", row.Entry, null));
             body.Append(PriceCell("stop", row.Stop, null));
             body.Append(PriceCell("target", row.Target, row.Trailing ? "trailing" : null));
-            body.Append(row.EndedOn is { } ended ? Formatted($"<td>ended {DayOf(ended)}</td>") : "<td><b>open</b></td>");
+            body.Append(row.Selling
+                ? "<td><b>sells at tomorrow's open</b></td>"
+                : row.EndedOn is { } ended
+                ? Formatted($"<td>ended {DayOf(ended)}</td>")
+                : row.ToBuy ? Formatted($"<td>{Escaped(TradeGroupsView.ToBuyWords)}</td>")
+                : row.NotBought is { } refused ? Formatted($"<td>not bought: {Escaped(refused)}</td>")
+                : "<td><b>open</b></td>");
             body.Append(Invariant, $"<td class=\"r num\">{Multiple(row.Result)}</td><td class=\"r num\">{(row.Cost is { } cost ? Unsigned(cost, 2).ToString("0.00", Invariant) : "<span class=\"degraded\">none yet</span>")}</td><td class=\"r num\">{Multiple(row.AfterCost)}</td></tr>");
         }
 

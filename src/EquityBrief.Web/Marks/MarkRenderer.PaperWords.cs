@@ -59,7 +59,7 @@ public sealed partial class MarkRenderer
             ? "Set your account above to walk every setup's trades together."
             : combined is not { } all
                 ? "No live setup has a trade yet, so the account of every setup together holds none."
-                : Formatted($"All setups together, counting the rules as registered now from the day each counts from: {(all.Walk.Return is { } made ? Moved(made).ToLowerInvariant() : "no return yet")} since {Short(all.Since)},{Counted(all.Open, "position", "positions")} open, {Counted(all.Skipped, "pick", "picks")} skipped.");
+                : Formatted($"All setups together, counting the rules as registered now from the day each counts from: {(all.Walk.Return is { } made ? Moved(made).ToLowerInvariant() : "no return yet")} since {Short(all.Since)}, {Counted(all.Open, "position", "positions")} open, {Counted(all.Skipped, "pick", "picks")} skipped.");
 
     public static string PaperBoughtSaid(PaperPageView page)
     {

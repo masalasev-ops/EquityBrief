@@ -191,7 +191,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>{Escaped(picks)}</b></p><p class=\"minute-said\">{Escaped(qualified + quiet)}</p></div>");
 
         // The system's trades still open, and those that ended tonight.
-        // see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+        // see: Every count of trades names its group and one function works the three groups
         var open = (view.Groups ?? line.Groups) is { } groups
             ? Formatted($"Of {TradeGroupsView.SystemWords}, {groups.System.Open} {(groups.System.Open == 1 ? "is" : "are")} open, {groups.ThisVersion.Open} of them this version's")
             : line.OpenTrades == 0
@@ -199,7 +199,9 @@ public sealed partial class MarkRenderer
                 : Counted(line.OpenTrades, "trade from an earlier night is still open", "trades from earlier nights are still open");
         var endedWords = view.Ended is not { Count: > 0 } done
             ? "."
-            : Formatted($"; {done.Count} ended tonight.");
+            : line.Universe is not null && (view.Groups ?? line.Groups) is not null
+                ? Formatted($"; {done.Count} of them {(done.Count == 1 ? "sells" : "sell")} at tomorrow's open.")
+                : Formatted($"; {done.Count} ended tonight.");
         var why = view.Ended is { Count: > 0 } split ? EndedWords(split) : "None ended tonight.";
         var paper = Formatted($"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">See them on Past picks</a>");
 
@@ -330,13 +332,19 @@ public sealed partial class MarkRenderer
     // with, where the page hands one, the stock's entry and exit plan drawn inside it beneath its setup's own plan, closed
     // until a press on the row or its Open plan opens it, the row the link names open; and one line on how to read it.
     // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
-    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, DateOnly? night = null)
+    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, DateOnly? night = null, int fundamentals = 0, int reshuffled = 0)
     {
         var body = new StringBuilder();
         var opens = OpenDay(night);
-        var summary = points.Count == 0
+        var all = points.Count + fundamentals;
+
+        // One count across the pages: the fundamentals' picks draw on their own card, and the monthly books' reshuffle is said.
+        // see: Every count of trades names its group and one function works the three groups
+        var summary = (all == 0
             ? "No stock to buy at " + opens + " open: no setup picked one tonight."
-            : Counted(points.Count, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close.";
+            : Counted(all, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close"
+                + (fundamentals == 0 ? "." : Formatted($": these {points.Count} and the fundamentals' {fundamentals} on their own card below.")))
+            + (reshuffled == 0 ? string.Empty : Formatted($" The monthly books' reshuffle adds {reshuffled} more."));
 
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary data-buy-points=\"{points.Count}\">{Escaped(summary)}</p>");
 

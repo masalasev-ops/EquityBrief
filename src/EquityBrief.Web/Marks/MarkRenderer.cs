@@ -243,7 +243,7 @@ public static class PickStatus
     public const string Missing = "missing";
 
     // A stock listed and not yet bought, which no group of trades counts until its next session's open fills it.
-    // see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+    // see: Every count of trades names its group and one function works the three groups
     public const string ToBuy = "to-buy";
 
     public static IReadOnlyList<string> Filters { get; } = [Open, ToBuy, Target, Stopped, Time];
@@ -7347,7 +7347,7 @@ public sealed partial class MarkRenderer : IComponent
     {
         var counts = new StringBuilder();
 
-        counts.Append(Invariant, $"<dl class=\"counts\" data-listed=\"{summary.Listed}\" data-nights=\"{summary.Nights}\" data-open=\"{summary.Open}\" data-finished=\"{summary.Finished}\" ");
+        counts.Append(Invariant, $"<dl class=\"counts\" data-listed=\"{summary.Listed}\" data-nights=\"{summary.Nights}\" data-open=\"{summary.Open}\" data-to-buy=\"{summary.ToBuy}\" data-finished=\"{summary.Finished}\" ");
         counts.Append(Invariant, $"data-target=\"{summary.Target}\" data-stopped=\"{summary.Stopped}\" data-time=\"{summary.Time}\" data-missing=\"{summary.Missing}\">");
         counts.Append(Invariant, $"<div><dt>Trades listed</dt><dd>{summary.Listed}<span class=\"grp\">over {summary.Nights} night{(summary.Nights == 1 ? string.Empty : "s")}</span></dd></div>");
 

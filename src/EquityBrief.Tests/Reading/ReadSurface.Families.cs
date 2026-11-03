@@ -190,7 +190,7 @@ public partial class ReadSurface
 
         // From 22.6 its header: the setup's word in its tint, since when it is live, tonight's count and what it buys; and
         // the Showing list, the live setup and each version; the page's words at its foot in place of a guide.
-        Assert.Contains("<header class=\"fam-head\" data-family=\"pullback\"><span class=\"fam-tag\" data-family=\"pullback\"><span class=\"fam-swatch\" data-family=\"pullback\"></span>Pullbacks to support</span> <span class=\"status-pill live\">Live since 25 Sep 2026</span> <span class=\"fam-count\">5 picks tonight</span></header>", page, StringComparison.Ordinal);
+        Assert.Contains("<header class=\"fam-head\" data-family=\"pullback\"><span class=\"fam-tag\" data-family=\"pullback\"><span class=\"fam-swatch\" data-family=\"pullback\"></span>Pullbacks to support</span> <span class=\"status-pill live\">This version since 25 Sep 2026</span> <span class=\"fam-count\">5 picks tonight</span></header>", page, StringComparison.Ordinal);
         Assert.Contains("<dl class=\"gloss tonight-words\">", page, StringComparison.Ordinal);
         Assert.Equal(3, Regex.Matches(Regex.Match(page, "<select id=\"rule-pullback\".*?</select>", RegexOptions.Singleline).Value, "<option ").Count);
         // Its rule in words, written from the settings of the version its night ran under, the version every row is
