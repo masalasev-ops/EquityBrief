@@ -150,7 +150,7 @@ public partial class ReadSurface
                 $"Picked tonight by {pullback}: buy at the next open, near tonight's close of 100.00.",
                 "Sell at the next trading day's open after a day that closes below 96.00.",
                 "Sell at the next trading day's open after a day that closes at or above 110.00. Otherwise sell at the close 21 trading days after the buy.",
-                "Your size: 250 shares, 25,000.00, 25.0% of the account, 1,000.00 at risk to the stop.",
+                "Your size: 250 shares, 25,000.00, 25.0% of the account, 1,000.00 at risk to the stop, 2,500.00 to the target.",
             ],
             LinesOf(view, "way-in"));
         Assert.Equal(
