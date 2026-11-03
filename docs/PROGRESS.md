@@ -14559,8 +14559,8 @@ Tests:      two new, each with an ex-dividend date nearer than the report, and t
 Mutation:   each predicted before its run by this rule, every property this pull request states at one site each, in four
             batches of disjoint tests, reverted, clean. Red: the reason's read; the second book's next report, AAPL's setups
             moving from 2026-10-29 to the ex-date; its past prints, AAPL's rule reading 2026-07-30 where it read 2026-04-30; the
-            every-name read; the chart's read; "not announced"; Home's rounding, red at nought as well as either side of it;
-            Home's third section; the run's stop; the too few years reason; the degraded class on a reason; the plan's word; the
+            every-name read; the chart's read; "not announced"; Home's rounding, red either side of nought; Home's third
+            section, red at nought and either side of it; the run's stop; the too few years reason; the degraded class on a reason; the plan's word; the
             universe's word; the event book's word. Survived as predicted, equivalent: the filter counts' replay reading every
             kind, since it reads a plan's first tranche and no setup of the second book.
 Carried:    none. The remedy above is owed to the operator's store and is not a carried obligation of the build.

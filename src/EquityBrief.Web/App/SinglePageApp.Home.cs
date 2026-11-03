@@ -334,9 +334,9 @@ public sealed partial class SinglePageApp
     public static string Bar(string key, string label, double? value, double widest)
     {
         var width = value is { } held && widest > 0 ? Math.Abs(held) / widest * 100 : 0;
-        var drawn = value is { } made && Math.Round(made * 100, 1) != 0 ? made * 100 : (double?)null;
-        var shown = value is null ? NoFigure : Invariant($"{drawn ?? 0:+0.0;-0.0;0.0}%");
+        var drawn = value is { } made && Math.Round(made * 100, 1) != 0 ? made * 100 : 0;
+        var shown = value is null ? NoFigure : Invariant($"{drawn:+0.0;-0.0;0.0}%");
 
-        return Invariant($"<div class=\"home-bar\" data-bar=\"{key}\"><div class=\"row\"><span>{Escaped(label)}</span><b{(key == "ours" && drawn is { } own ? Invariant($" style=\"color:var(--{(own > 0 ? "up" : "down")})\"") : string.Empty)}>{shown}</b></div><div class=\"track\"><div class=\"fill {key}\" style=\"width:{width.ToString("0.#", CultureInfo.InvariantCulture)}%\"></div></div></div>");
+        return Invariant($"<div class=\"home-bar\" data-bar=\"{key}\"><div class=\"row\"><span>{Escaped(label)}</span><b{(key == "ours" && drawn != 0 ? Invariant($" style=\"color:var(--{(drawn > 0 ? "up" : "down")})\"") : string.Empty)}>{shown}</b></div><div class=\"track\"><div class=\"fill {key}\" style=\"width:{width.ToString("0.#", CultureInfo.InvariantCulture)}%\"></div></div></div>");
     }
 }
