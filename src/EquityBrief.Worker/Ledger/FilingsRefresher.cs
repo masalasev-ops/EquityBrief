@@ -45,11 +45,23 @@ public sealed record FilingsOutcome(
 
 // What one company that re-filed under a new number took from its predecessor: the day its new filer's first report starts,
 // the facts stored, the earliest period among them and how many years before the new filer's own earliest it reaches.
-public sealed record PredecessorJoined(FilerSuccession Succession, DateOnly? Starts, int Facts, string? Earliest, double? YearsGained, string? Refused)
+public sealed record PredecessorJoined(FilerSuccession Succession, DateOnly? Starts, int Facts, string? Earliest, double? YearsGained, string? Refused, int InCommon = 0, decimal WorstGap = 0)
 {
     public string Said => Refused is { } why
         ? $"{Succession.Ticker}: not joined, {why}"
-        : FormattableString.Invariant($"{Succession.Ticker}: {Facts} fact(s) of {Succession.Predecessor} joined to {Succession.Successor}, before {Starts:yyyy-MM-dd}, from {Earliest ?? "none"}, {YearsGained:0.0} year(s) gained");
+        : FormattableString.Invariant($"{Succession.Ticker}: {Facts} fact(s) of {Succession.Predecessor} joined to {Succession.Successor}, before {Starts:yyyy-MM-dd}, from {Earliest ?? "none"}, {YearsGained:0.0} year(s) gained, {InCommon} figure(s) in common, the widest gap {WorstGap * 100:0.00}%");
+}
+
+// A stock left off the list, with the joined facts a join's run takes out of its new filer.
+public sealed record PredecessorLeftOff(FilerLeftOff LeftOff, int Removed)
+{
+    public string Said => FormattableString.Invariant($"{LeftOff.Ticker}: left off, {LeftOff.Why}") + (Removed > 0 ? FormattableString.Invariant($"; {Removed} joined fact(s) taken out") : string.Empty);
+}
+
+// What one run of the join came to.
+public sealed record PredecessorJoins(IReadOnlyList<PredecessorJoined> Joined, IReadOnlyList<PredecessorLeftOff> LeftOff)
+{
+    public IEnumerable<string> Said => Joined.Select(one => one.Said).Concat(LeftOff.Select(one => one.Said));
 }
 
 // The filings refresh. After the close and the quarters fetch, it reads the archive's daily index for each weekday
@@ -78,7 +90,7 @@ public sealed class FilingsRefresher : IComponent
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.PulledCompany, Touch.Read),
-            new StoreTouch(Store.FiledFact, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.FiledFact, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.FiledFactPull, Touch.Insert),
             new StoreTouch(Store.FilingDay, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -125,7 +137,15 @@ public sealed class FilingsRefresher : IComponent
     // predecessor's facts copied under it for the periods ending before that day.
     const string NewestFiler = "SELECT cik FROM company WHERE ticker = $ticker ORDER BY fetched_at DESC LIMIT 1;";
 
-    const string PeriodsOfFiler = "SELECT accession, form, filed, period_start, period_end FROM filed_fact WHERE cik = $cik;";
+    // A row the join copied carries the predecessor's own accession, so a second run reads what the new filer filed itself.
+    const string NotCopied = @"
+        NOT EXISTS (SELECT 1 FROM filed_fact old
+                    WHERE old.cik = $predecessor AND old.concept = filed_fact.concept AND old.period_start = filed_fact.period_start
+                      AND old.period_end = filed_fact.period_end AND old.accession = filed_fact.accession)";
+
+    const string PeriodsOfFiler = "SELECT accession, form, filed, period_start, period_end FROM filed_fact WHERE cik = $cik AND " + NotCopied + ";";
+
+    const string EarliestOwnPeriod = "SELECT MIN(period_end) FROM filed_fact WHERE cik = $cik AND " + NotCopied + ";";
 
     const string EarliestPeriod = "SELECT MIN(period_end) FROM filed_fact WHERE cik = $cik AND period_end < $before;";
 
@@ -135,6 +155,37 @@ public sealed class FilingsRefresher : IComponent
         FROM filed_fact
         WHERE cik = $predecessor AND period_end < $before
         ON CONFLICT (cik, concept, period_start, period_end) DO NOTHING;
+    ";
+
+    // Each figure both filers state of themselves for a period before the changeover: a row the join copied carries the
+    // predecessor's own accession, so it is not one of the new filer's statements.
+    const string FiguresInCommon = @"
+        SELECT old.dollars, new.dollars
+        FROM filed_fact old
+        JOIN filed_fact new ON new.cik = $successor AND new.concept = old.concept AND new.period_start = old.period_start AND new.period_end = old.period_end
+        WHERE old.cik = $predecessor AND old.period_end < $before AND new.accession <> old.accession;
+    ";
+
+    const string TakeOutJoined = @"
+        DELETE FROM filed_fact
+        WHERE cik = $successor
+          AND EXISTS (SELECT 1 FROM filed_fact old
+                      WHERE old.cik = $predecessor AND old.concept = filed_fact.concept AND old.period_start = filed_fact.period_start
+                        AND old.period_end = filed_fact.period_end AND old.accession = filed_fact.accession);
+    ";
+
+    // The figure of a period the new filer holds only as the join copied it from its predecessor.
+    const string JoinedFigure = @"
+        SELECT joined.dollars, joined.accession
+        FROM filed_fact joined
+        JOIN filed_fact old ON old.cik = $predecessor AND old.concept = joined.concept AND old.period_start = joined.period_start
+                           AND old.period_end = joined.period_end AND old.accession = joined.accession
+        WHERE joined.cik = $cik AND joined.concept = $concept AND joined.period_start = $period_start AND joined.period_end = $period_end;
+    ";
+
+    const string RestateJoined = @"
+        UPDATE filed_fact SET dollars = $dollars, filed = $filed, form = $form, accession = $accession, run_id = $run_id
+        WHERE cik = $cik AND concept = $concept AND period_start = $period_start AND period_end = $period_end;
     ";
 
     // Whether the store holds a fact of one report.
@@ -663,13 +714,15 @@ public sealed class FilingsRefresher : IComponent
     // Each company that re-filed under a new number has its predecessor's stored facts copied under its new filer, each with
     // the day it was filed, for the periods ending before the day the new filer's first report starts, a fact the new filer
     // states of itself standing as it is. By hand and once: it asks the archive for nothing, and a second run stores nothing.
-    // A stock whose newest company row names another filer is refused and named rather than joined to a number it left.
+    // A stock whose newest company row names another filer is refused and named rather than joined to a number it left, and
+    // one whose two filers' figures do not agree is refused and named. A stock left off has what a join copied taken out.
     // see: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts
-    public async Task<IReadOnlyList<PredecessorJoined>> JoinPredecessorsAsync(string runId, CancellationToken cancellation = default)
+    public async Task<PredecessorJoins> JoinPredecessorsAsync(string runId, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
         var watch = Stopwatch.StartNew();
         var joined = new List<PredecessorJoined>();
+        var leftOff = new List<PredecessorLeftOff>();
 
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
@@ -681,8 +734,27 @@ public sealed class FilingsRefresher : IComponent
             joined.Add(await JoinOneAsync(connection, transaction, succession, runId, cancellation));
         }
 
+        foreach (var left in FilerSuccessions.LeftOff)
+        {
+            var removed = 0;
+
+            if (left.Reversed is { } reversed)
+            {
+                await using var command = connection.CreateCommand();
+
+                command.Transaction = transaction;
+                command.CommandText = TakeOutJoined;
+                command.Parameters.AddWithValue("$successor", reversed.Successor);
+                command.Parameters.AddWithValue("$predecessor", reversed.Predecessor);
+                removed = await command.ExecuteNonQueryAsync(cancellation);
+            }
+
+            leftOff.Add(new PredecessorLeftOff(left, removed));
+        }
+
         await transaction.CommitAsync(cancellation);
 
+        var joins = new PredecessorJoins(joined, leftOff);
         var outcome = new FilingsOutcome([], null, [], joined.Sum(one => one.Facts), 0, 0, 0, 0, null, watch.Elapsed.TotalSeconds);
 
         await RecordAsync(
@@ -691,10 +763,10 @@ public sealed class FilingsRefresher : IComponent
             JoinStage,
             startedAt,
             outcome,
-            string.Join("; ", joined.Select(one => one.Said)),
+            string.Join("; ", joins.Said),
             cancellation);
 
-        return joined;
+        return joins;
     }
 
     static async Task<PredecessorJoined> JoinOneAsync(SqliteConnection connection, SqliteTransaction transaction, FilerSuccession succession, string runId, CancellationToken cancellation)
@@ -728,6 +800,7 @@ public sealed class FilingsRefresher : IComponent
             command.Transaction = transaction;
             command.CommandText = PeriodsOfFiler;
             command.Parameters.AddWithValue("$cik", succession.Successor);
+            command.Parameters.AddWithValue("$predecessor", succession.Predecessor);
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -743,7 +816,30 @@ public sealed class FilingsRefresher : IComponent
         }
 
         var day = starts.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var own = await ScalarAsync(EarliestPeriod, ("$cik", succession.Successor), ("$before", "9999-12-31")) as string;
+        var common = new List<(decimal Predecessor, decimal Successor)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = FiguresInCommon;
+            command.Parameters.AddWithValue("$successor", succession.Successor);
+            command.Parameters.AddWithValue("$predecessor", succession.Predecessor);
+            command.Parameters.AddWithValue("$before", day);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                common.Add((Money.FromStorage(reader.GetString(0)), Money.FromStorage(reader.GetString(1))));
+            }
+        }
+
+        if (FilerSuccessions.Disagreement(common) is { } disagreement)
+        {
+            return new PredecessorJoined(succession, starts, 0, null, null, disagreement, common.Count);
+        }
+
+        var own = await ScalarAsync(EarliestOwnPeriod, ("$cik", succession.Successor), ("$predecessor", succession.Predecessor)) as string;
         var earliest = await ScalarAsync(EarliestPeriod, ("$cik", succession.Predecessor), ("$before", day)) as string;
 
         int stored;
@@ -763,7 +859,54 @@ public sealed class FilingsRefresher : IComponent
             ? (DateOnly.ParseExact(own, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayNumber - DateOnly.ParseExact(earliest, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayNumber) / 365.25
             : 0;
 
-        return new PredecessorJoined(succession, starts, stored, earliest, years, null);
+        return new PredecessorJoined(succession, starts, stored, earliest, years, null, common.Count, common.Max(one => FilerSuccessions.Gap(one.Predecessor, one.Successor)));
+    }
+
+    // A figure the new filer states of a period it holds only as the join copied it: where the two differ the new filer's
+    // stands, with the day it filed it, and a figure the same keeps the earlier day.
+    // see: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts
+    static async Task<int> RestateJoinedAsync(SqliteConnection connection, SqliteTransaction transaction, string predecessor, string cik, FiledFactRow row, string runId, CancellationToken cancellation)
+    {
+        string? joined = null;
+
+        await using (var read = connection.CreateCommand())
+        {
+            read.Transaction = transaction;
+            read.CommandText = JoinedFigure;
+            read.Parameters.AddWithValue("$predecessor", predecessor);
+            read.Parameters.AddWithValue("$cik", cik);
+            read.Parameters.AddWithValue("$concept", row.Concept);
+            read.Parameters.AddWithValue("$period_start", Stamp(row.Start));
+            read.Parameters.AddWithValue("$period_end", Stamp(row.End));
+
+            await using var reader = await read.ExecuteReaderAsync(cancellation);
+
+            if (await reader.ReadAsync(cancellation) && reader.GetString(1) != row.Accession)
+            {
+                joined = reader.GetString(0);
+            }
+        }
+
+        if (joined is null || Money.FromStorage(joined) == row.Value)
+        {
+            return 0;
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = RestateJoined;
+        command.Parameters.AddWithValue("$cik", cik);
+        command.Parameters.AddWithValue("$concept", row.Concept);
+        command.Parameters.AddWithValue("$period_start", Stamp(row.Start));
+        command.Parameters.AddWithValue("$period_end", Stamp(row.End));
+        command.Parameters.AddWithValue("$dollars", Money.ToStorage(row.Value));
+        command.Parameters.AddWithValue("$filed", Stamp(row.Filed));
+        command.Parameters.AddWithValue("$form", row.Form);
+        command.Parameters.AddWithValue("$accession", row.Accession);
+        command.Parameters.AddWithValue("$run_id", runId);
+
+        return await command.ExecuteNonQueryAsync(cancellation);
     }
 
     // What the run page reads of the step: the days read, the members refreshed, the facts stored and the documents
@@ -798,6 +941,7 @@ public sealed class FilingsRefresher : IComponent
     {
         var rows = answered is null ? [] : FiledFacts.Stored(answered);
         var stored = 0;
+        var predecessor = FilerSuccessions.PredecessorOf(cik);
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
@@ -817,7 +961,11 @@ public sealed class FilingsRefresher : IComponent
             command.Parameters.AddWithValue("$accession", row.Accession);
             command.Parameters.AddWithValue("$run_id", runId);
 
-            stored += await command.ExecuteNonQueryAsync(cancellation);
+            var inserted = await command.ExecuteNonQueryAsync(cancellation);
+
+            stored += inserted == 0 && predecessor is not null
+                ? await RestateJoinedAsync(connection, transaction, predecessor, cik, row, runId, cancellation)
+                : inserted;
         }
 
         await using (var pull = connection.CreateCommand())

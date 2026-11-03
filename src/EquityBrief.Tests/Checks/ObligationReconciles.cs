@@ -518,9 +518,9 @@ public class ObligationReconciles
         ["19"] = 0,
         // None: phase 20 opened no carried obligation of either form.
         ["20"] = 0,
-        // Two, both opened by the 21.0 planning pass: the monthly run's time with every family tested, read on the first
-        // scheduled monthly run after 21.5, and the ratings refresh's cap read on its first five runs.
-        ["21"] = 2,
+        // One still operating of the two the 21.0 planning pass opened: the monthly run's time with every family tested, read
+        // on the first scheduled monthly run after 21.5, the ratings refresh's cap settled by 22.29 on the operator's word.
+        ["21"] = 1,
         // None: phase 22 opened no carried obligation of either form.
         ["22"] = 0,
     };

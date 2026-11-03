@@ -1,0 +1,6 @@
+# The remedy of 22.28 of 2026-11-03, on the operator's ruling of that day: VNOM's and QDEL's joined facts taken out and each
+# of the other 15 read again against the 5 figures in common and the 5% a join needs. It runs before the setup ledger's history
+# is built again, whose build reads what it leaves. No request and no model call, and no rule's version moves. Run on the
+# operator's word, from main after the merge, when no night, local run, drain, labeller, history read, ledger build or monthly
+# run is writing, and read the output for "remedy done", for 485 and 447 facts taken out and for no stock not joined.
+filings --join-predecessors
