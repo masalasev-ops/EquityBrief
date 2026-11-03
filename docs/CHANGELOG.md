@@ -26,6 +26,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/ARCHITECTURE.html, docs/SCHEMA.md - the family replay reads the kept bars and each member's year as it stood on the night
+Corrects: three replay mismatches, GDDY, STZ and REGN, read off the store on 2026-11-03: a replay measured a rescaled member against bands at the night's scale, and read a long high over a year that has since rolled past the sessions the night read.
+Was:
+> bar store, market series,
+> a drift's member read on the surprise the night stored for it where it stored one, since the provider revises a surprise after the night has read it, the night's shadow
+> ... are worked by one function in the core when a page is read).
+Now:
+> bar store, kept bars, market series,
+> a drift's member read on the surprise the night stored for it where it stored one, since the provider revises a surprise after the night has read it, each member's year as it stood on the night, the sessions since dropped from the store's year read from the kept bars and the bands and typical moves the night stored put on the scale a corporate action since has put its bars on, the night's shadow
+> ... are worked by one function in the core when a page is read). From 21.21 the family replay, which is no night's, reads a member's dropped sessions from it, to read a long high over the year the night read (see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise).
+Why: the component row and the schema state what the replay reads, and it now reads the kept bars.
+
 ### 2026-11-03 - docs/ARCHITECTURE.html, docs/RUNBOOK.md, docs/SCHEMA.md, .claude/rules/checks.md - the newest two of the store's copies are kept
 Authorised by: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 Was:

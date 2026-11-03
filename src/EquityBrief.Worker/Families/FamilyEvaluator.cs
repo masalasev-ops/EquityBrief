@@ -181,14 +181,14 @@ public sealed class FamilyEvaluator : IComponent
 
         if (night is not { } session)
         {
-            await AppendAsync(connection, null, runId, startedAt, 0, "no session is stored, so no family was evaluated", false, cancellation);
+            await AppendAsync(connection, null, runId, startedAt, 0, RuleWording.Evaluation.NoSession, false, cancellation);
 
             return new FamilyEvaluatorOutcome(null, 0, []);
         }
 
         if (await InputsAsync(connection, session, shadow.DriftWindowReach, cancellation, shadow.ReadingVersions) is not { } inputs)
         {
-            await AppendAsync(connection, null, runId, startedAt, 0, FormattableString.Invariant($"the swing filter stored no result for {Stamp(session)}, so no family was evaluated"), false, cancellation);
+            await AppendAsync(connection, null, runId, startedAt, 0, RuleWording.Evaluation.NoFilterResult(Stamp(session)), false, cancellation);
 
             return new FamilyEvaluatorOutcome(null, 0, []);
         }
@@ -432,7 +432,7 @@ public sealed class FamilyEvaluator : IComponent
     // ones a single gate short.
     public static string Detail(FamilyEvaluatorOutcome outcome) =>
         FormattableString.Invariant($"for {outcome.Night:yyyy-MM-dd}: ")
-        + string.Join("; ", outcome.Families.Select(family => FormattableString.Invariant($"the {family.Family} family passed {family.Passed} of {family.Members} members, {family.OneShort} one gate short")));
+        + string.Join("; ", outcome.Families.Select(family => RuleWording.Evaluation.Passed(family.Family, family.Passed, family.Members, family.OneShort)));
 
     // The series exclusions a family carries over from the filter's row: a gap, and a series marked suspect.
     // The filter's other exclusions are its own rule's.
@@ -630,7 +630,7 @@ public sealed class FamilyEvaluator : IComponent
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        return gates.Length == 0 ? string.Empty : "; the market switches: " + string.Join("; ", gates);
+        return gates.Length == 0 ? string.Empty : RuleWording.Evaluation.TheSwitches + string.Join("; ", gates);
     }
 
     // From 20.4 what the night's releases held under each reading version a standing rule names, so the stage's row says
@@ -642,7 +642,7 @@ public sealed class FamilyEvaluator : IComponent
             .Select(version => ReleaseTone.Said(version, [.. inputs.Members.Select(member => member.Inputs.Releases?.FirstOrDefault(release => release.Version == version)).OfType<PrintRelease>()]))
             .ToArray();
 
-        return said.Length == 0 ? string.Empty : "; the release readings: " + string.Join("; ", said);
+        return said.Length == 0 ? string.Empty : RuleWording.Evaluation.TheReadings + string.Join("; ", said);
     }
 
     static async Task<DateOnly?> NewestAsync(SqliteConnection connection, CancellationToken cancellation)

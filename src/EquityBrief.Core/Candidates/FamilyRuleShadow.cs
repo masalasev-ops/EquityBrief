@@ -106,20 +106,20 @@ public sealed class FamilyRuleShadow
     // correction will later divide by.
     public string Said =>
         standing.Count == 0
-            ? "; no family candidate stands registered, so nothing was evaluated in shadow"
-            : FormattableString.Invariant($"; {standing.Count} family candidate(s) registered, {Evaluated} shadow evaluation(s) written, ")
-                + FormattableString.Invariant($"{withheldBy.Values.Sum()} skipped on a member without the readings: {withheldBy.GetValueOrDefault(ShadowSkipCause.Stale)} stale, {withheldBy.GetValueOrDefault(ShadowSkipCause.Gapped)} gapped")
+            ? Families.RuleWording.Shadow.NoFamilyCandidate
+            : Families.RuleWording.Shadow.FamilyWritten(standing.Count, Evaluated)
+                + Families.RuleWording.Shadow.Skipped(withheldBy.Values.Sum(), withheldBy.GetValueOrDefault(ShadowSkipCause.Stale), withheldBy.GetValueOrDefault(ShadowSkipCause.Gapped))
                 + (faults.Count == 0
                     ? string.Empty
-                    : FormattableString.Invariant($"; FAILURE: {faults.Count} registered candidate(s) skipped on every member, the code carrying no evaluator by its name or a moved one: ")
+                    : Families.RuleWording.Shadow.FailedOnEveryMember(faults.Count)
                         + string.Join("; ", faults.Select(entry => $"'{entry.Key}' {entry.Value}")));
 
     // Why a member is handed no verdict at all: no bar stored for the night, or a gap across its series as the
     // swing filter's row excluded it for.
     public static NameWithheld? Withheld(bool stale, bool gapped) =>
         stale
-            ? new NameWithheld(ShadowSkipCause.Stale, "no bar is stored for the night's session")
+            ? new NameWithheld(ShadowSkipCause.Stale, Families.RuleWording.Shadow.NoBar)
             : gapped
-                ? new NameWithheld(ShadowSkipCause.Gapped, "the stored series has a gap, so nothing is computed across it")
+                ? new NameWithheld(ShadowSkipCause.Gapped, Families.RuleWording.Shadow.Gapped)
                 : null;
 }

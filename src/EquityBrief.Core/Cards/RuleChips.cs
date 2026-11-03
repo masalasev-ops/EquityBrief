@@ -100,7 +100,7 @@ public static class RuleChips
                 Add(DriftCandidate.WindowSessionsParameter, At(DriftCandidate.WindowSessionsParameter) is { } within ? Invariant($"within {Number(within)} sessions") : null);
                 Add(DriftCandidate.ReactionMovesParameter, At(DriftCandidate.ReactionMovesParameter) is { } reaction ? "up " + Moves(reaction) : null);
                 Add(DriftCandidate.VolumeMultipleParameter, At(DriftCandidate.VolumeMultipleParameter) is { } multiple ? Invariant($"volume {Number(multiple)} times") : null);
-                Add("target", (At(DriftCandidate.TargetRiskMultipleParameter) ?? At(IndexDriftCandidate.TargetMultipleParameter)) is { } target ? Invariant($"target {Number(target)} times the risk") : null);
+                Add("target", (At(DriftCandidate.TargetRiskMultipleParameter) ?? At(IndexDriftCandidate.TargetMultipleParameter)) is { } target ? "target " + Families.RuleWording.DriftTarget(Number(target)) : null);
                 Add("stopFloor", (At(DriftCandidate.StopFloorMovesParameter) ?? At(IndexDriftCandidate.StopFloorParameter)) is > 0 and var floor ? "stop at least " + Moves(floor) : null);
                 Add(IndexDriftCandidate.WideWindowParameter, At(IndexDriftCandidate.WideWindowParameter) is > 0 and var wide ? Invariant($"window {Number(wide)} sessions") : null);
                 Add(IndexDriftCandidate.PeersParameter, At(IndexDriftCandidate.PeersParameter) == 1 ? "peers beat first" : null);

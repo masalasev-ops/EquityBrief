@@ -3933,7 +3933,7 @@ public sealed partial class MarkRenderer : IComponent
             // names a night could not compare, the rows the fetch passed over and
             // the members a file carried nothing for were on the page and not
             // readable on it.
-            header.Append(Invariant, $"<td class=\"detail\">{Escaped(stage.Detail)}</td></tr>");
+            header.Append(Invariant, $"<td class=\"detail\">{Escaped(EquityBrief.Core.Families.RuleWording.ScreenName(stage.Detail))}</td></tr>");
         }
 
         header.Append("</table></div>");
@@ -4297,8 +4297,9 @@ public sealed partial class MarkRenderer : IComponent
             ? " data-directions=\"" + Escaped(string.Join(";", facts.Select(fact => fact.Concept + "|" + fact.Kind + "|" + fact.Sign.ToString(Invariant)))) + "\""
             : string.Empty;
 
+    // A line a page opens on, a rule's registered name among them, which is drawn in the words that name it.
     static string Capitalised(string line) =>
-        line.Length == 0 ? line : char.ToUpperInvariant(line[0]) + line[1..];
+        line.Length == 0 ? line : EquityBrief.Core.Families.RuleWording.ScreenName(char.ToUpperInvariant(line[0]) + line[1..]);
 
     // One written section, under its own heading, with the date it was written on beneath
     // the prose and the model that wrote it on the element, and the documents its markers

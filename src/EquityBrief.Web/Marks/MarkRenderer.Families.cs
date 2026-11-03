@@ -320,7 +320,7 @@ public sealed partial class MarkRenderer
 
             foreach (var row in family)
             {
-                var tip = row.Rule
+                var tip = EquityBrief.Core.Families.RuleWording.ScreenName(row.Rule)
                     + (row.From is { } from ? ". Its record counts from " + DayOf(from) : string.Empty)
                     + (row.Restarted is { } restarted ? ". It restarted at its registration, since " + restarted : string.Empty)
                     + ".";
@@ -956,7 +956,7 @@ public sealed partial class MarkRenderer
             var value = choice.Live ? RuleScreenWords.LiveSlug : choice.Slug;
             var current = choice.Slug == rule.Chosen.Slug;
 
-            body.Append(Invariant, $"<option value=\"{Escaped(value)}\" data-variant=\"{(choice.Variant is { } number ? number.ToString(Invariant) : "none")}\" title=\"{Escaped(choice.Rule)}\"{(current ? " selected" : string.Empty)}>{Escaped(VersionName(choice))}</option>");
+            body.Append(Invariant, $"<option value=\"{Escaped(value)}\" data-variant=\"{(choice.Variant is { } number ? number.ToString(Invariant) : "none")}\" title=\"{Escaped(EquityBrief.Core.Families.RuleWording.ScreenName(choice.Rule))}\"{(current ? " selected" : string.Empty)}>{Escaped(VersionName(choice))}</option>");
         }
 
         body.Append("</select></div>");

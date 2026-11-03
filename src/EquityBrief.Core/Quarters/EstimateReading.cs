@@ -33,7 +33,7 @@ public sealed record EstimateReading(DateOnly? YearEnd, decimal? Current, decima
     {
         if (trend.ValueKind != JsonValueKind.Object)
         {
-            return Unread("the answer files no earnings trend");
+            return Unread(Families.RuleWording.Estimate.NoTrend);
         }
 
         var years = trend.EnumerateObject()
@@ -43,7 +43,7 @@ public sealed record EstimateReading(DateOnly? YearEnd, decimal? Current, decima
 
         if (years.Length == 0)
         {
-            return Unread("the answer files no estimate for the current fiscal year");
+            return Unread(Families.RuleWording.Estimate.NoEstimate);
         }
 
         var current = years.MaxBy(entry => Day(Text(entry, "date")));
@@ -52,7 +52,7 @@ public sealed record EstimateReading(DateOnly? YearEnd, decimal? Current, decima
         var missing = reading.Current is null ? "now" : FormattableString.Invariant($"{Days} days before");
 
         return reading.Current is null || reading.DaysAgo is null
-            ? reading with { NotRead = $"the answer files the current fiscal year's estimate {missing} as none" }
+            ? reading with { NotRead = Families.RuleWording.Estimate.Missing(missing) }
             : reading;
     }
 

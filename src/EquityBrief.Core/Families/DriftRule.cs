@@ -126,7 +126,7 @@ public static class DriftRule
 
         if (inputs.Print is not { } print)
         {
-            return (new Gate(Print, false, "no print's reaction is stored for the name", Values()), null);
+            return (new Gate(Print, false, RuleWording.Drift.NoReaction, Values()), null);
         }
 
         var at = -1;
@@ -145,7 +145,7 @@ public static class DriftRule
 
         if (at < 1)
         {
-            return (new Gate(Print, false, Invariant($"not available: the stored bars do not reach the reaction session of {Day(print.ReactionSession)} and the close before it"), values), null);
+            return (new Gate(Print, false, RuleWording.Drift.BarsShort(print.ReactionSession), values), null);
         }
 
         var back = inputs.Bars.Count - 1 - at;
@@ -155,14 +155,12 @@ public static class DriftRule
             new Gate(
                 Print,
                 inside,
-                inside
-                    ? Invariant($"the print of {Day(print.ReportDate)} reacted on {Day(print.ReactionSession)}, {back} session(s) before tonight, inside the {window}-session window")
-                    : Invariant($"the print of {Day(print.ReportDate)} reacted on {Day(print.ReactionSession)}, {back} session(s) before tonight, outside the {window}-session window"),
+                RuleWording.Drift.Reacted(print.ReportDate, print.ReactionSession, back, inside, window),
                 Values(("report", Day(print.ReportDate)), ("session", Day(print.ReactionSession)), ("back", Whole(back)), ("window", Whole(window)))),
             inside ? at : null);
     }
 
-    static Gate NoPrint(string name) => new(name, false, "no print inside the window to read", Values());
+    static Gate NoPrint(string name) => new(name, false, RuleWording.Drift.NoPrint, Values());
 
     // The provider's surprise above zero. A print whose actual the calendar does not carry yet has no
     // surprise to read, and it does not pass until one is filed.
@@ -175,7 +173,7 @@ public static class DriftRule
 
         if (!print.ActualFiled || print.SurprisePct is not { } surprise)
         {
-            return new Gate(Beat, false, Invariant($"the calendar carries no actual for the print of {Day(print.ReportDate)} yet, so no surprise is read"), Values());
+            return new Gate(Beat, false, RuleWording.Drift.NoActual(print.ReportDate), Values());
         }
 
         var passed = surprise > 0;
@@ -183,9 +181,7 @@ public static class DriftRule
         return new Gate(
             Beat,
             passed,
-            passed
-                ? Invariant($"the print of {Day(print.ReportDate)} beat its estimate by {surprise:0.0#}%")
-                : Invariant($"the print of {Day(print.ReportDate)} did not beat its estimate: a surprise of {surprise:0.0#}%"),
+            RuleWording.Drift.Beat(print.ReportDate, passed, surprise),
             Values(("surprise", Figure(surprise))));
     }
 
@@ -199,7 +195,7 @@ public static class DriftRule
 
         if (inputs.TypicalMoveBefore is not { } move || move <= 0)
         {
-            return new Gate(Reaction, false, "not available: no typical move is stored for the session before the reaction's", Values());
+            return new Gate(Reaction, false, RuleWording.Drift.NoMoveBefore, Values());
         }
 
         var rise = inputs.Bars[index].Close - inputs.Bars[index - 1].Close;
@@ -209,7 +205,7 @@ public static class DriftRule
         return new Gate(
             Reaction,
             passed,
-            Invariant($"the reaction session closed {(rise >= 0 ? "up" : "down")} {Math.Abs(moves):0.00} typical moves, {(passed ? "at or above" : "below")} {settings.ReactionMoves:0.0#} up"),
+            RuleWording.Drift.Reaction(rise >= 0, Math.Abs(moves), passed, settings.ReactionMoves),
             Values(("moves", Figure(moves)), ("floor", Figure(settings.ReactionMoves)), ("typical move", Figure(move))));
     }
 
@@ -223,7 +219,7 @@ public static class DriftRule
 
         if (inputs.VolumeAverageAtReaction is not { } average || average <= 0)
         {
-            return new Gate(Volume, false, "not available: no 50-session average volume is stored for the reaction session", Values());
+            return new Gate(Volume, false, RuleWording.Drift.NoVolumeAverage, Values());
         }
 
         var multiple = Statistic.FromVolume(inputs.Bars[index].Volume) / average;
@@ -232,7 +228,7 @@ public static class DriftRule
         return new Gate(
             Volume,
             passed,
-            Invariant($"the reaction session's volume was {multiple:0.00} times its 50-session average, {(passed ? "at or above" : "below")} {settings.VolumeMultiple:0.0#}"),
+            RuleWording.Drift.Volume(multiple, passed, settings.VolumeMultiple),
             Values(("multiple", Figure(multiple)), ("floor", Figure(settings.VolumeMultiple))));
     }
 
@@ -251,7 +247,7 @@ public static class DriftRule
         return new Gate(
             Held,
             passed,
-            Invariant($"the close of {close} is {(passed ? "above" : "not above")} the reaction session's low of {low}"),
+            RuleWording.Drift.Held(close, passed, low),
             Values(("close", Price(close)), ("low", Price(low))));
     }
 
@@ -275,7 +271,7 @@ public static class DriftRule
         {
             if (inputs.TypicalMove is not { } night || night <= 0)
             {
-                return (new Gate(Trade, false, "no typical move is stored for the night to hold the stop's floor by", Values(("close", Price(close)))), null, null);
+                return (new Gate(Trade, false, RuleWording.Drift.NoTypicalMove, Values(("close", Price(close)))), null, null);
             }
 
             var floor = close - Statistic.ToPrice(night * settings.StopFloorMoves);
@@ -289,7 +285,7 @@ public static class DriftRule
 
         if (stop <= 0 || stop >= close)
         {
-            return (new Gate(Trade, false, Invariant($"the reaction session's low of {low} leaves no stop below the close of {close} and above zero"), Values(("close", Price(close)))), null, null);
+            return (new Gate(Trade, false, RuleWording.Drift.NoStop(low, close), Values(("close", Price(close)))), null, null);
         }
 
         var risk = close - stop;
@@ -322,12 +318,12 @@ public static class DriftRule
                 Trade,
                 true,
                 (floored
-                    ? Invariant($"bought at the close of {close} with the stop at {stop}, {settings.StopFloorMoves:0.#} typical moves under the close and below the reaction session's low of {low}, and the target at {target}, ")
-                    : Invariant($"bought at the close of {close} with the stop at the reaction session's low, {stop}, and the target at {target}, "))
+                    ? RuleWording.Drift.BoughtOnTheFloor(close, stop, settings.StopFloorMoves, low, target)
+                    : RuleWording.Drift.BoughtOnTheLow(close, stop, target))
                     + (fromBand
-                        ? Invariant($"the lowest band {TargetBandMoves:0.#} typical moves or more above the close")
-                        : Invariant($"{settings.TargetRiskMultiple:0.0#} times the risk above the close"))
-                    + Invariant($", a reward to risk of {rewardToRisk:0.00}"),
+                        ? RuleWording.Drift.TargetFromBand(TargetBandMoves)
+                        : RuleWording.Drift.TargetFromRisk(settings.TargetRiskMultiple))
+                    + RuleWording.Drift.RewardToRisk(rewardToRisk),
                 Values([.. values])),
             stop,
             target);

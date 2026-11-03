@@ -185,7 +185,7 @@ public static class RuleWords
 
     static string Drift(string window, string reaction, string volume, string target) =>
         $"A company beats its estimate and the stock closes up at least {Number(reaction)} typical moves on {Number(volume)} times its usual volume. "
-        + $"Bought within {window} sessions while it holds above that day's low. Stop at that day's low, target at the next band above or {Number(target)} times the risk, whichever is nearer.";
+        + $"Bought within {window} sessions while it holds above that day's low. Stop at that day's low, target {RuleWording.DriftTarget(Number(target))}.";
 
     static string Heavyweights(string size, string lookBack, string leaders, string comparison, string? beta, string period, string exit, string within) =>
         $"On each {period}'s first session, or the first after it whose stored year holds the closes its readings need, among each sector's {(size == "every" ? "companies" : size + " largest companies")} {within} by value, the {leaders} whose {lookBack}-session returns beat {comparison} by the most, where they beat it at all, their close above their 50-day average and that above their 200-day"

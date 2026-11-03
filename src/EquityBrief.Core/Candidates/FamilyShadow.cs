@@ -51,9 +51,9 @@ public sealed class FamilyShadow : IMemberShadow
     public string Evaluate(GateInputs inputs, bool stale, DateOnly? gap)
     {
         var withheld = stale
-            ? new NameWithheld(ShadowSkipCause.Stale, "no bar is stored for the night's session")
+            ? new NameWithheld(ShadowSkipCause.Stale, Families.RuleWording.Shadow.NoBar)
             : gap is { } at
-                ? new NameWithheld(ShadowSkipCause.Gapped, "the stored series has a gap at " + at.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ", so nothing is computed across it")
+                ? new NameWithheld(ShadowSkipCause.Gapped, Families.RuleWording.Shadow.GappedAt(at.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))
                 : null;
 
         var shadow = ShadowColumn.EvaluateGates(standing, inputs, withheld);
@@ -83,11 +83,11 @@ public sealed class FamilyShadow : IMemberShadow
     // correction will later divide by.
     public string Said =>
         standing.Count == 0
-            ? "; no swing family candidate stands registered, so nothing was evaluated in shadow"
-            : FormattableString.Invariant($"; {standing.Count} swing family candidate(s) registered, {Evaluated} shadow evaluation(s) written, ")
-                + FormattableString.Invariant($"{withheldBy.Values.Sum()} skipped on a member without the readings: {withheldBy.GetValueOrDefault(ShadowSkipCause.Stale)} stale, {withheldBy.GetValueOrDefault(ShadowSkipCause.Gapped)} gapped")
+            ? Families.RuleWording.Shadow.NoSwingCandidate
+            : Families.RuleWording.Shadow.SwingWritten(standing.Count, Evaluated)
+                + Families.RuleWording.Shadow.Skipped(withheldBy.Values.Sum(), withheldBy.GetValueOrDefault(ShadowSkipCause.Stale), withheldBy.GetValueOrDefault(ShadowSkipCause.Gapped))
                 + (faults.Count == 0
                     ? string.Empty
-                    : FormattableString.Invariant($"; FAILURE: {faults.Count} registered candidate(s) skipped on every member, the code carrying no evaluator by its name or a moved one: ")
+                    : Families.RuleWording.Shadow.FailedOnEveryMember(faults.Count)
                         + string.Join("; ", faults.Select(entry => $"'{entry.Key}' {entry.Value}")));
 }
