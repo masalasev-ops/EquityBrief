@@ -39,7 +39,7 @@ public sealed record TradeGroupsView(DateOnly? FirstLive, DateOnly? VersionSince
 
     // Paper trading's line above its fold of earlier versions, as the operator worded it.
     public string SystemLine =>
-        FormattableString.Invariant($"The system has bought {System.Bought} {(System.Bought == 1 ? "trade" : "trades")}{(FirstLive is { } first ? " since " + Day(first) : string.Empty)}: {System.Open} open, {System.AtTarget} reached their target, {System.AtStop} hit their stop, {Overall} overall.")
+        FormattableString.Invariant($"The system has bought {System.Bought} {(System.Bought == 1 ? "trade" : "trades")}{(FirstLive is { } first ? " since " + Day(first) : string.Empty)}: {System.Open} open, {System.AtTarget} reached their target, {System.AtStop} hit their stop, {(System.Closed - System.AtTarget - System.AtStop is > 0 and var other ? $"{other} sold by their rules' other exits, " : string.Empty)}{Overall} overall.")
         + (VersionSince is { } since ? $" The accounts above count only the rules as registered now, since {Day(since)}." : " The accounts above count only the rules as registered now.");
 
     string Overall => System.MeanReturn is { } mean ? (mean * 100).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "%" : "no return yet";

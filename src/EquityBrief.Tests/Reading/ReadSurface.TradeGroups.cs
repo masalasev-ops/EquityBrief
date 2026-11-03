@@ -192,6 +192,10 @@ public partial class ReadSurface
         var count = TradeGroups.Count([(outcome, 1.0), (trailed, 0.5), (timed, 0.1)], RestartNight, (_, _) => null);
 
         Assert.Equal((1, 1, 3), (count.AtTarget, count.AtStop, count.Closed));
+
+        var groups = RestartGroups() with { System = count };
+
+        Assert.Contains("0 open, 1 reached their target, 1 hit their stop, 1 sold by their rules' other exits,", groups.SystemLine, StringComparison.Ordinal);
     }
 
     [Fact]
