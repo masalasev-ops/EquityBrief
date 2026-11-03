@@ -2018,24 +2018,29 @@ public static partial class NameScreen
     }
 
     // A card whose night found no report on file reads one estimated from the company's own report a year before, with
-    // whether it falls inside the hold, in place of the line saying none is on file.
+    // whether it falls inside the hold, in place of the line saying none is on file; one that reported lately reads a note
+    // saying when, before any estimate.
     // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
-    public static DecisionCardView? WithEstimatedReport(DecisionCardView? card, IReadOnlyList<DateOnly> reported, Func<DateOnly, DateOnly?>? reportedOn = null) =>
-        card is { } drawn
-        && drawn.Lines.FirstOrDefault(line => line.Name == EquityBrief.Core.Cards.CardLines.EarningsName && line.Words.StartsWith("No report date is on file for it, ", StringComparison.Ordinal)) is { } none
-        && EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, drawn.Night, reportedOn?.Invoke(drawn.Night)) is { } estimate
-            ? drawn with
-            {
-                Lines =
-                [
-                    .. drawn.Lines.Select(line => line == none
-                        ? EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate, drawn.Night, drawn.Cap) is var estimated
-                            ? new CardLineView(line.Number, line.Name, estimated.Mark, estimated.Words)
-                            : line
-                        : line),
-                ],
-            }
+    // see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning
+    public static DecisionCardView? WithEstimatedReport(DecisionCardView? card, IReadOnlyList<DateOnly> reported, Func<DateOnly, DateOnly?>? reportedOn = null)
+    {
+        if (card is not { } drawn
+            || drawn.Lines.FirstOrDefault(line => line.Name == EquityBrief.Core.Cards.CardLines.EarningsName && line.Words.StartsWith("No report date is on file for it, ", StringComparison.Ordinal)) is not { } none)
+        {
+            return card;
+        }
+
+        var stated = reportedOn?.Invoke(drawn.Night);
+        var newest = reported.Where(day => day <= drawn.Night).Select(day => (DateOnly?)day).Append(stated <= drawn.Night ? stated : null).Max();
+        var replacing = EquityBrief.Core.Cards.CardLines.ReportedRecently(newest, drawn.Night, drawn.Cap)
+            ?? (EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, drawn.Night, stated) is { } estimate
+                ? EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate, drawn.Night, drawn.Cap)
+                : null);
+
+        return replacing is { } said
+            ? drawn with { Lines = [.. drawn.Lines.Select(line => line == none ? new CardLineView(line.Number, line.Name, said.Mark, said.Words) : line)] }
             : card;
+    }
 
     // An indicator's newest value the rows hold.
     static double? Newest(IReadOnlyList<IndicatorRow> indicators, string name) =>

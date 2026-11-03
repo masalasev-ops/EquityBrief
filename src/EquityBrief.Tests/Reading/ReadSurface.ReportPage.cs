@@ -184,6 +184,82 @@ public partial class ReadSurface
     // after the night prints, the fill and the reward against the risk at it are restated: a fill at 440.00 under a target
     // of 529.64 and a stop of 406.46 is (529.64 - 440.00) / (440.00 - 406.46) = 89.64 / 33.54 = 2.67.
     // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
+    // 22.21, worked by hand over a night of Friday 2026-10-30 and a hold's cap of 60 sessions: a report the day before has its
+    // next about thirteen weeks on, 2027-01-28, after the hold; one 60 days before has it on 2026-11-30, 21 sessions on, inside;
+    // one 100 days before has thirteen weeks already gone; and one 101 days before leaves the warning standing.
+    [Fact]
+    public void AStockThatReportedLatelyDrawsANoteSayingWhenAndOnlyOneThatHasNotKeepsTheWarning()
+    {
+        var night = new DateOnly(2026, 10, 30);
+        const string Warning = "No report date is on file for it, so a report inside the hold cannot be ruled out.";
+        var card = new DecisionCardView("GSPC", night, "drift", "ROP", "the drift rule", 441.65m, 406.46m, 529.64m,
+            [new CardLineView(4, EquityBrief.Core.Cards.CardLines.EarningsName, "warning", Warning)], null, Cap: 60);
+
+        CardLineView Drawn(params DateOnly[] reported) => NameScreen.WithEstimatedReport(card, reported)!.Lines.Single();
+
+        var yesterday = Drawn(new DateOnly(2026, 10, 29));
+
+        Assert.Equal("note", yesterday.Verdict);
+        Assert.Equal("Reported on 2026-10-29. The next date isn't announced yet; it's usually about three months after the last one, after this trade's hold ends.", yesterday.Words);
+
+        var inside = Drawn(new DateOnly(2026, 8, 31));
+
+        Assert.Equal("note", inside.Verdict);
+        Assert.Equal("Reported on 2026-08-31. The next date isn't announced yet; it's usually about three months after the last one, about 2026-11-30, inside this trade's hold.", inside.Words);
+
+        var due = Drawn(new DateOnly(2026, 7, 22));
+
+        Assert.Equal("note", due.Verdict);
+        Assert.Equal("Reported on 2026-07-22. The next date isn't announced yet; it's usually about three months after the last one, so one is due, inside this trade's hold.", due.Words);
+
+        var old = Drawn(new DateOnly(2026, 7, 21));
+
+        Assert.Equal(("warning", Warning), (old.Verdict, old.Words));
+
+        // The calendar's report of the night's own reading counts as a stored quarter does, and one after the night is not known.
+        var stated = NameScreen.WithEstimatedReport(card, [], _ => new DateOnly(2026, 10, 28))!.Lines.Single();
+
+        Assert.Equal("Reported on 2026-10-28. The next date isn't announced yet; it's usually about three months after the last one, after this trade's hold ends.", stated.Words);
+        Assert.Equal(Warning, Drawn(new DateOnly(2026, 10, 31)).Words);
+
+        // A holding with no hold's cap, as a heavyweight's, says when it reported and claims nothing of the hold.
+        var noCap = NameScreen.WithEstimatedReport(card with { Cap = null }, [new DateOnly(2026, 10, 19)])!.Lines.Single();
+
+        Assert.Equal(("note", "Reported on 2026-10-19. The next date isn't announced yet; it's usually about three months after the last one."), (noCap.Verdict, noCap.Words));
+    }
+
+    // 22.21: Tonight's cards read a night's newest reports and draw the same note; a stock with none, or one reported more
+    // than 100 days before, keeps the warning the night stored.
+    [Theory]
+    [InlineData("2026-10-29", "note")]
+    [InlineData("2026-07-21", "warning")]
+    [InlineData(null, "warning")]
+    public void TonightsCardDrawsTheNoteFromTheNightsNewestReports(string? reported, string verdict)
+    {
+        var row = new DecisionCardRow(
+            "GSPC",
+            new DateOnly(2026, 10, 30),
+            "drift",
+            "ROP",
+            1,
+            441.65m,
+            406.46m,
+            529.64m,
+            "the drift rule",
+            "{}",
+            "[{\"line\":4,\"name\":\"" + EquityBrief.Core.Cards.CardLines.EarningsName + "\",\"verdict\":\"warning\",\"words\":\"No report date is on file for it, so a report inside the hold cannot be ruled out.\"}]",
+            null,
+            Cap: 60);
+        var context = CardContext.None with
+        {
+            NewestReports = reported is null
+                ? new Dictionary<string, DateOnly>()
+                : new Dictionary<string, DateOnly> { ["ROP"] = DateOnly.ParseExact(reported, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) },
+        };
+
+        Assert.Equal(verdict, CardScreen.View(row, context).Lines.Single(line => line.Name == EquityBrief.Core.Cards.CardLines.EarningsName).Verdict);
+    }
+
     [Fact]
     public void APicksCardEstimatesItsNextReportAndRestatesTheFillOnceTheOpenPrints()
     {
@@ -234,24 +310,25 @@ public partial class ReadSurface
         // The page's card reads the estimate in place of the line saying none is on file.
         var card = new DecisionCardView("GSPC", night, "drift", "ROP", "the drift rule", 441.65m, 406.46m, 529.64m,
             [new CardLineView(4, EquityBrief.Core.Cards.CardLines.EarningsName, "warning", "No report date is on file for it, so a report inside the hold cannot be ruled out.")], null, Cap: 60);
-        var estimated = NameScreen.WithEstimatedReport(card, reported)!;
+        var estimated = NameScreen.WithEstimatedReport(card, [.. reported.Where(day => day.AddDays(EquityBrief.Core.Cards.CardLines.ReportedLately) < night)])!;
 
         Assert.Equal(after.Words, estimated.Lines.Single().Words);
 
         // A card whose company holds only the last year's reports keeps the line saying none is on file.
-        Assert.Equal("No report date is on file for it, so a report inside the hold cannot be ruled out.", NameScreen.WithEstimatedReport(card, [new(2026, 8, 14)])!.Lines.Single().Words);
+        Assert.Equal("No report date is on file for it, so a report inside the hold cannot be ruled out.", NameScreen.WithEstimatedReport(card, [new(2026, 7, 1)])!.Lines.Single().Words);
 
         // DASH's card, a pick the drift rule took on 2026-10-30 with a hold's cap of 60 sessions: read without the day the
-        // calendar holds it warns of a report 3 sessions on, and with it the report is a note after the hold's cap.
+        // calendar holds it, its report of 2026-08-05 has the next 91 days on, 2026-11-04, inside the hold, and with it the
+        // report of 2026-10-29 has the next after the hold; each a note, since it reported inside 100 days.
         var dashCard = card with { Night = dashNight, Cap = 60 };
-        var warned = NameScreen.WithEstimatedReport(dashCard, dash)!.Lines.Single();
+        var early = NameScreen.WithEstimatedReport(dashCard, dash)!.Lines.Single();
         var noted = NameScreen.WithEstimatedReport(dashCard, dash, _ => new DateOnly(2026, 10, 29))!.Lines.Single();
 
-        Assert.Equal("warning", warned.Verdict);
-        Assert.Contains("about 2026-11-04", warned.Words, StringComparison.Ordinal);
+        Assert.Equal("note", early.Verdict);
+        Assert.Contains("about 2026-11-04, inside this trade's hold", early.Words, StringComparison.Ordinal);
         Assert.Equal("note", noted.Verdict);
-        Assert.StartsWith("No report date is on file for it; estimated from its report of 2026-02-18 a year on, its next is about 2027-02-17", noted.Words, StringComparison.Ordinal);
-        Assert.Contains("after the hold's cap of 60 sessions", noted.Words, StringComparison.Ordinal);
+        Assert.StartsWith("Reported on 2026-10-29.", noted.Words, StringComparison.Ordinal);
+        Assert.EndsWith("after this trade's hold ends.", noted.Words, StringComparison.Ordinal);
 
         // The fill once the open prints, and none before it.
         Assert.Null(EquityBrief.Core.Cards.CardLines.Filled(night, 441.65m, 406.46m, 529.64m, [(night, 441.65m)]));

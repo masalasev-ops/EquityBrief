@@ -285,6 +285,42 @@ public static class CardLines
             : said + ".";
     }
 
+    // How recently a report keeps the line a note, thirteen weeks from it being the three months a next report usually
+    // follows, and the week's grace that estimate is read with against a hold's cap.
+    public const int ReportedLately = 100;
+    public const int ReportQuarter = 91;
+    public const int QuarterGraceSessions = 5;
+
+    // The earnings line where no next report is on file and the stock reported lately: a note saying when, and whether the
+    // next, about three months on, falls after the hold, where the rule states a hold to place it against; none where its
+    // newest report is older than that.
+    // see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning
+    public static CardLine? ReportedRecently(DateOnly? reported, DateOnly night, int? cap)
+    {
+        if (reported is not { } last || last > night || last.AddDays(ReportedLately) < night)
+        {
+            return null;
+        }
+
+        var said = FormattableString.Invariant($"Reported on {last:yyyy-MM-dd}. The next date isn't announced yet; it's usually about three months after the last one");
+
+        if (cap is not { } hold)
+        {
+            return new CardLine(4, EarningsName, CardVerdict.Note, said + ".");
+        }
+
+        var next = last.AddDays(ReportQuarter);
+
+        if (next <= night)
+        {
+            return new CardLine(4, EarningsName, CardVerdict.Note, said + ", so one is due, inside this trade's hold.");
+        }
+
+        return SessionsTo(night, next, EventTiming.Unstated) is { } sessions && sessions + QuarterGraceSessions < hold
+            ? new CardLine(4, EarningsName, CardVerdict.Note, FormattableString.Invariant($"{said}, about {next:yyyy-MM-dd}, inside this trade's hold."))
+            : new CardLine(4, EarningsName, CardVerdict.Note, said + ", after this trade's hold ends.");
+    }
+
     // The earnings line where no report is on file and one is estimated: the estimate and the report it was taken from,
     // the session it moves and whether that falls inside the hold's cap, a warning inside it and a note after it.
     public static CardLine EstimatedEarnings((DateOnly From, DateOnly Estimated) estimate, DateOnly night, int? cap)
