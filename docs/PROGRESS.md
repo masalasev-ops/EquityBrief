@@ -14860,3 +14860,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
             placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
+
+### 22.27 - the remedy run from main: each re-filed company's predecessor's facts joined, and the ruling's items read back on main's build   2026-11-03
+
+Not a checkpoint entry: it records 22.24's remedy and the read back 21.21 to 22.27 carried, and lands nothing.
+Ran:        `tools/remedies/2026-11-03-22.24-the-predecessor-filers.txt` from main's 3bd6fd9c, PR 627's merge, from 14:58 to 14:59 UTC
+            on 2026-11-03, with no night, drain, labeller, local run, ledger build or monthly run writing. No request and no model
+            call. The read surface restarted from main's Release after it.
+Measured:   6201 facts joined across the 17 stocks, each with its years gained: APA 349, 4.9; APO 237, 5.8; BG 542, 6.9; BLK 410, 6.9;
+            DINO 417, 4.9; FERG 106, 2.0; FUN 445, 6.9; LQDA 145, 2.8; MRVL 348, 5.0; NE 390, 5.9; NWE 494, 6.9; PNFP 240, 6.8; QDEL
+            447, 5.9; TPL 163, 3.8; UNIT 429, 6.7; VNOM 485, 6.8; XOM 554, 10.4. Fewer than 22.24's entry counts, which held the
+            facts the new filer already states.
+Read back:  on main's build over the night of 2026-11-02. `/proof/counts`: S&P 500 22 of 22, S&P 400 18 of 18, S&P 600 18 of 18. At a true
+            390: EQT's and ALGN's chart pages, Tonight, Paper trading, Past picks and Home, none past 390. EQT's brief: "slower than the
+            -29.2% of the quarter before". A drift's sentence: "the nearer of the next price band about two typical days' moves up, or
+            2.5 times the risk". Tonight on every index: no card warning that no report date is on file. S&P 500: Home 33 bought and
+            sold, 11 made money; Tonight 51 open, 8 of them this version's, 5 of them selling, 10 new picks, the reshuffle 3 more; Paper
+            84 bought, 51 open, 10 at their target, 17 at their stop, 6 by other exits; Past picks 39 open, 6 to buy. S&P 400: Paper 48
+            bought, 46 open, 2 selling. S&P 600: Paper 26 bought, 26 open, 1 selling.
+Carried:    each re-filed stock's scorecard, which the night writes, read after the night of 2026-11-03; the ledger's history, which reads
+            the joined facts once built again, on the operator's word; the read-only copy's own pages, which the operator set aside
+            on 2026-11-03 ("Forget about the read only pages for now"); the short version's first drafts at ten reports, on the
+            operating row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over d518d66a, whose tree PR 627 merged, with 22.27's figures, from
+            14:14 to 14:58 UTC; records alone change in this entry.
