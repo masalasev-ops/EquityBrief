@@ -16,6 +16,8 @@ public sealed partial class ReadApi
 {
     const string SessionsOfName = "SELECT COUNT(*), MIN(session_date) FROM bar WHERE ticker = $ticker AND session_date <= $on;";
 
+    const string FirstSessionOfTheStore = "SELECT MIN(session_date) FROM bar;";
+
     const string RecentOfName = @"
         SELECT session_date, high, low, close
         FROM (SELECT session_date, high, low, close FROM bar WHERE ticker = $ticker AND session_date <= $on
@@ -49,6 +51,18 @@ public sealed partial class ReadApi
 
             sessions = reader.GetInt32(0);
             first = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        }
+
+        // A stock whose bars open with the store's own did not start trading on that day, however few they are, and a plan the
+        // night placed is never replaced.
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = FirstSessionOfTheStore;
+
+            if (first <= DateOnly.ParseExact((string)(await command.ExecuteScalarAsync())!, "yyyy-MM-dd", CultureInfo.InvariantCulture) || NameScreen.PlanRows(stored).Count > 0)
+            {
+                return stored;
+            }
         }
 
         var recent = new List<LadderBar>();

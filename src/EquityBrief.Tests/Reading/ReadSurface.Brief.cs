@@ -232,7 +232,7 @@ public partial class ReadSurface
                 "Not among tonight's picks. The night's levels plan buys in its first zone at 95.00 to 97.00.",
                 "Its stop: a daily close below 92.00.",
                 "Its first sale at 108.00: risk $1 to make $2.28.",
-                "Your size: 200 shares, 19,400.00, 19.4% of the account, 1,000.00 at risk to the stop.",
+                "Your size: 200 shares, 19,400.00, 19.4% of the account, 1,000.00 at risk to the stop, 2,200.00 to the target.",
             ],
             LinesOf(BriefScreen.Of(BriefOf(BriefMember(), levels: levels, account: new AccountSettings(100_000m, 1m, 0.5m))), "way-in"));
 

@@ -336,11 +336,12 @@ public partial class ReadSurface
         Assert.DoesNotContain("level-summary", planned, StringComparison.Ordinal);
         Assert.Contains("<p class=\"card-full\"><a href=\"#/name/F3\">The stock's full page</a></p>", planned, StringComparison.Ordinal);
 
-        // A pick whose night stored no plan says so in the plan's place, F1 among the six.
-        Assert.Contains(
-            "<section class=\"card-levels\" data-ticker=\"F1\" data-plan-rows=\"0\"><h5>Entry and exit plan</h5><p class=\"degraded\" data-plan=\"none\">No entry and exit plan is drawn for F1: no plan is stored for it on the night.</p></section>",
-            folds.Single(fold => fold.Ticker == "F1").Body,
-            StringComparison.Ordinal);
+        // A pick whose night stored no plan, F1 among the six, its few bars starting after the store's and giving no level, says
+        // why in the plan's place. A stock with its full history and no plan stored says that, which PlainWords holds.
+        var unplanned = folds.Single(fold => fold.Ticker == "F1").Body;
+
+        Assert.Contains("<section class=\"card-levels\" data-ticker=\"F1\" data-plan-rows=\"0\"><h5>Entry and exit plan</h5><p class=\"degraded\" data-plan=\"none\">No entry and exit plan is drawn for F1: This stock started trading on ", unplanned, StringComparison.Ordinal);
+        Assert.Contains("and too few for any support or resistance level, so no plan can be drawn.</p></section>", unplanned, StringComparison.Ordinal);
 
         // F2 named in the link: its fold alone open, straight after its row and before F3's, its row selected and its
         // control saying it is open, every other control closed.

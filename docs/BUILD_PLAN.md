@@ -2392,7 +2392,7 @@ Kept word for word in `prompts/2026-11-03-22.31-pick-card-sizing-and-short-histo
 ### 22.32 On the operator's word of 2026-11-03: a stock with too few sessions for its averages draws its plan from its levels
 Same ruling. Worked as a page is read by the ladder's own rule over the stored levels and never stored, so no rule, gate or replay reads it and no pinned source moves; the page says why the average is missing, and says no plan can be drawn only where the stock holds no level (see: A stock with too few sessions for its averages draws its plan from its levels when a page is read and no rule reads it).
 
-**Done when** a plan is worked by hand over constructed bands; a stock at 200 sessions is shown to read its stored plan and one at 199 its levels; the words are read back with the first session and the count; a stock with no level and one with no support beneath the price each say so; the stored plan is shown unchanged and nothing written; every member it reaches on each index is listed from the store and FDXF's page read back; and one mutation is shown red, the rule stated before the run.
+**Done when** a plan is worked by hand over constructed bands; a stock at the average's need is shown to read its stored plan and one just short of it its levels, a stock whose bars open with the store's own and a plan the night placed each shown to stand; the words are read back with the first session and the count; a stock with no level and one with no support beneath the price each say so; the stored plan is shown unchanged and nothing written; every member it reaches on each index is listed from the store and FDXF's page read back; and one mutation is shown red, the rule stated before the run.
 
 ---
 
