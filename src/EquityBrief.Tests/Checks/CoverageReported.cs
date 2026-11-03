@@ -69,6 +69,7 @@ public class CoverageReported
         ["candidate-conditions"] = "CandidateConditions",
         ["trend-versions"] = "TrendVersions",
         ["plain-words"] = "PlainWords",
+        ["rule-wording-out-of-pins"] = "RuleWordingOutOfThePins",
         ["copy-method-leak"] = "CopyMethodLeak",
     };
 

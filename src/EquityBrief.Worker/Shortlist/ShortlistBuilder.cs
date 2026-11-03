@@ -384,7 +384,7 @@ public sealed class ShortlistBuilder : IComponent
             var withheld = stale
                 ? new NameWithheld(ShadowSkipCause.Stale, NoBarThisSession(sessionDate!.Value))
                 : gapped
-                    ? new NameWithheld(ShadowSkipCause.Gapped, GapAt(stop.Gaps[^1].SessionDate) + ", so nothing is computed across it")
+                    ? new NameWithheld(ShadowSkipCause.Gapped, GapAt(stop.Gaps[^1].SessionDate) + Core.Families.RuleWording.Shortlist.GapEnding)
                     : null;
 
             var shadow = ShadowColumn.Evaluate(
@@ -433,9 +433,9 @@ public sealed class ShortlistBuilder : IComponent
         var beyond = beyondTheCalendar.Count == 0
             ? string.Empty
             : "; " + beyondTheCalendar.Count.ToString(CultureInfo.InvariantCulture) +
-                " name(s) with a dated event beyond the exchange calendar, which ends " +
+                Core.Families.RuleWording.Shortlist.BeyondTheCalendarOpening +
                 ExchangeClosures.CoveredThrough.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
-                ", not counted and not fired: " + string.Join(", ", beyondTheCalendar);
+                Core.Families.RuleWording.Shortlist.BeyondTheCalendarEnding + string.Join(", ", beyondTheCalendar);
 
         // The shadow column's own sentence on the stage's row, and it is a
         // failure rather than a note where a candidate went unevaluated.
@@ -448,16 +448,13 @@ public sealed class ShortlistBuilder : IComponent
         // What it did not do is named where the run page draws failures.
         var shadowSaid =
             standing.Count == 0
-                ? "; no candidate stands registered, so nothing was evaluated in shadow"
-                : FormattableString.Invariant(
-                    $"; {standing.Count} candidate(s) registered, {evaluated} shadow evaluation(s) written, ") +
-                    FormattableString.Invariant(
-                        $"{withheldBy.Values.Sum()} skipped on a name-night without the readings: {withheldBy.GetValueOrDefault(ShadowSkipCause.Stale)} stale, ") +
-                    FormattableString.Invariant(
-                        $"{withheldBy.GetValueOrDefault(ShadowSkipCause.Gapped)} gapped, {withheldBy.GetValueOrDefault(ShadowSkipCause.NotAvailable)} with a reading not available")
+                ? Core.Families.RuleWording.Shadow.NoCandidate
+                : Core.Families.RuleWording.Shadow.Written(standing.Count, evaluated) +
+                    Core.Families.RuleWording.Shadow.SkippedANameNight(withheldBy.Values.Sum(), withheldBy.GetValueOrDefault(ShadowSkipCause.Stale)) +
+                    Core.Families.RuleWording.Shadow.GappedOrUnread(withheldBy.GetValueOrDefault(ShadowSkipCause.Gapped), withheldBy.GetValueOrDefault(ShadowSkipCause.NotAvailable))
                     + (faults.Count == 0
                         ? string.Empty
-                        : FormattableString.Invariant($"; FAILURE: {faults.Count} registered candidate(s) skipped on every name, the code carrying no evaluator by its name or a moved one: ")
+                        : Core.Families.RuleWording.Shadow.FailedOnEveryName(faults.Count)
                             + string.Join("; ", faults.Select(entry => $"'{entry.Key}' {entry.Value}")));
 
         // The stage's own row is written in the transaction that writes its list, so a listings
@@ -486,7 +483,7 @@ public sealed class ShortlistBuilder : IComponent
     // The stage ran and a registered candidate went unevaluated. Its own value
     // rather than the night's failure word, because the night did not stop and a
     // reader of the run log has to be able to tell the two apart.
-    public const string Failed = "ok, with a registered candidate's evaluator missing or moved";
+    public const string Failed = Core.Families.RuleWording.Shortlist.Failed;
 
     static async Task<IReadOnlyList<RegisterRow>> RegisterAsync(
         SqliteConnection connection,
@@ -610,12 +607,12 @@ public sealed class ShortlistBuilder : IComponent
 
     // Why a member is evaluated over nothing, as its row states it.
     static string NoBarThisSession(DateOnly last) =>
-        "no bar for this session; the last session stored for the name is " + last.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        Core.Families.RuleWording.Shortlist.NoBarOpening + last.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     static string GapAt(DateOnly gap) =>
-        "the stored series has a gap at " + gap.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        Core.Families.RuleWording.Shortlist.GapOpening + gap.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-    const string NoBarStored = "no bar is stored for the name";
+    const string NoBarStored = Core.Families.RuleWording.Shortlist.NoBarStored;
 
     // A name with no band on the session is written 0, the strength of no band, so a row that
     // recorded the figure is never read as one written before the column existed.
@@ -652,7 +649,7 @@ public sealed class ShortlistBuilder : IComponent
     {
         if (plan is null)
         {
-            return JsonSerializer.Serialize(new { note = "no ladder row for this name tonight" });
+            return JsonSerializer.Serialize(new { note = Core.Families.RuleWording.Shortlist.NoLadderRow });
         }
 
         using var document = JsonDocument.Parse(plan);

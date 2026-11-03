@@ -31,6 +31,7 @@ public sealed class FamilyReplay : IComponent
         Stores:
         [
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.KeptBar, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Level, Touch.Read),
@@ -48,6 +49,10 @@ public sealed class FamilyReplay : IComponent
         Feeds: []);
 
     public const string RunPrefix = "replay-";
+
+    // Why a rule reading the ledger's readings or the expected value of the setups like each restarts where it holds a
+    // trade: the ledger has moved since each night read it, so nothing can reproduce what the night's order was.
+    public const string NotReplayedOnItsReadings = "it reads the ledger's readings or the expected value of the setups like each, which have moved since each night read them, so its trades cannot be replayed";
 
     // A stop's or a target's distance from the buy is the same where the two agree to a millionth: a split or a
     // dividend since the night rescales the store's closes, and a distance does not move with the scale.
@@ -70,6 +75,13 @@ public sealed class FamilyReplay : IComponent
 
     // The surprise each member's drift row stored on a night, the figure the drift's order reads.
     const string SurprisesOn = "SELECT ticker, order_by FROM family_result WHERE family = $family AND session_date = $night AND order_by IS NOT NULL;";
+
+    // The members a corporate action since the night rescaled: their bar's close as the store holds it now and its
+    // unadjusted close, which is the close the night read.
+    const string RescaledOn = "SELECT ticker, close, raw_close FROM bar WHERE session_date = $night AND raw_close IS NOT NULL AND raw_close <> close;";
+
+    // The sessions the fetcher has dropped from the year it keeps, a night having read them before they fell out of it.
+    const string Dropped = "SELECT ticker, session_date, high, low, close, volume FROM kept_bar ORDER BY ticker, session_date;";
 
     // Every trade a rule's record stored.
     const string Stored = @"
@@ -197,6 +209,7 @@ public sealed class FamilyReplay : IComponent
         var at = calendar.Select((session, index) => (session, index)).ToDictionary(pair => pair.session, pair => pair.index);
         var kept = rules.ToDictionary(rule => rule.Candidate, _ => new List<Trade>(), StringComparer.Ordinal);
         var read = rules.ToDictionary(rule => rule.Candidate, _ => 0, StringComparer.Ordinal);
+        var dropped = await DroppedAsync(connection, cancellation);
 
         foreach (var night in nights)
         {
@@ -208,7 +221,10 @@ public sealed class FamilyReplay : IComponent
             // The provider revises a surprise after a night has read it, so a drift is replayed on the surprise its night
             // stored; a member whose row stored none, its print outside the live rule's window, is read as the calendar
             // holds it.
-            var inputs = family == DriftRule.Name ? AsTheNightRead(calendarInputs, await SurprisesAsync(connection, family, night, cancellation)) : calendarInputs;
+            var inputs = AsTheBarsStoodOnTheNight(
+                family == DriftRule.Name ? AsTheNightRead(calendarInputs, await SurprisesAsync(connection, family, night, cancellation)) : calendarInputs,
+                await RescaledAsync(connection, night, cancellation),
+                dropped);
 
             var verdicts = new List<(string Ticker, ShadowOutcome Outcome)>();
 
@@ -250,7 +266,8 @@ public sealed class FamilyReplay : IComponent
                 var from = froms[rule.Candidate];
                 var record = stored[rule.Candidate].Where(trade => trade.Session >= from).ToArray();
                 var replayed = kept[rule.Candidate];
-                var differs = FirstDifference(record, replayed);
+                var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters));
+                var differs = record.Length > 0 && (hooks.ReadsReadings || hooks.ReadsExpected) ? NotReplayedOnItsReadings : FirstDifference(record, replayed);
 
                 return new FamilyReplayed(
                     rule.Candidate,
@@ -395,6 +412,99 @@ public sealed class FamilyReplay : IComponent
         }
 
         return rows;
+    }
+
+    // A night's inputs with each member's year as it stood on the night, the sessions since dropped from the store's year
+    // put back before it, and with what the night stored at its own scale, the bands and the typical moves, put on the
+    // scale a corporate action since has put the member's bars on, since a stored band is not rewritten by the refetch
+    // that rescales its bars.
+    // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+    public static FamilyNightInputs AsTheBarsStoodOnTheNight(
+        FamilyNightInputs inputs,
+        IReadOnlyDictionary<string, decimal> rescaled,
+        IReadOnlyDictionary<string, IReadOnlyList<FamilyBar>> dropped) =>
+        inputs with
+        {
+            Members =
+            [
+                .. inputs.Members.Select(member =>
+                {
+                    var bars = member.Inputs.Breakout.Bars;
+                    var whole = bars.Count > 0 && dropped.TryGetValue(member.Ticker, out var before)
+                        ? (IReadOnlyList<FamilyBar>)[.. before.Where(bar => bar.Session < bars[0].Session), .. bars]
+                        : bars;
+                    var scale = rescaled.GetValueOrDefault(member.Ticker, 1m);
+                    var ratio = Core.Prices.Statistic.FromRatio(scale);
+
+                    return member with
+                    {
+                        Inputs = member.Inputs with
+                        {
+                            Breakout = member.Inputs.Breakout with
+                            {
+                                Bars = whole,
+                                TypicalMove = member.Inputs.Breakout.TypicalMove * ratio,
+                            },
+                            Drift = member.Inputs.Drift with
+                            {
+                                Bars = whole,
+                                TypicalMoveBefore = member.Inputs.Drift.TypicalMoveBefore * ratio,
+                                TypicalMove = member.Inputs.Drift.TypicalMove * ratio,
+                                BandLowEdges = [.. member.Inputs.Drift.BandLowEdges.Select(edge => edge * scale)],
+                            },
+                        },
+                    };
+                }),
+            ],
+        };
+
+    static async Task<IReadOnlyDictionary<string, decimal>> RescaledAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RescaledOn;
+        command.Parameters.AddWithValue("$night", Stamp(night));
+
+        var rescaled = new Dictionary<string, decimal>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            rescaled[reader.GetString(0)] = Money.FromStorage(reader.GetString(1)) / Money.FromStorage(reader.GetString(2));
+        }
+
+        return rescaled;
+    }
+
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<FamilyBar>>> DroppedAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Dropped;
+
+        var dropped = new Dictionary<string, List<FamilyBar>>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var ticker = reader.GetString(0);
+
+            if (!dropped.TryGetValue(ticker, out var held))
+            {
+                dropped[ticker] = held = [];
+            }
+
+            held.Add(new FamilyBar(
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(2)),
+                Money.FromStorage(reader.GetString(3)),
+                Money.FromStorage(reader.GetString(4)),
+                reader.GetInt64(5)));
+        }
+
+        return dropped.ToDictionary(entry => entry.Key, entry => (IReadOnlyList<FamilyBar>)entry.Value, StringComparer.Ordinal);
     }
 
     // A night's inputs with each member's newest print carrying the surprise the night stored for it.

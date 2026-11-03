@@ -18,7 +18,7 @@ public sealed class BreakoutCandidate : FamilyRuleEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "12392fc457b4";
+    public override string Version => "4b9af2099bd7";
 
     public override string Family => BreakoutRule.Name;
 

@@ -1,0 +1,29 @@
+# The remedy of 21.21 of 2026-11-03, on the operator's ruling and answer of that day: the words a page draws for a rule moved
+# out of the pinned files all of whose pinning rules restart with the 16.3 remedy of that day. The ladder builder moved, so the
+# ladder rules' code version moved and the eight windows the store holds open are closed, each version before its rule's live
+# window, then opened again, each live window before its versions; and one command registers again every standing candidate
+# whose evaluator the code no longer carries at the version it was registered with, the same 66 of the 137 the 16.3 remedy
+# registered hours before with no night between: the S&P 500's breakout, drift and swing filter and the S&P 400's and 600's
+# breakout, drift, pullback and heavyweight. The S&P 500's breakout and drift are replayed and carry their records where every
+# trade reproduces; the S&P 400's and 600's restart. The dip, quality and improving families, the S&P 500's heavyweight and the
+# swing filter's own versions do not move. A window opened after midnight in New York counts from the session after that day.
+# No request to the provider and no model call. Run on the operator's word, from main after the merge, when no night, local
+# run, drain, labeller, history read, ledger build or monthly run is writing, read the output for "remedy done" and the
+# counts, and restart the read surface after it.
+version --rule "merge distance" --close "a quarter of a typical move" --evidence "the ladder rules' code version moved to 2d37943222c1 with 21.21 of 2026-11-03, the ladder builder's words moved out of what a version pins"
+version --rule "merge distance" --close live --evidence "the ladder rules' code version moved to 2d37943222c1 with 21.21 of 2026-11-03, the ladder builder's words moved out of what a version pins"
+version --rule "zone edges from non-average anchors only" --close "non-average anchors only" --evidence "the ladder rules' code version moved to 2d37943222c1 with 21.21 of 2026-11-03, the ladder builder's words moved out of what a version pins"
+version --rule "zone edges from non-average anchors only" --close live --evidence "the ladder rules' code version moved to 2d37943222c1 with 21.21 of 2026-11-03, the ladder builder's words moved out of what a version pins"
+version --rule "the trend rule" --close "below both averages" --evidence "the ladder rules' code version moved to 2d37943222c1 with 21.21 of 2026-11-03, the ladder builder's words moved out of what a version pins"
+version --rule "the trend rule" --close "below both under a cross" --evidence "the ladder rules' code version moved to 2d37943222c1 with 21.21 of 2026-11-03, the ladder builder's words moved out of what a version pins"
+version --rule "the trend rule" --close "the new label holds two nights" --evidence "the ladder rules' code version moved to 2d37943222c1 with 21.21 of 2026-11-03, the ladder builder's words moved out of what a version pins"
+version --rule "the trend rule" --close live --evidence "the ladder rules' code version moved to 2d37943222c1 with 21.21 of 2026-11-03, the ladder builder's words moved out of what a version pins"
+version --rule "merge distance" --live-window
+version --rule "merge distance" --version "a quarter of a typical move" --parameters typicalMoveMultiple=0.25
+version --rule "zone edges from non-average anchors only" --live-window
+version --rule "zone edges from non-average anchors only" --version "non-average anchors only" --parameters zoneEdgesFromNonAverageAnchorsOnly=1
+version --rule "the trend rule" --live-window
+version --trend-version "below both averages"
+version --trend-version "below both under a cross"
+version --trend-version "the new label holds two nights"
+register --moved --evidence "21.21: the words a page draws for a rule moved out of the sources a version pins, on the operator's ruling and answer of 2026-11-03, which moved every evaluator pinning them"

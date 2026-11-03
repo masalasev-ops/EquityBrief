@@ -41,7 +41,7 @@ public abstract class IndexRuleCandidate(string index) : FamilyRuleEvaluator
     // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
     public const double NoMarketCheck = 2;
 
-    public const string MarketCheckOff = "market check off";
+    public const string MarketCheckOff = Families.RuleWording.IndexRule.MarketCheckOff;
 
     public static IReadOnlyList<string> Levels { get; } =
     [

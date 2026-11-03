@@ -225,7 +225,7 @@ public sealed class LadderBuilder : IComponent
             // see: A ladder row is written for every index member every night
             if (session is { } last && newest is { } night && last.SessionDate < night)
             {
-                var reason = "no bar for this session; the last session stored for the name is " +
+                var reason = Core.Families.RuleWording.Ladder.NoBarOpening +
                     last.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
                 counts[TrendState.NotClassified]++;
@@ -260,9 +260,9 @@ public sealed class LadderBuilder : IComponent
 
             if (stop.Stops(ticker, [.. held.Select(bar => bar.SessionDate)]))
             {
-                var gapped = "the stored series has a gap at "
+                var gapped = Core.Families.RuleWording.Ladder.GapOpening
                     + stop.Gaps[^1].SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-                    + ", so nothing is computed for this name until that session arrives";
+                    + Core.Families.RuleWording.Ladder.GapEnding;
 
                 counts[TrendState.NotClassified]++;
 
@@ -299,7 +299,7 @@ public sealed class LadderBuilder : IComponent
 
             var trend = session is { } bar
                 ? await TrendClassifier.ForAsync(connection, ticker, bar.SessionDate, bar.Close, cancellation)
-                : new Trend(TrendState.NotClassified, "no stored bars");
+                : new Trend(TrendState.NotClassified, Core.Families.RuleWording.Ladder.NoBars);
 
             var plan = session is { } priced
                 ? await PlanAsync(connection, ticker, priced.SessionDate, priced.Close, trend, cancellation)
@@ -374,14 +374,14 @@ public sealed class LadderBuilder : IComponent
 
         if (bands.Count == 0)
         {
-            return new Ladder([], [], null, "no bands are stored for this name", []);
+            return new Ladder([], [], null, Core.Families.RuleWording.Ladder.NoBands, []);
         }
 
         var typicalMove = await TypicalMoveAsync(connection, ticker, asOf, cancellation);
 
         if (typicalMove is not { } move)
         {
-            return new Ladder([], [], null, "no typical daily move is stored for this name", []);
+            return new Ladder([], [], null, Core.Families.RuleWording.Ladder.NoTypicalMove, []);
         }
 
         var recent = await RecentAsync(connection, ticker, cancellation);
@@ -483,10 +483,10 @@ public sealed class LadderBuilder : IComponent
                 shareOfStop = print.ShareOfStop is { } share ? Money.ToStorage(Round(share)) : null,
             }),
             reason = plan.Reason ?? (plan.Tranches.Count == 0
-                ? "no tranche is placed"
+                ? Core.Families.RuleWording.Ladder.NoTranche
                 : plan.Events.Count == 0
-                    ? "no report is dated on the calendar, so the second book is empty"
-                    : "every figure in the second book is a proposal"),
+                    ? Core.Families.RuleWording.Ladder.NoReportDated
+                    : Core.Families.RuleWording.Ladder.SecondBookProposes),
         });
 
     // The arithmetic in the storage form, so the figures a reader sees are the
@@ -726,7 +726,7 @@ public sealed class LadderBuilder : IComponent
             "$detail",
             $"{outcome.RowsWritten} row(s) for {outcome.MembersConsidered} member(s), " +
             $"{outcome.Uptrend} uptrend, {outcome.Downtrend} downtrend, {outcome.Range} range, " +
-            $"{outcome.NotClassified} not classified, {outcome.WithoutBars} with no stored bars, " +
+            Core.Families.RuleWording.Ladder.NotClassifiedAndBare(outcome.NotClassified, outcome.WithoutBars) +
             $"{outcome.RowsDropped} dropped{gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);

@@ -21,12 +21,12 @@ public static class ReleaseTone
     public const string VersionParameter = "readingVersion";
 
     // The condition in the card's short words.
-    public const string Words = "release better, outlook not cut";
+    public const string Words = Families.RuleWording.Tone.Words;
 
     // Why a version reads no release of a print, beside the reader's own reasons.
-    public const string HistoryOpen = "the reading version's history read is not complete";
+    public const string HistoryOpen = Families.RuleWording.Tone.HistoryOpen;
 
-    public const string NotHanded = "no release reading was handed for the print under the version";
+    public const string NotHanded = Families.RuleWording.Tone.NotHanded;
 
     // The version a registration's parameters name, nought where they name none.
     public static long VersionOf(IReadOnlyDictionary<string, double> parameters) =>
@@ -49,9 +49,9 @@ public static class ReleaseTone
 
     // The reasons an S&P 400 or 600 drift rule naming a version keeps a listed member off, its print's release holding no
     // reading under the version and its reading failing, which its card's funnel names as the two steps above.
-    public const string NotHeldOnTheIndex = "no reading of its release held under its rule's reading version";
+    public const string NotHeldOnTheIndex = Families.RuleWording.Tone.NotHeldOnTheIndex;
 
-    public const string FailedOnTheIndex = "its release not read better with its outlook not cut";
+    public const string FailedOnTheIndex = Families.RuleWording.Tone.FailedOnTheIndex;
 
     // What a night's releases held under one reading version, for the stage's row: the prints inside the drift's window
     // handed a release, how many of them were read, and how many hold none for each reason.
@@ -64,7 +64,7 @@ public static class ReleaseTone
             .ThenBy(group => group.Key, StringComparer.Ordinal)
             .Select(group => FormattableString.Invariant($", {group.Count()} where {group.Key}"));
 
-        return FormattableString.Invariant($"reading version {version}: {handed.Count} print(s) inside the window, {handed.Count(release => release.Answer is not null)} read") + string.Concat(none);
+        return Families.RuleWording.Tone.Handed(version, handed.Count, handed.Count(release => release.Answer is not null)) + string.Concat(none);
     }
 
     // The gate over the release a member's print is handed under the version.
@@ -72,7 +72,7 @@ public static class ReleaseTone
     {
         if (release is not { Answer: { } answer })
         {
-            return new Gate(Gate, false, $"no release reading under reading version {version}: {release?.Why ?? NotHanded}", FamilyRule.Values(("version", FamilyRule.Whole(version))));
+            return new Gate(Gate, false, Families.RuleWording.Tone.NoReading(version, release?.Why ?? NotHanded), FamilyRule.Values(("version", FamilyRule.Whole(version))));
         }
 
         var passed = Passes(answer);
@@ -80,9 +80,7 @@ public static class ReleaseTone
         return new Gate(
             Gate,
             passed,
-            passed
-                ? $"the release reads results {answer.Results} and outlook {answer.Outlook}, under reading version {version}"
-                : $"the release reads results {answer.Results} and outlook {answer.Outlook}, under reading version {version}, and the variant lists only results better with an outlook not lowered or withdrawn",
+            Families.RuleWording.Tone.Reads(answer.Results, answer.Outlook, version, passed),
             FamilyRule.Values(("version", FamilyRule.Whole(version)), ("results", answer.Results), ("outlook", answer.Outlook)));
     }
 

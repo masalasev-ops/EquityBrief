@@ -62,20 +62,20 @@ public sealed record IndexLevels(
 public static class IndexRules
 {
     // The reasons a level keeps a listed member off, after the floors and the quality.
-    public const string IndustryFell = "its industry fell";
+    public const string IndustryFell = RuleWording.IndexRule.IndustryFell;
 
-    public const string SwitchClosed = "a switch its rule reads closed";
+    public const string SwitchClosed = RuleWording.IndexRule.SwitchClosed;
 
-    public const string NotNearItsHigh = "not near enough its year's high";
+    public const string NotNearItsHigh = RuleWording.IndexRule.NotNearItsHigh;
 
-    public const string HighNotAsStated = "its year's high not as recent as its rule states";
+    public const string HighNotAsStated = RuleWording.IndexRule.HighNotAsStated;
 
     // The words a check on the year's high fails with where the night read no year's high for the member.
-    public const string NoYearHigh = "not read: no year's high tonight";
+    public const string NoYearHigh = RuleWording.IndexRule.NoYearHigh;
 
-    public const string VolumeUnder = "volume under its rule's multiple";
+    public const string VolumeUnder = RuleWording.IndexRule.VolumeUnder;
 
-    public const string PeersNotAbove = "its peers' surprise not above nothing";
+    public const string PeersNotAbove = RuleWording.IndexRule.PeersNotAbove;
 
     // From 20.4 the reasons the tone condition keeps a listed drift member off: its print's release read under the rule's
     // version and failing, and no reading of it held under the version.
@@ -85,7 +85,7 @@ public static class IndexRules
 
     // From 20.11 the reason the revenue level keeps a listed drift member off: its print's quarter's revenue not above the
     // same quarter's a year before, or not both read as first filed and stored before the night.
-    public const string RevenueNotAbove = "its print's revenue not above the same quarter's a year before";
+    public const string RevenueNotAbove = RuleWording.IndexRule.RevenueNotAbove;
 
     // The most rules a family keeps a night, and the most variants a freeze registers beside its live rule.
     public const int PerNight = 5;

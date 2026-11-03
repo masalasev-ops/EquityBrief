@@ -1,5 +1,6 @@
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Candidates;
@@ -253,6 +254,84 @@ public partial class FixtureExpectations
         store.Execute($"DELETE FROM family_trade WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BB';");
 
         await ReplayFinds(store, "the replay keeps BB on 2026-10-02 where the record keeps none");
+    }
+
+    // 21.21's first cause: a corporate action since the night rescaled the stock's bars and left what the night stored at the
+    // night's scale, so STZ's target of 2026-10-07 read at another distance from its buy. BA's whole year here is rescaled
+    // to 99 per cent as a refetch does, its raw closes as they were, and its stop's distance is counted in a typical move
+    // the night stored.
+    [Fact]
+    public async Task AReplayReproducesATradeWhoseBarsACorporateActionRescaledSinceTheNight()
+    {
+        using var store = await ReplayStore();
+
+        store.Execute("UPDATE bar SET high = printf('%.4f', high * 0.99), low = printf('%.4f', low * 0.99), close = printf('%.4f', close * 0.99) WHERE ticker = 'BA';");
+
+        await ReplayFinds(store, null);
+    }
+
+    [Fact]
+    public void AReplaysNightPutsItsStoredBandsAndTypicalMovesOnTheBarsScale()
+    {
+        var bars = new[] { new FamilyBar(new DateOnly(2026, 10, 7), 118m, 114m, 117.4545m, 1000) };
+        var market = new Gate("market", true, "open", FamilyRule.Values());
+        var member = new FamilyNightMember(
+            "STZ",
+            new FamilyMember(
+                new BreakoutInputs("STZ", market, bars, 500, 2.8, []),
+                new DriftInputs("STZ", market, bars, null, 2.6, 500, 2.8, [125.22m], [])),
+            null);
+
+        var read = FamilyReplay.AsTheBarsStoodOnTheNight(
+            new FamilyNightInputs([member], MarketCloses.None),
+            new Dictionary<string, decimal> { ["STZ"] = 0.5m },
+            new Dictionary<string, IReadOnlyList<FamilyBar>>()).Members[0].Inputs;
+
+        Assert.Equal(1.4, read.Breakout.TypicalMove);
+        Assert.Equal(1.3, read.Drift.TypicalMoveBefore);
+        Assert.Equal(1.4, read.Drift.TypicalMove);
+        Assert.Equal([62.61m], read.Drift.BandLowEdges);
+    }
+
+    // 21.21's second cause: the store's year has rolled past sessions the night read, so a long high is no longer read over
+    // the bars the store keeps. REGN's trade of 2026-10-30 under the 251-session rule read so. Here every session older than
+    // the newest twenty is dropped as the fetcher drops one, into the table it keeps them in.
+    [Fact]
+    public async Task AReplayReadsTheSessionsTheFetcherHasDroppedSinceTheNight()
+    {
+        using var store = await ReplayStore();
+
+        const string Older = "session_date < (SELECT session_date FROM (SELECT DISTINCT session_date FROM bar ORDER BY session_date DESC LIMIT 20) ORDER BY session_date LIMIT 1)";
+
+        store.Execute(
+            "INSERT INTO kept_bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close, kept_on) " +
+            $"SELECT ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close, '2026-10-03' FROM bar WHERE {Older};");
+        store.Execute($"DELETE FROM bar WHERE {Older};");
+
+        Assert.NotEqual(["0"], FamilyRows(store, "SELECT COUNT(*) FROM kept_bar;"));
+
+        await ReplayFinds(store, null);
+    }
+
+    // 21.21's third cause: a rule ordered by the expected value of the setups like each cannot be replayed, the ledger having
+    // moved since the night read it, and its row says so where it said the record kept a trade the replay did not.
+    [Fact]
+    public async Task ARuleReadingTheLedgerRestartsSayingItCannotBeReplayedWhereItHoldsATrade()
+    {
+        using var store = await ReplayStore();
+
+        var first = new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero);
+
+        Assert.Equal(0, (await RegisterVerbAt(store, first, RegisterVerb.FamilyAgain, BreakoutRule.Name, "--evidence", "a change of code")).Code);
+
+        store.Execute(
+            "INSERT INTO family_trade (candidate, ticker, session_date, family, place, entry, stop, target, risk_moves, reward_to_risk, cap) " +
+            $"SELECT '{TheSetupFamilies.BreakoutExpected.Candidate}', ticker, '2026-10-05', family, place, entry, stop, target, risk_moves, reward_to_risk, cap FROM family_trade WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BA';");
+
+        var (code, said) = await RegisterVerbAt(store, first.AddHours(6), RegisterVerb.FamilyAgain, BreakoutRule.Name, "--evidence", "a change of code");
+
+        Assert.Equal(0, code);
+        Assert.Contains($"replay: '{TheSetupFamilies.BreakoutExpected.Candidate}' restarts its record at this registration: {FamilyReplay.NotReplayedOnItsReadings}", said, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -97,7 +97,7 @@ public partial class ReadSurface
             ["126-session high", "volume 1.5 times", "ranges at 0.85", "stop 1.5 moves", "index above its 200-day"],
             Words(RuleKind.Breakout, new Dictionary<string, double> { ["highSessions"] = 126, ["volumeMultiple"] = 1.5, ["rangeCeiling"] = 0.85, ["stopMoves"] = 1.5, ["indexAverageSessions"] = 200, ["vixLookbackSessions"] = 0 }));
         Assert.Equal(
-            ["within 3 sessions", "up 0.5 moves", "volume 2 times", "target 2.5 times the risk", "stop at least 1 move", "VIX falling over 10"],
+            ["within 3 sessions", "up 0.5 moves", "volume 2 times", "target the nearer of the next price band about two typical moves up, or 2.5 times the risk", "stop at least 1 move", "VIX falling over 10"],
             Words(RuleKind.Drift, new Dictionary<string, double> { ["windowSessions"] = 3, ["reactionMoves"] = 0.5, ["volumeMultiple"] = 2, ["targetRiskMultiple"] = 2.5, ["stopFloorMoves"] = 1, ["indexAverageSessions"] = 0, ["vixLookbackSessions"] = 10 }));
 
         // The S&P 500's sector heavyweights at the live setting.
@@ -125,7 +125,7 @@ public partial class ReadSurface
 
         // An index drift with its window and stop floor, and the index heavyweights in each design.
         Assert.Equal(
-            ["within 3 sessions", "up 0.5 moves", "volume 2 times", "target 2.5 times the risk", "dollar floor 1 times", "close at least $5", "the profit gate", "market check off"],
+            ["within 3 sessions", "up 0.5 moves", "volume 2 times", "target the nearer of the next price band about two typical moves up, or 2.5 times the risk", "dollar floor 1 times", "close at least $5", "the profit gate", "market check off"],
             Words(RuleKind.IndexDrift, new Dictionary<string, double> { ["windowSessions"] = 3, ["reactionMoves"] = 0.5, ["volumeMultiple"] = 2, ["targetMultiple"] = 2.5, ["stopFloor"] = 0, ["wideWindow"] = 0, ["peers"] = 0, ["floors"] = 1, ["lowestClose"] = 5, ["quality"] = 1, ["largeBreadth"] = 2 }));
         Assert.Equal(
             ["10 largest", "251-session look-back", "2 leaders", "beta at least 1", "sold on losing the lead", "dollar floor 1 times", "profit and cover"],

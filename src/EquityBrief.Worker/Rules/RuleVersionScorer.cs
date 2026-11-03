@@ -77,7 +77,7 @@ public sealed class RuleVersionScorer : IComponent
     // see: The ladder rules' code version pins every source a live ladder rule or its replay runs through, its comments and blank lines aside
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "2328b7bf81b1";
+    public const string CodeVersion = "2d37943222c1";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -380,9 +380,7 @@ public sealed class RuleVersionScorer : IComponent
         var dropped = await DroppedAsync(connection, transaction, cancellation);
 
         var detail =
-            FormattableString.Invariant($"{open.Length} open version(s), {replayed.Length} replayed with {mergeDistance} of the merge distance, over {names.Count} name(s), ")
-            + FormattableString.Invariant($"{written} score(s) written, {kept} already stored and kept, {notComputed} name(s) with no bands or plan of that session, ")
-            + FormattableString.Invariant($"{skipped} name-night(s) skipped for a band set stored without member sources, {dropped} dropped, {frozen} block(s) frozen");
+            Core.Families.RuleWording.Versions.Scored(open.Length, replayed.Length, mergeDistance, names.Count, written, kept, notComputed, skipped, dropped, frozen);
 
         await RecordAsync(connection, runId, startedAt, written, detail, cancellation, transaction: transaction);
         await transaction.CommitAsync(cancellation);

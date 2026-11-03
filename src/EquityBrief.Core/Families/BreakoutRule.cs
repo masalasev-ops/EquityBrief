@@ -102,7 +102,7 @@ public static class BreakoutRule
             return new Gate(
                 NewHigh,
                 false,
-                Invariant($"not available: {inputs.Bars.Count} sessions are stored, and a close is read against the {sessions} before it"),
+                RuleWording.Breakout.TooFewForTheHigh(inputs.Bars.Count, sessions),
                 Values(("sessions", Whole(inputs.Bars.Count))));
         }
 
@@ -113,7 +113,7 @@ public static class BreakoutRule
         return new Gate(
             NewHigh,
             passed,
-            Invariant($"the close of {close} is {(passed ? "above" : "not above")} the highest high of the {sessions} sessions before it, {high}"),
+            RuleWording.Breakout.NewHigh(close, passed, sessions, high),
             Values(("close", Price(close)), ("high", Price(high)), ("sessions", Whole(inputs.Bars.Count)), (WindowValue, Whole(sessions))));
     }
 
@@ -122,7 +122,7 @@ public static class BreakoutRule
     {
         if (inputs.Bars.Count == 0 || inputs.VolumeAverage50 is not { } average || average <= 0)
         {
-            return (new Gate(Volume, false, "not available: no 50-session average volume is stored for the night", Values()), null);
+            return (new Gate(Volume, false, RuleWording.Breakout.NoVolumeAverage, Values()), null);
         }
 
         var multiple = Statistic.FromVolume(inputs.Bars[^1].Volume) / average;
@@ -132,7 +132,7 @@ public static class BreakoutRule
             new Gate(
                 Volume,
                 passed,
-                Invariant($"volume {multiple:0.00} times its 50-session average, {(passed ? "at or above" : "below")} {settings.VolumeMultiple:0.0#}"),
+                RuleWording.Breakout.Volume(multiple, passed, settings.VolumeMultiple),
                 Values(("multiple", Figure(multiple)), ("floor", Figure(settings.VolumeMultiple)))),
             multiple);
     }
@@ -148,7 +148,7 @@ public static class BreakoutRule
             return new Gate(
                 Tightened,
                 false,
-                Invariant($"not available: {inputs.Bars.Count} sessions are stored, and the ranges are read over the {RangeSessions * 2} before tonight"),
+                RuleWording.Breakout.TooFewForTheRanges(inputs.Bars.Count, RangeSessions * 2),
                 Values(("sessions", Whole(inputs.Bars.Count))));
         }
 
@@ -156,7 +156,7 @@ public static class BreakoutRule
 
         if (before.Any(bar => bar.Close <= 0))
         {
-            return new Gate(Tightened, false, "not available: a session before tonight holds no close above zero", Values());
+            return new Gate(Tightened, false, RuleWording.Breakout.NoCloseBefore, Values());
         }
 
         var older = before.Take(RangeSessions).Average(bar => (bar.High - bar.Low) / bar.Close);
@@ -164,7 +164,7 @@ public static class BreakoutRule
 
         if (older <= 0)
         {
-            return new Gate(Tightened, false, Invariant($"not available: the {RangeSessions} sessions the newer ranges are read against held no range"), Values());
+            return new Gate(Tightened, false, RuleWording.Breakout.NoRange(RangeSessions), Values());
         }
 
         var ratio = Statistic.FromRatio(newer / older);
@@ -173,7 +173,7 @@ public static class BreakoutRule
         return new Gate(
             Tightened,
             passed,
-            Invariant($"the mean daily range of the {RangeSessions} sessions before tonight is {Statistic.FromRatio(newer) * 100:0.00}% of the close, {(passed ? "no wider than" : "wider than")} {settings.RangeCeiling:0.0#} of the {Statistic.FromRatio(older) * 100:0.00}% of the {RangeSessions} before them"),
+            RuleWording.Breakout.Ranges(RangeSessions, Statistic.FromRatio(newer), passed, settings.RangeCeiling, Statistic.FromRatio(older)),
             Values(("recent", Figure(Statistic.FromRatio(newer))), ("before", Figure(Statistic.FromRatio(older))), ("ratio", Figure(ratio)), ("ceiling", Figure(settings.RangeCeiling))));
     }
 
@@ -183,28 +183,28 @@ public static class BreakoutRule
     {
         if (inputs.Bars.Count == 0)
         {
-            return (new Gate(Trade, false, "no close is stored for the night", Values()), null);
+            return (new Gate(Trade, false, RuleWording.Breakout.NoClose, Values()), null);
         }
 
         var close = inputs.Bars[^1].Close;
 
         if (inputs.TypicalMove is not { } move || move <= 0)
         {
-            return (new Gate(Trade, false, "no typical move is stored for the night to place the stop by", Values(("close", Price(close)))), null);
+            return (new Gate(Trade, false, RuleWording.Breakout.NoTypicalMove, Values(("close", Price(close)))), null);
         }
 
         var stop = close - Statistic.ToPrice(move * settings.StopMoves);
 
         if (stop <= 0 || stop >= close)
         {
-            return (new Gate(Trade, false, Invariant($"{settings.StopMoves:0.#} typical moves of {move:0.00} beneath the close of {close} leave no stop below it and above zero"), Values(("close", Price(close)), ("typical move", Figure(move)))), null);
+            return (new Gate(Trade, false, RuleWording.Breakout.NoStop(settings.StopMoves, move, close), Values(("close", Price(close)), ("typical move", Figure(move)))), null);
         }
 
         return (
             new Gate(
                 Trade,
                 true,
-                Invariant($"bought at the close of {close} with the stop at {stop}, {settings.StopMoves:0.#} typical moves of {move:0.00} beneath, trailing the highest close since"),
+                RuleWording.Breakout.Bought(close, stop, settings.StopMoves, move),
                 Values(("close", Price(close)), ("stop", Price(stop)), ("typical move", Figure(move)), ("moves", Figure(settings.StopMoves)))),
             stop);
     }
