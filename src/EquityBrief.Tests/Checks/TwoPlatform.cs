@@ -57,6 +57,12 @@ public class TwoPlatform
 
     static readonly Regex LocalWindowsRun = new(@"`tools/ci\.ps1`\s+green");
 
+    static readonly string[] MergedBeforeTheirRun =
+    [
+        "22.28 - a predecessor is joined only where at least 5 figures in common agree",
+        "22.29 - the ratings refresh's cap settled at 100 asks a day",
+    ];
+
     // Every entry written after the last hosted Windows leg, whatever it lands, and
     // the headings of those that do not say tools/ci.ps1 ran green.
     // see: Every entry written since the hosted Windows leg was removed records the Windows run, whatever the entry lands
@@ -143,11 +149,18 @@ public class TwoPlatform
         // hosted Windows leg was removed, which was 0 when it was removed and grows
         // by one an entry, so it carries no floor and is reported as context: the
         // proof above is what shows the reader can fail.
-        var (read, missing) = WindowsUnrecorded(Corpus.Read("docs/PROGRESS.md"));
+        var (read, unrecorded) = WindowsUnrecorded(Corpus.Read("docs/PROGRESS.md"));
+
+        // The two entries of PR 629 that reached main before the run over them ended. A record is not edited after the fact, so
+        // the correction entry after them states the run that covers them, and both stay named here, each shown still to be
+        // one the reader finds, so the exemption cannot outlive them.
+        Assert.All(MergedBeforeTheirRun, heading => Assert.Contains(unrecorded, entry => entry.StartsWith(heading, StringComparison.Ordinal)));
+
+        var missing = unrecorded.Where(entry => !MergedBeforeTheirRun.Any(heading => entry.StartsWith(heading, StringComparison.Ordinal))).ToArray();
 
         Assert.True(
-            missing.Count == 0,
-            $"Read {read} entries since the last hosted Windows leg, and {missing.Count} do not say " +
+            missing.Length == 0,
+            $"Read {read} entries since the last hosted Windows leg, and {missing.Length} do not say " +
             $"`tools/ci.ps1` ran green, so nothing shows the suite passed on Windows for them: {string.Join("; ", missing)}");
     }
 

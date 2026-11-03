@@ -26,6 +26,48 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/BUILD_PLAN.md - 22.32's done condition read as waiting on the calendar, and named two more guards
+Corrects: 22.32's done condition named a count of sessions in the words `done-condition-producible` reads as a wait, found by the suite's run over its first tree, and that run also found the two conditions it now names.
+Was:
+> **Done when** a plan is worked by hand over constructed bands; a stock at 200 sessions is shown to read its stored plan and one at 199 its levels; the words are read back
+Now:
+> **Done when** a plan is worked by hand over constructed bands; a stock at the average's need is shown to read its stored plan and one just short of it its levels, a stock whose bars open with the store's own and a plan the night placed each shown to stand; the words are read back
+Why: a check on what the suite builds waits on no calendar, and the condition must cover both guards.
+
+### 2026-11-03 - docs/ARCHITECTURE.html - a stock with too few sessions for its averages draws its plan from its levels
+Authorised by: A stock with too few sessions for its averages draws its plan from its levels when a page is read and no rule reads it
+Was:
+> or is worked by one function in the core from what they hold, of two kinds. The first is a figure at a price
+> performs no fetching, and no computation but a pick's plan in the operator's money and its open trades in its sector,
+> the reason its ladder stored and what would bring a plan (see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table); and folded
+Now:
+> or is worked by one function in the core from what they hold, of three kinds, the third the plan a stock with too few sessions for its averages draws from its stored levels, which no rule reads (see: A stock with too few sessions for its averages draws its plan from its levels when a page is read and no rule reads it). The first is a figure at a price
+> performs no fetching, and no computation but a pick's plan in the operator's money and its open trades in its sector, the plan a stock with too few sessions for its averages draws from its levels,
+> the reason its ladder stored and what would bring a plan (see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table); a stock with too few sessions for its averages draws a plan from its levels with why the average is missing, and says no plan can be drawn only where it holds no level, on every index (see: A stock with too few sessions for its averages draws its plan from its levels when a page is read and no rule reads it); and folded
+Why: the operator's ruling of 2026-11-03, in `prompts/2026-11-03-22.31-pick-card-sizing-and-short-history-rulings.md`.
+
+### 2026-11-03 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - a pick's plan is sized on the example account until the operator saves their own
+Authorised by: A pick's plan is sized on the example account until the operator saves their own
+Was:
+> the plan in the operator's money or the line linking the account page; the management in the rule's own terms
+> with none kept, the card draws its plan in prices and risks and one line linking the account page. Under the plan
+> <td>the card draws its plan in prices and risks with one line saying no account is kept and linking the account page, and sizes nothing; a file that cannot be read is read as none kept, and the account page draws it empty with the position cap it proposes (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold)</td><td>the card's plan, with the line linking the account page</td><td>a plan in money from an account the operator never set sizes a position nobody chose</td></tr>
+> then the size in the operator's money through the card's own function, or a link to the settings page where the account is not set; one row of chips,
+Now:
+> the plan in the operator's money or on the example account, with the line saying so and linking the account page; the management in the rule's own terms
+> with none kept, the card sizes its plan on the example account paper trading walks, in the same shares and dollars, with one line saying so and linking the account page (see: A pick's plan is sized on the example account until the operator saves their own). Under the plan
+> <td>the card sizes its plan on the example account with one line saying so and linking the account page; a file that cannot be read is read as none kept, and the account page draws it empty with the position cap it proposes (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold) (see: A pick's plan is sized on the example account until the operator saves their own)</td><td>the card's plan on the example, with the line linking the account page</td><td>a plan in money on an account the operator never set is read as theirs unless the card says whose it is</td></tr>
+> then the size in the operator's money through the card's own function, or on the example account with a link to the settings page where the account is not set; one row of chips,
+Why: the operator's ruling of 2026-11-03, in `prompts/2026-11-03-22.31-pick-card-sizing-and-short-history-rulings.md`.
+
+### 2026-11-03 - docs/BUILD_PLAN.md - 22.29's text named a derived component
+Corrects: the plan's text for 22.29 named the history pull, a component whose due point the plan supplies, so it shadowed that due point; found by the suite's first run over PR 629, stopped there.
+Was:
+> Recorded, with the history pull's days measured against the 16 proposed, which discharges a carried obligation
+Now:
+> Recorded, with the days a first pass over the members takes measured against the 16 proposed, which discharges a carried obligation
+Why: the check reads a component's due point off the plan's text, and this sentence means no such component.
+
 ### 2026-11-03 - docs/RUNBOOK.md, docs/BUILD_PLAN.md - the night's instant stated as the task fires it
 Authorised by: The night stays at 23:00 UTC on the operator's word, and a night finding the day's file not yet posted still moves it later
 Was:

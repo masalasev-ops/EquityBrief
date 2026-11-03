@@ -3019,6 +3019,7 @@ public static partial class NameScreen
             return body
                 + "<div class=\"plan-grid\"><div class=\"fig\">" + marks.PlanColumn(ticker, price, rows, plain: true) + "</div><div>"
                 + marks.PlanTables(ticker, rows, plain: true) + "</div></div>"
+                + (ladder?.ShortNote is { } tooShort ? Invariant($"<p class=\"card-note\" data-short-history=\"true\">{Escaped(tooShort)}</p>") : string.Empty)
                 + "<p class=\"card-note\">Worked from the stock's own support and resistance levels: it buys in the green zones below the price and sells in the orange zones above it, and the heavy line is where the whole idea is wrong.</p>"
                 + "</section>";
         }

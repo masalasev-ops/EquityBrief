@@ -150,7 +150,7 @@ public partial class ReadSurface
                 $"Picked tonight by {pullback}: buy at the next open, near tonight's close of 100.00.",
                 "Sell at the next trading day's open after a day that closes below 96.00.",
                 "Sell at the next trading day's open after a day that closes at or above 110.00. Otherwise sell at the close 21 trading days after the buy.",
-                "Your size: 250 shares, 25,000.00, 25.0% of the account, 1,000.00 at risk to the stop.",
+                "Your size: 250 shares, 25,000.00, 25.0% of the account, 1,000.00 at risk to the stop, 2,500.00 to the target.",
             ],
             LinesOf(view, "way-in"));
         Assert.Equal(
@@ -232,7 +232,7 @@ public partial class ReadSurface
                 "Not among tonight's picks. The night's levels plan buys in its first zone at 95.00 to 97.00.",
                 "Its stop: a daily close below 92.00.",
                 "Its first sale at 108.00: risk $1 to make $2.28.",
-                "Your size: 200 shares, 19,400.00, 19.4% of the account, 1,000.00 at risk to the stop.",
+                "Your size: 200 shares, 19,400.00, 19.4% of the account, 1,000.00 at risk to the stop, 2,200.00 to the target.",
             ],
             LinesOf(BriefScreen.Of(BriefOf(BriefMember(), levels: levels, account: new AccountSettings(100_000m, 1m, 0.5m))), "way-in"));
 
@@ -305,7 +305,8 @@ public partial class ReadSurface
         Assert.Equal($"Picked tonight by {pullback}: buy at the next open, near tonight's close of 100.00.", f1.Lines["buy"]);
         Assert.Equal("Sell at the next trading day's open after a day that closes below 96.00.", f1.Lines["stop"]);
         Assert.Equal("Sell at the next trading day's open after a day that closes at or above 110.00. Otherwise sell at the close 21 trading days after the buy.", f1.Lines["exit"]);
-        Assert.Equal("Your account is not set: set your account's size and risk to see a size.", f1.Lines["size"]);
+        Assert.Equal("On the example account: 200 shares, 20,000.00, 20.0% of the account, 800.00 at risk to the stop, 2,000.00 to the target.", f1.Lines["size"]);
+        Assert.Equal("Sized on the example account of $100,000 risking 1% a trade, as Paper trading uses, until you save your own: set your account's size and risk.", f1.Lines["size-example"]);
         Assert.Equal($"pullback|listed|{pullback}: picked tonight", f1.Chips[0]);
 
         var n1 = await Brief("N1");

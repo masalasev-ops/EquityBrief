@@ -158,7 +158,6 @@ public partial class PlainWords
                 heavyweights ? percent : record,
                 dip ? Management.ForDip(stop, 5, cap) : Management.For(stop, target, trail, cap, heavyweights),
                 heavyweights ? whole : money,
-                false,
                 taken,
                 true,
                 HitsDrawn[cards.Count % HitsDrawn.Length],
@@ -171,8 +170,8 @@ public partial class PlainWords
         }
 
         // The checklist's every other verdict, a record below the minimum, a rule not replayed, a rule standing at an
-        // approved change, and a card with the account not set and no trade taken.
-        cards.Add(new DecisionCardView("GSPC", CardNight, SetupFamilies.Pullback, "XYZ", "The pullback on the S&P 500", 50m, 47m, 56m, OtherLines(), record with { Trades = 12 }, AccountUnset: true, Pressable: true, Cap: 63));
+        // approved change, and a card sized on the example account with no trade taken.
+        cards.Add(new DecisionCardView("GSPC", CardNight, SetupFamilies.Pullback, "XYZ", "The pullback on the S&P 500", 50m, 47m, 56m, OtherLines(), record with { Trades = 12 }, Money: new CardMoneyView(333, 999m, 16_650m, 0.1665m, null, false, false, 1m, 1_998m, true), Pressable: true, Cap: 63));
         cards.Add(new DecisionCardView("SML", CardNight, BreakoutRule.Name, "XYZ", "The breakout on the S&P 600", 50m, 47m, null, OtherLines(), null, Pressable: true, Trail: 3m, Cap: 63));
         cards.Add(new DecisionCardView("MID", CardNight, DriftRule.Name, "XYZ", "The earnings drift on the S&P 400", 50m, 47m, 58m, OtherLines(), null, Approved: "exit: the seventh", Cap: 63));
 

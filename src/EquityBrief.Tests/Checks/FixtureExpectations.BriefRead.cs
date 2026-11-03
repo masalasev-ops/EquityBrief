@@ -58,7 +58,7 @@ public partial class FixtureExpectations
             var chips = Regex.Matches(brief, "data-family=\"([^\"]+)\" data-state=\"([^\"]+)\"").ToDictionary(match => match.Groups[1].Value, match => match.Groups[2].Value, StringComparer.Ordinal);
             var member = universe.Single(row => row.Ticker == ticker);
 
-            Assert.Equal(13, lines.Count);
+            Assert.Equal(14, lines.Count);
 
             // The trend, as the file states it.
             var trend = expected.GetProperty("trend").GetProperty(ticker).GetString()!;
@@ -137,7 +137,8 @@ public partial class FixtureExpectations
                     ? "No first sale is stored."
                     : $"Its first sale at {Price(decimal.Parse(sale.GetProperty("lowEdge").GetString()!, CultureInfo.InvariantCulture))}" + (ratio == "null" ? "." : FormattableString.Invariant($": risk $1 to make ${double.Parse(ratio, CultureInfo.InvariantCulture):0.00}.")),
                 lines["exit"]);
-            Assert.Equal("Your account is not set: set your account's size and risk to see a size.", lines["size"]);
+            Assert.StartsWith("On the example account: ", lines["size"], StringComparison.Ordinal);
+            Assert.Equal("Sized on the example account of $100,000 risking 1% a trade, as Paper trading uses, until you save your own: set your account's size and risk.", lines["size-example"]);
 
             // The chips: the drift's newest print outside its window on every name, NFLX one step short of the dip at its
             // trend, and every other setup not close; none held in the heavyweights' book.

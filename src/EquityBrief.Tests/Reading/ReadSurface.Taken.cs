@@ -83,7 +83,33 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task APicksCardDrawsItsPlanInTheOperatorsMoneyOnTonightAndInPricesWhereNoAccountIsKept()
+    public async Task APicksCardDrawsTheDollarsToItsTargetOnTheExampleAndOnASavedAccount()
+    {
+        using var store = TakenStore();
+
+        await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+        store.Execute("UPDATE decision_card SET target = '55' WHERE ticker = 'M1';");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        // On the example, the 370 shares a 2.70 stop buys make 5.00 each to a target at 55.00, 1,850.00.
+        var example = await CardRowOf(client, "MID", "breakout", "M1");
+
+        Assert.Contains("data-to-target=\"1850.00\"", example, StringComparison.Ordinal);
+        Assert.Contains("the 1% a trade the example gives, and $1,850.00 to the target at 55.00.", example, StringComparison.Ordinal);
+
+        // On a saved account of 10,000, the 37 shares it buys make 185.00.
+        AccountFile.Write(store.Root, new AccountSettings(10_000m, 1m, AccountSettings.ProposedCap));
+
+        var saved = await CardRowOf(client, "MID", "breakout", "M1");
+
+        Assert.Contains("your settings give, and $185.00 to the target at 55.00.", saved, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-account=\"example\"", saved, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task APicksCardDrawsItsPlanInTheOperatorsMoneyOnTonightAndOnTheExampleWhereNoAccountIsKept()
     {
         using var store = TakenStore();
 
@@ -92,11 +118,14 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        // No account kept: the plan in prices alone with the line linking the account page, and no shares.
+        // No account kept: sized on the example, 100,000 at a risk of 1%, 370 shares at a stop 2.70 under a buy of 50.00, saying
+        // so and linking the account page.
         var unset = await CardRowOf(client, "MID", "breakout", "M1");
 
-        Assert.Contains($"<p class=\"card-money degraded\" data-account=\"unset\">Your account is not set, so the plan is drawn in prices alone: <a href=\"{EquityBrief.Web.Marks.MarkRenderer.AccountRoute}\">", unset, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-shares=", unset, StringComparison.Ordinal);
+        Assert.Contains("data-shares=\"370\" data-at-risk=\"999.00\"", unset, StringComparison.Ordinal);
+        Assert.Contains("On the example account: 370 shares at 50.00, a position of $18,500.00, 18.5% of the account, with $999.00 at risk to the stop at 47.30, the 1% a trade the example gives", unset, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"card-note\" data-account=\"example\">Sized on the example account of $100,000 risking 1% a trade, as Paper trading uses, until you save your own: <a href=\"{EquityBrief.Web.Marks.MarkRenderer.AccountRoute}\">set your account's size and risk</a>.</p>", unset, StringComparison.Ordinal);
+        Assert.DoesNotContain("In your money", unset, StringComparison.Ordinal);
 
         // 10,000 at a risk of 1% under the cap the page proposes: 37 shares at a stop 2.70 under a buy of 50.00.
         AccountFile.Write(store.Root, new AccountSettings(10_000m, 1m, AccountSettings.ProposedCap));
@@ -123,7 +152,7 @@ public partial class ReadSurface
         // A file that cannot be read is read as none kept, and the account page draws it empty with the cap it proposes.
         File.WriteAllText(AccountFile.PathIn(store.Root), "{\"size\": \"ten thousand\"");
 
-        Assert.Contains("data-account=\"unset\"", await CardRowOf(client, "MID", "breakout", "M1"), StringComparison.Ordinal);
+        Assert.Contains("data-account=\"example\"", await CardRowOf(client, "MID", "breakout", "M1"), StringComparison.Ordinal);
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/account"));
 

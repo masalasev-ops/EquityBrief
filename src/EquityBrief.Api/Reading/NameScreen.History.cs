@@ -87,7 +87,8 @@ public static partial class NameScreen
             MoveCauses.LabelsCover(Stories(inputs.Stories)),
             RiskLinesAt(bands, price, invalidation),
             unplanned,
-            unplanned is { } why ? PlanForms(why, bands, price) : null);
+            unplanned is { } why ? PlanForms(why, bands, price) : null,
+            ladder?.ShortNote);
     }
 
     // The reason a stored ladder gives for placing no tranche, as the ladder's rule wrote it, or none where it placed one.

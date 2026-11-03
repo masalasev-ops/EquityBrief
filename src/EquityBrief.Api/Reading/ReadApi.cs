@@ -88,7 +88,10 @@ public sealed record CalendarRow(string Ticker, DateOnly EventDate, string Kind,
 // The plan is handed over as the stored JSON rather than parsed, because
 // parsing it here would make this surface the second place the plan's shape is
 // stated.
-public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, string Plan);
+//
+// A stock with too few sessions for its averages carries, worked as the page is read, why its plan reads its levels alone,
+// or why none could be drawn.
+public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, string Plan, string? ShortNote = null, string? ShortWhy = null);
 
 // A name whose stored series the corporate action check marked suspect, as its row holds
 // it: the reason its last refetch failed for, the instant it was last asked for, and how
