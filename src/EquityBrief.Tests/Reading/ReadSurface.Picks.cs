@@ -191,7 +191,7 @@ public partial class ReadSurface
 
         // The counts: PC open; PA reached its target, PB stopped out and PD ran out of time, three finished;
         // PE carries no outcome row, so it is listed and in no status.
-        Assert.Contains("<dl class=\"counts\" data-listed=\"5\" data-nights=\"2\" data-open=\"1\" data-finished=\"3\" data-target=\"1\" data-stopped=\"1\" data-time=\"1\" data-missing=\"1\">", page, StringComparison.Ordinal);
+        Assert.Contains("<dl class=\"counts\" data-listed=\"5\" data-nights=\"2\" data-open=\"1\" data-to-buy=\"0\" data-finished=\"3\" data-target=\"1\" data-stopped=\"1\" data-time=\"1\" data-missing=\"1\">", page, StringComparison.Ordinal);
         Assert.Contains("<div><dt>Trades listed</dt><dd>5<span class=\"grp\">over 2 nights</span></dd></div>", page, StringComparison.Ordinal);
 
         foreach (var (words, count) in new[] { ("Still open", 1), ("Finished", 3), ("Reached target", 1), ("Stopped out", 1), ("Ran out of time", 1) })
@@ -210,7 +210,7 @@ public partial class ReadSurface
 
         // The chips: all and the four statuses, each with its count, and no other.
         Assert.Equal(
-            ["all", PickStatus.Open, PickStatus.Target, PickStatus.Stopped, PickStatus.Time],
+            ["all", PickStatus.Open, PickStatus.ToBuy, PickStatus.Target, PickStatus.Stopped, PickStatus.Time],
             Regex.Matches(page, "<a class=\"chip\" data-filter=\"([^\"]+)\" data-value=\"([^\"]+)\"").Select(match => match.Groups[1].Value == "status" ? match.Groups[2].Value : "not a status"));
         Assert.Contains("<a class=\"chip\" data-filter=\"status\" data-value=\"all\" aria-pressed=\"true\" href=\"#/picks\">All<span class=\"n\">5</span></a>", page, StringComparison.Ordinal);
 
@@ -400,7 +400,7 @@ public partial class ReadSurface
         // and 35 for the 150, a mean of 31.0. Each result is the return over the 4% risked: +2 for a target,
         // -1 for a stop and +0.25 for a time-out, a mean over the 270 finished of 55/270, +0.20.
         Assert.DoesNotContain("not-yet-rate", page, StringComparison.Ordinal);
-        Assert.Contains("<dl class=\"counts\" data-listed=\"270\" data-nights=\"60\" data-open=\"0\" data-finished=\"270\" data-target=\"100\" data-stopped=\"150\" data-time=\"20\" data-missing=\"0\">", page, StringComparison.Ordinal);
+        Assert.Contains("<dl class=\"counts\" data-listed=\"270\" data-nights=\"60\" data-open=\"0\" data-to-buy=\"0\" data-finished=\"270\" data-target=\"100\" data-stopped=\"150\" data-time=\"20\" data-missing=\"0\">", page, StringComparison.Ordinal);
         Assert.Contains("<div><dt>Reached target first</dt><dd>40.0%</dd><small>100 of the 250 decided at the target or the stop</small></div>", page, StringComparison.Ordinal);
         Assert.Contains("<div><dt>Needed to break even</dt><dd>31.0%</dd><small>the mean of each decided trade's own bar</small></div>", page, StringComparison.Ordinal);
         Assert.Contains("<div><dt>Average result</dt><dd><span class=\"gain\">+0.20 × risk</span></dd><small>per finished trade</small></div>", page, StringComparison.Ordinal);

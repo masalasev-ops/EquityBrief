@@ -73,6 +73,25 @@ public static partial class PaperAccount
 
     public const string NoResult = "ended with no result read";
 
+    public const string TargetReached = "target reached";
+
+    public const string TimeRanOut = "time ran out";
+
+    // Why a trade's exit fired, read off the close it fired on as `Ending` reads a sale, for a trade the next open has yet to sell.
+    // see: Every count of trades names its group and one function works the three groups
+    public static string WhyFired(decimal? close, decimal? target, decimal? stop, decimal? trail, int? held, int? cap) =>
+        trail is null && target is { } goal && close >= goal ? TargetReached
+            : close is { } read && stop is { } floor && read < floor ? UnderStop
+            : held is { } kept && cap is { } limit && kept >= limit ? TimeRanOut
+            : trail is not null ? UnderTrail
+            : UnderStop;
+
+    // A trade whose exit fired by the night and whose sale the next open has not made: why it sells, none for any other.
+    public static string? Selling(PaperTrade trade, DateOnly night, Func<string, DateOnly, decimal?> close) =>
+        trade.FiredOn is not { } fired || fired > night || (trade.Ended is { } end && end <= night)
+            ? null
+            : trade.FiredWhy ?? WhyFired(close(trade.Ticker, fired), trade.Target, trade.Stop, trade.Trail, ExchangeClosures.SessionsUntil(trade.ListedOn, fired), trade.Cap);
+
     public const string Waiting = "waits on the next session's open";
 
     public const string Better = "Better";

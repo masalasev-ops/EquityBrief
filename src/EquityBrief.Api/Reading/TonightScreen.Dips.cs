@@ -358,7 +358,7 @@ public static partial class TonightScreen
             live?.Variants ?? 0,
             picks.Count(pick => pick.State == FamilyList.Listed),
             counted.Count,
-            counted.Count(trade => trade.EndedOn is null),
+            counted.Count(trade => trade.EndedOn is null && trade.Fill is not null),
             counted.Count(trade => trade.EndedOn is not null),
             live is null ? SetupFamilies.Provisional : FormattableString.Invariant($"{counted.Count(trade => trade.EndedOn is not null)} finished since its freeze"));
         var at = rows.Select((row, place) => (row, place)).FirstOrDefault(one => one.row.Family == HeavyweightRule.Name).place;

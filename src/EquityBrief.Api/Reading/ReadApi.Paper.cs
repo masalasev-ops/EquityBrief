@@ -41,7 +41,8 @@ public sealed record PaperRow(
     string? Reason = null,
     int? BookSize = null,
     int? Exit = null,
-    double? RiskMoves = null);
+    double? RiskMoves = null,
+    DateOnly? FiredOn = null);
 
 // What paper trading reads of a stock on the night: its company as the membership names it, its typical move and its
 // 200-session average as the night's indicators stored them, and from 21.11 its GICS sector on the night as the
@@ -102,14 +103,14 @@ public sealed partial class ReadApi
 
     // Each swing trade in one column order after its account and family: its stock, night, place, close, stop, end, result
     // at its fill, target, the distance it trails, cap, round trip, the exit of the menu it is walked under and its stop's
-    // distance in typical moves, a column a table keeps none of read as none.
-    static readonly string FamilyTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, NULL, t.cap, t.cost, t.exit, t.risk_moves, {FillColumns} FROM family_trade t {Filled("family_trade", "t", "'GSPC'", "t.candidate", "session_date")} ORDER BY t.session_date, t.place;";
+    // distance in typical moves and the close its exit fired on, a column a table keeps none of read as none.
+    static readonly string FamilyTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, NULL, t.cap, t.cost, t.exit, t.risk_moves, t.ended_on, {FillColumns} FROM family_trade t {Filled("family_trade", "t", "'GSPC'", "t.candidate", "session_date")} ORDER BY t.session_date, t.place;";
 
-    static readonly string RulePicksKept = $"SELECT t.rule, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, NULL, t.cap, NULL, NULL, NULL, {FillColumns} FROM rule_pick t {Filled("rule_pick", "t", "t.index_code", "t.rule", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
+    static readonly string RulePicksKept = $"SELECT t.rule, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, NULL, t.cap, NULL, NULL, NULL, t.ended_on, {FillColumns} FROM rule_pick t {Filled("rule_pick", "t", "t.index_code", "t.rule", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
-    static readonly string IndexFamilyTradesOn = $"SELECT t.family, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, t.trail, t.cap, t.cost, t.exit, t.risk_moves, {FillColumns} FROM index_family_trade t {Filled("index_family_trade", "t", "t.index_code", "t.family", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
+    static readonly string IndexFamilyTradesOn = $"SELECT t.family, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, t.trail, t.cap, t.cost, t.exit, t.risk_moves, t.ended_on, {FillColumns} FROM index_family_trade t {Filled("index_family_trade", "t", "t.index_code", "t.family", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
-    static readonly string IndexRuleTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, t.trail, t.cap, t.cost, t.exit, t.risk_moves, {FillColumns} FROM index_rule_trade t {Filled("index_rule_trade", "t", "t.index_code", "t.candidate", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
+    static readonly string IndexRuleTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, {SoldOn}, f.result, t.target, t.trail, t.cap, t.cost, t.exit, t.risk_moves, t.ended_on, {FillColumns} FROM index_rule_trade t {Filled("index_rule_trade", "t", "t.index_code", "t.candidate", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
     // Each holding in one column order after its account: its stock, rebalance, close, end, result at its fill, round
     // trip, sector and the reason its book sold it, a book keeping no round trip read as none.
@@ -147,7 +148,7 @@ public sealed partial class ReadApi
     // the next open in the fills' place, its result at that fill and its round trip each in the risk its listing close set.
     // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
     static readonly string DipTradesOn =
-        $"SELECT CASE WHEN t.rule = '{TonightScreen.ProvisionalDip}' THEN '{PageList} {DipRule.Name}' ELSE t.rule END, '{DipRule.Name}', t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, t.result, NULL, NULL, t.time_limit, t.cost, NULL, t.risk_moves, " +
+        $"SELECT CASE WHEN t.rule = '{TonightScreen.ProvisionalDip}' THEN '{PageList} {DipRule.Name}' ELSE t.rule END, '{DipRule.Name}', t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, t.result, NULL, NULL, t.time_limit, t.cost, NULL, t.risk_moves, NULL, " +
         "t.fill, t.bought_on, (SELECT b.open FROM bar b WHERE b.ticker = t.ticker AND b.session_date = t.bought_on), NULL, t.past, NULL " +
         "FROM dip_trade t WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
@@ -242,6 +243,7 @@ public sealed partial class ReadApi
                 Cap = reader.IsDBNull(11) ? null : reader.GetInt32(11),
                 Exit = reader.IsDBNull(13) ? null : reader.GetInt32(13),
                 RiskMoves = Optional(reader, 14),
+                FiredOn = DayAt(reader, 15),
             });
 
         static PaperRow Holding(SqliteDataReader reader, string account) =>

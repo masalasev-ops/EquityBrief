@@ -1,0 +1,52 @@
+using System.Globalization;
+
+namespace EquityBrief.Web.Marks;
+
+// One group of trades as every page counts it: those bought, open, closed, closed for a gain, at their target, at their stop,
+// and the mean return on the buy over all of them, an open one's at tonight's close.
+public sealed record TradeCountView(int Bought, int Open, int Closed, int MadeMoney, int AtTarget, int AtStop, double? MeanReturn, int Selling = 0);
+
+// A trade an earlier version of a family's live rule still holds of a stock: the family, the version that bought it, the day.
+public sealed record EarlierHoldingView(string Family, string Version, DateOnly Bought)
+{
+    public string Words(string setup) =>
+        FormattableString.Invariant($"An earlier version of {setup} still holds this stock, bought on {Bought.ToString("d MMM yyyy", CultureInfo.InvariantCulture)} under {Version}. It counts among {TradeGroupsView.SystemWords} and not toward this version's verdict.");
+}
+
+// The named groups, once: the system's trades, every trade the live rules bought under any version since each family first
+// went live; this version's trades, those of each rule as registered now, which alone count toward a verdict; the earlier
+// versions' trades; and the stocks to buy at tomorrow's open, which are in none of them until bought. The words each group
+// is named in are here, so that every page says the same.
+// see: Every count of trades names its group and one function works the three groups
+public sealed record TradeGroupsView(DateOnly? FirstLive, DateOnly? VersionSince, TradeCountView System, TradeCountView ThisVersion, TradeCountView EarlierVersions, int ToBuy, int ToBuyFromReshuffles = 0)
+{
+    // The new picks among those to buy, the rest being the monthly books' reshuffle.
+    public int NewPicks => ToBuy - ToBuyFromReshuffles;
+
+    public const string SystemWords = "the system's trades";
+
+    public const string VersionWords = "this version's trades";
+
+    public const string EarlierWords = "earlier versions' trades";
+
+    public const string ToBuyWords = "to buy at tomorrow's open";
+
+    public const string SellsWords = "sells at tomorrow's open";
+
+    // How many of a count of open trades sell at the next open, in the words every page counting them adds, none where none do.
+    public static string Selling(int selling) =>
+        selling <= 0 ? string.Empty : FormattableString.Invariant($"{selling} of them {(selling == 1 ? "sells" : "sell")} at tomorrow's open");
+
+    // Past picks' tables hold some of the system's trades: how many of its open trades a table holds, and where the rest are.
+    public string OpenHere(int here, string table) =>
+        FormattableString.Invariant($"Of {SystemWords}, {System.Open} {(System.Open == 1 ? "is" : "are")} open{(System.Selling > 0 ? ", " + Selling(System.Selling) : string.Empty)}: {here} in {table} and {System.Open - here} under the other setups.");
+
+    static string Day(DateOnly day) => day.ToString("d MMM", CultureInfo.InvariantCulture);
+
+    // Paper trading's line above its fold of earlier versions, as the operator worded it.
+    public string SystemLine =>
+        FormattableString.Invariant($"The system has bought {System.Bought} {(System.Bought == 1 ? "trade" : "trades")}{(FirstLive is { } first ? " since " + Day(first) : string.Empty)}: {System.Open} open, {(System.Selling > 0 ? Selling(System.Selling) + ", " : string.Empty)}{System.AtTarget} reached their target, {System.AtStop} hit their stop, {(System.Closed - System.AtTarget - System.AtStop is > 0 and var other ? $"{other} sold by their rules' other exits, " : string.Empty)}{Overall} overall.")
+        + (VersionSince is { } since ? $" The accounts above count only the rules as registered now, since {Day(since)}." : " The accounts above count only the rules as registered now.");
+
+    string Overall => System.MeanReturn is { } mean ? (mean * 100).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "%" : "no return yet";
+}

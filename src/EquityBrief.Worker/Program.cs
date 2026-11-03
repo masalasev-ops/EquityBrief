@@ -219,7 +219,8 @@ static int NoVerb()
         "'filings' reads the archive's daily index for the days since the refresh last read one and asks the facts of " +
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
         "step does, 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
-        "not yet stored as first filed, and 'filings --instances --from <yyyy-MM-dd>' reads each member's report filed " +
+        "not yet stored as first filed, 'filings --join-predecessors' copies under each company that re-filed under a new " +
+        "number its predecessor's stored facts, asking the archive for nothing, and 'filings --instances --from <yyyy-MM-dd>' reads each member's report filed " +
         "since that day that the store holds no fact of from its own XBRL instance, " +
         "'insiders-history' reads each quarter of the SEC's insider data sets from 2018q1 through the newest posted that " +
         "no earlier read recorded, one request a quarter and one for the page listing them, and stores every company's " +
@@ -1308,6 +1309,28 @@ static async Task<int> FilingsRun(string[] args)
     var clock = SystemClock.ForUnitedStatesSessions();
     var refresher = new EquityBrief.Worker.Ledger.FilingsRefresher(SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)), clock, store.DatabaseFile);
     var runId = FormattableString.Invariant($"filings-by-hand-{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}");
+
+    // Each company that re-filed under a new number carries its predecessor's stored facts; asks the archive for nothing,
+    // and refused while a night holds the store.
+    // see: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts
+    if (args.Contains("--join-predecessors", StringComparer.Ordinal))
+    {
+        if (EquityBrief.Core.Configuration.NightLock.Holder(store.DataRoot) is { } holding)
+        {
+            Console.Error.WriteLine($"filings: the night holds the store ({holding}); run it once the night has finished.");
+
+            return 2;
+        }
+
+        var joined = await refresher.JoinPredecessorsAsync(runId);
+
+        foreach (var one in joined)
+        {
+            Console.WriteLine("filings: " + one.Said);
+        }
+
+        return joined.Any(one => one.Refused is not null) ? 1 : 0;
+    }
 
     if (args.Contains("--whole", StringComparer.Ordinal))
     {

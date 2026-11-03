@@ -41,7 +41,7 @@ public sealed partial class MarkRenderer
             return "Set your account above to draw each setup's return.";
         }
 
-        var made = accounts.Where(account => account.Head && account.Walk?.Return is not null).ToArray();
+        var made = accounts.Where(account => account.Head && account.Trades > 0 && account.Walk?.Return is not null).ToArray();
 
         if (made.Length == 0)
         {
@@ -49,9 +49,9 @@ public sealed partial class MarkRenderer
         }
 
         var best = made.OrderByDescending(account => account.Walk!.Return!.Value).ThenBy(account => SetupFamilies.OrderOf(account.Family)).First();
-        var index = fund?.Return is { } held ? Formatted($"; the index's fund is {Moved(held).ToLowerInvariant()} over the same days") : string.Empty;
+        var index = best.Walk!.FundReturn is { } held && fund is { } named ? Formatted($"; the index's fund, {named.Fund}, is {Moved(held).ToLowerInvariant()} over the same days") : string.Empty;
 
-        return Formatted($"Of {made.Length} live setups with a trade, {FamilyName(best.Family)} has done best, {Moved(best.Walk!.Return!.Value).ToLowerInvariant()}{(best.Since is { } since ? " since " + Short(since) : string.Empty)}{index}.");
+        return Formatted($"Of {Counted(made.Length, "live setup", "live setups")} with a trade, {FamilyName(best.Family)} has done best, {Moved(best.Walk!.Return!.Value).ToLowerInvariant()}{(best.Since is { } since ? " since " + Short(since) : string.Empty)}{index}.");
     }
 
     public static string PaperCombinedSaid(PaperCombinedView? combined, bool walked) =>
@@ -59,15 +59,15 @@ public sealed partial class MarkRenderer
             ? "Set your account above to walk every setup's trades together."
             : combined is not { } all
                 ? "No live setup has a trade yet, so the account of every setup together holds none."
-                : Formatted($"All setups together: {(all.Walk.Return is { } made ? Moved(made).ToLowerInvariant() : "no return yet")} since {Short(all.Since)}, {Counted(all.Open, "position", "positions")} open, {Counted(all.Skipped, "pick", "picks")} skipped.");
+                : Formatted($"All setups together, counting the rules as registered now from the day each counts from: {(all.Walk.Return is { } made ? Moved(made).ToLowerInvariant() : "no return yet")} since {Short(all.Since)}, {Counted(all.Open, "position", "positions")} open, {Counted(all.Skipped, "pick", "picks")} skipped.");
 
     public static string PaperBoughtSaid(PaperPageView page)
     {
         var newest = page.Open.Concat(page.Closed).Select(trade => (DateOnly?)trade.Bought).Max();
 
         return page.Open.Count + page.Closed.Count == 0
-            ? "No live setup has bought a trade yet."
-            : Formatted($"{Capital(Counted(page.Open.Count, "trade is", "trades are"))} open and {Counted(page.Closed.Count, "has", "have")} closed, the newest bought on {Short(newest!.Value)}.");
+            ? "No live setup has bought a trade under its current version yet."
+            : Formatted($"This version's trades: {Counted(page.Open.Count, "trade is", "trades are")} open{(page.Open.Count(trade => trade.Selling is not null) is > 0 and var selling ? ", " + TradeGroupsView.Selling(selling) + "," : string.Empty)} and {Counted(page.Closed.Count, "has", "have")} closed, the newest bought on {Short(newest!.Value)}.");
     }
 
     public static string PaperVariantsSaid(PaperPageView page, string family)

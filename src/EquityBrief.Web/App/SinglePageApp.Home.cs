@@ -12,10 +12,11 @@ namespace EquityBrief.Web.App;
 // target, the distance it rises behind the highest close at and its rule's winning trades.
 public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null);
 
-// How past ideas have done on Home: the day the combined paper account counts from, the ideas it bought and sold and how
-// many made money, its return and an equal-weight hold of the index's stocks over the same days, and whether a live rule
-// still holds fewer finished trades than a verdict needs.
-public sealed record HomePast(DateOnly Since, int Closed, int Won, double? Ours, double? Index, bool Early);
+// How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
+// many made money; the combined paper account's return, the day it counts from and the index's fund over the same days; and
+// whether a live rule still holds fewer finished trades than a verdict needs.
+// see: Every count of trades names its group and one function works the three groups
+public sealed record HomePast(DateOnly Since, int Closed, int Won, double? Ours, double? Index, bool Early, string Fund = "", DateOnly? AccountSince = null);
 
 // Home as code draws it from the newest night: the index, the night drawn and whether a later night is still running; the
 // share of the index's stocks above their 200-day average with the floor the rules buy at and whether the market check
@@ -250,15 +251,15 @@ public sealed partial class SinglePageApp
 
         if (view.Past is { } past)
         {
-            region.Append(Invariant($"<div><p class=\"card-summary\">Since the rules went live on {past.Since.ToString("d MMM", CultureInfo.InvariantCulture)}, {past.Closed} {(past.Closed == 1 ? "idea has" : "ideas have")} been bought and sold on paper. {past.Won} made money.</p>"));
+            region.Append(Invariant($"<div><p class=\"card-summary\" data-system-closed=\"{past.Closed}\" data-made-money=\"{past.Won}\">Since the rules went live on {past.Since.ToString("d MMM", CultureInfo.InvariantCulture)}, {past.Closed} {(past.Closed == 1 ? "idea has" : "ideas have")} been bought and sold on paper; {past.Won} made money.</p>"));
             region.Append(past.Early ? Invariant($"<p style=\"margin:0;color:var(--soft);font-size:14px\">Still early: each rule needs about {FairVerdictTrades} finished trades for a fair verdict.</p>") : string.Empty);
-            region.Append(Invariant($"<p style=\"margin:10px 0 0\"><a href=\"{PicksRoute}{(view.Reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + view.Reading.Word)}\">See every past idea</a></p></div>"));
+            region.Append(Invariant($"<p style=\"margin:10px 0 0\"><a href=\"{PicksRoute}{(view.Reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + view.Reading.Word)}\">See every past idea</a>, or the rules as they stand now on <a href=\"{PaperRoute}{(view.Reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + view.Reading.Word)}\">Paper trading</a></p></div>"));
 
             var widest = Math.Max(Math.Abs(past.Ours ?? 0), Math.Abs(past.Index ?? 0));
 
             region.Append("<div>");
-            region.Append(Bar("ours", "Our paper account", past.Ours, widest));
-            region.Append(Bar("index", "Just holding the whole index", past.Index, widest));
+            region.Append(Bar("ours", past.AccountSince is { } counted ? Invariant($"Our paper account, as the rules stand now, since {counted.ToString("d MMM", CultureInfo.InvariantCulture)}") : "Our paper account", past.Ours, widest));
+            region.Append(Bar("index", Invariant($"The index's fund, {past.Fund}, over the same days"), past.Index, widest));
             region.Append("</div>");
         }
         else

@@ -101,7 +101,12 @@ public static class PicksScreen
                 trade.EndedOn,
                 trade.Result,
                 trade.Cost,
-                trade.Result is { } result && trade.Cost is { } cost ? result - cost : null)),
+                trade.Result is { } result && trade.Cost is { } cost ? result - cost : null,
+                trade.Fill is null ? trade.Unfilled ?? EquityBrief.Core.Ledger.TradeFills.Waiting : null,
+                trade.EndedOn is { } fired && trade.Result is null && trade.Fill is not null
+                    ? EquityBrief.Core.Cards.PaperAccount.WhyFired(trade.FiredClose, trade.Target, trade.Stop, trade.Trail, ExchangeClosures.SessionsUntil(trade.Listed, fired), trade.Cap)
+                    : null,
+                trade.Sale)),
     ];
 
     public static IReadOnlyList<HeavyweightPickCell> IndexHeavyweights(IReadOnlyList<IndexHoldingRow> holdings) =>
@@ -208,7 +213,9 @@ public static class PicksScreen
             met ? decided.Average(cell => cell.BreakEven!.Value) : null,
             met && results.Length > 0 ? results.Average() : null,
             cells.Count - counted.Length,
-            counted.Count(cell => cell.Provisional));
+            counted.Count(cell => cell.Provisional),
+            counted.Count(cell => cell.Status == PickStatus.ToBuy),
+            counted.Count(cell => cell.FiredAs is not null));
     }
 
     // The stored outcome a status stands for, which the run page's own test of a scored setup reads.
@@ -224,19 +231,31 @@ public static class PicksScreen
         // A trade the store says finished after the night drawn was open on it.
         var finishedBy = row.ResolvedOn is { } resolved && resolved <= asOf;
 
+        // A trade is open only once bought: a listing whose next session's open has not filled it yet is still to buy.
+        // see: Every count of trades names its group and one function works the three groups
+        var ending = row.Outcome switch
+        {
+            ForwardReturnSeries.Win => PickStatus.Target,
+            ForwardReturnSeries.Loss => PickStatus.Stopped,
+            // A trade sold at a close under its trailing stop left at its stop, at a gain or a loss.
+            TrailingExit.Trailed => PickStatus.Stopped,
+            ForwardReturnSeries.Unresolved => PickStatus.Time,
+            _ => PickStatus.Missing,
+        };
+
+        // A trade whose exit fired on a close is held until the next open sells it: open, saying why it sells, and ended on the
+        // night after the sale with the sale's price. One no fill bought has no sale to wait on.
+        // see: Every count of trades names its group and one function works the three groups
+        var sold = row.SoldOn is { } soldOn ? soldOn <= asOf : row.Fill is null || row.FillResult is not null;
+        var selling = row.OutcomeStored && finishedBy && !sold && ending != PickStatus.Missing;
+
         var status = !row.OutcomeStored
             ? PickStatus.Missing
-            : row.Outcome is null || !finishedBy
+            : row.Fill is null && row.Unfilled is null && row.Outcome is null
+                ? PickStatus.ToBuy
+                : row.Outcome is null || !finishedBy || selling
                 ? PickStatus.Open
-                : row.Outcome switch
-                {
-                    ForwardReturnSeries.Win => PickStatus.Target,
-                    ForwardReturnSeries.Loss => PickStatus.Stopped,
-                    // A trade sold at a close under its trailing stop left at its stop, at a gain or a loss.
-                    TrailingExit.Trailed => PickStatus.Stopped,
-                    ForwardReturnSeries.Unresolved => PickStatus.Time,
-                    _ => PickStatus.Missing,
-                };
+                : ending;
 
         var family = SetupFamilies.Named(row.Family);
 
@@ -284,6 +303,10 @@ public static class PicksScreen
             Unfilled: row.Unfilled,
             Waiting: row.OutcomeStored && row.Fill is null && row.Unfilled is null,
             FilledOn: row.FilledOn,
-            Cap: CapOf(row));
+            Cap: CapOf(row),
+            FiredAs: selling ? ending : null,
+            FiredOn: selling ? row.ResolvedOn : null,
+            SoldOn: finished ? row.SoldOn : null,
+            Sale: finished ? row.Sale : null);
     }
 }

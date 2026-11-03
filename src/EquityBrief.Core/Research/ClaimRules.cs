@@ -868,6 +868,11 @@ public static class ClaimRules
         "Oct", "Nov", "Dec",
     };
 
+    // Whether a sentence states a figure the tiles under the headline show, which the written-last sections never write,
+    // read as the check on them reads it.
+    public static bool StatesATileFigure(string text, IReadOnlyList<Fact> facts) =>
+        Figures(text).Any(figure => figure.Kind == FigureKind.Figure && facts.Any(fact => FactOwners.IsTile(fact) && Matches(figure, [fact])));
+
     public static IReadOnlyList<ProseSentence> Sentences(string prose)
     {
         var sentences = new List<ProseSentence>();

@@ -14721,3 +14721,142 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
             placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
+
+### 22.23 - the short version's first draft told its limits, each claim naming its part of the page and none stating a tile's figure handed   2026-11-03
+
+Refusals:   every short version since 2026-10-23 read off the store, 95 rows over 47 passes, deepseek-flash all: 46 of the 47
+            first drafts refused, every one naming a paragraph of more than five sentences and one a figure a tile shows as well.
+            The ask told it to give each point its own sentence over about 53 claims, and named the limit only in a retry's brief.
+Built:      the ask states the two limits first and that most claims are left out, gives each paragraph its parts and keeps the
+            plan's to the plan's claims; each claim names its part of the page; a sentence stating a figure a tile shows is not
+            handed on, read by a helper over what the check reads. The check's rules are unchanged. Decision written, section's
+            row, the operating row read and re-aimed at ten reports after this merges, since the paid model's rate is its measure.
+Measured:   read-only over the store with a tool in the session's scratch folder and no paid call, the 47 passes' stored claims
+            through the local model at temperature 0, qwen/qwen3.5-9b, each answer through the shipped check. Old ask: 1 of 47
+            first drafts passes, 46 on the paragraph's length and 41 on a sentence naming no claim. This ask: 36 of 47; the 11
+            left, 5 a sentence naming no claim, 4 a paragraph's length, 2 a fourth paragraph, 1 a figure and 1 a quotation, some
+            naming two. 21 of the 47 hold no facts row at their date, so they read the stock's next row, which only the tiles and the
+            figures' check read. Gemma has a saved structured output and answers in JSON, so it writes no prose; qwen was loaded for
+            the runs and Gemma put back before the local run of 12:05 UTC, one model at a time. The card stood at 390 W, the operator's
+            250 W cap needing their admin prompt, under a guard holding each call at 72 degrees or more until it read 68.
+Fixture:    20 recordings the ask moved re-keyed whole with no paid call, 13 paid each naming in its note the file it was and 7
+            local in the manifest: their answers stand as they were, so they prove the pipeline's path and not the new ask's rate.
+Tests:      3128, from 3125: the limits held to the check's constants and the labels, a tile's figure not handed, and the re-keying.
+Mutation:   predicted first and each red: the filter removed, at its test; the limit out of the ask, at its test; the labels off, at
+            the ask's test and the handed claims' test.
+Carried:    the paid model's first drafts at ten reports after the merge, on the operating row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
+
+### 22.24 - a company that re-filed under a new SEC number carries its predecessor's stored facts up to the day its new filer's first report starts   2026-11-03
+
+Built:      `FilerSuccessions`, the 17 stated with the day read off each new filer's first report; `filings --join-predecessors`,
+            copying a predecessor's facts under the new filer in the filings refresher's own table, a fact the new filer states
+            standing; its remedy file. No request: the facts stand in the store already. No source a rule's version pins moves, and
+            no rule restarts. Decision written, the runbook's command, the worker's help.
+Measured:   read-only on 2026-11-03, each company's newest row naming its new filer, each stock with the day its join stops, the
+            facts before that day, some of which the new filer already states, and the years they reach before its own earliest:
+            XOM 2026-04-01, 576, 10.4. BLK 2024-07-01, 448, 6.9. BG 2023-10-01, 621, 6.9. FUN 2024-04-01, 497, 6.9. NWE 2023-07-01,
+            546, 6.9. PNFP 2025-01-01, 245, 6.8. VNOM 2025-07-01, 533, 6.8. UNIT 2025-07-01, 459, 6.7. NE 2022-07-01, 421, 5.9. QDEL
+            2022-04-04, 447, 5.9. APO 2022-01-01, 265, 5.8. MRVL 2021-01-31, 406, 5.0. APA 2021-01-01, 387, 4.9. DINO 2022-01-01,
+            490, 4.9. TPL 2020-10-01, 198, 3.8. LQDA 2020-01-01, 154, 2.8. FERG 2023-08-01, 124, 2.0.
+Evidence:   the SEC's submissions of 40 stocks holding a second filer, read that day, and the figures both filers state before the
+            changeover, within a tenth of a per cent. Clean, every figure: BG, BLK, DINO, FERG, FUN, LQDA, MRVL, NE, NWE, PNFP and XOM.
+            Rounding and small restatements: APA 1 of 38, APO 4 of 28, TPL 5 of 35, UNIT 11 of 30. VNOM 11 of 48, among them net
+            income of 2021 and 2022 at 57.9 million and 151.7 million against the new filer's 257 and 655, the new filer's being
+            before what other holders took. QDEL holds no figure in common, joined on its 8-K12B. Left off, each named in the decision: DOW,
+            AESI, OZK, the unrelated numbers and the new filers with long histories of their own.
+Tests:      3132, from 3128: the first report's start worked by hand, the list, the join and its second run, the refusal.
+Mutation:   predicted first and each red: copying past the day, at the join's test; another filer no longer refused, at the refusal;
+            the longest period read for the shortest, at the start's test. One mutation's revert also dropped the uncommitted join
+            from one file, restored from the session and committed before the next.
+Carried:    the remedy's counts, recorded after the merge; the ledger's history reads the joined facts once built again, put to
+            the operator with its time.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
+
+### 22.25 - every count of trades names its group from one function, a trade open only once bought, and the proof reading each count off its page   2026-11-03
+
+Built:      `TradeGroups`, the one function over the accounts paper trading reads, and its words in one view; `CountsProof` at its own
+            route, reading each count back off the words its page draws and held to the function; Home's sentence and its fund
+            over the same days; the setup tiles' first live day and this version's; Past picks' to buy; Paper's summary, its line
+            above the fold; a stock an earlier version holds on its chart and name pages. Decision, runbook, guide, section 15.
+Findings:   the operator's twelve of 2 November, each read back on the three indexes on night 2026-11-02. S&P 500: Home 38 bought
+            and sold since 25 Sep, 15 made money, our account +1.0% since 2 Oct against SPY's -2.3%; Tonight 10 new picks, the
+            reshuffle 3 more, 46 of the system's trades open, 8 of them this version's; Paper 84 bought, 46 open, 14 at their
+            target, 18 at their stop, 6 by other exits; Past picks 34 open and 6 to buy in its table; Run's pullback 20 bought, 1
+            open, 19 decided, 1 to buy. PNR's chart names the earlier version holding it.
+Sweep:      changed beyond the twelve. Paper's target and stop counted the sale price, so a next open under the target or a risen
+            trailing stop read as neither, 13 and 16 against Past picks' 14 and 18, now the exit that sold it, and 6 sold by other exits
+            said. Tomorrow's buys drew 8 against the one-minute's 10, now 10 with the fundamentals' 2 named. Paper's waiting line says
+            the reshuffle's share. The S&P 400's and 600's Past picks counted tonight's listings open, now to buy, with the dip's
+            and the fundamentals-first cards and the Run rows of the index's families and its dip. A trade whose exit fired tonight
+            on those two indexes read ended on Past picks and open on Paper, now held until sold and said so, the one-minute with
+            it. Their tables say how many of the system's open they hold and how many came before a family went live. The S&P 500's
+            Past picks says the dip's table is apart, its chips 74 against its statuses' 72. An older night's page counted a
+            trade bought after it as open. The fold's "every figure on this page", no longer true, and three missing spaces.
+            The read-only copy draws these through the same functions and hides the fold, as 22.17 ruled.
+Measured:   `/proof/counts` read-only on the store, night 2026-11-02: S&P 500 20 of 20, S&P 400 16 of 16, S&P 600 16 of 16, under
+            a minute. Before the sweep's fixes it failed the S&P 400 by 29 against 31 and the S&P 600 by 13 against 12.
+Fixture:    a night after a constructed restart: the three groups worked by hand, and the proof failing a page for each of 13 counts
+            drawn from another group, a page drawing none unexamined.
+Tests:      3156, from 3132.
+Mutation:   chosen for the groups, the ending, the night, the proof and to buy; predicted first and each red at its test: the ending
+            read off the sale; a trade bought after the night counted; earlier versions out of the system's; the proof passing any
+            count; a page drawing none passed; a listing waiting counted open; a trade selling counted ended; other exits unsaid. The
+            proof's first mutation did not compile and its red came from the build before; made again so it built, red.
+Carried:    the read-only copy's own pages read after the merge from main.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
+
+### 22.26 ruling - a fired exit held until sold on every index, and the read-only copy's fold of every earlier trade
+
+Not a checkpoint entry: it records the operator's two rulings of 2026-11-03 UTC and lands nothing.
+Ruled:      word for word in `prompts/2026-11-03-22.26-fired-exit-and-copy-fold-rulings.md`, committed with this entry: a trade
+            whose exit fired tonight is open until the next open sells it, on every index; and the read-only copy shows every
+            earlier trade in Paper trading's fold, amending 22.17, the decision's prior text under Previously decided.
+Remedy:     21.21's, run from main ff60770d after PR 625 merged on the operator's word, 13:48 to 13:50 UTC with no writer running:
+            all 17 steps, 66 registered again, the same 66 as the 16.3 remedy; 57 replays, 18 carried on and 39 restarted, against 17 and
+            40 at the 16.3 remedy. No request and no model call. 5152 restarted from main's Release build.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
+
+### 22.26 - a trade whose exit fired is open until the next open sells it, on every index, and has ended the night after with the sale's price   2026-11-03
+
+Built:      the S&P 500's pick cell reads the sale's session and price, open while the sale waits, saying why it sells; a trade's fired
+            day read on the rows paper trading walks; the one function's count of those selling; each count of open trades on
+            Tonight, paper trading, Past picks and the Run page adding how many sell at tomorrow's open, and each row saying so with
+            why; an ended row its sale's price. A monthly book sells at its rebalance's close and a dip's step writes its end with
+            its sale, so neither waits. No rule's version moves: the read surface alone reads it.
+Measured:   read on night 2026-11-02 over the store. S&P 500: Past picks 39 still open, 5 of them selling, 10 at their target, 17 at their
+            stop, 27 finished, where it drew 34, 14, 18 and 32; Paper 84 bought, 51 open, 5 of them selling, 6 by other exits; Tonight 51,
+            8 this version's, 5 selling, 4 and 1 what fired. S&P 400: 46 open, 2 selling, Past picks 31 open with 2 of them selling
+            and 3 to buy. S&P 600: 26 open, 1 selling. `/proof/counts` passes on all three.
+Fixture:    target reached, closed under its stop and time ran out each worked by hand as open and selling, then ended the night after
+            with the sale's price, and an earlier night drawn after the sale reading it as it stood.
+Tests:      counted at this pull request's last entry.
+Mutation:   chosen for selling and the count; predicted first, each red at its test: a fired trade read as ended, at the S&P 500's
+            worked trade; the count of those selling dropped, at the function's test; a trade fired after the night counted, at the
+            same; the proof's selling rule passing any count, at the proof's test.
+Carried:    the paper tiles keep their own count of each account's open positions, the page's two lines saying how many sell.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
+
+### 22.27 - the read-only copy's fold of every earlier trade, each row with no version, amending 22.17   2026-11-03
+
+Built:      the fold paper trading has drawn on the copy too, every family's earlier trades in it, Quality's and Fundamentals' among
+            them; on the copy a row reads its stock, family, "an earlier version", the day bought, how it ended or that it is open
+            and its result, with no version in its words, its title or its markup. The leak check reads the fold with the rest of
+            the page. 22.17's decision amended, its prior clause under Previously decided.
+Fixture:    a row carrying a version: the copy's fold passes the leak check and draws none of it, and the operator's draws it and is
+            refused, worked over the check's own needles.
+Tests:      3163, from 3132 at 22.24, over 22.25 to 22.27.
+Mutation:   chosen for the row and the fold; predicted first, each red at its test: the fold's row naming the version on the copy; the
+            fold hidden on the copy again. A first run's commit failed on the intermittent object write, so its restores dropped
+            five files of uncommitted work, reapplied from the session and committed before the mutations were run again.
+Carried:    the copy's own pages read after the merge from main.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3163 of 3163 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
+            placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.

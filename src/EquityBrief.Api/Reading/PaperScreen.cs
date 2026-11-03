@@ -51,7 +51,8 @@ public sealed record PaperAccounts(
     IReadOnlyDictionary<string, PaperStockRow>? Stocks = null,
     Func<DateOnly, decimal?>? Fund = null,
     IReadOnlyDictionary<string, string>? Standings = null,
-    PaperCombinedView? Combined = null);
+    PaperCombinedView? Combined = null,
+    TradeGroupsView? Groups = null);
 
 // The projection from stored trades and test rows to paper trading's accounts and their trade logs. The accounts are an
 // index's: each family's live or provisional rule's list, the page's own, each registered variant's own list or book,
@@ -513,7 +514,8 @@ public static class PaperScreen
             row.Edge,
             row.Book ? row.Reason : null,
             row.Exit,
-            row.RiskMoves), row.Result)),
+            row.RiskMoves,
+            FiredOn: row.FiredOn), row.Result)),
     ];
 
     // The stocks a list or a book kept that no fill bought: waiting on their next session's open, or holding none for the
@@ -535,8 +537,9 @@ public static class PaperScreen
                 cell.FilledOn!.Value,
                 cell.Buy!.Value,
                 cell.Stop,
-                cell.EndedOn,
-                PaperAccount.SaleOf(cell.Buy!.Value, cell.Stop, cell.EndedOn, cell.Result, false, cell.Planned)
+                cell.SoldOn ?? cell.EndedOn,
+                cell.Sale
+                    ?? PaperAccount.SaleOf(cell.Buy!.Value, cell.Stop, cell.EndedOn, cell.Result, false, cell.Planned)
                     ?? (cell.EndedOn is not null && cell.ReturnPct is { } made ? cell.Buy!.Value * (1m + (Statistic.ToPrice(made) / 100m)) : null),
                 null,
                 place + 1,
@@ -555,7 +558,9 @@ public static class PaperScreen
                     PickStatus.Stopped => cell.Trailing ? PaperAccount.UnderTrail : PaperAccount.UnderStop,
                     PickStatus.Time => PaperAccount.TimeLimit,
                     _ => null,
-                }), cell.Result))),
+                },
+                FiredOn: cell.FiredOn,
+                FiredWhy: cell.FiredWords), cell.Result))),
     ];
 
     // The S&P 500's page list's trades no fill bought, a repeat listing and one with no outcome stored left out.
@@ -766,7 +771,8 @@ public static class PaperScreen
                 Shut(trade, result),
                 version is null && (trade.Ended is null || trade.Ended > night) ? PaperAccount.HeldBy(trade.Ticker, night, VariantsOf(head.Family)) : [],
                 trade.Past,
-                version);
+                version,
+                PaperAccount.Selling(trade, night, close));
 
         var bought = heads
             .SelectMany(head => (head.Walk?.Trades ?? [])

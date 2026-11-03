@@ -811,6 +811,7 @@ details.expander>*:not(summary){margin:10px 12px}
 .bar-labels{display:flex;justify-content:space-between;gap:8px;margin:4px 0 0;font-size:12px;color:var(--soft)}
 .setup-tile .tile-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .setup-tile .tile-plain{font-size:13px;color:var(--ink-2)}
+.setup-tile .tile-version{font-size:12px;color:var(--soft)}
 .setup-tile .tile-tonight{font-size:13px;font-weight:600;color:var(--ink)}
 .setup-about{flex-basis:100%;margin:2px 0 0;font-size:13.5px;color:var(--ink-2)}
 .rule-view{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;font-size:13px;color:var(--ink-2)}

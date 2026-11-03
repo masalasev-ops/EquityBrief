@@ -166,7 +166,7 @@ public partial class ReadSurface
             var dip = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), DipRule.Name);
 
             Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-04\" data-variants=\"3\"", dip, StringComparison.Ordinal);
-            Assert.Contains("Live since 4 Oct 2026", dip, StringComparison.Ordinal);
+            Assert.Contains("This version since 4 Oct 2026", dip, StringComparison.Ordinal);
             Assert.DoesNotContain(SetupFamilies.ProvisionalStatus, dip, StringComparison.Ordinal);
             Assert.Contains("data-frozen=\"2026-10-04\" data-run=\"20261024T060843Z\" data-answer=\"passed\"", dip, StringComparison.Ordinal);
 

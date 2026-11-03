@@ -225,7 +225,7 @@ public partial class ReadSurface
             Regex.Matches(Assert.Single(Blocks(picks, "<nav class=\"universe-filters picks-filters picks-setups\".*?</nav>")), "data-value=\"([a-z]+)\"[^>]*>[^<]+<span class=\"n\">([0-9]+)</span>")
                 .Where(match => match.Groups[1].Value != "all")
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
-        Assert.Contains("Showing 4 of 4 S&P 400 trades, 2 open", picks, StringComparison.Ordinal);
+        Assert.Contains("Showing 4 of 4 S&P 400 trades, 1 open, 1 to buy at tomorrow's open", picks, StringComparison.Ordinal);
 
         // Each chip keeps the S&P 400 in its link, so a press filters this index's trades and not the S&P 500's.
         Assert.Equal(
@@ -239,13 +239,13 @@ public partial class ReadSurface
         var dipsOnly = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400&setup=dip"));
 
         Assert.Equal(["M2", "M1"], Regex.Matches(Assert.Single(Blocks(dipsOnly, "<table class=\"list-table index-trades\".*?</table>")), "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Contains("Showing 2 of 4 S&P 400 trades, 1 open", dipsOnly, StringComparison.Ordinal);
+        Assert.Contains("Showing 2 of 4 S&P 400 trades, 0 open, 1 to buy at tomorrow's open", dipsOnly, StringComparison.Ordinal);
 
         // The S&P 500's: the dip's card beneath the lists' trades with AAA held, and the dip chosen drawing that card alone.
         var large = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks"));
         var card = Assert.Single(Blocks(large, "<section class=\"card\"[^>]*data-card=\"dip-picks\".*?</section>"));
 
-        Assert.Contains("<p class=\"list-count\" data-dip=\"1\" data-open=\"1\">1 S&P 500 short-term dip trade, 1 open</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"list-count\" data-dip=\"1\" data-open=\"1\" data-to-buy=\"0\">1 S&P 500 short-term dip trade, 1 open</p>", card, StringComparison.Ordinal);
         Assert.Contains("<td class=\"setup\" data-setup=\"dip\">Short-term dip · S&P 500</td>", card, StringComparison.Ordinal);
 
         var largeDips = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?setup=dip"));

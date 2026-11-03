@@ -26,6 +26,36 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/ARCHITECTURE.html - a fired exit held until sold on every index, and the read-only copy's fold
+Authorised by: Every count of trades names its group and one function works the three groups
+Was:
+> A stock listed and not yet filled is to buy at tomorrow's open and in no group, and a trade whose exit fired on tonight's close on an S&amp;P 400 or 600 list is held, and counted open, until the next open sells it. Home, Tonight, paper trading, Past picks and the Run page each say which group a count is and link to where the others are; the read-only copy draws the same counts and no earlier version's row.
+Now:
+> A stock listed and not yet filled is to buy at tomorrow's open and in no group. A trade whose exit fired on tonight's close, on every index, is held and counted open until the next open sells it: each count of open trades adds how many of them sell at tomorrow's open, its row says so with why, and it has ended on the night after the sale with the sale's price. Home, Tonight, paper trading, Past picks and the Run page each say which group a count is and link to where the others are; the read-only copy draws the same counts, and its fold of earlier trades reads only each stock, family, the words an earlier version, the day bought, how it ended or that it is open and its result. (see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one)
+Why: the operator's two rulings of 2026-11-03, in `prompts/2026-11-03-22.26-fired-exit-and-copy-fold-rulings.md`.
+
+### 2026-11-03 - docs/ARCHITECTURE.html - a setup's badge and tile name the version, and the Earlier fold is no longer left out of every figure
+Authorised by: Every count of trades names its group and one function works the three groups
+Was:
+> its badge reading "Live since" its day or "Not yet tested"
+> each tile holds the setup's name with "Live since" its day or "Not yet tested";
+> with each named by the version that listed it and left out of every figure (see: A paper account
+Now:
+> its badge reading "This version since" its day or "Not yet tested"
+> each tile holds the setup's name with "Live since" the day its family first went live or "Not yet tested";
+> with each named by the version that listed it and left out of every account, from 22.25 the line above the fold counting them among the system's trades (see: A paper account
+Why: the "Live since" a restart moved showed the re-registration's day, and the line above the fold now counts what the fold holds.
+
+### 2026-11-03 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - the short version's first draft told its limits and handed no claim stating a tile's figure
+Authorised by: A short version's first draft is told its limits and is handed no claim stating a tile's figure
+Was:
+> after every other section's last retry, the claims the checker accepted in each written section, their marks taken off and numbered, beside the business state's and the plan's claims in words; no document and no facts file
+> | **The short version's refusals after it is written from accepted claims** | 18.0 | operating | 10 reports written after 18.4 merges, read on the run page's rate for the short version written last, which 18.4 builds. At the trigger the short version's refusals over those reports are read against its rate over the ten reports before 18.4, and the way it is written stays or goes back on the operator's word |
+Now:
+> after every other section's last retry, the claims the checker accepted in each written section but any stating a figure the tiles show, their marks taken off and numbered, each naming its part of the page, beside the business state's and the plan's claims in words; no document and no facts file (see: A short version's first draft is told its limits and is handed no claim stating a tile's figure)
+> | **The short version's refusals after it is written from accepted claims** | 18.0 | operating | 10 reports written after 22.23 merges, read on the run page's rate for the short version written last, which 18.4 builds. Read on the operator's ruling of 2026-11-03 before it: 46 of the 47 first drafts since 2026-10-23 refused, nearly all on a paragraph of more than five sentences. At the trigger the paid model's first drafts over those reports are read against that rate, and the way it is written stays or goes back on the operator's word |
+Why: the ruling asked for the refusals read and the writing step fixed, measured on the local model, and the row now waits on the paid model's first drafts under that fix.
+
 ### 2026-11-03 - docs/BUILD_PLAN.md - 22.21's done condition names the edge it tests with no span of days
 Corrects: `done-condition-producible` read the span in 22.21's done condition as evidence the calendar produces, found at the checkpoint's gates.
 Was:

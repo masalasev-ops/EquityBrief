@@ -797,7 +797,11 @@ public static partial class TonightScreen
     // among them, counted as ended by its setup's own exit, since their rows store no status.
     public static EndedTonightView EndedTonight(DateOnly night, IReadOnlyList<PickCell> trades, IEnumerable<IndexTradeRow> others)
     {
-        var ended = trades.Where(trade => trade.EndedOn == night && trade.Night < night && trade.RepeatOf is null).ToArray();
+        // A trade whose exit fired tonight is open until tomorrow's open sells it, and what fired is what the line says.
+        (string Status, bool Tonight)[] ended = [.. trades
+            .Where(trade => trade.Night < night && trade.RepeatOf is null)
+            .Select(trade => (trade.FiredAs ?? trade.Status, (trade.FiredOn ?? trade.EndedOn) == night))
+            .Where(one => one.Item2)];
 
         return new EndedTonightView(
             ended.Count(trade => trade.Status == PickStatus.Target),

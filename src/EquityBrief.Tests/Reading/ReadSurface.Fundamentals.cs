@@ -139,6 +139,6 @@ public partial class ReadSurface
         var setups = Regex.Matches(Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>")), "<tr data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value);
 
         Assert.Equal(["pullback", "breakout", "drift", "fundamentals"], setups);
-        Assert.Contains("<tr data-family=\"fundamentals\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-listed=\"1\" data-trades=\"1\" data-open=\"1\" data-finished=\"0\">", run, StringComparison.Ordinal);
+        Assert.Contains("<tr data-family=\"fundamentals\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-listed=\"1\" data-trades=\"1\" data-open=\"0\" data-finished=\"0\">", run, StringComparison.Ordinal);
     }
 }
