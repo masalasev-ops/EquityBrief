@@ -2354,6 +2354,11 @@ Item 5 of that ruling: each stock's predecessor filer named from the SEC's own r
 
 **Done when** the first report's start is worked by hand over a constructed filer's report, cover page and balance; a predecessor's fact after that day is shown not copied and a fact the new filer states shown standing; a second run stores nothing; a stock whose company row names another filer is refused; every stock joined and left off is named with why; and one mutation is shown red, the rule stated before the run.
 
+### 22.25 On the operator's word of 2026-11-03: every count of trades names its group and one function works them
+Item 10 of that ruling: the three groups named once in the decisions and worked by one function; every count on Home, Tonight, paper trading, Past picks and the Run page saying which it counts, in plain words, with a link to the others; a trade open only once bought and tonight's picks to buy at tomorrow's open; the index named in each comparison; the operator's twelve findings of 2 November fixed and read back; all three indexes and the read-only copy swept for every other count; a proof reading each count back off its page, and a constructed restart.
+
+**Done when** a constructed restart's three groups are worked by hand and match; the proof passes each page drawing its group's count and fails a page drawing another group's, a count at a time; a page drawing no such count is unexamined and never passed; every count the sweep changed is listed in the entry; the proof reads green on all three indexes; and one mutation is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

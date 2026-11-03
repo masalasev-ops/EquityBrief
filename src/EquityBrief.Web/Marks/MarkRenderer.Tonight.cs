@@ -203,7 +203,7 @@ public sealed partial class MarkRenderer
                 ? Formatted($"; {done.Count} of them {(done.Count == 1 ? "sells" : "sell")} at tomorrow's open.")
                 : Formatted($"; {done.Count} ended tonight.");
         var why = view.Ended is { Count: > 0 } split ? EndedWords(split) : "None ended tonight.";
-        var paper = Formatted($"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">See them on Past picks</a>");
+        var paper = Formatted($"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">See them on Past picks</a>{((view.Groups ?? line.Groups) is null ? string.Empty : Formatted($", and this version's alone on <a href=\"#/paper{(line.Universe is { } paperOn ? "?universe=" + Uri.EscapeDataString(paperOn) : string.Empty)}\">Paper trading</a>"))}");
 
         body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>{Escaped(open + endedWords)}</b></p><p class=\"minute-said\">{Escaped(why)} {paper}</p></div>");
 

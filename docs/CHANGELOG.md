@@ -26,6 +26,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/ARCHITECTURE.html - a setup's badge and tile name the version, and the Earlier fold is no longer left out of every figure
+Authorised by: Every count of trades names its group and one function works the three groups
+Was:
+> its badge reading "Live since" its day or "Not yet tested"
+> each tile holds the setup's name with "Live since" its day or "Not yet tested";
+> with each named by the version that listed it and left out of every figure (see: A paper account
+Now:
+> its badge reading "This version since" its day or "Not yet tested"
+> each tile holds the setup's name with "Live since" the day its family first went live or "Not yet tested", and from 22.25, where its rule was registered again since, "This version since" that day and "earlier trades kept" beneath;
+> with each named by the version that listed it and left out of every account, from 22.25 the line above the fold counting them among the system's trades (see: A paper account
+Why: the "Live since" a restart moved showed the re-registration's day, and the line above the fold now counts what the fold holds.
+
 ### 2026-11-03 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - the short version's first draft told its limits and handed no claim stating a tile's figure
 Authorised by: A short version's first draft is told its limits and is handed no claim stating a tile's figure
 Was:

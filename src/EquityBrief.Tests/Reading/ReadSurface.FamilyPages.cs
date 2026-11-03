@@ -133,7 +133,7 @@ public partial class ReadSurface
             FormattableString.Invariant($"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>7 new picks to buy at Monday's open, from the pullback and the breakout.</b></p><p class=\"minute-said\">{passed} of the {members} S&P 500 stocks qualified under some setup tonight. The other 2 setups found nothing new.</p></div>"),
             minute,
             StringComparison.Ordinal);
-        Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>Of the system's trades, 8 are open, 8 of them this version's.</b></p><p class=\"minute-said\">None ended tonight. <a href=\"#/picks?status=open\">See them on Past picks</a></p></div>", minute, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>Of the system's trades, 8 are open, 8 of them this version's.</b></p><p class=\"minute-said\">None ended tonight. <a href=\"#/picks?status=open\">See them on Past picks</a>, and this version's alone on <a href=\"#/paper\">Paper trading</a></p></div>", minute, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>2 stocks are one step from qualifying.</b></p><p class=\"minute-said\">They could become picks in the next few nights. <a class=\"close-open\" href=\"#/night/{TheSwitch}?universe=500&close=open\">See which, and the step each is missing</a></p></div>"), minute, StringComparison.Ordinal);
 
         // Read back against the store: the buy points are the listed rows, and the open trade is the one

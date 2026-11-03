@@ -608,6 +608,14 @@ curl -s http://localhost:5152/proof/report-pages > artifacts/report-proof.html
 curl -s "http://localhost:5152/proof/report-pages?format=json" > artifacts/report-proof.json
 ```
 
+### Reading every count of trades against the one function
+
+The read surface draws Home, Tonight, paper trading and Past picks for each index, and the Run page for the S&P 500, and reads each count of trades back off the words at `/proof/counts`, holding it to the one function for the group it names. Each rule answers pass, fail with the two figures, or unexamined where the page draws no such count, which is never a pass. It writes nothing and asks no provider and no model, and takes under a minute (see: Every count of trades names its group and one function works the three groups):
+
+```
+curl -s http://localhost:5152/proof/counts > artifacts/counts-proof.html
+```
+
 ### Setting a stock's industry in place of the provider's
 
 The valuation's peers and the page's group read the industry the provider files for a stock, labelled as the provider's classification. An industry set for a stock in the read surface's own settings stands in its place, one entry a ticker under `EquityBrief:IndustryOverrides`, in `src/EquityBrief.Api/appsettings.json` or as an environment variable, `EquityBrief__IndustryOverrides__ROP=Software`; the page then labels its group as set for the stock in place of the provider's. ROP's is set to Software in that file, on your approval. A page whose company's own clean segment table, its release's revenue lines or its filing's segments summing to its revenue, puts more than half the quarter's revenue in a business its group names nothing of says so beside the group either way (see: A stock's industry group is checked against the company's own segments and revenue lines and not its description), and the page's sources and each written section's are held to the company and the industry the page reads it under, an override's where one is set (see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text). The report page proof, `/proof/report-pages`, lists every such page under "Peer groups to approve" with the group proposed from those lines; it sets nothing, and an override goes in only once you approve one. The setting is read as the read surface starts, so restart it after changing one; no rule, pick or scorecard reads it.

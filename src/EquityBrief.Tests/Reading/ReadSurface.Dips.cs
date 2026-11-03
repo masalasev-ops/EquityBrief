@@ -245,7 +245,7 @@ public partial class ReadSurface
         var large = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks"));
         var card = Assert.Single(Blocks(large, "<section class=\"card\"[^>]*data-card=\"dip-picks\".*?</section>"));
 
-        Assert.Contains("<p class=\"list-count\" data-dip=\"1\" data-open=\"1\">1 S&P 500 short-term dip trade, 1 open</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"list-count\" data-dip=\"1\" data-open=\"1\" data-to-buy=\"0\">1 S&P 500 short-term dip trade, 1 open</p>", card, StringComparison.Ordinal);
         Assert.Contains("<td class=\"setup\" data-setup=\"dip\">Short-term dip · S&P 500</td>", card, StringComparison.Ordinal);
 
         var largeDips = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?setup=dip"));

@@ -253,7 +253,7 @@ public sealed partial class SinglePageApp
         {
             region.Append(Invariant($"<div><p class=\"card-summary\" data-system-closed=\"{past.Closed}\" data-made-money=\"{past.Won}\">Since the rules went live on {past.Since.ToString("d MMM", CultureInfo.InvariantCulture)}, {past.Closed} {(past.Closed == 1 ? "idea has" : "ideas have")} been bought and sold on paper; {past.Won} made money.</p>"));
             region.Append(past.Early ? Invariant($"<p style=\"margin:0;color:var(--soft);font-size:14px\">Still early: each rule needs about {FairVerdictTrades} finished trades for a fair verdict.</p>") : string.Empty);
-            region.Append(Invariant($"<p style=\"margin:10px 0 0\"><a href=\"{PicksRoute}{(view.Reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + view.Reading.Word)}\">See every past idea</a></p></div>"));
+            region.Append(Invariant($"<p style=\"margin:10px 0 0\"><a href=\"{PicksRoute}{(view.Reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + view.Reading.Word)}\">See every past idea</a>, or the rules as they stand now on <a href=\"{PaperRoute}{(view.Reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + view.Reading.Word)}\">Paper trading</a></p></div>"));
 
             var widest = Math.Max(Math.Abs(past.Ours ?? 0), Math.Abs(past.Index ?? 0));
 
