@@ -14498,3 +14498,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
             placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
+
+### 18.5 ruling - the calendar's ex-dividend dates read as reports, by the pages and by two rules, corrected before phase 18 is signed   2026-11-03
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-03 UTC and lands nothing.
+Found:      carried by the last entry and measured over the night of 2026-11-02: reads of the calendar took the next event of
+            any kind where they mean the next report. Over the 503 S&P 500 listing rows of that night, 93 have an ex-dividend
+            date next, and 94 of the 274 earnings soon reasons fired on a date holding no earnings row. AEP's chart page drew
+            "Next report 2026-11-10", its one upcoming row an ex-dividend date. Since 16.3 stored those dates the universe's
+            sessions to earnings, Close to buy's next report and the watch list's sessions read them too.
+Ruled:      "i want these fixed before sign off", of the chart page's next report, Home's signed nought and the chart grid's
+            "Raised in a row"; and, asked how far with the rule side put to them, "Pages and rules together". They were told
+            the remedy closes and reopens the S&P 500 rule windows. Measured after, it is those 8 windows and 66 of the 137
+            standing candidates, and that was put to them while the branch was built. It runs only on their word.
+Labelled:   read off the record: the calendar's readers under 16.3, which stored the second kind; Home's nought under 22.16;
+            "Raised in a row" under 19.11.
+Queue:      done, PR 623; in progress, this pull request; next, a fresh session's review of these fixes, PR 623's and the
+            corrections table, and its sign-off of phase 18, then the sign-offs of phases 20, 21 and 22 by their own fresh
+            sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
