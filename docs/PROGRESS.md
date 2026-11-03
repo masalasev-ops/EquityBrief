@@ -14992,3 +14992,20 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
             placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
+
+### 22.32 - record: the setup ledger's history built again over the joined facts, and the card's fixes read back on main's build   2026-11-03
+
+Not a checkpoint entry: it records the build 22.28 carried and the read back of 22.31 and 22.32, and lands nothing.
+Ran:        the three indices' history through 2026-10-08 with `--again` from a clean copy of main's b4492044, each checked with `ledger-check`,
+            from 17:03 to 19:41 UTC on 2026-11-03, 2 hours 38 minutes, the first through `tools/ledger-build` and the rest on the worker of
+            the same copy so the checkout could carry a branch. No request and no model call. The gates shared the machine for part of it.
+Measured:   S&P 500 385,303 setups, 61,667 passing the live rule; S&P 400 280,896 and 45,178; S&P 600 384,397 and 51,071; each check 200 of 200.
+            Setups of the history holding a fundamentals score, all families and indices: XOM 868 of 868, BLK 643 of 806, NWE 587 of 760,
+            PNFP 486 of 688, UNIT 460 of 557; VNOM, left off, 0 of 162; QDEL, left off, on its own facts, 261 of 493.
+Read back:  on main's ed835147 Release, over the night of 2026-11-02. FDXF's page: "This stock started trading on 26 May 2026, so it has 112 of the 200
+            trading days a 200-day average needs. The plan below uses the levels its 112 days show, without the average." VYLR's and MSGR's say
+            no plan can be drawn. FDXF's way in sizes 60 shares on the example; Tonight 10, 12 and 11 cards on the example on the three indices.
+Carried:    each re-filed stock's scorecard on its page, which the night writes, and the 8 selling trades' sales, read after the night of
+            2026-11-03; the monthly run of 2026-11-07 reads the ledger built here.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over c24c1e7a, whose tree PR 631 merged, with 22.32's figures, from
+            19:12 to 19:53 UTC; records alone change in this entry.
