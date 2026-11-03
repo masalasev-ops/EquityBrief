@@ -3026,7 +3026,7 @@ public sealed partial class MarkRenderer : IComponent
         "breakout on volume" => "the close is above a band that sat at or above last night's close, on volume above the fifty-day average.",
         "trend state changed" => "tonight's trend label differs from last night's, so the ladder changes shape and the whole plan is different from yesterday's.",
         "unusual volume" => "volume is above twice the fifty-day average, so something happened the price may not have shown yet.",
-        "earnings soon" => "the next dated event is inside the twenty-session horizon, which is a calendar fact rather than a setup.",
+        "earnings soon" => "the next report is inside the twenty-session horizon, which is a calendar fact rather than a setup.",
         _ => throw new InvalidOperationException(
             $"The stored listing carries the reason '{reason}', which this mapping has no sentence for. " +
             "A sentence a reader acts on that was produced by a value nobody wrote is what a catch-all arm " +
@@ -6503,7 +6503,7 @@ public sealed partial class MarkRenderer : IComponent
                 $"<td>{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}</td>"));
             table.Append(Formatted($"<td>{DistanceRow(row)}</td>"));
 
-            // The sessions until the name's next dated event, which section 15.8
+            // The sessions until the name's next report, which section 15.8
             // states as a column of this table. Two absences and they are stated
             // as two: a name the calendar holds nothing for has no event to
             // count to, and one whose event is past the end of the exchange
@@ -6517,7 +6517,7 @@ public sealed partial class MarkRenderer : IComponent
                 ? Formatted($"{sessions}")
                 : row.EventBeyondTheTable
                     ? "<span class=\"degraded\">past the end of the closure table</span>"
-                    : "<span class=\"degraded\">no dated event</span>");
+                    : "<span class=\"degraded\">no report dated</span>");
             table.Append("</td>");
 
             // The swing readings, each as the swing reader stored it and drawn whole on its

@@ -3245,7 +3245,7 @@ public sealed partial class SinglePageApp : IComponent
         if (worries is { } items)
         {
             // The store's newest copy beneath the checklist, where the surface was handed the copies to read.
-            // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+            // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
             region.Append(Cards.Computed(
                 "Health",
                 marks.WorryRegion(items, harness) + (storeCopy is { } copies ? marks.StoreCopyLine(copies.Newest) : string.Empty),

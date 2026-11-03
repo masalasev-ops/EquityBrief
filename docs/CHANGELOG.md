@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/ARCHITECTURE.html, docs/RUNBOOK.md, docs/SCHEMA.md, .claude/rules/checks.md - the newest two of the store's copies are kept
+Authorised by: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+Was:
+> (each file's citation of the superseded decision) the newest three copies are kept after each is opened and read; (architecture, step and component row) keeps the newest three; (section 17) the newest 3 of the store's own copies kept; (section 18) where one of the newest three kept does not; (runbook) keeps the newest three, about half a gigabyte a copy on the copies' disk; The night copies it, and keeps the newest three copies; (roster, fixture-expectations) the newest three kept, never fewer than the three kept, or than stood plus the one made under three, the removed the oldest beyond the three
+Now:
+> the newest two copies are kept after each is opened and read; keeps the newest two; the newest 2 of the store's own copies kept; where one of the newest two kept does not; keeps the newest two, about five and a half gigabytes a copy on the copies' disk; The night copies it, and keeps the newest two copies; the newest two kept, never fewer than the two kept, or than stood plus the one made under two, the removed the oldest beyond the two
+Why: The operator's ruling of 2026-11-03, "i want the copies to be limited to 2 from now on". The runbook's half a gigabyte was stale: the copy measured 5.97 billion bytes that night.
+
+### 2026-11-03 - docs/ARCHITECTURE.html - the second book, earnings soon and a page's next report read the calendar's earnings alone
+Authorised by: The second book is keyed to the next report the calendar holds, and an ex-dividend date beside it is no key
+Was:
+> The second book is keyed to dated events, of which an earnings print is one, and it never merges with the position book. (see: The second book is keyed to a dated event, and an earnings print is the only kind on file) The kinds it can carry are the kinds the calendar holds, which is what the provider files, and a dated item a research pass found is a claim
+Now:
+> The second book is keyed to the next report the calendar holds, and it never merges with the position book. (see: The second book is keyed to the next report the calendar holds, and an ex-dividend date beside it is no key) An ex-dividend date the calendar holds beside the report is no key of it, as it fires no earnings soon and is no page's next report (see: Earnings soon, the sessions to earnings and a page's next report read the calendar's earnings alone), and a dated item a research pass found is a claim
+Why: The operator's answers of 2026-11-03: since 16.3 stored each member's ex-dividend dates, 93 of the 503 S&P 500 rows of the night of 2026-11-02 had one next, and 94 of 274 earnings soon reasons fired on a date holding no report.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a quarter's end is drawn as the filing states it
 Authorised by: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
 Was:

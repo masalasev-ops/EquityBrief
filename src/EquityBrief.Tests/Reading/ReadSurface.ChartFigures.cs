@@ -49,11 +49,13 @@ public partial class ReadSurface
         store.Execute(
             "INSERT INTO dividend_reading (ticker, fetched_at, forward_rate, last_ex_date, by_year) VALUES " +
             "('S1', '2026-10-02T23:00:00Z', '0', NULL, '{}'), ('M1', '2026-10-02T23:00:00Z', '0', NULL, '{}'), ('M2', '2026-10-02T23:00:00Z', '0', NULL, '{}'), " +
-            "('AAA', '2026-10-02T23:00:00Z', '1.00', NULL, '{}');");
+            "('AAA', '2026-10-02T23:00:00Z', '1.00', NULL, '{}'), ('BBB', '2026-10-02T23:00:00Z', '1.00', NULL, '{}');");
         store.Execute(
             "INSERT INTO dividend_event (ticker, ex_date, amount, source, run_id) VALUES " +
             "('M1', '2025-10-02', '0.50', 'history', 'constructed'), ('M2', '2025-10-03', '0.25', 'history', 'constructed'), ('M2', '2025-12-10', '0.25', 'history', 'constructed'), " +
             "('S2', '2025-06-02', '0.40', 'history', 'constructed'), " +
+            // BBB paid one in 2024 and two in 2025, so the two years are not compared and its run stops at nought saying so.
+            "('BBB', '2024-03-01', '0.20', 'history', 'constructed'), ('BBB', '2025-03-03', '0.25', 'history', 'constructed'), ('BBB', '2025-09-02', '0.25', 'history', 'constructed'), " +
             "('AAA', '2024-03-01', '0.20', 'history', 'constructed'), ('AAA', '2024-09-03', '0.20', 'history', 'constructed'), " +
             "('AAA', '2025-03-03', '0.25', 'history', 'constructed'), ('AAA', '2025-09-02', '0.25', 'history', 'constructed');");
 
@@ -79,10 +81,12 @@ public partial class ReadSurface
         var unrated = await Grid("S2", "dividend");
         var raising = await Grid("AAA", "dividend");
 
+        Assert.Equal("0 years, not compared past 2025: 2 payments against 1", (await Grid("BBB", "dividend"))["Raised in a row"]);
+
         Assert.Equal([.. dividend.Select(_ => SinglePageApp.PaysNone)], dividend.Select(label => none[label]));
         Assert.Equal([SinglePageApp.PaysNone, "0.50 in 2025, 1 payment", SinglePageApp.PaysNone, SinglePageApp.PaysNone], dividend.Select(label => stopped[label]));
         Assert.Equal(
-            ["1.00% on the last year's payments of 0.50", "0.50 in 2025, 2 payments", "not stored (degraded)", "not stored (degraded)"],
+            ["1.00% on the last year's payments of 0.50", "0.50 in 2025, 2 payments", "not stored (degraded)", $"not stored: {DividendSafety.TooFewYearsToCompare} (degraded)"],
             dividend.Select(label => payer[label]));
         Assert.Equal([.. dividend.Select(_ => "not stored (degraded)")], dividend.Select(label => nothing[label]));
         Assert.Equal([SinglePageApp.PaysNone, "0.40 in 2025, 1 payment", SinglePageApp.PaysNone, SinglePageApp.PaysNone], dividend.Select(label => unrated[label]));

@@ -32,7 +32,7 @@ public sealed record ChartInputs(
     YearExtremes? Year,
     LongViewRow? LongView,
     IReadOnlyList<StoredPick> Peers,
-    CalendarRow? NextEvent,
+    DateOnly? NextReport,
     DateOnly? ReportWritten,
     (DateOnly Quarter, decimal Shares)? ProviderShares = null,
     IReadOnlyList<ReactionRow>? Reactions = null,
@@ -308,9 +308,9 @@ public static class ChartScreen
                 ? new GridFigure("The surprise", SurpriseWords(surprise), surprise.ToString(CultureInfo.InvariantCulture), MarkRenderer.Hue(surprise))
                 : Missing("The surprise"),
             AgainstItsEstimate(revenue?.Line ?? "Revenue", revenue, value => Figures.Money(value, inputs.Report.Currency)),
-            inputs.NextEvent is { } next
-                ? new GridFigure("Next report", FormattableString.Invariant($"{next.EventDate:yyyy-MM-dd}"), FormattableString.Invariant($"{next.EventDate:yyyy-MM-dd}"))
-                : Missing("Next report"),
+            inputs.NextReport is { } next
+                ? new GridFigure("Next report", FormattableString.Invariant($"{next:yyyy-MM-dd}"), FormattableString.Invariant($"{next:yyyy-MM-dd}"))
+                : new GridFigure("Next report", "not announced"),
         ]);
     }
 
@@ -338,9 +338,13 @@ public static class ChartScreen
             dividend?.PayoutOnEarnings is { } payout
                 ? new GridFigure("Paid out of earnings", FormattableString.Invariant($"{payout:0.0}%"), payout.ToString(CultureInfo.InvariantCulture))
                 : Unpaid("Paid out of earnings"),
+            // The reason the report's own row gives, where the run stopped short of a year the store could not compare or
+            // where too few whole years are kept to count one.
             dividend?.RaisedInARow is { } raised
-                ? new GridFigure("Raised in a row", FormattableString.Invariant($"{raised} {(raised == 1 ? "year" : "years")}"), raised.ToString(CultureInfo.InvariantCulture))
-                : Unpaid("Raised in a row"),
+                ? new GridFigure("Raised in a row", FormattableString.Invariant($"{raised} {(raised == 1 ? "year" : "years")}{(EquityBrief.Core.Report.DividendSafety.RunStopped(dividend.Years) is { } stopped ? ", " + stopped : string.Empty)}"), raised.ToString(CultureInfo.InvariantCulture))
+                : dividend is not null && !inputs.Report.PaysNone
+                    ? new GridFigure("Raised in a row", SinglePageApp.NotStoredBecause(EquityBrief.Core.Report.DividendSafety.TooFewYearsToCompare))
+                    : Unpaid("Raised in a row"),
         ]);
     }
 

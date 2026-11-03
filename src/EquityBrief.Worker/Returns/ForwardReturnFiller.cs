@@ -809,7 +809,7 @@ public sealed class ForwardReturnFiller : IComponent
     // A report before the open moves that day's session and one after the close moves the next,
     // and a timing the provider left unstated is read as the print's own day, which is the reading
     // that assumes least and is the one the ladder's earnings rule takes.
-    // see: The second book is keyed to a dated event, and an earnings print is the only kind on file
+    // see: The second book is keyed to the next report the calendar holds, and an ex-dividend date beside it is no key
     static bool? OnEarnings(
         IReadOnlyList<(DateOnly Date, string Timing)> prints,
         IReadOnlyList<ReturnBar> after,

@@ -893,7 +893,7 @@ public static class Nightly
             // its own, which waits until the night has finished, copies the store and writes one row of its own.
             // It waits for no labeller and no drain, since the night starts neither, and a night handed nothing to
             // start one with says so and starts none.
-            // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+            // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
             new("backup", async () =>
             {
                 var started = clock.UtcNow;

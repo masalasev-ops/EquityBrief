@@ -1,0 +1,28 @@
+# The remedy of the 16.3 correction of 2026-11-03, on the operator's answers of that day: the earnings soon reason and the
+# second book read the calendar's earnings alone. The ladder builder and the shortlist builder moved, so the ladder rules'
+# code version moved and the eight windows the store holds open are closed, each version before its rule's live window, then
+# opened again, each live window before its versions; and one command registers again every standing candidate whose
+# evaluator the code no longer carries at the version it was registered with: on the night of 2026-11-02 that is 66 of the
+# 137, the S&P 500's breakout, drift and swing filter and the S&P 400's and 600's breakout, drift, pullback and heavyweight,
+# each record restarting at this instant, its count printed before it restarts. The dip, quality and improving families and
+# the S&P 500's heavyweight do not move. A window opened after midnight in New York counts from the session after that day.
+# No request to the provider and no model call. Run on the operator's word, from main after the merge, when no night, local
+# run, drain, labeller, history read, ledger build or monthly run is writing, read the output for "remedy done" and the
+# counts, and restart the read surface after it.
+version --rule "merge distance" --close "a quarter of a typical move" --evidence "the ladder rules' code version moved to 2328b7bf81b1 with the 16.3 correction of 2026-11-03, the second book reading the calendar's earnings alone"
+version --rule "merge distance" --close live --evidence "the ladder rules' code version moved to 2328b7bf81b1 with the 16.3 correction of 2026-11-03, the second book reading the calendar's earnings alone"
+version --rule "zone edges from non-average anchors only" --close "non-average anchors only" --evidence "the ladder rules' code version moved to 2328b7bf81b1 with the 16.3 correction of 2026-11-03, the second book reading the calendar's earnings alone"
+version --rule "zone edges from non-average anchors only" --close live --evidence "the ladder rules' code version moved to 2328b7bf81b1 with the 16.3 correction of 2026-11-03, the second book reading the calendar's earnings alone"
+version --rule "the trend rule" --close "below both averages" --evidence "the ladder rules' code version moved to 2328b7bf81b1 with the 16.3 correction of 2026-11-03, the second book reading the calendar's earnings alone"
+version --rule "the trend rule" --close "below both under a cross" --evidence "the ladder rules' code version moved to 2328b7bf81b1 with the 16.3 correction of 2026-11-03, the second book reading the calendar's earnings alone"
+version --rule "the trend rule" --close "the new label holds two nights" --evidence "the ladder rules' code version moved to 2328b7bf81b1 with the 16.3 correction of 2026-11-03, the second book reading the calendar's earnings alone"
+version --rule "the trend rule" --close live --evidence "the ladder rules' code version moved to 2328b7bf81b1 with the 16.3 correction of 2026-11-03, the second book reading the calendar's earnings alone"
+version --rule "merge distance" --live-window
+version --rule "merge distance" --version "a quarter of a typical move" --parameters typicalMoveMultiple=0.25
+version --rule "zone edges from non-average anchors only" --live-window
+version --rule "zone edges from non-average anchors only" --version "non-average anchors only" --parameters zoneEdgesFromNonAverageAnchorsOnly=1
+version --rule "the trend rule" --live-window
+version --trend-version "below both averages"
+version --trend-version "below both under a cross"
+version --trend-version "the new label holds two nights"
+register --moved --evidence "16.3: the shortlist builder and the ladder builder read the calendar's earnings alone, on the operator's answers of 2026-11-03, which moved every evaluator pinning them"

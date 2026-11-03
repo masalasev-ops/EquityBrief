@@ -175,7 +175,7 @@ public sealed class ShortlistBuilder : IComponent
     const string NextEventFor = @"
         SELECT event_date
         FROM calendar
-        WHERE ticker = $ticker AND event_date >= $on_or_after
+        WHERE ticker = $ticker AND kind = 'earnings' AND event_date >= $on_or_after
         ORDER BY event_date
         LIMIT 1;
     ";

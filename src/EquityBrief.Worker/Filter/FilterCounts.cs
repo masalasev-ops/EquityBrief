@@ -100,7 +100,6 @@ public sealed class FilterCounts : IComponent
         var bars = await BarsAsync(connection, cancellation);
         var indicators = await IndicatorsAsync(connection, cancellation);
         var prints = await EventsAsync(connection, "WHERE kind = 'earnings'", cancellation);
-        var events = await EventsAsync(connection, string.Empty, cancellation);
         var suspects = await SuspectsAsync(connection, cancellation);
         var storedNights = await StoredNightsAsync(connection, cancellation);
 
@@ -133,7 +132,7 @@ public sealed class FilterCounts : IComponent
                 .ToArray();
 
             var stored = storedNights.Contains(session) ? await StoredAsync(connection, session, cancellation) : null;
-            var inputs = await InputsAsync(connection, session, members, bars, indicators, prints, events, suspects, stored, earlierKept, cancellation);
+            var inputs = await InputsAsync(connection, session, members, bars, indicators, prints, prints, suspects, stored, earlierKept, cancellation);
 
             // A session no breadth can be read on is one the market gate and the trend classifier, which
             // both read the 200-day average, cannot answer for, so it is named and not counted.
@@ -148,7 +147,7 @@ public sealed class FilterCounts : IComponent
 
             if (year && stored is not null)
             {
-                var (sameBands, sameTrend, samePlan) = await ParityAsync(connection, session, inputs, bars, indicators, events, stored, cancellation);
+                var (sameBands, sameTrend, samePlan) = await ParityAsync(connection, session, inputs, bars, indicators, prints, stored, cancellation);
 
                 compared += inputs.Rows.Count(row => row.Inputs.Close is not null);
                 bandsAgree += sameBands;

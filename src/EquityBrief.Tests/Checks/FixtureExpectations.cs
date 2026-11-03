@@ -3387,7 +3387,7 @@ public partial class FixtureExpectations
                 .RootElement;
 
             Assert.Empty(plan.GetProperty("events").EnumerateArray());
-            Assert.Contains("no dated event", plan.GetProperty("reason").GetString()!, StringComparison.Ordinal);
+            Assert.Contains("no report is dated", plan.GetProperty("reason").GetString()!, StringComparison.Ordinal);
         }
 
         // The second book never merges with the position book, and what that

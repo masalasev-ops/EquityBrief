@@ -127,13 +127,15 @@ public sealed class LadderBuilder : IComponent
         ORDER BY session_date;
     ";
 
-    // The next dated event on or after the as-of session. The calendar holds a
-    // quarter ahead, so a name that reports inside that window has a row and one
-    // that does not has none, which is the explicit blank rather than a guess.
+    // The next report on or after the as-of session. The calendar holds a quarter
+    // ahead, so a name that reports inside that window has a row and one that does
+    // not has none, which is the explicit blank rather than a guess. An ex-dividend
+    // date beside it is no key of the second book.
+    // see: The second book is keyed to the next report the calendar holds, and an ex-dividend date beside it is no key
     const string NextEventFor = @"
         SELECT event_date
         FROM calendar
-        WHERE ticker = $ticker AND event_date >= $as_of
+        WHERE ticker = $ticker AND kind = 'earnings' AND event_date >= $as_of
         ORDER BY event_date
         LIMIT 1;
     ";
@@ -143,7 +145,7 @@ public sealed class LadderBuilder : IComponent
     const string PastEventsFor = @"
         SELECT event_date, timing
         FROM calendar
-        WHERE ticker = $ticker AND event_date < $as_of
+        WHERE ticker = $ticker AND kind = 'earnings' AND event_date < $as_of
         ORDER BY event_date;
     ";
 
@@ -393,9 +395,9 @@ public sealed class LadderBuilder : IComponent
             .Select(swing => swing.Price)
             .ToArray();
 
-        // The next dated event on file, which is what the second book is keyed
-        // to. A name with none gets no setups rather than setups built from a
-        // guessed date.
+        // The next report on file, which is what the second book is keyed to. A
+        // name with none gets no setups rather than setups built from a guessed
+        // date.
         var nextEvent = await NextEventAsync(connection, ticker, asOf, cancellation);
 
         return LadderSeries.For(bands, close, move, recent, trend.State, lows, nextEvent);
@@ -483,7 +485,7 @@ public sealed class LadderBuilder : IComponent
             reason = plan.Reason ?? (plan.Tranches.Count == 0
                 ? "no tranche is placed"
                 : plan.Events.Count == 0
-                    ? "no dated event is on file, so the second book is empty"
+                    ? "no report is dated on the calendar, so the second book is empty"
                     : "every figure in the second book is a proposal"),
         });
 

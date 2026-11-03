@@ -497,7 +497,7 @@ public class PinnedConstants
             new("Figures checked", "0.001", Core.Report.FiguresChecked.RoundingShare, "FiguresChecked.RoundingShare"),
             new("Figures checked", "400", Core.Report.FiguresChecked.DaysRead, "FiguresChecked.DaysRead"),
             new("Figures checked", "7", Core.Report.FiguresChecked.SameQuarterWithin, "FiguresChecked.SameQuarterWithin"),
-            new("Store copies", "3", Core.Configuration.StoreCopies.Kept, "StoreCopies.Kept"),
+            new("Store copies", "2", Core.Configuration.StoreCopies.Kept, "StoreCopies.Kept"),
             new("Store copies", "20", (decimal)Core.Configuration.StoreCopies.WaitsAtMost.TotalHours, "StoreCopies.WaitsAtMost in hours"),
             new("Store copies", "30", (decimal)Worker.Backup.StoreBackup.Between.TotalSeconds, "StoreBackup.Between in seconds"),
             new("Store copies", "10", (decimal)Worker.Backup.StoreBackup.PastTheLabellersLimit.TotalMinutes, "StoreBackup.PastTheLabellersLimit in minutes"),

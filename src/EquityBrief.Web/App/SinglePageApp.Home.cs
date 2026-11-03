@@ -331,11 +331,12 @@ public sealed partial class SinglePageApp
     }
 
     // One of the two bars comparing the paper account with holding the index, its length the share of the larger of the two.
-    static string Bar(string key, string label, double? value, double widest)
+    public static string Bar(string key, string label, double? value, double widest)
     {
         var width = value is { } held && widest > 0 ? Math.Abs(held) / widest * 100 : 0;
-        var shown = value is { } made ? Invariant($"{(made >= 0 ? "+" : "-")}{Math.Abs(made * 100):0.0}%") : NoFigure;
+        var drawn = value is { } made && Math.Round(made * 100, 1) != 0 ? made * 100 : 0;
+        var shown = value is null ? NoFigure : Invariant($"{drawn:+0.0;-0.0;0.0}%");
 
-        return Invariant($"<div class=\"home-bar\" data-bar=\"{key}\"><div class=\"row\"><span>{Escaped(label)}</span><b{(key == "ours" && value is { } own ? Invariant($" style=\"color:var(--{(own >= 0 ? "up" : "down")})\"") : string.Empty)}>{shown}</b></div><div class=\"track\"><div class=\"fill {key}\" style=\"width:{width.ToString("0.#", CultureInfo.InvariantCulture)}%\"></div></div></div>");
+        return Invariant($"<div class=\"home-bar\" data-bar=\"{key}\"><div class=\"row\"><span>{Escaped(label)}</span><b{(key == "ours" && drawn != 0 ? Invariant($" style=\"color:var(--{(drawn > 0 ? "up" : "down")})\"") : string.Empty)}>{shown}</b></div><div class=\"track\"><div class=\"fill {key}\" style=\"width:{width.ToString("0.#", CultureInfo.InvariantCulture)}%\"></div></div></div>");
     }
 }

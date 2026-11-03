@@ -94,7 +94,7 @@ public class StoreNeverDeleted
         // hold nothing of the operator's. SweepRunner writes and replaces its own run folder's files, and
         // removes its own saved candidates where the history moved under them. StoreBackup, in the copies'
         // folder alone, removes an unfinished copy an earlier run left, names a finished copy by moving it from
-        // its unfinished name, and removes a copy older than the newest three once each of those has opened and
+        // its unfinished name, and removes a copy older than the newest two once each of those has opened and
         // read; the store itself it only reads, through SQLite's own backup.
         Assert.Equal(
             [

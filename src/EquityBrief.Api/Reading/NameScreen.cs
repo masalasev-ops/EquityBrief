@@ -174,7 +174,7 @@ public static partial class NameScreen
 
         if (setups.Length == 0)
         {
-            html.Append("<p class=\"degraded\">no dated event is on file, so there are no setups</p></section>");
+            html.Append("<p class=\"degraded\">no report is dated on the calendar, so there are no setups</p></section>");
 
             return html.ToString();
         }
@@ -333,7 +333,7 @@ public static partial class NameScreen
             ? FormattableString.Invariant($" data-year-high=\"{span.High}\" data-year-high-on=\"{Day(span.HighOn)}\" data-year-low=\"{span.Low}\" data-year-low-on=\"{Day(span.LowOn)}\" data-year-sessions=\"{span.Sessions}\"")
             : " data-year-high=\"none\" data-year-low=\"none\"");
 
-        // next earnings date
+        // next dated event, of any kind
         html.Append(nextEvent is { } dated
             ? $" data-next-event=\"{Day(dated)}\""
             : " data-next-event=\"none\"");

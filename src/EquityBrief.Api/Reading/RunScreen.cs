@@ -2007,7 +2007,7 @@ public static class RunScreen
     // failed by one that was ended before it finished, by one that made none, or by none started since; and
     // every copy the newest copy's row before it kept still in the folder, failed where the newest copy found
     // any gone that no copy removed, each named. Neither is read where the store holds no copy's row.
-    // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
     public static IReadOnlyList<WorryItem> Worries(
         IReadOnlyList<string> stale,
         NightView night,
@@ -2320,7 +2320,7 @@ public static class RunScreen
     // newest attempt after it that made none, with why, the newest copy started after it that has written no end,
     // waiting or copying still or ended before it finished where its start is older than a copy's longest wait
     // and an hour, and the copies the newest copy found gone from the folder that no copy removed.
-    // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
     public static StoreCopyRead StoreCopy(IReadOnlyList<StoreBackupRow> rows, string dataRoot, DateTimeOffset now)
     {
         var placed = rows.Select((row, place) => (Row: row, Place: place)).ToArray();
@@ -2394,7 +2394,7 @@ public static class RunScreen
         // The copies gone, the newest copy's and those an attempt after it found, and the newest copy the rows show
         // standing: the newest copy and those its row kept, less any gone. A copy gone is a worry only where no copy
         // newer than it stands.
-        // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+        // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
         string[] goneSince = notMade is null ? [] : Listed(Detail(notMade), "missing");
         string[] allGone = [.. missing.Concat(goneSince).Distinct(StringComparer.Ordinal)];
         DateTimeOffset[] stands =
