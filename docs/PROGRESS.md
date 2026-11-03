@@ -14464,3 +14464,16 @@ Tests:      four new: the limit at 200 and 201 days, the page, the facts file an
 Mutation:   stated in the last entry of this pull request.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.2 - correction: a page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label   2026-11-02
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Corrected:  `StatedQuarters` holds the ends the filings state, within a week of the label. The title and year-earlier heading,
+            growth, margins, multiples and income, the boxes, the short version, the reported lines, what the numbers say,
+            the chart page's quarter, its brief read and the fundamentals note draw them. `LatestQuarter.Quarter`, the quarter
+            table's attribute and the proof's dates stay the label. A decision; the architecture's sentence with prior text in
+            the changelog; the guide. Also a test of a research pass's old release guard.
+Tests:      four new; a graph test's expected dates read through the filings.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

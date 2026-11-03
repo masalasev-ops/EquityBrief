@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-02 - docs/ARCHITECTURE.html - a quarter's end is drawn as the filing states it
+Authorised by: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
+Was:
+> (section 4, the report page) ... its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported).
+Now:
+> ... its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported). A quarter's end is drawn as the company's stored filing states it wherever one states an end within a week of the provider's label, and quarters go on being matched on that label, which a quarter no filing states keeps (see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label).
+Why: The operator's answer to the eighth phase 18 sign-off review: 54 pages titled their latest quarter with the provider's label above the filing's own date in their numbers.
+
 ### 2026-11-02 - docs/ARCHITECTURE.html - a part older than its filing is left out, a fetch takes the SEC's filer, with section 17's row and the fetcher's catalogue row
 Authorised by: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
 Was:

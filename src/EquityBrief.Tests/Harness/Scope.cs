@@ -4347,7 +4347,7 @@ internal static class Scope
             Verdict.Pass, "a stock asked on the window's first New York day drawn and one asked the day before it behind the link, the link drawing both; the figure read off the document against the constant", ByReadSurface),
         // The 18.4 correction of 2026-11-02, the report page's day limits.
         [CheckReach.Key(LimitsTable, "Report page's day limits")] = new Scoped(
-            Verdict.Pass, "DASH's reports worked by hand and the edge at 45 and 46 days, its card a note after the hold, and the proof failing CRH's shape; each figure read off the document against its constant", ByReadSurface),
+            Verdict.Pass, "DASH's reports worked by hand and the edge at 45 and 46 days, its card a note after the hold, and the proof failing CRH's shape; the filing's limit at 200 and 201 days on the page and in the facts file; each figure read off the document against its constant", ByReadSurface),
         // 19.10, on the operator's rulings of 2026-10-15: the fill step's catalogue and matrix rows and its store.
         [CheckReach.Key(CatalogueTable, "Trade filler")] = new Scoped(
             Verdict.Pass,
