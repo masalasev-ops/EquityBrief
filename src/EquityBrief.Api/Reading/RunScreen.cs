@@ -1036,9 +1036,9 @@ public static class RunScreen
     // owes: The trend confirmation's nights settled from flip-backs
     // From 15.2 the S&P 400's and 600's members holding four dated rating counts, against nine in ten of them.
     // owes: Analyst coverage tested as a dial once dated counts exist
-    // From 21.6 the ratings refresh's runs against the five its cap is settled from, with the asks they made, those that
+    // From 21.6 the ratings refresh's runs against the five its cap was read on, with the asks they made, those that
     // failed and the stocks holding a stored answer.
-    // owes: The ratings refresh's cap read on its first five runs
+    // see: The ratings refresh's cap is settled at 100 asks a New York day on the operator's word, 80 for the refresh and 20 for the chart page
     public static IReadOnlyList<TriggerLine> Triggers(TriggerReads reads, PricedCalls priced, TriggerLine? labeller = null) =>
     [
         new(
@@ -1067,7 +1067,7 @@ public static class RunScreen
             "ratings refresh",
             reads.Refresh.Runs,
             5,
-            FormattableString.Invariant($"run(s) of the ratings refresh, against the five its cap of {EquityBrief.Core.Analysts.AnalystLimits.RefreshCap} asks of Yahoo a New York day is settled from: {reads.Refresh.Asked} ask(s) made, {reads.Refresh.Failed} of them failed, and {reads.Refresh.Answered} stock(s) holding a stored answer")),
+            FormattableString.Invariant($"run(s) of the ratings refresh, against the five its cap of {EquityBrief.Core.Analysts.AnalystLimits.RefreshCap} asks of Yahoo a New York day was read on: {reads.Refresh.Asked} ask(s) made, {reads.Refresh.Failed} of them failed, and {reads.Refresh.Answered} stock(s) holding a stored answer")),
         .. labeller is null ? Array.Empty<TriggerLine>() : new[] { labeller },
     ];
 

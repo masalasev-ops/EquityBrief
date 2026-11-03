@@ -220,7 +220,7 @@ static int NoVerb()
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
         "step does, 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
         "not yet stored as first filed, 'filings --join-predecessors' copies under each company that re-filed under a new " +
-        "number its predecessor's stored facts, asking the archive for nothing, and 'filings --instances --from <yyyy-MM-dd>' reads each member's report filed " +
+        "number its predecessor's stored facts where the two filers' figures agree and takes out what it copied for a stock left off, asking the archive for nothing, and 'filings --instances --from <yyyy-MM-dd>' reads each member's report filed " +
         "since that day that the store holds no fact of from its own XBRL instance, " +
         "'insiders-history' reads each quarter of the SEC's insider data sets from 2018q1 through the newest posted that " +
         "no earlier read recorded, one request a quarter and one for the page listing them, and stores every company's " +
@@ -1322,14 +1322,14 @@ static async Task<int> FilingsRun(string[] args)
             return 2;
         }
 
-        var joined = await refresher.JoinPredecessorsAsync(runId);
+        var joins = await refresher.JoinPredecessorsAsync(runId);
 
-        foreach (var one in joined)
+        foreach (var said in joins.Said)
         {
-            Console.WriteLine("filings: " + one.Said);
+            Console.WriteLine("filings: " + said);
         }
 
-        return joined.Any(one => one.Refused is not null) ? 1 : 0;
+        return joins.Joined.Any(one => one.Refused is not null) ? 1 : 0;
     }
 
     if (args.Contains("--whole", StringComparer.Ordinal))

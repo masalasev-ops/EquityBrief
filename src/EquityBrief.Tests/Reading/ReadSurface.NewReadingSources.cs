@@ -49,7 +49,7 @@ public partial class ReadSurface
         Assert.True(line.Success, "The Run page draws no line for the ratings refresh.");
         Assert.Equal(("2", "5"), (line.Groups[1].Value, line.Groups[2].Value));
         Assert.Equal(
-            "2 of 5: run(s) of the ratings refresh, against the five its cap of 80 asks of Yahoo a New York day is settled from: 83 ask(s) made, 5 of them failed, and 3 stock(s) holding a stored answer",
+            "2 of 5: run(s) of the ratings refresh, against the five its cap of 80 asks of Yahoo a New York day was read on: 83 ask(s) made, 5 of them failed, and 3 stock(s) holding a stored answer",
             line.Groups[3].Value);
     }
 

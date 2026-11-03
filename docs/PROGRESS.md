@@ -14884,3 +14884,52 @@ Carried:    each re-filed stock's scorecard, which the night writes, read after 
             operating row.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over d518d66a, whose tree PR 627 merged, with 22.27's figures, from
             14:14 to 14:58 UTC; records alone change in this entry.
+
+### 22.28 - a predecessor is joined only where at least 5 figures in common agree within 5%, VNOM and QDEL left off, amending 22.24   2026-11-03
+
+Built:      `FilerSuccessions` states 15 joined and 5 left off, each with its reason: VNOM, QDEL, DOW, AESI and OZK. The join refuses and
+            names a stock with fewer than 5 figures in common or one past 5%, reading only what the new filer filed itself, and its own
+            run takes out what it copied for VNOM and QDEL. The refresh replaces a copied figure a new filer states differently,
+            with the newer day; one the same keeps its earlier day. `filed_fact` gains its update and delete, declared. The
+            decision amended under its own name, its prior clause under Previously decided. The remedy file. No source a rule's
+            version pins moves.
+Measured:   read-only on the store before the remedy, each with its figures in common and widest gap, all 15 joining at the first
+            run's day and storing nothing more: APA 38, 1.56%. APO 28, 0.25%. BG 79, 0. BLK 38, 0. DINO 73, 0. FERG 18, 0. FUN 52, 0. LQDA 9, 0.
+            MRVL 58, 0. NE 31, 0. NWE 52, 0. PNFP 5, 0. TPL 35, 4.72%. UNIT 30, 2.11%. XOM 22, 0. To take out: VNOM 485 of its 587 rows, QDEL
+            447 of its 683.
+Found:      a fault of 22.24's own: on a second run the join read its copied rows as the new filer's reports, so it put the
+            changeover years too early. It stored nothing either way until the new check, which would have refused all 15. The
+            second run's test caught it before any run on the store.
+Carried:    the 568 figures in common carry the new filer's later filing day, so a setup in the ledger's history dated before that
+            day reads no figure for that period, on the operator's ruling that the newer figure is the one used; the remedy's counts
+            and the ledger's history built again, recorded after the merge.
+Mutation:   one for each property, predicted first and each red at its test: any gap let through; one figure in common enough; copied
+            rows read as the new filer's; the new filer's own row taken out; a figure the same replaced; a filer's own figure replaced;
+            no figure ever replaced.
+
+### 22.29 - the ratings refresh's cap settled at 100 asks a day, and the history pull's days measured against the 16 proposed   2026-11-03
+
+Built:      the cap recorded on the operator's word, 100 a New York day, 80 for the refresh and 20 for the chart page, no longer proposed,
+            which discharges its carried obligation. The Run page's line says the cap was read on the runs.
+Measured:   off the run log, the 8 runs from 2026-10-31 to 2026-11-03: 80 asked and 80 answered on each of 4 New York days, 320 different
+            members, none failed, the chart pages asking at most 1 a day. The history pull was proposed at about 16 days, 1,505 members
+            at the whole 100. At 80 a day 1,506 members take 19 New York days, the 4 measured and 15 more, to about 2026-11-18.
+Mutation:   chosen for the figure: the chart page's 20 moved to 25, predicted and red at the check on section 17's figures and at the
+            Run page's line.
+
+### 22.30 - the runbook registers the night at 23:00 UTC, as the operator ruled and the task fires   2026-11-03
+
+Built:      the runbook's statement, its two setup commands, its read back and its sentence on New York's hours, and the plan's one
+            sentence, at 23:00; a check holding the statement and the two commands to one instant, the count of 2 stated in advance.
+            The decision that the instant moves later on a refused night stands.
+Measured:   the registered task read back on 2026-11-03: `2026-09-11T18:00:00-05:00`, Monday to Friday, next run 23:00:00Z. No
+            re-registration was needed. Two older decisions name the night's start in passing, as 19:30 in one and near 23:30Z in
+            another, as reasoning of their day, and stand.
+Tests:      3169, from 3163: the left-off list, the 5 and the 5% worked by hand, a join refused past either, a stock left off, a later
+            figure, the runbook's instant.
+Mutation:   chosen for the one instant: one setup command moved to 23:20, predicted and red at the check.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3169 of 3169 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
+            placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.

@@ -26,6 +26,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/RUNBOOK.md, docs/BUILD_PLAN.md - the night's instant stated as the task fires it
+Authorised by: The night stays at 23:00 UTC on the operator's word, and a night finding the day's file not yet posted still moves it later
+Was:
+> **The instant is 23:30 UTC.**
+> so reading it back shows `2026-09-10T19:30:00-04:00` rather than
+> $trigger.StartBoundary = '2026-09-11T23:30:00Z' (both commands)
+> **Weekdays only, because the exchange trades on weekdays.** 23:30 UTC is 19:30 or 18:30 in New York,
+> because the schedule fires at 23:30 UTC on weekdays, which is 18:30 or 19:30 in New York at both ends of the year,
+Now:
+> **The instant is 23:00 UTC.**
+> so reading it back shows `2026-09-10T19:00:00-04:00` rather than
+> $trigger.StartBoundary = '2026-09-11T23:00:00Z' (both commands)
+> **Weekdays only, because the exchange trades on weekdays.** 23:00 UTC is 19:00 or 18:00 in New York,
+> because the schedule fires at 23:00 UTC on weekdays, which is 18:00 or 19:00 in New York at both ends of the year,
+Why: the operator's ruling of 2026-11-03; a fresh machine registered from the runbook would have fired half an hour after this one.
+
+### 2026-11-03 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md, docs/RUNBOOK.md - the ratings refresh's cap settled
+Authorised by: The ratings refresh's cap is settled at 100 asks a New York day on the operator's word, 80 for the refresh and 20 for the chart page
+Was:
+> the analyst job's cap of 100 less 20 left to the chart page, proposed and read on its first five runs (owes: The ratings refresh's cap read on its first five runs); it stops after 3 failed asks
+> | **The ratings refresh's cap read on its first five runs** | 21.0 | operating | 5 runs of the ratings refresh, read on the Run page's row for it, which 21.6 builds. At the trigger the cap of 100 asks a New York day, proposed, with the refresh's 80 of them and the 20 left to the chart page, is settled against the five runs' counts, the members each covered, whether Yahoo refused any ask, and the days the history pull took against the 16 proposed |
+> The Run page counts the refresh's runs against the five its cap is settled from, with the asks they made, the failed among them and the stocks holding an answer (owes: The ratings refresh's cap read on its first five runs).
+Now:
+> the analyst job's cap of 100 less 20 left to the chart page (see: The ratings refresh's cap is settled at 100 asks a New York day on the operator's word, 80 for the refresh and 20 for the chart page); it stops after 3 failed asks
+> | **The ratings refresh's cap read on its first five runs** | 21.0 | 22.29, discharged | settled by the operator's ruling of 2026-11-03 at 100 asks a New York day, 80 for the refresh and 20 for the chart page, 22.29 recording it; 8 runs asked 320 different members on 4 New York days with none failed, and the history pull at 80 a day takes 19 New York days against the 16 proposed at the whole 100 |
+> The Run page counts the refresh's runs against the five its cap was read on, with the asks they made, the failed among them and the stocks holding an answer (see: The ratings refresh's cap is settled at 100 asks a New York day on the operator's word, 80 for the refresh and 20 for the chart page).
+Why: the operator ruled the figures, so nothing is left to settle against the runs' counts.
+
+### 2026-11-03 - docs/SCHEMA.md, docs/RUNBOOK.md - a join reads whether two filers' figures agree, and a stock left off has its joined facts taken out
+Authorised by: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts
+Was:
+> | `filed_fact` | FilingsRefresher | none | none |
+> where the first paragraph after the table's primary key now stands, nothing
+> It copies under each company that re-filed under a new SEC number its predecessor's facts the store already holds, for periods ending before the day its new filer's first report starts, and prints each stock with the facts stored and the years gained, or why it was refused. It asks the archive for nothing, is refused while a night holds the store, and a second run stores nothing.
+Now:
+> | `filed_fact` | FilingsRefresher | FilingsRefresher | FilingsRefresher |
+> **A row is updated or deleted only where a company re-filed under a new number** (see: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts). A row the by-hand join copies under the new filer carries its predecessor's accession, which is how it is told from the new filer's own. The refresh updates such a row where the new filer states that period at another figure, and the join's own run deletes such a row of a stock left off. Every other row stands as first filed.
+> It copies under each company that re-filed under a new SEC number its predecessor's facts the store already holds, for periods ending before the day its new filer's first report starts, where the two filers state at least 5 figures in common and each is within 5%, and prints each stock with the facts stored, the years gained, the figures in common and the widest gap, or why it was refused, and each stock left off with its reason and the joined facts taken out of it. It asks the archive for nothing, is refused while a night holds the store, and a second run stores and takes out nothing.
+Why: the operator's rulings of 2026-11-03, in `prompts/2026-11-03-22.28-filer-agreement-ratings-cap-night-instant-rulings.md`.
+
 ### 2026-11-03 - docs/ARCHITECTURE.html - a fired exit held until sold on every index, and the read-only copy's fold
 Authorised by: Every count of trades names its group and one function works the three groups
 Was:
