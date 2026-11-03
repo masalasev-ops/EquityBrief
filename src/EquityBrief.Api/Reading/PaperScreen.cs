@@ -51,7 +51,8 @@ public sealed record PaperAccounts(
     IReadOnlyDictionary<string, PaperStockRow>? Stocks = null,
     Func<DateOnly, decimal?>? Fund = null,
     IReadOnlyDictionary<string, string>? Standings = null,
-    PaperCombinedView? Combined = null);
+    PaperCombinedView? Combined = null,
+    TradeGroupsView? Groups = null);
 
 // The projection from stored trades and test rows to paper trading's accounts and their trade logs. The accounts are an
 // index's: each family's live or provisional rule's list, the page's own, each registered variant's own list or book,

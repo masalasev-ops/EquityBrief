@@ -242,11 +242,16 @@ public static class PickStatus
     public const string Time = "time";
     public const string Missing = "missing";
 
-    public static IReadOnlyList<string> Filters { get; } = [Open, Target, Stopped, Time];
+    // A stock listed and not yet bought, which no group of trades counts until its next session's open fills it.
+    // see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+    public const string ToBuy = "to-buy";
+
+    public static IReadOnlyList<string> Filters { get; } = [Open, ToBuy, Target, Stopped, Time];
 
     public static string Words(string status) => status switch
     {
         Open => "Open",
+        ToBuy => "To buy at tomorrow's open",
         Target => "Reached target",
         Stopped => "Stopped out",
         Time => "Ran out of time",
@@ -282,13 +287,15 @@ public sealed record PicksSummary(
     // The trades among those listed that a setup on provisional settings listed: counted as listed, open
     // or finished, and in neither the share nor the average.
     // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
-    int Provisional = 0)
+    int Provisional = 0,
+    int ToBuy = 0)
 {
     public int Finished => Target + Stopped + Time;
 
     public int Of(string status) => status switch
     {
         PickStatus.Open => Open,
+        PickStatus.ToBuy => ToBuy,
         PickStatus.Target => Target,
         PickStatus.Stopped => Stopped,
         PickStatus.Time => Time,
@@ -7344,7 +7351,7 @@ public sealed partial class MarkRenderer : IComponent
         counts.Append(Invariant, $"data-target=\"{summary.Target}\" data-stopped=\"{summary.Stopped}\" data-time=\"{summary.Time}\" data-missing=\"{summary.Missing}\">");
         counts.Append(Invariant, $"<div><dt>Trades listed</dt><dd>{summary.Listed}<span class=\"grp\">over {summary.Nights} night{(summary.Nights == 1 ? string.Empty : "s")}</span></dd></div>");
 
-        foreach (var (words, count) in new[] { ("Still open", summary.Open), ("Finished", summary.Finished), ("Reached target", summary.Target), ("Stopped out", summary.Stopped), ("Ran out of time", summary.Time) })
+        foreach (var (words, count) in new[] { ("To buy at tomorrow's open", summary.ToBuy), ("Still open", summary.Open), ("Finished", summary.Finished), ("Reached target", summary.Target), ("Stopped out", summary.Stopped), ("Ran out of time", summary.Time) })
         {
             counts.Append(Invariant, $"<div><dt>{words}</dt><dd>{count}</dd></div>");
         }
@@ -7996,7 +8003,7 @@ public sealed partial class MarkRenderer : IComponent
     // tiles Past picks draws: how many it listed, how many are open and how many decided against the count a share waits on.
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     public string TradesLine(PicksSummary summary, string picks) =>
-        Formatted($"<p class=\"run-trades\" data-listed=\"{summary.Listed}\" data-open=\"{summary.Open}\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\">The live list's trades: {summary.Listed} listed, {summary.Open} still open, {summary.Decided} decided of the {summary.MinimumDecided} a share waits on. <a href=\"{Escaped(picks)}\">Open their trade log &#8594;</a></p>");
+        Formatted($"<p class=\"run-trades\" data-listed=\"{summary.Listed}\" data-open=\"{summary.Open}\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\" data-to-buy=\"{summary.ToBuy}\">The pullback's trades under every version, part of {TradeGroupsView.SystemWords}: {summary.Listed - summary.ToBuy} bought, {summary.Open} still open, {summary.Decided} decided of the {summary.MinimumDecided} a share waits on{(summary.ToBuy > 0 ? Formatted($", and {summary.ToBuy} {TradeGroupsView.ToBuyWords}") : string.Empty)}. <a href=\"{Escaped(picks)}\">Open their trade log &#8594;</a></p>");
 
     // Is the list finding new stocks, section 15.10's fifth region: a bar for each evening up to the night, the
     // part new that evening and the part also on the list the evening before, and the night's split in words.

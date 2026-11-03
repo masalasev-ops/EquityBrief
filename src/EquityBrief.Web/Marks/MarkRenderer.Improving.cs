@@ -30,7 +30,8 @@ public sealed record ImprovingCardView(
     string Rule,
     EquityBrief.Core.Families.ImprovingSweepSetting? Setting = null,
     DateOnly? LiveSince = null,
-    QualityFixedView? Fixed = null);
+    QualityFixedView? Fixed = null,
+    int? HeldByThisVersion = null);
 
 // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
@@ -89,7 +90,7 @@ public sealed partial class MarkRenderer
         body.Append("<header class=\"fam-head\" data-family=\"improving\"><span class=\"fam-tag\" data-family=\"improving\"><span class=\"fam-swatch\" data-family=\"improving\"></span>");
         body.Append(Escaped(EquityBrief.Core.Families.ImprovingRule.Label)).Append("</span>");
         body.Append(card.LiveSince is { } since
-            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">Live since {since:d MMM yyyy}</span>")
+            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">This version since {since:d MMM yyyy}</span>")
             : FormattableString.Invariant($" <span class=\"status-pill provisional\" title=\"{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}\">Not yet tested</span>"));
         body.Append(Invariant, $" <span class=\"fam-count\">{Escaped(card.Bought == 1 ? "1 pick tonight" : Formatted($"{card.Bought} picks tonight"))}</span></header>");
         body.Append(Invariant, $"<p class=\"setup-about\">{Escaped(EquityBrief.Core.Families.ImprovingRule.Description)}<br>{Escaped(CheckedNightly)}</p>");
@@ -307,7 +308,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Flagged, waiting for the filing</span><b data-state=\"flagged\">{card.Flagged}</b><span>results release read; filing usually within weeks</span></div>");
         body.Append(card.Holding == 0
             ? "<div class=\"hw-tile\"><span class=\"tile-label\">Holding</span><b>0</b><span>none bought yet</span></div>"
-            : FormattableString.Invariant($"<div class=\"hw-tile\"><span class=\"tile-label\">Holding</span><b>{card.Holding}</b><span>{Percent(card.HoldingSince)} since bought, the index's stocks {Percent(card.MembersSince)}</span></div>"));
+            : FormattableString.Invariant($"<div class=\"hw-tile\"><span class=\"tile-label\">Holding{(card.HeldByThisVersion is { } own && own < card.Holding ? own == 0 ? ", under an earlier version" : Formatted($", {own} under this version") : string.Empty)}</span><b>{card.Holding}</b><span>{Percent(card.HoldingSince)} since bought, the index's stocks {Percent(card.MembersSince)}</span></div>"));
         body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Reporting this week</span><b>{(card.Reporting is { } count ? count.ToString(Invariant) : "not read")}</b><span>of the index's stocks, in the next {ReportingDays} trading days</span></div>");
         body.Append("</div>");
 

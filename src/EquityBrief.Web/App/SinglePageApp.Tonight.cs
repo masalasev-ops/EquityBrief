@@ -52,7 +52,7 @@ public sealed partial class SinglePageApp
         // The buys' title names the session they are bought at, as their sentences do: Monday's buys on a Friday.
         var opens = MarkRenderer.OpenDay(night);
 
-        region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night)), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
+        region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night, line.Groups, improving?.Bought)), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
         region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
         region.Append(marks.Copying ? string.Empty : marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
 
@@ -88,7 +88,7 @@ public sealed partial class SinglePageApp
             tonight[EquityBrief.Core.Families.QualityRule.Name] = QualityTileLine(quality, night);
         }
 
-        region.Append(Cards.Computed(SetupsTitle(shown.Count), marks.SixSetups(shown, liveSince, tonight), stamp: Cards.Night(night), id: "setups", region: "setups"));
+        region.Append(Cards.Computed(SetupsTitle(shown.Count), marks.SixSetups(shown, liveSince, tonight, line.FirstLive), stamp: Cards.Night(night), id: "setups", region: "setups"));
 
         // The Fundamentals family's card in the fundamentals-first family's place, before the dip's.
         var improvingDrawn = improving is null;
@@ -149,6 +149,16 @@ public sealed partial class SinglePageApp
             + (improving.Flagged == 1 ? " 1 flagged, waiting for the filing." : Invariant($" {improving.Flagged} flagged, waiting for the filing."));
     }
 
+    // A book's holdings in words: those bought, and those chosen and to buy at tomorrow's open, which are held by nothing yet.
+    // see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+    static string HoldingsWords(int chosen, int toBuy)
+    {
+        var bought = chosen - toBuy;
+        var held = bought == 1 ? "1 holding" : Invariant($"{bought} holdings");
+
+        return toBuy == 0 ? held + "." : bought == 0 ? Invariant($"{toBuy} {TradeGroupsView.ToBuyWords}.") : Invariant($"{held}, {toBuy} {TradeGroupsView.ToBuyWords}.");
+    }
+
     // Quality at a fair price's tile line: its holdings and when it next reshuffles.
     static string QualityTileLine(QualityCardView quality, DateOnly night)
     {
@@ -162,7 +172,7 @@ public sealed partial class SinglePageApp
             return "Its first holdings are chosen on its first night.";
         }
 
-        var held = quality.Cells.Count == 1 ? "1 holding." : Invariant($"{quality.Cells.Count} holdings.");
+        var held = HoldingsWords(quality.Cells.Count, quality.Cells.Count(cell => cell.SinceBought is null));
 
         if (quality.LastReshuffle == night)
         {
@@ -205,7 +215,7 @@ public sealed partial class SinglePageApp
     // The sector heavyweights' tile line: its holdings and when it next reshuffles.
     static string HeavyweightTileLine(HeavyweightCardView heavyweights, DateOnly night)
     {
-        var held = heavyweights.Holdings.Count == 1 ? "1 holding." : Invariant($"{heavyweights.Holdings.Count} holdings.");
+        var held = HoldingsWords(heavyweights.Holdings.Count, heavyweights.Holdings.Count(holding => holding.SinceBought is null));
 
         if (heavyweights.LastRebalance == night)
         {

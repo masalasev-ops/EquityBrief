@@ -4146,7 +4146,7 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append(Cards.Computed(
             "Past picks",
-            marks.PicksCounts(summary) + Cards.Key(
+            Invariant($"<p class=\"card-note picks-group\">These are {TradeGroupsView.SystemWords} of the pullback, the breakout and the earnings drift under every version, and each row says which. Paper trading's accounts count {TradeGroupsView.VersionWords} alone, on <a href=\"{PaperRoute}\">Paper trading</a>.</p>") + marks.PicksCounts(summary) + Cards.Key(
                 "How to read it.",
                 Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its target, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions pass. A result is what the trade made in multiples of what it risked, so <span class=\"loss\">-1</span> is a full stop-out and <span class=\"gain\">+2</span> a target twice as far away as the stop."),
                 "Each trade is a fact and is always shown. A share over a handful of trades looks like evidence and is not, so it waits for the minimums, and it never appears without the share the trades needed to break even beside it."),

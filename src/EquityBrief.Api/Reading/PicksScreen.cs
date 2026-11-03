@@ -208,7 +208,8 @@ public static class PicksScreen
             met ? decided.Average(cell => cell.BreakEven!.Value) : null,
             met && results.Length > 0 ? results.Average() : null,
             cells.Count - counted.Length,
-            counted.Count(cell => cell.Provisional));
+            counted.Count(cell => cell.Provisional),
+            counted.Count(cell => cell.Status == PickStatus.ToBuy));
     }
 
     // The stored outcome a status stands for, which the run page's own test of a scored setup reads.
@@ -224,9 +225,13 @@ public static class PicksScreen
         // A trade the store says finished after the night drawn was open on it.
         var finishedBy = row.ResolvedOn is { } resolved && resolved <= asOf;
 
+        // A trade is open only once bought: a listing whose next session's open has not filled it yet is still to buy.
+        // see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
         var status = !row.OutcomeStored
             ? PickStatus.Missing
-            : row.Outcome is null || !finishedBy
+            : row.Fill is null && row.Unfilled is null
+                ? PickStatus.ToBuy
+                : row.Outcome is null || !finishedBy
                 ? PickStatus.Open
                 : row.Outcome switch
                 {

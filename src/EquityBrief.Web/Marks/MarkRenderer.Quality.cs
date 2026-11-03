@@ -67,7 +67,7 @@ public sealed partial class MarkRenderer
         body.Append("<header class=\"fam-head\" data-family=\"quality\"><span class=\"fam-tag\" data-family=\"quality\"><span class=\"fam-swatch\" data-family=\"quality\"></span>");
         body.Append(Escaped(EquityBrief.Core.Families.QualityRule.Label)).Append("</span>");
         body.Append(card.LiveSince is { } since
-            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">Live since {since:d MMM yyyy}</span>")
+            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">This version since {since:d MMM yyyy}</span>")
             : FormattableString.Invariant($" <span class=\"status-pill provisional\" title=\"{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}\">Not yet tested</span>"));
         body.Append(Invariant, $" <span class=\"fam-count\">{Escaped(card.Cells.Count == 1 ? "1 holding" : Formatted($"{card.Cells.Count} holdings"))}</span></header>");
         body.Append(Invariant, $"<p class=\"setup-about\">{Escaped(EquityBrief.Core.Families.QualityRule.Description)}</p>");

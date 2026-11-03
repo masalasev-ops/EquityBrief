@@ -137,7 +137,9 @@ public sealed record MarketLineView(
     string? CloseHref = null,
     IReadOnlyList<MarketCheckView>? Checks = null,
     string? Dip = null,
-    bool DipOpen = false);
+    bool DipOpen = false,
+    TradeGroupsView? Groups = null,
+    IReadOnlyDictionary<string, DateOnly?>? FirstLive = null);
 
 // One setup's own market check on an S&P 400 or 600 night, as its rule's first stored part read it for every member: the
 // family, its label, whether it left the family's list open, the check's words, and the breadth and floor it read, none
@@ -588,7 +590,7 @@ public sealed partial class MarkRenderer
         rule is { Chosen.Live: false } variant
             ? ("A version being tested", "variant", variant.Chosen.Rule)
             : liveSince is { } since
-                ? (FormattableString.Invariant($"Live since {since:d MMM yyyy}"), "live", null)
+                ? (FormattableString.Invariant($"This version since {since:d MMM yyyy}"), "live", null)
                 : ("Not yet tested", "provisional", EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus);
 
     // Whether a card draws folded to one line: it lists nothing tonight and no variant is chosen on it.

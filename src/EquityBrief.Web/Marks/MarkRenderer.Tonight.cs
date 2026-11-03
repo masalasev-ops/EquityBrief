@@ -11,7 +11,7 @@ public sealed record EndedTonightView(int AtTarget, int AtStop, int AtLimit, int
 
 // What Tonight in one minute reads: the market line, tonight's picks by setup, the trades from earlier nights still open
 // with those that ended on the night, and the stocks one step from qualifying with the link opening them.
-public sealed record OneMinuteView(MarketLineView Line, IReadOnlyList<SetupTileView> Tiles, EndedTonightView? Ended, string? PicksHref, DateOnly? Night = null);
+public sealed record OneMinuteView(MarketLineView Line, IReadOnlyList<SetupTileView> Tiles, EndedTonightView? Ended, string? PicksHref, DateOnly? Night = null, TradeGroupsView? Groups = null, int? Fundamentals = null);
 
 // One setup in the reader's words: the line its tile states what it looks for in, and the two sentences its card's header
 // describes it with.
@@ -154,22 +154,31 @@ public sealed partial class MarkRenderer
         body.Append("</div>");
 
         // Tonight's picks and the setups they came from.
-        var listing = view.Tiles.Where(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name && tile.Count > 0).ToArray();
-        var setups = view.Tiles.Count(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name);
-        var from = listing.Length switch
+        var listing = view.Tiles.Where(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name && tile.Count > 0).Select(tile => tile.Label).ToList();
+        var setups = view.Tiles.Count(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name) + (view.Fundamentals is null ? 0 : 1);
+
+        if (view.Fundamentals > 0)
+        {
+            listing.Add(EquityBrief.Core.Families.ImprovingRule.Label);
+        }
+
+        var from = listing.Count switch
         {
             0 => string.Empty,
-            1 => ", all from the " + listing[0].Label.ToLowerInvariant(),
-            _ => ", from the " + string.Join(", the ", listing[..^1].Select(tile => tile.Label.ToLowerInvariant())) + " and the " + listing[^1].Label.ToLowerInvariant(),
+            1 => ", all from the " + listing[0].ToLowerInvariant(),
+            _ => ", from the " + string.Join(", the ", listing[..^1].Select(label => label.ToLowerInvariant())) + " and the " + listing[^1].ToLowerInvariant(),
         };
         var opens = OpenDay(view.Night);
-        var picks = line.BuyPoints == 0
+        var newPicks = line.BuyPoints + (view.Fundamentals ?? 0);
+        var reshuffled = (view.Groups ?? line.Groups)?.ToBuyFromReshuffles ?? 0;
+        var picks = (newPicks == 0
             ? "No new picks to buy at " + opens + " open."
-            : Counted(line.BuyPoints, "new pick", "new picks") + " to buy at " + opens + " open" + from + ".";
+            : Counted(newPicks, "new pick", "new picks") + " to buy at " + opens + " open" + from + ".")
+            + (reshuffled == 0 ? string.Empty : Formatted($" The monthly books' reshuffle adds {reshuffled} more."));
         var qualified = line.Passed is { } passed && line.Members is { } members
             ? Formatted($"{passed} of the {members} {line.Index} stocks qualified under some setup tonight. ")
             : string.Empty;
-        var others = setups - listing.Length;
+        var others = setups - listing.Count;
         var quiet = line.BuyPoints == 0
             ? "No setup found anything new."
             : others switch
@@ -181,10 +190,13 @@ public sealed partial class MarkRenderer
 
         body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>{Escaped(picks)}</b></p><p class=\"minute-said\">{Escaped(qualified + quiet)}</p></div>");
 
-        // The trades from earlier nights still open, and those that ended tonight.
-        var open = line.OpenTrades == 0
-            ? "No trade from an earlier night is still open"
-            : Counted(line.OpenTrades, "trade from an earlier night is still open", "trades from earlier nights are still open");
+        // The system's trades still open, and those that ended tonight.
+        // see: Every count of trades names its group, and the system's trades, this version's and the earlier versions' are worked by one function
+        var open = (view.Groups ?? line.Groups) is { } groups
+            ? Formatted($"Of {TradeGroupsView.SystemWords}, {groups.System.Open} {(groups.System.Open == 1 ? "is" : "are")} open, {groups.ThisVersion.Open} of them this version's")
+            : line.OpenTrades == 0
+                ? "No trade from an earlier night is still open"
+                : Counted(line.OpenTrades, "trade from an earlier night is still open", "trades from earlier nights are still open");
         var endedWords = view.Ended is not { Count: > 0 } done
             ? "."
             : Formatted($"; {done.Count} ended tonight.");
@@ -268,7 +280,7 @@ public sealed partial class MarkRenderer
 
     // The six setups: a tile each, its name, whether it is live and since when or not yet tested, a line on what it looks
     // for, and tonight's line, opening the setup's card.
-    public string SixSetups(IReadOnlyList<SetupTileView> tiles, IReadOnlyDictionary<string, DateOnly?> liveSince, IReadOnlyDictionary<string, string> tonight)
+    public string SixSetups(IReadOnlyList<SetupTileView> tiles, IReadOnlyDictionary<string, DateOnly?> liveSince, IReadOnlyDictionary<string, string> tonight, IReadOnlyDictionary<string, DateOnly?>? firstLive = null)
     {
         var body = new StringBuilder();
         var setups = tiles.Count;
@@ -284,10 +296,13 @@ public sealed partial class MarkRenderer
         {
             var words = WordsOf(tile.Family, tile.Label);
             var since = liveSince.GetValueOrDefault(tile.Family);
-            var badge = since is { } live ? FormattableString.Invariant($"Live since {live:d MMM yyyy}") : "Not yet tested";
+            var first = since is null ? null : firstLive?.GetValueOrDefault(tile.Family) ?? since;
+            var badge = first is { } live ? FormattableString.Invariant($"Live since {live:d MMM yyyy}") : "Not yet tested";
+            var version = since is { } registered && first != since ? FormattableString.Invariant($"<span class=\"tile-version\">This version since {registered:d MMM yyyy}; earlier trades kept.</span>") : string.Empty;
 
             body.Append(Invariant, $"<button type=\"button\" class=\"setup-tile fam-edge\" data-family=\"{Escaped(tile.Family)}\" data-card=\"{Escaped(tile.Family)}\" data-count=\"{tile.Count}\" data-state=\"{Escaped(tile.State)}\">");
             body.Append(Invariant, $"<span class=\"tile-top\"><span class=\"fam-tag\" data-family=\"{Escaped(tile.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(tile.Family)}\"></span>{Escaped(tile.Label)}</span><span class=\"status-pill {(since is null ? "provisional" : "live")}\">{Escaped(badge)}</span></span>");
+            body.Append(version);
             body.Append(Invariant, $"<span class=\"tile-plain\">{Escaped(words.Plain)}</span>");
             body.Append(Invariant, $"<span class=\"tile-tonight\">{Escaped(tonight.GetValueOrDefault(tile.Family) ?? tile.State)}</span>{(tile.Quiet is { } quiet ? Formatted($"<span class=\"tile-quiet\">{Escaped(quiet)}</span>") : string.Empty)}</button>");
         }

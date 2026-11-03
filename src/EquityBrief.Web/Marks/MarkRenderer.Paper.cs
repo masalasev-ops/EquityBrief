@@ -112,7 +112,8 @@ public sealed record PaperPageView(
     IReadOnlyList<PaperOnlyView> OnlyVariants,
     PaperFundView? Fund,
     PaperCombinedView? Combined = null,
-    IReadOnlyList<PaperComingView>? Coming = null);
+    IReadOnlyList<PaperComingView>? Coming = null,
+    TradeGroupsView? Groups = null);
 
 // From 21.20 a variant registered after the newest night, which no night has read yet: its family, its number and what it
 // changes as its card will number it, the day it was registered and the night that first reads it, none where the closure
@@ -341,9 +342,14 @@ public sealed partial class MarkRenderer
         html.Append(link.Closed ? ClosedTrades(page.Closed) : OpenTrades(page.Open));
         html.Append(NotBought(page.NotBought));
 
+        if (page.Groups is { } groups)
+        {
+            html.Append(Invariant, $"<p class=\"card-note paper-system\" data-system=\"{groups.System.Bought}\" data-system-open=\"{groups.System.Open}\" data-version=\"{groups.ThisVersion.Bought}\" data-earlier-trades=\"{groups.EarlierVersions.Bought}\">{Escaped(groups.SystemLine)} <a href=\"{App.SinglePageApp.PicksRoute}\">See every trade on Past picks</a></p>");
+        }
+
         if (page.Earlier.Count > 0 && !Copying)
         {
-            html.Append(Invariant, $"<details class=\"paper-earlier\" data-earlier=\"{page.Earlier.Count}\"><summary>Earlier versions: {page.Earlier.Count} {(page.Earlier.Count == 1 ? "trade" : "trades")} a rule's earlier versions listed, left out of every figure on this page</summary>");
+            html.Append(Invariant, $"<details class=\"paper-earlier\" data-earlier=\"{page.Earlier.Count}\"><summary>Earlier versions:{page.Earlier.Count} {(page.Earlier.Count == 1 ? "trade" : "trades")} a rule's earlier versions listed, left out of every figure on this page</summary>");
             html.Append("<div class=\"tbl-wrap\"><table class=\"paper-bought\"><thead><tr><th>Stock</th><th>Setup</th><th>Listed by</th><th class=\"r\">Bought</th><th>Open or how it ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
 
             foreach (var trade in page.Earlier)
