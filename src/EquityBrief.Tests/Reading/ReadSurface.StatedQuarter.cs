@@ -5,6 +5,7 @@ using EquityBrief.Api.Reading;
 using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Report;
 using EquityBrief.Tests.Checks;
+using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -108,6 +109,21 @@ public partial class ReadSurface
         Assert.Contains($"data-estimated-quarter=\"{label}\"", numbers, StringComparison.Ordinal);
         Assert.Contains($"The quarter to {filed} was reported on {Iso(reportDate)}", numbers, StringComparison.Ordinal);
         Assert.Contains($"<small>the quarter to {filed} was reported on {Iso(reportDate)}</small>", numbers, StringComparison.Ordinal);
+    }
+
+    // The short version says the date the view draws, and a view no filing corrects draws the label.
+    [Fact]
+    public void TheShortVersionSaysTheDateTheLatestQuarterDraws()
+    {
+        LatestQuarter latest = new(
+            new DateOnly(2026, 6, 30),
+            new DateOnly(2026, 7, 30),
+            new DateOnly(2025, 6, 30),
+            [new QuarterLine(QuarterLines.Revenue, 1_100_000_000m, 1_050_000_000m, 50_000_000m, 4.7619, 900_000_000m, 22.2222, null, null, false, null, null, null)]);
+
+        Assert.Equal((new DateOnly(2026, 6, 30), new DateOnly(2025, 6, 30)), (latest.DrawnQuarter, latest.DrawnYearEarlier));
+        Assert.Contains("In the quarter to 2026-06-30,", MarkRenderer.ShortVersionLead(null, latest), StringComparison.Ordinal);
+        Assert.Contains("In the quarter to 2026-06-27,", MarkRenderer.ShortVersionLead(null, latest with { DrawnQuarter = new DateOnly(2026, 6, 27) }), StringComparison.Ordinal);
     }
 
     // The fundamentals card's note, the quarter awaited being still to file and so its label.

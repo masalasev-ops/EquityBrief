@@ -196,8 +196,8 @@ public sealed partial class MarkRenderer
         return lead.Length == "<div class=\"short-lead\">".Length ? string.Empty : lead.Append("</div>").ToString();
 
         static string Against(EquityBrief.Core.Report.QuarterLine line) =>
-            (line.AgainstEstimate is { } against ? Formatted($", {Unsigned(against, 1).ToString("+0.0;-0.0;0.0", Invariant)}% against its estimate") : string.Empty)
-            + (line.OnTheYear is { } year ? Formatted($" and {Unsigned(year, 1).ToString("+0.0;-0.0;0.0", Invariant)}% on a year earlier") : string.Empty);
+            (line.AgainstEstimate is { } against ? Formatted($", {against.ToString("+0.0;-0.0;0.0", Invariant)}% against its estimate") : string.Empty)
+            + (line.OnTheYear is { } year ? Formatted($" and {year.ToString("+0.0;-0.0;0.0", Invariant)}% on a year earlier") : string.Empty);
     }
 
     [GeneratedRegex(@"(?<=[.!?][""”']?)\s+(?=[A-Z""“])")]
