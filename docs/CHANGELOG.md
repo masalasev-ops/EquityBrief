@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-11-03 - docs/ARCHITECTURE.html - a fired exit held until sold on every index, and the read-only copy's fold
+Authorised by: Every count of trades names its group and one function works the three groups
+Was:
+> A stock listed and not yet filled is to buy at tomorrow's open and in no group, and a trade whose exit fired on tonight's close on an S&amp;P 400 or 600 list is held, and counted open, until the next open sells it. Home, Tonight, paper trading, Past picks and the Run page each say which group a count is and link to where the others are; the read-only copy draws the same counts and no earlier version's row.
+Now:
+> A stock listed and not yet filled is to buy at tomorrow's open and in no group. A trade whose exit fired on tonight's close, on every index, is held and counted open until the next open sells it: each count of open trades adds how many of them sell at tomorrow's open, its row says so with why, and it has ended on the night after the sale with the sale's price. Home, Tonight, paper trading, Past picks and the Run page each say which group a count is and link to where the others are; the read-only copy draws the same counts, and its fold of earlier trades reads only each stock, family, the words an earlier version, the day bought, how it ended or that it is open and its result. (see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one)
+Why: the operator's two rulings of 2026-11-03, in `prompts/2026-11-03-22.26-fired-exit-and-copy-fold-rulings.md`.
+
 ### 2026-11-03 - docs/ARCHITECTURE.html - a setup's badge and tile name the version, and the Earlier fold is no longer left out of every figure
 Authorised by: Every count of trades names its group and one function works the three groups
 Was:

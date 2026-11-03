@@ -197,11 +197,11 @@ public sealed partial class MarkRenderer
             : line.OpenTrades == 0
                 ? "No trade from an earlier night is still open"
                 : Counted(line.OpenTrades, "trade from an earlier night is still open", "trades from earlier nights are still open");
-        var endedWords = view.Ended is not { Count: > 0 } done
-            ? "."
-            : line.Universe is not null && (view.Groups ?? line.Groups) is not null
-                ? Formatted($"; {done.Count} of them {(done.Count == 1 ? "sells" : "sell")} at tomorrow's open.")
-                : Formatted($"; {done.Count} ended tonight.");
+        var endedWords = (view.Groups ?? line.Groups) is { System.Selling: > 0 } selling
+            ? Formatted($"; {TradeGroupsView.Selling(selling.System.Selling)}.")
+            : view.Ended is { Count: > 0 } done
+                ? Formatted($"; {done.Count} ended tonight.")
+                : ".";
         var why = view.Ended is { Count: > 0 } split ? EndedWords(split) : "None ended tonight.";
         var paper = Formatted($"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">See them on Past picks</a>{((view.Groups ?? line.Groups) is null ? string.Empty : Formatted($", and this version's alone on <a href=\"#/paper{(line.Universe is { } paperOn ? "?universe=" + Uri.EscapeDataString(paperOn) : string.Empty)}\">Paper trading</a>"))}");
 

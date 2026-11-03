@@ -89,7 +89,8 @@ public sealed record PaperBoughtView(
     PaperEnded? Closed,
     IReadOnlyList<string> AlsoHeld,
     string? Past,
-    string? Version = null);
+    string? Version = null,
+    string? Selling = null);
 
 // A trade a family's variants took that its live or provisional rule did not take off the same night: its stock and
 // company, the variants that took it by their short names, the night that listed it, the session it was bought on and its
@@ -347,19 +348,22 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<p class=\"card-note paper-system\" data-system=\"{groups.System.Bought}\" data-system-open=\"{groups.System.Open}\" data-version=\"{groups.ThisVersion.Bought}\" data-earlier-trades=\"{groups.EarlierVersions.Bought}\">{Escaped(groups.SystemLine)} <a href=\"{App.SinglePageApp.PicksRoute}\">See every trade on Past picks</a></p>");
         }
 
-        if (page.Earlier.Count > 0 && !Copying)
+        // On the read-only copy too, each row its stock, family, the words "an earlier version", the day bought and how it ended or
+        // that it is open with its result, the version itself drawn nowhere.
+        // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
+        if (page.Earlier.Count > 0)
         {
             html.Append(Invariant, $"<details class=\"paper-earlier\" data-earlier=\"{page.Earlier.Count}\"><summary>Earlier versions: {page.Earlier.Count} {(page.Earlier.Count == 1 ? "trade" : "trades")} a rule's earlier versions listed, in the line above and left out of every account</summary>");
             html.Append("<div class=\"tbl-wrap\"><table class=\"paper-bought\"><thead><tr><th>Stock</th><th>Setup</th><th>Listed by</th><th class=\"r\">Bought</th><th>Open or how it ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
 
             foreach (var trade in page.Earlier)
             {
-                html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-version=\"{Escaped(trade.Version ?? string.Empty)}\">");
+                html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\"{(Copying ? string.Empty : Formatted($" data-version=\"{Escaped(trade.Version ?? string.Empty)}\""))}>");
                 html.Append(StockCell(trade.Ticker, trade.Company, null));
                 html.Append(FamilyCell(trade.Family));
-                html.Append(Invariant, $"<td><span title=\"{Escaped(trade.Version ?? string.Empty)}\">an earlier version</span></td>");
+                html.Append(Copying ? "<td>an earlier version</td>" : Formatted($"<td><span title=\"{Escaped(trade.Version ?? string.Empty)}\">an earlier version</span></td>"));
                 html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
-                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : "<td><span class=\"pill\">open</span></td>");
+                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Stop is null, trade.Closed is { } shut ? (shut.Risks, shut.Fraction) : (trade.Open?.Risks, trade.Open?.Fraction))}</td></tr>");
             }
 
@@ -433,7 +437,7 @@ public sealed partial class MarkRenderer
                 : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
             html.Append(Invariant, $"<td class=\"r num\">{(open?.Close is { } shut ? Figures.Price(shut) : "<span class=\"degraded\">not stored</span>")}<span class=\"pb-day\">{Held(open?.Held, trade.Cap)}</span></td>");
             html.Append(Invariant, $"<td class=\"r num\">{Result(book, (open?.Risks, open?.Fraction))}</td>");
-            html.Append(Invariant, $"<td><span class=\"pb-standing {StandingClass(open?.Standing)}\" data-standing=\"{Escaped(open?.Standing ?? string.Empty)}\">{Escaped(Capitalised(open?.Standing ?? HeavyweightStandings.NotRead))}</span></td></tr>");
+            html.Append(Invariant, $"<td><span class=\"pb-standing {StandingClass(open?.Standing)}\" data-standing=\"{Escaped(open?.Standing ?? string.Empty)}\">{Escaped(trade.Selling is { } why ? Capitalised(TradeGroupsView.SellsWords) + ": " + why : Capitalised(open?.Standing ?? HeavyweightStandings.NotRead))}</span></td></tr>");
         }
 
         html.Append("</tbody></table></div>");

@@ -2359,6 +2359,16 @@ Item 10 of that ruling: the three groups named once in the decisions and worked 
 
 **Done when** a constructed restart's three groups are worked by hand and match; the proof passes each page drawing its group's count and fails a page drawing another group's, a count at a time; a page drawing no such count is unexamined and never passed; every count the sweep changed is listed in the entry; the proof reads green on all three indexes; and one mutation is shown red, the rule stated before the run.
 
+### 22.26 On the operator's ruling of 2026-11-03: a trade whose exit fired is open until the next open sells it, on every index
+The S&P 500's Paper trading and Past picks and the one function brought to what the S&P 400 and 600 do; every count of open trades saying how many sell at tomorrow's open; the row saying so with why; and the sale's price once it has ended.
+
+**Done when** a trade whose exit fired is worked by hand as open and selling, and on the night after its sale as ended with the sale's price, for each of target reached, closed under its stop and time ran out; the one function counts it so; the proof holds each page's count of those selling; the counts are read back on all three indexes; and one mutation is shown red, the rule stated before the run.
+
+### 22.27 On the operator's ruling of 2026-11-03, amending 22.17: the read-only copy's fold of every earlier trade
+Every family's earlier trades on the copy, in the fold paper trading has, each row reading only its stock, family, "an earlier version", the day bought, how it ended or that it is open, and its result; the amendment in 22.17's decision and its prior text under Previously decided.
+
+**Done when** the copy's fold draws a row with no version in its words or its markup where the operator's draws it; the leak check is shown to pass that fold and to refuse one carrying a version; and one mutation is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

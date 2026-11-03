@@ -29,6 +29,8 @@ public static partial class CountsProof
             Same("Home's stocks to buy are the new picks", Read(onHome, @"Tonight's ideas: (\d+) stocks?"), groups.NewPicks),
             Same("Tonight's open trades are the system's", Read(onTonight, @"Of the system's trades, (\d+)"), groups.System.Open),
             Same("Tonight's open trades of this version are this version's", Read(onTonight, @"(\d+) of them this version's"), groups.ThisVersion.Open),
+            Same("Tonight's open trades selling at tomorrow's open are the system's", Read(onTonight, @"(\d+) of them sells? at tomorrow's open", "Of the system's trades"), groups.System.Selling),
+            Same("Paper trading's open trades selling at tomorrow's open are the system's", Read(onPaper, @"The system has bought [^:]*: \d+ open, (\d+) of them sells? at tomorrow's open", "The system has bought"), groups.System.Selling),
             Same("Tonight's new picks are those to buy less the reshuffle", Read(onTonight, @"(\d+) new picks? to buy", "No new picks to buy"), groups.NewPicks),
             Same("Tomorrow's buys count the same new picks", Read(onTonight, @"(\d+) stocks? to buy at [^.,:]+ open, at about tonight's close", "No stock to buy at"), groups.NewPicks),
             Same("Paper trading's bought are the system's", Read(onPaper, @"The system has bought (\d+)"), groups.System.Bought),
@@ -47,7 +49,7 @@ public static partial class CountsProof
     {
         var text = Text(picks);
         var open = Read(text, @"(\d+) in this table") ?? Read(text, @"Still open (\d+)");
-        var buying = Read(text, @"To buy at tomorrow's open (\d+)") ?? Read(text, @"trades?, \d+ open, (\d+) to buy at tomorrow's open", "trades?, \\d+ open\\.");
+        var buying = Read(text, @"To buy at tomorrow's open (\d+)") ?? Read(text, @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?, (\d+) to buy at tomorrow's open", @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?\.");
 
         return
         [

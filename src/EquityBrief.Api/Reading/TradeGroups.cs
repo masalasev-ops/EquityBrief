@@ -73,7 +73,8 @@ public static class TradeGroups
             closed.Count(one => one.Result > 0 || (one.Result is null && one.Trade.Sale > one.Trade.Buy)),
             endings.Count(ending => ending is PaperAccount.ReachedTarget or PaperAccount.OpenedOverTarget),
             endings.Count(ending => ending is PaperAccount.UnderStop or PaperAccount.UnderTrail or PaperAccount.OpenedUnderStop),
-            returns.Length == 0 ? null : returns.Average());
+            returns.Length == 0 ? null : returns.Average(),
+            trades.Count(one => PaperAccount.Selling(one.Trade, night, close) is not null));
     }
 
     // A trade's return on its buy: its sale once it ended, and tonight's close while it is open.

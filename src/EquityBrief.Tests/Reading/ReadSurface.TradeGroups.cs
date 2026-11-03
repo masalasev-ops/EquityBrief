@@ -1,6 +1,7 @@
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Returns;
 using EquityBrief.Web.Marks;
 using Xunit;
 
@@ -140,7 +141,7 @@ public partial class ReadSurface
     {
         var verdicts = CountsProof.Check(RestartGroups(), HomeAfterTheRestart, TonightAfterTheRestart, PaperAfterTheRestart);
 
-        Assert.Equal(14, verdicts.Count);
+        Assert.Equal(16, verdicts.Count);
         Assert.All(verdicts, verdict => Assert.Equal("pass", verdict.Verdict));
     }
 
@@ -202,12 +203,12 @@ public partial class ReadSurface
     public void AnIndexsTradeIsOpenOnceBoughtStaysHeldUntilSoldAndNamesWhichItIs()
     {
         var day = new DateOnly(2026, 11, 2);
-        IndexTradeCell Cell(DateOnly? ended, double? result, string? notBought) => new("X", null, DriftRule.Name, "Earnings drift", day, 100m, 90m, 120m, false, ended, result, null, null, notBought);
+        IndexTradeCell Cell(DateOnly? ended, double? result, string? notBought, string? why = null, decimal? sale = null) => new("X", null, DriftRule.Name, "Earnings drift", day, 100m, 90m, 120m, false, ended, result, null, null, notBought, why, sale);
 
         var waiting = Cell(null, null, EquityBrief.Core.Ledger.TradeFills.Waiting);
         var held = Cell(null, null, null);
-        var selling = Cell(day, null, null);
-        var ended = Cell(day, 1.5, null);
+        var selling = Cell(day, null, null, PaperAccount.TargetReached);
+        var ended = Cell(day, 1.5, null, null, 121m);
         var refused = Cell(null, null, "no open was stored");
 
         Assert.Equal((false, true, false), (waiting.Open, waiting.ToBuy, waiting.Selling));
@@ -216,11 +217,101 @@ public partial class ReadSurface
         Assert.Equal((false, false, false), (ended.Open, ended.ToBuy, ended.Selling));
         Assert.Equal((false, false, false), (refused.Open, refused.ToBuy, refused.Selling));
 
-        var drawn = new MarkRenderer().IndexTrades([waiting, selling, refused], "S&P 400");
+        var drawn = new MarkRenderer().IndexTrades([waiting, selling, refused, ended], "S&P 400");
 
         Assert.Contains("to buy at tomorrow's open", drawn, StringComparison.Ordinal);
-        Assert.Contains("sells at tomorrow's open", drawn, StringComparison.Ordinal);
+        Assert.Contains("<b>sells at tomorrow's open</b>: target reached", drawn, StringComparison.Ordinal);
         Assert.Contains("not bought: no open was stored", drawn, StringComparison.Ordinal);
+        Assert.Contains(", sold at 121.00", drawn, StringComparison.Ordinal);
+    }
+
+    // The operator's ruling of 2026-11-03: the S&P 500's list as the others. A stored outcome and a fill with no sale is open, says
+    // why it sells and is in no finished count; the night after the sale it has ended, with the sale's price.
+    static PickRow FiredRow(string outcome, DateOnly? soldOn = null, decimal? sale = null, double? result = null) =>
+        new(
+            "FIRE", new DateOnly(2026, 10, 28), "swing", 100m, 95m, 110m, true, outcome, new DateOnly(2026, 11, 2), 10.0, 0.3, "Fire Co", 100m, new DateOnly(2026, 11, 2), 111m,
+            Family: DriftRule.Name, FillResult: result, Fill: 101m, FilledOn: new DateOnly(2026, 10, 29), SoldOn: soldOn, Sale: sale);
+
+    [Theory]
+    [InlineData(ForwardReturnSeries.Win, PaperAccount.TargetReached, PickStatus.Target)]
+    [InlineData(ForwardReturnSeries.Loss, PaperAccount.UnderStop, PickStatus.Stopped)]
+    [InlineData(ForwardReturnSeries.Unresolved, PaperAccount.TimeRanOut, PickStatus.Time)]
+    public void TheSAndP500sTradeIsOpenUntilTheNextOpenSellsItAndThenEndedWithTheSale(string outcome, string why, string ended)
+    {
+        var night = new DateOnly(2026, 11, 2);
+        var firing = Assert.Single(PicksScreen.Cells([FiredRow(outcome)], night));
+
+        Assert.Equal((PickStatus.Open, why, night, (DateOnly?)null), (firing.Status, firing.FiredWords, firing.FiredOn, firing.EndedOn));
+
+        var summary = PicksScreen.Summary([firing]);
+
+        Assert.Equal((1, 0, 1), (summary.Open, summary.Finished, summary.Selling));
+        Assert.Contains("1 of them sells at tomorrow's open", new MarkRenderer().PicksCounts(summary).Replace("&#39;", "'", StringComparison.Ordinal), StringComparison.Ordinal);
+
+        var sale = new DateOnly(2026, 11, 3);
+        var sold = Assert.Single(PicksScreen.Cells([FiredRow(outcome, sale, 109.5m, 1.5)], sale));
+
+        Assert.Equal((ended, (string?)null, night, sale, (decimal?)109.5m), (sold.Status, sold.FiredWords, sold.EndedOn, sold.SoldOn, sold.Sale));
+
+        // An earlier night drawn after the sale still reads it as it stood.
+        Assert.Equal(PickStatus.Open, Assert.Single(PicksScreen.Cells([FiredRow(outcome, sale, 109.5m, 1.5)], night)).Status);
+    }
+
+    [Fact]
+    public void WhyAnExitFiredIsReadOffItsClose()
+    {
+        Assert.Equal(PaperAccount.TargetReached, PaperAccount.WhyFired(121m, 120m, 90m, null, 3, 60));
+        Assert.Equal(PaperAccount.UnderStop, PaperAccount.WhyFired(89m, 120m, 90m, null, 3, 60));
+        Assert.Equal(PaperAccount.TimeRanOut, PaperAccount.WhyFired(100m, 120m, 90m, null, 60, 60));
+        Assert.Equal(PaperAccount.UnderTrail, PaperAccount.WhyFired(100m, null, 90m, 5m, 3, 60));
+    }
+
+    [Fact]
+    public void TheOneFunctionCountsAFiredTradeOpenAndSellingUntilItsSale()
+    {
+        var night = new DateOnly(2026, 11, 2);
+        var firing = BoughtTrade("FIRE", new DateOnly(2026, 10, 29), null, null, 120m, 90m) with { FiredOn = night, FiredWhy = PaperAccount.TargetReached };
+        var sold = firing with { Ended = night, Sale = 121m };
+        var later = firing with { FiredOn = night.AddDays(1) };
+
+        var count = TradeGroups.Count([(firing, null), (sold, 2.0), (later, null)], night, (_, _) => 100m);
+
+        Assert.Equal((2, 1, 1), (count.Open, count.Closed, count.Selling));
+    }
+
+    [Fact]
+    public void TheProofHoldsEachPagesSellingCountToTheFunction()
+    {
+        var groups = RestartGroups() with { System = RestartGroups().System with { Selling = 1 } };
+        var tonight = TonightAfterTheRestart.Replace("this version's.", "this version's; 1 of them sells at tomorrow's open.", StringComparison.Ordinal);
+        var paper = PaperAfterTheRestart.Replace(": 2 open,", ": 2 open, 1 of them sells at tomorrow's open,", StringComparison.Ordinal);
+
+        Assert.All(CountsProof.Check(groups, HomeAfterTheRestart, tonight, paper), verdict => Assert.Equal("pass", verdict.Verdict));
+        Assert.Equal(2, CountsProof.Check(groups, HomeAfterTheRestart, TonightAfterTheRestart, PaperAfterTheRestart).Count(verdict => verdict.Verdict == "fail"));
+    }
+
+    // The operator's amendment of 22.17: the copy's fold, each row its stock, family, "an earlier version", the day and its end, no version.
+    [Fact]
+    public void TheReadOnlyCopysFoldDrawsEveryEarlierTradeAndNoVersion()
+    {
+        const string Version = "the live quality rule at a score of 7 in 9, code f6b52da6e0c6";
+        var row = new PaperBoughtView("k", QualityRule.Name, "AUB", "Atlantic Union", new DateOnly(2026, 10, 23), new DateOnly(2026, 10, 26), 40.06m, null, null, false, null, null, null, null, [], null, Version);
+        var page = new PaperPageView([], [], [], [row], new PaperNotBought([]), [], null);
+
+        var copy = new MarkRenderer { Copying = true }.PaperBought(page, new PaperLink("500", null, false, null, null, null));
+        var read = new MarkRenderer().PaperBought(page, new PaperLink("500", null, false, null, null, null));
+
+        Assert.Contains("<td>an earlier version</td>", copy, StringComparison.Ordinal);
+        Assert.Contains("data-ticker=\"AUB\"", copy, StringComparison.Ordinal);
+        Assert.DoesNotContain("f6b52da6e0c6", copy, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-version", copy, StringComparison.Ordinal);
+        Assert.Contains("f6b52da6e0c6", read, StringComparison.Ordinal);
+
+        // The upload's leak check reads the fold with the rest of the page: this copy passes it and the operator's own is refused.
+        var needles = EquityBrief.Web.Cloudflare.SiteCopy.MethodNeedles([Version], [Version]);
+
+        Assert.Empty(EquityBrief.Web.Cloudflare.SiteCopy.Leaks("screens/paper.html", copy, needles));
+        Assert.NotEmpty(EquityBrief.Web.Cloudflare.SiteCopy.Leaks("screens/paper.html", read, needles));
     }
 
     [Fact]

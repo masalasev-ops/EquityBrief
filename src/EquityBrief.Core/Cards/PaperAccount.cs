@@ -33,7 +33,9 @@ public sealed record PaperTrade(
     string? Outcome = null,
     int? Exit = null,
     double? RiskMoves = null,
-    bool Halved = false)
+    bool Halved = false,
+    DateOnly? FiredOn = null,
+    string? FiredWhy = null)
 {
     // The price the trade is sized from: the close its plan was set at where it was set the night before.
     public decimal SizedAt => Planned ?? Buy;

@@ -517,7 +517,10 @@ public sealed record PickRow(
     decimal? Fill = null,
     DateOnly? FilledOn = null,
     string? Past = null,
-    string? Unfilled = null);
+    string? Unfilled = null,
+    // From 22.26 the session the next open sold it at and the price, both none while that sale waits on its open.
+    DateOnly? SoldOn = null,
+    decimal? Sale = null);
 
 // A pick's card as the night stored it: its index, night, family and stock, its place, the plan's prices, the rule it
 // names, the card's values it was read with, its lines and the rule's record as the card read it, none where the rule had
@@ -611,7 +614,7 @@ public sealed record IndexResultRow(string Ticker, string Family, bool Passed, i
 
 // One trade an index's list kept: where it ended by the night, its result before its cost and its cost, each in
 // multiples of its risk, none while open on the night.
-public sealed record IndexTradeRow(string Index, string Family, string Ticker, DateOnly Listed, int Place, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, DateOnly? EndedOn, double? Result, double? Cost, decimal? Fill = null, string? Unfilled = null);
+public sealed record IndexTradeRow(string Index, string Family, string Ticker, DateOnly Listed, int Place, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, DateOnly? EndedOn, double? Result, double? Cost, decimal? Fill = null, string? Unfilled = null, decimal? FiredClose = null, decimal? Sale = null);
 
 // One holding an index's sector heavyweights kept, as of a night: where it ended by the night, why, its result, its
 // size cut's and its cost, each a fraction of its buy and none while it is held on the night, and the lead it was bought
@@ -1534,7 +1537,7 @@ public sealed partial class ReadApi : IComponent
                IFNULL(" + EquityBrief.Core.Families.FamilyList.PlaceOn("g.ticker", "g.session_date") + @", 0),
                " + EquityBrief.Core.Quarters.FundamentalState.PlaceIn("s.state") + @",
                g.rank,
-               tf.result, tf.fill, tf.filled_on, tf.past, tf.reason
+               tf.result, tf.fill, tf.filled_on, tf.past, tf.reason, tf.sold_on, tf.sale
         FROM gate_result g
         JOIN list_rule r ON r.session_date = g.session_date AND r.rule = $filter
         LEFT JOIN filter_version v ON v.version = g.version
@@ -1569,7 +1572,7 @@ public sealed partial class ReadApi : IComponent
                IFNULL(p.place, 0),
                0,
                0,
-               ptf.result, ptf.fill, ptf.filled_on, ptf.past, ptf.reason
+               ptf.result, ptf.fill, ptf.filled_on, ptf.past, ptf.reason, ptf.sold_on, ptf.sale
         FROM family_pick p
         JOIN family_result pr ON pr.session_date = p.session_date AND pr.ticker = p.ticker AND pr.family = p.family
         LEFT JOIN gate_result pg ON pg.ticker = p.ticker AND pg.session_date = p.session_date
@@ -3768,7 +3771,9 @@ public sealed partial class ReadApi : IComponent
                 Price(23),
                 Day(24),
                 reader.IsDBNull(25) ? null : reader.GetString(25),
-                reader.IsDBNull(26) ? null : reader.GetString(26)));
+                reader.IsDBNull(26) ? null : reader.GetString(26),
+                Day(27),
+                Price(28)));
         }
 
         return rows;
@@ -4522,7 +4527,9 @@ public sealed partial class ReadApi : IComponent
                CASE WHEN t.ended_on <= $on THEN t.ended_on END,
                CASE WHEN t.ended_on <= $on THEN f.result END,
                CASE WHEN t.ended_on <= $on THEN t.cost END,
-               f.fill, f.reason
+               f.fill, f.reason,
+               CASE WHEN t.ended_on <= $on THEN (SELECT b.close FROM bar b WHERE b.ticker = t.ticker AND b.session_date = t.ended_on) END,
+               CASE WHEN f.sold_on <= $on THEN f.sale END
         FROM index_family_trade t
         {Filled("index_family_trade", "t", "t.index_code", "t.family", "session_date")}
         WHERE t.index_code = $index AND t.session_date <= $on
@@ -4561,7 +4568,9 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(11) ? null : reader.GetDouble(11),
                 reader.IsDBNull(12) ? null : reader.GetDouble(12),
                 Price(13),
-                reader.IsDBNull(14) ? null : reader.GetString(14)));
+                reader.IsDBNull(14) ? null : reader.GetString(14),
+                Price(15),
+                Price(16)));
         }
 
         return rows;

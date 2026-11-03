@@ -62,8 +62,8 @@ public sealed partial class SinglePageApp
             ? Invariant($"<p class=\"paper-line\" data-size=\"{(settings is null ? "example" : "kept")}\"><span>Account <b>${used.Size:#,0}</b></span><span>Risk a trade <b>{used.Risk:0.##}%</b></span><span>Most in one stock <b>{used.Cap * 100:0.##}%</b></span><span>Each rule trades its own copy of this account.</span></p>")
             : "<p class=\"paper-line degraded\">No account is kept: set the three to walk the accounts.</p>";
 
-        // From 22.17 the read-only copy draws each family's live or provisional account alone: no variant, no earlier
-        // version, no setting and no trade of the operator's.
+        // The read-only copy draws each family's live or provisional account alone, with its earlier trades in their fold: no
+        // variant, no version named, no setting and no trade of the operator's.
         // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
         var plain = marks.Copying;
 

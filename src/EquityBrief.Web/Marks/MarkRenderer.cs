@@ -225,7 +225,23 @@ public sealed record PickCell(
     bool Waiting = false,
     DateOnly? FilledOn = null,
     // The sessions the trade is given, which paper trading draws an open trade's sessions held against.
-    int? Cap = null);
+    int? Cap = null,
+    // From 22.26 a trade whose exit fired and whose sale the next open has not made is open: the status it fired as and when;
+    // and once sold, the session and the price of its sale.
+    // see: Every count of trades names its group and one function works the three groups
+    string? FiredAs = null,
+    DateOnly? FiredOn = null,
+    DateOnly? SoldOn = null,
+    decimal? Sale = null)
+{
+    public string? FiredWords => FiredAs switch
+    {
+        null => null,
+        PickStatus.Target => EquityBrief.Core.Cards.PaperAccount.TargetReached,
+        PickStatus.Time => EquityBrief.Core.Cards.PaperAccount.TimeRanOut,
+        _ => Trailing ? EquityBrief.Core.Cards.PaperAccount.UnderTrail : EquityBrief.Core.Cards.PaperAccount.UnderStop,
+    };
+}
 
 // One stock the swing filter passed on a night while a trade the live list recommended for it on an
 // earlier night is still open, with that trade as Past picks draws it as of the night.
@@ -288,7 +304,8 @@ public sealed record PicksSummary(
     // or finished, and in neither the share nor the average.
     // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     int Provisional = 0,
-    int ToBuy = 0)
+    int ToBuy = 0,
+    int Selling = 0)
 {
     public int Finished => Target + Stopped + Time;
 
@@ -7320,7 +7337,7 @@ public sealed partial class MarkRenderer : IComponent
             // The status, and on a listing that repeated a trade still open, the mark saying so: the row is
             // drawn as the night stored it and counted in no total.
             // see: A repeat listing made before the rule reached the filter is marked and counted once
-            table.Append(Invariant, $"<td class=\"status\">{PickStatus.Words(row.Status)}{(row.RepeatOf is { } repeated ? Formatted($"<span class=\"listed-again\" data-repeat-of=\"{DayOf(repeated)}\">listed again while the trade from {DayOf(repeated)} was open</span>") : string.Empty)}</td>");
+            table.Append(Invariant, $"<td class=\"status\">{(row.FiredWords is { } fired ? Formatted($"{Escaped(TradeGroupsView.SellsWords)}: {Escaped(fired)}") : PickStatus.Words(row.Status))}{(row.Sale is { } sale ? Formatted($", sold at {Price(sale)}") : string.Empty)}{(row.RepeatOf is { } repeated ? Formatted($"<span class=\"listed-again\" data-repeat-of=\"{DayOf(repeated)}\">listed again while the trade from {DayOf(repeated)} was open</span>") : string.Empty)}</td>");
             table.Append(Invariant, $"<td class=\"r num\" data-sessions=\"{(row.Sessions is { } counted ? counted.ToString(Invariant) : "none")}\">{(row.Sessions is { } sessions ? sessions.ToString(Invariant) : "<span class=\"degraded\">not counted</span>")}</td>");
             table.Append(row.Status == PickStatus.Open
                 ? "<td class=\"r res open\" data-result=\"open\">open</td>"
@@ -7353,7 +7370,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var (words, count) in new[] { ("To buy at tomorrow's open", summary.ToBuy), ("Still open", summary.Open), ("Finished", summary.Finished), ("Reached target", summary.Target), ("Stopped out", summary.Stopped), ("Ran out of time", summary.Time) })
         {
-            counts.Append(Invariant, $"<div><dt>{words}</dt><dd>{count}</dd></div>");
+            counts.Append(Invariant, $"<div><dt>{words}</dt><dd>{count}{(words == "Still open" && summary.Selling > 0 ? Formatted($"<span class=\"grp\">{Escaped(TradeGroupsView.Selling(summary.Selling))}</span>") : string.Empty)}</dd></div>");
         }
 
         counts.Append("</dl>");
@@ -8003,7 +8020,7 @@ public sealed partial class MarkRenderer : IComponent
     // tiles Past picks draws: how many it listed, how many are open and how many decided against the count a share waits on.
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     public string TradesLine(PicksSummary summary, string picks) =>
-        Formatted($"<p class=\"run-trades\" data-listed=\"{summary.Listed}\" data-open=\"{summary.Open}\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\" data-to-buy=\"{summary.ToBuy}\">The pullback's trades under every version, part of {TradeGroupsView.SystemWords}: {summary.Listed - summary.ToBuy} bought, {summary.Open} still open, {summary.Decided} decided of the {summary.MinimumDecided} a share waits on{(summary.ToBuy > 0 ? Formatted($", and {summary.ToBuy} {TradeGroupsView.ToBuyWords}") : string.Empty)}. <a href=\"{Escaped(picks)}\">Open their trade log &#8594;</a> This version's alone are on <a href=\"#/paper\">Paper trading</a>.</p>");
+        Formatted($"<p class=\"run-trades\" data-listed=\"{summary.Listed}\" data-open=\"{summary.Open}\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\" data-to-buy=\"{summary.ToBuy}\">The pullback's trades under every version, part of {TradeGroupsView.SystemWords}: {summary.Listed - summary.ToBuy} bought, {summary.Open} still open{(summary.Selling > 0 ? ", " + TradeGroupsView.Selling(summary.Selling) : string.Empty)}, {summary.Decided} decided of the {summary.MinimumDecided} a share waits on{(summary.ToBuy > 0 ? Formatted($", and {summary.ToBuy} {TradeGroupsView.ToBuyWords}") : string.Empty)}. <a href=\"{Escaped(picks)}\">Open their trade log &#8594;</a> This version's alone are on <a href=\"#/paper\">Paper trading</a>.</p>");
 
     // Is the list finding new stocks, section 15.10's fifth region: a bar for each evening up to the night, the
     // part new that evening and the part also on the list the evening before, and the night's split in words.

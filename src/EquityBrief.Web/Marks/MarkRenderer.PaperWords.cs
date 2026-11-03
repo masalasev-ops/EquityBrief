@@ -67,7 +67,7 @@ public sealed partial class MarkRenderer
 
         return page.Open.Count + page.Closed.Count == 0
             ? "No live setup has bought a trade under its current version yet."
-            : Formatted($"This version's trades: {Counted(page.Open.Count, "trade is", "trades are")} open and {Counted(page.Closed.Count, "has", "have")} closed, the newest bought on {Short(newest!.Value)}.");
+            : Formatted($"This version's trades: {Counted(page.Open.Count, "trade is", "trades are")} open{(page.Open.Count(trade => trade.Selling is not null) is > 0 and var selling ? ", " + TradeGroupsView.Selling(selling) + "," : string.Empty)} and {Counted(page.Closed.Count, "has", "have")} closed, the newest bought on {Short(newest!.Value)}.");
     }
 
     public static string PaperVariantsSaid(PaperPageView page, string family)

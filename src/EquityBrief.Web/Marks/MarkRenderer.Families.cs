@@ -188,13 +188,15 @@ public sealed record IndexTradeCell(
     double? Result,
     double? Cost,
     double? AfterCost,
-    string? NotBought = null)
+    string? NotBought = null,
+    string? FiredWhy = null,
+    decimal? Sale = null)
 {
     // A trade is open only once bought: a listing still waiting on the next session's open is to buy.
     public bool ToBuy => EndedOn is null && NotBought == EquityBrief.Core.Ledger.TradeFills.Waiting;
 
     // A trade whose exit fired on a close is still held until the next session's open sells it, and its result is priced then.
-    public bool Selling => EndedOn is not null && NotBought is null && Result is null;
+    public bool Selling => FiredWhy is not null;
 
     public bool Open => (EndedOn is null && NotBought is null) || Selling;
 }
@@ -245,10 +247,10 @@ public sealed partial class MarkRenderer
             body.Append(PriceCell("buy", row.Entry, null));
             body.Append(PriceCell("stop", row.Stop, null));
             body.Append(PriceCell("target", row.Target, row.Trailing ? "trailing" : null));
-            body.Append(row.Selling
-                ? "<td><b>sells at tomorrow's open</b></td>"
+            body.Append(row.FiredWhy is { } why
+                ? Formatted($"<td><b>{Escaped(TradeGroupsView.SellsWords)}</b>: {Escaped(why)}</td>")
                 : row.EndedOn is { } ended
-                ? Formatted($"<td>ended {DayOf(ended)}</td>")
+                ? Formatted($"<td>ended {DayOf(ended)}{(row.Sale is { } sale ? Formatted($", sold at {Price(sale)}") : string.Empty)}</td>")
                 : row.ToBuy ? Formatted($"<td>{Escaped(TradeGroupsView.ToBuyWords)}</td>")
                 : row.NotBought is { } refused ? Formatted($"<td>not bought: {Escaped(refused)}</td>")
                 : "<td><b>open</b></td>");

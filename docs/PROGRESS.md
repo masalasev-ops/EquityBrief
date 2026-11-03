@@ -14805,10 +14805,58 @@ Mutation:   chosen for the groups, the ending, the night, the proof and to buy; 
             read off the sale; a trade bought after the night counted; earlier versions out of the system's; the proof passing any
             count; a page drawing none passed; a listing waiting counted open; a trade selling counted ended; other exits unsaid. The
             proof's first mutation did not compile and its red came from the build before; made again so it built, red.
-Carried:    the read-only copy's own pages read after the merge from main; the S&P 500 counts a fired exit as ended while the S&P
-            400 and 600 count it held until sold, put to the operator.
+Carried:    the read-only copy's own pages read after the merge from main.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
+
+### 22.26 ruling - a fired exit held until sold on every index, and the read-only copy's fold of every earlier trade
+
+Not a checkpoint entry: it records the operator's two rulings of 2026-11-03 UTC and lands nothing.
+Ruled:      word for word in `prompts/2026-11-03-22.26-fired-exit-and-copy-fold-rulings.md`, committed with this entry: a trade
+            whose exit fired tonight is open until the next open sells it, on every index; and the read-only copy shows every
+            earlier trade in Paper trading's fold, amending 22.17, the decision's prior text under Previously decided.
+Remedy:     21.21's, run from main ff60770d after PR 625 merged on the operator's word, 13:48 to 13:50 UTC with no writer running:
+            all 17 steps, 66 registered again, the same 66 as the 16.3 remedy; 57 replays, 18 carried on and 39 restarted, against 17 and
+            40 at the 16.3 remedy. No request and no model call. 5152 restarted from main's Release build.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
+
+### 22.26 - a trade whose exit fired is open until the next open sells it, on every index, and has ended the night after with the sale's price   2026-11-03
+
+Built:      the S&P 500's pick cell reads the sale's session and price, open while the sale waits, saying why it sells; a trade's fired
+            day read on the rows paper trading walks; the one function's count of those selling; each count of open trades on
+            Tonight, paper trading, Past picks and the Run page adding how many sell at tomorrow's open, and each row saying so with
+            why; an ended row its sale's price. A monthly book sells at its rebalance's close and a dip's step writes its end with
+            its sale, so neither waits. No rule's version moves: the read surface alone reads it.
+Measured:   read on night 2026-11-02 over the store. S&P 500: Past picks 39 still open, 5 of them selling, 10 at their target, 17 at their
+            stop, 27 finished, where it drew 34, 14, 18 and 32; Paper 84 bought, 51 open, 5 of them selling, 6 by other exits; Tonight 51,
+            8 this version's, 5 selling, 4 and 1 what fired. S&P 400: 46 open, 2 selling, Past picks 31 open with 2 of them selling
+            and 3 to buy. S&P 600: 26 open, 1 selling. `/proof/counts` passes on all three.
+Fixture:    target reached, closed under its stop and time ran out each worked by hand as open and selling, then ended the night after
+            with the sale's price, and an earlier night drawn after the sale reading it as it stood.
+Tests:      counted at this pull request's last entry.
+Mutation:   chosen for selling and the count; predicted first, each red at its test: a fired trade read as ended, at the S&P 500's
+            worked trade; the count of those selling dropped, at the function's test; a trade fired after the night counted, at the
+            same; the proof's selling rule passing any count, at the proof's test.
+Carried:    the paper tiles keep their own count of each account's open positions, the page's two lines saying how many sell.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
+
+### 22.27 - the read-only copy's fold of every earlier trade, each row with no version, amending 22.17   2026-11-03
+
+Built:      the fold paper trading has drawn on the copy too, every family's earlier trades in it, Quality's and Fundamentals' among
+            them; on the copy a row reads its stock, family, "an earlier version", the day bought, how it ended or that it is open
+            and its result, with no version in its words, its title or its markup. The leak check reads the fold with the rest of
+            the page. 22.17's decision amended, its prior clause under Previously decided.
+Fixture:    a row carrying a version: the copy's fold passes the leak check and draws none of it, and the operator's draws it and is
+            refused, worked over the check's own needles.
+Tests:      3163, from 3132 at 22.24, over 22.25 to 22.27.
+Mutation:   chosen for the row and the fold; predicted first, each red at its test: the fold's row naming the version on the copy; the
+            fold hidden on the copy again. A first run's commit failed on the intermittent object write, so its restores dropped
+            five files of uncommitted work, reapplied from the session and committed before the mutations were run again.
+Carried:    the copy's own pages read after the merge from main.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
-            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3156 of 3156 tests ran
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3163 of 3163 tests ran
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
             `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
             placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
