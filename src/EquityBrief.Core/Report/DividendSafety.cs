@@ -157,6 +157,8 @@ public static class DividendSafety
     // dividend was held level where the kept years do not reach a comparison.
     public const int WholeYearsToCompare = 2;
 
+    public const string TooFewYearsToCompare = "fewer than two whole years of its dividends are kept to compare";
+
     public static int? InARow(IReadOnlyList<DividendYear> years) =>
         years.Count(year => year.Whole) < WholeYearsToCompare
             ? null

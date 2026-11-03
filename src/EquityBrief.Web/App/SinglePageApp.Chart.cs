@@ -244,7 +244,7 @@ public sealed partial class SinglePageApp
                     : figure.Href is { } href
                         ? FormattableString.Invariant($"<a href=\"{Escaped(href)}\">{Whole(Escaped(figure.Shown))}</a>")
                         : Whole(Escaped(figure.Shown));
-                var classes = string.Join(' ', new[] { figure.Hue, figure.Shown == NotStored ? "degraded" : null }.Where(part => part is not null));
+                var classes = string.Join(' ', new[] { figure.Hue, figure.Shown == NotStored || figure.Shown.StartsWith(NotStoredBecause(string.Empty), StringComparison.Ordinal) ? "degraded" : null }.Where(part => part is not null));
 
                 grid.Append(FormattableString.Invariant($"<dt>{Escaped(figure.Label)}</dt><dd{(classes.Length > 0 ? FormattableString.Invariant($" class=\"{classes}\"") : string.Empty)}{(figure.Value is { } value ? FormattableString.Invariant($" data-value=\"{Escaped(value)}\"") : string.Empty)}>{shown}</dd>"));
             }
@@ -330,6 +330,8 @@ public sealed partial class SinglePageApp
 
     // What a figure EquityBrief fetches and holds none of for a stock says.
     public const string NotStored = "not stored";
+
+    public static string NotStoredBecause(string reason) => NotStored + ": " + reason;
 
     // What each dividend figure says for a company paying none.
     // see: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
