@@ -319,6 +319,18 @@ public partial class ReadSurface
         Assert.Matches(@"(?m)^\.tbl-wrap\{overflow-x:auto\}", Stylesheet.Css);
     }
 
+    // 22.19: a brief's chip wraps, since a family tag does not and "one step short: did not jump on the report day" laid a
+    // phone's page out past its width.
+    [Fact]
+    public void ABriefsChipWrapsInsideItsRow()
+    {
+        var css = Regex.Replace(Stylesheet.Css, @"/\*.*?\*/", string.Empty, RegexOptions.Singleline);
+
+        Assert.Matches(@"(?m)^\.fam-tag\{[^}]*white-space:nowrap", css);
+        Assert.Matches(@"(?m)^\.brief-chip\{white-space:normal;max-width:100%\}$", css);
+        Assert.True(css.IndexOf(".brief-chip{", StringComparison.Ordinal) > css.IndexOf(".fam-tag{", StringComparison.Ordinal), "The chip's rule must follow the tag's to override it.");
+    }
+
     // The 17.2 correction: a select is as wide as its longest choice, and each of the S&P 500's cards picks its rule in
     // one whose choices are the rules' words, so at a phone's 390 pixels its Tonight was laid out 1,229 wide, the
     // heavyweights' picker alone 1,198. Every select is held to what holds it, and no rule a select reads gives it a width
