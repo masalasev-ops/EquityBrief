@@ -8093,7 +8093,6 @@ public sealed partial class MarkRenderer : IComponent
     // runs refused or failed by why, and each ask no run of the quote job answered, by its name and instant. A night whose
     // session's pages asked none says so, and a night on no session draws nothing.
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
-    // owes: The day's live quotes stay under their cap on the first five sessions
     static string QuotesParagraph(EquityBrief.Web.App.QuoteRunsView? quotes)
     {
         if (quotes is null)
