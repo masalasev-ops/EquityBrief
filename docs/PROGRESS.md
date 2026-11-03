@@ -14747,3 +14747,30 @@ Mutation:   predicted first and each red: the filter removed, at its test; the l
 Carried:    the paid model's first drafts at ten reports after the merge, on the operating row.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
             with the figures it states.
+
+### 22.24 - a company that re-filed under a new SEC number carries its predecessor's stored facts up to the day its new filer's first report starts   2026-11-03
+
+Built:      `FilerSuccessions`, the 17 stated with the day read off each new filer's first report; `filings --join-predecessors`,
+            copying a predecessor's facts under the new filer in the filings refresher's own table, a fact the new filer states
+            standing; its remedy file. No request: the facts stand in the store already. No source a rule's version pins moves, and
+            no rule restarts. Decision written, the runbook's command, the worker's help.
+Measured:   read-only on 2026-11-03, each company's newest row naming its new filer, each stock with the day its join stops, the
+            facts before that day, some of which the new filer already states, and the years they reach before its own earliest:
+            XOM 2026-04-01, 576, 10.4. BLK 2024-07-01, 448, 6.9. BG 2023-10-01, 621, 6.9. FUN 2024-04-01, 497, 6.9. NWE 2023-07-01,
+            546, 6.9. PNFP 2025-01-01, 245, 6.8. VNOM 2025-07-01, 533, 6.8. UNIT 2025-07-01, 459, 6.7. NE 2022-07-01, 421, 5.9. QDEL
+            2022-04-04, 447, 5.9. APO 2022-01-01, 265, 5.8. MRVL 2021-01-31, 406, 5.0. APA 2021-01-01, 387, 4.9. DINO 2022-01-01,
+            490, 4.9. TPL 2020-10-01, 198, 3.8. LQDA 2020-01-01, 154, 2.8. FERG 2023-08-01, 124, 2.0.
+Evidence:   the SEC's submissions of 40 stocks holding a second filer, read that day, and the figures both filers state before the
+            changeover, within a tenth of a per cent. Clean, every figure: BG, BLK, DINO, FERG, FUN, LQDA, MRVL, NE, NWE, PNFP and XOM.
+            Rounding and small restatements: APA 1 of 38, APO 4 of 28, TPL 5 of 35, UNIT 11 of 30. VNOM 11 of 48, among them net
+            income of 2021 and 2022 at 57.9 million and 151.7 million against the new filer's 257 and 655, the new filer's being
+            before what other holders took. QDEL holds no figure in common, joined on its 8-K12B. Left off, each named in the decision: DOW,
+            AESI, OZK, the unrelated numbers and the new filers with long histories of their own.
+Tests:      3132, from 3128: the first report's start worked by hand, the list, the join and its second run, the refusal.
+Mutation:   predicted first and each red: copying past the day, at the join's test; another filer no longer refused, at the refusal;
+            the longest period read for the shortest, at the start's test. One mutation's revert also dropped the uncommitted join
+            from one file, restored from the session and committed before the next.
+Carried:    the remedy's counts, recorded after the merge; the ledger's history reads the joined facts once built again, put to
+            the operator with its time.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request,
+            with the figures it states.
