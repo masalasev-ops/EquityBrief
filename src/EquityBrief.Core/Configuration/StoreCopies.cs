@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Configuration;
 // data root where it names none; each copy named by the instant it was made, which orders them; and the folder
 // as a store row carries it, relative to the data root with forward separators, since no absolute path is
 // written into a store row, or by its name alone where it lies on a volume no relative path reaches.
-// see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+// see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 public static class StoreCopies
 {
     public const string FolderKey = "EquityBrief:Backup:Folder";
@@ -20,7 +20,7 @@ public static class StoreCopies
     public const string StartStage = "store-backup-started";
 
     // How many copies are kept, the newest.
-    public const int Kept = 3;
+    public const int Kept = 2;
 
     // How long a copy waits for the night, its drain and its labeller before it gives up, which ends it well
     // before the next night is built.
@@ -28,7 +28,7 @@ public static class StoreCopies
 
     // How long after a copy started its ending row is waited for before the copy is read as ended before it
     // finished: its longest wait, and an hour for the copy itself and its reading back.
-    // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
     public static readonly TimeSpan EndsBy = WaitsAtMost + TimeSpan.FromHours(1);
 
     // A copy written and not yet checked and named, which a copy that did not finish leaves behind.

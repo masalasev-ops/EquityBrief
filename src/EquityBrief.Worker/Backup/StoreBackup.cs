@@ -18,14 +18,14 @@ public sealed record StoreBackupOutcome(string Outcome, string? Copy, string Det
 // instant a labeller started with it could end has passed, its time limit counted over the hours outside any peak
 // window a paid labeller waited through, none on the local model, then holds the drain's lock so no pass writes beneath it, copies the store page by
 // page through SQLite's own backup into a file of its own in the copies' folder, names it by its instant once
-// written, and opens and reads it against the store. It keeps the newest three of the copies its own rows
+// written, and opens and reads it against the store. It keeps the newest two of the copies its own rows
 // name, opening and reading each before any older one is removed, and removes nothing where one of them does
 // not open and read; a copy another store made in the same folder is neither counted nor removed. It gives up
 // waiting after twenty hours, well before the next night is built. It writes two rows of its own on the run
 // log and nothing else: one as it starts, so a copy ended before it finished leaves a start with no end, and
 // one as it ends, naming the folder relative to the data root and never as an absolute path, and naming the
 // copies its own earlier rows kept that are gone from the folder, removed by no copy.
-// see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+// see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 // see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
 // see: The operator's store is never deleted, and every site that removes a file is stated where a check holds it
 // see: The news labeller waits for the local model's lock and stops before the local run's next slot, its time limit counted from its start
@@ -171,7 +171,7 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
         }
 
         // The copies this store's own rows name, and the ones its newest ending row kept that are gone from the
-        // folder before this copy is counted: removed by no copy, since a copy removes only beyond the three it
+        // folder before this copy is counted: removed by no copy, since a copy removes only beyond the two it
         // keeps and names each removal, so a copy gone unnamed went by another hand, and the row says so.
         var (own, lastKept) = await OwnCopiesAsync(cancellation);
         var missing = lastKept.Where(kept => !File.Exists(Path.Combine(folder, kept))).ToArray();
@@ -215,7 +215,7 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             }, name, cancellation);
         }
 
-        // The newest three of this store's own copies kept, each opened and read before any older one is removed.
+        // The newest two of this store's own copies kept, each opened and read before any older one is removed.
         own.Add(name);
 
         var copies = StoreCopies.In(folder).Where(one => own.Contains(Path.GetFileName(one.File))).ToArray();

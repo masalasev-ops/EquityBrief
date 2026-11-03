@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Reading;
 // correction of 2026-10-08 a copy started since that has written no end, waiting or copying within a copy's longest
 // wait and an hour and ended before it finished past it, the copies the newest copy found gone from its folder that
 // no copy removed, and the checklist's two items on the copies.
-// see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+// see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 public partial class ReadSurface
 {
     static StoreBackupRow StartedRow(string runId, string startedAt, bool afterTheLabeller = true) =>

@@ -7,7 +7,7 @@ namespace EquityBrief.Tests.Checks;
 // labeller, its own row after the request saying the off-peak run labels tonight's list, with no model call on it,
 // and a night run again for an earlier session says its list is not tonight's; and, from the operator's ruling of
 // 2026-10-02, the store's copy last, which waits for no labeller since the night starts none.
-// see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+// see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
 // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends
 public partial class NightlyRun

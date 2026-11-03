@@ -14564,6 +14564,23 @@ Mutation:   each predicted before its run by this rule, every property this pull
             universe's word; the event book's word. Survived as predicted, equivalent: the filter counts' replay reading every
             kind, since it reads a plan's first tranche and no setup of the second book.
 Carried:    none. The remedy above is owed to the operator's store and is not a carried obligation of the build.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.5 ruling - the newest two of the store's copies are kept, where three were   2026-11-03
+
+Not a checkpoint entry: it records the operator's ruling of 2026-11-03 UTC and the change it carries, and lands nothing.
+Ruled:      "i want the copies to be limited to 2 from now on. I do not need large number of copies and then nightly running
+            for hours and hours". They were told it shortens the copy and not the night, which ends before the copy starts.
+Built:      `StoreCopies.Kept` is 2. A decision superseding the one naming three, its citations moved; section 17's row, the
+            step, the component row and the failure row; the runbook, whose half a gigabyte a copy read 5.97 billion bytes
+            that night; the schema's citation; the roster's row; the guide; prior text in the changelog. The next copy after
+            the merge removes the oldest beyond two and names each removal on its row.
+Tests:      the copy's rotation tests restated at two, each case worked again by hand.
+Mutation:   `Kept` back to 3 and down to 1, each predicted before its run, the property being how many are kept: both red at
+            the two worked rotation tests and at the pin of section 17. The test over none to five standing reads the
+            constant and stayed green, as predicted, so what it holds is the rotation's shape and not the count.
+Carried:    none.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
             last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3097 of 3097 tests ran
             with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never

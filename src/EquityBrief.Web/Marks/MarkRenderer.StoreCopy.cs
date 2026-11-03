@@ -28,7 +28,7 @@ public sealed partial class MarkRenderer
     // kept, the newest attempt that made none with why, a copy started since that has written no end, waiting or
     // copying still or ended before it finished, the copies the newest copy found gone from its folder that no
     // copy removed, or that no copy is recorded yet.
-    // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
     public string StoreCopyLine(StoreCopyView? copy)
     {
         if (copy is null)

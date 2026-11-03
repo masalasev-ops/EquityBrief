@@ -2997,7 +2997,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Store copies")] = new Scoped(
             Verdict.Pass,
-            "over a constructed store the copy is made, opened and read, the newest three kept with each read before an older one is removed, each wait worked by a clock the copy's own wait moves, and the figures read off the document against the constants",
+            "over a constructed store the copy is made, opened and read, the newest two kept with each read before an older one is removed, each wait worked by a clock the copy's own wait moves, and the figures read off the document against the constants",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A store copy that does not open and read")] = new Scoped(
             Verdict.Pass,
