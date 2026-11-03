@@ -14518,3 +14518,54 @@ Queue:      done, PR 623; in progress, this pull request; next, a fresh session'
             sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 22.16 - correction: a Home bar rounding to nought draws no sign and no hue   2026-11-03
+
+Not a checkpoint entry: it corrects what 22.16 carried into shipped source, and lands nothing.
+Corrected:  `Bar` drew "+0.0%" or "-0.0%" in a hue. It draws "0.0%" in none.
+Tests:      five cases of one theory.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 19.11 - correction: the chart grid's Raised in a row says where its run stopped and why it reads none   2026-11-03
+
+Not a checkpoint entry: it corrects what 19.11 carried into shipped source, and lands nothing.
+Corrected:  the grid draws the report's own two reasons: "0 years, not compared past 2025: 2 payments against 1", and "not
+            stored: fewer than two whole years of its dividends are kept to compare" for a payer. Both pages read one sentence,
+            `DividendSafety.TooFewYearsToCompare`.
+Tests:      the chart figures test extended; a case worked by hand.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 16.3 - correction: the earnings soon reason, the second book and every page's next report read the calendar's earnings alone   2026-11-03
+
+Not a checkpoint entry: it corrects what 16.3 left reading the calendar when it stored a second kind, and lands nothing.
+Corrected:  the shortlist builder's read and the ladder builder's two name the earnings kind, so an ex-dividend date fires no
+            earnings soon, keys no setup and is no past print. `NextReportsAsync` replaces the every-name read behind the
+            universe's sessions, Close to buy and the watch list; the chart page reads `NextReportAsync` and says "not
+            announced" where none is dated. The filter counts' replay reads the same. The name page's next dated event and
+            the facts file's stay any kind and say so. Two decisions, one superseding the second book's; the architecture's
+            paragraph with prior text in the changelog; the claim's note. The guide names none of these reads.
+Pins:       the ladder rules' code version moved to 2328b7bf81b1 and 12 evaluator versions moved, for 16 evaluators.
+Remedy:     `tools/remedies/2026-11-03-16.3-the-reports-alone.txt`, owed before the next night and run only on the operator's
+            word: the 8 windows closed and opened again, the 66 of 137 standing candidates registered again. No request to the
+            provider and no model call. Its window commands are those of the 12.2 remedy, read against the 8 open rows.
+Measured:   read-only over the store after the night of 2026-11-02. No pick reads what moved: `fired_count` decides a list only
+            on a night no family or filter drew, and no source under the core or the worker names the reason outside its own
+            series. The 1,648 stored reasons of the decision stand as written.
+Tests:      two new, each with an ex-dividend date nearer than the report, and the ones naming the old words updated.
+Mutation:   each predicted before its run by this rule, every property this pull request states at one site each, in four
+            batches of disjoint tests, reverted, clean. Red: the reason's read; the second book's next report, AAPL's setups
+            moving from 2026-10-29 to the ex-date; its past prints, AAPL's rule reading 2026-07-30 where it read 2026-04-30; the
+            every-name read; the chart's read; "not announced"; Home's rounding, red at nought as well as either side of it;
+            Home's third section; the run's stop; the too few years reason; the degraded class on a reason; the plan's word; the
+            universe's word; the event book's word. Survived as predicted, equivalent: the filter counts' replay reading every
+            kind, since it reads a plan's first tranche and no setup of the second book.
+Carried:    none. The remedy above is owed to the operator's store and is not a carried obligation of the build.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3097 of 3097 tests ran
+            with none failed, migrations 0 to 119 with none pending, schema version 119, against `data-ci` and never
+            `data`; the phase report 65 tables, 1498 claims, 1498 passing, none out of scope and none unexamined, 1513
+            placements and verdicts reconciled against a floor of 34, 45 checks on the roster run and passed.
