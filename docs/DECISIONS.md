@@ -1455,6 +1455,10 @@ Supersedes **The store is copied once the night and every process it started hav
 
 ## Previously decided
 
+**The chart page's scale fits the candles, the plan's lines and the levels shown, and an average never widens it** The name this decision carried in 22.34's first commit, written with two commas. It stands word for word under the name with one (see: The chart page's scale fits the candles and the plan's lines and the levels shown, and an average never widens it).
+
+**The chart page draws a box beside the candle under the pointer, a tap or the arrow keys, and rests on the newest candle's line** The name this decision carried in 22.35's first commit, written with two commas. It stands word for word under the name with one (see: The chart page draws a box beside the candle under the pointer or a tap or the arrow keys, and rests on the newest candle's line).
+
 **A name the file stops carrying asks nothing on the nights it is not carried** Prior text of the clause of **A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing** the operator's answers of 2026-11-04 amended: "Sessions after the newest stored bar are a shorter history and not a gap, so a name the file stops carrying asks nothing on the nights it is not carried and is asked for once a later bar makes them a gap." It left HOS seven sessions behind and reading ok.
 
 Superseded on 2026-11-04 by the amended clause of that decision, whose name stands, and by the rule on a member behind the night (see: A member holding a copied candle or behind the night is asked for its year again, and stays suspect until an answer clears it).
