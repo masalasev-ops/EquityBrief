@@ -30,6 +30,7 @@ public sealed class ChartAverager : IComponent
         [
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.ChartAverage, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -63,7 +64,7 @@ public sealed class ChartAverager : IComponent
 
     const string WarmUpFrom = @"
         SELECT session_date, high, low, close, volume FROM pulled_bar
-        WHERE ticker = $ticker AND pull = $pull AND session_date < $first AND session_date >= $covered
+        WHERE ticker = $ticker AND pull = $pull AND session_date < $first AND session_date >= $covered AND " + EquityBrief.Core.Chart.SessionMarking.FromItsStart + @"
         ORDER BY session_date DESC
         LIMIT $count;
     ";

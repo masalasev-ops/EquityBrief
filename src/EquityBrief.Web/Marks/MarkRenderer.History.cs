@@ -15,13 +15,15 @@ public sealed record LadderBand(decimal LowEdge, decimal HighEdge, string Role, 
 // beneath the pointer and the short name it is drawn with at the line's end.
 public sealed record LongViewLevel(decimal LowEdge, decimal HighEdge, string Role, string Says, string Label);
 
-// One date the chart marks beneath a session's candle: a report, the session its reaction is read on, or an ex-dividend
-// date, with what the mark says beneath the pointer.
+// One date the chart marks beneath a session's candle: a report, the session its reaction is read on, an ex-dividend date or
+// a session the operator marked a bad print, with what the mark says beneath the pointer.
 public sealed record ChartEvent(DateOnly Session, string Kind, string Says)
 {
     public const string Report = "report";
 
     public const string ExDividend = "ex-dividend";
+
+    public const string BadPrint = "bad print";
 }
 
 // What the earnings reactions, the chart's marks, the long view, the moves' causes, the ladder figure and the plan's

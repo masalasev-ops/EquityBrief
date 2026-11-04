@@ -1,0 +1,17 @@
+# The remedy of 22.38 and 22.40, the operator's second answers of 2026-11-04 on the chart audit, each stock read in its filings at the SEC. Migrations 122 and 123 create the
+# session marks and the dividend waits. No provider call and no model call. No pulled row moves and no source a rule's version or the readings' version pins moves. The chart page
+# and the name page read a mark as soon as it is written, and the night's chart check and averages read it next. Run from main after the merge, when no night, off-peak run, local
+# run, ledger build or monthly run is writing, and restart the read surface after it.
+migrate
+session-mark --ticker CHRD --session 2020-11-20 --kind "starts here" --says "Its history starts here: Oasis Petroleum came out of Chapter 11 on 2020-11-19, its old shares cancelled and about 20,000,000 new ones issued, so the sessions before are not this stock's."
+session-mark --ticker INSW --session 2016-12-01 --kind "starts here" --says "Its history starts at its first regular-way session: spun off from OSG, the distribution completed on 2016-11-30, and the thin when-issued sessions before are left out."
+session-mark --ticker SNDK --session 2025-02-24 --kind "starts here" --says "Its history starts at its first regular-way session: spun off from Western Digital, the when-issued sessions traded as SNDKV before it are left out."
+session-mark --ticker TALO --session 2018-05-10 --kind "starts here" --says "Its history starts here: Talos Energy became the successor to Stone Energy on 2018-05-10, and the two companies' reported figures do not agree, so Stone's sessions before are left out."
+session-mark --ticker PRG --session 2021-04-06 --kind "bad print" --says "A bad print: every price this session stands about 40% below the sessions either side, on half the usual volume, with no filing."
+session-mark --ticker GME --session 2021-02-01 --kind "checked and kept" --says "Checked and kept: the January 2021 short squeeze unwinding, with no filing on the day."
+session-mark --ticker MARA --session 2020-12-15 --kind "checked and kept" --says "Checked and kept: an 8-K of 2020-12-11 on 10,000 Bitmain miners and a shelf registration the same day."
+session-mark --ticker MARA --session 2021-03-01 --kind "checked and kept" --says "Checked and kept: a real move on the filings read, with no bad print found."
+session-mark --ticker MARA --session 2021-03-09 --kind "checked and kept" --says "Checked and kept: no filing in the window, a real move with bitcoin miners that session."
+session-mark --ticker CLSK --session 2021-03-09 --kind "checked and kept" --says "Checked and kept: an 8-K of 2021-03-08 and a press release of March 9 on mining machine agreements."
+session-mark --ticker CRK --session 2016-01-20 --kind "checked and kept" --says "Checked and kept: a real move at a raw price of 1.37 on the filings read, the nearest an 8-K of 2016-01-25 on an acreage swap."
+session-mark --ticker TNDM --session 2017-10-09 --kind "checked and kept" --says "Checked and kept: a real fall into a 1 for 10 reverse split effective 2017-10-10, with an offering and preliminary figures on 2017-10-12."

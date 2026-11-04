@@ -15198,6 +15198,7 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             migrations 0 to 121 with none pending, schema version 121, against `data-ci` and never `data`; the phase report 65 tables,
             1506 claims, 1506 passing, none out of scope and none unexamined, 1521 placements and verdicts reconciled against a floor
             of 34, 46 checks on the roster run and passed.
+
 ### 22.38 ruling - the operator's second answers on the chart audit, and their word on KVUE
 
 Not a checkpoint entry: it records the operator's answers of 2026-11-04 and lands nothing.
@@ -15215,5 +15216,26 @@ On KVUE:    "Restore the four from last night's copy, with a fresh copy of the s
             stock's prices on tiny volume), and report them; restore none without my word. The refetch guard from the other tab goes in the same PR, so this cannot happen
             silently again."
 Queue:      done, 22.33 to 22.37; in progress, 22.38 to 22.40 in one pull request; next, the read-only copy's read-back and the sign-offs the queue ruling sets.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 22.38 - the pulled years' faults classified against EODHD, and the operator's word on sessions the filings explain   2026-11-04
+
+Built:      a table beside the pull, `session_mark`, migration 122, written by the verb `session-mark` on the operator's word, the first word on a session standing and no pulled row
+            moving. A session a stock's history starts on leaves the sessions before it out of the chart's and the name page's read of the pull, the chart's averages, the page
+            history reader and the chart check; a bad print is read past by the check's moves and draws a small mark on its candle; a move checked and kept is a line and no flag.
+            Each is a line beneath a chart showing its session, from the moment it is written. The sweep's series and the rules' reads wait for phase 23's restart, in the plan's table.
+Classified: the audit's pulled years against EODHD, 182 calls, read-only. Missing 2,812 on 29: 2,788 thin on 13; 15 on 9 liquid stocks EODHD holds none for; 9 on 9 it holds, all 2023-04-06.
+            No volume 4,982 on 77: 4,893 thin on 25; 88 on 55 liquid stocks it serves the same; 1 it holds, CNC 2020-02-26. Jumps 657 on 213: 485 on volume on 193, 151 thin on 28, 7 market
+            or sector wide, 3 spike backs, 11 unexplained. The rules are the plan's, stated there for phase 23's data check.
+SEC:        each of the 14 read in its filings, the marks in `tools/remedies/2026-11-04-22.38-the-marked-sessions.txt`. CHRD 2020-11-20: Oasis came out of Chapter 11 on 2020-11-19, old
+            equity cancelled, starts there. INSW: spun from OSG, distributed 2016-11-30, when-issued to then, starts 2016-12-01. SNDK: spun from WDC, when-issued as SNDKV to 2025-02-21,
+            starts 2025-02-24. TALO 2016-05-25 and 06-06: Stone Energy's, CIK 904080; Talos became its successor on 2018-05-10; of 172 figures both state 2 agree within 5%, so the rule
+            for a predecessor fails and it starts 2018-05-10. GME 2021-02-01, MARA 2020-12-15 (8-K on Bitmain's 10,000 miners), MARA 2021-03-09, CLSK 2021-03-09 (8-K on mining machines): real,
+            kept. PRG 2021-04-06: every price about 40% under its neighbours on half the usual volume, no filing: a bad print, marked. PRG 2021-04-07: only the return from it, gone
+            with it. TNDM 2017-10-09: 8-K of 10-10 on a 1 for 10 reverse split and an offering: a real fall, kept. CRK 2016-01-20 and MARA 2021-03-01: kept on the operator's word.
+Remedy:     `tools/remedies/2026-11-04-22.38-the-mended-pulls-and-the-49.txt`, run before this pull request from b5254a7a since it needs no new code; `tools/remedies/2026-11-04-22.38-the-marked-sessions.txt`, `migrate` and the 12 marks, no request, to run from main after the merge.
+Tests:      with 22.40's, in one count there.
+Mutation:   each predicted first, in 22.40's entry.
+Carried:    the marks' reach into the sweep's series and the rules' reads, in the plan's table for phase 23. The stocks EODHD cannot mend, listed to the operator with their dates. KVUE's restore and the ledgers, in the record after 22.40.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
 

@@ -7,6 +7,10 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - ARCHITECTURE.html - the chart check's, the chart averages' and the page history's rows read the operator's marks
+Decision: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart
+Was: the catalogue rows of the chart checker, the chart averager and the page history reader read no session marks, and "What happened" ended at "a first session (see: A real event the chart check confirms is a line beneath the chart saying what happened on that date)".
+
 ### 2026-11-04 - CLAUDE.md - the chart averages step's reading of the pulled history includes the chart check
 Decision: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
 Was:

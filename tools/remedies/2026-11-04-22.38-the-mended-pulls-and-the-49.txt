@@ -1,0 +1,12 @@
+# The remedy of 22.38's data and 22.40's first refetch, the operator's second answers of 2026-11-04 on the chart audit, already run once from main at b5254a7a since it needs no new code,
+# committed here as the record of what ran. The 49 stocks whose stored year the provider's ex-date night answer left without a dividend are refetched through the corporate action check's
+# own path, one request a stock. The 10 stocks EODHD can mend are pulled again, one request a stock and the earnings calendar once a month of the span, 134 months from 2015-10-01, on each of
+# the three indices, about 412 of the provider's weighted calls. The 49's outcomes decided from 2026-09-10, the first ex-date among them, are scored again and every stored trade's fill is
+# priced again over the bars as they now stand, no request. About 461 weighted calls and no model call. No source a rule's version or the readings' version pins moves. Each index's ledger
+# history is then built again by hand with tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-08 --again and checked with ledger-check --index <GSPC, MID or SML>.
+refetch --names AEO,AIG,AMT,APD,ARE,ARES,ARR,BEN,BXP,CCI,CMCSA,CPT,DCOM,DTE,DVN,EIX,ES,ESS,EXR,FCPT,FITB,GAP,GILD,GIS,GNTX,HBAN,HST,IRM,ITW,KVUE,LEN,MAA,MPT,MRSH,MTN,OZK,PLD,PSA,RCL,SKT,STT,T,UCB,UNH,USB,UVV,VICI,VTR,XEL --live
+history-pull --from 2015-10-01 --index GSPC --names SLB,CNC --live
+history-pull --from 2015-10-01 --index MID --names DTM,EVR,HLNE,MOH,PEN --live
+history-pull --from 2015-10-01 --index SML --names SNDR,TGTX,YOU --live
+outcomes-again --names AEO,AIG,AMT,APD,ARE,ARES,ARR,BEN,BXP,CCI,CMCSA,CPT,DCOM,DTE,DVN,EIX,ES,ESS,EXR,FCPT,FITB,GAP,GILD,GIS,GNTX,HBAN,HST,IRM,ITW,KVUE,LEN,MAA,MPT,MRSH,MTN,OZK,PLD,PSA,RCL,SKT,STT,T,UCB,UNH,USB,UVV,VICI,VTR,XEL --from 2026-09-10
+fill --again

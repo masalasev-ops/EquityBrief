@@ -6163,6 +6163,8 @@ internal static class Scope
         // 18.2's two, which the plan describes by the dividends the night keeps and the yield it reads.
         // 22.33's one, which the plan describes as a ticker change joined on the operator's word.
         ["Ticker joins"] = "22.33",
+        // 22.38's one, which the plan describes as the operator's word on a session of the pulled history.
+        ["Session marks"] = "22.38",
         // 22.37's one, which the plan describes as the chart audit run as a nightly check.
         ["Chart checker"] = "22.37",
         ["Dividend keeper"] = "18.2",

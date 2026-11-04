@@ -14,6 +14,8 @@ namespace EquityBrief.Tests.Checks;
 // see: A real event the chart check confirms is a line beneath the chart saying what happened on that date
 public partial class FixtureExpectations
 {
+    internal static readonly string[] SessionMarkRows = [.. ComponentAccess.SessionMarkRows, .. SchemaColumns.SessionMarkStoreRows];
+
     internal static readonly string[] ChartCheckRows = [.. ComponentAccess.ChartCheckRows, .. SchemaColumns.ChartCheckStoreRows, .. Reading.ReadSurface.WhatHappenedRows];
 
     static readonly DateOnly CheckFirst = new(2026, 3, 2);

@@ -29,6 +29,7 @@ public sealed class ChartChecker(IClock clock, string databaseFile) : IComponent
             new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.PulledEarnings, Touch.Read),
             new StoreTouch(Store.PulledSplit, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.SplitEvent, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.ChartAverage, Touch.Read),
@@ -70,7 +71,8 @@ public sealed class ChartChecker(IClock clock, string databaseFile) : IComponent
     const string States = "SELECT ticker, state FROM series_state;";
     const string BarsOf = "SELECT session_date, open, high, low, close, raw_close, volume FROM bar WHERE ticker = $ticker AND session_date <= $session ORDER BY session_date;";
     const string PullHolding = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
-    const string PullOf = "SELECT session_date, open, high, low, close, raw_close, volume FROM pulled_bar WHERE ticker = $ticker AND pull = $pull ORDER BY session_date;";
+    const string PullOf = "SELECT session_date, open, high, low, close, raw_close, volume FROM pulled_bar WHERE ticker = $ticker AND pull = $pull AND " + SessionMarking.FromItsStart + " ORDER BY session_date;";
+    const string Marks = "SELECT ticker, session_date, kind, says FROM session_mark;";
     const string KeptRaw = "SELECT raw_close FROM kept_bar WHERE ticker = $ticker AND session_date = $session;";
     const string IndicatorsOf = "SELECT name, session_date, value FROM indicator WHERE ticker = $ticker AND name IN ('sma20', 'sma50', 'sma200') AND value IS NOT NULL;";
     const string WarmedOf = "SELECT name, sessions FROM chart_average WHERE ticker = $ticker;";
@@ -179,14 +181,15 @@ public sealed class ChartChecker(IClock clock, string databaseFile) : IComponent
         var events = await EventsAsync(connection, cancellation);
         var states = await PairsAsync(connection, States, cancellation);
         var changes = await ChangesAsync(connection, members, session, cancellation);
-        var traded = ExchangeClosures.SessionsBetween(new[] { night.AddYears(-1), ExchangeClosures.CoveredFrom }.Max().AddDays(-1), night.AddDays(1));
+        var marks = await MarksAsync(connection, cancellation);
+        var traded =ExchangeClosures.SessionsBetween(new[] { night.AddYears(-1), ExchangeClosures.CoveredFrom }.Max().AddDays(-1), night.AddDays(1));
         var findings = new List<(string Ticker, ChartFinding Finding)>();
         var moves = new List<(string Ticker, IReadOnlyList<SeenMove> Moves)>();
         var bySession = new Dictionary<DateOnly, int>();
 
         foreach (var ticker in members.Keys.Order(StringComparer.Ordinal))
         {
-            var stock = await StockAsync(connection, ticker, session, states, changes, cancellation);
+            var stock = await StockAsync(connection, ticker, session, states, changes, marks.GetValueOrDefault(ticker), cancellation);
 
             if (stock is null)
             {
@@ -194,7 +197,7 @@ public sealed class ChartChecker(IClock clock, string databaseFile) : IComponent
             }
 
             var theirs = events.TryGetValue(ticker, out var held) ? held.Read() : new StockEvents(new HashSet<DateOnly>(), new HashSet<DateOnly>(), [], []);
-            var seen = ChartCheck.MovesOf(stock.Sessions);
+            var seen = ChartCheck.MovesOf(stock.Sessions, stock.Marks);
 
             findings.AddRange(ChartCheck.Read(stock, theirs, night, traded).Select(finding => (ticker, finding)));
             moves.Add((ticker, seen));
@@ -450,7 +453,29 @@ public sealed class ChartChecker(IClock clock, string databaseFile) : IComponent
         return events;
     }
 
-    static async Task<StockToCheck?> StockAsync(SqliteConnection connection, string ticker, DateOnly session, Dictionary<string, string> states, Dictionary<string, (string Old, DateOnly? On)> changes, CancellationToken cancellation)
+    static async Task<Dictionary<string, List<SessionMark>>> MarksAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var marks = new Dictionary<string, List<SessionMark>>(StringComparer.Ordinal);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = Marks;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            if (!marks.TryGetValue(reader.GetString(0), out var theirs))
+            {
+                marks[reader.GetString(0)] = theirs = [];
+            }
+
+            theirs.Add(new SessionMark(Date(reader.GetString(1)), reader.GetString(2), reader.GetString(3)));
+        }
+
+        return marks;
+    }
+
+    static async Task<StockToCheck?> StockAsync(SqliteConnection connection, string ticker, DateOnly session, Dictionary<string, string> states, Dictionary<string, (string Old, DateOnly? On)> changes, IReadOnlyList<SessionMark>? marks, CancellationToken cancellation)
     {
         async Task<List<CheckedSession>> Sessions(string query, bool pulled, params (string Name, string Value)[] bound)
         {
@@ -595,6 +620,7 @@ public sealed class ChartChecker(IClock clock, string databaseFile) : IComponent
             kept,
             states.GetValueOrDefault(ticker, "ok"),
             before.Count == 0 && first.Session <= session.AddYears(-1).AddDays(7),
-            changes.TryGetValue(ticker, out var change) ? change : null);
+            changes.TryGetValue(ticker, out var change) ? change : null,
+            marks);
     }
 }
