@@ -15195,6 +15195,6 @@ Mutation:   one for each property, predicted first and each red at its test: an 
 Carried:    the first night's rows read at the proof page; the 49 stocks' dividends and the fix, on the operator's word; 22.38 and 22.39.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the
             figures below stated before that run: all six steps, 0 warnings, 0 errors, 3224 of 3224 tests ran with none failed,
-            migrations 0 to 121 with none pending, schema version 121, against `data-ci` and never `data`; the phase report 67 tables,
+            migrations 0 to 121 with none pending, schema version 121, against `data-ci` and never `data`; the phase report 65 tables,
             1506 claims, 1506 passing, none out of scope and none unexamined, 1521 placements and verdicts reconciled against a floor
             of 34, 46 checks on the roster run and passed.
