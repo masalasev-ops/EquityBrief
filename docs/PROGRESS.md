@@ -15198,3 +15198,22 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             migrations 0 to 121 with none pending, schema version 121, against `data-ci` and never `data`; the phase report 65 tables,
             1506 claims, 1506 passing, none out of scope and none unexamined, 1521 placements and verdicts reconciled against a floor
             of 34, 46 checks on the roster run and passed.
+### 22.38 ruling - the operator's second answers on the chart audit, and their word on KVUE
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-04 and lands nothing.
+Ruled:      word for word in `prompts/2026-11-04-chart-audit-second-answers.md`, gitignored, and here. "The 49 dividends: yes. After a stock's ex-dividend refetch, ask EODHD again on
+            each of the next five nights and weekly after, until the answer carries the dividend, as the quarters fetch does; the page and the run page say so while it waits.
+            Refetch the 49 now (state the calls first, about 49), rebuild the ledger history for them, and say which records or readings moved. The nightly check flags a
+            stored dividend the bars do not carry at a 0.5% gap, not 5%." "The 14 jumps: check each against the SEC's filings (free), not another price source": CHRD,
+            leave out the history before the new equity's first regular-way session with a line; INSW and SNDK, start each at its first regular-way session with a line; TALO,
+            say which company the history belongs to and join it under the 5%-and-5-figures rule or leave it out; GME, MARA 2020-12-15 and 2021-03-09 and CLSK, keep; PRG 2021-04-07
+            and TNDM, check and report; CRK, MARA 2021-03-01 and PRG 2021-04-06, likely bad prints, "mark those sessions so the history tests skip them, without changing the pulled
+            rows, and draw a small mark on the chart". "Report each one's finding in a line." "The thin-trading and heavy-volume thresholds go into phase 23's plan as stated rules."
+            "22.39: yes, 'How to read this page' in words everywhere." On the tests' series, "At phase 23's restart". On CRK and MARA 2021-03-01, "Keep both as real".
+On KVUE:    "Restore the four from last night's copy, with a fresh copy of the store taken first and kept. Then: list any paper trade, pick or record the four false sessions touched,
+            and correct them in the same remedy. Check every other member that left an index in the last 30 days for the same fault (sessions after its last real one that are another
+            stock's prices on tiny volume), and report them; restore none without my word. The refetch guard from the other tab goes in the same PR, so this cannot happen
+            silently again."
+Queue:      done, 22.33 to 22.37; in progress, 22.38 to 22.40 in one pull request; next, the read-only copy's read-back and the sign-offs the queue ruling sets.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
