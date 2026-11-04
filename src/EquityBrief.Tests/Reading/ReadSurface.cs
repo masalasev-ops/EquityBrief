@@ -213,6 +213,9 @@ public partial class ReadSurface
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 
+            // 22.36, the line on the chart for each real event.
+            .. WhatHappenedRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

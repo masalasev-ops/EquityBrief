@@ -26,6 +26,9 @@ public partial class ReadSurface
         CheckReach.Key("15.10 Run", "Every page's time"),
     ];
 
+    // 22.36's row: the line on the chart for each real event.
+    internal static readonly string[] WhatHappenedRows = [CheckReach.Key("15.22 Chart", "What happened")];
+
     static DateOnly Day(string day) => DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     static SessionBar Session(string day, decimal open, decimal high, decimal low, decimal close, long volume) =>
@@ -215,6 +218,79 @@ public partial class ReadSurface
 
         Assert.Contains("quote", await RoutesAsync(new DateTimeOffset(2026, 10, 23, 15, 0, 0, TimeSpan.Zero)));
         Assert.DoesNotContain("quote", await RoutesAsync(new DateTimeOffset(2026, 10, 24, 15, 0, 0, TimeSpan.Zero)));
+    }
+
+    // 22.36: the newest night's notes in view are drawn beneath the chart newest first, a move before the candles only on the
+    // daily chart and only as far as its longest average reads, and a flag and an older night's note on neither. 22.37: the proof
+    // page draws the same rows' flags by the route the runbook gives.
+    // see: A real event the chart check confirms is a line beneath the chart saying what happened on that date
+    [Fact]
+    public async Task TheChartPageSaysWhatHappenedOverWhatItShowsAndTheProofPageListsTheFlags()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'AAA', '2020-01-02', NULL, '2020-01-02T21:00:00Z');");
+
+        var day = new DateOnly(2026, 9, 1);
+
+        for (var held = 0; held < 30; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            {
+                continue;
+            }
+
+            var stamp = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            store.Execute($"INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('AAA', '{stamp}', '100', '101', '99', '100', 1000, 'eodhd', '{stamp}T21:00:00Z', '100');");
+            held++;
+        }
+
+        void Row(string night, string flag, string kind, string session, string says) =>
+            store.Execute($"INSERT INTO chart_check (night, ticker, flag, kind, session_date, says, run_id) VALUES ('{night}', 'AAA', '{flag}', '{kind}', '{session}', '{says}', 'night');");
+
+        // 290 days before the first candle, 2026-09-01, is 2025-11-15.
+        Row("2026-10-12", "note", "move", "2026-09-15", "the move in view");
+        Row("2026-10-12", "note", "ticker change", "2026-09-22", "the change in view");
+        Row("2026-10-12", "note", "move", "2025-11-15", "the move its averages read");
+        Row("2026-10-12", "note", "move", "2025-11-14", "the move past its averages");
+        Row("2026-10-12", "note", "spin-off", "2026-08-20", "the spin-off before the candles");
+        Row("2026-10-12", "e", "copied candle", "2026-09-16", "the flag on the proof");
+        Row("2026-10-11", "note", "move", "2026-09-17", "the older night");
+        Row("2026-10-11", "e", "zero volume", "2026-09-18", "the older flag");
+
+        using var host = new Host(store.Root, FixedClock.At(new DateTimeOffset(2026, 10, 13, 15, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+        using var client = host.CreateClient();
+
+        var daily = await client.GetStringAsync("/screens/chart/AAA");
+        var says = Regex.Matches(daily, "<li class=\"chart-note\" data-kind=\"([^\"]*)\" data-on=\"([^\"]*)\">([^<]*)</li>").Select(match => match.Groups[3].Value).ToArray();
+
+        Assert.Equal(["the change in view", "the move in view", "the move its averages read"], says);
+
+        var weekly = await client.GetStringAsync("/screens/chart/AAA?interval=weekly");
+
+        Assert.Equal(
+            ["the change in view", "the move in view"],
+            Regex.Matches(weekly, "<li class=\"chart-note\"[^>]*>([^<]*)</li>").Select(match => match.Groups[1].Value));
+
+        var proof = await client.GetStringAsync(ChartProof.Route);
+
+        Assert.Contains("Over the night of 2026-10-12: 1 finding(s) on 1 stock(s), 0 of them in the pulled years, 1 new since the night before.", proof, StringComparison.Ordinal);
+        Assert.Contains("the flag on the proof", proof, StringComparison.Ordinal);
+        Assert.DoesNotContain("the move in view", proof, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AChartHoldingMoreThanItsLinesSaysHowManyMoreAreOnFile()
+    {
+        var notes = Enumerable.Range(0, SinglePageApp.NotesShown + 2).Select(at => new ChartNote(new DateOnly(2026, 9, 1 + at), "move", FormattableString.Invariant($"line {at}"))).ToArray();
+        var region = SinglePageApp.ChartNotes(notes);
+
+        Assert.Equal(SinglePageApp.NotesShown, Regex.Matches(region, "<li class=\"chart-note\" ").Count);
+        Assert.Contains("line 0", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("line 6", region, StringComparison.Ordinal);
+        Assert.Contains("And 2 earlier.", region, StringComparison.Ordinal);
+        Assert.Empty(SinglePageApp.ChartNotes([]));
     }
 
     // The fixture's night: AAPL's chart page draws a week worked by hand from the daily bars it rolls up, its 50-session

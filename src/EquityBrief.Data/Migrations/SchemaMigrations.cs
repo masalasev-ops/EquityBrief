@@ -741,7 +741,31 @@ public static class SchemaMigrations
         new Migration(118, "add treasury_yield.three_month", AddTreasuryThreeMonth),
         new Migration(119, "add trade_fill's sold_on and sale", AddTradeFillSale),
         new Migration(120, "create ticker_join", CreateTickerJoin),
+        new Migration(121, "create chart_check and split_event", CreateChartCheck),
     ];
+
+    // From 22.36 what the chart check finds of each member a night, and from 22.37 each split the night's day files carry.
+    const string CreateChartCheck = @"
+        CREATE TABLE chart_check (
+            night         TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            flag          TEXT NOT NULL CHECK (flag IN ('a', 'b', 'c', 'e', 'note')),
+            kind          TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            says          TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (night, ticker, flag, kind, session_date)
+        ) STRICT;
+
+        CREATE TABLE split_event (
+            ticker      TEXT NOT NULL,
+            ex_date     TEXT NOT NULL,
+            new_shares  TEXT NOT NULL,
+            old_shares  TEXT NOT NULL,
+            run_id      TEXT NOT NULL,
+            PRIMARY KEY (ticker, ex_date)
+        ) STRICT;
+    ";
 
     // From 22.33 a stock whose ticker changed and whose history the provider keeps under the old ticker, joined once on the
     // operator's word.
