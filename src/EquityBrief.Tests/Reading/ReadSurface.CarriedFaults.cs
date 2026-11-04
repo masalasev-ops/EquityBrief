@@ -72,6 +72,12 @@ public partial class ReadSurface
         Assert.Null(short_.OneSegment);
         Assert.Equal("the segments' revenue does not sum to the company's within rounding", short_.Raw);
 
+        // The axis beside a word naming no segment of its own is no segment either, whatever it holds.
+        var eliminated = SegmentTable.Read(ATable(1_000_000_000m, AGroup("Reportable Segment | Intersegment Eliminations", 1_000_000_000m)));
+
+        Assert.Null(eliminated.OneSegment);
+        Assert.Equal("the table states no segment's revenue for the quarter", eliminated.Raw);
+
         var two = SegmentTable.Read(ATable(3_000_000_000m, AGroup("Stores", 2_000_000_000m), AGroup("Online", 1_000_000_000m)));
 
         Assert.True(two.Clean);

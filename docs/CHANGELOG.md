@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - .claude/rules/checks.md - plain-words states that three pages draw no field's code name
+Decision: A page draws every field in the reader's words, and the proof fails a page drawing a field's code name
+Was:
+> (plain-words) ... and an attribute keeping its stored words, and the market strip's card among Tonight's regions |
+Now:
+> (plain-words) ...; and from the 22.5 correction of 2026-11-04 those three pages drawing no field's code name, by the reader the proof fails a name page with |
+Why: each roster row says what its check asserts, and the correction's test extends plain-words.
+
 ### 2026-11-04 - docs/ARCHITECTURE.html - a company reporting one segment, the awaited line, and a page's fields and dates
 Decision: A company reporting one segment is told so with its revenue and its quarter and the table as filed stays beneath; A page names a company's newest report from the night its quarter is stored, which the night's readings ran before; A page draws every field in the reader's words, and the proof fails a page drawing a field's code name; The analysts' table and the figures checked draw a quarter's end as the filing states it
 Was:

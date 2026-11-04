@@ -184,7 +184,7 @@ public static partial class NumbersSay
     static string Change(decimal growth) =>
         growth > 0m ? Fill("sales rose", Percent(growth)) : growth < 0m ? Fill("sales fell", Percent(-growth)) : Fill("sales held");
 
-    static string Percent(decimal share) => (share * 100m).ToString("0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "%";
+    static string Percent(decimal share) => (share * 100m).ToString("0.0", CultureInfo.InvariantCulture) + "%";
 
     static string Signed(decimal share) => (share * 100m).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "%";
 
