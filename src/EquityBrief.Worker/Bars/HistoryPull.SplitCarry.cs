@@ -109,7 +109,9 @@ public sealed partial class HistoryPull
 
             await transaction.CommitAsync(cancellation);
 
-            lines.Add(FormattableString.Invariant($"{ticker}: {string.Join(" and ", left.Select(split => $"{split.ExDate:yyyy-MM-dd}, {split.NewShares:0.####} for {split.OldShares:0.####}"))} applied to the {sessions.Count} session(s) of {pull}"));
+            var applied = left.Select(split => string.Join(", ", Text(split.ExDate), split.NewShares.ToString("0.####", CultureInfo.InvariantCulture) + " for " + split.OldShares.ToString("0.####", CultureInfo.InvariantCulture)));
+
+            lines.Add(FormattableString.Invariant($"{ticker}: {string.Join(" and ", applied)} applied to the {sessions.Count} session(s) of {pull}"));
         }
 
         var requests = splits.Requests - requestsBefore;

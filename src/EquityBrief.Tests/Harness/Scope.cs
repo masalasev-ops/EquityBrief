@@ -4543,6 +4543,18 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(CatalogueTable, "Ticker joins")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the ticker joins it reads and inserts and the run log it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Ticker joins")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Ticker joins")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(StoresTable, "Dividend events")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
@@ -6131,6 +6143,8 @@ internal static class Scope
         ["Loop apply"] = "17.9",
         ["Live alarm reader"] = "17.9",
         // 18.2's two, which the plan describes by the dividends the night keeps and the yield it reads.
+        // 22.33's one, which the plan describes as a ticker change joined on the operator's word.
+        ["Ticker joins"] = "22.33",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -6251,6 +6265,7 @@ internal static class Scope
         ["Analyst views"] = "20.13",
         // 18.2's three, which the plan names as the trend the fetch keeps, the bulk dividends and the Treasury yield.
         ["Estimate trends"] = "18.2",
+        ["Ticker joins"] = "22.33",
         ["Dividend events"] = "18.2",
         ["Treasury yields"] = "18.2",
         // 18.3's two, which the plan names as the typical move over every stored print and the month-end closes.

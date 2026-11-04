@@ -18,6 +18,8 @@ namespace EquityBrief.Tests.Checks;
 // see: A member holding a copied candle or behind the night is asked for its year again, and stays suspect until an answer clears it
 public partial class FixtureExpectations
 {
+    internal static readonly string[] TickerJoinRows = [.. ComponentAccess.TickerJoinRows, .. SchemaColumns.TickerJoinStoreRows];
+
     static readonly DateOnly FaultNight = new(2026, 10, 2);
 
     static DateTimeOffset NightAt(DateOnly session) => new(session.Year, session.Month, session.Day, 23, 0, 0, TimeSpan.Zero);
@@ -102,7 +104,7 @@ public partial class FixtureExpectations
     }
 
     static void AskedOn(TemporaryStore store, string ticker, DateOnly session) =>
-        store.Execute($"INSERT INTO series_state (ticker, state, reason, checked_at, retries) VALUES ('{ticker}', 'ok', NULL, '{NightAt(session):yyyy-MM-ddTHH:mm:ssZ}', 0);");
+        store.Execute(FormattableString.Invariant($"INSERT INTO series_state (ticker, state, reason, checked_at, retries) VALUES ('{ticker}', 'ok', NULL, '{NightAt(session):yyyy-MM-ddTHH:mm:ssZ}', 0);"));
 
     static (string State, string? Reason) StateOfName(TemporaryStore store, string ticker)
     {
@@ -227,7 +229,7 @@ public partial class FixtureExpectations
         var (state, reason) = StateOfName(store, "GONE");
 
         Assert.Equal("suspect", state);
-        Assert.Contains($"its newest bar is {heldTo:yyyy-MM-dd}, behind the night", reason, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"its newest bar is {heldTo:yyyy-MM-dd}, behind the night"), reason, StringComparison.Ordinal);
         Assert.Equal(["GONE"], outcome.Suspect);
         Assert.DoesNotContain("FINE", history.Asked);
     }
@@ -299,7 +301,7 @@ public partial class FixtureExpectations
         Assert.Equal(189.73m, CloseOn(store, "CLEARS", copied));
         Assert.Equal(("ok", (string?)null), StateOfName(store, "CLEARS"));
         Assert.Equal("suspect", StateOfName(store, "STAYS").State);
-        Assert.Contains($"1 copied candle(s), no volume at the close before, the newest on {copied:yyyy-MM-dd}", StateOfName(store, "STAYS").Reason, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"1 copied candle(s), no volume at the close before, the newest on {copied:yyyy-MM-dd}"), StateOfName(store, "STAYS").Reason, StringComparison.Ordinal);
     }
 
     [Fact]
