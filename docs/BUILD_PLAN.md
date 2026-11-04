@@ -2409,6 +2409,16 @@ Same answers. A box beside the candle under the pointer, a tap or the arrow keys
 
 **Done when** a daily, a weekly and a first candle's box are read from the drawing with their dates, prices, signed change in its colour, full volume and averages; each candle is shown carrying what the script places; the line reaches the volume pane and the close's tag stands in the column; the script is read for the mouse, the tap and the keys; the box is read back on a real page at both widths; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.36 On the operator's answers of 2026-11-04: a line on the chart for each real event
+Same answers. Beneath the chart a line for each real event the audit confirmed: a move saying what explains it, a spin-off, a ticker change and a first session, on the daily, weekly and monthly charts (see: A real event the chart check confirms is a line beneath the chart saying what happened on that date).
+
+**Done when** each note is worked by hand over constructed sessions and each explanation of a move shown at its limit; a line in view is drawn and one out of view is not, with the daily chart's move in the sessions its averages read shown drawn; FISV and a stock with no big drop are read back on a real page at both widths; and one mutation of each property is shown red, the rule stated before the run.
+
+### 22.37 On the operator's answers of 2026-11-04: the chart audit as a nightly check
+Same answers. Flags a, b, c and e with no network, plus a copied zero-volume candle, a newest bar behind the night while the stock's state reads ok and a split or dividend among the stored actions that the stored bars do not carry, run in the chart averages step and listed at the proof page (see: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears).
+
+**Done when** each flag is worked by hand over constructed sessions on both sides of its limit; the check is run over a constructed store and writes its rows, its row partial where a flag is new and naming it; it declares no feed and its failure leaves the night going on; a split the day files carry is kept with the first standing; the proof page is read for what is new first; its figures over a read-only pass of the operator's store are set against the audit's and each difference said; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

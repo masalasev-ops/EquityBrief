@@ -3250,6 +3250,8 @@ internal static class Scope
             Verdict.Pass, "a week and a month rolled into one candle worked by hand over constructed sessions with a stretch holding none named; a fixture name's week worked by hand from its daily bars and read off the weekly chart; the pulled sessions brought to the store's scale by the close both hold, the store read where it holds the session; and the daily chart reading no pulled bar, answering with the pulled bars' table renamed where the weekly one does not", ByReadSurface),
         [CheckReach.Key("15.22 Chart", "The averages")] = new Scoped(
             Verdict.Pass, "a fixture name's 50-session average at its newest session worked by hand from its 50 newest closes and read off the newest candle", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "What happened")] = new Scoped(
+            Verdict.Pass, "each note worked by hand over constructed sessions and a line in view read off the page, a line out of view read as absent", ByReadSurface),
         [CheckReach.Key("15.22 Chart", "Volume")] = new Scoped(
             Verdict.Pass, "each candle's volume and the hue of its close on the one before read off the rendered chart", ByReadSurface),
         [CheckReach.Key("15.22 Chart", "The marks")] = new Scoped(
@@ -4540,6 +4542,22 @@ internal static class Scope
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
         [CheckReach.Key(StoresTable, "Estimate trends")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(CatalogueTable, "Chart checker")] = new Scoped(
+            Verdict.Pass,
+            "the class declares what it reads and the chart checks it writes and removes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Chart checker")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Chart checks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Split events")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
@@ -6145,6 +6163,8 @@ internal static class Scope
         // 18.2's two, which the plan describes by the dividends the night keeps and the yield it reads.
         // 22.33's one, which the plan describes as a ticker change joined on the operator's word.
         ["Ticker joins"] = "22.33",
+        // 22.37's one, which the plan describes as the chart audit run as a nightly check.
+        ["Chart checker"] = "22.37",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -6266,6 +6286,8 @@ internal static class Scope
         // 18.2's three, which the plan names as the trend the fetch keeps, the bulk dividends and the Treasury yield.
         ["Estimate trends"] = "18.2",
         ["Ticker joins"] = "22.33",
+        ["Chart checks"] = "22.37",
+        ["Split events"] = "22.37",
         ["Dividend events"] = "18.2",
         ["Treasury yields"] = "18.2",
         // 18.3's two, which the plan names as the typical move over every stored print and the month-end closes.
@@ -6728,6 +6750,7 @@ internal static class Scope
         [CheckReach.Key("15.22 Chart", "The report line")] = "19.11",
         [CheckReach.Key("15.22 Chart", "The interval and the levels")] = "19.11",
         [CheckReach.Key("15.22 Chart", "The chart")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "What happened")] = "22.36",
         [CheckReach.Key("15.22 Chart", "The averages")] = "19.11",
         [CheckReach.Key("15.22 Chart", "Volume")] = "19.11",
         [CheckReach.Key("15.22 Chart", "The marks")] = "19.11",

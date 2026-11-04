@@ -83,6 +83,9 @@ public partial class ArchitectureConformance
 
         // 22.33's ticker joins, after phase 21's as well.
         .. FixtureExpectations.TickerJoinRows,
+
+        // 22.36's line on the chart and 22.37's chart checker and two stores, after phase 21's as well.
+        .. FixtureExpectations.ChartCheckRows,
     ];
 
     // The rows the document loses after phase 22's report: none.
