@@ -15239,3 +15239,10 @@ Mutation:   each predicted first, in 22.40's entry.
 Carried:    the marks' reach into the sweep's series and the rules' reads, in the plan's table for phase 23. The stocks EODHD cannot mend, listed to the operator with their dates. KVUE's restore and the ledgers, in the record after 22.40.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
 
+### 22.39 - the fold that opens a page's guide reads in words   2026-11-04
+
+Built:      the fold on the universe, Researched, Watch list, Ledger, Loop and paper trading pages says "How to read this page", underlined, in place of a question mark in a circle or a bare one with the browser's arrow, one style wherever it stands.
+Tests:      with 22.40's, in one count there.
+Mutation:   each predicted first, in 22.40's entry.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+

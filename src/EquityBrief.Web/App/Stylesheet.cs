@@ -694,11 +694,12 @@ a.sort[aria-pressed='true']{color:var(--ink)}
 .fam-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px}
 .fam-head .fam-tag{font-size:14px;padding:3px 10px 3px 8px}
 .fam-head .fam-count{font-size:13px;color:var(--ink-2)}
+.guide>summary{list-style:none;cursor:pointer;display:inline-block;font:500 13px var(--sans);color:var(--ink-2);text-decoration:underline;text-decoration-color:var(--hair-2);text-underline-offset:3px}
+.guide>summary::-webkit-details-marker{display:none}
+.guide-b{margin:8px 0 0;padding:10px 12px;border:1px solid var(--hair);border-radius:6px;font-size:13px;line-height:1.5;color:var(--ink-2)}
 .fam-head .guide{margin-left:auto}
 .fam-head .guide[open]{flex-basis:100%;margin-left:0}
-.fam-head .guide>summary{list-style:none;cursor:pointer;width:26px;height:26px;border:1px solid var(--hair-2);border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font:600 13px var(--sans);color:var(--ink-2)}
-.fam-head .guide>summary::-webkit-details-marker{display:none}
-.fam-head .guide-b{margin:8px 0 0;padding:10px 12px;border:1px solid var(--hair);border-radius:6px;background:var(--surface);font-size:13px;line-height:1.5;color:var(--ink-2)}
+.fam-head .guide-b{background:var(--surface)}
 p.no-variant{margin:0 0 8px;font-size:12.5px;color:var(--soft)}
 .rule-chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0 0 6px;padding:0}
 .rule-chip{font:500 12px var(--sans);color:var(--ink-2);border:1px solid var(--hair);border-radius:999px;padding:2px 9px;background:var(--plot)}
@@ -717,9 +718,6 @@ p.no-variant{margin:0 0 8px;font-size:12.5px;color:var(--soft)}
 .fam-fold>summary .family-empty-line{margin:0}
 .fam-fold-b{margin-top:12px}
 .fam-fold-b>.guide{margin:0 0 10px}
-.fam-fold-b>.guide>summary,.card-one-line .guide>summary{list-style:none;cursor:pointer;width:26px;height:26px;border:1px solid var(--hair-2);border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font:600 13px var(--sans);color:var(--ink-2)}
-.fam-fold-b>.guide>summary::-webkit-details-marker,.card-one-line .guide>summary::-webkit-details-marker{display:none}
-.fam-fold-b .guide-b,.card-one-line .guide-b{margin:8px 0 0;padding:10px 12px;border:1px solid var(--hair);border-radius:6px;font-size:13px;line-height:1.5;color:var(--ink-2)}
 .card-one-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
 .card-one-line>p{flex:1 1 auto;margin:0;font-size:13.5px;color:var(--ink-2)}
 .card-one-line .guide{margin-left:auto}
