@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Chart;
 using EquityBrief.Data;
+using EquityBrief.Web.App;
 
 namespace EquityBrief.Api.Reading;
 
@@ -28,6 +29,59 @@ public sealed partial class ReadApi
         SELECT session_date, open, high, low, close, volume FROM pulled_bar
         WHERE ticker = $ticker AND pull = $pull AND session_date < $first
         ORDER BY session_date;";
+
+    // The newest night's notes of one stock, each a real event the chart check confirmed.
+    // see: A real event the chart check confirms is a line beneath the chart saying what happened on that date
+    const string NotesOfStock = @"
+        SELECT session_date, kind, says FROM chart_check
+        WHERE ticker = $ticker AND flag = 'note' AND night = (SELECT MAX(night) FROM chart_check)
+        ORDER BY session_date DESC;";
+
+    public async Task<IReadOnlyList<ChartNote>> ChartNotesAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NotesOfStock;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var notes = new List<ChartNote>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            notes.Add(new ChartNote(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture), reader.GetString(1), reader.GetString(2)));
+        }
+
+        return notes;
+    }
+
+    // Every finding of the newest night and the one before it, which the proof page reads.
+    // see: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
+    const string ChecksOfNights = @"
+        SELECT night, ticker, flag, kind, session_date, says FROM chart_check
+        WHERE flag <> 'note' AND night IN (SELECT DISTINCT night FROM chart_check ORDER BY night DESC LIMIT 2)
+        ORDER BY night DESC, ticker, flag, session_date DESC;";
+
+    public async Task<IReadOnlyList<ChartProofRow>> ChartChecksAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ChecksOfNights;
+
+        var rows = new List<ChartProofRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new ChartProofRow(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5)));
+        }
+
+        return rows;
+    }
 
     public async Task<PulledSeries> PulledSeriesAsync(string ticker, DateOnly first)
     {

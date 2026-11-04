@@ -349,7 +349,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         member?.Researched,
         await read.ProviderSharesAsync(ticker),
         reactions,
-        priceDrawn));
+        priceDrawn,
+        await read.ChartNotesAsync(ticker)));
 
     // From 20.13 the analysts as Yahoo and TipRanks last answered for the stock, the month's TipRanks calls, and whether
     // the page asks Yahoo again, which it does where no answer of this New York day is stored.
@@ -2368,6 +2369,10 @@ async Task<IResult> TonightScreenAsync(
 // The watch list page, section 15.16: the names the operator follows on the newest night, each drawn from
 // that night's own rows whether or not the list holds it, with what the swing filter said of it.
 // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+// The chart check's findings of the newest night, those new since the night before first.
+// see: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
+app.MapGet(ChartProof.Route, async (ReadApi read) => Results.Content(ChartProof.Page(await read.ChartChecksAsync()), "text/html; charset=utf-8"));
+
 // Each page's count of trades read back off its rendered markup against the one function, an index at a time.
 // see: Every count of trades names its group and one function works the three groups
 app.MapGet(CountsProof.Route, async (HttpRequest request, ReadApi read, EndpointDataSource routes) =>

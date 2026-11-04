@@ -360,8 +360,25 @@ public static class Nightly
                     history = "the earnings moves and long views not read tonight, " + failed.Message;
                 }
 
-                return FormattableString.Invariant($"{outcome.NamesWarmed} name(s) read from a pull, {outcome.NamesWithout} with none, {outcome.RowsWritten} row(s); ") + history;
-            }, [ChartAverager.Stage, PageHistoryReader.Stage]),
+                // The chart check over what the night now holds, named on its own row where it cannot finish, and the night goes on.
+                // see: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
+                var checker = new EquityBrief.Worker.Charts.ChartChecker(clock, store.DatabaseFile);
+                var checkStarted = clock.UtcNow;
+                string charts;
+
+                try
+                {
+                    charts = EquityBrief.Worker.Charts.ChartChecker.Detail(await checker.RunAsync(indexCode, runId, night.Token, wider));
+                }
+                catch (Exception failed) when (failed is not OperationCanceledException)
+                {
+                    await checker.RecordNotReadAsync(runId, checkStarted, failed.Message, night.Token);
+
+                    charts = "the chart check not read tonight, " + failed.Message;
+                }
+
+                return FormattableString.Invariant($"{outcome.NamesWarmed} name(s) read from a pull, {outcome.NamesWithout} with none, {outcome.RowsWritten} row(s); ") + history + "; " + charts;
+            }, [ChartAverager.Stage, PageHistoryReader.Stage, EquityBrief.Worker.Charts.ChartChecker.Stage]),
             new("swings", async () =>
             {
                 var outcome = await new SwingFinder(clock, store.DatabaseFile)

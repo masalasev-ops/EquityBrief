@@ -1,0 +1,8 @@
+# The remedy of 22.36 and 22.37, the operator's answers of 2026-11-04 on the chart audit. Migration 121 creates the chart check's
+# table and the table the night keeps a split in. CTVA's split of 2026-10-01 stands in no table the check reads, since it landed
+# after the last splits pull, so its one request asks the splits endpoint for CTVA alone, one of the provider's weighted calls,
+# and no model call. A row the pull finds already held stands. No bar moves and no source a rule's version or the readings'
+# version pins moves. The night writes the check's rows, and the chart page draws no line until it has. Run from main after the
+# merge, when no night, off-peak run, local run, ledger build or monthly run is writing, and restart the read surface after it.
+migrate
+history-pull --splits --from 2026-09-01 --index GSPC --names CTVA --live

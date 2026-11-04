@@ -67,4 +67,48 @@ public partial class NightlyRun
         Assert.Equal(1, Scalar(store, "SELECT COUNT(*) FROM earnings_move;"));
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM long_view;"));
     }
+
+    // 22.37: the chart check runs in the same step after the page history reader, asks nothing, and its row is ok on a night with
+    // no night before it to be new against.
+    // see: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
+    [Fact]
+    public async Task TheChartCheckRunsAfterThePageHistoryReaderAndBeforeTheSwingsWithNoCall()
+    {
+        using var store = new TemporaryStore();
+
+        var (code, _, error) = await NightAsync(store, runId: "night-chart-check");
+
+        Assert.True(code == 0, error);
+
+        var stages = RunLog(store, "night-chart-check").Select(row => row.Stage).ToList();
+        var history = stages.IndexOf(PageHistoryReader.Stage);
+        var check = stages.IndexOf(EquityBrief.Worker.Charts.ChartChecker.Stage);
+
+        Assert.True(check == history + 1, string.Join(", ", stages));
+        Assert.True(stages.IndexOf(SwingFinder.Stage) > check, string.Join(", ", stages));
+        Assert.Equal(0, Scalar(store, $"SELECT model_calls + network_requests FROM run_log WHERE run_id = 'night-chart-check' AND stage = '{EquityBrief.Worker.Charts.ChartChecker.Stage}';"));
+        Assert.Equal("ok", RunLog(store, "night-chart-check").Single(row => row.Stage == EquityBrief.Worker.Charts.ChartChecker.Stage).Outcome);
+    }
+
+    [Fact]
+    public async Task AChartCheckThatCannotFinishNamesWhyAndTheNightGoesOnToTheRules()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute("CREATE TRIGGER refuse_check BEFORE INSERT ON run_log WHEN NEW.stage = 'chart-check' AND NEW.detail NOT LIKE 'the chart check did not finish%' BEGIN SELECT RAISE(ABORT, 'the store refused the row'); END;");
+
+        var (code, output, error) = await NightAsync(store, runId: "night-chart-check-refused");
+
+        Assert.True(code == 0, error);
+        Assert.Contains("the chart check not read tonight, ", output, StringComparison.Ordinal);
+
+        var log = RunLog(store, "night-chart-check-refused");
+        var check = log.Single(row => row.Stage == EquityBrief.Worker.Charts.ChartChecker.Stage);
+
+        Assert.Equal("partial", check.Outcome);
+        Assert.Contains("the store refused the row", check.Detail, StringComparison.Ordinal);
+        Assert.Contains(log, row => row.Stage == SwingFinder.Stage && row.Outcome == "ok");
+        Assert.Contains(log, row => row.Stage == EquityBrief.Worker.Nights.NightClose.Stage);
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM chart_check;"));
+    }
 }

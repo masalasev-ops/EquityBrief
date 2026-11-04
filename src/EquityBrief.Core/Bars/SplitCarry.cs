@@ -18,6 +18,11 @@ public static class SplitCarry
     public static bool Fits(decimal closeOverClose, decimal newShares, decimal oldShares) =>
         newShares > 0 && oldShares > 0 && Math.Abs((closeOverClose * newShares / oldShares) - 1) < Tolerance;
 
+    // A move this split explains: one the ratio fits, a ratio close to one asking nothing of the closes, since an ordinary day's
+    // move would fit it.
+    public static bool Reads(decimal closeOverClose, decimal newShares, decimal oldShares) =>
+        Math.Abs((oldShares / newShares) - 1) >= 0.25m && Fits(closeOverClose, newShares, oldShares);
+
     public static IReadOnlyList<SplitAnswer> NotCarried(IReadOnlyList<PulledSession> sessions, IReadOnlyList<SplitAnswer> splits)
     {
         var ordered = sessions.OrderBy(session => session.Session).ToArray();
@@ -27,8 +32,7 @@ public static class SplitCarry
         {
             var at = Array.FindIndex(ordered, session => session.Session >= split.ExDate);
 
-            // A plain ratio close to one asks nothing of the closes, since an ordinary day's move would fit it.
-            if (at > 0 && ordered[at - 1].Close > 0 && Math.Abs((split.OldShares / split.NewShares) - 1) >= 0.25m && Fits(ordered[at].Close / ordered[at - 1].Close, split.NewShares, split.OldShares))
+            if (at > 0 && ordered[at - 1].Close > 0 && Reads(ordered[at].Close / ordered[at - 1].Close, split.NewShares, split.OldShares))
             {
                 left.Add(split);
             }

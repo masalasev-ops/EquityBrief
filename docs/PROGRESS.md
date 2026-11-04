@@ -15117,3 +15117,84 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             migrations 0 to 120 with none pending, schema version 120, against `data-ci` and never `data`; the phase report 65 tables,
             1501 claims, 1501 passing, none out of scope and none unexamined, 1516 placements and verdicts reconciled against a floor
             of 34, 46 checks on the roster run and passed.
+
+### 22.33 - record: the two remedies and the three ledgers run, and which rules' records and readings moved   2026-11-04
+
+Not a checkpoint entry: it records the runs 22.33 and its correction carried, and lands nothing.
+Ran:        the first remedy from 5605e41b from 07:35 UTC, steps 1 to 4, 6 and 7 of 7; the second, from b8514f00 from 09:02 to 09:04 UTC, 8 of 8 stocks,
+            19,372 bars, 317 prints, 142 requests. PECO 2021-07-06 at 1 for 3 on 1,423 sessions, TALO 2016-06-13 at 1 for 10 on 2,782, WOR 2023-12-01 at
+            1622 for 1000 on 2,782; 6,987 rows, 3 requests, pull history-pull-20261104T090425.4605125Z. VSXY joined, pull
+            history-pull-20261104T073504.5421568Z, 1,329 bars from 2021-07-21. The three ledgers with `--again` through 2026-10-08 from a clean copy of
+            b8514f002a20, from 09:05 to 11:33 UTC, each `ledger-check` 200 of 200.
+Ledgers:    setups and those passing the live rule, with the build of 2026-11-03 beside them. S&P 500 385,304 and 61,666 (385,303 and 61,667);
+            S&P 400 280,800 and 45,158 (280,896 and 45,178); S&P 600 384,403 and 51,089 (384,397 and 51,071).
+On CTVA:    43 outcomes changed, 40 from a loss to a win and 3 still a loss; 18 fills changed, all in risk multiples: -1131.95, -1.37 twice, -0.89, 1.12,
+            1.39, 1.44, 1.45, 1.56, 1.58, 4.78, 5.38, 11.15 twice, 12.89 twice, 19.97 and 54.32, the worst before them among -632, -282, -168, -47 and -44. The
+            fill of -1131.95 on 2026-09-30 is the right arithmetic, a stop of 77.6378 under a close of 77.65. No pick, trade or holding stands on CTVA on any rule.
+            The 13 of 22.33's correction are the false losses decided on 2026-10-01; the 43 are all that changed, read before and after the remedy.
+Moved:      setups, live, mean result and edge, by index and rule. The largest: the S&P 400's drift, mean .2784 to .2802, edge .0265 to .0295; the S&P 600's
+            drift, edge -.1050 to -.1037; the S&P 500's drift, mean .1982 to .1975, edge -.0063 to -.0068; the S&P 500's quality, live 10,516 to 10,515;
+            the S&P 400's dip, setups down 79 and live down 16; its pullback, setups down 8 and live down 3; the S&P 600's dip, setups up 3 and live up 18.
+            By stock: CTVA's dip, mean -.015 to .031, its quality, live 13 to 12; WOR's setups on the S&P 400, dip 307 to 230, breakout 20 to 12, pullback
+            49 to 41. Picks and trades on the other stocks that changed stand as they were: HWKN's S&P 600 drift pick and trade, 4 index rule trades and 1
+            heavyweight rule holding.
+Stands:     MOG-A stays suspect, since EODHD still serves its 3 copied candles. The 14 refetched stocks' 2025-11-03 session was dropped without a kept bar row,
+            which the pull holds.
+Carried:    CTVA's 5 night setups, which the monthly run of 2026-11-07 writes again; its averages and those of MSGK and THRM, which the night of 2026-11-04 works
+            again; the splits with no ratio the audit could match, LGND 2022-11-02, TALO 2017-03-01 and VTOL 2020-06-12, read at 22.38.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 07a234fd, whose tree PR 635 merged, with 22.35's figures; records alone change in this entry.
+
+### 22.36 - a line beneath the chart for each real event the chart check confirms   2026-11-04
+
+Built:      beneath the chart the newest night's notes in view, newest first, six and how many more: a move saying what explains it, results, a filing,
+            a dividend at least half the fall or 10 or more members moving that far; a spin-off; a ticker change; a first session. On the daily chart a move
+            up to 290 days before the first candle is drawn too, since that is what leaves its averages off the chart.
+Read back:  on this branch's build, over a scratch store holding FISV, KO, FDX and CTVA's rows copied read-only and the read-only pass's findings. FISV daily and
+            weekly: "On 2025-11-11 the ticker changed from FI to FISV." and "On 2025-10-29 the close fell 44.0% in a day, from 126.17 to 70.60, on its results.", at
+            1440 light and 390 dark. FDX on all three: "On 2026-06-01 it paid out a spin-off or a stock dividend, filed as a split of 1241 for 1000", at 1440 dark and
+            390 light. KO, with no big drop, draws none, at 390 light and 1440 light.
+Found:      the first rule for a spin-off, under one and a half for one, left CTVA's 1333 for 200 silent; the second, two whole numbers at most 20, named BKNG's 25 for
+            1 and POWL's 959692 for 319897 as spin-offs. The rule stands on the ratio's value: a whole number or 5 for 4, 4 for 3 or 3 for 2 within 0.1% is a company's own.
+Tests:      from 3207, 5 of the 17 22.36 and 22.37 add: each note and each explanation at its limit, a line in view drawn and one out of it not, and six and how many more.
+Mutation:   one for each property, predicted first and each red at its test: a move past the averages drawn; a spin-off before the candles drawn; the longer charts drawing
+            a move before them; an older night read; every line shown; results read on the session alone; a dividend a quarter of the fall; nine members market-wide; a
+            split read after the results; a quarter exactly over the limit; a whole split a spin-off; a filing a split; no history a first session; three years
+            a first session. Fourteen, fourteen red.
+Carried:    CTVA's line, read on main after the remedy's one request and the night; the read-only copy's pages with 22.34's and 22.35's, from `tools/publish-site`.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with the figures 22.37's entry states.
+
+### 22.37 - the chart audit runs every night after the bars land, with no request, and lists what it finds   2026-11-04
+
+Built:      the chart checker, in the chart averages step after the page history reader: flags a, b, c and e over every member and the three the audit found, writing the
+            night's rows and keeping the night before's; its row partial where a flag is new, naming up to 20; its failure named and the night going on. The corporate
+            action checker keeps each split the day files carry in a table of its own, the first standing. `/proof/charts` lists every finding, what is new first and what
+            stands in the pulled years in a fold. Migration 121 creates the two tables.
+Remedy:     `tools/remedies/2026-11-04-22.37-the-chart-check.txt`, `migrate` and one weighted call for CTVA's split, to run from main after the merge.
+Measured:   a read-only pass of the store's night of 2026-11-03, 1,504 stocks, 210 seconds cold and 12 warm, writing nothing: 76 of flag a on 57 stocks, 39 of flag b on 34
+            in the stored year and 657 on 213 in the pulled years, 10 of flag c on 4, 55 of flag e in the stored year and 4,982 in the pulled years, and 1,281 notes.
+Against:    the audit of the same store before the fixes. Flag a 56 stocks, the check 57, CTVA alone more, whose averages wait for the night. Flag b in the stored year 39 and
+            39, CTVA gone and a move on MSGK's adjusted closes come. Flag c 16 stocks, the check 4: 13 of the 16 mended by the remedies, CTVA, MSGK and THRM's averages waiting
+            for the night, and HR's raw close 1.0% from the pull on one of its copied candles' sessions. Stored candles on 8 stocks and 2 behind, the check 3 and 1: 5 and 2 mended, MOG-A's 3 still
+            served, MSGR's of 2026-10-26 copied, FDXF's first day with no volume and KVUE behind since 2026-10-30. The pulled years: 690 jumps on 224 stocks, the check 657 on 213, the
+            remedies' pulls and splits between them; 4,936 candles with no volume, the check 4,982, the 8 new pulls' among them; the 2,812 missing sessions are 22.38's and the
+            check reads no missing session before the stored year.
+Found:      49 stocks the check flags as holding a dividend the stored bars do not carry, of 981 stocks paying one since 2026-08-01, which the audit's 5% limit could not see. 47 of
+            the first count's 53 were refetched on the night of the ex-date: the action fired, the provider's answer that evening did not yet carry the dividend, and nothing
+            asked again, so the sessions before stay about 1% high until the next dividend. AMT's 2026-09-29: stored 167.35 adjusted and raw, the pull of 2026-10-25 165.56 and 167.35.
+            A later reverse split restating an amount, AMCR's and DD's, read as a dividend not carried at first; the step is now read at no more than half the smallest
+            read, 0.25%. No fix is made here: it waits on the operator's word. The suite's first run over this pull request found the Run page holding no group for the check's
+            stage, so a new flag would have reached no one, and two of its lists naming the components that read the chart averages and the members; a stock announced and not yet
+            joined was read too, and is not now.
+Tests:      3224, from 3207, the 12 of 17 not at 22.36: each flag on both sides of its limit, the store read and written over three nights, the day files' split kept and the
+            first standing, the proof page, a finding in the pulled years, a night's order and a failed check's row, and a new flag read off the Run page's failed region.
+Mutation:   one for each property, predicted first and each red at its test: an average limit of a fifth; the monthly chart not read; the pull at 6%; the pull off its scale; the raw
+            not held; the join reading the pull alone; an average off by 1.5% passing; a copied candle reading as zero volume; a close outside the range; a suspect stock flagged as
+            behind; a missing session past the newest; a dividend held to the full step; a small dividend read; a pulled finding saying nothing; a new flag reading ok; nothing older
+            removed; a known flag new; a name no member holds kept; a later answer replacing the first; the pulled years under their flag; the night reading no check; a failed check
+            stopping the night; the Run page holding no group for it; a partial row dropped from the page; a stock not yet joined read. Twenty five, twenty five red.
+Carried:    the first night's rows read at the proof page; the 49 stocks' dividends and the fix, on the operator's word; 22.38 and 22.39.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the
+            figures below stated before that run: all six steps, 0 warnings, 0 errors, 3224 of 3224 tests ran with none failed,
+            migrations 0 to 121 with none pending, schema version 121, against `data-ci` and never `data`; the phase report 65 tables,
+            1506 claims, 1506 passing, none out of scope and none unexamined, 1521 placements and verdicts reconciled against a floor
+            of 34, 46 checks on the roster run and passed.

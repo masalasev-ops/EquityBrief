@@ -18,6 +18,9 @@ public sealed record RouteTime(string Route, int Requests, double Median, double
 // A stretch of the weekly or monthly chart holding no daily row, between the candles either side of it.
 public sealed record ChartGap(DateOnly After, DateOnly Before);
 
+// A real event the chart check confirmed: its session, its kind and what happened in words.
+public sealed record ChartNote(DateOnly Session, string Kind, string Says);
+
 // From 20.12 what the chart page's graphs draw, each from a figure the report reads: the newest prints' earnings a share
 // against their estimates and the quarter to report next, the newest quarters' revenue and net income with the net
 // margin in the currency the filings state, and the analysts' figures with the price the target is set against; and
@@ -55,13 +58,38 @@ public sealed record ChartPageView(
     ReportStandingView? Standing = null,
     ChartGraphs? Graphs = null,
     BriefView? Brief = null,
-    FundamentalsView? Fundamentals = null);
+    FundamentalsView? Fundamentals = null,
+    IReadOnlyList<ChartNote>? Notes = null);
 
 // The chart page, which every link opening a stock opens first, and the masthead it shares with the name page.
 // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
 public sealed partial class SinglePageApp
 {
     public const string ChartRoute = MarkRenderer.ChartRoute;
+
+    // How many of a chart's real events its lines name.
+    public const int NotesShown = 6;
+
+    // The real events the chart shows, each what happened on its date, the newest few with how many more are on file.
+    // see: A real event the chart check confirms is a line beneath the chart saying what happened on that date
+    public static string ChartNotes(IReadOnlyList<ChartNote> notes)
+    {
+        if (notes.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var lines = new StringBuilder("<ul class=\"chart-notes\">");
+
+        foreach (var note in notes.Take(NotesShown))
+        {
+            lines.Append(FormattableString.Invariant($"<li class=\"chart-note\" data-kind=\"{Escaped(note.Kind)}\" data-on=\"{note.Session:yyyy-MM-dd}\">{Escaped(note.Says)}</li>"));
+        }
+
+        lines.Append(notes.Count > NotesShown ? FormattableString.Invariant($"<li class=\"chart-note muted\">And {notes.Count - NotesShown} earlier.</li>") : string.Empty);
+
+        return lines.Append("</ul>").ToString();
+    }
 
     // The intervals the chart page offers, each by the word its link carries.
     public static IReadOnlyList<(string Word, string Label)> Intervals { get; } =
@@ -193,6 +221,8 @@ public sealed partial class SinglePageApp
             ? FormattableString.Invariant($"<p class=\"chart-reading\" aria-live=\"polite\">{MarkRenderer.ChartReading(view.Candles, view.Candles.Count - 1)}</p>")
             : string.Empty);
         chart.Append("<div class=\"chart-wrap\"><div class=\"fig chart-fig\">").Append(marks.CandleChart(ticker, view.Interval, view.Candles, view.Bands, view.Plans, view.Events)).Append("</div><div class=\"chart-box\" hidden></div></div>");
+
+        chart.Append(ChartNotes(view.Notes ?? []));
 
         foreach (var gap in view.Gaps)
         {

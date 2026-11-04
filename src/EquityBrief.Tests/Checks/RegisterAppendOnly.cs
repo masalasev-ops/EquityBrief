@@ -788,7 +788,7 @@ public class RegisterAppendOnly
         Assert.DoesNotContain(EquityBrief.Worker.Sweep.SweepHistory.Access.Stores, touch => touch.Touch != EquityBrief.Core.Components.Touch.Read);
         Assert.Contains(ChartAverages, found);
         Assert.Equal(
-            ["ChartAverager:Insert, Delete", "ReadApi:Read"],
+            ["ChartAverager:Insert, Delete", "ChartChecker:Read", "ReadApi:Read"],
             ShippedComponents.All()
                 .SelectMany(component => component.Access.Stores
                     .Where(touch => touch.Store == EquityBrief.Core.Components.Store.ChartAverage)

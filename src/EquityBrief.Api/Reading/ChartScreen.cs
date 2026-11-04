@@ -36,7 +36,8 @@ public sealed record ChartInputs(
     DateOnly? ReportWritten,
     (DateOnly Quarter, decimal Shares)? ProviderShares = null,
     IReadOnlyList<ReactionRow>? Reactions = null,
-    decimal? PriceDrawn = null);
+    decimal? PriceDrawn = null,
+    IReadOnlyList<ChartNote>? Notes = null);
 
 // The chart page's figures, worked when the page is read from what the store holds: the candles at the interval shown,
 // rolled up in the core, each with the averages the name page draws at its last session; and the grid, every figure
@@ -94,7 +95,33 @@ public static class ChartScreen
             BeforeLine(inputs, stored),
             Grid(inputs, stored),
             inputs.ReportWritten,
-            Graphs: Graphs(inputs));
+            Graphs: Graphs(inputs),
+            Notes: NotesInView(inputs.Notes ?? [], candles, inputs.Interval));
+    }
+
+    // How far before a daily chart's first candle a move still shapes what it draws: the 200 sessions its longest average
+    // reads, in calendar days.
+    const int DaysAnAverageReachesBack = 290;
+
+    // The real events the chart check confirmed that this chart shows, newest first, and on the daily chart a move in the sessions
+    // its averages still read, since that is what leaves them off the chart.
+    // see: A real event the chart check confirms is a line beneath the chart saying what happened on that date
+    static IReadOnlyList<ChartNote> NotesInView(IReadOnlyList<ChartNote> notes, IReadOnlyList<Candle> candles, ChartInterval interval)
+    {
+        if (candles.Count == 0)
+        {
+            return [];
+        }
+
+        var (first, last) = (candles[0].First, candles[^1].Last);
+
+        return
+        [
+            .. notes
+                .Where(note => (first <= note.Session && note.Session <= last)
+                    || (interval == ChartInterval.Daily && note.Kind == "move" && note.Session < first && note.Session >= first.AddDays(-DaysAnAverageReachesBack)))
+                .OrderByDescending(note => note.Session),
+        ];
     }
 
     // From 20.12 the graphs' figures, each the report's own: the stored reactions' estimates and reported earnings a share

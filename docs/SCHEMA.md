@@ -169,6 +169,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `version_block` | RuleVersionScorer | none | none |
 | `series_state` | CorporateActionChecker | CorporateActionChecker | none |
 | `ticker_join` | TickerJoins | none | none |
+| `chart_check` | ChartChecker | none | ChartChecker |
+| `split_event` | CorporateActionChecker | none | none |
 | `research_request` | ReadApi, RequestDrain | ReadApi, RequestDrain | none |
 | `watch_list` | ReadApi | none | ReadApi |
 | `quote_request` | ReadApi | none | none |
@@ -263,6 +265,38 @@ Primary key: `ticker`, `session_date`.
 It sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
 
 One year retained. The fetcher drops sessions older than the retention window on the night they fall out of it, and is declared above as a deleter of this table because it does.
+
+### chart_check
+Grain: one row per night, stock, flag, kind and session.
+
+| Column | Type | Notes |
+|---|---|---|
+| `night` | TEXT | the newest stored session the check read over |
+| `ticker` | TEXT | |
+| `flag` | TEXT | a, b, c or e, the audit's flags, or note, a real event the chart page says in words |
+| `kind` | TEXT | what the flag found, as "copied candle", or what the note says, as "move" |
+| `session_date` | TEXT | the session it stands on |
+| `says` | TEXT | the words a person reads |
+| `run_id` | TEXT | the night that wrote it |
+
+Primary key: `night`, `ticker`, `flag`, `kind`, `session_date`.
+
+**What the chart check found, read by the chart page and the proof page and by no rule** (see: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears) (see: A real event the chart check confirms is a line beneath the chart saying what happened on that date). The night writes its rows whole and keeps the night before's, which it reads for what is new, removing anything older in the same transaction.
+
+### split_event
+Grain: one row per stock per split the night's day files carried for a member.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `ex_date` | TEXT | the first session trading on the new basis |
+| `new_shares` | TEXT | decimal in code, the shares one block of old shares became |
+| `old_shares` | TEXT | decimal in code, the old shares in that block |
+| `run_id` | TEXT | the night that kept it, or the remedy's pull |
+
+Primary key: `ticker`, `ex_date`.
+
+**A split the day files carried, kept for the chart check to read that the stored bars carry it.** The first answer stands, nothing updates or deletes a row, and a ratio that is not two numbers is left out. No rule reads it.
 
 ### ticker_join
 Grain: one row per stock whose earlier sessions the provider keeps under another ticker.

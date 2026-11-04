@@ -78,6 +78,7 @@ public sealed class CorporateActionChecker : IComponent
             // suspect with its adjusted history out of step with the provider,
             // and nothing asked for it again unless another action landed on it.
             new StoreTouch(Store.SeriesState, Touch.Read | Touch.Insert | Touch.Update),
+            new StoreTouch(Store.SplitEvent, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.SplitsAndDividends, Feed.HistoricalPrice]);
@@ -313,6 +314,8 @@ public sealed class CorporateActionChecker : IComponent
         var (lateActions, late, lateUnread) = await LateActionsAsync(connection, session, members, cancellationToken);
 
         acted.UnionWith(late);
+
+        await KeepSplitsAsync(connection, today.Concat(lateActions).Where(action => members.Contains(action.Ticker)), started, runId, cancellationToken);
 
         // And every name an earlier night left suspect, asked for again nightly
         // while its retries last and weekly after that, until one refetch
@@ -684,6 +687,35 @@ public sealed class CorporateActionChecker : IComponent
         }
 
         return (behind, copied.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<DateOnly>)pair.Value, StringComparer.OrdinalIgnoreCase), reach);
+    }
+
+    // Each split the day files carry for a member, the first kept standing, which the chart check reads to see that the stored
+    // bars carry it. A ratio that is not two numbers is left out.
+    // see: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
+    static async Task KeepSplitsAsync(SqliteConnection connection, IEnumerable<CorporateAction> actions, DateTimeOffset started, string runId, CancellationToken cancellationToken)
+    {
+        foreach (var split in actions.Where(action => action.Kind == ActionKind.Split))
+        {
+            var parts = split.Value.Split('/');
+
+            if (parts.Length != 2
+                || !decimal.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var newShares)
+                || !decimal.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var oldShares)
+                || newShares <= 0 || oldShares <= 0)
+            {
+                continue;
+            }
+
+            await using var insert = connection.CreateCommand();
+            insert.CommandText = "INSERT INTO split_event (ticker, ex_date, new_shares, old_shares, run_id) VALUES ($ticker, $ex_date, $new_shares, $old_shares, $run_id) ON CONFLICT (ticker, ex_date) DO NOTHING;";
+            insert.Parameters.AddWithValue("$ticker", split.Ticker);
+            insert.Parameters.AddWithValue("$ex_date", Text(split.Date));
+            Money.Bind(insert, "$new_shares", newShares);
+            Money.Bind(insert, "$old_shares", oldShares);
+            insert.Parameters.AddWithValue("$run_id", runId);
+
+            await insert.ExecuteNonQueryAsync(cancellationToken);
+        }
     }
 
     // The actions of the sessions before the night's, the members among them this check has not asked for since their

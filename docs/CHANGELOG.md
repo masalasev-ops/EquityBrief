@@ -7,6 +7,23 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - CLAUDE.md - the chart averages step's reading of the pulled history includes the chart check
+Decision: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
+Was:
+> whose figures, the chart's averages and each stock's typical earnings move and long view, only the name page and the chart page draw and no rule, level, listing or gate reads, and the setup ledger's valuation reading alone,
+Now:
+> the same, with the chart check's findings named after the reads, which only the chart page and its proof page draw and no rule reads.
+Why: the chart check reads the pulled history inside the step the hard rule names, and the rule says what may read those tables.
+
+### 2026-11-04 - docs/ARCHITECTURE.html - the night's chart averages step reads every member's chart and the corporate action checker keeps the splits it reads
+Decision: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
+Was:
+> a reader that cannot finish named on its own row while the night goes on; figures the name and chart pages alone draw (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw) (see: A stock's typical earnings move is the median size of its reaction over every print the store holds, read through the history pulled before its year) (see: The long view draws the month-end closes over the pulled history at the bar store's scale with the plan's levels on the same prices).</li>
+> <td>splits and dividends feed, historical price feed, membership, bar store, series state</td><td>bar store, series state</td>
+Now:
+> the same, with the chart check read after the long views; and the writes reading bar store, series state, split events.
+Why: the operator's answers of 2026-11-04 ask for the audit as a nightly check, and the check reads the splits the night's day files carry.
+
 ### 2026-11-04 - docs/ARCHITECTURE.html - the chart's box under the pointer
 Decision: The chart page draws a box beside the candle under the pointer or a tap or the arrow keys, and rests on the newest candle's line
 Was:

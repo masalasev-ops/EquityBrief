@@ -1154,6 +1154,7 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .candle-chart .level-bands{display:none} .chart-fig.bands-on .candle-chart .level-bands{display:inline}
 .chart-fig .candle-chart-levels{display:none} .chart-fig.bands-on .candle-chart-levels{display:inline} .chart-fig.bands-on .candle-chart-plain{display:none}
 .chart-wrap{position:relative}
+.chart-notes{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px;font-size:14px;color:var(--ink-2)}
 .candle-chart:focus{outline:none} .candle-chart:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .candle-chart .volume-pane,.candle-chart .chart-events,.candle-chart .chart-cross{pointer-events:none}
 .chart-cross{display:none} .chart-cross.on{display:inline}

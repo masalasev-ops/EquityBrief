@@ -45,6 +45,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Ticker joins"),
     ];
 
+    // 22.37's one: the chart checker.
+    internal static string[] ChartCheckRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Chart checker"),
+        CheckReach.Key(Scope.MatrixTable, "Chart checker"),
+    ];
+
     // 18.2's two: the dividend keeper and the Treasury reader.
     internal static string[] ReportComponentRows =>
     [
@@ -198,6 +205,9 @@ public partial class ComponentAccess
 
             // 22.33, the ticker joins.
             .. TickerJoinRows,
+
+            // 22.37, the chart checker.
+            .. ChartCheckRows,
 
             // 22.9, Quality at a fair price.
             .. QualityRows,
