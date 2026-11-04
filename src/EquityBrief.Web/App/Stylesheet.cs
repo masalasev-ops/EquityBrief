@@ -1152,6 +1152,7 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
    toggle, the volume in the gain's and the loss's hue, a listing rule's lines, and the grid of figures in groups. */
 .candle-chart .m-legend-t,.candle-chart .m-tick,.candle-chart .m-nowtag-t,.candle-chart .m-cap{font-size:15px}
 .candle-chart .level-bands{display:none} .chart-fig.bands-on .candle-chart .level-bands{display:inline}
+.chart-fig .candle-chart-levels{display:none} .chart-fig.bands-on .candle-chart-levels{display:inline} .chart-fig.bands-on .candle-chart-plain{display:none}
 .candle-chart .vol-up{fill:var(--up)} .candle-chart .vol-down{fill:var(--down)} .candle-chart .vol-flat{fill:var(--muted)}
 .candle-chart .plan-line{stroke-width:1.6} .candle-chart .plan-buy,.candle-chart .plan-target{stroke:var(--up)} .candle-chart .plan-stop{stroke:var(--down)}
 .candle-chart .plan-tick-buy,.candle-chart .plan-tick-target{fill:var(--up)} .candle-chart .plan-tick-stop{fill:var(--down)}

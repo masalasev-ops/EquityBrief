@@ -1066,6 +1066,7 @@ public sealed partial class SinglePageApp : IComponent
           if (!chart || (event.relatedTarget && chart.contains(event.relatedTarget))) { return; }
           const candles = chart.querySelectorAll('.candle');
           if (candles.length > 0) { readCandle(candles[candles.length - 1]); }
+          for (const label of chart.querySelectorAll('[data-rest]')) { label.textContent = label.getAttribute('data-rest'); }
         });
         menuButton.addEventListener('click', () => {
           const open = menuButton.getAttribute('aria-expanded') !== 'true';

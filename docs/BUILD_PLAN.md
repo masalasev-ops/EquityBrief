@@ -2399,6 +2399,11 @@ The audit's answers, word for word in the ruling entry. The night's check reads 
 
 **Done when** a split filed for an earlier session is shown refetched by a later session's check, and one the check asked for on its own session shown left; the requests of its own file and the earlier files are counted and an unreadable earlier file is shown failing nothing; a member behind the night is shown asked, clearing to ok where the answer reaches the night and reading suspect with why where it does not, a member at the night left alone, and past the limit marked with no request; a copied candle is worked by hand against each price and the volume, a first-day zero left alone, and an answer without it shown clearing it; the join is worked by hand over constructed closes at the scale the two closes set; the carried split is worked by hand, one the closes carry and one whose ratio fits no move shown left; clearing outcomes is shown touching only the named stock from the day on; the remedy file states its calls and the rows on CTVA are listed from the store; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.34 On the operator's answers of 2026-11-04: the chart's scale and price gridlines
+Same answers. The scale fits the candles and the plan's lines with a small margin, and the night's levels while they are shown; an average is clipped at the edge and the legend says so; the three averages differ in dashes and weight; round prices are labelled gridlines (see: The chart page's scale fits the candles, the plan's lines and the levels shown, and an average never widens it).
+
+**Done when** the fit and the step are worked by hand; a chart shaped as FISV's is shown with its scale at the candles, its average clipped and the legend's words read back, above and below; a plan's line and a level past the candles are each shown widening the scale, the level only in the drawing the toggle shows; the three averages' strokes are shown distinct and each swatch its line's; the gridlines are read from the drawing and a label a named price stands on left out; the legend is shown fitting on a second row; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23
