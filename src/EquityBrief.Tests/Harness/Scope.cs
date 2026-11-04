@@ -4573,6 +4573,22 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(CatalogueTable, "Session marks")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the session marks it inserts and the run log it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Session marks")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Session marks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Dividend waits")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(StoresTable, "Dividend events")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
@@ -6288,6 +6304,8 @@ internal static class Scope
         // 18.2's three, which the plan names as the trend the fetch keeps, the bulk dividends and the Treasury yield.
         ["Estimate trends"] = "18.2",
         ["Ticker joins"] = "22.33",
+        ["Session marks"] = "22.38",
+        ["Dividend waits"] = "22.40",
         ["Chart checks"] = "22.37",
         ["Split events"] = "22.37",
         ["Dividend events"] = "18.2",

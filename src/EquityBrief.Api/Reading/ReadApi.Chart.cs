@@ -42,6 +42,32 @@ public sealed partial class ReadApi
         WHERE ticker = $ticker
         ORDER BY session_date DESC;";
 
+    const string WaitsOfStock = "SELECT ex_date, amount, asked_on FROM dividend_wait WHERE ticker = $ticker ORDER BY ex_date;";
+
+    // see: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits
+    public async Task<IReadOnlyList<DividendWait>> DividendWaitsAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = WaitsOfStock;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var waits = new List<DividendWait>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            waits.Add(new DividendWait(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(1)),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+        }
+
+        return waits;
+    }
+
     public async Task<IReadOnlyList<ChartNote>> ChartNotesAsync(string ticker)
     {
         await using var connection = Open();

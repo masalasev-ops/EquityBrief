@@ -170,7 +170,8 @@ public sealed partial class SinglePageApp
         QuoteSession? quoteSession,
         SuspectPrices? suspect,
         bool? watched,
-        string? universe)
+        string? universe,
+        IReadOnlyList<DividendWait>? dividendWaits = null)
     {
         var ticker = view.Ticker;
         var kept = universe is { Length: > 0 } index ? "&universe=" + Uri.EscapeDataString(index) : string.Empty;
@@ -178,6 +179,7 @@ public sealed partial class SinglePageApp
 
         region.Append(FormattableString.Invariant($"<section class=\"chart-page\" data-ticker=\"{Escaped(ticker)}\" data-interval=\"{Escaped(view.Interval)}\">"));
         region.Append(marks.PricesSuspect(ticker, suspect));
+        region.Append(marks.DividendWaits(ticker, dividendWaits));
         region.Append(Masthead(ticker, bars, mast, quote, quoteSession, asksForQuotes: true, night: null, suspect, watched, string.Empty));
 
         // The report: a link to it with the day it was written, its standing and the controls that write it again, or that

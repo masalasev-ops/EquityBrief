@@ -86,6 +86,10 @@ public partial class ArchitectureConformance
 
         // 22.36's line on the chart and 22.37's chart checker and two stores, after phase 21's as well.
         .. FixtureExpectations.ChartCheckRows,
+
+        // 22.38's session marks and 22.40's dividend waits, after phase 21's as well.
+        .. FixtureExpectations.SessionMarkRows,
+        .. SchemaColumns.DividendWaitStoreRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

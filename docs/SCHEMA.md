@@ -169,6 +169,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `version_block` | RuleVersionScorer | none | none |
 | `series_state` | CorporateActionChecker | CorporateActionChecker | none |
 | `ticker_join` | TickerJoins | none | none |
+| `session_mark` | SessionMarks | none | none |
+| `dividend_wait` | CorporateActionChecker | CorporateActionChecker | CorporateActionChecker |
 | `chart_check` | ChartChecker | none | ChartChecker |
 | `split_event` | CorporateActionChecker | none | none |
 | `research_request` | ReadApi, RequestDrain | ReadApi, RequestDrain | none |
@@ -311,6 +313,38 @@ Grain: one row per stock whose earlier sessions the provider keeps under another
 Primary key: `ticker`.
 
 **Written once by `ticker-join` on the operator's word, a second word changing nothing, and read wherever the provider's series is asked for** (see: A ticker change the provider keeps under two tickers is joined once on the operator's word, and every read of the provider's series reads the join).
+
+### session_mark
+Grain: one row per stock and session of its pulled history the operator gave their word on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the session |
+| `kind` | TEXT | starts here, bad print or checked and kept |
+| `says` | TEXT | the words a person reads beneath the chart |
+| `ruled` | TEXT | UTC instant the operator's word was recorded |
+| `run_id` | TEXT | the run that recorded it |
+
+Primary key: `ticker`, `session_date`.
+
+**Written once by `session-mark` on the operator's word, a second word changing nothing, and no pulled row moves** (see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart). A session a history starts on leaves the sessions before it out of the chart's and the name page's reads of the pull, the chart's averages and the page history reader; a bad print is read past by the chart check's moves and draws a small mark; a move checked and kept is a line and no flag. No rule reads it until phase 23's restart.
+
+### dividend_wait
+Grain: one row per stock and ex-date whose dividend the provider's answer did not carry.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `ex_date` | TEXT | the dividend's ex-date |
+| `amount` | TEXT | decimal in code, the amount a share as it was paid |
+| `asked_on` | TEXT | the session it was last asked for |
+| `retries` | INTEGER | the nights after the first that have asked |
+| `run_id` | TEXT | the run that last asked |
+
+Primary key: `ticker`, `ex_date`.
+
+**A dividend the answer did not carry, asked for again on the five nights after and weekly, and removed when an answer carries it or the stock leaves the index** (see: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits). Its stock's state stays ok, so no rule stops; the stock's pages and the run page read it.
 
 ### kept_bar
 Grain: one row per ticker and session the fetcher dropped as it fell out of the year it keeps.

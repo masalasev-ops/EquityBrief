@@ -415,7 +415,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
             quoteSession,
             NameScreen.Suspect((await read.SuspectSeriesAsync()).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal))),
             (await read.WatchedAsync()).Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
-            universe),
+            universe,
+            await read.DividendWaitsAsync(ticker)),
         "text/html; charset=utf-8");
 });
 
@@ -750,7 +751,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // the table was read for its facts was not.
         commentaryFromRelease: written.FirstOrDefault(section => string.Equals(section.Section, EquityBrief.Core.Research.Evidence.Segments, StringComparison.Ordinal)) is { } commentary
             ? await read.WrittenFromReleaseSegmentsAsync(ticker, commentary.AsOf)
-            : null);
+            : null,
+        dividendWaits: await read.DividendWaitsAsync(ticker));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

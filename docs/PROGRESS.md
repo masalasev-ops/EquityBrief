@@ -15246,3 +15246,26 @@ Tests:      with 22.40's, in one count there.
 Mutation:   each predicted first, in 22.40's entry.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
 
+### 22.40 - a dividend the provider's answer does not yet carry is asked for again, and an answer that is another stock's prices is refused   2026-11-04
+
+Built:      the corporate action checker reads each dividend the day files carry and each waiting against the answer that replaced a year, in a shared core function. Not carried, at a gap of
+            half of 1% of the close, it waits in `dividend_wait`, migration 123, and is asked for on the five nights after and weekly; an answer carrying it or the stock leaving the
+            index ends it. The stock's state stays ok, so no rule stops. The name page and the chart page open with a line, the actions row is partial and the Run page names it. The chart
+            check flags at the same gap from the same function, a later split's restated amount read back to what was paid. A refetch's answer with a day's move over 25% that the
+            stored closes miss by over 25 points is refused before anything is dropped: the stock keeps its year and reads suspect, a real move, a split the store has not applied and a stored session with no volume standing.
+Cost:       one request a stock a night for five nights and one a week after, each ending as above. The first refetch's count, 49 of 981 stocks paying since 2026-08-01 over about three months, is about 250 asks across those months, and the carve-out in `CLAUDE.md` says so.
+Tests:      3251, from 3224, 27 tests and theories in all: the refetch's limits by hand and over the store, the marks read by the check, the averages and the long view, the chart page's line and mark, the fold on four screens and no question mark on ten, the gap by hand, the wait's nights over the store, a stock leaving, AMCR's restated amount, and the Run page's row.
+Mutation:   one for each property, predicted first and each red at its test. The guard: a day of 26% standing; apart by 26 points standing; a move the store shows refused; a
+            split the store has not applied refused; a session with no volume a witness; the refetch not asking. 22.38: a bad print read; a move kept still a move; a start naming a first
+            session too; the check reading before a start; the check reading no marks; the averages, the long view and the chart each reading before a start; a later word replacing the
+            first; a kind no one ruled kept; no line beneath the chart; no mark on the candle; a bad print drawn as a dividend. 22.39: the fold a question mark. 22.40: a gap of 0.6%; a gap at
+            the limit carried; the step read one way only; an ex-date with nothing before it read; a restated amount read as paid; the check holding to a 1.6% gap; no wait written; a
+            carried answer leaving the wait; four nights asked; asked every night after; never asked after the five; the count running on the same night; a dividend waiting as suspect; a
+            leaver keeping its wait; a wait reading ok on its row; the name page and the chart page each saying nothing. Thirty seven, thirty seven red: the ex-date with nothing before it
+            survived its first run, a missing property, since the test held no year whose first session was the ex-date, and went red once that case was written.
+Carried:    the first night's waits read on the Run page; the read-only copy's pages read back. 22.33 to 22.37's carried read-backs stand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the
+            figures below stated before that run: all six steps, 0 warnings, 0 errors, 3251 of 3251 tests ran with none failed,
+            migrations 0 to 123 with none pending, schema version 123, against `data-ci` and never `data`; the phase report 65 tables,
+            1510 claims, 1510 passing, none out of scope and none unexamined, 1525 placements and verdicts reconciled against a floor
+            of 34, 46 checks on the roster run and passed.

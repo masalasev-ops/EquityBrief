@@ -86,7 +86,7 @@ public static class ChartCheck
             || FractionsOfASplit.Any(fraction => Math.Abs((ratio / fraction) - 1) <= SplitRatioNear);
     }
 
-    // A ratio within 3% of one leaves too small a step to read, and a dividend under half of 1% of the close the same.
+    // A ratio within 3% of one leaves too small a step to read.
     public const decimal SmallestSplitRead = 0.03m;
 
     // A first session since two years before the night is a stock new to the market.
@@ -413,9 +413,11 @@ public static class ChartCheck
                 continue;
             }
 
-            // Half the step the dividend should leave, and no more than half the smallest step read: a split after it restates the
-            // amount and not the raw close, so a step of any readable size is the dividend carried.
-            if (Math.Abs(across.Step - 1) < Math.Min(dividend.Amount / across.Before.RawClose!.Value, SmallestDividendRead) / 2)
+            // A split after it restates the amount and not the raw close, so the amount goes back to what it paid: 0.65 after 1 for 5
+            // is 0.13 on the raw close of its day.
+            var paid = events.Splits.Where(split => split.ExDate > dividend.ExDate).Aggregate(dividend.Amount, (amount, split) => amount * split.NewShares / split.OldShares);
+
+            if (DividendCarry.NotCarried(DividendCarry.Gap(paid, across.Before.Close, across.Before.RawClose!.Value, across.After.Close, across.After.RawClose!.Value)))
             {
                 findings.Add(new("e", "action not carried", dividend.ExDate, FormattableString.Invariant($"The store holds a dividend of {Money(dividend.Amount)} on {Day(dividend.ExDate)} that the stored bars do not carry.")));
             }

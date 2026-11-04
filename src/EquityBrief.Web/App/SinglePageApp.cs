@@ -1505,7 +1505,9 @@ public sealed partial class SinglePageApp : IComponent
         // What the newest section asked for alone came to, none where none was asked for.
         AloneLine? aloneLine = null,
         // The trade a family holds the name on where the night lists it under none, with the card its own night stored.
-        HeldTradeView? held = null)
+        HeldTradeView? held = null,
+        // The dividends the provider's answer does not yet carry.
+        IReadOnlyList<DividendWait>? dividendWaits = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1609,6 +1611,7 @@ public sealed partial class SinglePageApp : IComponent
         // computed over those prices, the masthead's close among them. Inside the region, so
         // the exported report carries it.
         region.Append(marks.PricesSuspect(ticker, suspect));
+        region.Append(marks.DividendWaits(ticker, dividendWaits));
         region.Append(marks.NoYearServed(ticker, noYear));
 
         // A page about an earlier night says so above every figure it draws, and links to

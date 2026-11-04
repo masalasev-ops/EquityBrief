@@ -939,6 +939,9 @@ public sealed record QueueState(string State, string? At, string Words)
 // them.
 public sealed record SuspectPrices(string LastAskedAt, string Reason);
 
+// A dividend the provider's answer does not yet carry: its ex-date, the amount as paid and the session it was last asked for.
+public sealed record DividendWait(DateOnly ExDate, decimal Amount, DateOnly AskedOn);
+
 // Where the chart's averages over its first sessions came from, as the night stored it: the pull read through the
 // sessions before the store's year, or why none was read.
 public sealed record AveragesFrom(string? Pull, string? Reason);
@@ -2883,6 +2886,15 @@ public sealed partial class MarkRenderer : IComponent
     // draws them all the same rather than withholding them. The instant and the reason are
     // the row's, drawn as stored. A name whose series is trusted draws nothing here.
     // see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
+    // A line for each dividend the provider's answer does not yet carry, which leaves the prices before it high by about the
+    // dividend. The figures stand and the rules go on reading them, so this is not the suspect line.
+    // see: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits
+    public string DividendWaits(string ticker, IReadOnlyList<DividendWait>? waits) =>
+        string.Concat((waits ?? []).Select(wait =>
+            Formatted($"<p class=\"dividend-waits\" data-ticker=\"{Escaped(ticker)}\" data-ex-date=\"{wait.ExDate:yyyy-MM-dd}\" data-asked-on=\"{wait.AskedOn:yyyy-MM-dd}\">") +
+            Formatted($"{Escaped(ticker)}'s prices before {wait.ExDate:yyyy-MM-dd} do not yet carry its dividend of {Price(wait.Amount)} a share, so they stand a little high. ") +
+            Formatted($"The provider is asked again on each of the five nights after and weekly until its answer carries it, last on {wait.AskedOn:yyyy-MM-dd}.</p>")));
+
     public string PricesSuspect(string ticker, SuspectPrices? suspect) =>
         suspect is null
             ? string.Empty

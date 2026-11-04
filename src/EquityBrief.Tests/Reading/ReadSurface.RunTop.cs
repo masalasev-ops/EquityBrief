@@ -206,6 +206,28 @@ public partial class ReadSurface
     // 22.37: a flag new since the night before reaches the page a person reads the morning it appears, the row partial with its words.
     // see: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
     [Fact]
+    public async Task ADividendWaitingIsNamedOnTheRunPage()
+    {
+        using var store = RunTopStore();
+
+        var runId = FinishedNight[0].RunId;
+        var at = FinishedNight[0].StartedAt.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+            $"VALUES ('{runId}', 'actions', '{at}', '{at}', 'partial', 1, 0, 1, '0', '1 dividend(s) the answer does not yet carry: AMT 2026-09-29, last asked for on 2026-09-30');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = await client.GetStringAsync("/screens/run/2026-09-10");
+        var region = page.IndexOf("<p class=\"failed\" data-stage=\"actions\" data-outcome=\"partial\"", StringComparison.Ordinal);
+
+        Assert.True(region > 0);
+        Assert.Contains("AMT 2026-09-29, last asked for on 2026-09-30", page[region..(region + 400)], StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ANewChartFlagIsNamedOnTheRunPageAndAQuietNightsIsNot()
     {
         using var store = RunTopStore();
