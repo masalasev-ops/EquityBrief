@@ -15055,3 +15055,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             migrations 0 to 120 with none pending, schema version 120, against `data-ci` and never `data`; the phase report 65 tables,
             1501 claims, 1501 passing, none out of scope and none unexamined, 1516 placements and verdicts reconciled against a floor
             of 34, 46 checks on the roster run and passed.
+
+### 22.33 - correction: the pull asks a named stock the wider index holds today, and carrying a split names no span   2026-11-04
+
+Corrects: PR 633's remedy, run from main's 5605e41b from 07:35 UTC. Its pull asked for VSXY alone of the 9 named, since the wider index's names
+            came from lists read on 2026-10-04 and the 8 joined later, and its carrying step stopped on the verb's demand for a first
+            session. Neither moved a stored bar.
+Built:      a stock asked for by name is read where the wider index holds it today as well; `--carry-splits` runs ahead of that demand.
+            Second remedy, `tools/remedies/2026-11-04-22.33-correction-the-named-pull.txt`, about 145 weighted calls.
+Ran:        steps 1 to 4, 6 and 7 of the first remedy from main. All 14 years replaced, VSXY from VSCO's sessions at 2025-11-04. MOG-A alone stays
+            suspect: EODHD still serves its 3 copied candles. CTVA's 49 outcomes decided from 2026-10-01 scored again, its 14 false
+            losses now 9 wins at 7.59% to 19.40% with 5 others unmoved, and every fill priced again.
+Tests:      3187, from 3185: the verb with no span named and with no stock named, and a named stock the stored lists lack, one the index no
+            longer holds and a pull naming none.
+Mutation:   two, predicted first and each red at its test: a named stock not read from today's members; the verb demanding a first session.
+Carried:    the second remedy and the ledger histories, then a record entry saying what moved.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the
+            figures below stated before that run: all six steps, 0 warnings, 0 errors, 3187 of 3187 tests ran with none failed,
+            migrations 0 to 120 with none pending, schema version 120, against `data-ci` and never `data`; the phase report 65 tables,
+            1501 claims, 1501 passing, none out of scope and none unexamined, 1516 placements and verdicts reconciled against a floor
+            of 34, 46 checks on the roster run and passed.

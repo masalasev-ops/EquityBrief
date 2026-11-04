@@ -202,6 +202,8 @@ public sealed partial class HistoryPull(
     // The names a pull asks for on a wider index: its members today, as a members pull stored them, and from 15.3 every
     // code its fund's snapshots matched a holding to, so the names it held and let go are pulled beside them.
     // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+    const string MembersToday = @"SELECT ticker FROM membership WHERE index_code = $index AND ""left"" IS NULL ORDER BY ticker;";
+
     const string MembersHeld = @"
         SELECT ticker FROM pulled_member WHERE index_code = $index
         UNION
@@ -385,6 +387,30 @@ public sealed partial class HistoryPull(
             return await HoldingsAsync(VerbArguments.Value(args, "--index"), snapshots, symbols, mappings, feeds, clock, databaseFile, output, error);
         }
 
+        // A split the provider's own closes still carry reads the stock's own pull and asks for no span.
+        if (VerbArguments.Has(args, "--carry-splits"))
+        {
+            if (VerbArguments.Value(args, "--names") is not { } named || Resolved(splits, "splits", error) is not { } carried)
+            {
+                error.WriteLine("history-pull: name the stocks to carry the provider's splits into with '--names <codes>'.");
+
+                return 2;
+            }
+
+            var carrying = await CarrySplitsAsync(carried, clock, databaseFile, named.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), RunIdAt(RunPrefix, clock.UtcNow));
+
+            output.WriteLine("pull " + carrying.Pull);
+
+            foreach (var line in carrying.Lines)
+            {
+                output.WriteLine(line);
+            }
+
+            output.WriteLine(FormattableString.Invariant($"{carrying.Rows} row(s) written, {carrying.Requests} request(s)"));
+
+            return 0;
+        }
+
         if (VerbArguments.Value(args, "--from") is not { } given
             || !DateOnly.TryParseExact(given, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var from))
         {
@@ -412,29 +438,6 @@ public sealed partial class HistoryPull(
         if (VerbArguments.Has(args, "--splits"))
         {
             return await SplitsAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", splits, clock, databaseFile, output, error, only, pastTheStop);
-        }
-
-        if (VerbArguments.Has(args, "--carry-splits"))
-        {
-            if (only is null || Resolved(splits, "splits", error) is not { } carried)
-            {
-                error.WriteLine("history-pull: name the stocks to carry the provider's splits into with '--names <codes>'.");
-
-                return 2;
-            }
-
-            var carrying = await CarrySplitsAsync(carried, clock, databaseFile, only, RunIdAt(RunPrefix, clock.UtcNow));
-
-            output.WriteLine("pull " + carrying.Pull);
-
-            foreach (var line in carrying.Lines)
-            {
-                output.WriteLine(line);
-            }
-
-            output.WriteLine(FormattableString.Invariant($"{carrying.Rows} row(s) written, {carrying.Requests} request(s)"));
-
-            return 0;
         }
 
         NightFeeds resolved;
@@ -2766,6 +2769,27 @@ public sealed partial class HistoryPull(
         while (await reader.ReadAsync(cancellation))
         {
             names.Add(reader.GetString(0));
+        }
+
+        await reader.CloseAsync();
+
+        // A stock asked for by name that the wider index's stored lists do not hold, having joined it since they were read, is
+        // read as well where the index holds it today, so a pull for the few codes a list lacks can reach them.
+        if (wider && only is not null)
+        {
+            await using var today = connection.CreateCommand();
+            today.CommandText = MembersToday;
+            today.Parameters.AddWithValue("$index", indexCode);
+
+            await using var members = await today.ExecuteReaderAsync(cancellation);
+
+            while (await members.ReadAsync(cancellation))
+            {
+                if (!names.Contains(members.GetString(0), StringComparer.Ordinal))
+                {
+                    names.Add(members.GetString(0));
+                }
+            }
         }
 
         return only is null ? names : [.. names.Where(name => only.Contains(name, StringComparer.Ordinal))];
