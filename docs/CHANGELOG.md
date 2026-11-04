@@ -7,6 +7,10 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - BUILD_PLAN.md - 22.40's done condition names no span of the calendar
+Decision: none, a repair to 22.40's own done condition, which `done-condition-producible` read as waiting on the calendar.
+Was: "asked for on five nights, not inside the week and again when its week comes round, an answer carrying it ending the wait;"
+
 ### 2026-11-04 - CLAUDE.md, ARCHITECTURE.html and RUNBOOK.md - the corporate action refetch asks again for a dividend an answer did not carry and refuses another stock's prices
 Decision: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits; A refetch answer whose day's move the stored closes do not show is refused, and the stock keeps its year and is asked again
 Was: the hard rule's carve-out went from "until a refetch succeeds or the name leaves the index, and the night's requests for six reports" with nothing between them, and its citations held no such decision. The corporate action checker's catalogue row read and wrote no dividend waits and said nothing of either. The runbook's section ended at the sentence on `history-pull --carry-splits`.

@@ -2320,7 +2320,7 @@ public partial class NightlyRun
         // loader reads it for the spans it closes when the feed stops listing them. From 21.6 the short interest reader
         // reads it for the stocks it asks FINRA about at a settlement, every stock held on or after it.
         Assert.Equal(
-            ["Backfill", "BarFetcher", "CorporateActionChecker", "CorporateActionChecker", "CorporateActionChecker", "MembershipLoader", "MembershipLoader", "ShortInterestReader"],
+            ["Backfill", "BarFetcher", "CorporateActionChecker", "CorporateActionChecker", "CorporateActionChecker", "CorporateActionChecker", "MembershipLoader", "MembershipLoader", "ShortInterestReader"],
             stored.Order(StringComparer.Ordinal));
 
         // Every other read asks the join date as well. Stated as a set, and a

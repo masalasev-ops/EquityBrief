@@ -2891,9 +2891,9 @@ public sealed partial class MarkRenderer : IComponent
     // see: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits
     public string DividendWaits(string ticker, IReadOnlyList<DividendWait>? waits) =>
         string.Concat((waits ?? []).Select(wait =>
-            Formatted($"<p class=\"dividend-waits\" data-ticker=\"{Escaped(ticker)}\" data-ex-date=\"{wait.ExDate:yyyy-MM-dd}\" data-asked-on=\"{wait.AskedOn:yyyy-MM-dd}\">") +
-            Formatted($"{Escaped(ticker)}'s prices before {wait.ExDate:yyyy-MM-dd} do not yet carry its dividend of {Price(wait.Amount)} a share, so they stand a little high. ") +
-            Formatted($"The provider is asked again on each of the five nights after and weekly until its answer carries it, last on {wait.AskedOn:yyyy-MM-dd}.</p>")));
+            FormattableString.Invariant($"<p class=\"dividend-waits\" data-ticker=\"{Escaped(ticker)}\" data-ex-date=\"{wait.ExDate:yyyy-MM-dd}\" data-asked-on=\"{wait.AskedOn:yyyy-MM-dd}\">") +
+            FormattableString.Invariant($"{Escaped(ticker)}'s prices before {wait.ExDate:yyyy-MM-dd} do not yet carry its dividend of {Price(wait.Amount)} a share, so they stand a little high. ") +
+            FormattableString.Invariant($"The provider is asked again on each of the five nights after and weekly until its answer carries it, last on {wait.AskedOn:yyyy-MM-dd}.</p>")));
 
     public string PricesSuspect(string ticker, SuspectPrices? suspect) =>
         suspect is null

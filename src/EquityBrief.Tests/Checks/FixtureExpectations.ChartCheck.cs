@@ -197,12 +197,12 @@ public partial class FixtureExpectations
         // Under half of 1% of the close asks nothing of the factor.
         Assert.DoesNotContain(Checked(Stock(unpaid), NoEvents with { Dividends = [new CheckedDividend(exDate, 0.49m)] }), finding => finding.Kind == "action not carried");
 
-        // AMCR's shape: an amount a later reverse split restated to 0.65 over a raw close of 8.52, 7.6%, and the factor carrying
-        // the 1.5% actually paid, which is past half of the smallest step read, 0.25%; 0.24% is not.
-        var restated = new[] { new CheckedDividend(exDate, 0.65m) };
+        // AMCR's shape: an amount a later reverse split of 1 for 5 restated to 0.65 over a raw close of 8.52, and the factor carrying
+        // the 0.13 actually paid, 1.5%. A step of 2.6% carries it, and one of 0.24% leaves a gap of 1.3%.
+        var restated = NoEvents with { Dividends = [new CheckedDividend(exDate, 0.65m)], Splits = [new CheckedSplit(exDate.AddDays(30), 1m, 5m)] };
 
-        Assert.DoesNotContain(Checked(Stock([Day(0, 39.71m, raw: 8.52m), Day(1, 40.77m, raw: 8.52m)]), NoEvents with { Dividends = restated }), finding => finding.Kind == "action not carried");
-        Assert.Contains(Checked(Stock([Day(0, 40.67m, raw: 8.52m), Day(1, 40.77m, raw: 8.52m)]), NoEvents with { Dividends = restated }), finding => finding.Kind == "action not carried");
+        Assert.DoesNotContain(Checked(Stock([Day(0, 39.71m, raw: 8.52m), Day(1, 40.77m, raw: 8.52m)]), restated), finding => finding.Kind == "action not carried");
+        Assert.Contains(Checked(Stock([Day(0, 40.67m, raw: 8.52m), Day(1, 40.77m, raw: 8.52m)]), restated), finding => finding.Kind == "action not carried");
     }
 
     [Fact]
