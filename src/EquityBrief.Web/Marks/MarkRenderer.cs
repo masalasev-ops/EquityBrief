@@ -2288,7 +2288,7 @@ public sealed partial class MarkRenderer : IComponent
             foreach (var average in missing)
             {
                 table.Append(Invariant, $"<tr class=\"absent-average\" data-name=\"{Escaped(average.Name)}\" ");
-                table.Append(Invariant, $"data-bar-count=\"{average.BarCount}\"><td>{Escaped(average.Name)}</td>");
+                table.Append(Invariant, $"data-bar-count=\"{average.BarCount}\"><td>the {Escaped(AverageName(average.Name))}</td>");
                 table.Append(Invariant, $"<td colspan=\"3\">not available, {average.BarCount} bars</td></tr>");
             }
 

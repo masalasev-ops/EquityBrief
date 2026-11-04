@@ -147,6 +147,10 @@ public static partial class FieldWords
         return sentence;
     }
 
+    // A label a filing's table states with a filer's tag in it: "us-gaap:CostOfRevenue" reads "cost of revenue".
+    public static string FilerLabel(string label) =>
+        FilerTag().Replace(label, match => Humps().Replace(match.Groups["tag"].Value, hump => " " + hump.Value.ToLowerInvariant()).TrimStart());
+
     // A rule version's stored settings in words: {"nightsTheNewLabelHolds": 1} reads "nights the new label holds 1".
     public static string Settings(string stored)
     {
@@ -170,6 +174,9 @@ public static partial class FieldWords
 
     [GeneratedRegex(@"holds no (?<field>[a-z][a-z0-9_]*) reading tonight")]
     private static partial Regex StoredMissing();
+
+    [GeneratedRegex(@"\b(?:us-gaap|dei|srt)[_:](?<tag>\w+)")]
+    private static partial Regex FilerTag();
 
     [GeneratedRegex("[A-Z]")]
     private static partial Regex Humps();

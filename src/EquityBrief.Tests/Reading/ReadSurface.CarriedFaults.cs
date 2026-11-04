@@ -293,6 +293,31 @@ public partial class ReadSurface
         Assert.All(FieldWords.Fields, field => Assert.Null(FieldWords.Drawn("<p>" + field.Words + "</p>")));
 
         Assert.Equal("downtrend from averages 1, nights the new label holds 2", FieldWords.Settings("{\"downtrendFromAverages\": 1, \"nightsTheNewLabelHolds\": 2}"));
+
+        // TSN's and APOG's raw tables, and BWXT's eliminations: a tag read as words, and a share rounding to nothing bare.
+        Assert.Equal("Income Statement Location [Axis]: cost of revenue | Pork", FieldWords.FilerLabel("Income Statement Location [Axis]: us-gaap:CostOfRevenue | Pork"));
+        Assert.Equal("Reportable Segment", FieldWords.FilerLabel("Reportable Segment"));
+
+        var bars = new MarkRenderer().ShareBars(new SegmentReading("R9.htm", ThreeMonths.Ended, 3, 100m, 100m, [new SegmentRow("Eliminations", -0.01m, null, null, null, null, null, -0.03), new SegmentRow("Stores", 100.01m, null, null, null, null, null, 100.03)], null));
+
+        Assert.Contains("Eliminations: 0.0% of revenue</title>", bars, StringComparison.Ordinal);
+        Assert.Null(FieldWords.SignedZero(bars));
+    }
+
+    // TSN's raw table by hand: the group's heading reads the tag in words, and its attribute keeps what the filing states.
+    // see: A page draws every field in the reader's words, and the proof fails a page drawing a field's code name
+    [Fact]
+    public async Task ARawTablesHeadingReadsAFilersTagInWords()
+    {
+        var table = FiledSegments([TheQuarter], FiledFigure("us-gaap_Revenues", "Net Sales", null, TheQuarter, "2044397000"));
+        const string Label = "Income Statement Location [Axis]: us-gaap:CostOfRevenue";
+
+        table["groups"] = new System.Text.Json.Nodes.JsonArray(new System.Text.Json.Nodes.JsonObject { ["label"] = Label, ["dimension"] = "axis=x", ["figures"] = new System.Text.Json.Nodes.JsonArray(FiledFigure("us-gaap_CostOfRevenue", "Cost", null, TheQuarter, "100")) });
+
+        var raw = await RawSegmentsOf(table);
+
+        Assert.Contains($"data-segment=\"{Label}\"><th colspan=\"2\">Income Statement Location [Axis]: cost of revenue</th>", raw, StringComparison.Ordinal);
+        Assert.Null(FieldWords.Drawn(raw));
     }
 
     // The proof's check over each kind of code name a page drew, with what a reader may be shown beside them: a name in an

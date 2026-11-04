@@ -377,8 +377,8 @@ public sealed partial class MarkRenderer
             var y = 4 + (at * Row);
 
             svg.Append(Formatted($"<text class=\"m-row\" x=\"0\" y=\"{Number(y + 15)}\">{Escaped(Shortened(row.Segment, 30))}</text>"));
-            svg.Append(Formatted($"<rect class=\"sb-bar\" x=\"{Number(Label)}\" y=\"{Number(y + 4)}\" width=\"{Number(Math.Max(wide * row.Share / 100, 1))}\" height=\"14\" rx=\"3\" data-share=\"{row.Share.ToString(Invariant)}\"><title>{Escaped(row.Segment)}: {row.Share.ToString("0.0", Invariant)}% of revenue</title></rect>"));
-            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(Label + (wide * row.Share / 100) + 6)}\" y=\"{Number(y + 15)}\">{row.Share.ToString("0.0", Invariant)}%</text>"));
+            svg.Append(Formatted($"<rect class=\"sb-bar\" x=\"{Number(Label)}\" y=\"{Number(y + 4)}\" width=\"{Number(Math.Max(wide * row.Share / 100, 1))}\" height=\"14\" rx=\"3\" data-share=\"{row.Share.ToString(Invariant)}\"><title>{Escaped(row.Segment)}: {Tenth(row.Share)}% of revenue</title></rect>"));
+            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(Label + (wide * row.Share / 100) + 6)}\" y=\"{Number(y + 15)}\">{Tenth(row.Share)}%</text>"));
 
             if (row.RevenueChange is { } change)
             {
