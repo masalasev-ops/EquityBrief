@@ -156,12 +156,13 @@ public partial class ReadSurface
         var marks = new MarkRenderer();
         var conflict = new FigureConflict("Gross profit", new DateOnly(2026, 7, 31), 1_270_000_000m, "GrossProfit", new DateOnly(2026, 9, 2), 1_272_000_000m);
 
-        // The filing's figure first with its concept and the day it was first filed, then the fetch's, which the page draws.
+        // The filing's figure first with the day it was first filed, its concept in an attribute a reader does not read,
+        // then the fetch's, which the page draws.
         var listed = marks.Sources("KEYS", [], [conflict], filedFactsHeld: true);
 
         Assert.Contains("data-conflicts=\"1\"", listed, StringComparison.Ordinal);
-        Assert.Contains("<tr data-line=\"Gross profit\" data-filed=\"1270000000\" data-fetched=\"1272000000\"><td>Gross profit</td><td>2026-07-31</td>", listed, StringComparison.Ordinal);
-        Assert.Contains(", first filed 2026-09-02 as GrossProfit</td>", listed, StringComparison.Ordinal);
+        Assert.Contains("<tr data-line=\"Gross profit\" data-concept=\"GrossProfit\" data-filed=\"1270000000\" data-fetched=\"1272000000\"><td>Gross profit</td><td>2026-07-31</td>", listed, StringComparison.Ordinal);
+        Assert.Contains(", first filed 2026-09-02</td>", listed, StringComparison.Ordinal);
         Assert.Contains("<td>the fetch's</td></tr>", listed, StringComparison.Ordinal);
 
         // Every line agreeing within rounding, and no filed facts to check by, each said in its own words, and the line

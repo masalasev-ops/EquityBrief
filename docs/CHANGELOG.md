@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - docs/ARCHITECTURE.html - a company reporting one segment, the awaited line, and a page's fields and dates
+Decision: A company reporting one segment is told so with its revenue and its quarter and the table as filed stays beneath; A page names a company's newest report from the night its quarter is stored, which the night's readings ran before; A page draws every field in the reader's words, and the proof fails a page drawing a field's code name; The analysts' table and the figures checked draw a quarter's end as the filing states it
+Was:
+> and the filing's table as filed folded beneath, standing in the table's place with what its rows summed to where none sums</td>
+> The check holds every term of the first table to a phrase that puts it into the reader's words.</p>
+Now:
+> and the filing's table as filed folded beneath, standing in the table's place with what its rows summed to where none sums, and a company reporting one segment told so above it with the segment's name, its revenue and its quarter (see: ...)</td>
+> The check holds every term of the first table to a phrase that puts it into the reader's words.</p>, then a paragraph stating the proof's field-names rule and the two dates, and the pattern table gaining its row "reported after"
+Why: the operator's seven faults of 2026-11-04, fixed before the sign-offs of phases 20, 21 and 22.
+
 ### 2026-11-04 - BUILD_PLAN.md - 22.40's done condition names no span of the calendar
 Decision: none, a repair to 22.40's own done condition, which `done-condition-producible` read as waiting on the calendar.
 Was: "asked for on five nights, not inside the week and again when its week comes round, an answer carrying it ending the wait;"

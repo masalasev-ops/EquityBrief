@@ -2150,11 +2150,12 @@ public sealed partial class MarkRenderer : IComponent
         _ => name,
     };
 
-    // A pane's name as a reader says it, with the names the store holds its readings under.
+    // A pane's name as a reader says it.
+    // see: A page draws every field in the reader's words, and the proof fails a page drawing a field's code name
     static string TitleOf(string pane) => pane switch
     {
-        "strength" => "Relative strength over 14 sessions (rsi14)",
-        "convergence" => "Trend momentum (macd, the solid line) and its signal line (macd_signal, dashed)",
+        "strength" => "Relative strength over 14 sessions",
+        "convergence" => "Trend momentum, the solid line, and its signal line, dashed",
         _ => pane,
     };
 
@@ -2166,7 +2167,7 @@ public sealed partial class MarkRenderer : IComponent
         "convergence" =>
         [
             "The solid line is the gap between a fast and a slow average of the price, and the dashed line is a slower average of that gap.",
-            "The bars (macd_hist) are the distance between the two lines: above zero the move is strengthening, below zero it is weakening, and a crossing is where the bars change side.",
+            "The bars are the distance between the two lines: above zero the move is strengthening, below zero it is weakening, and a crossing is where the bars change side.",
         ],
         _ => [],
     };
@@ -5382,7 +5383,7 @@ public sealed partial class MarkRenderer : IComponent
             drawn.Append(Invariant, $"<article class=\"trend-version\" data-version=\"{Escaped(version.Version)}\" data-parameters=\"{Escaped(version.Parameters)}\" ");
             drawn.Append(Invariant, $"data-opened=\"{Opened(version.OpenedAt)}\" data-moved=\"{version.Moved}\">");
             drawn.Append(Invariant, $"<h4>{Escaped(version.Version)}</h4>");
-            drawn.Append(Invariant, $"<p data-labels=\"version\">Opened {Opened(version.OpenedAt)} at {Escaped(version.Parameters)}. It labelled ");
+            drawn.Append(Invariant, $"<p data-labels=\"version\">Opened {Opened(version.OpenedAt)} at {Escaped(FieldWords.Settings(version.Parameters))}. It labelled ");
             drawn.Append(Labels(version.Labels));
             drawn.Append(Invariant, $", which moves {version.Moved} name(s) off the live rule's label.</p>");
 
@@ -5423,7 +5424,7 @@ public sealed partial class MarkRenderer : IComponent
     static string Labels(IReadOnlyList<LabelCount> labels) =>
         labels.Count == 0
             ? "no name at all"
-            : string.Join(", ", labels.Select(label => Formatted($"{label.Names} {Escaped(label.Label)}")));
+            : string.Join(", ", labels.Select(label => Formatted($"{label.Names} {Escaped(label.Label.Replace('_', ' '))}")));
 
     public string CandidateRecords(CandidateRegion region)
     {

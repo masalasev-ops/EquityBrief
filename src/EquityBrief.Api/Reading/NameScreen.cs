@@ -643,7 +643,7 @@ public static partial class NameScreen
             currency,
             [.. EquityBrief.Core.Report.QuarterLines.Margins(inputs.Quarters).Select(quarter => quarter with { Quarter = stated.Of(quarter.Quarter) })],
             segments,
-            EquityBrief.Core.Report.AnalystView.Of(inputs.TrendFetchedOn, inputs.Trend, inputs.Ratings, night, price),
+            AnalystsAsFiled(EquityBrief.Core.Report.AnalystView.Of(inputs.TrendFetchedOn, inputs.Trend, inputs.Ratings, night, price), stated),
             EquityBrief.Core.Report.DividendSafety.Of(
                 forwardRate,
                 price,
@@ -725,18 +725,43 @@ public static partial class NameScreen
             calendarReports ?? []);
     }
 
-    // The day the page knows the company last reported on by a night, which an estimate of its next report must fall clear of.
-    static DateOnly? ReportedOnOf(IReadOnlyList<FilingRow> filings, DateOnly night, IReadOnlyList<QuarterDatesRow>? storedQuarters, IReadOnlyList<DateOnly>? calendarReports)
+    // The first day a name's next dated event may fall on: after the page's night and after its last stored session, a stock
+    // holding no bar on the night still asked for what comes after that night.
+    // see: A name's next dated event is the first after the night, and the earnings soon reason alone counts the night's own
+    public static DateOnly NextEventFrom(DateOnly? lastSession, DateOnly? night) =>
+        lastSession is null && night is null
+            ? DateOnly.MinValue
+            : new[] { lastSession, night }.Max()!.Value.AddDays(1);
+
+    // The day the page knows the company last reported on by a night: the newest of its stored quarters' report days and the
+    // calendar's, as Tonight's cards read it, and the filing's reading of them where it names a day past both. An estimate
+    // of its next report must fall clear of it.
+    // see: A page names a company's newest report from the night its quarter is stored, which the night's readings ran before
+    public static DateOnly? ReportedOnOf(IReadOnlyList<FilingRow> filings, DateOnly night, IReadOnlyList<QuarterDatesRow>? storedQuarters, IReadOnlyList<DateOnly>? calendarReports)
     {
+        DateOnly? known = (storedQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()
+            .Concat(calendarReports ?? [])
+            .Where(day => day <= night)
+            .Select(day => (DateOnly?)day)
+            .Max();
+
         if (filings.Count == 0)
         {
-            return null;
+            return known;
         }
 
         using var newest = JsonDocument.Parse(filings[0].Payload);
 
-        return ReportedDayOf(newest.RootElement, night, storedQuarters, calendarReports).On;
+        return new[] { known, ReportedDayOf(newest.RootElement, night, storedQuarters, calendarReports).On }.Max();
     }
+
+    // The analysts' rows and the figures checked with each quarter's end as the filing states it, the rows keeping the label.
+    // see: The analysts' table and the figures checked draw a quarter's end as the filing states it
+    public static EquityBrief.Core.Report.AnalystReading? AnalystsAsFiled(EquityBrief.Core.Report.AnalystReading? analysts, EquityBrief.Core.Report.StatedQuarters stated) =>
+        analysts is { } read ? read with { Consensus = [.. read.Consensus.Select(row => row with { DrawnEnd = stated.Of(row.PeriodEnd) })] } : null;
+
+    public static IReadOnlyList<EquityBrief.Core.Report.FigureConflict> ConflictsAsFiled(IReadOnlyList<EquityBrief.Core.Report.FigureConflict> conflicts, EquityBrief.Core.Report.StatedQuarters stated) =>
+        [.. conflicts.Select(conflict => conflict with { PeriodEnd = stated.Of(conflict.PeriodEnd) })];
 
     // The quarter ends the name's stored filings state.
     // see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
@@ -1614,6 +1639,10 @@ public static partial class NameScreen
         // Every report day the calendar holds for the name, which the reported day and the next report read after its stored
         // quarters.
         IReadOnlyList<DateOnly>? calendarReports = null,
+        // The quarters of the newest fetch on or before the night, which name its reports where the night fetched them after
+        // its readings ran; a page handed none reads the reading's own fetch.
+        // see: A page names a company's newest report from the night its quarter is stored, which the night's readings ran before
+        IReadOnlyList<QuarterDatesRow>? reportedQuarters = null,
         // The model profiles the settings name and the profile each section is written under.
         IReadOnlyList<JobProfile>? profiles = null,
         IReadOnlyDictionary<string, string>? sectionProfiles = null,
@@ -1665,7 +1694,8 @@ public static partial class NameScreen
         }
         var newest = Pass(pass);
         var notWritten = NotWritten(pass, accepted, leftOut);
-        var says = reading is null ? null : WhatTheNumbersSay(reading, readQuarters ?? [], StatedOf(fundamentals ?? []));
+        var reportQuarters = reportedQuarters ?? readQuarters;
+        var says = reading is null ? null : WhatTheNumbersSay(reading, readQuarters ?? [], StatedOf(fundamentals ?? []), reportQuarters);
 
         // The latest quarter's lines checked against the filing's facts as first filed.
         // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
@@ -1733,14 +1763,15 @@ public static partial class NameScreen
         // The price the masthead draws, the stored quote where the page is tonight's and drawn inside the session or after
         // a close the bars do not hold yet, and the last close otherwise, which the tiles are worked at.
         var live = SinglePageApp.QuoteDrawn(quote, quoteSession, night, bars.Count > 0 ? bars[^1].SessionDate : null);
-        DateOnly? ReportedOn(DateOnly at) => ReportedOnOf(filings, at, readQuarters, calendarReports);
+        DateOnly? ReportedOn(DateOnly at) => ReportedOnOf(filings, at, reportQuarters, calendarReports);
+        DateOnly[] reportedDays = [.. (reportQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()];
 
         var cards = WithEstimatedReport(
             (decisionCards ?? [])
                 .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family))
                 .Select(card => CardScreen.View(card, cardContext))
                 .FirstOrDefault(),
-            [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()],
+            reportedDays,
             ReportedOn);
 
         // Once the open after the card's night prints, the fill and the reward against the risk at it.
@@ -1751,12 +1782,11 @@ public static partial class NameScreen
         // The trade a family holds the name on where the night lists it under none: the newest still open of the nights the
         // live list picked it before, with the card that night stored for its family, drawn as the pick's card is.
         // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
-        var heldTrade = HeldOf(cards, earlier, heldCards, [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()], ReportedOn);
+        var heldTrade = HeldOf(cards, earlier, heldCards, reportedDays, ReportedOn);
 
         // The next report estimated from the company's own report of the same quarter a year before, which the page draws
         // beside a next report not on file.
         // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
-        DateOnly[] reportedDays = [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()];
         var estimatedAt = night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
         var nextEstimated = EquityBrief.Core.Cards.CardLines.EstimatedReport(reportedDays, estimatedAt, ReportedOn(estimatedAt));
         decimal? shownPrice = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
@@ -1858,7 +1888,7 @@ public static partial class NameScreen
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            says is null ? Numbers(filings, concepts, newestRelease, nextEstimated, readQuarters, calendarReports, night is not null) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease, nextEstimated, readQuarters, calendarReports, night is not null)),
+            says is null ? Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null)),
             cells,
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
             previousOnTheList,
@@ -1910,7 +1940,7 @@ public static partial class NameScreen
             calendar: bars.Count > 0
                 ? Calendar(night ?? bars[^1].SessionDate, events ?? [], forwardRate, reportInputs?.Dividends ?? [], historyInputs?.RawCloses ?? [], filings, nextEstimated, (cards ?? heldTrade?.Card)?.Hits?.Through) with { EarlierNight = night is not null }
                 : null,
-            figuresChecked: checkedFigures.Conflicts,
+            figuresChecked: ConflictsAsFiled(checkedFigures.Conflicts, StatedOf(filings)),
             filedFactsHeld: checkedFigures.Compared > 0,
             behind: behind,
             standing: Standing(staleness, newest, spend, priced, today, OwnWritten(accepted), IndustryWritten(accepted), passCosts),
@@ -2164,7 +2194,7 @@ public static partial class NameScreen
     // one sentence per reading, and the quarters any reading read with the dates each was filed and
     // reported on, newest first.
     // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
-    public static NumbersSayView WhatTheNumbersSay(FundamentalReadingRow reading, IReadOnlyList<QuarterDatesRow> quarters, EquityBrief.Core.Report.StatedQuarters? stated = null)
+    public static NumbersSayView WhatTheNumbersSay(FundamentalReadingRow reading, IReadOnlyList<QuarterDatesRow> quarters, EquityBrief.Core.Report.StatedQuarters? stated = null, IReadOnlyList<QuarterDatesRow>? newestQuarters = null)
     {
         stated ??= new EquityBrief.Core.Report.StatedQuarters([]);
 
@@ -2176,11 +2206,15 @@ public static partial class NameScreen
             .Concat(readings.Valuation.Quarters)
             .ToHashSet();
 
-        // The awaited quarter's line moves on once the quarter is reported, its filing not stored yet.
+        // The awaited quarter's line moves on once the quarter is reported: its filing not stored yet, or the quarter fetched
+        // whole after these readings ran, which the next night's read.
         // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
+        // see: A page names a company's newest report from the night its quarter is stored, which the night's readings ran before
         var reported = readings.Awaited is { } awaited && readings.ReadFrom is { } readFrom
-            && quarters.FirstOrDefault(quarter => quarter.PeriodEnd == awaited && quarter.FilingDate is null) is { ReportDate: { } reportedOn }
-                ? EquityBrief.Core.Quarters.NumbersSay.Reported(awaited, reportedOn, stated.Of(readFrom))
+            && (newestQuarters ?? quarters).FirstOrDefault(quarter => quarter.PeriodEnd == awaited) is { ReportDate: { } reportedOn } quarterReported
+                ? quarterReported.FilingDate is null
+                    ? EquityBrief.Core.Quarters.NumbersSay.Reported(stated.Of(awaited), reportedOn, stated.Of(readFrom))
+                    : EquityBrief.Core.Quarters.NumbersSay.ReportedAfter(stated.Of(awaited), reportedOn, stated.Of(readFrom))
                 : null;
 
         return new NumbersSayView(

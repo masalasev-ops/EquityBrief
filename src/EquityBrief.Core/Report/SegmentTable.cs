@@ -33,6 +33,10 @@ public sealed record SegmentReading(
     // Whether the table is another filing's, left out with Raw saying why, and no raw table is drawn beneath it.
     // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
     public bool LeftOut { get; init; }
+
+    // The company's one segment where its table reports one and its revenue sums to the company's: its name and revenue.
+    // see: A company reporting one segment is told so with its revenue and its quarter and the table as filed stays beneath
+    public (string Name, decimal Revenue)? OneSegment { get; init; }
 }
 
 // The segment table built from a filing's segment report by a stated rule, worked by one function so the page and its
@@ -114,6 +118,22 @@ public static class SegmentTable
             .Where(segment => segment.Revenue is not null)
             .ToArray();
 
+        // A group labelled no more than the axis's singular holds the whole company's figures: its one segment, which names
+        // no business of its own to list as a row, so the raw table stands beneath the line saying so.
+        var unnamed = segments.Length == 0
+            ? table.Groups
+                .Where(group => OneSegmentName(group.Label) is not null)
+                .Select(group => (Name: OneSegmentName(group.Label)!, Revenue: First(group.Figures, IsRevenue, ended)))
+                .Where(group => group.Revenue is not null)
+                .DistinctBy(group => group.Revenue)
+                .ToArray()
+            : [];
+
+        if (unnamed.Length == 1)
+        {
+            segments = [(unnamed[0].Name, unnamed[0].Revenue, null, null, null)];
+        }
+
         if (segments.Length == 0)
         {
             return new SegmentReading(table.Report, ended, shortest, total, null, [], "the table states no segment's revenue for the quarter");
@@ -140,6 +160,13 @@ public static class SegmentTable
                 "the segments' revenue does not sum to the company's within rounding");
         }
 
+        (string Name, decimal Revenue)? one = segments.Length == 1 ? (segments[0].Name, segments[0].Revenue!.Value) : null;
+
+        if (unnamed.Length == 1)
+        {
+            return new SegmentReading(table.Report, ended, shortest, whole, sum, [], OneSegmentReads) { OneSegment = one };
+        }
+
         return new SegmentReading(
             table.Report,
             ended,
@@ -157,7 +184,26 @@ public static class SegmentTable
                     Percents.FromFraction(QuarterFetch.Grown(segment.Earnings, segment.EarningsBefore)),
                     Percents.FromFraction(QuarterFetch.Margined(segment.Revenue, whole))!.Value)),
             ],
-            null);
+            null)
+        { OneSegment = one };
+    }
+
+    // Why no segment's share is drawn for a company that reports one.
+    public const string OneSegmentReads = "the company reports one segment";
+
+    // The name a group's label gives the company's one segment: the singular of the axis as filed, where the label holds
+    // nothing but the axis; none for a label naming a business, and none for the plural, which says nothing of how many.
+    // see: A company reporting one segment is told so with its revenue and its quarter and the table as filed stays beneath
+    public static string? OneSegmentName(string label)
+    {
+        var parts = label.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(part => part.Replace("[Member]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim())
+            .Where(part => part.Length > 0)
+            .ToArray();
+
+        return parts.Length > 0 && parts.All(part => AxisParts.Contains(part.ToLowerInvariant()))
+            ? parts.FirstOrDefault(part => !part.EndsWith('s'))
+            : null;
     }
 
     // A group's segment name: its label's parts with those naming the consolidation's axis taken off, joined; none where

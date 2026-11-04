@@ -21,6 +21,7 @@ public static partial class NumbersSay
         ("heading", "What the numbers say: {state}, read from sales and operating margin alone"),
         ("awaited", "The quarter to {quarter} is awaited, so these read the quarter to {quarter}."),
         ("reported", "The quarter to {quarter} was reported on {day} in its results release and its filing is not stored yet, so these read the quarter to {quarter}."),
+        ("reported after", "The quarter to {quarter} was reported on {day} and reached the store after these were read, so these read the quarter to {quarter} until the next night."),
         ("sales", "Sales {change} on a year earlier in the quarter to {quarter}, and {change} in the quarter to {quarter}."),
         ("sales rose", "rose {percent}"),
         ("sales fell", "fell {percent}"),
@@ -55,6 +56,10 @@ public static partial class NumbersSay
     // awaiting a quarter already reported.
     // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
     public static string Reported(DateOnly awaited, DateOnly reportedOn, DateOnly from) => Fill("reported", Date(awaited), Date(reportedOn), Date(from));
+
+    // The same line where the night fetched the quarter after its readings ran, which the next night's readings read.
+    // see: A page names a company's newest report from the night its quarter is stored, which the night's readings ran before
+    public static string ReportedAfter(DateOnly awaited, DateOnly reportedOn, DateOnly from) => Fill("reported after", Date(awaited), Date(reportedOn), Date(from));
 
     // Whether a sentence is the awaited quarter's line.
     public static bool IsAwaited(string sentence) => PatternOf(sentence) == "awaited";
@@ -179,9 +184,9 @@ public static partial class NumbersSay
     static string Change(decimal growth) =>
         growth > 0m ? Fill("sales rose", Percent(growth)) : growth < 0m ? Fill("sales fell", Percent(-growth)) : Fill("sales held");
 
-    static string Percent(decimal share) => (share * 100m).ToString("0.0", CultureInfo.InvariantCulture) + "%";
+    static string Percent(decimal share) => (share * 100m).ToString("0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "%";
 
-    static string Signed(decimal share) => (share >= 0m ? "+" : string.Empty) + Percent(share);
+    static string Signed(decimal share) => (share * 100m).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "%";
 
     static string Ratio(decimal ratio) => ratio.ToString("0.00", CultureInfo.InvariantCulture);
 

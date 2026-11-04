@@ -97,6 +97,8 @@ public static partial class ReportProof
         ("fill-against-plan", "A held trade's card states the reward to risk its plan was struck at the close beside the one at its fill."),
         ("next-report-hold", "A picked or held stock's next report, declared or estimated, is placed against the hold in the calendar and in the plan's block around the next report."),
         ("short-priority", "Each paragraph of what worked and what did not keeps the paragraph's first sentence on demand, on cost, naming a segment and on the main risk, where the written paragraph holds one."),
+        ("field-names", "The page draws no field's code name in its visible text, a name the store or the code keeps it under or a filer's tag."),
+        ("signed-zero", "A percentage rounding to nothing is drawn with no sign."),
     ];
 
     public static ProofPage Evaluate(string ticker, string page, ProofContext? context = null)
@@ -461,7 +463,7 @@ public static partial class ReportProof
         var holding = picked || heldOn;
         var calendarPlaced = Regex.IsMatch(page, "<tr data-date=\"[^\"]+\" data-kind=\"results\" data-declared=\"(?:yes|no)\" data-inside-hold=\"(?:yes|no)\"");
         var planPlaced = Regex.IsMatch(page, "<p class=\"next-report-around\"[^>]*data-inside-hold=\"(?:yes|no)\"");
-        var reportListed = page.Contains("data-kind=\"results\"", StringComparison.Ordinal);
+        var reportListed = CalendarResults().IsMatch(page);
         var planDrawn = page.Contains("<div class=\"sub\">Around the next report</div>", StringComparison.Ordinal);
 
         Add(
@@ -490,6 +492,15 @@ public static partial class ReportProof
             "short-priority",
             worked.Success && priorities.Success ? missed is null : null,
             !worked.Success ? "no written what worked and what did not is drawn" : !priorities.Success ? "the paragraphs' priorities are not stated" : missed is null ? null : "a paragraph's sentence on " + missed + " is left out");
+
+        // see: A page draws every field in the reader's words, and the proof fails a page drawing a field's code name
+        var codeName = EquityBrief.Web.Marks.FieldWords.Drawn(page);
+
+        Add("field-names", codeName is null, codeName is null ? null : "the page draws the code name " + codeName);
+
+        var signedZero = EquityBrief.Web.Marks.FieldWords.SignedZero(page);
+
+        Add("signed-zero", signedZero is null, signedZero is null ? null : "the page draws " + signedZero);
 
         var heldFamily = Regex.Match(page, "<section class=\"held-card\" data-family=\"(?<family>[^\"]+)\" data-night=\"(?<night>[^\"]+)\"");
 
@@ -730,6 +741,10 @@ public static partial class ReportProof
 
     [GeneratedRegex("<table class=\"quarter-table\" data-quarter=\"(\\d{4}-\\d{2}-\\d{2})\"")]
     private static partial Regex QuarterTable();
+
+    // The calendar's row for a report: a news row labelled results carries the same kind on a list item and is no such row.
+    [GeneratedRegex("<tr data-date=\"[^\"]+\" data-kind=\"results\"")]
+    private static partial Regex CalendarResults();
 
     [GeneratedRegex("<h2>The quarter to (\\d{4}-\\d{2}-\\d{2}), line by line</h2>")]
     private static partial Regex QuarterTitle();
