@@ -15076,3 +15076,44 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             migrations 0 to 120 with none pending, schema version 120, against `data-ci` and never `data`; the phase report 65 tables,
             1501 claims, 1501 passing, none out of scope and none unexamined, 1516 placements and verdicts reconciled against a floor
             of 34, 46 checks on the roster run and passed.
+
+### 22.34 - the chart's scale fits the candles, the plan's lines and the levels shown, and an average never widens it   2026-11-04
+
+Built:      the scale over the candles and the plan's lines with a margin of 3%; the levels widen it only in a second drawing the toggle swaps in,
+            drawn only where a band reaches past the first; an average clipped at the pane, the legend naming its value at the left edge
+            and that it stands off the chart, its words back at rest; the three averages in solid, dashed and dotted lines, each swatch its
+            line's; round prices labelled, at most 7, a label a named price stands on left out; the legend taking a second row where it must.
+Read back:  on this branch's build over the store, at true widths with Chrome's device metrics. FISV daily, 1440 light: scale 43.07 to 71.21 where it
+            was 43.87 to 171.32, labels 45, 50, 60, 65 and 70, "200-session average 171.32 at the left edge, off the chart above". FISV
+            weekly and monthly, 1440, light and dark: 36.15 to 244.49. FISV daily 390 dark and KO weekly 390 light: no page wider than the
+            screen. KO daily, 1440 dark, no big drop: 65 to 97.17, every average inside. MSA, AVPT and CTVA, one each of the other two
+            indices' charts, the same. CTVA's averages read off the chart until the night works them over its refetched bars.
+Tests:      from 3187, 14 of the 20 22.34 and 22.35 add: the fit, five steps and the lines worked by hand, FISV's shape, an average below, a plan and a level
+            past the candles, the three strokes and swatches, the labels, the second row and the script.
+Mutation:   one for each property, predicted first and each red at its test: an average widening the scale; no margin; no clip; a plan not
+            widening it; a far level drawing no second chart; two averages alike; a label over a named price; a legend on one row; more
+            lines than the most. Nine, nine red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the
+            figures it states.
+
+### 22.35 - a box beside the candle under the pointer, a tap or the arrow keys   2026-11-04
+
+Built:      each candle carries its box written on the server, the place its line stands and its close; the shell's script shows the box inside
+            the chart's width, the thin line through the candle and its volume bar and the close in the price column; a mouse leaving takes it down,
+            a tap stands until a tap lands off the chart, and the arrow keys, Home and End step while the chart holds the focus; at phone
+            width the prices stand two pairs a row. The line above the chart rests on the newest candle as it did.
+Read back:  the same build and pages. Mouse at 1440: FISV's candle 12 of daily, box 81 to 313 in a chart 1335 wide, 2025-11-19, -0.17 (-0.28%), volume
+            5,086,100, the averages off the chart named as such under the pointer; candle 243, box to its left, 943 to 1183. Off the chart: box
+            down, words back. Keys on each of 5 charts: 2 left arrows and Home step one and one and to 0. Taps at 390 on KO: box 136 high in a chart 188
+            high, at 40 to 249 and then at 4 to 220; a second tap moves it.
+Found:      the first read back showed a box 218 high in a chart 193 high at 390, and that a focus from a tap took the box down on the next tap. Both answered above.
+Tests:      3207, from 3187: a daily box, a week's, the first candle's, what each candle carries, the script, the styles, and the 14 of 22.34.
+Mutation:   one for each property, predicted first and each red at its test: volume rounded; a change with no sign; a week named by its last session;
+            the line short of the volume pane; a candle carrying no place; a tap taken down on lifting; no arrow keys; a keyed chart's box
+            taken down by the mouse. Eight, eight red.
+Carried:    the read-only copy's pages, read with `tools/publish-site` from main after the merge.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the
+            figures below stated before that run: all six steps, 0 warnings, 0 errors, 3207 of 3207 tests ran with none failed,
+            migrations 0 to 120 with none pending, schema version 120, against `data-ci` and never `data`; the phase report 65 tables,
+            1501 claims, 1501 passing, none out of scope and none unexamined, 1516 placements and verdicts reconciled against a floor
+            of 34, 46 checks on the roster run and passed.
