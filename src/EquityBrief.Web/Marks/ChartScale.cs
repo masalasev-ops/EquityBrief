@@ -4,7 +4,7 @@ namespace EquityBrief.Web.Marks;
 
 // The chart page's vertical scale and the prices its gridlines are labelled at: the arithmetic of where a price sits, kept
 // apart so it can be worked by hand.
-// see: The chart page's scale fits the candles, the plan's lines and the levels shown, and an average never widens it
+// see: The chart page's scale fits the candles and the plan's lines and the levels shown, and an average never widens it
 public static class ChartScale
 {
     // The room left above and below what the scale fits, as a share of what it spans, so the highest wick and a plan's line

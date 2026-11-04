@@ -32,7 +32,7 @@ public sealed partial class MarkRenderer
 
     // How each average is drawn, its line and its legend's swatch alike, each told apart by its dashes and its weight so it
     // reads without colour in both palettes.
-    // see: The chart page's scale fits the candles, the plan's lines and the levels shown, and an average never widens it
+    // see: The chart page's scale fits the candles and the plan's lines and the levels shown, and an average never widens it
     static string AverageStroke(int line) => line switch
     {
         0 => "stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"0.6\" stroke-width=\"1.2\"",
@@ -117,7 +117,7 @@ public sealed partial class MarkRenderer
         // One scale over the candles and every price a plan draws, so a stop or a target past the candles' range is still a
         // line on the pane, with a small margin. An average never widens it: one outside it is clipped at the pane's edge and
         // named so in the legend, since a sharp fall leaves the long averages far above the price and the candles squashed.
-        // see: The chart page's scale fits the candles, the plan's lines and the levels shown, and an average never widens it
+        // see: The chart page's scale fits the candles and the plan's lines and the levels shown, and an average never widens it
         var prices = candles
             .SelectMany(candle => new[] { PlotValue(candle.High), PlotValue(candle.Low) })
             .Concat(plans.SelectMany(plan => new decimal?[] { plan.Buy, plan.Stop, plan.Target }).OfType<decimal>().Select(PlotValue))
@@ -439,7 +439,7 @@ public sealed partial class MarkRenderer
     // The box the shell's script shows beside a candle: its session, or the week's or month's first and last; its open, high,
     // low and close; its change on the candle before in price and per cent in the gain's or the loss's colour with its sign;
     // its volume in full; and each average at its last session.
-    // see: The chart page draws a box beside the candle under the pointer, a tap or the arrow keys, and rests on the newest candle's line
+    // see: The chart page draws a box beside the candle under the pointer or a tap or the arrow keys, and rests on the newest candle's line
     public static string ChartBox(IReadOnlyList<ChartCandle> candles, int at)
     {
         var candle = candles[at];

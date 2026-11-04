@@ -7,7 +7,7 @@ using Xunit;
 namespace EquityBrief.Tests.Reading;
 
 // 22.35: the box beside the candle under the pointer, a tap or the arrow keys.
-// see: The chart page draws a box beside the candle under the pointer, a tap or the arrow keys, and rests on the newest candle's line
+// see: The chart page draws a box beside the candle under the pointer or a tap or the arrow keys, and rests on the newest candle's line
 public class ChartBoxTests
 {
     static readonly DateOnly Monday = new(2026, 10, 26);

@@ -7,7 +7,7 @@ using Xunit;
 namespace EquityBrief.Tests.Reading;
 
 // 22.34: the chart page's scale fits the candles, the plan's lines and the levels shown, and an average never widens it.
-// see: The chart page's scale fits the candles, the plan's lines and the levels shown, and an average never widens it
+// see: The chart page's scale fits the candles and the plan's lines and the levels shown, and an average never widens it
 public class ChartScaleTests
 {
     static readonly DateOnly First = new(2026, 9, 1);
