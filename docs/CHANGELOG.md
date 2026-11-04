@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - docs/ARCHITECTURE.html - the chart's box under the pointer
+Decision: The chart page draws a box beside the candle under the pointer, a tap or the arrow keys, and rests on the newest candle's line
+Was:
+> and the three averages there; and the newest candle's while the pointer is off the chart</td>
+Now:
+> and the three averages there; and the newest candle's while the pointer is off the chart; and from 22.35, under the pointer, a tap or the arrow keys while the chart holds the focus, a box beside the candle ...</td>
+Why: the operator's answers on the chart audit.
+
 ### 2026-11-04 - docs/ARCHITECTURE.html - the chart's scale, its gridlines and the averages' styles
 Decision: The chart page's scale fits the candles, the plan's lines and the levels shown, and an average never widens it
 Was:

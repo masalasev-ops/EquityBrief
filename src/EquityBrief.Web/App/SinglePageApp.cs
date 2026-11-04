@@ -1057,16 +1057,76 @@ public sealed partial class SinglePageApp : IComponent
             if (words) { label.textContent = words; }
           }
         }
-        document.addEventListener('pointerover', (event) => {
-          const candle = event.target.closest && event.target.closest('.candle-chart .candle');
-          if (candle) { readCandle(candle); }
-        });
-        document.addEventListener('pointerout', (event) => {
-          const chart = event.target.closest && event.target.closest('.candle-chart');
-          if (!chart || (event.relatedTarget && chart.contains(event.relatedTarget))) { return; }
+        // A candle pointed at, tapped or stepped to: the box beside it, kept inside the chart's width, the thin line through it
+        // and its volume bar, and its close marked in the price column.
+        function pointAt(candle) {
+          readCandle(candle);
+          const chart = candle.closest('.candle-chart');
+          const x = candle.getAttribute('data-x');
+          const line = chart.querySelector('.chart-cross-line');
+          line.setAttribute('x1', x);
+          line.setAttribute('x2', x);
+          chart.querySelector('.chart-cross-close').setAttribute('transform', 'translate(0,' + candle.getAttribute('data-close-y') + ')');
+          chart.querySelector('.chart-cross-t').textContent = candle.getAttribute('data-close-shown');
+          chart.querySelector('.chart-cross').classList.add('on');
+          chart.setAttribute('data-pointed', candle.getAttribute('data-at'));
+          const wrap = chart.closest('.chart-wrap');
+          const box = wrap && wrap.querySelector('.chart-box');
+          if (!box) { return; }
+          box.innerHTML = candle.getAttribute('data-box');
+          box.hidden = false;
+          const hit = candle.querySelector('.candle-hit').getBoundingClientRect();
+          const within = wrap.getBoundingClientRect();
+          const room = within.width - box.offsetWidth - 4;
+          const right = hit.right - within.left + 10;
+          const left = right <= room ? right : hit.left - within.left - box.offsetWidth - 10;
+          box.style.left = Math.max(4, Math.min(left, room)) + 'px';
+        }
+        function pointAway(chart) {
+          chart.querySelector('.chart-cross').classList.remove('on');
+          chart.removeAttribute('data-pointed');
+          const wrap = chart.closest('.chart-wrap');
+          const box = wrap && wrap.querySelector('.chart-box');
+          if (box) { box.hidden = true; }
           const candles = chart.querySelectorAll('.candle');
           if (candles.length > 0) { readCandle(candles[candles.length - 1]); }
           for (const label of chart.querySelectorAll('[data-rest]')) { label.textContent = label.getAttribute('data-rest'); }
+        }
+        document.addEventListener('pointerover', (event) => {
+          const candle = event.target.closest && event.target.closest('.candle-chart .candle');
+          if (candle) { pointAt(candle); }
+        });
+        // A finger lifting leaves the box up until a tap lands off the chart; a mouse leaving the chart takes it down.
+        document.addEventListener('pointerout', (event) => {
+          if (event.pointerType === 'touch') { return; }
+          const chart = event.target.closest && event.target.closest('.candle-chart');
+          if (!chart || (event.relatedTarget && chart.contains(event.relatedTarget))) { return; }
+          if (document.activeElement !== chart) { pointAway(chart); }
+        });
+        document.addEventListener('pointerdown', (event) => {
+          if (event.pointerType !== 'touch') { return; }
+          for (const chart of document.querySelectorAll('.candle-chart[data-pointed]')) {
+            if (!chart.contains(event.target)) { pointAway(chart); }
+          }
+        });
+        // The arrow keys step from candle to candle while the chart holds the focus, Home and End go to its first and newest.
+        document.addEventListener('focusin', (event) => {
+          if (!event.target.matches || !event.target.matches('.candle-chart') || !event.target.matches(':focus-visible')) { return; }
+          const candles = event.target.querySelectorAll('.candle');
+          if (candles.length > 0) { pointAt(candles[candles.length - 1]); }
+        });
+        document.addEventListener('focusout', (event) => {
+          if (event.target.matches && event.target.matches('.candle-chart')) { pointAway(event.target); }
+        });
+        document.addEventListener('keydown', (event) => {
+          const chart = event.target.matches && event.target.matches('.candle-chart') ? event.target : null;
+          if (!chart || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) { return; }
+          event.preventDefault();
+          const candles = chart.querySelectorAll('.candle');
+          const held = chart.getAttribute('data-pointed');
+          const from = held === null ? candles.length - 1 : parseInt(held, 10);
+          const to = event.key === 'Home' ? 0 : event.key === 'End' ? candles.length - 1 : from + (event.key === 'ArrowLeft' ? -1 : 1);
+          if (to >= 0 && to < candles.length) { pointAt(candles[to]); }
         });
         menuButton.addEventListener('click', () => {
           const open = menuButton.getAttribute('aria-expanded') !== 'true';

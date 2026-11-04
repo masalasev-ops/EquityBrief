@@ -192,7 +192,7 @@ public sealed partial class MarkRenderer
         var svg = new StringBuilder();
 
         svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {wide} {ChartHeight + legendExtra}\" width=\"{wide}\" height=\"{ChartHeight + legendExtra}\" ");
-        svg.Append(Invariant, $"role=\"img\" class=\"{classes}\" data-ticker=\"{Escaped(ticker)}\" data-interval=\"{Escaped(interval)}\" data-candles=\"{candles.Count}\" ");
+        svg.Append(Invariant, $"role=\"img\" tabindex=\"0\" aria-label=\"{Escaped(ticker)}'s {Escaped(interval)} chart: the arrow keys step from candle to candle\" class=\"{classes}\" data-ticker=\"{Escaped(ticker)}\" data-interval=\"{Escaped(interval)}\" data-candles=\"{candles.Count}\" ");
         svg.Append(Invariant, $"data-axis-low=\"{Number(axis.Low)}\" data-axis-high=\"{Number(axis.High)}\">");
         svg.Append(Invariant, $"<title>{Escaped(ticker)}, {candles.Count} {Escaped(interval)} candles from {candles[0].First:yyyy-MM-dd} to {candles[^1].Last:yyyy-MM-dd}</title>");
         svg.Append(Invariant, $"<desc>{Escaped(interval)} candles with the 20, 50 and 200 session averages over a volume pane on a shared time axis, the night's level bands shown by the page's toggle and a listing rule's buy, stop and target as lines.</desc>");
@@ -290,7 +290,8 @@ public sealed partial class MarkRenderer
             svg.Append(Invariant, $"<g class=\"candle\" data-at=\"{index}\" data-first=\"{candle.First:yyyy-MM-dd}\" data-last=\"{candle.Last:yyyy-MM-dd}\" ");
             svg.Append(Invariant, $"data-open=\"{candle.Open.ToString(Invariant)}\" data-high=\"{candle.High.ToString(Invariant)}\" data-low=\"{candle.Low.ToString(Invariant)}\" data-close=\"{candle.Close.ToString(Invariant)}\" data-volume=\"{candle.Volume}\" ");
             svg.Append(Invariant, $"data-average20=\"{(candle.Sma20 is { } a20 ? a20.ToString("R", Invariant) : "none")}\" data-average50=\"{(candle.Sma50 is { } a50 ? a50.ToString("R", Invariant) : "none")}\" data-average200=\"{(candle.Sma200 is { } a200 ? a200.ToString("R", Invariant) : "none")}\" ");
-            svg.Append(Invariant, $"data-reading=\"{Escaped(ChartReading(candles, index))}\"");
+            svg.Append(Invariant, $"data-reading=\"{Escaped(ChartReading(candles, index))}\" data-box=\"{Escaped(ChartBox(candles, index))}\" ");
+            svg.Append(Invariant, $"data-x=\"{Number(centre)}\" data-close-y=\"{Number(closeY)}\" data-close-shown=\"{Price(candle.Close)}\"");
 
             foreach (var (name, words) in PageAverages)
             {
@@ -298,7 +299,7 @@ public sealed partial class MarkRenderer
             }
 
             svg.Append('>');
-            svg.Append(Invariant, $"<rect class=\"candle-hit\" x=\"{Number(centre - (slot / 2))}\" y=\"0\" width=\"{Number(slot)}\" height=\"{PriceHeight}\" fill=\"transparent\"/>");
+            svg.Append(Invariant, $"<rect class=\"candle-hit\" x=\"{Number(centre - (slot / 2))}\" y=\"0\" width=\"{Number(slot)}\" height=\"{PriceHeight + Gap + VolumeHeight}\" fill=\"transparent\"/>");
             svg.Append(Invariant, $"<line x1=\"{Number(centre)}\" y1=\"{Number(At(axis, PlotValue(candle.High)))}\" x2=\"{Number(centre)}\" y2=\"{Number(At(axis, PlotValue(candle.Low)))}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1\"/>");
             svg.Append(height < 1
                 ? Formatted($"<line x1=\"{Number(left)}\" y1=\"{Number(closeY)}\" x2=\"{Number(left + body)}\" y2=\"{Number(closeY)}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1\"/>")
@@ -423,9 +424,53 @@ public sealed partial class MarkRenderer
             svg.Append(Invariant, $"<text class=\"m-tick\" x=\"{Number(x)}\" y=\"{dateY}\" text-anchor=\"{anchor}\">{candles[tick].Last:yyyy-MM-dd}</text>");
         }
 
-        svg.Append("</g></g></svg>");
+        svg.Append("</g>");
+
+        // What the pointer, a tap or the arrow keys set on a candle: a thin line through it and its volume bar, and its close
+        // marked in the price column. The shell's script places and shows them.
+        svg.Append(Invariant, $"<g class=\"chart-cross\"><line class=\"chart-cross-line\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"{PriceHeight + Gap + VolumeHeight}\"/>");
+        svg.Append(Invariant, $"<g class=\"chart-cross-close\"><rect class=\"chart-cross-tag\" x=\"{Width + 4}\" y=\"-11\" width=\"{AxisWidth - 6}\" height=\"22\" rx=\"2\"/>");
+        svg.Append(Invariant, $"<text class=\"m-nowtag-t chart-cross-t\" x=\"{Width + ColumnLabelAt}\" y=\"5\"></text></g></g>");
+        svg.Append("</g></svg>");
 
         return svg.ToString();
+    }
+
+    // The box the shell's script shows beside a candle: its session, or the week's or month's first and last; its open, high,
+    // low and close; its change on the candle before in price and per cent in the gain's or the loss's colour with its sign;
+    // its volume in full; and each average at its last session.
+    // see: The chart page draws a box beside the candle under the pointer, a tap or the arrow keys, and rests on the newest candle's line
+    public static string ChartBox(IReadOnlyList<ChartCandle> candles, int at)
+    {
+        var candle = candles[at];
+        var sessions = candle.First == candle.Last
+            ? FormattableString.Invariant($"{candle.Last:yyyy-MM-dd}")
+            : FormattableString.Invariant($"{candle.First:yyyy-MM-dd} to {candle.Last:yyyy-MM-dd}");
+        var change = ChangeOf(candles, at) is { } moved
+            ? SignedFigure(moved.Percent, 2, Formatted($"{(moved.Change > 0 ? "+" : string.Empty)}{Price(moved.Change)} ({Change2(moved.Percent)})"))
+            : "no candle before";
+        var box = new StringBuilder();
+
+        box.Append(Invariant, $"<div class=\"chart-box-when\">{sessions}</div><dl>");
+
+        var rows = new List<(string Label, string Value)>
+        {
+            ("Open", Price(candle.Open)),
+            ("High", Price(candle.High)),
+            ("Low", Price(candle.Low)),
+            ("Close", Price(candle.Close)),
+            ("Change", change),
+            ("Volume", candle.Volume.ToString("N0", Invariant)),
+        };
+
+        rows.AddRange(PageAverages.Select(average => (average.Words, AverageOf(candle, average.Name) is { } held ? held.ToString("#,##0.00", Invariant) : "not stored")));
+
+        foreach (var (label, value) in rows)
+        {
+            box.Append(Invariant, $"<dt>{label}</dt><dd>{value}</dd>");
+        }
+
+        return box.Append("</dl>").ToString();
     }
 
     // An average as the legend names it under the pointer, and whether it stands off the chart at that candle.

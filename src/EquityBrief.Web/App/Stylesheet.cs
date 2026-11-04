@@ -1153,6 +1153,16 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .candle-chart .m-legend-t,.candle-chart .m-tick,.candle-chart .m-nowtag-t,.candle-chart .m-cap{font-size:15px}
 .candle-chart .level-bands{display:none} .chart-fig.bands-on .candle-chart .level-bands{display:inline}
 .chart-fig .candle-chart-levels{display:none} .chart-fig.bands-on .candle-chart-levels{display:inline} .chart-fig.bands-on .candle-chart-plain{display:none}
+.chart-wrap{position:relative}
+.candle-chart:focus{outline:none} .candle-chart:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.candle-chart .volume-pane,.candle-chart .chart-events,.candle-chart .chart-cross{pointer-events:none}
+.chart-cross{display:none} .chart-cross.on{display:inline}
+.chart-cross-line{stroke:var(--ink-2);stroke-width:1} .chart-cross-tag{fill:var(--accent)} .candle-chart .chart-cross-t{fill:var(--accent-ink)}
+.chart-box{position:absolute;top:30px;z-index:5;width:max-content;max-width:min(300px,calc(100% - 8px));padding:8px 10px;background:var(--surface);border:1px solid var(--hair);border-radius:3px;box-shadow:var(--shadow);font-size:13px;font-variant-numeric:tabular-nums;pointer-events:none}
+.chart-box-when{font-weight:600;margin-bottom:4px}
+.chart-box dl{display:grid;grid-template-columns:auto auto;gap:1px 14px;margin:0}
+.chart-box dt{color:var(--soft);font-weight:400} .chart-box dd{margin:0;text-align:right}
+@media (max-width:640px){.chart-box{top:4px;font-size:12px;padding:6px 8px}}
 .candle-chart .vol-up{fill:var(--up)} .candle-chart .vol-down{fill:var(--down)} .candle-chart .vol-flat{fill:var(--muted)}
 .candle-chart .plan-line{stroke-width:1.6} .candle-chart .plan-buy,.candle-chart .plan-target{stroke:var(--up)} .candle-chart .plan-stop{stroke:var(--down)}
 .candle-chart .plan-tick-buy,.candle-chart .plan-tick-target{fill:var(--up)} .candle-chart .plan-tick-stop{fill:var(--down)}

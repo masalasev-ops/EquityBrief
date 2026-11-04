@@ -2404,6 +2404,11 @@ Same answers. The scale fits the candles and the plan's lines with a small margi
 
 **Done when** the fit and the step are worked by hand; a chart shaped as FISV's is shown with its scale at the candles, its average clipped and the legend's words read back, above and below; a plan's line and a level past the candles are each shown widening the scale, the level only in the drawing the toggle shows; the three averages' strokes are shown distinct and each swatch its line's; the gridlines are read from the drawing and a label a named price stands on left out; the legend is shown fitting on a second row; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.35 On the operator's answers of 2026-11-04: the chart's hover box
+Same answers. A box beside the candle under the pointer, a tap or the arrow keys, a thin line through the candle and its volume bar, its close marked on the price axis, and the line above the chart back on the newest candle at rest (see: The chart page draws a box beside the candle under the pointer, a tap or the arrow keys, and rests on the newest candle's line).
+
+**Done when** a daily, a weekly and a first candle's box are read from the drawing with their dates, prices, signed change in its colour, full volume and averages; each candle is shown carrying what the script places; the line reaches the volume pane and the close's tag stands in the column; the script is read for the mouse, the tap and the keys; the box is read back on a real page at both widths; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23
