@@ -452,6 +452,68 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task TheVerbCarriesASplitWithNoSpanNamedAndRefusesWithNoStockNamed()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute("INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES ('JUMP', '2021-07-02', '11', '11', '11', '11', '11', 100, 'history-pull-1'), ('JUMP', '2021-07-06', '33', '33', '33', '33', '33', 100, 'history-pull-1');");
+
+        var clock = FixedClock.At(NightAt(FaultNight), SessionZones.UnitedStates);
+        var said = new StringWriter();
+        var refused = new StringWriter();
+
+        Assert.Equal(2, await HistoryPull.RunAsync(["history-pull", "--carry-splits"], () => throw new InvalidOperationException("no feeds"), clock, store.DatabaseFile, said, refused, splits: () => new SplitsOf()));
+        Assert.Contains("--names", refused.ToString(), StringComparison.Ordinal);
+
+        Assert.Equal(0, await HistoryPull.RunAsync(["history-pull", "--carry-splits", "--names", "JUMP"], () => throw new InvalidOperationException("no feeds"), clock, store.DatabaseFile, said, refused, splits: () => new SplitsOf(new SplitAnswer(new DateOnly(2021, 7, 6), 1m, 3m))));
+        Assert.Contains("2 row(s) written, 1 request(s)", said.ToString(), StringComparison.Ordinal);
+    }
+
+    sealed class EmptyCalendar : IEarningsCalendarFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<CalendarEvent>> EventsAsync(DateOnly from, DateOnly to, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult<IReadOnlyList<CalendarEvent>>([]);
+        }
+    }
+
+    [Fact]
+    public async Task AStockAskedForByNameIsPulledWhereTheWiderIndexHoldsItTodayThoughItsStoredListsDoNot()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var day = new DateOnly(2026, 9, 1);
+
+        // AVPT's shape: the stored lists were read before it joined, and the night's list holds it.
+        store.Execute("INSERT INTO pulled_member (index_code, ticker, exchange, pull) VALUES ('SML', 'OLD', 'US', 'history-pull-0');");
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('SML', 'NEWER', '2026-09-30', NULL, '2026-11-01T00:00:00Z'), ('SML', 'GONE', '2026-01-01', '2026-08-01', '2026-11-01T00:00:00Z');");
+
+        var history = new SeriesByTicker(new()
+        {
+            ["NEWER"] = [Priced(day, 10m)],
+            ["OLD"] = [Priced(day, 20m)],
+            ["GONE"] = [Priced(day, 30m)],
+        });
+        var clock = FixedClock.At(NightAt(FaultNight), SessionZones.UnitedStates);
+        var puller = new HistoryPull(history, new EmptyCalendar(), clock, store.DatabaseFile);
+
+        await puller.PullAsync("SML", day, "history-pull-named", _ => { }, only: ["NEWER"]);
+        Assert.Equal(["NEWER"], history.Asked);
+
+        // Named, one the index left before the span is not read, and with no names the stored lists alone are.
+        history.Asked.Clear();
+        await puller.PullAsync("SML", day, "history-pull-gone", _ => { }, only: ["GONE"]);
+        Assert.Empty(history.Asked);
+
+        history.Asked.Clear();
+        await puller.PullAsync("SML", day, "history-pull-all", _ => { });
+        Assert.Equal(["OLD"], history.Asked);
+    }
+
+    [Fact]
     public async Task ClearingOutcomesRemovesOnlyTheNamedStocksFromTheDayOn()
     {
         using var store = new TemporaryStore().Migrated();
