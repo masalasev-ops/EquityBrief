@@ -15064,8 +15064,9 @@ Corrects: PR 633's remedy, run from main's 5605e41b from 07:35 UTC. Its pull ask
 Built:      a stock asked for by name is read where the wider index holds it today as well; `--carry-splits` runs ahead of that demand.
             Second remedy, `tools/remedies/2026-11-04-22.33-correction-the-named-pull.txt`, about 145 weighted calls.
 Ran:        steps 1 to 4, 6 and 7 of the first remedy from main. All 14 years replaced, VSXY from VSCO's sessions at 2025-11-04. MOG-A alone stays
-            suspect: EODHD still serves its 3 copied candles. CTVA's 49 outcomes decided from 2026-10-01 scored again, its 14 false
-            losses now 9 wins at 7.59% to 19.40% with 5 others unmoved, and every fill priced again.
+            suspect: EODHD still serves its 3 copied candles. CTVA's 49 outcomes decided from 2026-10-01 scored again and every fill
+            priced again. Its false losses were 13, 10 setups and 3 swing plans, and not the 14 of 22.33's entry: all 13 now wins at 7.59%
+            to 19.40%.
 Tests:      3187, from 3185: the verb with no span named and with no stock named, and a named stock the stored lists lack, one the index no
             longer holds and a pull naming none.
 Mutation:   two, predicted first and each red at its test: a named stock not read from today's members; the verb demanding a first session.
