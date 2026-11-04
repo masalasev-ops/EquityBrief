@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md - the corporate action check reads earlier day files, and asks for a member behind the night or holding a copied candle
+Decision: A member holding a copied candle or behind the night is asked for its year again, and stays suspect until an answer clears it
+Was:
+> or a member missing a session the exchange traded, once for the newest session missing, and on each of the five nights after a failed check and once a week after that until a refetch succeeds or the name leaves the index,
+> <td>nightly, once</td><td>splits and dividends feed, historical price feed, membership, bar store, series state</td>
+> | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
+Now:
+> or a member missing a session the exchange traded, once for the newest session missing, or a member behind the night or holding a copied candle, up to 20 members a night, and on each of the five nights after a failed check and once a week after that until a refetch succeeds or the name leaves the index,
+> <td>nightly, once, and by hand for the stocks a remedy names</td><td>splits and dividends feed, historical price feed, membership, bar store, series state</td>
+> | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | ForwardReturnFiller |
+Why: the chart audit of 2026-11-04 found CTVA's spin-off never adjusted, 17 copied candles, and HOS seven sessions behind reading ok.
+
 ## Entry format
 
 ```

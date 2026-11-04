@@ -35,6 +35,7 @@ public enum Store
     PulledCompany,
     PulledShares,
     PulledSplit,
+    TickerJoin,
     PulledRevenue,
     PulledMember,
     PulledIncome,

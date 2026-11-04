@@ -15009,3 +15009,49 @@ Carried:    each re-filed stock's scorecard on its page, which the night writes,
             2026-11-03; the monthly run of 2026-11-07 reads the ledger built here.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over c24c1e7a, whose tree PR 631 merged, with 22.32's figures, from
             19:12 to 19:53 UTC; records alone change in this entry.
+
+### 22.33 ruling - the operator's answers on the chart audit, each fix its own checkpoint in the order they give
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-04 and lands nothing.
+Ruled:      word for word in `prompts/2026-11-04-chart-audit-answers-and-the-fixes.md`, committed with this entry. In order, each its own
+            checkpoint: the data fixes, 22.33; the scale and price gridlines, 22.34; the hover box, 22.35; a line on the chart for each real
+            event, 22.36; the audit as a nightly check, 22.37; the pulled years' faults classified and fixed from EODHD with the count in phase
+            23's plan, 22.38; and the stray question mark on pages, 22.39. EODHD is the one source: the Yahoo comparison is dropped from
+            the audit and the nightly check. Flag a need not count the plan's lines; the three rules stand: market-wide at 10 or more
+            members over 25%, a dividend at least half the fall, an event on the session or the one before.
+Measured:   the audit, read-only, over the night of 2026-11-03, 1,503 stocks: 561 with a flag, 942 with none, 54 of 54 chart views read back
+            the same as the page. Its report, artifacts/chart-audit/ and the published page, gitignored and no part of the corpus.
+Queue:      done, the audit; in progress, 22.33; next, 22.34 to 22.39 in that order.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the
+            figures it states.
+
+### 22.33 - the bars the rules read are put right from EODHD, and the night finds the same faults itself   2026-11-04
+
+Traced:     CTVA's split of 2026-10-01, 1333 for 200, stands in EODHD's day file for that date today; the night of that date refetched 8 names
+            and not CTVA, so EODHD posted it after the night read the file, and nothing read that file again. The 17 copied candles came
+            down in EODHD's own answer to the backfill of 2026-10-02; no code here writes a price it was not sent, and nothing asked
+            again. HOS: the day file stopped carrying it on 2026-10-26 and a shorter history asked nothing, by a clause of the rule
+            on missing sessions, now amended, its prior text under Previously decided.
+Built:      the action check reads the five sessions before its own, 10 requests more a night; a member behind the newest session any
+            member holds, or holding a copied candle, is asked for, 20 a night at most, and reads suspect with why until an answer
+            clears it; `refetch` by hand through the check's own path; `ticker-join` with its table and migration 120, every read
+            of the provider's series reading the join; `history-pull --carry-splits`, a new pull with the split applied; and
+            `outcomes-again`, by hand from a remedy that names the stock.
+Remedy:     `tools/remedies/2026-11-04-22.33-the-bars-the-rules-read.txt`, about 165 weighted calls, to run from main after the merge, then
+            the three ledger histories by hand. No source a rule's version or the readings' version pins moves.
+On CTVA:    no pick, trade, holding or paper trade on any rule, each of the 15 tables read at 0. Built on the wrong bars: 14 outcomes decided
+            at about -84% on 2026-10-01, 12 setups and 2 swing plans; 18 fills, three of them -632%, -282% and -168%; and 725 setups, 720
+            of the history and 5 of the nights since 2026-10-23. What each becomes is stated in the remedy's record.
+Tests:      3185, from 3173: a late split refetched and one asked on its night left; the requests of six sessions; an unreadable earlier file
+            failing nothing; behind, clearing and staying; the limit; a copied candle against each price and the volume, a first-day
+            zero left; the refetch by hand; the join and the carried split worked by hand; clearing the named stock alone.
+Mutation:   one for each property, predicted first and each red at its test: a late file not read; a member asked on its own session asked
+            again; a year short of the night reading ok; the limit past 20; a copied candle needing no missing volume; the join at no
+            scale; the split applied the wrong way; every stock's outcomes cleared. Eight, eight red.
+Carried:    the remedy's run and what moved, in a record entry after the merge; CTVA's 5 night setups, which the monthly run of 2026-11-07
+            writes again; 22.34 to 22.39.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the
+            figures below stated before that run: all six steps, 0 warnings, 0 errors, 3185 of 3185 tests ran with none failed,
+            migrations 0 to 120 with none pending, schema version 120, against `data-ci` and never `data`; the phase report 65 tables,
+            1501 claims, 1501 passing, none out of scope and none unexamined, 1516 placements and verdicts reconciled against a floor
+            of 34, 46 checks on the roster run and passed.

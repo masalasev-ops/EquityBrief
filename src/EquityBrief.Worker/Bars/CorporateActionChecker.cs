@@ -34,7 +34,14 @@ public sealed record ActionCheckOutcome(
     IReadOnlyList<string>? Missing = null,
     // The dividends the night's answer carried for the names the night stores, whole, which the dividend keeper keeps.
     // see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read
-    IReadOnlyList<DividendPaid>? Paid = null);
+    IReadOnlyList<DividendPaid>? Paid = null,
+    // Members an action the provider posted after its own night landed on, read from the day files of the sessions before
+    // this one, and how many of those files could not be read.
+    IReadOnlyList<string>? Late = null,
+    int LateFilesUnread = 0,
+    // Members whose newest stored bar is behind the night, and members holding a copied candle.
+    IReadOnlyList<string>? Behind = null,
+    IReadOnlyList<string>? Copied = null);
 
 // A suspect name whose nightly retries are spent: when it was last asked for, as the UTC
 // instant its row carries, and the reason that refetch failed for.
@@ -112,6 +119,17 @@ public sealed class CorporateActionChecker : IComponent
     // seventh day the exchange did not trade is asked on the next session it did.
     // see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
     public const int WeeklyRetryDays = 7;
+
+    // How many sessions before the night's the check reads the day files of again, ten requests a night whatever the
+    // universe, since the provider posts some actions after the night has asked.
+    // see: The corporate action check reads the day files of the five sessions before its own, and refetches a member an action the provider posted late landed on
+    public const int LateFileSessions = 5;
+
+    // The most members a night asks for because they are behind or hold a copied candle, so the requests follow the
+    // provider's faults and a day file missing the whole index does not ask for every member; those past it are marked
+    // suspect with the reason and asked on a later night.
+    // see: A member holding a copied candle or behind the night is asked for its year again, and stays suspect until an answer clears it
+    public const int FaultAskLimit = 20;
 
     readonly ICorporateActionFeed actions;
     readonly IHistoricalBarFeed history;
@@ -206,6 +224,20 @@ public sealed class CorporateActionChecker : IComponent
 
     const string CheckedEach = "SELECT ticker, checked_at FROM series_state;";
 
+    // Each stored bar with no volume with the close of the session before it, which a copied candle is read from.
+    const string NoVolumeEach = @"
+        SELECT b.ticker, b.session_date, b.open, b.high, b.low, b.close, (
+            SELECT p.close FROM bar p
+            WHERE p.ticker = b.ticker AND p.session_date < b.session_date
+            ORDER BY p.session_date DESC LIMIT 1)
+        FROM bar b
+        WHERE b.volume = 0;
+    ";
+
+    const string NewestEach = "SELECT ticker, MAX(session_date) FROM bar WHERE session_date <= $session GROUP BY ticker;";
+
+    const string NewestSession = "SELECT MAX(session_date) FROM bar;";
+
     // The only sanctioned removal of a bar besides retention, and it is paired
     // with the insert that follows it inside one transaction.
     const string DropYear = @"
@@ -275,6 +307,13 @@ public sealed class CorporateActionChecker : IComponent
             .Select(action => action.Ticker)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+        // And every member an action of the sessions before landed on that this check has not asked for since that
+        // session, which is an action the provider posted after its own night read the file.
+        // see: The corporate action check reads the day files of the five sessions before its own, and refetches a member an action the provider posted late landed on
+        var (lateActions, late, lateUnread) = await LateActionsAsync(connection, session, members, cancellationToken);
+
+        acted.UnionWith(late);
+
         // And every name an earlier night left suspect, asked for again nightly
         // while its retries last and weekly after that, until one refetch
         // succeeds. A name whose retries are spent is asked for on a night its
@@ -325,6 +364,21 @@ public sealed class CorporateActionChecker : IComponent
         // name asked for tonight is not named as spent.
         var fresh = acted.Concat(returning).Concat(missing).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+        // And every other member holding a copied candle or behind the night, a suspect name left to its own count so that
+        // a fault the provider does not clear is asked for on the five nights after and weekly, up to the limit a night.
+        // see: A member holding a copied candle or behind the night is asked for its year again, and stays suspect until an answer clears it
+        var (behindAll, copiedAll, reach) = await FaultsAsync(connection, members, session);
+        var suspectNames = suspects.Select(name => name.Ticker).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var asking = fresh.Concat(retried).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var faultAsks = copiedAll.Keys
+            .Concat(behindAll.Keys)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(name => !asking.Contains(name) && !suspectNames.Contains(name))
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
+        var faultsAsked = faultAsks.Take(FaultAskLimit).ToArray();
+        var faultsLeft = faultAsks.Skip(FaultAskLimit).ToArray();
+
         var spent = suspects
             .Where(name => !Due(name) && !fresh.Contains(name.Ticker))
             .Select(name => new SpentName(name.Ticker, name.CheckedAt, name.Reason))
@@ -334,6 +388,7 @@ public sealed class CorporateActionChecker : IComponent
             .Concat(retried)
             .Concat(returning)
             .Concat(missing)
+            .Concat(faultsAsked)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(ticker => ticker, StringComparer.Ordinal)
             .ToArray();
@@ -351,47 +406,19 @@ public sealed class CorporateActionChecker : IComponent
 
             try
             {
-                var year = await history.BarsAsync(ticker, session.AddYears(-1), session, cancellationToken);
+                var year = await ReplaceYearAsync(connection, ticker, session, observed, cancellationToken);
 
-                if (year.Count == 0)
+                // The year is the provider's whole answer, so where it still ends short of the night or still holds a
+                // copied candle the name stays suspect with why, on the count a failure holds.
+                if ((behindAll.ContainsKey(ticker) || copiedAll.ContainsKey(ticker)) && StillFaulty(year, reach ?? session) is { } fault)
                 {
-                    throw new InvalidOperationException(
-                        "the refetch returned no bars, so replacing the year would empty it");
-                }
+                    await MarkAsync(connection, ticker, Suspect, fault, observed, counted.GetValueOrDefault(ticker) + (askedTonight.Contains(ticker) ? 0 : 1));
+                    await transaction.CommitAsync();
 
-                // A year the provider has not yet brought up to the sessions the night stored is
-                // refused as an empty one is, the stored year left as it was and the name asked
-                // for again on the nights after, rather than replaced by a shorter one that would
-                // leave the name stale and the figures stored over those sessions ahead of its bars.
-                // see: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
-                await using (var newest = connection.CreateCommand())
-                {
-                    newest.CommandText = NewestHeld;
-                    newest.Parameters.AddWithValue("$ticker", ticker);
-                    newest.Parameters.AddWithValue("$session", Text(session));
+                    refetched++;
+                    suspect.Add(ticker);
 
-                    var last = year.Max(bar => bar.SessionDate);
-
-                    if (await newest.ExecuteScalarAsync() is string held
-                        && DateOnly.ParseExact(held, "yyyy-MM-dd", CultureInfo.InvariantCulture) > last)
-                    {
-                        throw new InvalidOperationException(
-                            $"the refetch's year ends on {Text(last)} before {held}, the newest session the night stored, " +
-                            "so replacing the year would drop sessions the store holds");
-                    }
-                }
-
-                await using (var drop = connection.CreateCommand())
-                {
-                    drop.CommandText = DropYear;
-                    drop.Parameters.AddWithValue("$ticker", ticker);
-
-                    await drop.ExecuteNonQueryAsync();
-                }
-
-                foreach (var bar in year)
-                {
-                    await StoreAsync(connection, ticker, bar, observed);
+                    continue;
                 }
 
                 await MarkAsync(connection, ticker, Ok, null, observed, 0);
@@ -426,6 +453,18 @@ public sealed class CorporateActionChecker : IComponent
             }
         }
 
+        foreach (var ticker in faultsLeft)
+        {
+            await MarkAsync(
+                connection,
+                ticker,
+                Suspect,
+                FormattableString.Invariant($"past the {FaultAskLimit} members a night asks for: {(behindAll.TryGetValue(ticker, out var newest) ? BehindWords(newest) : CopiedWords(copiedAll[ticker]))}"),
+                observed,
+                0);
+            suspect.Add(ticker);
+        }
+
         var refetchRequests = history.Requests - refetchRequestsBefore;
 
         var outcome = new ActionCheckOutcome(
@@ -439,11 +478,263 @@ public sealed class CorporateActionChecker : IComponent
             spent,
             returning,
             missing,
-            [.. today.Where(action => action.Paid is not null && members.Contains(action.Ticker)).Select(action => action.Paid!)]);
+            [.. today.Concat(lateActions).Where(action => action.Paid is not null && members.Contains(action.Ticker)).Select(action => action.Paid!)],
+            late,
+            lateUnread,
+            [.. behindAll.Keys.OrderBy(name => name, StringComparer.Ordinal)],
+            [.. copiedAll.Keys.OrderBy(name => name, StringComparer.Ordinal)]);
 
         await AppendAsync(connection, runId, observed, outcome);
 
         return outcome;
+    }
+
+    // A year asked for by hand for each name given, as a refetch after an action is, each in its own transaction: a name
+    // whose answer cannot replace its year keeps its year and is marked suspect. One request a name, never from a night.
+    // see: Adjusted history is re-fetched after a corporate action
+    public async Task<ActionCheckOutcome> RefetchNamesAsync(IReadOnlyList<string> names, string runId, CancellationToken cancellationToken = default)
+    {
+        var started = clock.UtcNow;
+        var session = clock.SessionDateAt(started);
+        var observed = started.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellationToken);
+
+        var before = await CountAsync(connection);
+        var requestsBefore = history.Requests;
+        var suspect = new List<string>();
+        var refetched = 0;
+
+        await using var newestStored = connection.CreateCommand();
+        newestStored.CommandText = NewestSession;
+
+        var reach = await newestStored.ExecuteScalarAsync(cancellationToken) is string stored
+            ? DateOnly.ParseExact(stored, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : session;
+
+        foreach (var ticker in names)
+        {
+            await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                var year = await ReplaceYearAsync(connection, ticker, session, observed, cancellationToken);
+
+                // By hand the day's own session may not have closed, so the year is held to the newest session the store holds.
+                if (StillFaulty(year, reach) is { } fault)
+                {
+                    await MarkAsync(connection, ticker, Suspect, fault, observed, 0);
+                    suspect.Add(ticker);
+                }
+                else
+                {
+                    await MarkAsync(connection, ticker, Ok, null, observed, 0);
+                }
+
+                await transaction.CommitAsync(cancellationToken);
+
+                refetched++;
+            }
+            catch (Exception failure) when (!(failure is OperationCanceledException && cancellationToken.IsCancellationRequested))
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                await MarkAsync(connection, ticker, Suspect, failure.Message, observed, 0);
+                suspect.Add(ticker);
+            }
+        }
+
+        var requests = history.Requests - requestsBefore;
+        var outcome = new ActionCheckOutcome(0, refetched, await CountAsync(connection) - before, requests, suspect, requests);
+
+        await AppendAsync(connection, runId, observed, outcome);
+
+        return outcome;
+    }
+
+    // Replaces the name's whole year inside the caller's transaction with the provider's answer, refused where that would
+    // empty it or drop a session the store holds.
+    async Task<IReadOnlyList<ProviderBar>> ReplaceYearAsync(SqliteConnection connection, string ticker, DateOnly session, string observed, CancellationToken cancellationToken)
+    {
+        var year = await history.BarsAsync(ticker, session.AddYears(-1), session, cancellationToken);
+
+        if (year.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "the refetch returned no bars, so replacing the year would empty it");
+        }
+
+        // A year the provider has not yet brought up to the sessions the night stored is
+        // refused as an empty one is, the stored year left as it was and the name asked
+        // for again on the nights after, rather than replaced by a shorter one that would
+        // leave the name stale and the figures stored over those sessions ahead of its bars.
+        // see: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
+        await using (var newest = connection.CreateCommand())
+        {
+            newest.CommandText = NewestHeld;
+            newest.Parameters.AddWithValue("$ticker", ticker);
+            newest.Parameters.AddWithValue("$session", Text(session));
+
+            var last = year.Max(bar => bar.SessionDate);
+
+            if (await newest.ExecuteScalarAsync() is string held
+                && DateOnly.ParseExact(held, "yyyy-MM-dd", CultureInfo.InvariantCulture) > last)
+            {
+                throw new InvalidOperationException(
+                    $"the refetch's year ends on {Text(last)} before {held}, the newest session the night stored, " +
+                    "so replacing the year would drop sessions the store holds");
+            }
+        }
+
+        await using (var drop = connection.CreateCommand())
+        {
+            drop.CommandText = DropYear;
+            drop.Parameters.AddWithValue("$ticker", ticker);
+
+            await drop.ExecuteNonQueryAsync();
+        }
+
+        foreach (var bar in year)
+        {
+            await StoreAsync(connection, ticker, bar, observed);
+        }
+
+        return year;
+    }
+
+    // Why a replaced year is still not right, none where it reaches the night and holds no copied candle.
+    static string? StillFaulty(IReadOnlyList<ProviderBar> year, DateOnly session)
+    {
+        var ordered = year.OrderBy(bar => bar.SessionDate).ToArray();
+        var newest = ordered[^1].SessionDate;
+
+        if (ExchangeClosures.SessionsBetween(newest, session.AddDays(1)).Count > 0)
+        {
+            return BehindWords(newest);
+        }
+
+        var copied = Enumerable.Range(1, ordered.Length - 1)
+            .Where(at => CopiedCandle.Is(ordered[at].Volume, ordered[at].Open, ordered[at].High, ordered[at].Low, ordered[at].Close, ordered[at - 1].Close))
+            .Select(at => ordered[at].SessionDate)
+            .ToArray();
+
+        return copied.Length > 0 ? CopiedWords(copied) : null;
+    }
+
+    static string BehindWords(DateOnly newest) =>
+        FormattableString.Invariant($"its newest bar is {Text(newest)}, behind the night, and the provider holds no later session");
+
+    static string CopiedWords(IReadOnlyList<DateOnly> sessions) =>
+        FormattableString.Invariant($"its stored year holds {sessions.Count} copied candle(s), no volume at the close before, the newest on {Text(sessions.Max())}");
+
+    // The members behind the night, each with its newest stored bar, and the members holding a copied candle in the year,
+    // each with the sessions it holds one on.
+    //
+    // Behind is read against the newest session any member holds, which is the night the fetch stored: a night whose file
+    // stored nothing leaves no member behind another, and is the fetch's fault to name rather than every member's.
+    static async Task<(IReadOnlyDictionary<string, DateOnly> Behind, IReadOnlyDictionary<string, IReadOnlyList<DateOnly>> Copied, DateOnly? Reach)> FaultsAsync(
+        SqliteConnection connection,
+        IReadOnlyCollection<string> members,
+        DateOnly session)
+    {
+        var newestEach = new Dictionary<string, DateOnly>(StringComparer.OrdinalIgnoreCase);
+        var copied = new Dictionary<string, List<DateOnly>>(StringComparer.OrdinalIgnoreCase);
+        var held = members.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = NewestEach;
+            command.Parameters.AddWithValue("$session", Text(session));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                if (held.Contains(reader.GetString(0)))
+                {
+                    newestEach[reader.GetString(0)] = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                }
+            }
+        }
+
+        DateOnly? reach = newestEach.Count > 0 ? newestEach.Values.Max() : null;
+        var behind = newestEach
+            .Where(pair => ExchangeClosures.SessionsBetween(pair.Value, reach!.Value.AddDays(1)).Count > 0)
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = NoVolumeEach;
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                if (held.Contains(reader.GetString(0)) && !reader.IsDBNull(6)
+                    && CopiedCandle.Is(0, Money.FromStorage(reader.GetString(2)), Money.FromStorage(reader.GetString(3)), Money.FromStorage(reader.GetString(4)), Money.FromStorage(reader.GetString(5)), Money.FromStorage(reader.GetString(6))))
+                {
+                    if (!copied.TryGetValue(reader.GetString(0), out var sessions))
+                    {
+                        copied[reader.GetString(0)] = sessions = [];
+                    }
+
+                    sessions.Add(DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+                }
+            }
+        }
+
+        return (behind, copied.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<DateOnly>)pair.Value, StringComparer.OrdinalIgnoreCase), reach);
+    }
+
+    // The actions of the sessions before the night's, the members among them this check has not asked for since their
+    // session, and how many day files could not be read, which names no member and fails nothing, since tonight's own
+    // answer is what the night stands on. A member holding no state row has never been asked.
+    async Task<(IReadOnlyList<CorporateAction> Actions, IReadOnlyList<string> Names, int Unread)> LateActionsAsync(
+        SqliteConnection connection,
+        DateOnly session,
+        IReadOnlyCollection<string> members,
+        CancellationToken cancellationToken)
+    {
+        var asked = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = CheckedEach;
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                asked[reader.GetString(0)] = reader.GetString(1);
+            }
+        }
+
+        var actionsRead = new List<CorporateAction>();
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var unread = 0;
+        var held = members.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var day in ExchangeClosures.SessionsBetween(session.AddDays(-14), session).TakeLast(LateFileSessions))
+        {
+            try
+            {
+                foreach (var action in await actions.ActionsAsync(Exchange, day, cancellationToken))
+                {
+                    actionsRead.Add(action);
+
+                    if (held.Contains(action.Ticker) && !(asked.TryGetValue(action.Ticker, out var checkedAt) && SessionAsked(checkedAt) >= action.Date))
+                    {
+                        names.Add(action.Ticker);
+                    }
+                }
+            }
+            catch (Exception failure) when (!(failure is OperationCanceledException && cancellationToken.IsCancellationRequested))
+            {
+                unread++;
+            }
+        }
+
+        return (actionsRead, [.. names.OrderBy(name => name, StringComparer.Ordinal)], unread);
     }
 
     sealed record SuspectRow(string Ticker, int Retries, string Reason, string CheckedAt);
@@ -543,10 +834,9 @@ public sealed class CorporateActionChecker : IComponent
     // The members holding a stored bar whose year misses a session the exchange traded, read
     // between the first stored bar within the year the night keeps and the newest, tonight's
     // included, that this check has not asked for since the newest session missing. Sessions
-    // after the newest stored bar are a shorter history and not a gap, which a name the price
-    // file stops carrying holds on every night until it carries it again, so they ask nothing
-    // until a later bar makes them a gap. A name tonight already asks for is left to the
-    // reason asking for it, and a name holding no bar is the backfill's.
+    // after the newest stored bar are not a gap and are read as the member being behind. A name
+    // tonight already asks for is left to the reason asking for it, and a name holding no bar
+    // is the backfill's.
     // see: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
     async Task<IReadOnlyList<string>> MissingAsync(
         SqliteConnection connection,
@@ -770,6 +1060,16 @@ public sealed class CorporateActionChecker : IComponent
             ((outcome.Missing ?? []).Count == 0
                 ? string.Empty
                 : $", {outcome.Missing!.Count} missing a session the exchange traded: " + string.Join(", ", outcome.Missing!)) +
+            ((outcome.Late ?? []).Count == 0
+                ? string.Empty
+                : $", {outcome.Late!.Count} an action the provider posted late landed on: " + string.Join(", ", outcome.Late!)) +
+            (outcome.LateFilesUnread == 0 ? string.Empty : $", {outcome.LateFilesUnread} earlier day file(s) unread") +
+            ((outcome.Behind ?? []).Count == 0
+                ? string.Empty
+                : $", {outcome.Behind!.Count} behind the night: " + string.Join(", ", outcome.Behind!)) +
+            ((outcome.Copied ?? []).Count == 0
+                ? string.Empty
+                : $", {outcome.Copied!.Count} holding a copied candle: " + string.Join(", ", outcome.Copied!)) +
             (outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect)) +
             (spent.Count == 0
                 ? string.Empty

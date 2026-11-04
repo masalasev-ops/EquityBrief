@@ -86,7 +86,7 @@ internal static class ComponentVocabulary
     // short interest, each a source's answer about a company.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
-        ("Membership", [DataStore.Membership]),
+        ("Membership", [DataStore.Membership, DataStore.TickerJoin]),
         ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar, DataStore.LiveQuote, DataStore.TreasuryYield]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
@@ -334,6 +334,7 @@ internal static class ComponentVocabulary
         ["dividend readings"] = DataStore.DividendReading,
         ["estimate trends"] = DataStore.EstimateTrend,
         ["dividend events"] = DataStore.DividendEvent,
+        ["ticker joins"] = DataStore.TickerJoin,
         ["Treasury yields"] = DataStore.TreasuryYield,
         ["night estimate trends"] = DataStore.EstimateTrendNight,
         ["short interest"] = DataStore.ShortInterest,

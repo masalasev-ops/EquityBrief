@@ -80,6 +80,9 @@ public partial class ArchitectureConformance
 
         // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits, after phase 21's as well.
         .. Reading.ReadSurface.PageDayLimitRows,
+
+        // 22.33's ticker joins, after phase 21's as well.
+        .. FixtureExpectations.TickerJoinRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

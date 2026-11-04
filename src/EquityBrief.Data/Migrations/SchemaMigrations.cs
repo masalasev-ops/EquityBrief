@@ -740,7 +740,19 @@ public static class SchemaMigrations
         new Migration(117, "add dip_trade.exit, and rebuild quality_holding and improving_trade with the sale under the 200-day average", AddTheChangesTheNightsRead),
         new Migration(118, "add treasury_yield.three_month", AddTreasuryThreeMonth),
         new Migration(119, "add trade_fill's sold_on and sale", AddTradeFillSale),
+        new Migration(120, "create ticker_join", CreateTickerJoin),
     ];
+
+    // From 22.33 a stock whose ticker changed and whose history the provider keeps under the old ticker, joined once on the
+    // operator's word.
+    const string CreateTickerJoin = @"
+        CREATE TABLE ticker_join (
+            ticker   TEXT NOT NULL PRIMARY KEY,
+            earlier  TEXT NOT NULL,
+            joined   TEXT NOT NULL,
+            run_id   TEXT NOT NULL
+        ) STRICT;
+    ";
 
     // From 21.14 the session a swing trade was sold on and the price it was sold at, at the trade's own scale: the open of
     // the session after a close that signalled its stop, its target or its trail, and its own close for the cap or a time

@@ -39,7 +39,7 @@ namespace EquityBrief.Worker.Bars;
 // them, survivors alone, since the answer carries no span of membership.
 // see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
 // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
-public sealed class HistoryPull(
+public sealed partial class HistoryPull(
     IHistoricalBarFeed bars,
     IEarningsCalendarFeed earnings,
     IClock clock,
@@ -414,11 +414,37 @@ public sealed class HistoryPull(
             return await SplitsAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", splits, clock, databaseFile, output, error, only, pastTheStop);
         }
 
+        if (VerbArguments.Has(args, "--carry-splits"))
+        {
+            if (only is null || Resolved(splits, "splits", error) is not { } carried)
+            {
+                error.WriteLine("history-pull: name the stocks to carry the provider's splits into with '--names <codes>'.");
+
+                return 2;
+            }
+
+            var carrying = await CarrySplitsAsync(carried, clock, databaseFile, only, RunIdAt(RunPrefix, clock.UtcNow));
+
+            output.WriteLine("pull " + carrying.Pull);
+
+            foreach (var line in carrying.Lines)
+            {
+                output.WriteLine(line);
+            }
+
+            output.WriteLine(FormattableString.Invariant($"{carrying.Rows} row(s) written, {carrying.Requests} request(s)"));
+
+            return 0;
+        }
+
         NightFeeds resolved;
 
         try
         {
-            resolved = feeds();
+            var asked = feeds();
+
+            // see: A ticker change the provider keeps under two tickers is joined once on the operator's word, and every read of the provider's series reads the join
+            resolved = asked with { Historical = TickerJoins.Over(asked.Historical, databaseFile) };
         }
         catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
         {
