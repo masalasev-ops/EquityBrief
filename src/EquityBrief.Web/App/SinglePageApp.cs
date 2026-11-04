@@ -1101,7 +1101,7 @@ public sealed partial class SinglePageApp : IComponent
           if (event.pointerType === 'touch') { return; }
           const chart = event.target.closest && event.target.closest('.candle-chart');
           if (!chart || (event.relatedTarget && chart.contains(event.relatedTarget))) { return; }
-          if (document.activeElement !== chart) { pointAway(chart); }
+          if (!chart.hasAttribute('data-keyed')) { pointAway(chart); }
         });
         document.addEventListener('pointerdown', (event) => {
           if (event.pointerType !== 'touch') { return; }
@@ -1113,10 +1113,14 @@ public sealed partial class SinglePageApp : IComponent
         document.addEventListener('focusin', (event) => {
           if (!event.target.matches || !event.target.matches('.candle-chart') || !event.target.matches(':focus-visible')) { return; }
           const candles = event.target.querySelectorAll('.candle');
+          event.target.setAttribute('data-keyed', '');
           if (candles.length > 0) { pointAt(candles[candles.length - 1]); }
         });
         document.addEventListener('focusout', (event) => {
-          if (event.target.matches && event.target.matches('.candle-chart')) { pointAway(event.target); }
+          if (event.target.matches && event.target.matches('.candle-chart[data-keyed]')) {
+            event.target.removeAttribute('data-keyed');
+            pointAway(event.target);
+          }
         });
         document.addEventListener('keydown', (event) => {
           const chart = event.target.matches && event.target.matches('.candle-chart') ? event.target : null;

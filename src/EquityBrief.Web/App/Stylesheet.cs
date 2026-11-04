@@ -1162,7 +1162,7 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .chart-box-when{font-weight:600;margin-bottom:4px}
 .chart-box dl{display:grid;grid-template-columns:auto auto;gap:1px 14px;margin:0}
 .chart-box dt{color:var(--soft);font-weight:400} .chart-box dd{margin:0;text-align:right}
-@media (max-width:640px){.chart-box{top:4px;font-size:12px;padding:6px 8px}}
+@media (max-width:640px){.chart-box{top:4px;font-size:12px;line-height:1.25;padding:5px 8px} .chart-box dl{grid-template-columns:auto auto auto auto;gap:0 10px} .chart-box dt:nth-of-type(n+5){grid-column:1 / 4} .chart-box dd:nth-of-type(n+5){grid-column:4}}
 .candle-chart .vol-up{fill:var(--up)} .candle-chart .vol-down{fill:var(--down)} .candle-chart .vol-flat{fill:var(--muted)}
 .candle-chart .plan-line{stroke-width:1.6} .candle-chart .plan-buy,.candle-chart .plan-target{stroke:var(--up)} .candle-chart .plan-stop{stroke:var(--down)}
 .candle-chart .plan-tick-buy,.candle-chart .plan-tick-target{fill:var(--up)} .candle-chart .plan-tick-stop{fill:var(--down)}

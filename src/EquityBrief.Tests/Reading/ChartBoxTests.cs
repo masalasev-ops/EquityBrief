@@ -77,6 +77,10 @@ public class ChartBoxTests
         Assert.Contains("['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)", shell, StringComparison.Ordinal);
         Assert.Contains("if (candles.length > 0) { readCandle(candles[candles.length - 1]); }", shell, StringComparison.Ordinal);
         Assert.Contains("box.style.left = Math.max(4, Math.min(left, room)) + 'px';", shell, StringComparison.Ordinal);
+
+        // A chart the keys reached keeps its box when the mouse leaves; any other chart's goes down.
+        Assert.Contains("if (!chart.hasAttribute('data-keyed')) { pointAway(chart); }", shell, StringComparison.Ordinal);
+        Assert.Contains("event.target.matches('.candle-chart[data-keyed]')", shell, StringComparison.Ordinal);
     }
 
     [Fact]
