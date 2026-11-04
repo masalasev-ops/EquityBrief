@@ -192,7 +192,7 @@ public sealed partial class SinglePageApp
         chart.Append(view.Candles.Count > 0
             ? FormattableString.Invariant($"<p class=\"chart-reading\" aria-live=\"polite\">{MarkRenderer.ChartReading(view.Candles, view.Candles.Count - 1)}</p>")
             : string.Empty);
-        chart.Append("<div class=\"fig chart-fig\">").Append(marks.CandleChart(ticker, view.Interval, view.Candles, view.Bands, view.Plans, view.Events)).Append("</div>");
+        chart.Append("<div class=\"chart-wrap\"><div class=\"fig chart-fig\">").Append(marks.CandleChart(ticker, view.Interval, view.Candles, view.Bands, view.Plans, view.Events)).Append("</div><div class=\"chart-box\" hidden></div></div>");
 
         foreach (var gap in view.Gaps)
         {

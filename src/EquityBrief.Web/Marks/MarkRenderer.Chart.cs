@@ -30,6 +30,20 @@ public sealed partial class MarkRenderer
         ("sma200", "200-session average"),
     ];
 
+    // How each average is drawn, its line and its legend's swatch alike, each told apart by its dashes and its weight so it
+    // reads without colour in both palettes.
+    // see: The chart page's scale fits the candles and the plan's lines and the levels shown, and an average never widens it
+    static string AverageStroke(int line) => line switch
+    {
+        0 => "stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"0.6\" stroke-width=\"1.2\"",
+        1 => "stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"0.8\" stroke-width=\"1.6\" stroke-dasharray=\"8 4\"",
+        _ => "stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"1\" stroke-width=\"2.4\" stroke-dasharray=\"1.5 3.5\" stroke-linecap=\"round\"",
+    };
+
+    // Where a value stands against the scale, in the words a legend adds to it.
+    static string OffChart(PriceAxis axis, double value) =>
+        value > axis.High ? ", off the chart above" : value < axis.Low ? ", off the chart below" : string.Empty;
+
     static double? AverageOf(ChartCandle candle, string name) => name switch
     {
         "sma20" => candle.Sma20,
@@ -100,14 +114,36 @@ public sealed partial class MarkRenderer
             return Degraded(ticker, candles.Count);
         }
 
-        // One scale over the candles, the averages and every price a plan draws, so a stop or a target past the
-        // candles' range is still a line on the pane. The bands do not widen it, as on the name page's chart.
+        // One scale over the candles and every price a plan draws, so a stop or a target past the candles' range is still a
+        // line on the pane, with a small margin. An average never widens it: one outside it is clipped at the pane's edge and
+        // named so in the legend, since a sharp fall leaves the long averages far above the price and the candles squashed.
+        // see: The chart page's scale fits the candles and the plan's lines and the levels shown, and an average never widens it
         var prices = candles
             .SelectMany(candle => new[] { PlotValue(candle.High), PlotValue(candle.Low) })
-            .Concat(PageAverages.SelectMany(average => candles.Select(candle => AverageOf(candle, average.Name))).OfType<double>())
             .Concat(plans.SelectMany(plan => new decimal?[] { plan.Buy, plan.Stop, plan.Target }).OfType<decimal>().Select(PlotValue))
             .ToArray();
-        var axis = new PriceAxis(prices.Min(), prices.Max());
+        var axis = ChartScale.Fit(prices);
+
+        // The levels widen it only when they are shown: where a band reaches past that scale a second drawing holds them, and
+        // the page's toggle shows it in the first's place.
+        var edges = bands.SelectMany(band => new[] { PlotValue(band.LowEdge), PlotValue(band.HighEdge) }).ToArray();
+        var withLevels = ChartScale.Fit([.. prices, .. edges]);
+
+        return edges.Any(edge => edge < axis.Low || edge > axis.High)
+            ? Drawn(ticker, interval, candles, bands, plans, events, axis, "candle-chart candle-chart-plain") + Drawn(ticker, interval, candles, bands, plans, events, withLevels, "candle-chart candle-chart-levels")
+            : Drawn(ticker, interval, candles, bands, plans, events, axis, "candle-chart");
+    }
+
+    string Drawn(
+        string ticker,
+        string interval,
+        IReadOnlyList<ChartCandle> candles,
+        IReadOnlyList<ChartBand> bands,
+        IReadOnlyList<ChartPlan> plans,
+        IReadOnlyList<ChartEvent> events,
+        PriceAxis axis,
+        string classes)
+    {
         var loudest = candles.Max(candle => candle.Volume);
         var busiest = loudest > 0 ? loudest : 1;
         var slot = (Width - (2.0 * Margin)) / candles.Count;
@@ -116,35 +152,84 @@ public sealed partial class MarkRenderer
         double Centre(int index) => Margin + (slot * index) + (slot / 2);
 
         var wide = Width + PriceColumn(candles[^1].Close, plans);
+
+        // The legend: each average with its value at the newest candle, or at the left edge where the line starts off the
+        // chart, and room for the longest words the pointer sets it to, a further row where they do not fit on one.
+        var rest = PageAverages.Select(average =>
+        {
+            var left = candles.Select(candle => AverageOf(candle, average.Name)).FirstOrDefault(value => value is not null);
+            var newest = AverageOf(candles[^1], average.Name);
+
+            return left is { } start && OffChart(axis, start) is { Length: > 0 } off
+                ? Formatted($"{average.Words} {start.ToString("#,##0.00", Invariant)} at the left edge{off}")
+                : newest is { } at
+                    ? Formatted($"{LegendWords(average.Words, at)}{OffChart(axis, at)}")
+                    : LegendWords(average.Words, null);
+        }).ToArray();
+        var longest = PageAverages.Select((average, line) => candles
+            .Select(candle => CandleLegend(average.Words, AverageOf(candle, average.Name), axis).Length)
+            .Append(rest[line].Length)
+            .Max()).ToArray();
+        var legendSlots = new List<(double X, double Y)>();
+        double legendAt = Margin;
+        double legendY = 16;
+
+        for (var line = 0; line < PageAverages.Length; line++)
+        {
+            var slotWidth = 34 + (longest[line] * LegendCharacter) + 18;
+
+            if (line > 0 && legendAt + slotWidth > wide)
+            {
+                legendAt = Margin;
+                legendY += 20;
+            }
+
+            legendSlots.Add((legendAt, legendY));
+            legendAt += slotWidth;
+        }
+
+        var legendExtra = (int)(legendY - 16);
         var svg = new StringBuilder();
 
-        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {wide} {ChartHeight}\" width=\"{wide}\" height=\"{ChartHeight}\" ");
-        svg.Append(Invariant, $"role=\"img\" class=\"candle-chart\" data-ticker=\"{Escaped(ticker)}\" data-interval=\"{Escaped(interval)}\" data-candles=\"{candles.Count}\" ");
+        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {wide} {ChartHeight + legendExtra}\" width=\"{wide}\" height=\"{ChartHeight + legendExtra}\" ");
+        svg.Append(Invariant, $"role=\"img\" tabindex=\"0\" aria-label=\"{Escaped(ticker)}'s {Escaped(interval)} chart: the arrow keys step from candle to candle\" class=\"{classes}\" data-ticker=\"{Escaped(ticker)}\" data-interval=\"{Escaped(interval)}\" data-candles=\"{candles.Count}\" ");
         svg.Append(Invariant, $"data-axis-low=\"{Number(axis.Low)}\" data-axis-high=\"{Number(axis.High)}\">");
         svg.Append(Invariant, $"<title>{Escaped(ticker)}, {candles.Count} {Escaped(interval)} candles from {candles[0].First:yyyy-MM-dd} to {candles[^1].Last:yyyy-MM-dd}</title>");
         svg.Append(Invariant, $"<desc>{Escaped(interval)} candles with the 20, 50 and 200 session averages over a volume pane on a shared time axis, the night's level bands shown by the page's toggle and a listing rule's buy, stop and target as lines.</desc>");
 
-        // The averages named above the picture with their values at the newest candle, which the shell's script sets to
-        // the candle under the pointer.
+        // The averages named above the picture, which the shell's script sets to the candle under the pointer and back to
+        // these words when it leaves.
         svg.Append("<g class=\"m-legend\">");
-
-        double legendAt = Margin;
 
         for (var line = 0; line < PageAverages.Length; line++)
         {
-            var (name, words) = PageAverages[line];
-            var text = LegendWords(words, AverageOf(candles[^1], name));
+            var (name, _) = PageAverages[line];
+            var (x, y) = legendSlots[line];
 
-            svg.Append(Invariant, $"<line class=\"m-legend-swatch\" x1=\"{Number(legendAt)}\" y1=\"12\" x2=\"{Number(legendAt + 20)}\" y2=\"12\" ");
-            svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"{Number(0.34 + (0.22 * line))}\" stroke-width=\"1.4\"/>");
-            svg.Append(Invariant, $"<text class=\"m-legend-t\" data-legend=\"{name}\" x=\"{Number(legendAt + 26)}\" y=\"16\">{Escaped(text)}</text>");
-
-            legendAt += 26 + ((words.Length + 12) * LegendCharacter) + 22;
+            svg.Append(Invariant, $"<line class=\"m-legend-swatch\" x1=\"{Number(x)}\" y1=\"{Number(y - 4)}\" x2=\"{Number(x + 28)}\" y2=\"{Number(y - 4)}\" {AverageStroke(line)}/>");
+            svg.Append(Invariant, $"<text class=\"m-legend-t\" data-legend=\"{name}\" data-rest=\"{Escaped(rest[line])}\" x=\"{Number(x + 34)}\" y=\"{Number(y)}\">{Escaped(rest[line])}</text>");
         }
 
         svg.Append("</g>");
-        svg.Append(Invariant, $"<g class=\"m-body\" transform=\"translate(0,{LegendRow})\">");
+        svg.Append(Invariant, $"<g class=\"m-body\" transform=\"translate(0,{LegendRow + legendExtra})\">");
+
+        var clip = Formatted($"chart-pane-{Escaped(ticker)}-{Escaped(interval)}-{(classes.EndsWith("levels", StringComparison.Ordinal) ? "levels" : "plain")}");
+
+        svg.Append(Invariant, $"<clipPath id=\"{clip}\"><rect x=\"{Margin}\" y=\"0\" width=\"{Width - (2 * Margin)}\" height=\"{PriceHeight}\"/></clipPath>");
         svg.Append(Invariant, $"<rect class=\"m-plot\" x=\"{Margin}\" y=\"0\" width=\"{Width - (2 * Margin)}\" height=\"{PriceHeight}\"/>");
+
+        // The price's gridlines behind everything, each labelled in the column once the plan's prices have their places.
+        var step = ChartScale.Step(axis.Low, axis.High);
+        var gridlines = ChartScale.Lines(axis.Low, axis.High, step);
+
+        svg.Append(Invariant, $"<g class=\"price-grid\" data-step=\"{Number(step)}\" data-lines=\"{gridlines.Count}\">");
+
+        foreach (var price in gridlines)
+        {
+            svg.Append(Invariant, $"<line class=\"m-gridline\" data-price=\"{price.ToString("R", Invariant)}\" x1=\"{Margin}\" y1=\"{Number(At(axis, price))}\" x2=\"{Width - Margin}\" y2=\"{Number(At(axis, price))}\"/>");
+        }
+
+        svg.Append("</g>");
 
         // The night's bands, in a group the page's toggle shows and hides, behind everything else.
         if (bands.Count > 0)
@@ -171,7 +256,7 @@ public sealed partial class MarkRenderer
             var (name, _) = PageAverages[line];
             var run = new StringBuilder();
 
-            svg.Append(Invariant, $"<g class=\"moving-average\" data-average=\"{name}\" data-values=\"{candles.Count(candle => AverageOf(candle, name) is not null)}\">");
+            svg.Append(Invariant, $"<g class=\"moving-average\" data-average=\"{name}\" data-values=\"{candles.Count(candle => AverageOf(candle, name) is not null)}\" clip-path=\"url(#{clip})\">");
 
             for (var index = 0; index <= candles.Count; index++)
             {
@@ -184,7 +269,7 @@ public sealed partial class MarkRenderer
 
                 if (run.Length > 0)
                 {
-                    svg.Append(Invariant, $"<path d=\"{run.ToString().Trim()}\" fill=\"none\" stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"{Number(0.34 + (0.22 * line))}\" stroke-width=\"1.4\"/>");
+                    svg.Append(Invariant, $"<path d=\"{run.ToString().Trim()}\" fill=\"none\" {AverageStroke(line)}/>");
                     run.Clear();
                 }
             }
@@ -205,15 +290,16 @@ public sealed partial class MarkRenderer
             svg.Append(Invariant, $"<g class=\"candle\" data-at=\"{index}\" data-first=\"{candle.First:yyyy-MM-dd}\" data-last=\"{candle.Last:yyyy-MM-dd}\" ");
             svg.Append(Invariant, $"data-open=\"{candle.Open.ToString(Invariant)}\" data-high=\"{candle.High.ToString(Invariant)}\" data-low=\"{candle.Low.ToString(Invariant)}\" data-close=\"{candle.Close.ToString(Invariant)}\" data-volume=\"{candle.Volume}\" ");
             svg.Append(Invariant, $"data-average20=\"{(candle.Sma20 is { } a20 ? a20.ToString("R", Invariant) : "none")}\" data-average50=\"{(candle.Sma50 is { } a50 ? a50.ToString("R", Invariant) : "none")}\" data-average200=\"{(candle.Sma200 is { } a200 ? a200.ToString("R", Invariant) : "none")}\" ");
-            svg.Append(Invariant, $"data-reading=\"{Escaped(ChartReading(candles, index))}\"");
+            svg.Append(Invariant, $"data-reading=\"{Escaped(ChartReading(candles, index))}\" data-box=\"{Escaped(ChartBox(candles, index))}\" ");
+            svg.Append(Invariant, $"data-x=\"{Number(centre)}\" data-close-y=\"{Number(closeY)}\" data-close-shown=\"{Price(candle.Close)}\"");
 
             foreach (var (name, words) in PageAverages)
             {
-                svg.Append(Invariant, $" data-{name}=\"{Escaped(LegendWords(words, AverageOf(candle, name)))}\"");
+                svg.Append(Invariant, $" data-{name}=\"{Escaped(CandleLegend(words, AverageOf(candle, name), axis))}\"");
             }
 
             svg.Append('>');
-            svg.Append(Invariant, $"<rect class=\"candle-hit\" x=\"{Number(centre - (slot / 2))}\" y=\"0\" width=\"{Number(slot)}\" height=\"{PriceHeight}\" fill=\"transparent\"/>");
+            svg.Append(Invariant, $"<rect class=\"candle-hit\" x=\"{Number(centre - (slot / 2))}\" y=\"0\" width=\"{Number(slot)}\" height=\"{PriceHeight + Gap + VolumeHeight}\" fill=\"transparent\"/>");
             svg.Append(Invariant, $"<line x1=\"{Number(centre)}\" y1=\"{Number(At(axis, PlotValue(candle.High)))}\" x2=\"{Number(centre)}\" y2=\"{Number(At(axis, PlotValue(candle.Low)))}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1\"/>");
             svg.Append(height < 1
                 ? Formatted($"<line x1=\"{Number(left)}\" y1=\"{Number(closeY)}\" x2=\"{Number(left + body)}\" y2=\"{Number(closeY)}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1\"/>")
@@ -293,6 +379,17 @@ public sealed partial class MarkRenderer
             svg.Append(Invariant, $"<text class=\"m-tick plan-tick-{kind}\" x=\"{Width + ColumnLabelAt}\" y=\"{Number(y + 5)}\">{Escaped(text)}</text>");
         }
 
+        // Each gridline's price, where no price named above stands in its place.
+        foreach (var price in gridlines)
+        {
+            var y = At(axis, price);
+
+            if (y >= 8 && y <= PriceHeight - 4 && !placed.Any(other => Math.Abs(other - y) < 18))
+            {
+                svg.Append(Invariant, $"<text class=\"m-tick price-grid-t\" data-price=\"{price.ToString("R", Invariant)}\" x=\"{Width + ColumnLabelAt}\" y=\"{Number(y + 5)}\">{ChartScale.Label(price, step)}</text>");
+            }
+        }
+
         svg.Append("</g>");
 
         // Volume beneath, each bar in the hue of its candle's close on the one before it.
@@ -327,10 +424,58 @@ public sealed partial class MarkRenderer
             svg.Append(Invariant, $"<text class=\"m-tick\" x=\"{Number(x)}\" y=\"{dateY}\" text-anchor=\"{anchor}\">{candles[tick].Last:yyyy-MM-dd}</text>");
         }
 
-        svg.Append("</g></g></svg>");
+        svg.Append("</g>");
+
+        // What the pointer, a tap or the arrow keys set on a candle: a thin line through it and its volume bar, and its close
+        // marked in the price column. The shell's script places and shows them.
+        svg.Append(Invariant, $"<g class=\"chart-cross\"><line class=\"chart-cross-line\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"{PriceHeight + Gap + VolumeHeight}\"/>");
+        svg.Append(Invariant, $"<g class=\"chart-cross-close\"><rect class=\"chart-cross-tag\" x=\"{Width + 4}\" y=\"-11\" width=\"{AxisWidth - 6}\" height=\"22\" rx=\"2\"/>");
+        svg.Append(Invariant, $"<text class=\"m-nowtag-t chart-cross-t\" x=\"{Width + ColumnLabelAt}\" y=\"5\"></text></g></g>");
+        svg.Append("</g></svg>");
 
         return svg.ToString();
     }
+
+    // The box the shell's script shows beside a candle: its session, or the week's or month's first and last; its open, high,
+    // low and close; its change on the candle before in price and per cent in the gain's or the loss's colour with its sign;
+    // its volume in full; and each average at its last session.
+    // see: The chart page draws a box beside the candle under the pointer or a tap or the arrow keys, and rests on the newest candle's line
+    public static string ChartBox(IReadOnlyList<ChartCandle> candles, int at)
+    {
+        var candle = candles[at];
+        var sessions = candle.First == candle.Last
+            ? FormattableString.Invariant($"{candle.Last:yyyy-MM-dd}")
+            : FormattableString.Invariant($"{candle.First:yyyy-MM-dd} to {candle.Last:yyyy-MM-dd}");
+        var change = ChangeOf(candles, at) is { } moved
+            ? SignedFigure(moved.Percent, 2, Formatted($"{(moved.Change > 0 ? "+" : string.Empty)}{Price(moved.Change)} ({Change2(moved.Percent)})"))
+            : "no candle before";
+        var box = new StringBuilder();
+
+        box.Append(Invariant, $"<div class=\"chart-box-when\">{sessions}</div><dl>");
+
+        var rows = new List<(string Label, string Value)>
+        {
+            ("Open", Price(candle.Open)),
+            ("High", Price(candle.High)),
+            ("Low", Price(candle.Low)),
+            ("Close", Price(candle.Close)),
+            ("Change", change),
+            ("Volume", candle.Volume.ToString("N0", Invariant)),
+        };
+
+        rows.AddRange(PageAverages.Select(average => (average.Words, AverageOf(candle, average.Name) is { } held ? held.ToString("#,##0.00", Invariant) : "not stored")));
+
+        foreach (var (label, value) in rows)
+        {
+            box.Append(Invariant, $"<dt>{label}</dt><dd>{value}</dd>");
+        }
+
+        return box.Append("</dl>").ToString();
+    }
+
+    // An average as the legend names it under the pointer, and whether it stands off the chart at that candle.
+    static string CandleLegend(string words, double? value, PriceAxis axis) =>
+        Formatted($"{LegendWords(words, value)}{(value is { } at ? OffChart(axis, at) : string.Empty)}");
 
     // An average as the legend names it at a candle: its words and its value there, or that none is stored.
     static string LegendWords(string words, double? value) =>

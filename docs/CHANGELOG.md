@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - docs/ARCHITECTURE.html - the chart's box under the pointer
+Decision: The chart page draws a box beside the candle under the pointer or a tap or the arrow keys, and rests on the newest candle's line
+Was:
+> and the three averages there; and the newest candle's while the pointer is off the chart</td>
+Now:
+> and the three averages there; and the newest candle's while the pointer is off the chart; and from 22.35 under the pointer or a tap or the arrow keys while the chart holds the focus a box beside the candle ...</td>
+Why: the operator's answers on the chart audit.
+
+### 2026-11-04 - docs/ARCHITECTURE.html - the chart's scale, its gridlines and the averages' styles
+Decision: The chart page's scale fits the candles and the plan's lines and the levels shown, and an average never widens it
+Was:
+> <td>The chart</td><td>candles at the interval shown at the column's width above everything else;
+> named above the chart with their values at the candle under the pointer; a candle holding none breaking its line</td>
+Now:
+> <td>The chart</td><td>candles at the interval shown at the column's width above everything else; from 22.34 a scale fitting the candles and the plan's lines and the night's levels while they are shown; a small margin; each round price it holds a labelled gridline ...;
+> named above the chart with their values at the candle under the pointer; a candle holding none breaking its line; from 22.34 each told apart by its dashes and its weight ...
+Why: the chart audit found 56 daily charts squashed by their averages.
+
 ### 2026-11-04 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md - the corporate action check reads earlier day files, and asks for a member behind the night or holding a copied candle
 Decision: A member holding a copied candle or behind the night is asked for its year again, and stays suspect until an answer clears it
 Was:
