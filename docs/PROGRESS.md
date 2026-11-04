@@ -15291,3 +15291,192 @@ Outcomes:   386 of 3,596 decided since 2026-07-01 on these 59 stocks moved, the 
             Trades: RCL's 6 drift trades of 2026-10-27 fill at 295.60 from 295.595, result 12.752 to 12.744; OZK's S&P 400 background drift of 10-21 sold at 50.73 from 50.54, result 1.623 to 1.737. No pick, holding or account row moved.
 Carried:    the night of 2026-11-04 works the 49's averages and figures again, and writes the check's first rows; PARA's history, QRVO's and BLFS's last candles, on the operator's word.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 91913ac9, whose tree this pull request merges, with 22.40's figures; records alone change in this entry.
+
+### Phase 18 sign-off                                                        2026-11-04
+Signed by a session that has committed no code to this repository. Its only commit is this entry, which is a document,
+            so the fresh session rule permits it. This is the ninth review of phase 18, and the first eight signed nothing.
+            On the operator's order of 2026-11-02 it read only the fixes and the correction table: PR 623's corrections of
+            the eighth review, PR 624's of the three items the operator added, and what later pull requests changed in phase
+            18's files. It signs over 63e929a0, the commit its gates and its page reads ran on; PRs 633 to 638, merged while
+            the operator's answer was pending, are traced in the table below and their code is otherwise their own phase's.
+Ruled:      "yes do the phase 18 sign off", and over faults A to D below, "Sign now, carry them": "You rule A to D not blocking.
+            I write the sign-off now, listing them as carried with your words, about 30 to 45 minutes including hosted CI. The
+            four stay on the pages until someone fixes them." The session had said it could not sign over known defects unless
+            the operator ruled otherwise.
+Verified:   by re-running both gates on `main` at 63e929a0 before this entry: `tools/ci.ps1` green end to end, 20:24:21 to
+            21:05:36 UTC on 2026-11-03, all six steps, 0 warnings, 0 errors, 3173 of 3173 tests passing inside it, migrations 0 to
+            119 against `data-ci/` and then none pending, exit 0; `tools/verify-phase.ps1` green to 21:05:41 UTC, at 65 tables,
+            1498 claims, 1498 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1513 placements and verdicts reconciled against a floor
+            of 34, 46 checks on the roster, 46 carried and 46 passed. The code merged since is 22.40's run over 91913ac9, which
+            this session did not repeat. Over the tree carrying this entry, a record entry alone, the checks that read the record
+            ran filtered in place of the full script, on the operator's standing ruling: 166 of 166 tests passing.
+            Hosted CI: PRs 623 to 627, 631 to 636 and 638 green under both events at their final heads, and each one's push to
+            main green. PR 628's branch push cancelled on macOS, its pull request and main's push green. PR 629 red on
+            `two-platform` and the due-point check, recorded and answered by the 22.30 correction. Main's push of 2f101958 green.
+Read:       all 1,504 members' pages against the store over the night of 2026-11-03. D1, 368 estimates each more than 45 days
+            after the newest report known. D2, 483 raw tables and 172 clean each on the quarter's shortest period over months, the
+            20 pages the eighth review named each read, AME's Net Sales drawn. D3, 7 old tables and 14 old guidance left out and
+            saying so, none else. D4, none. D5, 1,503 of 1,504 first after the night, C below the other. D6, none in the
+            table. D7, none in phase 18's regions. J1, none on tonight's page, and AAPL's dated version of 2026-09-28 saying so 5 times. J2, 205 reasons each
+            matching the store's payments, every 0 with no reason a year that fell, held or was the first kept. J3, 231 titles
+            drawing the filing's end, A below the rest. The filer: the 4 rows fetched since the merge each name the SEC's. Proof over
+            the same night: report-day fails none, passing 500, 21 and 26; next-report-clear passes 334, 16 and 18, fails none;
+            next-report-estimated and segments-scale fail none; news-labelled fails 307, 306 and 374, the backlog with the night's
+            stories before the off-peak run; newest-quarter fails 36, 1 and 2, each passing quarter-wait; next-report-hold fails
+            FDXF alone, D below. Screens: 15 pages at 1440 and a true 390 in both palettes, 60 reads of each page's widths, none wider
+            than its screen, every POST refused. Exports: 8, every stored figure on the page, no form. The read-only copy was not read, the
+            operator having set it aside on 2026-11-03.
+Mutation:   16, each predicted first, made in this checkout and reverted, the tree clean after each batch. Red, 12: the newest
+            report known dropping the day handed, a filing's nearest end unpreferred, a table's oldest period read as its end, a
+            payload's day labelled today's, the chart's next report at or after the night, the proof's edge at 45 days, a payer
+            with too few years read as paying none, the peer median's sign, the note's newest report dropping the day handed, the
+            calendar's earliest day taken as the reported one, every kind read as a report, and a dated page's calendar bounded by
+            its night. Three of these were predicted to survive, and the tests were stronger. Survived, 4: `Raised is null` in the
+            run's stop and the report path's quarter over all periods, each equivalent on the data's shape; a unit equal to the
+            table's currency read as money, and an old segment table's growth kept out of a facts file, each a missing property
+            whose code reads correct.
+Carried:    on the operator's word above, each stands on the pages until a correction takes it, none a phase 18 obligation row.
+            A, one quarter under two dates on 25 pages over the night of 2026-11-03: the analysts' table, the figures checked and the
+            earnings reactions keep the provider's label where the page draws the filing's end. B, a company with one segment reads
+            "the table states no segment's revenue for the quarter" on 26 pages where the table states it under "Reportable Segment".
+            C, INDV, holding no bar on the night, names the night as its next dated event. D, the proof's next-report-hold reads a news
+            row's kind as a calendar row and fails FDXF, whose page is right. The two test gaps above. Phase 18's operating row, the
+            short version's refusals at ten reports, stands; the labeller's backlog clears over the off-peak runs.
+Others:     for their own sign-offs. 22.21: a name page's "Reported on" reads the night's reading's fetch, one night behind a report, 6
+            of 17 notes on the night of 2026-11-02 naming the report before, BTSG's "Reported on 2026-07-31" when picked for its report
+            of 2026-10-30, Tonight's reading the right day. 22.8: "-0.0%" on the fundamentals card, ADAM and MTX. A pick's card
+            drawing a stored key: "no high_ratio reading" on FCN, "no close_over_long reading" on FDXF.
+Table:      the operator's rule of 2026-11-01. Every pull request since phase 18's first build, 2026-10-10, none signed before it: 215
+            merged, 419 to 638, numbers 492, 508, 612, 630 and 637 no merge. Changing a file the phase's build touched, 158, each
+            with how many:
+            419 (11) 421 (29) 422 (41) 423 (9) 425 (71) 424 (85) 426 (66) 427 (75) 428 (4) 429 (2) 430 (4) 431 (6) 432 (10)
+            433 (48) 434 (3) 435 (13) 436 (3) 438 (2) 439 (1) 440 (3) 441 (16) 442 (1) 448 (6) 450 (8) 451 (9) 452 (39) 453 (17)
+            454 (21) 455 (14) 456 (9) 457 (4) 458 (11) 459 (4) 460 (18) 462 (20) 463 (11) 464 (6) 466 (1) 467 (17) 468 (16)
+            470 (6) 471 (24) 472 (14) 473 (25) 474 (1) 476 (3) 477 (17) 478 (3) 479 (1) 481 (4) 482 (3) 485 (1) 488 (19) 490 (16)
+            493 (17) 494 (8) 497 (3) 499 (4) 500 (3) 503 (11) 507 (3) 511 (20) 510 (5) 512 (20) 514 (11) 515 (11) 516 (3) 517 (3)
+            518 (19) 519 (5) 520 (4) 521 (14) 522 (4) 523 (6) 524 (14) 526 (10) 527 (10) 532 (25) 505 (13) 535 (10) 536 (9)
+            537 (21) 538 (10) 541 (1) 543 (1) 544 (9) 546 (2) 547 (6) 548 (1) 549 (18) 550 (2) 552 (24) 553 (5) 555 (20) 556 (5)
+            557 (8) 559 (4) 562 (5) 563 (1) 564 (9) 565 (2) 566 (1) 567 (5) 568 (23) 569 (1) 570 (4) 573 (4) 575 (4) 577 (31)
+            578 (12) 579 (15) 580 (13) 581 (6) 582 (18) 583 (5) 585 (2) 586 (1) 587 (1) 590 (5) 591 (13) 592 (3) 593 (1) 594 (10)
+            595 (23) 596 (5) 597 (3) 598 (6) 599 (9) 603 (2) 604 (7) 605 (7) 606 (19) 607 (1) 608 (12) 609 (2) 610 (1) 613 (3)
+            614 (3) 615 (3) 616 (8) 617 (3) 618 (2) 619 (10) 620 (7) 621 (4) 622 (6) 623 (21) 624 (15) 625 (1) 626 (8) 627 (19)
+            629 (3) 631 (9) 633 (13) 634 (1) 635 (2) 636 (18) 638 (19).
+            Changing only a file a correction touched, 4: 501 528 539 554. Neither, 53: 420 437 443 444 445 446 447 449 461 465 469
+            475 480 483 484 486 487 489 491 495 496 498 502 504 506 509 513 525 529 531 530 534 533 540 542 545 551 558 560 561 571
+            572 574 576 584 588 589 600 601 602 611 628 632.
+            Each correction the phase carries with the commit that made it, and how many of the source lines it added stand on
+            2f101958; 0 of 0 is a commit changing no shipped line. 110, 4,988 lines, 668 absent, each traced to the commit that removed
+            it, 70 commits, the 80 new since the eighth review read by hand here and the rest read by hand at the eighth: each
+            extended or moved, a signature gaining a parameter, a pin's version moving, none undoing or contradicting its correction.
+            Their 143 test methods: 91 the same on 2f101958, 48 changed and 4 gone, each read, none weakening what its correction
+            held, and none changed by PRs 633 to 638.
+            3ff56c5e 7 of 7, 18.4 the risks' computed lines name a band of one price at its price
+            768a2a42 0 of 0, 18.4 the entry's figures from the gates over 3ff56c5e
+            5c99b743 0 of 0, 18.1 every written section's prose is set in the page's own type
+            b5ecd86b 0 of 0, 18.1 the entry's figures from the gates over 5c99b743
+            80be52a7 6 of 7, 18.4 a name's News region draws the articles holding no label under a tab
+            721eb5d2 0 of 0, 18.4 the entry's figures from the gates over 80be52a7
+            1c8c8b36 13 of 13, 18.4 the short version is held to three paragraphs of at most five sentences
+            08fd8a03 0 of 2, 18.1 a phone's masthead is one column no wider than the screen
+            f58ddad4 0 of 0, 18.4 the entries' figures from the gates over 08fd8a03
+            b2cd5885 0 of 0, 18.5 ruling: the reports written again once after the bug hunt's corrections
+            5d232059 11 of 11, 18.5 each of the two cases holds at most six sentences
+            9159df49 11 of 14, 18.3 the ladder figure says where no band stands on a side of the price
+            d8f764ea 55 of 60, 18.1 the name page's counts, signs, columns and dates read as a reader reads them
+            5bbafaa6 20 of 20, 18.2 the margins' lines name their newest margins inside the figure
+            e44c67ed 9 of 16, 18.2 the quarters verb asks again by hand each member whose newest fetch
+            9abe957f 0 of 0, 18.2 the entries' figures from the gates over e44c67ed
+            01dc0bc3 0 of 0, 18.1 the design test reads a name's masthead under a clock held to a Saturday
+            4bebef70 6 of 9, 18.2 raised in a row is none where fewer than two whole years of dividends
+            685a2967 7 of 7, 18.1 the quote verb builds its feed at the provider's own address
+            1473a5bd 34 of 37, 18.1 the Run page's quote line counts the asks the name pages wrote
+            d52df924 0 of 0, 18.1 a quote on a band's low edge is held inside the band at no distance
+            59bf469d 0 of 0, 18.2 the segment table's sum exactly at its tolerance and a dividend exactly
+            bd99db54 0 of 0, 18.3 a store whose year opens on the last session of a month the pull also
+            00541e8d 0 of 0, 18.4 results on the calendar's ninetieth day are held drawn
+            403ac4d5 2 of 6, 18.1 a count a rule stored with its noun's (s), drawn on a pick's card
+            9dab869e 11 of 11, 18.2 the report charts' axes are ticked at round values
+            3a3e3025 5 of 5, 18.3 each report's estimate and actual read to two places
+            6012acaf 0 of 0, 18.1 the review's eight entries written before their run
+            4d224ee2 0 of 0, 18.2 the ticks test says how its ticks rise in words
+            a7a118ff 9 of 9, 18.1 the read surface writes a session's open and close in UTC
+            5886fc2e 5 of 8, 18.1 a rule's stored words on a pick's card, the name page's gates
+            3db080b7 0 of 0, 18.3 an actual stored at one place is held reading at two
+            2a56cd5f 0 of 0, 18.1 the phase 18 sign-off review's three correction entries
+            2e21e88a 0 of 0, 18.1 the researched page's test reads the not-written reason with its count
+            cf286f82 97 of 108, 18.2 the latest quarter is read against the estimates kept before its release
+            5aa51a39 8 of 9, 18.2 a quarter's estimate read under the next quarter's word
+            8bb43265 16 of 17, 18.2 a financial company's revenue is read against no estimate
+            8427bd9a 0 of 0, 18.2 the comments the second 18.2 correction wrote state its tests' rules
+            ce7e7f05 5 of 5, 18.1 a stock's rules region names the family the page's list holds it under
+            bc88e698 10 of 10, 18.3 the long view ticks at round values
+            e8ee6fe1 39 of 39, 18.4 the masthead marks its price LIVE while the session is open
+            71fbb943 670 of 806, 18.4 every name's report page holds its written sentences to the stored quarter
+            773361e4 97 of 147, 18.4 the report page reads a quarter its release reported before the filing
+            340307ed 110 of 110, 18.4 a section the checker left out is written again alone on the local model
+            7f9b88ab 0 of 0, 18.4 the row for sections left out states the control that writes one again
+            27af85f5 80 of 101, 18.4 the proof reads each held sentence, the news recount and the industry
+            b2bf1653 1 of 1, 18.4 the proof reads the rules card opening on the picking family's checks
+            36efff95 0 of 0, 18.4 the proof's decision says each rule reads what the page draws
+            4c93cb68 0 of 0, 18.4 the tests reading a written section's tag and the news region's count
+            0785abf1 13 of 19, 18.4 a written section is held to the latest quarter only where written after
+            72d200f4 0 of 0, 18.4 the report page corrections' record and its proof over every page
+            318cc225 71 of 72, 18.4 the box management speaks in quotes the sentence of the newest release
+            4947b406 0 of 0, 18.4 the box's test reads a release naming the company by its listing alone
+            6fdd40b0 15 of 17, 18.4 the news labeller labels every name a report is written for
+            734a801a 0 of 0, 18.4 the record of the box's sentence, the labeller's names and stories
+            ae36bcd9 3 of 4, 18.4 the short version code writes for a pick whose card the page draws
+            ae75796d 0 of 0, 18.4 the record names the short version's plan line and its mutation
+            9711105b 343 of 349, 18.4 the news labeller labels on the local model under a pin of its own
+            b4c0bee7 6 of 6, 18.4 the labeller reads the local run's next slot in its own file
+            8ab08ad3 462 of 528, 18.4 every name's report page closes the defects ROP's still showed
+            7be23102 23 of 24, 18.4 a release's segments read under a heading of years or with no total line
+            fdcd865e 19 of 19, 18.4 a picked or held stock's target or stop beyond every band the history read
+            bc78ce50 3 of 4, 18.4 an abbreviation whose spelled-out first use the four-sentence cap left out
+            5c305ed2 0 of 0, 18.4 the record of the report page's remaining defects closed for every name
+            b797568d 15 of 15, 18.4 a held stock's written short version leaves its paragraph on the levels
+            2ce6b606 664 of 882, 18.4 a read-only copy of the site on Cloudflare Pages
+            f22c6816 233 of 233, 18.4 the copy's upload goes through a feed of its own
+            5c9bfdbb 0 of 0, 18.4 the count of files that may hold a client gains the copy's feed
+            238b5979 506 of 559, 18.4 every name's page names each job's profile, states its research cost
+            619dbd28 153 of 159, 18.4 the drift's open floor is replayed beside its live rule
+            f110f5ee 22 of 22, 18.4 a release's table reads no column heading's dates as segments
+            d53b7083 0 of 0, 18.4 the suite reads the open floor's run log row back as the record
+            3382e908 12 of 12, 18.4 the peer check reads a clean segment table alone
+            8c6f29d9 0 of 0, 18.4 the record of every name's page closing the gaps ROP's and KEY's still
+            ab061106 0 of 0, 18.4 the record names what this pull request carries
+            6e954d59 6 of 7, 18.4 the cost and open floor lines format their dates invariantly
+            7b11e60a 3 of 3, 18.4 only an estimated report carries the estimated mark in the calendar's
+            b933c557 2 of 2, 18.4 a link the read-only copy does not hold is drawn as its words alone
+            a2699d6f 1 of 1, 18.4 the open floor's line on a drift pick's card in the reader's words
+            d797b2e0 0 of 0, 18.4 the entry, the figures stated before the run that verifies them
+            234a83ed 13 of 17, 18.4 a segment table whose smallest amount reads under a million
+            c5ca9f0d 10 of 17, 18.4 a next report no report a year earlier can estimate says why
+            2899a310 0 of 0, 18.4 a test reads the stale note a page draws beside a provider's figure
+            25824d09 0 of 0, 18.5 ruling: a sign-off lists every pull request since the phase's last
+            e83285f1 4 of 4, 18.2 the valuation's heading writes an industry's possessive as a name is
+            4f71ca68 1 of 3, 18.4 the read-only copy's masthead says the night's close once
+            17088097 34 of 36, 18.4 the news labeller labels every other member holding a story
+            37c33916 0 of 0, 18.4 the labeller's tests read the member off the list it now reaches
+            4d67a1ba 4 of 6, 18.4 a next report not on file is estimated only where a report fifty-two
+            5c6f4f52 4 of 4, 18.4 a segment table's one scale is read off its amounts
+            51619f50 5 of 5, 18.4 the read-only copy says a stock's older close in one sentence
+            5bf583ac 82 of 91, 18.4 a quarter's reported day and its next report are read from its stored
+            32edf8d9 3 of 3, 18.4 a report's dated version on the read-only copy is marked by its own night
+            cbe78e9d 27 of 29, 18.4 a next report is estimated from the first report a year back falling
+            5690077d 18 of 22, 18.4 a page for an earlier night says its next report and calendar
+            7870613e 18 of 22, 18.2 a filed segment table's quarter is its shortest period over months
+            6f6cc166 1 of 1, 22.8 the fundamentals card reads one analyst as one
+            25d9e29d 12 of 12, 18.2 a dividend's run of raises says where it stopped
+            11a7c7b6 76 of 76, 18.2 a part filed more than 200 days before the page's own filing
+            15c2d56a 53 of 54, 18.2 a page draws a quarter's end as the company's filing states it
+            e9fbdfc7 1 of 1, 18.2 a quarter's end drawn as the filing states it, its decision
+            3ef10b7a 0 of 1, 18.2 the tests the mutations found wanting, its Percent taken out by 9d3073c0
+            9d3073c0 1 of 1, 18.2 Percent as it was
+            aeb215d4 2 of 2, 18.2 the short version's date held, and its signed figures
+            4abe19dc 0 of 0, 18.2 a clean filed table's quarter line and a TipRanks span's one analyst
+            e3aae2de 0 of 0, 18.2 the pull request's mutations and its figures stated before the gates
+            079d31d3 0 of 0, 18.4 the card's fill cites the estimate's new decision
+            816b5997 1 of 4, 22.16 a Home bar rounding to nought draws no sign, reshaped by c2945b80
+            e7bc8b07 4 of 4, 19.11 the chart grid's Raised in a row says where its run stopped
+            476d68b4 27 of 41, 16.3 the earnings soon reason and every page's next report, its pins moved by 3080da3b
