@@ -489,7 +489,7 @@ public partial class FixtureExpectations
 
         // AVPT's shape: the stored lists were read before it joined, and the night's list holds it.
         store.Execute("INSERT INTO pulled_member (index_code, ticker, exchange, pull) VALUES ('SML', 'OLD', 'US', 'history-pull-0');");
-        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('SML', 'NEWER', '2026-10-30', NULL, '2026-11-01T00:00:00Z'), ('SML', 'GONE', '2026-01-01', '2026-10-01', '2026-11-01T00:00:00Z');");
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('SML', 'NEWER', '2026-10-30', NULL, '2026-11-01T00:00:00Z'), ('SML', 'GONE', '2026-01-01', '2026-08-01', '2026-11-01T00:00:00Z');");
 
         var history = new SeriesByTicker(new()
         {
@@ -503,7 +503,7 @@ public partial class FixtureExpectations
         await puller.PullAsync("SML", day, "history-pull-named", _ => { }, only: ["NEWER"]);
         Assert.Equal(["NEWER"], history.Asked);
 
-        // Named, one the index no longer holds is not read, and with no names the stored lists alone are.
+        // Named, one the index left before the span is not read, and with no names the stored lists alone are.
         history.Asked.Clear();
         await puller.PullAsync("SML", day, "history-pull-gone", _ => { }, only: ["GONE"]);
         Assert.Empty(history.Asked);

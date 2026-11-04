@@ -202,8 +202,6 @@ public sealed partial class HistoryPull(
     // The names a pull asks for on a wider index: its members today, as a members pull stored them, and from 15.3 every
     // code its fund's snapshots matched a holding to, so the names it held and let go are pulled beside them.
     // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
-    const string MembersToday = @"SELECT ticker FROM membership WHERE index_code = $index AND ""left"" IS NULL ORDER BY ticker;";
-
     const string MembersHeld = @"
         SELECT ticker FROM pulled_member WHERE index_code = $index
         UNION
@@ -2774,14 +2772,16 @@ public sealed partial class HistoryPull(
         await reader.CloseAsync();
 
         // A stock asked for by name that the wider index's stored lists do not hold, having joined it since they were read, is
-        // read as well where the index holds it today, so a pull for the few codes a list lacks can reach them.
+        // read as well where the night's membership holds it over the span, so a pull for the few codes a list lacks can reach them.
         if (wider && only is not null)
         {
-            await using var today = connection.CreateCommand();
-            today.CommandText = MembersToday;
-            today.Parameters.AddWithValue("$index", indexCode);
+            await using var held = connection.CreateCommand();
+            held.CommandText = NamesHeld;
+            held.Parameters.AddWithValue("$index", indexCode);
+            held.Parameters.AddWithValue("$from", Text(from));
+            held.Parameters.AddWithValue("$through", Text(through));
 
-            await using var members = await today.ExecuteReaderAsync(cancellation);
+            await using var members = await held.ExecuteReaderAsync(cancellation);
 
             while (await members.ReadAsync(cancellation))
             {

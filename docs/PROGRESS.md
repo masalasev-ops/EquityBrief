@@ -15069,7 +15069,7 @@ Ran:        steps 1 to 4, 6 and 7 of the first remedy from main. All 14 years re
             to 19.40%.
 Tests:      3187, from 3185: the verb with no span named and with no stock named, and a named stock the stored lists lack, one the index no
             longer holds and a pull naming none.
-Mutation:   two, predicted first and each red at its test: a named stock not read from today's members; the verb demanding a first session.
+Mutation:   two, predicted first and each red at its test: a named stock not read from the membership over the span; the verb demanding a first session.
 Carried:    the second remedy and the ledger histories, then a record entry saying what moved.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the
             figures below stated before that run: all six steps, 0 warnings, 0 errors, 3187 of 3187 tests ran with none failed,
