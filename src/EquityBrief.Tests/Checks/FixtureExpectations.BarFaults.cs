@@ -489,7 +489,7 @@ public partial class FixtureExpectations
 
         // AVPT's shape: the stored lists were read before it joined, and the night's list holds it.
         store.Execute("INSERT INTO pulled_member (index_code, ticker, exchange, pull) VALUES ('SML', 'OLD', 'US', 'history-pull-0');");
-        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('SML', 'NEWER', '2026-10-30', NULL, '2026-11-01T00:00:00Z'), ('SML', 'GONE', '2026-01-01', '2026-08-01', '2026-11-01T00:00:00Z');");
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('SML', 'NEWER', '2026-09-30', NULL, '2026-11-01T00:00:00Z'), ('SML', 'GONE', '2026-01-01', '2026-08-01', '2026-11-01T00:00:00Z');");
 
         var history = new SeriesByTicker(new()
         {
