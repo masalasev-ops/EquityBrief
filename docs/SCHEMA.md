@@ -138,7 +138,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `estimate_trend` | QuarterFetcher | none | none |
 | `estimate_trend_night` | TrendsFetcher | none | none |
 | `sweep_answer` | SweepAnswers | SweepAnswers | none |
-| `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
+| `forward_return` | ForwardReturnFiller | ForwardReturnFiller | ForwardReturnFiller |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
 | `fundamentals_snapshot` | FundamentalsFetcher | none | none |
@@ -168,6 +168,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `version_score` | RuleVersionScorer | RuleVersionScorer | RuleVersionScorer |
 | `version_block` | RuleVersionScorer | none | none |
 | `series_state` | CorporateActionChecker | CorporateActionChecker | none |
+| `ticker_join` | TickerJoins | none | none |
 | `research_request` | ReadApi, RequestDrain | ReadApi, RequestDrain | none |
 | `watch_list` | ReadApi | none | ReadApi |
 | `quote_request` | ReadApi | none | none |
@@ -262,6 +263,20 @@ Primary key: `ticker`, `session_date`.
 It sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
 
 One year retained. The fetcher drops sessions older than the retention window on the night they fall out of it, and is declared above as a deleter of this table because it does.
+
+### ticker_join
+Grain: one row per stock whose earlier sessions the provider keeps under another ticker.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the stock's code now |
+| `earlier` | TEXT | the code the provider keeps its earlier sessions under |
+| `joined` | TEXT | UTC instant the operator's word was recorded |
+| `run_id` | TEXT | the run that recorded it |
+
+Primary key: `ticker`.
+
+**Written once by `ticker-join` on the operator's word, a second word changing nothing, and read wherever the provider's series is asked for** (see: A ticker change the provider keeps under two tickers is joined once on the operator's word, and every read of the provider's series reads the join).
 
 ### kept_bar
 Grain: one row per ticker and session the fetcher dropped as it fell out of the year it keeps.

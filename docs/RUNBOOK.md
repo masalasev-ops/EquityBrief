@@ -1930,6 +1930,19 @@ It runs the newest night on the run log from the first step its tries have not f
 
 ---
 
+## Replacing a stock's stored bars by hand
+
+From 22.33, for a stock a remedy names. Each command names its stocks and is run from main with no night, off-peak run, local run, ledger build or monthly run writing; state its calls first. The worker's own night reads the same answers afterwards, and the figures stored over a stock's bars are worked again on the next night.
+
+```
+dotnet run --project src/EquityBrief.Worker -- refetch --names CTVA,HOS --live
+dotnet run --project src/EquityBrief.Worker -- ticker-join --ticker VSXY --earlier VSCO
+dotnet run --project src/EquityBrief.Worker -- history-pull --carry-splits --names PECO,TALO,WOR --live
+dotnet run --project src/EquityBrief.Worker -- outcomes-again --names CTVA --from 2026-10-01
+```
+
+`refetch` replaces each stock's year through the corporate action check's own path, one request a stock; a stock it cannot serve keeps its year and reads suspect. `ticker-join` costs nothing and asks nothing, and the next refetch or pull of the stock reads the older ticker's sessions. `history-pull --carry-splits` asks one request a stock and writes a new pull only for a stock with a split its own closes still carry. `outcomes-again` removes the named stocks' outcomes decided on or after the day and scores them again, the one way a decided outcome moves, for a remedy that names the stock (see: An outcome decided over bars a ruled correction replaced is scored again by a remedy that names the stock, and no other outcome is rewritten).
+
 ## Store maintenance
 
 **Never edit the store by hand.** Every table has one declared writer per operation and `writer-ownership` asserts it in both directions; a hand edit is a write nobody declared.

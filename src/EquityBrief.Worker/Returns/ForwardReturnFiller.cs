@@ -33,7 +33,7 @@ public sealed class ForwardReturnFiller : IComponent
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
-            new StoreTouch(Store.ForwardReturn, Touch.Read | Touch.Insert | Touch.Update),
+            new StoreTouch(Store.ForwardReturn, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -188,6 +188,32 @@ public sealed class ForwardReturnFiller : IComponent
     {
         this.clock = clock;
         this.databaseFile = databaseFile;
+    }
+
+    // The outcomes of the named members decided on or after a day, removed so the next run scores them again over the bars
+    // a ruled correction replaced, and nothing else. By hand from a remedy alone, never from a night; how many it removed.
+    // see: An outcome decided over bars a ruled correction replaced is scored again by a remedy that names the stock, and no other outcome is rewritten
+    public async Task<int> ClearDecidedAsync(IReadOnlyCollection<string> names, DateOnly from, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        var removed = 0;
+
+        foreach (var name in names)
+        {
+            await using var clear = connection.CreateCommand();
+            clear.CommandText = "DELETE FROM forward_return WHERE ticker = $ticker AND resolved_on >= $from;";
+            clear.Parameters.AddWithValue("$ticker", name);
+            clear.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            removed += await clear.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return removed;
     }
 
     sealed record Listing(string Ticker, string SessionDate, string Plan, Dictionary<string, string?> Outcomes);

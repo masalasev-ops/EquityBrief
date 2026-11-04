@@ -89,13 +89,89 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "compare-labels" => await CompareLabelsVerb(),
     "compare-reviews" => await CompareReviewsVerb(),
     "publish-site" => await PublishSiteVerb(args),
+    "refetch" => await RefetchRun(args),
+    "ticker-join" => await TickerJoinRun(args),
+    "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
+
+// A year asked for by hand for each stock named, through the corporate action check's own replacement, the provider's
+// series read with the store's joins. One request a name.
+// see: Adjusted history is re-fetched after a corporate action
+static async Task<int> RefetchRun(string[] args)
+{
+    if (VerbArguments.Value(args, "--names") is not { } listed)
+    {
+        Console.Error.WriteLine("refetch: name the stocks with '--names <codes>'.");
+
+        return 2;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var feeds = NightFeeds.Resolve(args.Contains("--live") ? NightFeeds.LiveSource : configuration[NightFeeds.SourceKey], Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey], configuration[EodhdBulkPriceFeed.BaseAddressKey], configuration[ProviderCredentials.ApiKeyName]);
+    var names = listed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var outcome = await new EquityBrief.Worker.Bars.CorporateActionChecker(
+        feeds.Corporate,
+        EquityBrief.Worker.Bars.TickerJoins.Over(feeds.Historical, store.DatabaseFile),
+        clock,
+        store.DatabaseFile).RefetchNamesAsync(names, FormattableString.Invariant($"refetch-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.WriteLine(FormattableString.Invariant($"refetch: {outcome.Refetched} of {names.Length} year(s) replaced, {outcome.Requests} request(s), {outcome.RowsReplaced} row(s) more than before{(outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect))}"));
+
+    return 0;
+}
+
+// The operator's word that a stock's earlier history sits under another ticker at the provider.
+// see: A ticker change the provider keeps under two tickers is joined once on the operator's word, and every read of the provider's series reads the join
+static async Task<int> TickerJoinRun(string[] args)
+{
+    if (VerbArguments.Value(args, "--ticker") is not { } ticker || VerbArguments.Value(args, "--earlier") is not { } earlier)
+    {
+        Console.Error.WriteLine("ticker-join: give '--ticker <code> --earlier <code>'.");
+
+        return 2;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var written = await new EquityBrief.Worker.Bars.TickerJoins(clock, store.DatabaseFile).JoinAsync(ticker, earlier, FormattableString.Invariant($"ticker-join-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.WriteLine(written == 1 ? FormattableString.Invariant($"ticker-join: {ticker} reads {earlier} for its earlier sessions") : FormattableString.Invariant($"ticker-join: {ticker} was joined already, nothing changed"));
+
+    return 0;
+}
+
+// The named stocks' outcomes decided on or after a day, scored again over the bars a ruled correction replaced.
+// see: An outcome decided over bars a ruled correction replaced is scored again by a remedy that names the stock, and no other outcome is rewritten
+static async Task<int> OutcomesAgainRun(string[] args)
+{
+    if (VerbArguments.Value(args, "--names") is not { } listed
+        || !DateOnly.TryParseExact(VerbArguments.Value(args, "--from") ?? string.Empty, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var from))
+    {
+        Console.Error.WriteLine("outcomes-again: give '--names <codes> --from <yyyy-MM-dd>'.");
+
+        return 2;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var filler = new EquityBrief.Worker.Returns.ForwardReturnFiller(clock, store.DatabaseFile);
+    var removed = await filler.ClearDecidedAsync(listed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), from);
+    var scored = await filler.RunAsync(FormattableString.Invariant($"outcomes-again-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.WriteLine(FormattableString.Invariant($"outcomes-again: {removed} outcome(s) removed; {scored.RowsWritten} row(s) written, {scored.Matured} matured, {scored.Immature} not yet matured"));
+
+    return 0;
+}
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 60 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 63 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -307,7 +383,12 @@ static int NoVerb()
         "'publish-site' writes the read-only copy of the site into the data root's site folder through the read surface " +
         "built beside the worker, asking no provider and writing nothing to the store, reads it for forms, the surface's " +
         "addresses, secrets, paths and the account's settings, and writes its report beside the folder, with '--upload' " +
-        "uploading the folder to its own Cloudflare Pages project once the report refuses nothing. '--live' " +
+        "uploading the folder to its own Cloudflare Pages project once the report refuses nothing, " +
+        "'refetch --names <codes> --live' asks the provider for each stock's year and replaces it through the corporate action " +
+        "check's own path, one request a stock, " +
+        "'ticker-join --ticker <code> --earlier <code>' records that a stock's earlier sessions sit under another ticker at the " +
+        "provider, and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
+        "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 

@@ -1,0 +1,21 @@
+# The remedy of 22.33, the operator's answers of 2026-11-04 on the chart audit. Migration 120 creates the ticker join. VSXY is
+# joined to VSCO. The stocks the audit found wrong are refetched through the corporate action check's own path, one request
+# a stock, 14 in all: CTVA for its spin-off, HR, HWKN, LPX, MOG-A, MSA and WINA for their copied candles, HOS and INDV for being
+# behind, THRM, PMT and MSGK for their adjustments, CZR for its raw close, and VSXY for the join, two requests. The 8 stocks with
+# no pulled history are pulled with VSXY, all of them the S&P 600's, one request a stock and VSXY's one more, and the earnings
+# calendar once a month of the span, 134 months from 2015-10-01. PECO, TALO and WOR have the splits EODHD records applied to a
+# new pull, one request a stock. CTVA's outcomes decided from 2026-10-01 are scored again and every
+# stored trade's fill is priced again over the bars as they now stand, no request. About 165 of the provider's weighted calls,
+# no model call. The figures the night stores over these stocks' bars are worked again by the next night. Each index's ledger
+# history is then built again by hand with tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-08
+# --again, which builds main's own commit from a clean copy and so is not a worker command this file can run, checked with
+# ledger-check --index <GSPC, MID or SML>. No source a rule's version or the readings' version pins moves, so nothing is
+# registered again and no record or paper account restarts. Run from main after the merge, when no night, off-peak run, local
+# run, ledger build or monthly run is writing, and restart the read surface after it.
+migrate
+ticker-join --ticker VSXY --earlier VSCO
+refetch --names CTVA,HR,HWKN,LPX,MOG-A,MSA,WINA,HOS,INDV,THRM,PMT,MSGK,CZR,VSXY --live
+history-pull --from 2015-10-01 --index SML --names AVPT,DMC,FRSH,HHH,HURN,MSGK,SEI,WK,VSXY --live
+history-pull --carry-splits --names PECO,TALO,WOR --live
+outcomes-again --names CTVA --from 2026-10-01
+fill --again

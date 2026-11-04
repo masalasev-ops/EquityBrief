@@ -1160,7 +1160,10 @@ public class CorporateActions
 
         Assert.Contains("1 retried from an earlier night: AAPL", (string)command.ExecuteScalar()!, StringComparison.Ordinal);
 
-        // And once it is ok, the night after asks nothing for it.
+        // And once it is ok, the night after asks nothing for it. That night's fetch storing no session here, no member stands
+        // ahead of the year the refetch ended on.
+        store.Execute($"DELETE FROM bar WHERE session_date > '{Day(DateOnly.FromDateTime(ActionNight.UtcDateTime.AddDays(1)))}';");
+
         var quiet = await new CorporateActionChecker(
             new NoActionFeed(),
             RecordedHistoricalBarFeed.FromFolder(FixtureFolder()),
@@ -1172,7 +1175,7 @@ public class CorporateActions
     }
 
     [Fact]
-    public async Task TheCheckCostsTwoRequestsAndOnePerRefetchedNameAndTheRunLogSaysSo()
+    public async Task TheCheckCostsTwoRequestsASessionForSixSessionsAndOnePerRefetchedNameAndTheRunLogSaysSo()
     {
         // One per kind, and neither grows with the universe. The refetch is a
         // per-name call bounded by the day's actions rather than by the index,
@@ -1195,7 +1198,7 @@ public class CorporateActions
             FixedClock.At(ActionNight, SessionZones.UnitedStates),
             store.DatabaseFile).RunAsync(Index, "run-actions");
 
-        Assert.Equal(2, feed.Requests);
+        Assert.Equal(2 * (1 + CorporateActionChecker.LateFileSessions), feed.Requests);
 
         // One refetch per affected member, counted off the feed that made it.
         Assert.Equal(1, outcome.Refetched);
@@ -1215,8 +1218,8 @@ public class CorporateActions
         using var reader = command.ExecuteReader();
 
         Assert.True(reader.Read(), "The check left no run log row.");
-        Assert.Equal(3L, reader.GetInt64(0));
-        Assert.Contains("1 of the 3 request(s) per name", reader.GetString(1), StringComparison.Ordinal);
+        Assert.Equal(13L, reader.GetInt64(0));
+        Assert.Contains("1 of the 13 request(s) per name", reader.GetString(1), StringComparison.Ordinal);
     }
 
     // The S&P 400 and 600, which the night reads beside its own index.
@@ -1288,7 +1291,9 @@ public class CorporateActions
         Assert.Equal("ok", stage.Outcome);
         Assert.Contains("1 back after sessions in no index the night reads: MSFT", stage.Detail, StringComparison.Ordinal);
 
-        // Once: the night after asks nothing for it.
+        // Once: the night after asks nothing for it, no member standing ahead of the year it was asked for through.
+        store.Execute($"DELETE FROM bar WHERE session_date > '{Day(Joined)}';");
+
         var after = await ThreeIndicesOn(store, SessionsFrom(Joined.AddDays(1), 1)[0], history);
 
         Assert.Empty(after.Returning ?? []);
@@ -1354,6 +1359,8 @@ public class CorporateActions
         Assert.Equal(1, back.RefetchRequests);
         Assert.Equal(CorporateActionChecker.Ok, StateOf(store, "MSFT").State);
         Assert.Equal(away[0], EquityBrief.Core.Bars.TradingCalendar.Check(SessionsHeld(store, "MSFT")).Earliest);
+
+        store.Execute($"DELETE FROM bar WHERE session_date > '{Day(Joined)}';");
 
         foreach (var session in SessionsFrom(Joined.AddDays(1), 2))
         {
@@ -1465,8 +1472,9 @@ public class CorporateActions
         var nights = SessionsFrom(Joined.AddDays(1), 3);
 
         // Each night stores its own session before the check reads, as the fetch does, and the
-        // second night's file carries nothing for MSFT. Neither night asks for it, since the
-        // check reads the sessions before tonight's and the one asked for still stands.
+        // second night's file carries nothing for MSFT. The first night asks nothing, since the
+        // sessions it was asked for stand; from 22.33 the second asks for it as behind the night,
+        // and that fills the second's session and not the three the provider cannot serve.
         void Fetched(DateOnly night, bool carriesMsft) =>
             store.Execute(
                 "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
@@ -1480,18 +1488,19 @@ public class CorporateActions
             var quiet = await ThreeIndicesOn(store, night, history);
 
             Assert.Empty(quiet.Missing ?? []);
-            Assert.Equal(0, quiet.RefetchRequests);
+            Assert.Equal(carriesMsft ? [] : (string[])["MSFT"], quiet.Behind ?? []);
+            Assert.Equal(carriesMsft ? 0 : 1, quiet.RefetchRequests);
         }
 
-        // The third night reads the second's session missing, later than the night it was last
-        // asked for, and asks for it once more: that session filled, the three it cannot serve not.
+        Assert.Contains(nights[1], SessionsHeld(store, "MSFT"));
+
+        // The third night finds nothing new, the three it cannot serve standing as a gap.
         Fetched(nights[2], true);
 
         var later = await ThreeIndicesOn(store, nights[2], history);
 
-        Assert.Equal(["MSFT"], later.Missing ?? []);
-        Assert.Equal(1, later.RefetchRequests);
-        Assert.Contains(nights[1], SessionsHeld(store, "MSFT"));
+        Assert.Empty(later.Missing ?? []);
+        Assert.Equal(0, later.RefetchRequests);
         Assert.All(gone, session => Assert.DoesNotContain(session, SessionsHeld(store, "MSFT")));
     }
 

@@ -204,6 +204,9 @@ public static class Nightly
 
         var (membership, historical, bulkFeed, corporate, calendar, _, companies, market) = feeds;
 
+        // see: A ticker change the provider keeps under two tickers is joined once on the operator's word, and every read of the provider's series reads the join
+        historical = EquityBrief.Worker.Bars.TickerJoins.Over(historical, store.DatabaseFile);
+
         // The indices read beside the night's own, the S&P 400 and 600 from their funds' files: every stage that stores
         // or computes what each member needs reads their members too, and every stage that ranks, lists or records a
         // family reads the night's own index alone.
