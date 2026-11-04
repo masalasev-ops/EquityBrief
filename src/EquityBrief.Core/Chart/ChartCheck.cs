@@ -20,7 +20,7 @@ public sealed record StockEvents(
 
 // What is stored of one stock: its series at the store's scale oldest first, the averages each session draws, the pull's own
 // closes over the stored year with the page's scale, the raw close the store kept of the session before its year, its state,
-// whether any history is pulled before its year, and a ticker change a row or a join names.
+// whether any history is pulled before its year, a ticker change a row or a join names, and the operator's word on its sessions.
 public sealed record StockToCheck(
     string Ticker,
     IReadOnlyList<CheckedSession> Sessions,
@@ -30,7 +30,8 @@ public sealed record StockToCheck(
     decimal? KeptRawBefore,
     string State,
     bool NoHistoryBeforeTheYear,
-    (string Old, DateOnly? On)? TickerChange);
+    (string Old, DateOnly? On)? TickerChange,
+    IReadOnlyList<SessionMark>? Marks = null);
 
 // A close-to-close move past the limit.
 public sealed record SeenMove(DateOnly Before, DateOnly Session, decimal BeforeClose, decimal Close, decimal? RawBefore, decimal? Raw, bool Pulled);
@@ -85,9 +86,8 @@ public static class ChartCheck
             || FractionsOfASplit.Any(fraction => Math.Abs((ratio / fraction) - 1) <= SplitRatioNear);
     }
 
-    // A ratio within 3% of one leaves too small a step to read, and a dividend under half of 1% of the close the same.
+    // A ratio within 3% of one leaves too small a step to read.
     public const decimal SmallestSplitRead = 0.03m;
-    public const decimal SmallestDividendRead = 0.005m;
 
     // A first session since two years before the night is a stock new to the market.
     public const int NewListingYears = 2;
@@ -107,16 +107,19 @@ public static class ChartCheck
 
     static string Signed(decimal fraction) => (fraction * 100).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "%";
 
-    // The moves past the limit, which the night counts across every member before it says what any of them was.
-    public static IReadOnlyList<SeenMove> MovesOf(IReadOnlyList<CheckedSession> sessions)
+    // The moves past the limit, which the night counts across every member before it says what any of them was. A session marked a
+    // bad print is read past as if it had not traded, and a move the operator checked and kept is theirs to say, as a line.
+    public static IReadOnlyList<SeenMove> MovesOf(IReadOnlyList<CheckedSession> sessions, IReadOnlyList<SessionMark>? marks = null)
     {
         var moves = new List<SeenMove>();
+        bool Marked(DateOnly day, string kind) => marks?.Any(mark => mark.Session == day && mark.Kind == kind) == true;
+        CheckedSession[] read = [.. sessions.Where(session => !Marked(session.Session, SessionMarking.BadPrint))];
 
-        for (var at = 1; at < sessions.Count; at++)
+        for (var at = 1; at < read.Length; at++)
         {
-            var (before, session) = (sessions[at - 1], sessions[at]);
+            var (before, session) = (read[at - 1], read[at]);
 
-            if (before.Close > 0 && Math.Abs((session.Close / before.Close) - 1) > MoveLimit)
+            if (before.Close > 0 && Math.Abs((session.Close / before.Close) - 1) > MoveLimit && !Marked(session.Session, SessionMarking.CheckedAndKept))
             {
                 moves.Add(new SeenMove(before.Session, session.Session, before.Close, session.Close, before.RawClose, session.RawClose, session.Pulled));
             }
@@ -362,7 +365,7 @@ public static class ChartCheck
                 ? new(Note, "ticker change", on, FormattableString.Invariant($"On {Day(on)} the ticker changed from {change.Old} to {stock.Ticker}."))
                 : new(Note, "ticker change", stock.Sessions[0].Session, FormattableString.Invariant($"Its earlier sessions were traded under {change.Old}.")));
         }
-        else if (stock.Sessions[0].Session > night.AddYears(-NewListingYears) && !stock.NoHistoryBeforeTheYear)
+        else if (stock.Sessions[0].Session > night.AddYears(-NewListingYears) && !stock.NoHistoryBeforeTheYear && stock.Marks?.Any(mark => mark.Kind == SessionMarking.StartsHere) != true)
         {
             findings.Add(new(Note, "first session", stock.Sessions[0].Session, FormattableString.Invariant($"It started trading on {Day(stock.Sessions[0].Session)}.")));
         }
@@ -405,14 +408,16 @@ public static class ChartCheck
 
         foreach (var dividend in events.Dividends)
         {
-            if (Across(dividend.ExDate) is not { } across || dividend.Amount / across.Before.RawClose!.Value < SmallestDividendRead)
+            if (Across(dividend.ExDate) is not { } across)
             {
                 continue;
             }
 
-            // Half the step the dividend should leave, and no more than half the smallest step read: a split after it restates the
-            // amount and not the raw close, so a step of any readable size is the dividend carried.
-            if (Math.Abs(across.Step - 1) < Math.Min(dividend.Amount / across.Before.RawClose!.Value, SmallestDividendRead) / 2)
+            // A split after it restates the amount and not the raw close, so the amount goes back to what it paid: 0.65 after 1 for 5
+            // is 0.13 on the raw close of its day.
+            var paid = events.Splits.Where(split => split.ExDate > dividend.ExDate).Aggregate(dividend.Amount, (amount, split) => amount * split.NewShares / split.OldShares);
+
+            if (DividendCarry.NotCarried(DividendCarry.Gap(paid, across.Before.Close, across.Before.RawClose!.Value, across.After.Close, across.After.RawClose!.Value)))
             {
                 findings.Add(new("e", "action not carried", dividend.ExDate, FormattableString.Invariant($"The store holds a dividend of {Money(dividend.Amount)} on {Day(dividend.ExDate)} that the stored bars do not carry.")));
             }

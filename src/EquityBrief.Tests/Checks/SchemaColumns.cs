@@ -33,6 +33,12 @@ public class SchemaColumns
     // 22.33's one: the ticker joins.
     internal static string[] TickerJoinStoreRows => [CheckReach.Key(Scope.StoresTable, "Ticker joins")];
 
+    // 22.38's one: the operator's word on a session of the pulled history.
+    internal static string[] SessionMarkStoreRows => [CheckReach.Key(Scope.StoresTable, "Session marks")];
+
+    // 22.40's one: the dividends an answer has not carried.
+    internal static string[] DividendWaitStoreRows => [CheckReach.Key(Scope.StoresTable, "Dividend waits")];
+
     // 22.37's two: what the chart check finds and the splits the night keeps.
     internal static string[] ChartCheckStoreRows => [CheckReach.Key(Scope.StoresTable, "Chart checks"), CheckReach.Key(Scope.StoresTable, "Split events")];
 
@@ -267,6 +273,8 @@ public class SchemaColumns
             .. NewReadingStoreRows,
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,
+            .. SessionMarkStoreRows,
+            .. DividendWaitStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

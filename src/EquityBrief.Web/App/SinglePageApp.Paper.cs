@@ -12,7 +12,7 @@ namespace EquityBrief.Web.App;
 // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 public sealed partial class SinglePageApp
 {
-    // How paper trading is read, opened from its "?".
+    // How paper trading is read, opened from its fold.
     public const string PaperGuide =
         "Each account takes one rule's trades: a family's live or provisional rule takes the page's own list, each registered variant its own list or book, and You the trades you took from the cards. Each trade is bought at the open of the session after the night that listed it and sized off the account's value at its buy by the card's own sizing, the trades ending on a session sold before any is bought, and one the free cash cannot buy is skipped and counted; each pays its round trip, half at its buy and half at its sale. The tiles draw each family's live or provisional account's return since its record began beside the index's fund over the same days, and the chart draws each account's return session by session, a chosen family's variants dashed; a key's press hides or shows its line. An account is evidence about one unchanged rule, so a registered rule's account counts only the trades of its current version, from where the Run page's record of the rule starts, and starts again when the rule is registered again; the trades of earlier versions stay folded and left out of every figure. A provisional account and yours count every trade from the first. A rule's scorecard puts two things beside each other and never adds them together: how the rule did on the test years in the newest monthly test, and its own record since it went live, which is not evidence until it holds the test's count of trades or months.";
 
@@ -192,9 +192,11 @@ public sealed partial class SinglePageApp
         return region.ToString();
     }
 
-    // A screen's "?" opening how it is read.
+    // The fold on a screen opening how it is read, in words wherever it stands.
+    public const string GuideWords = "How to read this page";
+
     static string Guide(string guide) =>
-        $"<details class=\"guide\"><summary title=\"How to read this page\" aria-label=\"How to read this page\">?</summary><p class=\"guide-b\">{Escaped(guide)}</p></details>";
+        $"<details class=\"guide\"><summary>{GuideWords}</summary><p class=\"guide-b\">{Escaped(guide)}</p></details>";
 
     static string FamilyLabel(string family) =>
         family == EquityBrief.Core.Families.HeavyweightRule.Name

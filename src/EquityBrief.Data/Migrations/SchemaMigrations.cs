@@ -742,7 +742,35 @@ public static class SchemaMigrations
         new Migration(119, "add trade_fill's sold_on and sale", AddTradeFillSale),
         new Migration(120, "create ticker_join", CreateTickerJoin),
         new Migration(121, "create chart_check and split_event", CreateChartCheck),
+        new Migration(122, "create session_mark", CreateSessionMark),
+        new Migration(123, "create dividend_wait", CreateDividendWait),
     ];
+
+    // From 22.40 a dividend the provider's answer did not carry, one row while it waits for an answer that does.
+    const string CreateDividendWait = @"
+        CREATE TABLE dividend_wait (
+            ticker    TEXT NOT NULL,
+            ex_date   TEXT NOT NULL,
+            amount    TEXT NOT NULL,
+            asked_on  TEXT NOT NULL,
+            retries   INTEGER NOT NULL,
+            run_id    TEXT NOT NULL,
+            PRIMARY KEY (ticker, ex_date)
+        ) STRICT;
+    ";
+
+    // From 22.38 the operator's word on a session of the pulled history, after the check against its filings.
+    const string CreateSessionMark = @"
+        CREATE TABLE session_mark (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            kind          TEXT NOT NULL CHECK (kind IN ('starts here', 'bad print', 'checked and kept')),
+            says          TEXT NOT NULL,
+            ruled         TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
 
     // From 22.36 what the chart check finds of each member a night, and from 22.37 each split the night's day files carry.
     const string CreateChartCheck = @"

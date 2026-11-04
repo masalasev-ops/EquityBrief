@@ -1949,7 +1949,16 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --carry-splits --nam
 dotnet run --project src/EquityBrief.Worker -- outcomes-again --names CTVA --from 2026-10-01
 ```
 
-`refetch` replaces each stock's year through the corporate action check's own path, one request a stock; a stock it cannot serve keeps its year and reads suspect. `ticker-join` costs nothing and asks nothing, and the next refetch or pull of the stock reads the older ticker's sessions. `history-pull --carry-splits` asks one request a stock and writes a new pull only for a stock with a split its own closes still carry. `outcomes-again` removes the named stocks' outcomes decided on or after the day and scores them again, the one way a decided outcome moves, for a remedy that names the stock (see: An outcome decided over bars a ruled correction replaced is scored again by a remedy that names the stock, and no other outcome is rewritten).
+`refetch` replaces each stock's year through the corporate action check's own path, one request a stock; a stock it cannot serve keeps its year and reads suspect. `ticker-join` costs nothing and asks nothing, and the next refetch or pull of the stock reads the older ticker's sessions. `history-pull --carry-splits` asks one request a stock and writes a new pull only for a stock with a split its own closes still carry.
+
+The operator's word on a session of a stock's pulled history, after the check against its filings, is recorded by a verb, with no request and no pulled row moved:
+
+```
+dotnet run --project src/EquityBrief.Worker -- session-mark --ticker CHRD --session 2020-11-20 --kind "starts here" --says "Its history starts here."
+```
+
+`--kind` is `starts here`, `bad print` or `checked and kept`, and `--says` is the line a person reads beneath the chart. A second word on the same session changes nothing. A refetch answer with a day's move over 25% that the stored closes miss by over 25 points is refused and the stock keeps its year and reads suspect: read the provider's answer and the filings before anything else moves it. A dividend the provider's answer does not carry is asked for again on its own on the five nights after and weekly, and reads on the stock's pages and the actions row of the Run page while it waits.
+ `outcomes-again` removes the named stocks' outcomes decided on or after the day and scores them again, the one way a decided outcome moves, for a remedy that names the stock (see: An outcome decided over bars a ruled correction replaced is scored again by a remedy that names the stock, and no other outcome is rewritten).
 
 ## Store maintenance
 

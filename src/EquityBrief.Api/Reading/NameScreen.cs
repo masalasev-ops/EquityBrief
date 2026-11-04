@@ -1636,7 +1636,9 @@ public static partial class NameScreen
         // segments from.
         string? newestReleaseText = null,
         // Whether the segment commentary was written from the release's own segment table, and none where none is written.
-        bool? commentaryFromRelease = null)
+        bool? commentaryFromRelease = null,
+        // The dividends the provider's answer does not yet carry.
+        IReadOnlyList<DividendWait>? dividendWaits = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1928,7 +1930,8 @@ public static partial class NameScreen
                 swingLows ?? []),
             olderBands: OlderBandsOf(bars, levels, pulled, typicalMove, (cards ?? heldTrade?.Card) is { } shownPick ? (shownPick.Stop, shownPick.Target) : null),
             aloneLine: Alone(aloneDetail),
-            held: heldTrade);
+            held: heldTrade,
+            dividendWaits: dividendWaits);
     }
 
     // The trade a family holds the name on: the newest of the earlier picks still open, with its card from the night it was

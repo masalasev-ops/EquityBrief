@@ -817,6 +817,8 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.KeptBar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read),
+            new StoreTouch(Store.DividendWait, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),

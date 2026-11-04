@@ -36,6 +36,8 @@ public enum Store
     PulledShares,
     PulledSplit,
     TickerJoin,
+    SessionMark,
+    DividendWait,
     ChartCheck,
     SplitEvent,
     PulledRevenue,

@@ -45,6 +45,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Ticker joins"),
     ];
 
+    // 22.38's one: the session marks.
+    internal static string[] SessionMarkRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Session marks"),
+        CheckReach.Key(Scope.MatrixTable, "Session marks"),
+    ];
+
     // 22.37's one: the chart checker.
     internal static string[] ChartCheckRows =>
     [
@@ -205,6 +212,9 @@ public partial class ComponentAccess
 
             // 22.33, the ticker joins.
             .. TickerJoinRows,
+
+            // 22.38, the session marks.
+            .. SessionMarkRows,
 
             // 22.37, the chart checker.
             .. ChartCheckRows,

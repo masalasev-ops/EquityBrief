@@ -91,6 +91,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "publish-site" => await PublishSiteVerb(args),
     "refetch" => await RefetchRun(args),
     "ticker-join" => await TickerJoinRun(args),
+    "session-mark" => await SessionMarkRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -144,6 +145,31 @@ static async Task<int> TickerJoinRun(string[] args)
     return 0;
 }
 
+// The operator's word on a session of a stock's pulled history.
+// see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart
+static async Task<int> SessionMarkRun(string[] args)
+{
+    if (VerbArguments.Value(args, "--ticker") is not { } ticker
+        || !DateOnly.TryParseExact(VerbArguments.Value(args, "--session") ?? string.Empty, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var session)
+        || VerbArguments.Value(args, "--kind") is not { } kind
+        || !EquityBrief.Core.Chart.SessionMarking.Kinds.Contains(kind)
+        || VerbArguments.Value(args, "--says") is not { } says)
+    {
+        Console.Error.WriteLine(FormattableString.Invariant($"session-mark: give '--ticker <code> --session <yyyy-MM-dd> --kind <{string.Join(" or ", EquityBrief.Core.Chart.SessionMarking.Kinds)}> --says <words>'."));
+
+        return 2;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var written = await new EquityBrief.Worker.Charts.SessionMarks(clock, store.DatabaseFile).MarkAsync(ticker, session, kind, says, FormattableString.Invariant($"session-mark-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.WriteLine(written == 1 ? FormattableString.Invariant($"session-mark: {ticker} {session:yyyy-MM-dd} {kind}") : FormattableString.Invariant($"session-mark: {ticker} {session:yyyy-MM-dd} was marked already, nothing changed"));
+
+    return 0;
+}
+
 // The named stocks' outcomes decided on or after a day, scored again over the bars a ruled correction replaced.
 // see: An outcome decided over bars a ruled correction replaced is scored again by a remedy that names the stock, and no other outcome is rewritten
 static async Task<int> OutcomesAgainRun(string[] args)
@@ -171,7 +197,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 63 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 64 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -387,7 +413,8 @@ static int NoVerb()
         "'refetch --names <codes> --live' asks the provider for each stock's year and replaces it through the corporate action " +
         "check's own path, one request a stock, " +
         "'ticker-join --ticker <code> --earlier <code>' records that a stock's earlier sessions sit under another ticker at the " +
-        "provider, and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
+        "provider, 'session-mark --ticker <code> --session <yyyy-MM-dd> --kind <kind> --says <words>' records the operator's word on a " +
+        "session of its pulled history, and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");

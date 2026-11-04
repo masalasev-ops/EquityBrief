@@ -15198,3 +15198,96 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             migrations 0 to 121 with none pending, schema version 121, against `data-ci` and never `data`; the phase report 65 tables,
             1506 claims, 1506 passing, none out of scope and none unexamined, 1521 placements and verdicts reconciled against a floor
             of 34, 46 checks on the roster run and passed.
+
+### 22.38 ruling - the operator's second answers on the chart audit, and their word on KVUE
+
+Not a checkpoint entry: it records the operator's answers of 2026-11-04 and lands nothing.
+Ruled:      word for word in `prompts/2026-11-04-chart-audit-second-answers.md`, gitignored, and here. "The 49 dividends: yes. After a stock's ex-dividend refetch, ask EODHD again on
+            each of the next five nights and weekly after, until the answer carries the dividend, as the quarters fetch does; the page and the run page say so while it waits.
+            Refetch the 49 now (state the calls first, about 49), rebuild the ledger history for them, and say which records or readings moved. The nightly check flags a
+            stored dividend the bars do not carry at a 0.5% gap, not 5%." "The 14 jumps: check each against the SEC's filings (free), not another price source": CHRD,
+            leave out the history before the new equity's first regular-way session with a line; INSW and SNDK, start each at its first regular-way session with a line; TALO,
+            say which company the history belongs to and join it under the 5%-and-5-figures rule or leave it out; GME, MARA 2020-12-15 and 2021-03-09 and CLSK, keep; PRG 2021-04-07
+            and TNDM, check and report; CRK, MARA 2021-03-01 and PRG 2021-04-06, likely bad prints, "mark those sessions so the history tests skip them, without changing the pulled
+            rows, and draw a small mark on the chart". "Report each one's finding in a line." "The thin-trading and heavy-volume thresholds go into phase 23's plan as stated rules."
+            "22.39: yes, 'How to read this page' in words everywhere." On the tests' series, "At phase 23's restart". On CRK and MARA 2021-03-01, "Keep both as real".
+On KVUE:    "Restore the four from last night's copy, with a fresh copy of the store taken first and kept. Then: list any paper trade, pick or record the four false sessions touched,
+            and correct them in the same remedy. Check every other member that left an index in the last 30 days for the same fault (sessions after its last real one that are another
+            stock's prices on tiny volume), and report them; restore none without my word. The refetch guard from the other tab goes in the same PR, so this cannot happen
+            silently again."
+Queue:      done, 22.33 to 22.37; in progress, 22.38 to 22.40 in one pull request; next, the read-only copy's read-back and the sign-offs the queue ruling sets.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 22.38 - the pulled years' faults classified against EODHD, and the operator's word on sessions the filings explain   2026-11-04
+
+Built:      a table beside the pull, `session_mark`, migration 122, written by the verb `session-mark` on the operator's word, the first word on a session standing and no pulled row
+            moving. A session a stock's history starts on leaves the sessions before it out of the chart's and the name page's read of the pull, the chart's averages, the page
+            history reader and the chart check; a bad print is read past by the check's moves and draws a small mark on its candle; a move checked and kept is a line and no flag.
+            Each is a line beneath a chart showing its session, from the moment it is written. The sweep's series and the rules' reads wait for phase 23's restart, in the plan's table.
+Classified: the audit's pulled years against EODHD, 182 calls, read-only. Missing 2,812 on 29: 2,788 thin on 13; 15 on 9 liquid stocks EODHD holds none for; 9 on 9 it holds, all 2023-04-06.
+            No volume 4,982 on 77: 4,893 thin on 25; 88 on 55 liquid stocks it serves the same; 1 it holds, CNC 2020-02-26. Jumps 657 on 213: 485 on volume on 193, 151 thin on 28, 7 market
+            or sector wide, 3 spike backs, 11 unexplained. The rules are the plan's, stated there for phase 23's data check.
+SEC:        each of the 14 read in its filings, the marks in `tools/remedies/2026-11-04-22.38-the-marked-sessions.txt`. CHRD 2020-11-20: Oasis came out of Chapter 11 on 2020-11-19, old
+            equity cancelled, starts there. INSW: spun from OSG, distributed 2016-11-30, when-issued to then, starts 2016-12-01. SNDK: spun from WDC, when-issued as SNDKV to 2025-02-21,
+            starts 2025-02-24. TALO 2016-05-25 and 06-06: Stone Energy's, CIK 904080; Talos became its successor on 2018-05-10; of 172 figures both state 2 agree within 5%, so the rule
+            for a predecessor fails and it starts 2018-05-10. GME 2021-02-01, MARA 2020-12-15 (8-K on Bitmain's 10,000 miners), MARA 2021-03-09, CLSK 2021-03-09 (8-K on mining machines): real,
+            kept. PRG 2021-04-06: every price about 40% under its neighbours on half the usual volume, no filing: a bad print, marked. PRG 2021-04-07: only the return from it, gone
+            with it. TNDM 2017-10-09: 8-K of 10-10 on a 1 for 10 reverse split and an offering: a real fall, kept. CRK 2016-01-20 and MARA 2021-03-01: kept on the operator's word.
+Remedy:     `tools/remedies/2026-11-04-22.38-the-mended-pulls-and-the-49.txt`, run before this pull request from b5254a7a since it needs no new code; `tools/remedies/2026-11-04-22.38-the-marked-sessions.txt`, `migrate` and the 12 marks, no request, to run from main after the merge.
+Tests:      with 22.40's, in one count there.
+Mutation:   each predicted first, in 22.40's entry.
+Carried:    the marks' reach into the sweep's series and the rules' reads, in the plan's table for phase 23. The stocks EODHD cannot mend, listed to the operator with their dates. KVUE's restore and the ledgers, in the record after 22.40.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 22.39 - the fold that opens a page's guide reads in words   2026-11-04
+
+Built:      the fold on the universe, Researched, Watch list, Ledger, Loop and paper trading pages says "How to read this page", underlined, in place of a question mark in a circle or a bare one with the browser's arrow, one style wherever it stands.
+Tests:      with 22.40's, in one count there.
+Mutation:   each predicted first, in 22.40's entry.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 22.40 - a dividend the provider's answer does not yet carry is asked for again, and an answer that is another stock's prices is refused   2026-11-04
+
+Built:      the corporate action checker reads each dividend the day files carry and each waiting against the answer that replaced a year, in a shared core function. Not carried, at a gap of
+            half of 1% of the close, it waits in `dividend_wait`, migration 123, and is asked for on the five nights after and weekly; an answer carrying it or the stock leaving the
+            index ends it. The stock's state stays ok, so no rule stops. The name page and the chart page open with a line, the actions row is partial and the Run page names it. The chart
+            check flags at the same gap from the same function, a later split's restated amount read back to what was paid. A refetch's answer with a day's move over 25% that the
+            stored closes miss by over 25 points is refused before anything is dropped: the stock keeps its year and reads suspect, a real move, a split the store has not applied and a stored session with no volume standing.
+Cost:       one request a stock a night for five nights and one a week after, each ending as above. The first refetch's count, 49 of 981 stocks paying since 2026-08-01 over about three months, is about 250 asks across those months, and the carve-out in `CLAUDE.md` says so.
+Tests:      3251, from 3224, 27 tests and theories in all: the refetch's limits by hand and over the store, the marks read by the check, the averages and the long view, the chart page's line and mark, the fold on four screens and no question mark on ten, the gap by hand, the wait's nights over the store, a stock leaving, AMCR's restated amount, and the Run page's row.
+Mutation:   one for each property, predicted first and each red at its test. The guard: a day of 26% standing; apart by 26 points standing; a move the store shows refused; a
+            split the store has not applied refused; a session with no volume a witness; the refetch not asking. 22.38: a bad print read; a move kept still a move; a start naming a first
+            session too; the check reading before a start; the check reading no marks; the averages, the long view and the chart each reading before a start; a later word replacing the
+            first; a kind no one ruled kept; no line beneath the chart; no mark on the candle; a bad print drawn as a dividend. 22.39: the fold a question mark. 22.40: a gap of 0.6%; a gap at
+            the limit carried; the step read one way only; an ex-date with nothing before it read; a restated amount read as paid; the check holding to a 1.6% gap; no wait written; a
+            carried answer leaving the wait; four nights asked; asked every night after; never asked after the five; the count running on the same night; a dividend waiting as suspect; a
+            leaver keeping its wait; a wait reading ok on its row; the name page and the chart page each saying nothing. Thirty seven, thirty seven red: the ex-date with nothing before it
+            survived its first run, a missing property, since the test held no year whose first session was the ex-date, and went red once that case was written.
+Carried:    the first night's waits read on the Run page; the read-only copy's pages read back. 22.33 to 22.37's carried read-backs stand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the
+            figures below stated before that run: all six steps, 0 warnings, 0 errors, 3251 of 3251 tests ran with none failed,
+            migrations 0 to 123 with none pending, schema version 123, against `data-ci` and never `data`; the phase report 65 tables,
+            1510 claims, 1510 passing, none out of scope and none unexamined, 1525 placements and verdicts reconciled against a floor
+            of 34, 46 checks on the roster run and passed.
+
+### 22.38 - record: the 49 refetched, the 10 pulled again, KVUE put back and the three ledgers run, and which rules' records and readings moved   2026-11-04
+
+Not a checkpoint entry: it records the runs 22.38 and 22.40 carried, and lands nothing.
+Ran:        `tools/remedies/2026-11-04-22.38-the-mended-pulls-and-the-49.txt` from b5254a7a, 14:28 to 14:38 UTC. The 49 refetched, 49 requests; the 10 pulled again, 412 requests, each now holding its
+            session. The read-only check over the store after it: every one of the 49's flags gone, none of them new but the averages the night works again.
+KVUE:       its answer served four sessions of another listing, 2026-10-27 to 10-30, 361 to 376 on volumes of 21 to 364, where the store held 19.43 to 19.56 on 10 to 66 million shares. On the
+            operator's word, with `E:/EquityBrief-backups/kept-before-the-kvue-restore-20261104.db` copied first and kept, the four rows went back from the copy of the night of 2026-11-03 in one
+            transaction outside the worker's refetch path, written on the run log as `bar-restore`, the other sessions staying as refetched so the dividend is carried. No paper trade, pick or
+            holding names KVUE, and its 24 fills did not move. 8 outcomes had turned to false wins of about +1,800%, the 21-session outcomes of 2026-09-28 to 10-01 and the 5-session of 10-20 to 10-23; `outcomes-again --names KVUE --from 2026-09-10` and `fill --again` put them back and KVUE's largest return is 12.5%. It reads suspect and has left the index, so no night asks for it.
+Others:     of the 12 stocks that left in the 30 days to 2026-11-04, 8 hold no such tail. PARA's row names Banzai International, and its stored year and pull are Banzai's under Paramount's old ticker;
+            QRVO 2026-10-05 and BLFS 2026-10-06 each end on a copied candle. Reported, and restored none, on the operator's word.
+Ledgers:    with `--again` through 2026-10-08 from a clean copy of b5254a7a, 15:19 to 19:11 UTC, beside gates and a mutation sweep, each `ledger-check` 200 of 200. Setups and those passing the live rule,
+            with the build of 22.33 beside them. S&P 500 385,497 and 61,715 (385,304 and 61,666); S&P 400 281,065 and 45,208 (280,800 and 45,158); S&P 600 384,403 and 51,089, the same.
+Moved:      setups, live, mean result and edge, by index and rule. The largest: the S&P 500's quality, setups up 24 and live up 23, mean .0883 to .0881; its dip, up 122 and 22, mean .0268 to .0270; the S&P
+            400's dip, up 182 and 28; its drift, mean .2802 to .2810; its pullback, up 17 and 4, edge .0074 to .0072. The S&P 600's move in the fourth place or none. Most setups added stand on the mended
+            stocks, whose missing session of 2023-04-06 had stopped the read: DTM's dip 214 to 263, EVR's 417 to 464, MOH's 218 to 271, PEN's 391 to 477, SLB's 443 to 512.
+Outcomes:   386 of 3,596 decided since 2026-07-01 on these 59 stocks moved, the dividend now in the prices before it: 42 changed their word, 39 from a loss to a win, 2 wins to never entered, DVN's of 2026-09-09
+            and HST's of 09-25, and ESS's clear-20 of 09-29 from a loss to unresolved. The largest moves are ESS's, about 6.8 points, across its dividend of 2026-09-29. 223 fills moved, 216 of them forward returns.
+            Trades: RCL's 6 drift trades of 2026-10-27 fill at 295.60 from 295.595, result 12.752 to 12.744; OZK's S&P 400 background drift of 10-21 sold at 50.73 from 50.54, result 1.623 to 1.737. No pick, holding or account row moved.
+Carried:    the night of 2026-11-04 works the 49's averages and figures again, and writes the check's first rows; PARA's history, QRVO's and BLFS's last candles, on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 91913ac9, whose tree this pull request merges, with 22.40's figures; records alone change in this entry.

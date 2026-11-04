@@ -41,7 +41,9 @@ public sealed record ActionCheckOutcome(
     int LateFilesUnread = 0,
     // Members whose newest stored bar is behind the night, and members holding a copied candle.
     IReadOnlyList<string>? Behind = null,
-    IReadOnlyList<string>? Copied = null);
+    IReadOnlyList<string>? Copied = null,
+    // The dividends an answer has not yet carried, which keep the row partial so the run page names them.
+    IReadOnlyList<string>? Waiting = null);
 
 // A suspect name whose nightly retries are spent: when it was last asked for, as the UTC
 // instant its row carries, and the reason that refetch failed for.
@@ -79,6 +81,7 @@ public sealed class CorporateActionChecker : IComponent
             // and nothing asked for it again unless another action landed on it.
             new StoreTouch(Store.SeriesState, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.SplitEvent, Touch.Insert),
+            new StoreTouch(Store.DividendWait, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.SplitsAndDividends, Feed.HistoricalPrice]);
@@ -239,6 +242,31 @@ public sealed class CorporateActionChecker : IComponent
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
 
+    const string StoredYear = "SELECT session_date, close, volume FROM bar WHERE ticker = $ticker;";
+
+    const string WaitsLeft = @"
+        DELETE FROM dividend_wait
+        WHERE NOT EXISTS (
+            SELECT 1 FROM membership m
+            WHERE m." + IndexScope.Condition + @" AND m.ticker = dividend_wait.ticker
+              AND (m.""left"" IS NULL OR m.""left"" > $session));
+    ";
+
+    const string WaitsOpen = "SELECT ticker, ex_date, amount, asked_on, retries FROM dividend_wait ORDER BY ticker, ex_date;";
+
+    const string WaitsOfName = "SELECT ex_date, amount FROM dividend_wait WHERE ticker = $ticker;";
+
+    const string WaitAsked = @"
+        INSERT INTO dividend_wait (ticker, ex_date, amount, asked_on, retries, run_id)
+        VALUES ($ticker, $ex_date, $amount, $asked_on, 0, $run_id)
+        ON CONFLICT (ticker, ex_date) DO UPDATE SET
+            retries = retries + CASE WHEN asked_on = excluded.asked_on THEN 0 ELSE 1 END,
+            asked_on = excluded.asked_on,
+            run_id = excluded.run_id;
+    ";
+
+    const string WaitOver = "DELETE FROM dividend_wait WHERE ticker = $ticker AND ex_date = $ex_date;";
+
     // The only sanctioned removal of a bar besides retention, and it is paired
     // with the insert that follows it inside one transaction.
     const string DropYear = @"
@@ -346,6 +374,14 @@ public sealed class CorporateActionChecker : IComponent
 
         var counted = suspects.ToDictionary(name => name.Ticker, name => name.Retries, StringComparer.OrdinalIgnoreCase);
 
+        // And every name holding a dividend an earlier answer did not carry, on each of the five nights after and weekly, ending
+        // when an answer carries it or the name leaves the index. Its state stays ok, since the rules go on reading its prices.
+        // see: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits
+        var waitsDue = (await WaitsAsync(connection, indexCode, session, wider))
+            .Where(wait => wait.AskedOn == session || wait.Retries < RetryNights || session >= wait.AskedOn.AddDays(WeeklyRetryDays))
+            .Select(wait => wait.Ticker)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         // And every member back after sessions in no index the night reads, on its first
         // night back. A name this check has asked for since its span closed is not asked
         // again, so a stretch the provider cannot serve costs one request and then stands
@@ -361,7 +397,7 @@ public sealed class CorporateActionChecker : IComponent
             connection,
             members,
             session,
-            acted.Concat(retried).Concat(returning).ToHashSet(StringComparer.OrdinalIgnoreCase));
+            acted.Concat(retried).Concat(returning).Concat(waitsDue).ToHashSet(StringComparer.OrdinalIgnoreCase));
 
         // A new reason to ask starts a name's count again as an action does, so a spent
         // name asked for tonight is not named as spent.
@@ -372,7 +408,7 @@ public sealed class CorporateActionChecker : IComponent
         // see: A member holding a copied candle or behind the night is asked for its year again, and stays suspect until an answer clears it
         var (behindAll, copiedAll, reach) = await FaultsAsync(connection, members, session);
         var suspectNames = suspects.Select(name => name.Ticker).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var asking = fresh.Concat(retried).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var asking = fresh.Concat(retried).Concat(waitsDue).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var faultAsks = copiedAll.Keys
             .Concat(behindAll.Keys)
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -392,9 +428,15 @@ public sealed class CorporateActionChecker : IComponent
             .Concat(returning)
             .Concat(missing)
             .Concat(faultsAsked)
+            .Concat(waitsDue)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(ticker => ticker, StringComparer.Ordinal)
             .ToArray();
+
+        var paid = today.Concat(lateActions)
+            .Where(action => action.Paid is not null)
+            .GroupBy(action => action.Ticker, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.Select(action => action.Paid!).ToArray(), StringComparer.OrdinalIgnoreCase);
 
         var suspect = new List<string>();
         var refetched = 0;
@@ -410,6 +452,8 @@ public sealed class CorporateActionChecker : IComponent
             try
             {
                 var year = await ReplaceYearAsync(connection, ticker, session, observed, cancellationToken);
+
+                await SettleDividendsAsync(connection, ticker, year, paid.GetValueOrDefault(ticker) ?? [], session, runId, cancellationToken);
 
                 // The year is the provider's whole answer, so where it still ends short of the night or still holds a
                 // copied candle the name stays suspect with why, on the count a failure holds.
@@ -469,6 +513,7 @@ public sealed class CorporateActionChecker : IComponent
         }
 
         var refetchRequests = history.Requests - refetchRequestsBefore;
+        var waiting = await WaitsAsync(connection, indexCode, session, wider);
 
         var outcome = new ActionCheckOutcome(
             today.Count,
@@ -485,7 +530,8 @@ public sealed class CorporateActionChecker : IComponent
             late,
             lateUnread,
             [.. behindAll.Keys.OrderBy(name => name, StringComparer.Ordinal)],
-            [.. copiedAll.Keys.OrderBy(name => name, StringComparer.Ordinal)]);
+            [.. copiedAll.Keys.OrderBy(name => name, StringComparer.Ordinal)],
+            [.. waiting.Select(wait => FormattableString.Invariant($"{wait.Ticker} {Text(wait.ExDate)}, last asked for on {Text(wait.AskedOn)}"))]);
 
         await AppendAsync(connection, runId, observed, outcome);
 
@@ -523,6 +569,8 @@ public sealed class CorporateActionChecker : IComponent
             try
             {
                 var year = await ReplaceYearAsync(connection, ticker, session, observed, cancellationToken);
+
+                await SettleDividendsAsync(connection, ticker, year, [], session, runId, cancellationToken);
 
                 // By hand the day's own session may not have closed, so the year is held to the newest session the store holds.
                 if (StillFaulty(year, reach) is { } fault)
@@ -589,6 +637,13 @@ public sealed class CorporateActionChecker : IComponent
             }
         }
 
+        // see: A refetch answer whose day's move the stored closes do not show is refused, and the stock keeps its year and is asked again
+        if (RefetchAnswer.Refused(await StoredYearAsync(connection, ticker), [.. year.Select(bar => (bar.SessionDate, bar.Close))]) is { } refused)
+        {
+            throw new InvalidOperationException(FormattableString.Invariant(
+                $"the refetch's answer moves {refused.AnswerMove * 100:+0.0;-0.0;0.0}% from {Text(refused.Before)} to {Text(refused.Session)} where the stored closes move {refused.StoredMove * 100:+0.0;-0.0;0.0}%, so it may be another stock's prices"));
+        }
+
         await using (var drop = connection.CreateCommand())
         {
             drop.CommandText = DropYear;
@@ -603,6 +658,106 @@ public sealed class CorporateActionChecker : IComponent
         }
 
         return year;
+    }
+
+    sealed record WaitRow(string Ticker, DateOnly ExDate, DateOnly AskedOn, int Retries);
+
+    // The dividends still waiting, a name that has left the index taking its rows with it.
+    static async Task<IReadOnlyList<WaitRow>> WaitsAsync(SqliteConnection connection, string indexCode, DateOnly session, IReadOnlyList<string>? wider)
+    {
+        await using (var left = connection.CreateCommand())
+        {
+            left.CommandText = WaitsLeft;
+            IndexScope.Bind(left, indexCode, wider);
+            left.Parameters.AddWithValue("$session", Text(session));
+
+            await left.ExecuteNonQueryAsync();
+        }
+
+        var waits = new List<WaitRow>();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = WaitsOpen;
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            waits.Add(new WaitRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetInt32(4)));
+        }
+
+        return waits;
+    }
+
+    // Each dividend the name waits on and each the day files carry for it, read against the answer that just replaced its year:
+    // one the answer does not carry waits and counts this night, and one it carries is over. The amount is what was paid, since the
+    // answer's raw closes are as they traded.
+    static async Task SettleDividendsAsync(SqliteConnection connection, string ticker, IReadOnlyList<ProviderBar> year, IReadOnlyList<DividendPaid> paid, DateOnly session, string runId, CancellationToken cancellationToken)
+    {
+        var dividends = new Dictionary<DateOnly, decimal>();
+
+        foreach (var dividend in paid)
+        {
+            dividends[dividend.ExDate] = dividend.Unadjusted ?? dividend.Amount;
+        }
+
+        await using (var open = connection.CreateCommand())
+        {
+            open.CommandText = WaitsOfName;
+            open.Parameters.AddWithValue("$ticker", ticker);
+
+            await using var reader = await open.ExecuteReaderAsync(cancellationToken);
+
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                dividends[DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture)] = Money.FromStorage(reader.GetString(1));
+            }
+        }
+
+        (DateOnly Session, decimal Close, decimal RawClose)[] closes = [.. year.Select(bar => (bar.SessionDate, bar.Close, bar.RawClose))];
+
+        foreach (var (exDate, amount) in dividends)
+        {
+            await using var write = connection.CreateCommand();
+            write.Parameters.AddWithValue("$ticker", ticker);
+            write.Parameters.AddWithValue("$ex_date", Text(exDate));
+
+            if (DividendCarry.NotCarried(DividendCarry.GapAcross(closes, exDate, amount)))
+            {
+                write.CommandText = WaitAsked;
+                Money.Bind(write, "$amount", amount);
+                write.Parameters.AddWithValue("$asked_on", Text(session));
+                write.Parameters.AddWithValue("$run_id", runId);
+            }
+            else
+            {
+                write.CommandText = WaitOver;
+            }
+
+            await write.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
+
+    static async Task<IReadOnlyDictionary<DateOnly, (decimal Close, long Volume)>> StoredYearAsync(SqliteConnection connection, string ticker)
+    {
+        var stored = new Dictionary<DateOnly, (decimal Close, long Volume)>();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = StoredYear;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            stored[DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture)] = (Money.FromStorage(reader.GetString(1)), reader.GetInt64(2));
+        }
+
+        return stored;
     }
 
     // Why a replaced year is still not right, none where it reaches the night and holds no copied candle.
@@ -1077,7 +1232,7 @@ public sealed class CorporateActionChecker : IComponent
         // whether its refetch failed tonight or its retries are spent and its week
         // has not come round, so the run page's failed region names a spent name on
         // every night it stays suspect rather than only on the nights it was asked for.
-        command.Parameters.AddWithValue("$outcome", outcome.Suspect.Count == 0 && spent.Count == 0 ? "ok" : "partial");
+        command.Parameters.AddWithValue("$outcome", outcome.Suspect.Count == 0 && spent.Count == 0 && (outcome.Waiting ?? []).Count == 0 ? "ok" : "partial");
         command.Parameters.AddWithValue("$rows_written", outcome.RowsReplaced);
         command.Parameters.AddWithValue("$network_requests", outcome.Requests);
         command.Parameters.AddWithValue(
@@ -1103,6 +1258,9 @@ public sealed class CorporateActionChecker : IComponent
                 ? string.Empty
                 : $", {outcome.Copied!.Count} holding a copied candle: " + string.Join(", ", outcome.Copied!)) +
             (outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect)) +
+            ((outcome.Waiting ?? []).Count == 0
+                ? string.Empty
+                : $", {outcome.Waiting!.Count} dividend(s) the provider's answer does not yet carry, each asked for on the {RetryNights} nights after and every {WeeklyRetryDays} days after that: " + string.Join("; ", outcome.Waiting!)) +
             (spent.Count == 0
                 ? string.Empty
                 : $", {spent.Count} left suspect with {RetryNights} nightly retries spent, each asked for again {WeeklyRetryDays} days after the session it was last asked for: " +

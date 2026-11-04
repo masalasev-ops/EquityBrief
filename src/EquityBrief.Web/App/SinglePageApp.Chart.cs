@@ -170,7 +170,8 @@ public sealed partial class SinglePageApp
         QuoteSession? quoteSession,
         SuspectPrices? suspect,
         bool? watched,
-        string? universe)
+        string? universe,
+        IReadOnlyList<DividendWait>? dividendWaits = null)
     {
         var ticker = view.Ticker;
         var kept = universe is { Length: > 0 } index ? "&universe=" + Uri.EscapeDataString(index) : string.Empty;
@@ -178,6 +179,7 @@ public sealed partial class SinglePageApp
 
         region.Append(FormattableString.Invariant($"<section class=\"chart-page\" data-ticker=\"{Escaped(ticker)}\" data-interval=\"{Escaped(view.Interval)}\">"));
         region.Append(marks.PricesSuspect(ticker, suspect));
+        region.Append(marks.DividendWaits(ticker, dividendWaits));
         region.Append(Masthead(ticker, bars, mast, quote, quoteSession, asksForQuotes: true, night: null, suspect, watched, string.Empty));
 
         // The report: a link to it with the day it was written, its standing and the controls that write it again, or that
@@ -232,7 +234,7 @@ public sealed partial class SinglePageApp
         chart.Append(view.Before is { } before ? FormattableString.Invariant($"<p class=\"chart-before\">{Escaped(before)}</p>") : string.Empty);
         chart.Append(Cards.Key(
             "How to read it.",
-            "A candle is a session on the daily chart, a week from Monday to Friday on the weekly one and a calendar month on the monthly one: its body runs from the first session's open to the last session's close, hollow where it closed up and filled where it closed down, and its line from the highest high to the lowest low. The three lines are the 20, 50 and 200 session averages, named above the chart with their values at the candle under the pointer. Beneath, each bar is the volume traded, green where the candle closed above the one before and red where it closed below. R marks a report and D an ex-dividend date. Where a rule lists the stock tonight, its buy at the next open, its stop and its target are drawn across the chart with the rule's name. The toggle shows the levels the night computed, green for support below the price and orange for resistance above it. The weekly and monthly charts read the history pulled before the stored year at the stored prices.",
+            "A candle is a session on the daily chart, a week from Monday to Friday on the weekly one and a calendar month on the monthly one: its body runs from the first session's open to the last session's close, hollow where it closed up and filled where it closed down, and its line from the highest high to the lowest low. The three lines are the 20, 50 and 200 session averages, named above the chart with their values at the candle under the pointer. Beneath, each bar is the volume traded, green where the candle closed above the one before and red where it closed below. R marks a report, D an ex-dividend date and ! a session marked a bad print. Where a rule lists the stock tonight, its buy at the next open, its stop and its target are drawn across the chart with the rule's name. The toggle shows the levels the night computed, green for support below the price and orange for resistance above it. The weekly and monthly charts read the history pulled before the stored year at the stored prices.",
             "The chart draws what the store holds and decides nothing. Open the report for what the rules made of the stock."));
 
         var last = bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null;

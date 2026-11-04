@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - BUILD_PLAN.md - 22.40's done condition names no span of the calendar
+Decision: none, a repair to 22.40's own done condition, which `done-condition-producible` read as waiting on the calendar.
+Was: "asked for on five nights, not inside the week and again when its week comes round, an answer carrying it ending the wait;"
+
+### 2026-11-04 - CLAUDE.md, ARCHITECTURE.html and RUNBOOK.md - the corporate action refetch asks again for a dividend an answer did not carry and refuses another stock's prices
+Decision: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits; A refetch answer whose day's move the stored closes do not show is refused, and the stock keeps its year and is asked again
+Was: the hard rule's carve-out went from "until a refetch succeeds or the name leaves the index, and the night's requests for six reports" with nothing between them, and its citations held no such decision. The corporate action checker's catalogue row read and wrote no dividend waits and said nothing of either. The runbook's section ended at the sentence on `history-pull --carry-splits`.
+
+### 2026-11-04 - ARCHITECTURE.html - a reading guide stands behind a fold in words
+Decision: none, on the operator's second answers of 2026-11-04, in 22.38's ruling entry in `PROGRESS.md`, "How to read this page" in words everywhere.
+Was: four sentences of section 15 named a guide "behind its \"?\"" or "behind the table's \"?\"", now "behind its fold" and "behind the table's fold".
+
+### 2026-11-04 - ARCHITECTURE.html - the chart check's, the chart averages' and the page history's rows read the operator's marks
+Decision: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart
+Was: the catalogue rows of the chart checker, the chart averager and the page history reader read no session marks, and "What happened" ended at "a first session (see: A real event the chart check confirms is a line beneath the chart saying what happened on that date)".
+
 ### 2026-11-04 - CLAUDE.md - the chart averages step's reading of the pulled history includes the chart check
 Decision: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
 Was:

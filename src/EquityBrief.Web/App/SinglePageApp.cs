@@ -1505,7 +1505,9 @@ public sealed partial class SinglePageApp : IComponent
         // What the newest section asked for alone came to, none where none was asked for.
         AloneLine? aloneLine = null,
         // The trade a family holds the name on where the night lists it under none, with the card its own night stored.
-        HeldTradeView? held = null)
+        HeldTradeView? held = null,
+        // The dividends the provider's answer does not yet carry.
+        IReadOnlyList<DividendWait>? dividendWaits = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1609,6 +1611,7 @@ public sealed partial class SinglePageApp : IComponent
         // computed over those prices, the masthead's close among them. Inside the region, so
         // the exported report carries it.
         region.Append(marks.PricesSuspect(ticker, suspect));
+        region.Append(marks.DividendWaits(ticker, dividendWaits));
         region.Append(marks.NoYearServed(ticker, noYear));
 
         // A page about an earlier night says so above every figure it draws, and links to
@@ -3864,15 +3867,15 @@ public sealed partial class SinglePageApp : IComponent
         return ReaderText.Page(region.ToString());
     }
 
-    // How the Researched page is read, opened from its "?".
+    // How the Researched page is read, opened from its fold.
     public const string ResearchedGuide =
         "Every name holding a section a research pass wrote and the claim checker accepted, with the day its newest section was written and why: tonight's list, asked by you, a regeneration you asked for, or a pass run by hand. A report stands until a filing, a passed earnings date or a jump in the name's news is dated after a section was written, which the stock's page judges the same way; a stale report names what made it so. The move is the stock's close tonight against its close on the day the report was written, and the sections count those accepted out of the full set. A key under each figure, which the overnight queue once wrote for every name, is not counted.";
 
-    // How the Watch list is read, opened from its "?".
+    // How the Watch list is read, opened from its fold.
     public const string WatchGuide =
         "Each name you follow, drawn every evening whether or not a list holds it. Its nearest setup is the family that passed it tonight, or the one it missed by the fewest gates, a tie going to the family first in the one order, with the first gate it missed and that gate's own words under the pointer. Beside it the distance picture places the close between the nearest bands, and the report column counts the sessions to its next report. Search a name in the bar above to add it here.";
 
-    // How the Ledger page is read, opened from its "?".
+    // How the Ledger page is read, opened from its fold.
     public const string LedgerGuide =
         "Each family's card counts its setups a year on this index, the member-sessions its loose gates passed, with the share the live rule passes, the share the night's list picked of the rows a night wrote, and the mean result and edge of the settled ones, its edge a bar a year in green above nothing and red beneath. A family whose live rule passes few of its setups is choosing, and its edge against the same plan on every member says whether the choice paid. The strip draws the edge at each tenth of the newest year's settled setups; a wide strip is a family whose setups differ a great deal, which is what the loop's engines read. Beneath, a setup's path draws its closes from about ten sessions before it to where its path ended, with its buy, its stop and its target across.";
 
@@ -4037,7 +4040,7 @@ public sealed partial class SinglePageApp : IComponent
         return ReaderText.Page(region.ToString());
     }
 
-    // How the Loop page is read, opened from its "?".
+    // How the Loop page is read, opened from its fold.
     public const string LoopGuide =
         "Each month the tester runs a set of procedures for each setup on the years before each test year and scores what they choose on that year against the rule today; a proposal is the procedure run on all finished data. The meter draws a proposal's adjusted p, its chance of a result this strong by luck corrected for every proposal tested beside it, on a scale from a ten-thousandth to one with the bar marked: green at or under the bar, red over it. A proposal passes only where all four parts hold, and the strongest that passes and states a change is put to you; nothing changes a rule until you approve it. Each proposal opens to its four parts and its test years drawn as a pair of bars a year, the rule today's above and the proposal's beneath. The rule today was chosen on these same test years, so a proposal reads understated against it.";
 

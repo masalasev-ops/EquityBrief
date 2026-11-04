@@ -21,7 +21,7 @@ public sealed record UniverseView(
 // Universe's guide and the corrections a page folds onto the Run page.
 public sealed partial class SinglePageApp
 {
-    // How the universe is read, opened from its "?".
+    // How the universe is read, opened from its fold.
     public const string UniverseGuide =
         "Each tile is a GICS sector: its members, how many are in an uptrend where the trend is read on the index, how many tonight's lists hold, and its sector fund's return over the live sector heavyweights rule's look-back; a tile filters the table to its sector. The table is every member, nearest a level first unless a heading sorts it, each heading's press sorting on its column and the next press turning it the other way. Search finds a ticker by its opening letters or a company by any part of its name. Near support and near resistance keep a close within one typical day's move of its nearest band's edge, a close inside the band counting; one gate short keeps a member that missed one gate of a setup, its tag naming the setup and the gate. The distance picture fixes each close at its centre line, the nearest support in green to its left and the nearest resistance in orange to its right, one tick per typical day. The strength is the stock's place among the members' returns, the pullback is in typical moves, and the dry-up and the tightness carry a bar with a tick at the live rule's threshold. In the strip each column is one session, marked on an evening the stock was on the list. On a phone each row is a card of the name, the close, the trend and the distance picture.";
 

@@ -39,6 +39,7 @@ public sealed class PageHistoryReader(IClock clock, string databaseFile) : IComp
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.PulledEarnings, Touch.Read),
             new StoreTouch(Store.EarningsMove, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongView, Touch.Insert | Touch.Delete),
@@ -69,7 +70,7 @@ public sealed class PageHistoryReader(IClock clock, string databaseFile) : IComp
     // from.
     const string PulledTo = @"
         SELECT session_date, close FROM pulled_bar
-        WHERE ticker = $ticker AND pull = $pull AND session_date <= $first
+        WHERE ticker = $ticker AND pull = $pull AND session_date <= $first AND " + EquityBrief.Core.Chart.SessionMarking.FromItsStart + @"
         ORDER BY session_date;
     ";
 

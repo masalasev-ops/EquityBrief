@@ -281,6 +281,89 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task TheChartPageStartsWhereTheOperatorSaidAndMarksABadPrintAndSaysSoInWords()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'AAA', '2020-01-02', NULL, '2020-01-02T21:00:00Z');");
+
+        var day = new DateOnly(2026, 9, 1);
+
+        for (var held = 0; held < 30; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            {
+                continue;
+            }
+
+            var stamp = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            store.Execute($"INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('AAA', '{stamp}', '100', '101', '99', '100', 1000, 'bulk', '{stamp}T21:00:00Z', '100');");
+            held++;
+        }
+
+        foreach (var (stamp, close) in new[] { ("2025-03-03", "900"), ("2025-03-04", "900"), ("2025-03-05", "100"), ("2025-03-06", "60"), ("2025-03-07", "100"), ("2026-09-01", "100") })
+        {
+            store.Execute($"INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES ('AAA', '{stamp}', '{close}', '{close}', '{close}', '{close}', '{close}', 1000, 'pull-1');");
+        }
+
+        void Mark(string session, string kind, string says) =>
+            store.Execute($"INSERT INTO session_mark (ticker, session_date, kind, says, ruled, run_id) VALUES ('AAA', '{session}', '{kind}', '{says}', '2026-11-04T00:00:00Z', 'mark-1');");
+
+        Mark("2025-03-05", SessionMarking.StartsHere, "its history starts here");
+        Mark("2025-03-06", SessionMarking.BadPrint, "a bad print");
+        store.Execute("INSERT INTO dividend_wait (ticker, ex_date, amount, asked_on, retries, run_id) VALUES ('AAA', '2026-09-15', '0.50', '2026-10-12', 1, 'night-1');");
+
+        using var host = new Host(store.Root, FixedClock.At(new DateTimeOffset(2026, 10, 13, 15, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+        using var client = host.CreateClient();
+
+        var weekly = await client.GetStringAsync("/screens/chart/AAA?interval=weekly");
+
+        // The sessions before the start are out of the chart, the bad print's week holds its mark and the lines say both.
+        Assert.DoesNotContain("data-first=\"2025-03-03\"", weekly, StringComparison.Ordinal);
+        Assert.DoesNotContain("900.00", weekly, StringComparison.Ordinal);
+        Assert.Contains("class=\"ev-mark ev-bad\" data-kind=\"bad print\" data-session=\"2025-03-06\"", weekly, StringComparison.Ordinal);
+        Assert.Equal(
+            ["a bad print", "its history starts here"],
+            Regex.Matches(weekly, "<li class=\"chart-note\"[^>]*>([^<]*)</li>").Select(match => match.Groups[1].Value));
+
+        // The daily chart shows neither session, so says neither.
+        var daily = await client.GetStringAsync("/screens/chart/AAA");
+
+        Assert.DoesNotContain("its history starts here", daily, StringComparison.Ordinal);
+        Assert.DoesNotContain("ev-bad", daily, StringComparison.Ordinal);
+
+        const string Wait = "<p class=\"dividend-waits\" data-ticker=\"AAA\" data-ex-date=\"2026-09-15\" data-asked-on=\"2026-10-12\">";
+
+        Assert.Contains(Wait, daily, StringComparison.Ordinal);
+        Assert.Contains(Wait, await client.GetStringAsync("/screens/name/AAA"), StringComparison.Ordinal);
+
+        store.Execute("DELETE FROM dividend_wait;");
+
+        Assert.DoesNotContain("dividend-waits", await client.GetStringAsync("/screens/chart/AAA"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EveryScreensGuideSaysHowToReadItInWordsAndNoFoldReadsAsAQuestionMark()
+    {
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        // The four the fixture's night draws a guide on. The Ledger and Loop pages draw theirs through the same fold once each holds
+        // a row, and the fixture holds none, so they are held only to drawing no question mark.
+        foreach (var route in new[] { "/screens/paper", "/screens/researched", "/screens/watch", "/screens/universe" })
+        {
+            Assert.Contains("<details class=\"guide\"><summary>" + SinglePageApp.GuideWords + "</summary>", await client.GetStringAsync(route), StringComparison.Ordinal);
+        }
+
+        foreach (var route in new[] { "/screens/paper", "/screens/researched", "/screens/watch", "/screens/universe", "/screens/ledger", "/screens/loop", "/screens/tonight", "/screens/home", "/screens/picks", "/screens/queue" })
+        {
+            Assert.DoesNotContain(">?</summary>", await client.GetStringAsync(route), StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void AChartHoldingMoreThanItsLinesSaysHowManyMoreAreOnFile()
     {
         var notes = Enumerable.Range(0, SinglePageApp.NotesShown + 2).Select(at => new ChartNote(new DateOnly(2026, 9, 1 + at), "move", FormattableString.Invariant($"line {at}"))).ToArray();

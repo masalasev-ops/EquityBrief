@@ -347,11 +347,16 @@ public sealed partial class MarkRenderer
             foreach (var (item, at) in marked)
             {
                 var x = Centre(at);
-                var report = item.Kind == ChartEvent.Report;
+                var (kind, tag) = item.Kind switch
+                {
+                    ChartEvent.Report => ("ev-report", "R"),
+                    ChartEvent.BadPrint => ("ev-bad", "!"),
+                    _ => ("ev-dividend", "D"),
+                };
 
-                svg.Append(Invariant, $"<g class=\"ev-mark {(report ? "ev-report" : "ev-dividend")}\" data-kind=\"{Escaped(item.Kind)}\" data-session=\"{item.Session:yyyy-MM-dd}\" data-at=\"{at}\"><title>{Escaped(item.Says)}</title>");
+                svg.Append(Invariant, $"<g class=\"ev-mark {kind}\" data-kind=\"{Escaped(item.Kind)}\" data-session=\"{item.Session:yyyy-MM-dd}\" data-at=\"{at}\"><title>{Escaped(item.Says)}</title>");
                 svg.Append(Invariant, $"<rect class=\"ev-tag\" x=\"{Number(x - 6)}\" y=\"{PriceHeight - 15}\" width=\"12\" height=\"12\" rx=\"2\"/>");
-                svg.Append(Invariant, $"<text class=\"ev-tag-t\" x=\"{Number(x)}\" y=\"{PriceHeight - 5.5}\" text-anchor=\"middle\">{(report ? "R" : "D")}</text></g>");
+                svg.Append(Invariant, $"<text class=\"ev-tag-t\" x=\"{Number(x)}\" y=\"{PriceHeight - 5.5}\" text-anchor=\"middle\">{tag}</text></g>");
             }
 
             svg.Append("</g>");

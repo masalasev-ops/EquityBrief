@@ -90,7 +90,7 @@ public static class ChartScreen
             drawn,
             [.. inputs.Levels.Select(level => new ChartBand(level.LowEdge, level.HighEdge, level.Role, level.Immediate, level.Strength))],
             plans,
-            inputs.Events,
+            [.. inputs.Events, .. (inputs.Notes ?? []).Where(note => note.Kind == SessionMarking.BadPrint).Select(note => new ChartEvent(note.Session, ChartEvent.BadPrint, note.Says))],
             [.. ChartSeries.Holes(candles, inputs.Interval).Select(hole => new ChartGap(hole.After, hole.Before))],
             BeforeLine(inputs, stored),
             Grid(inputs, stored),
