@@ -15269,3 +15269,25 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             migrations 0 to 123 with none pending, schema version 123, against `data-ci` and never `data`; the phase report 65 tables,
             1510 claims, 1510 passing, none out of scope and none unexamined, 1525 placements and verdicts reconciled against a floor
             of 34, 46 checks on the roster run and passed.
+
+### 22.38 - record: the 49 refetched, the 10 pulled again, KVUE put back and the three ledgers run, and which rules' records and readings moved   2026-11-04
+
+Not a checkpoint entry: it records the runs 22.38 and 22.40 carried, and lands nothing.
+Ran:        `tools/remedies/2026-11-04-22.38-the-mended-pulls-and-the-49.txt` from b5254a7a, 14:28 to 14:38 UTC. The 49 refetched, 49 requests; the 10 pulled again, 412 requests, each now holding its
+            session. The read-only check over the store after it: every one of the 49's flags gone, none of them new but the averages the night works again.
+KVUE:       its answer served four sessions of another listing, 2026-10-27 to 10-30, 361 to 376 on volumes of 21 to 364, where the store held 19.43 to 19.56 on 10 to 66 million shares. On the
+            operator's word, with `E:/EquityBrief-backups/kept-before-the-kvue-restore-20261104.db` copied first and kept, the four rows went back from the copy of the night of 2026-11-03 in one
+            transaction outside the worker's refetch path, written on the run log as `bar-restore`, the other sessions staying as refetched so the dividend is carried. No paper trade, pick or
+            holding names KVUE, and its 24 fills did not move. 8 outcomes had turned to false wins of about +1,800%, the 21-session outcomes of 2026-09-28 to 10-01 and the 5-session of 10-20 to 10-23; `outcomes-again --names KVUE --from 2026-09-10` and `fill --again` put them back and KVUE's largest return is 12.5%. It reads suspect and has left the index, so no night asks for it.
+Others:     of the 12 stocks that left in the 30 days to 2026-11-04, 8 hold no such tail. PARA's row names Banzai International, and its stored year and pull are Banzai's under Paramount's old ticker;
+            QRVO 2026-10-05 and BLFS 2026-10-06 each end on a copied candle. Reported, and restored none, on the operator's word.
+Ledgers:    with `--again` through 2026-10-08 from a clean copy of b5254a7a, 15:19 to 19:11 UTC, beside gates and a mutation sweep, each `ledger-check` 200 of 200. Setups and those passing the live rule,
+            with the build of 22.33 beside them. S&P 500 385,497 and 61,715 (385,304 and 61,666); S&P 400 281,065 and 45,208 (280,800 and 45,158); S&P 600 384,403 and 51,089, the same.
+Moved:      setups, live, mean result and edge, by index and rule. The largest: the S&P 500's quality, setups up 24 and live up 23, mean .0883 to .0881; its dip, up 122 and 22, mean .0268 to .0270; the S&P
+            400's dip, up 182 and 28; its drift, mean .2802 to .2810; its pullback, up 17 and 4, edge .0074 to .0072. The S&P 600's move in the fourth place or none. Most setups added stand on the mended
+            stocks, whose missing session of 2023-04-06 had stopped the read: DTM's dip 214 to 263, EVR's 417 to 464, MOH's 218 to 271, PEN's 391 to 477, SLB's 443 to 512.
+Outcomes:   386 of 3,596 decided since 2026-07-01 on these 59 stocks moved, the dividend now in the prices before it: 42 changed their word, 39 from a loss to a win, 2 wins to never entered, DVN's of 2026-09-09
+            and HST's of 09-25, and ESS's clear-20 of 09-29 from a loss to unresolved. The largest moves are ESS's, about 6.8 points, across its dividend of 2026-09-29. 223 fills moved, 216 of them forward returns.
+            Trades: RCL's 6 drift trades of 2026-10-27 fill at 295.60 from 295.595, result 12.752 to 12.744; OZK's S&P 400 background drift of 10-21 sold at 50.73 from 50.54, result 1.623 to 1.737. No pick, holding or account row moved.
+Carried:    the night of 2026-11-04 works the 49's averages and figures again, and writes the check's first rows; PARA's history, QRVO's and BLFS's last candles, on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 91913ac9, whose tree this pull request merges, with 22.40's figures; records alone change in this entry.
