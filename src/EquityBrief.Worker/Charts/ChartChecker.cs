@@ -51,7 +51,7 @@ public sealed class ChartChecker(IClock clock, string databaseFile) : IComponent
 
     const string Members = @"
         SELECT ticker, name, joined FROM membership
-        WHERE " + IndexScope.Condition + @" AND (""left"" IS NULL OR ""left"" > $session);
+        WHERE " + IndexScope.Condition + @" AND (joined IS NULL OR joined <= $session) AND (""left"" IS NULL OR ""left"" > $session);
     ";
 
     const string FormerRows = @"SELECT ticker, name, ""left"" FROM membership WHERE ""left"" IS NOT NULL AND ""left"" <= $session;";

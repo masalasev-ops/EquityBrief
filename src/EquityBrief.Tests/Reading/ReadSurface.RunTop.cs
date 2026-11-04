@@ -203,6 +203,42 @@ public partial class ReadSurface
         Assert.Equal((NightClose.TryMark, NightClose.TryAgainStage, NightClose.Waiting), (RunScreen.TryMark, RunScreen.TryAgainStage, RunScreen.Waiting));
     }
 
+    // 22.37: a flag new since the night before reaches the page a person reads the morning it appears, the row partial with its words.
+    // see: The chart check reads every member's chart after the bars land and asks nothing of the network, and lists what it finds the morning it appears
+    [Fact]
+    public async Task ANewChartFlagIsNamedOnTheRunPageAndAQuietNightsIsNot()
+    {
+        using var store = RunTopStore();
+
+        var runId = FinishedNight[0].RunId;
+        var at = FinishedNight[0].StartedAt.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
+
+        void Check(string outcome, string detail) => store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+            $"VALUES ('{runId}', 'chart-check', '{at}', '{at}', '{outcome}', 1, 0, 0, '0', '{detail}');");
+
+        Check("ok", "a quiet night of the chart check");
+
+        using (var host = new Host(store.Root))
+        using (var client = host.CreateClient())
+        {
+            Assert.DoesNotContain("<p class=\"failed\" data-stage=\"chart-check\"", await client.GetStringAsync("/screens/run/2026-09-10"), StringComparison.Ordinal);
+        }
+
+        store.Execute("DELETE FROM run_log WHERE stage = 'chart-check';");
+        Check("partial", "1 new since the night before: ABC e copied candle 2026-09-10");
+
+        using (var host = new Host(store.Root))
+        using (var client = host.CreateClient())
+        {
+            var page = await client.GetStringAsync("/screens/run/2026-09-10");
+            var region = page.IndexOf("<p class=\"failed\" data-stage=\"chart-check\" data-outcome=\"partial\"", StringComparison.Ordinal);
+
+            Assert.True(region > 0);
+            Assert.Contains("1 new since the night before: ABC e copied candle 2026-09-10", page[region..(region + 400)], StringComparison.Ordinal);
+        }
+    }
+
     // The word the market is named by, worked by hand at each point of its rule and a hair either side.
     [Fact]
     public void TheMarketIsNamedByItsRuleAtTheFloorAndAtTheHealthyPoint()

@@ -229,10 +229,15 @@ public partial class FixtureExpectations
         Stored(store, "BBB", sessions.SkipLast(1).Select(day => Priced(day, 100m)).Append(Priced(sessions[^1], 40m)));
         store.Execute(FormattableString.Invariant($"INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('BBB', '{sessions[^1]:yyyy-MM-dd}', 'earnings', 'after', '', '2026-10-01T00:00:00Z');"));
 
+        // Announced and not yet joined, it is no member of the night.
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'SOON', '2026-12-01', NULL, '2026-10-02T23:00:00Z');");
+        Stored(store, "SOON", sessions.Select(day => Priced(day, 100m)));
+
         var clock = FixedClock.At(NightAt(FaultNight), SessionZones.UnitedStates);
         var first = await new ChartChecker(clock, store.DatabaseFile).RunAsync("GSPC", "night-1");
 
         Assert.Equal(2, first.Stocks);
+        Assert.Empty(Query(store, "SELECT ticker FROM chart_check WHERE ticker = 'SOON';"));
         Assert.Empty(first.New);
         Assert.Equal(["ok"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'night-1' AND stage = 'chart-check';"));
 

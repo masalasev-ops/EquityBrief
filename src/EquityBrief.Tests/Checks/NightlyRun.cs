@@ -2360,7 +2360,7 @@ public partial class NightlyRun
         // session it asks Yahoo about; and from the 18.4 correction of 2026-11-01 the news labeller the three indices'
         // members on the night holding a story it has not labelled.
         Assert.Equal(
-            ["CalendarFetcher", "DecisionCards", "DipFamily", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "FundamentalScorer", "HeavyweightBook", "ImprovingFamily", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsLabeller", "NewsPulseCounter", "NightClose", "NightClose", "QualityFamily", "QuarterFetcher", "RatingsRefresh", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ReleaseFetch", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower", "TrendsFetcher"],
+            ["CalendarFetcher", "ChartChecker", "DecisionCards", "DipFamily", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "FundamentalScorer", "HeavyweightBook", "ImprovingFamily", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsLabeller", "NewsPulseCounter", "NightClose", "NightClose", "QualityFamily", "QuarterFetcher", "RatingsRefresh", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ReleaseFetch", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower", "TrendsFetcher"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

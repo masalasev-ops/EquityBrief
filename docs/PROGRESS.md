@@ -15155,7 +15155,7 @@ Read back:  on this branch's build, over a scratch store holding FISV, KO, FDX a
             390 light. KO, with no big drop, draws none, at 390 light and 1440 light.
 Found:      the first rule for a spin-off, under one and a half for one, left CTVA's 1333 for 200 silent; the second, two whole numbers at most 20, named BKNG's 25 for
             1 and POWL's 959692 for 319897 as spin-offs. The rule stands on the ratio's value: a whole number or 5 for 4, 4 for 3 or 3 for 2 within 0.1% is a company's own.
-Tests:      from 3207, 5 of the 16 22.36 and 22.37 add: each note and each explanation at its limit, a line in view drawn and one out of it not, and six and how many more.
+Tests:      from 3207, 5 of the 17 22.36 and 22.37 add: each note and each explanation at its limit, a line in view drawn and one out of it not, and six and how many more.
 Mutation:   one for each property, predicted first and each red at its test: a move past the averages drawn; a spin-off before the candles drawn; the longer charts drawing
             a move before them; an older night read; every line shown; results read on the session alone; a dividend a quarter of the fall; nine members market-wide; a
             split read after the results; a quarter exactly over the limit; a whole split a spin-off; a filing a split; no history a first session; three years
@@ -15182,17 +15182,19 @@ Found:      49 stocks the check flags as holding a dividend the stored bars do n
             the first count's 53 were refetched on the night of the ex-date: the action fired, the provider's answer that evening did not yet carry the dividend, and nothing
             asked again, so the sessions before stay about 1% high until the next dividend. AMT's 2026-09-29: stored 167.35 adjusted and raw, the pull of 2026-10-25 165.56 and 167.35.
             A later reverse split restating an amount, AMCR's and DD's, read as a dividend not carried at first; the step is now read at no more than half the smallest
-            read, 0.25%. No fix is made here: it waits on the operator's word.
-Tests:      3223, from 3207, the 11 of 16 not at 22.36: each flag on both sides of its limit, the store read and written over three nights, the day files' split kept and the
-            first standing, the proof page, a finding in the pulled years, and a night's order and a failed check's row.
+            read, 0.25%. No fix is made here: it waits on the operator's word. The suite's first run over this pull request found the Run page holding no group for the check's
+            stage, so a new flag would have reached no one, and two of its lists naming the components that read the chart averages and the members; a stock announced and not yet
+            joined was read too, and is not now.
+Tests:      3224, from 3207, the 12 of 17 not at 22.36: each flag on both sides of its limit, the store read and written over three nights, the day files' split kept and the
+            first standing, the proof page, a finding in the pulled years, a night's order and a failed check's row, and a new flag read off the Run page's failed region.
 Mutation:   one for each property, predicted first and each red at its test: an average limit of a fifth; the monthly chart not read; the pull at 6%; the pull off its scale; the raw
             not held; the join reading the pull alone; an average off by 1.5% passing; a copied candle reading as zero volume; a close outside the range; a suspect stock flagged as
             behind; a missing session past the newest; a dividend held to the full step; a small dividend read; a pulled finding saying nothing; a new flag reading ok; nothing older
             removed; a known flag new; a name no member holds kept; a later answer replacing the first; the pulled years under their flag; the night reading no check; a failed check
-            stopping the night. Twenty two, twenty two red.
+            stopping the night; the Run page holding no group for it; a partial row dropped from the page; a stock not yet joined read. Twenty five, twenty five red.
 Carried:    the first night's rows read at the proof page; the 49 stocks' dividends and the fix, on the operator's word; 22.38 and 22.39.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the
-            figures below stated before that run: all six steps, 0 warnings, 0 errors, 3223 of 3223 tests ran with none failed,
+            figures below stated before that run: all six steps, 0 warnings, 0 errors, 3224 of 3224 tests ran with none failed,
             migrations 0 to 121 with none pending, schema version 121, against `data-ci` and never `data`; the phase report 67 tables,
             1506 claims, 1506 passing, none out of scope and none unexamined, 1521 placements and verdicts reconciled against a floor
             of 34, 46 checks on the roster run and passed.
