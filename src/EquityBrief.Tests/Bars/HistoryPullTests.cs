@@ -692,7 +692,7 @@ public class HistoryPullTests
                 int.Parse(Rows(plain, "SELECT COUNT(*) FROM level;")[0], CultureInfo.InvariantCulture) > 0,
                 "The fixture night stored no band, so a comparison of bands would pass on nothing.");
 
-            string[] pageTables = ["chart_average", "chart_check", "earnings_move", "long_view"];
+            string[] pageTables = ["chart_average", "chart_check", "earnings_move", "entry_reading", "long_view"];
 
             foreach (var table in tables.Where(table => !pageTables.Contains(table)))
             {
