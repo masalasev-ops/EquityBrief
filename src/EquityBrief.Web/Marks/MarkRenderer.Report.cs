@@ -316,12 +316,22 @@ public sealed partial class MarkRenderer
             return Formatted($"<p class=\"degraded\" data-segments=\"old\" data-report=\"{Escaped(segments.Report)}\" data-ended=\"{(segments.Quarter is { } ended ? DayOf(ended) : "none")}\">The filing's segment table is left out: {Escaped(segments.Raw!)}.</p>");
         }
 
+        // see: A company reporting one segment is told so with its revenue and its quarter and the table as filed stays beneath
+        var oneSegment = segments.OneSegment is { } only && segments.Quarter is { } itsQuarter
+            ? Formatted($"<p class=\"one-segment\" data-one-segment=\"{Escaped(only.Name)}\" data-revenue=\"{only.Revenue.ToString(Invariant)}\">This company reports one business segment: {Escaped(only.Name)}, with revenue of {Figures.Money(only.Revenue, currency)} in the quarter to {DayOf(itsQuarter)}.</p>")
+            : string.Empty;
+
+        if (!segments.Clean && oneSegment.Length > 0)
+        {
+            return oneSegment;
+        }
+
         if (!segments.Clean)
         {
             return Formatted($"<p class=\"degraded\" data-segments=\"raw\" data-report=\"{Escaped(segments.Report)}\" data-total=\"{(segments.Total is { } total ? total.ToString(Invariant) : "none")}\" data-sum=\"{(segments.Sum is { } sum ? sum.ToString(Invariant) : "none")}\">The filing's segment table is drawn as filed beneath, because {Escaped(segments.Raw!)}{(segments.Total is { } whole && segments.Sum is { } summed ? Formatted($": its segments' revenue sums to {Figures.Money(summed, currency)} against the company's {Figures.Money(whole, currency)}") : string.Empty)}.</p>");
         }
 
-        var table = new StringBuilder();
+        var table = new StringBuilder(oneSegment);
 
         // Every amount in the table is read in one scale, so no two rows are read in different units.
         // see: A segment table draws every amount in one scale, billions where every amount is a billion or more and millions or thousands by its largest amount
@@ -367,8 +377,8 @@ public sealed partial class MarkRenderer
             var y = 4 + (at * Row);
 
             svg.Append(Formatted($"<text class=\"m-row\" x=\"0\" y=\"{Number(y + 15)}\">{Escaped(Shortened(row.Segment, 30))}</text>"));
-            svg.Append(Formatted($"<rect class=\"sb-bar\" x=\"{Number(Label)}\" y=\"{Number(y + 4)}\" width=\"{Number(Math.Max(wide * row.Share / 100, 1))}\" height=\"14\" rx=\"3\" data-share=\"{row.Share.ToString(Invariant)}\"><title>{Escaped(row.Segment)}: {row.Share.ToString("0.0", Invariant)}% of revenue</title></rect>"));
-            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(Label + (wide * row.Share / 100) + 6)}\" y=\"{Number(y + 15)}\">{row.Share.ToString("0.0", Invariant)}%</text>"));
+            svg.Append(Formatted($"<rect class=\"sb-bar\" x=\"{Number(Label)}\" y=\"{Number(y + 4)}\" width=\"{Number(Math.Max(wide * row.Share / 100, 1))}\" height=\"14\" rx=\"3\" data-share=\"{row.Share.ToString(Invariant)}\"><title>{Escaped(row.Segment)}: {Tenth(row.Share)}% of revenue</title></rect>"));
+            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(Label + (wide * row.Share / 100) + 6)}\" y=\"{Number(y + 15)}\">{Tenth(row.Share)}%</text>"));
 
             if (row.RevenueChange is { } change)
             {
@@ -396,7 +406,7 @@ public sealed partial class MarkRenderer
                     ? (perShare ? Figures.PerShare(bottom) + " to " + Figures.PerShare(top) : Figures.Money(bottom, currency) + " to " + Figures.Money(top, currency))
                     : "none filed";
 
-            table.Append(Formatted($"<tr data-period=\"{Escaped(row.Period)}\" data-period-end=\"{DayOf(row.PeriodEnd)}\"><td>{PeriodWords(row.Period)} to {DayOf(row.PeriodEnd)}</td>"));
+            table.Append(Formatted($"<tr data-period=\"{Escaped(row.Period)}\" data-period-end=\"{DayOf(row.PeriodEnd)}\"><td>{PeriodWords(row.Period)} to {DayOf(row.DrawnEnd ?? row.PeriodEnd)}</td>"));
             table.Append(row.Eps is { } eps ? Formatted($"<td class=\"num\" data-eps=\"{eps.ToString(Invariant)}\">{Figures.PerShare(eps)}</td>") : "<td class=\"num degraded\">none filed</td>");
             table.Append("<td class=\"num\">").Append(Range(row.EpsLow, row.EpsHigh, true)).Append("</td>");
             table.Append(row.EpsAnalysts is { } count ? Formatted($"<td class=\"num\" data-analysts=\"{count}\">{count}</td>") : "<td class=\"num degraded\">none filed</td>");

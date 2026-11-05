@@ -243,8 +243,8 @@ public sealed partial class MarkRenderer
 
             foreach (var conflict in conflicts)
             {
-                region.Append(Formatted($"<tr data-line=\"{Escaped(conflict.Line)}\" data-filed=\"{conflict.Filed.ToString(Invariant)}\" data-fetched=\"{conflict.Fetched.ToString(Invariant)}\"><td>{Escaped(conflict.Line)}</td><td>{DayOf(conflict.PeriodEnd)}</td>"));
-                region.Append(Formatted($"<td class=\"num\">{Figures.Money(conflict.Filed)}, first filed {DayOf(conflict.FiledOn)} as {Escaped(conflict.Concept)}</td><td class=\"num\">{Figures.Money(conflict.Fetched)}</td><td>the fetch's</td></tr>"));
+                region.Append(Formatted($"<tr data-line=\"{Escaped(conflict.Line)}\" data-concept=\"{Escaped(conflict.Concept)}\" data-filed=\"{conflict.Filed.ToString(Invariant)}\" data-fetched=\"{conflict.Fetched.ToString(Invariant)}\"><td>{Escaped(conflict.Line)}</td><td>{DayOf(conflict.PeriodEnd)}</td>"));
+                region.Append(Formatted($"<td class=\"num\">{Figures.Money(conflict.Filed)}, first filed {DayOf(conflict.FiledOn)}</td><td class=\"num\">{Figures.Money(conflict.Fetched)}</td><td>the fetch's</td></tr>"));
             }
 
             region.Append("</table></div>");

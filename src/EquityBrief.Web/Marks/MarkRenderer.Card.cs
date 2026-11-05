@@ -792,6 +792,11 @@ public sealed partial class MarkRenderer
     // on, or why none were matched; and the learned score's rank of the pick where the score passed its test on the card's
     // index, and the words saying it has not where it has not.
     // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
+    // Why no past setups were matched, the reason as the night stored it put into the reader's words.
+    // see: A page draws every field in the reader's words, and the proof fails a page drawing a field's code name
+    public static string NoPastSetups(string? unmatched) =>
+        Formatted($"<p class=\"degraded\" data-similar=\"none\">No past setups were matched: {Escaped(ReaderWords.Plain(FieldWords.Words(unmatched ?? "the part holds no figure")))}.</p>");
+
     static string ScorePart(DecisionCardView card, string setup)
     {
         if (card.Score is not { } score)
@@ -809,7 +814,7 @@ public sealed partial class MarkRenderer
 
         if (similar.Unmatched is { } why || similar.Count is not { } count || similar.Mean is not { } mean || similar.Low is not { } low || similar.High is not { } high || similar.RuleMean is not { } ruleMean)
         {
-            body.Append(Invariant, $"<p class=\"degraded\" data-similar=\"none\">No past setups were matched: {Escaped(ReaderWords.Plain(similar.Unmatched ?? "the part holds no figure"))}.</p>");
+            body.Append(NoPastSetups(similar.Unmatched));
         }
         else
         {

@@ -38,7 +38,7 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"loop-proposal\" data-family=\"drift\" data-proposal=\"the idea generator, ranked 1\"", page, StringComparison.Ordinal);
         Assert.Contains("<h4 class=\"loop-name\">An idea the local model put, ranked 1: did not pass the tester</h4>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"loop-change\" data-words=\"also requires rsi at or above 61.5\">", page, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"loop-finding\" data-finding=\"{Finding}\"><b>Why.</b> The local model named rsi above the top of its tenth 7 over the 1200 finished picks", page, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"loop-finding\" data-finding=\"{Finding}\"><b>Why.</b> The local model named relative strength above the top of its tenth 7 over the 1200 finished picks", page, StringComparison.Ordinal);
         Assert.True(page.IndexOf("data-words=\"also requires rsi at or above 61.5\"", StringComparison.Ordinal) < page.IndexOf("class=\"loop-finding\"", StringComparison.Ordinal));
 
         // The second states no change and draws no finding.

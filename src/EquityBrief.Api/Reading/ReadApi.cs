@@ -1617,6 +1617,18 @@ public sealed partial class ReadApi : IComponent
         ORDER BY period_end DESC;
     ";
 
+    // The quarters of the newest fetch on or before a night, newest first, with the dates each was filed and reported on.
+    const string QuartersOfTheNewestFetch = @"
+        SELECT period_end, filing_date, report_date
+        FROM reported_quarter
+        WHERE ticker = $ticker AND fetched_at = (
+            SELECT fetched_at FROM reported_quarter
+            WHERE ticker = $ticker AND session_date <= $on
+            ORDER BY session_date DESC, fetched_at DESC
+            LIMIT 1)
+        ORDER BY period_end DESC;
+    ";
+
     // Every current member of the index, with what the night computed for it.
     //
     // Each figure is the newest at or before `$on`, so a page about an earlier
@@ -5174,6 +5186,26 @@ public sealed partial class ReadApi : IComponent
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$fetched_at", fetchedAt);
 
+        return await QuarterDatesAsync(command);
+    }
+
+    // The quarters of a member's newest fetch on or before a night, which the night's own readings ran before where the
+    // night fetched them.
+    // see: A page names a company's newest report from the night its quarter is stored, which the night's readings ran before
+    public async Task<IReadOnlyList<QuarterDatesRow>> QuartersToTheNightAsync(string ticker, DateOnly? on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = QuartersOfTheNewestFetch;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(on));
+
+        return await QuarterDatesAsync(command);
+    }
+
+    static async Task<IReadOnlyList<QuarterDatesRow>> QuarterDatesAsync(Microsoft.Data.Sqlite.SqliteCommand command)
+    {
         var rows = new List<QuarterDatesRow>();
 
         await using var reader = await command.ExecuteReaderAsync();

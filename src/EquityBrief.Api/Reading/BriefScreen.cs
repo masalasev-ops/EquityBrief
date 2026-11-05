@@ -660,7 +660,7 @@ public static class BriefScreen
 
     static string Percent(decimal share) => (share * 100m).ToString("0.0", CultureInfo.InvariantCulture) + "%";
 
-    static string Signed(decimal share) => (share >= 0m ? "+" : string.Empty) + Percent(share);
+    static string Signed(decimal share) => (share * 100m).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "%";
 
     static string Change(decimal growth) => growth > 0m ? "up " + Percent(growth) : growth < 0m ? "down " + Percent(-growth) : "level";
 

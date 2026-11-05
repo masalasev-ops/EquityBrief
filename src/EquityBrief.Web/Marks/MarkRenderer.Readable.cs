@@ -184,7 +184,7 @@ public sealed partial class MarkRenderer
 
             if (Line("Operating income") is { Margin: { } margin, MarginYearEarlier: { } before })
             {
-                said.Add(Formatted($"an operating margin of {margin:0.0}% against {before:0.0}% a year earlier"));
+                said.Add(Formatted($"an operating margin of {margin:0.0;-0.0;0.0}% against {before:0.0;-0.0;0.0}% a year earlier"));
             }
 
             if (said.Count > 0)

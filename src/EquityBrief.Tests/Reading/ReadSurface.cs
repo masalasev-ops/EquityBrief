@@ -2727,7 +2727,7 @@ public partial class ReadSurface
             bands,
             [new AbsentAverage(IndicatorSeries.Sma200, 60)]);
 
-        Assert.Contains("not available, 60 bars", summary, StringComparison.Ordinal);
+        Assert.Contains("<td>the 200-day average</td><td colspan=\"3\">not available, 60 bars</td>", summary, StringComparison.Ordinal);
         Assert.Contains("data-name=\"sma200\"", summary, StringComparison.Ordinal);
         Assert.Contains("data-bar-count=\"60\"", summary, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(summary, "class=\"absent-average\""));

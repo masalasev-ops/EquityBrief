@@ -312,7 +312,7 @@ public static partial class TonightScreen
             ? $"Its sector, {sector}, ranks {rank} of {ranked} by its members' return"
             : "Its sector is among the strongest";
         var leading = own is { } over && place is { Length: > 0 } && of is { Length: > 0 }
-            ? FormattableString.Invariant($", and its own return of {over * 100:0.0}% is {place} of the {of} in it")
+            ? FormattableString.Invariant($", and its own return of {over * 100:0.0;-0.0;0.0}% is {place} of the {of} in it")
             : string.Empty;
 
         return standing + leading + ". It is at a pullback's buy point tonight.";

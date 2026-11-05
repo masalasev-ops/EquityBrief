@@ -25,6 +25,9 @@ public partial class PlainWords
 
             foreach (var (_, drawn, html) in own)
             {
+                // see: A page draws every field in the reader's words, and the proof fails a page drawing a field's code name
+                Assert.Null(EquityBrief.Web.Marks.FieldWords.Drawn(html));
+
                 var faults = FaultsOn(name, html, terms);
 
                 Assert.True(faults.Count == 0, drawn + ":\n" + string.Join("\n", faults));

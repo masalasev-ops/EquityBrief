@@ -15480,3 +15480,88 @@ Table:      the operator's rule of 2026-11-01. Every pull request since phase 18
             816b5997 1 of 4, 22.16 a Home bar rounding to nought draws no sign, reshaped by c2945b80
             e7bc8b07 4 of 4, 19.11 the chart grid's Raised in a row says where its run stopped
             476d68b4 27 of 41, 16.3 the earnings soon reason and every page's next report, its pins moved by 3080da3b
+
+### 22.40 ruling - the seven faults the phase 18 sign-off carried and named, fixed before the sign-offs of phases 20, 21 and 22
+
+Not a checkpoint entry: it records the operator's order of 2026-11-04 and lands nothing.
+Ruled:      word for word in `prompts/2026-11-04-22.40-the-seven-faults-before-the-signoffs.md`, gitignored, and here. "Fix the four faults phase 18's sign-off carried and the three it put in
+            phase 22's sign-off entry, in one PR before the phase 20, 21 and 22 sign-offs, whose reviews check them. Read each back on 5152 and list every page changed." A: "show the filing's date
+            wherever a quarter is dated, as my ruling said; the provider's date appears nowhere a reader sees." B: "for a company that reports one segment, say 'This company reports one business
+            segment: <its name>, with revenue of <figure> in <quarter>.'" C: "name the event's own date, and check every member for the same fault." D: "fix the check, and say what it misread." E: "the
+            page names the newest report from the night it is stored. Find why the newest one was read a night late, and check every member that reported since 1 Oct." F: "a figure that rounds to zero
+            shows '0.0%' with no sign, everywhere a signed percentage is drawn." G: "every field reads in the reader's words; add a check to the proof that fails any page drawing a field's code name."
+Queue:      done, phase 18's sign-off; in progress, this pull request; next, the sign-offs of phases 20, 21 and 22, which check it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 18.2 - correction: the analysts' table and the figures checked draw the filing's date, and a company reporting one segment is told so   2026-11-04
+
+Not a checkpoint entry: it corrects what 18.2 carried into shipped source, and lands nothing.
+Corrected:  A. the analysts' row and the figures checked read the stated end, the row keeping the label in its attribute, and the chart's quarter to report next with them. The ninth review's third
+            site was its own scan's: "reactions" matched a move's session falling on a quarter's label, a date that is a session and no quarter. B. a group labelled the axis's singular alone holding the
+            company's revenue, or one named segment that is the whole table, reads the sentence ruled; the singular draws no row and joins no business line; the name is the filing's, "Reportable Segment"
+            on most. Two decisions; the architecture's rows, with prior text in the changelog.
+Measured:   read-only on the live store by a debug build of this tree against 5152's main, all 1,504 pages of the night of 2026-11-03. A: 16 analysts' tables and 9 figures checked before, none after. B: 26
+            told no revenue before, none after, and 33 told one segment; the words stand on 51 whose tables state no segment's revenue.
+Tests:      in `ReadSurface.CarriedFaults`, by hand from ADBE's, ABNB's, BKNG's, OMC's, AZO's, DD's, GILD's and LOW's shapes.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 18.4 - correction: a name's next dated event is asked for after the night, and the proof's hold reads the calendar's row alone   2026-11-04
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Corrected:  C. the fact strip and the chart's next report ask from the later of the night and the last stored session, where a stock with no bar on the night was asked from before it. D. `next-report-hold`
+            took a news row's `data-kind="results"`, a story labelled results, as the calendar listing a report, so FDXF, listing none, read as failing to place one; it reads the calendar's table row.
+Measured:   over the same pages, no member's next dated event at or before the night, 835 naming a later day and 669 none. INDV holds the night's bar now, so its fault is held by the test of its shape.
+Tests:      in `ReadSurface.CarriedFaults`, INDV's and FDXF's shapes by hand.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 22.21 - correction: a page names a company's newest report from the night its quarter is stored   2026-11-04
+
+Not a checkpoint entry: it corrects what 22.21 carried into shipped source, and lands nothing.
+Corrected:  E. the night's readings run before its quarters fetch, so on the night a quarter is fetched its reading names the fetch before, and the page read every report day through that fetch; BTSG's filing
+            expected no quarter, so the calendar went unread too. The page reads the newest fetch on or before its night and the calendar for the report days, the numbers' row and line, the estimate and the
+            cards' note. The reading's line gains a pattern, "reported after", in place of "is awaited". The order of the night stands. A decision; the architecture's row, with prior text in the changelog.
+Measured:   from the store, read-only: since 2026-10-01, 794 members each stood one night with a reading whose fetch held an older report than the newest stored, 793 members having a stored report since then. BTSG's
+            page of 2026-11-02 now reads "Reported on 2026-10-30". Over the 1,504 pages of the night of 2026-11-03, the 66 that said "is awaited" of a stored report each read "reported after", 21 estimates of a
+            next report moved clear of a report just made, and no note names an older report. Each of the 794 dated pages is read in the report to the operator.
+Tests:      in `ReadSurface.CarriedFaults`, BTSG's night by hand over a store and over the reads.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 22.8 - correction: a percentage rounding to nothing is drawn with no sign   2026-11-04
+
+Not a checkpoint entry: it corrects what 22.8 carried into shipped source, and lands nothing.
+Corrected:  F. `Figures.Share`, read from a double, kept the sign of a value rounding to nothing; so did a segment's share bar, the short version's margins and a heavyweight's own return. The numbers' and the
+            brief's signed change drew "+0.0%". Each reads the format's third section or the renderer's rounding. The proof gains `signed-zero`.
+Measured:   over the same pages, 4 before, ADAM, MTX, BWXT and ESNT. A first read back on the branch still drew BWXT's and ESNT's share bars, drawn bare since and held by a test; the read back over the
+            merged build is carried by the last entry of this pull request.
+Tests:      in `ReadSurface.CarriedFaults`.
+Mutation:   stated in the last entry of this pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 22.5 - correction: a page draws every field in the reader's words, and the proof fails a page drawing a field's code name   2026-11-04
+
+Not a checkpoint entry: it corrects what 22.5 carried into shipped source, and lands nothing.
+Corrected:  G. `FieldWords` holds each compound reading with the reader's words, in both directions to the ledger's catalogue; the card's stored reason, FCN's and FDXF's, and the Loop page's, the Ledger's and
+            paper trading's phrases read through it, stored rows unchanged. Reading for the same shape found more: every page's momentum headings, a filer's tag in the figures checked on 261 pages, an absent
+            average on 7 and a raw table's heading or line on 7, a standard tag on APOG, TSN and WMB, the filer's own on LVS and a tag's whole name on FCX, LYV and PLTR, each worded; and the Run page's trend
+            labels and settings. The Run page's log details stand as the log wrote them, and a shorter run of capitals a filing states, DHI's segment HomeBuildingOps or an insider's title on CPAY and DUK, stands
+            as filed, as a company's name does. The proof gains `field-names`, and plain-words reads the same reader over the three pages. A decision; the architecture's paragraph, and plain-words' row, with
+            prior text in the changelog.
+Measured:   over the same pages, every one of the 1,504 drew a code name before.
+Tests:      3274, from 3251; 23 tests and theories' cases in `ReadSurface.CarriedFaults` and the three pages' read. The suite's three that stated the old words moved with them.
+Mutation:   chosen before the runs by this rule, each property the seven add, filtered to their tests, 44 in all. Red, 42: the analysts drawing the label, handed no stated end, the figures checked keeping
+            it, a tag drawn; the plural read as one segment, one drawn as a row, a named one-row table told nothing, the old words beside the line; the next event from the last session alone and on the
+            night; any results kind read as the calendar; the newest fetch past the night, the page handed the reading's fetch, stored days and the calendar each unread, a day after the night counted, the
+            awaited line on the reading's fetch, a filed quarter worded as the release; `Share`, the numbers' `Signed`, the proof and a share bar each with a signed zero; the card and the three pages
+            unworded, the proof reading no compound name, no tag and the attributes, a file name read as a code name, the shorter name first, the heading naming the store, a raw label and an absent average; a label's filer's own prefix and whole name each unread, a shorter
+            run read as a tag, a label's opening left lower case, a raw table's line as filed, the proof reading neither the prefix nor the whole name, and the proof failing a shorter run or a word before a colon.
+            A label beside a word naming no segment survived its first run, a missing property, and went red once that case was written. Survived, 2: `Figures.Percent` and the numbers' `Percent` with no third
+            section, each equivalent, a decimal rounding to nothing carrying no sign, so both changes came out as an 18.2 correction once ruled the same way. Not mutated: the brief's `Signed`, the short
+            version's margins, a heavyweight's own return, the chart's next report and quarter, the Run page's two; the page reads above hold each.
+Carried:    the operator's read back on 5152 and every page changed, after the merge, in the report to them. The "Filed" column of 4 pages' oldest quarters, MRVL, PENG, RVTY and VLTO, where the provider's
+            filing date is its quarter's own label, as it stored it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors,
+            3274 of 3274 tests ran with none failed, migrations 0 to 123 with none pending, schema version 123, against `data-ci` and never `data`; the phase report 65 tables, 1510 claims, 1510 passing, none out
+            of scope and none unexamined, 1525 placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.

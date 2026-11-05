@@ -63,12 +63,12 @@ public partial class ReadSurface
         // median and the edge of each tenth; a reading no listing holds drawing none for each figure.
         Assert.Contains("<details class=\"loop-readings\" data-family=\"drift\" data-readings=\"2\"><summary>Each reading, what the winning picks had in common</summary>", page, StringComparison.Ordinal);
         Assert.Contains(
-            "<tr data-reading=\"rsi\" data-units=\"1200\" data-winners=\"560\" data-losers=\"640\"><td>rsi</td><td class=\"r num\">1200: 560 won, 640 did not</td><td class=\"r num\">63.1</td><td class=\"r num\">58.4</td>"
+            "<tr data-reading=\"rsi\" data-units=\"1200\" data-winners=\"560\" data-losers=\"640\"><td>relative strength</td><td class=\"r num\">1200: 560 won, 640 did not</td><td class=\"r num\">63.1</td><td class=\"r num\">58.4</td>"
             + "<td class=\"num\" data-deciles=\"-0.20 -0.10 0.00 +0.05 +0.10 +0.10 +0.15 +0.20 +0.25 +0.30\">",
             page,
             StringComparison.Ordinal);
         Assert.Contains(
-            "<tr data-reading=\"earnings_sessions\" data-units=\"0\" data-winners=\"0\" data-losers=\"0\"><td>earnings_sessions</td><td class=\"r num\">0: 0 won, 0 did not</td><td class=\"r num\">none</td><td class=\"r num\">none</td>",
+            "<tr data-reading=\"earnings_sessions\" data-units=\"0\" data-winners=\"0\" data-losers=\"0\"><td>the days to its next report</td><td class=\"r num\">0: 0 won, 0 did not</td><td class=\"r num\">none</td><td class=\"r num\">none</td>",
             page,
             StringComparison.Ordinal);
         Assert.True(page.IndexOf("data-proposal=\"winners against losers, ranked 1\"", StringComparison.Ordinal) < page.IndexOf("<details class=\"loop-readings\" data-family=\"drift\"", StringComparison.Ordinal));

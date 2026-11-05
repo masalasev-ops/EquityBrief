@@ -25,7 +25,12 @@ public sealed record ConsensusRow(
     decimal? RevenueHigh,
     decimal? RevenueYearAgo,
     double? RevenueGrowth,
-    int? RevenueAnalysts);
+    int? RevenueAnalysts)
+{
+    // The period's end as the company's filing states it, which a page draws; the period end stays the provider's label.
+    // see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
+    public DateOnly? DrawnEnd { get; init; }
+}
 
 // One period's revisions: the analysts who raised and cut their estimate over the last 7 and 30 days, and the consensus
 // now against 30 days before in per cent of it.

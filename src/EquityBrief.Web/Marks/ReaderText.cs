@@ -188,6 +188,8 @@ public static class ReaderText
     // A sentence in the reader's words.
     public static string Words(string text)
     {
+        text = FieldWords.Words(text);
+
         foreach (var (pattern, words) in Rules)
         {
             text = pattern.Replace(text, match =>

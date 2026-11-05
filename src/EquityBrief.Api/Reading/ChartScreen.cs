@@ -133,7 +133,7 @@ public static class ChartScreen
         var analysts = inputs.Report.Analysts;
         var (prints, next) = EquityBrief.Core.Report.QuarterLines.Earnings(
             (inputs.Reactions ?? []).Select(row => new EquityBrief.Core.Report.EarningsPrint(row.ReportDate, Stored(row.Estimate), Stored(row.Actual))),
-            analysts?.Consensus.Select(row => (row.Period, row.PeriodEnd, row.Eps)) ?? []);
+            analysts?.Consensus.Select(row => (row.Period, row.DrawnEnd ?? row.PeriodEnd, row.Eps)) ?? []);
 
         return new ChartGraphs(prints, next, inputs.Report.Income ?? [], inputs.Report.Currency, analysts, inputs.PriceDrawn);
     }

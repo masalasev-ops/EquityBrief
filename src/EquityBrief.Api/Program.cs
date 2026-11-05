@@ -345,7 +345,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         NameScreen.PickedPeers(ticker, await read.PeerReadingsAsync()),
         // see: A name's next dated event is the first after the night, and the earnings soon reason alone counts the night's own
         // see: Earnings soon, the sessions to earnings and a page's next report read the calendar's earnings alone
-        await read.NextReportAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
+        await read.NextReportAsync(ticker, bars.Count > 0 && (night is null || bars[^1].SessionDate >= night) ? bars[^1].SessionDate : night ?? DateOnly.MinValue),
         member?.Researched,
         await read.ProviderSharesAsync(ticker),
         reactions,
@@ -534,11 +534,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         .Select(pair => (int?)pair.position)
         .FirstOrDefault();
 
-    // After the last stored session, so the strip states what is coming rather than what has been.
+    // After the night and the last stored session, so the strip states what is coming rather than what has been.
     // see: A name's next dated event is the first after the night, and the earnings soon reason alone counts the night's own
     var nextEvent = await read.NextEventAsync(
         ticker,
-        bars.Count > 0 ? bars[^1].SessionDate.AddDays(1) : DateOnly.MinValue);
+        NameScreen.NextEventFrom(bars.Count > 0 ? bars[^1].SessionDate : null, night));
 
     // Every filing this name holds, which the numbers section draws five of. A
     // name nobody has opened holds none and the section says so, because the
@@ -549,6 +549,10 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // numbers open with; a night before the readings existed has none and the numbers draw as they did.
     var reading = await read.FundamentalReadingAsync(ticker, on);
     var readQuarters = reading?.FetchedAt is { } fetched ? await read.QuartersOfAFetchAsync(ticker, fetched) : [];
+
+    // The newest fetch the night holds, which the night's readings ran before when it fetched the member's new quarter.
+    // see: A page names a company's newest report from the night its quarter is stored, which the night's readings ran before
+    var reportedQuarters = await read.QuartersToTheNightAsync(ticker, on);
 
     // The year's high and low among the stored bars up to the night, each with its
     // session, which the fact strip states beside the close. A name holding no bar
@@ -723,6 +727,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // profile names now, so each job's model is named paid or local.
         paidModels: await read.PaidModelsAsync(),
         calendarReports: await read.ReportDaysOnTheCalendarAsync(ticker),
+        reportedQuarters: reportedQuarters,
         profiles: read.ModelProfiles,
         sectionProfiles: read.SectionProfiles,
         // Every research pass's cost as the run page's table counts it, and the seven nights that table reads.
