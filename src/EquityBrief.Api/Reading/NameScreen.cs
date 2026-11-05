@@ -1196,7 +1196,7 @@ public static partial class NameScreen
             foreach (var figure in quarter)
             {
                 var value = figure.GetProperty("value");
-                var line = figure.GetProperty("lineItem").GetString() ?? string.Empty;
+                var line = FieldWords.FilerLabel(figure.GetProperty("lineItem").GetString() ?? string.Empty);
 
                 if (value.ValueKind != JsonValueKind.String && line.EndsWith(':'))
                 {

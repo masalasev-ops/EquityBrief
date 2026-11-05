@@ -298,6 +298,11 @@ public partial class ReadSurface
         Assert.Equal("Income Statement Location [Axis]: cost of revenue | Pork", FieldWords.FilerLabel("Income Statement Location [Axis]: us-gaap:CostOfRevenue | Pork"));
         Assert.Equal("Reportable Segment", FieldWords.FilerLabel("Reportable Segment"));
 
+        // LVS's own tag, the flag FCX, LYV and PLTR draw as a line, and DHI's segment under a shorter run of capitals, its own name.
+        Assert.Equal("Balance [Axis]: corporate expense", FieldWords.FilerLabel("Balance [Axis]: lvs:CorporateExpense"));
+        Assert.Equal("Number of reportable segments not disclosed flag", FieldWords.FilerLabel("NumberOfReportableSegmentsNotDisclosedFlag"));
+        Assert.Equal("Northwest | HomeBuildingOps", FieldWords.FilerLabel("Northwest | HomeBuildingOps"));
+
         var bars = new MarkRenderer().ShareBars(new SegmentReading("R9.htm", ThreeMonths.Ended, 3, 100m, 100m, [new SegmentRow("Eliminations", -0.01m, null, null, null, null, null, -0.03), new SegmentRow("Stores", 100.01m, null, null, null, null, null, 100.03)], null));
 
         Assert.Contains("Eliminations: 0.0% of revenue</title>", bars, StringComparison.Ordinal);
@@ -312,11 +317,12 @@ public partial class ReadSurface
         var table = FiledSegments([TheQuarter], FiledFigure("us-gaap_Revenues", "Net Sales", null, TheQuarter, "2044397000"));
         const string Label = "Income Statement Location [Axis]: us-gaap:CostOfRevenue";
 
-        table["groups"] = new System.Text.Json.Nodes.JsonArray(new System.Text.Json.Nodes.JsonObject { ["label"] = Label, ["dimension"] = "axis=x", ["figures"] = new System.Text.Json.Nodes.JsonArray(FiledFigure("us-gaap_CostOfRevenue", "Cost", null, TheQuarter, "100")) });
+        table["groups"] = new System.Text.Json.Nodes.JsonArray(new System.Text.Json.Nodes.JsonObject { ["label"] = Label, ["dimension"] = "axis=x", ["figures"] = new System.Text.Json.Nodes.JsonArray(FiledFigure("us-gaap_CostOfRevenue", "Cost", null, TheQuarter, "100"), FiledFigure("us-gaap_Flag", "NumberOfReportableSegmentsNotDisclosedFlag", null, TheQuarter, "100")) });
 
         var raw = await RawSegmentsOf(table);
 
         Assert.Contains($"data-segment=\"{Label}\"><th colspan=\"2\">Income Statement Location [Axis]: cost of revenue</th>", raw, StringComparison.Ordinal);
+        Assert.Contains("<td>Number of reportable segments not disclosed flag</td>", raw, StringComparison.Ordinal);
         Assert.Null(FieldWords.Drawn(raw));
     }
 
@@ -331,6 +337,8 @@ public partial class ReadSurface
     [InlineData("<title>Relative strength over 14 sessions (rsi14)</title>", "rsi14")]
     [InlineData("<td>$1.2B, first filed 2026-09-02 as GrossProfit</td>", "GrossProfit")]
     [InlineData("<td>as us-gaap_Revenues</td>", "us-gaap_Revenues")]
+    [InlineData("<th>Balance [Axis]: lvs:CorporateExpense</th>", "lvs:CorporateExpense")]
+    [InlineData("<td>NumberOfReportableSegmentsNotDisclosedFlag</td>", "NumberOfReportableSegmentsNotDisclosedFlag")]
     public void TheProofFailsAPageDrawingAFieldsCodeName(string drawn, string name)
     {
         var page = ReportProof.Evaluate("FCN", drawn);
@@ -343,6 +351,7 @@ public partial class ReadSurface
     [InlineData("<tr data-name=\"macd_hist\" data-concept=\"GrossProfit\"><td>Gross profit</td></tr>")]
     [InlineData("<script>var high_ratio = 1;</script><style>.close_over_long { color: red; }</style><p>Words</p>")]
     [InlineData("<p>Results release, btsg-ex99_1.htm and press_release.htm, published by McKesson and AbbVie</p>")]
+    [InlineData("<p>GroupPresident IntlVehiclePmts sold, Northwest | HomeBuildingOps, and Note: The quarter, at 10:30, from https://www.sec.gov/Archives</p>")]
     public void TheProofPassesAPageDrawingNoFieldsCodeName(string drawn) =>
         Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("FCN", drawn), "field-names"));
 }

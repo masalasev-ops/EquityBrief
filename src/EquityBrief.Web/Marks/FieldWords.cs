@@ -128,7 +128,9 @@ public static partial class FieldWords
         @"(?<![\w.\-/@])[a-z][a-z0-9]*(?:_[a-z0-9]+)+(?![\w/@\-]|\.[a-z])"
         + @"|\b(?:" + string.Join("|", EquityBrief.Core.Indicators.IndicatorSeries.Names.Where(name => !name.Contains('_', StringComparison.Ordinal)).Append("rsi")) + @")\b"
         + @"|\b(?:" + string.Join("|", FilerTags.Where(tag => tag.Skip(1).Any(char.IsUpper))) + @")\b"
-        + @"|\b(?:us-gaap|dei|srt)[_:]\w+",
+        + @"|\b(?:us-gaap|dei|srt)[_:]\w+"
+        + @"|\b[a-z][a-z0-9]{1,9}:[A-Z]\w+"
+        + @"|\b(?:[A-Z][a-z]+){5,}\b",
         RegexOptions.CultureInvariant);
 
     // A stored sentence with each field's code name in the reader's words, the longer name first so one holding a shorter
@@ -147,9 +149,17 @@ public static partial class FieldWords
         return sentence;
     }
 
-    // A label a filing's table states with a filer's tag in it: "us-gaap:CostOfRevenue" reads "cost of revenue".
+    // A label a filing's table states with a tag in it, the standard's or the filer's own, or as a tag's whole name of five
+    // words or more, a shorter run of capitals being as likely a name the filer chose: "us-gaap:CostOfRevenue" reads "cost of
+    // revenue", "lvs:CorporateExpense" "corporate expense" and "NumberOfReportableSegmentsNotDisclosedFlag" "Number of
+    // reportable segments not disclosed flag".
     public static string FilerLabel(string label) =>
-        FilerTag().Replace(label, match => Humps().Replace(match.Groups["tag"].Value, hump => " " + hump.Value.ToLowerInvariant()).TrimStart());
+        FilerTag().Replace(label, match =>
+        {
+            var words = Humps().Replace(match.Groups["tag"].Value, hump => " " + hump.Value.ToLowerInvariant()).TrimStart();
+
+            return match.Index == 0 ? char.ToUpperInvariant(words[0]) + words[1..] : words;
+        });
 
     // A rule version's stored settings in words: {"nightsTheNewLabelHolds": 1} reads "nights the new label holds 1".
     public static string Settings(string stored)
@@ -175,7 +185,7 @@ public static partial class FieldWords
     [GeneratedRegex(@"holds no (?<field>[a-z][a-z0-9_]*) reading tonight")]
     private static partial Regex StoredMissing();
 
-    [GeneratedRegex(@"\b(?:us-gaap|dei|srt)[_:](?<tag>\w+)")]
+    [GeneratedRegex(@"\b(?:(?:us-gaap|dei|srt)[_:]|[a-z][a-z0-9]{1,9}:(?=[A-Z]))(?<tag>\w+)|\b(?<tag>(?:[A-Z][a-z]+){5,})\b")]
     private static partial Regex FilerTag();
 
     [GeneratedRegex("[A-Z]")]
