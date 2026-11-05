@@ -937,7 +937,7 @@ public sealed record QueueState(string State, string? At, string Words)
 // A name whose stored series may not reflect a dividend or split, as a page states it:
 // when its refetch was last asked for and the reason it failed, both as the store holds
 // them.
-public sealed record SuspectPrices(string LastAskedAt, string Reason);
+public sealed record SuspectPrices(string LastAskedAt, string Reason, IReadOnlyList<DateOnly>? Copied = null);
 
 // A dividend the provider's answer does not yet carry: its ex-date, the amount as paid and the session it was last asked for.
 public sealed record DividendWait(DateOnly ExDate, decimal Amount, DateOnly AskedOn);
@@ -2896,13 +2896,47 @@ public sealed partial class MarkRenderer : IComponent
             FormattableString.Invariant($"{Escaped(ticker)}'s prices before {wait.ExDate:yyyy-MM-dd} do not yet carry its dividend of {Price(wait.Amount)} a share, so they stand a little high. ") +
             FormattableString.Invariant($"The provider is asked again on each of the five nights after and weekly until its answer carries it, last on {wait.AskedOn:yyyy-MM-dd}.</p>")));
 
+    // see: A suspect name's line says what the provider's answer held, and says a download failed only where one did
     public string PricesSuspect(string ticker, SuspectPrices? suspect) =>
         suspect is null
             ? string.Empty
             : $"<p class=\"prices-suspect\" data-ticker=\"{Escaped(ticker)}\" data-last-asked-at=\"{Escaped(suspect.LastAskedAt)}\">" +
-              $"{Escaped(ticker)}'s prices may not reflect a recent dividend or split: downloading its year of prices again failed. " +
-              $"Last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}. " +
+              (EquityBrief.Core.Bars.SuspectReason.Read(suspect.Reason) is { } fault
+                  ? Escaped(FaultSaid(ticker, suspect, fault)) + " "
+                  : $"{Escaped(ticker)}'s prices may not reflect a recent dividend or split: downloading its year of prices again failed. " +
+                    $"Last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}. ") +
               "The figures on this page are computed from the prices as stored.</p>";
+
+    // What the provider's answer held, stating when it was asked where it answered short, since a late bar arrives after it.
+    static string FaultSaid(string ticker, SuspectPrices suspect, EquityBrief.Core.Bars.SuspectFault fault)
+    {
+        const string Again = "on the next five nights and weekly after.";
+
+        if (fault.Copied)
+        {
+            var days = suspect.Copied is { Count: > 0 } copied
+                ? (copied.Count == 1 ? DayOf(copied[0]) : string.Join(", ", copied.Take(copied.Count - 1).Select(DayOf)) + " and " + DayOf(copied[^1]))
+                : "sessions to " + DayOf(fault.Newest);
+
+            return $"The provider's prices for {days} are copies of the session before, with no trades. " + (fault.PastLimit is { } limit
+                ? FormattableString.Invariant($"Past the {limit} members a night asks for, they are asked for again on a later night.")
+                : "They are asked for again " + Again);
+        }
+
+        return fault.PastLimit is { } past
+            ? FormattableString.Invariant($"{ticker}'s newest stored price is {DayOf(fault.Newest)}, behind the night. Past the {past} members a night asks for, it is asked for again on a later night.")
+            : $"The provider held nothing for {ticker} after {DayOf(fault.Newest)} when it was asked at {suspect.LastAskedAt}. It is asked for again {Again}";
+    }
+
+    // A suspect name beside its row, the instant and the reason as its title, in the words of what is wrong with its prices.
+    public string SuspectMark(SuspectPrices suspect) =>
+        $" <span class=\"prices-suspect\" data-last-asked-at=\"{Escaped(suspect.LastAskedAt)}\" title=\"last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}\">" +
+        (EquityBrief.Core.Bars.SuspectReason.Read(suspect.Reason) switch
+        {
+            { Copied: true } => "some prices are copies of the session before",
+            { } fault => "no price after " + DayOf(fault.Newest),
+            null => "prices may not reflect a dividend or split",
+        }) + "</span>";
 
     // The line a name's page opens with where the backfill asked for its year and none came
     // back: the nights it was asked for, and when it is asked next.
@@ -3463,9 +3497,7 @@ public sealed partial class MarkRenderer : IComponent
             // instant and the reason are the name page's to state in full; the row carries
             // them as its title.
             // see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
-            list.Append(row.Suspect is { } suspect
-                ? $" <span class=\"prices-suspect\" data-last-asked-at=\"{Escaped(suspect.LastAskedAt)}\" title=\"last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}\">prices may not reflect a dividend or split</span></td>"
-                : "</td>");
+            list.Append(row.Suspect is { } suspect ? SuspectMark(suspect) + "</td>" : "</td>");
 
             list.Append(Invariant, $"<td class=\"r num\">{(row.Close is { } close ? close.ToString(Invariant) : "not computed")}</td>");
 

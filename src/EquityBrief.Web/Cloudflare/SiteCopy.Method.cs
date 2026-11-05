@@ -45,11 +45,12 @@ public static partial class SiteCopy
             .Where(part => part.Any(char.IsAsciiDigit) && part.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length >= 3);
 
     // Every leak in one file, each needle its text carries as a reader reads it, its entities decoded; a needle read outside
-    // prose is read with every report's written section taken out first.
+    // prose is read with every report's written section and the headline a model wrote taken out first.
+    // see: A headline the model wrote is prose to the copy's method check, and one code wrote is read as the page is
     public static IReadOnlyList<string> Leaks(string file, string text, IReadOnlyList<MethodNeedle> needles)
     {
         var read = WebUtility.HtmlDecode(text);
-        var outside = WebUtility.HtmlDecode(Removed(text, "section", start => HasClass(start, WrittenSection)));
+        var outside = WebUtility.HtmlDecode(Removed(Removed(text, "section", start => HasClass(start, WrittenSection)), "h1", IsModelsHeadline));
 
         return
         [
@@ -62,18 +63,24 @@ public static partial class SiteCopy
     // The class a report's written section is drawn in, its prose the model's under the claim checker.
     public const string WrittenSection = "written-section";
 
+    // A report's headline as the page marks it, the model's under the claim checker and code's where none was accepted.
+    static bool IsModelsHeadline(string start) => HasClass(start, "lead-line") && AttributeOf(start, "data-written") == "model";
+
     // A screen with the target's close the code writes said in the copy's words: "a close at or above 22.13" as "a close at
-    // 22.13 or higher", and the words list's "at or above it" as "at it or higher"; a report's written prose is left as the
-    // claim checker accepted it.
+    // 22.13 or higher", and the words list's "at or above it" as "at it or higher"; a report's written prose and the headline a
+    // model wrote are left as the claim checker accepted them.
     public static string Worded(string fragment)
     {
         var kept = new List<string>();
-        var marked = Removed(fragment, "section", start => HasClass(start, WrittenSection), section =>
+
+        string Kept(string prose)
         {
-            kept.Add(section);
+            kept.Add(prose);
 
             return "\u0001" + (kept.Count - 1).ToString(System.Globalization.CultureInfo.InvariantCulture) + "\u0001";
-        });
+        }
+
+        var marked = Removed(Removed(fragment, "section", start => HasClass(start, WrittenSection), Kept), "h1", IsModelsHeadline, Kept);
         var worded = AtOrAbove().Replace(marked, "at ${what} or higher").Replace("The price a close at or above ends it at a gain", "The price at which a close ends it at a gain", StringComparison.Ordinal);
 
         return Regex.Replace(worded, "\u0001(?<at>[0-9]+)\u0001", held => kept[int.Parse(held.Groups["at"].Value, System.Globalization.CultureInfo.InvariantCulture)]);

@@ -97,7 +97,7 @@ public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, 
 // it: the reason its last refetch failed for, the instant it was last asked for, and how
 // many nights after the one that marked it it has been asked for again. Every field is
 // the stored column, and the instant stays the text the check wrote.
-public sealed record SuspectSeriesRow(string Ticker, string? Reason, string CheckedAt, int Retries);
+public sealed record SuspectSeriesRow(string Ticker, string? Reason, string CheckedAt, int Retries, IReadOnlyList<DateOnly>? Copied = null);
 
 // A member the backfill asked for a year for and got none, as the newest of its rows naming
 // the member says: the nights it was asked for, the session it was last asked for on, and
@@ -6273,7 +6273,39 @@ public sealed partial class ReadApi : IComponent
                 reader.GetInt32(3)));
         }
 
+        await reader.CloseAsync();
+
+        for (var at = 0; at < rows.Count; at++)
+        {
+            if (EquityBrief.Core.Bars.SuspectReason.Read(rows[at].Reason) is { Copied: true })
+            {
+                rows[at] = rows[at] with { Copied = await CopiedSessionsAsync(connection, rows[at].Ticker) };
+            }
+        }
+
         return rows;
+    }
+
+    static async Task<IReadOnlyList<DateOnly>> CopiedSessionsAsync(SqliteConnection connection, string ticker)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NoVolumeSessions;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var copied = new List<DateOnly>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            if (!reader.IsDBNull(5) && EquityBrief.Core.Bars.CopiedCandle.Is(0, Money.FromStorage(reader.GetString(1)), Money.FromStorage(reader.GetString(2)), Money.FromStorage(reader.GetString(3)), Money.FromStorage(reader.GetString(4)), Money.FromStorage(reader.GetString(5))))
+            {
+                copied.Add(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+            }
+        }
+
+        return copied;
     }
 
     const string SuspectSeries = @"
@@ -6281,6 +6313,17 @@ public sealed partial class ReadApi : IComponent
         FROM series_state
         WHERE state = $suspect
         ORDER BY ticker;
+    ";
+
+    // Each of one stock's stored bars with no volume, with the close of the session before it.
+    const string NoVolumeSessions = @"
+        SELECT b.session_date, b.open, b.high, b.low, b.close, (
+            SELECT p.close FROM bar p
+            WHERE p.ticker = b.ticker AND p.session_date < b.session_date
+            ORDER BY p.session_date DESC LIMIT 1)
+        FROM bar b
+        WHERE b.ticker = $ticker AND b.volume = 0
+        ORDER BY b.session_date;
     ";
 
     // The backfill's stage, stated here because the read surface holds no reference to the

@@ -1,9 +1,11 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Bars;
 using Microsoft.Data.Sqlite;
 
@@ -78,6 +80,92 @@ public partial class ReadSurface
             StringComparison.Ordinal);
 
         Assert.DoesNotContain("prices-suspect", await client.GetStringAsync($"/screens/name/{trusted}"), StringComparison.Ordinal);
+    }
+
+    // MOG-A's and HOS's lines of 2026-11-04, whose refetches each succeeded, read from the reason the check stores: each says
+    // what the provider's answer held and neither says a download failed; a reason the check wrote from a failure says one
+    // did; and past the night's limit, where nothing was asked, neither is claimed.
+    // see: A suspect name's line says what the provider's answer held, and says a download failed only where one did
+    [Fact]
+    public void ASuspectLineSaysWhatTheProvidersAnswerHeldAndAFailedDownloadOnlyWhereOneFailed()
+    {
+        const string At = "2026-11-05T00:00:41Z";
+        const string Failed = "downloading its year of prices again failed";
+
+        static string Said(string ticker, SuspectPrices suspect) => WebUtility.HtmlDecode(new EquityBrief.Web.Marks.MarkRenderer().PricesSuspect(ticker, suspect));
+
+        DateOnly[] sessions = [new(2026, 7, 21), new(2026, 7, 22), new(2026, 7, 31)];
+        var copied = Said("MOG-A", new SuspectPrices(At, SuspectReason.Copied(sessions), sessions));
+
+        Assert.Contains("The provider's prices for 2026-07-21, 2026-07-22 and 2026-07-31 are copies of the session before, with no trades. They are asked for again on the next five nights and weekly after.", copied, StringComparison.Ordinal);
+        Assert.DoesNotContain(Failed, copied, StringComparison.Ordinal);
+
+        Assert.Contains(
+            "The provider's prices for 2026-10-26 are copies",
+            Said("MSGR", new SuspectPrices(At, SuspectReason.Copied([new(2026, 10, 26)]), [new(2026, 10, 26)])),
+            StringComparison.Ordinal);
+
+        var behind = Said("HOS", new SuspectPrices(At, SuspectReason.Behind(new(2026, 11, 3))));
+
+        Assert.Contains($"The provider held nothing for HOS after 2026-11-03 when it was asked at {At}. It is asked for again on the next five nights and weekly after.", behind, StringComparison.Ordinal);
+        Assert.DoesNotContain(Failed, behind, StringComparison.Ordinal);
+        Assert.DoesNotContain("dividend or split", behind, StringComparison.Ordinal);
+
+        var failed = Said("AAPL", new SuspectPrices(At, "The request timed out"));
+
+        Assert.Contains($"AAPL's prices may not reflect a recent dividend or split: {Failed}. Last tried {At}, because The request timed out.", failed, StringComparison.Ordinal);
+
+        // Named by the night's limit it was never asked for.
+        foreach (var unasked in new[]
+        {
+            Said("HOS", new SuspectPrices(At, SuspectReason.PastTheLimit(20, SuspectReason.Behind(new(2026, 11, 3))))),
+            Said("MSGR", new SuspectPrices(At, SuspectReason.PastTheLimit(20, SuspectReason.Copied([new(2026, 10, 26)])), [new(2026, 10, 26)])),
+        })
+        {
+            Assert.Contains("Past the 20 members a night asks for", unasked, StringComparison.Ordinal);
+            Assert.DoesNotContain(Failed, unasked, StringComparison.Ordinal);
+            Assert.DoesNotContain("when it was asked", unasked, StringComparison.Ordinal);
+        }
+
+        // The mark beside a name on a list says the same in a few words.
+        var marks = new EquityBrief.Web.Marks.MarkRenderer();
+
+        Assert.Contains(">some prices are copies of the session before</span>", marks.SuspectMark(new SuspectPrices(At, SuspectReason.Copied(sessions), sessions)), StringComparison.Ordinal);
+        Assert.Contains(">no price after 2026-11-03</span>", marks.SuspectMark(new SuspectPrices(At, SuspectReason.Behind(new(2026, 11, 3)))), StringComparison.Ordinal);
+        Assert.Contains(">prices may not reflect a dividend or split</span>", marks.SuspectMark(new SuspectPrices(At, "The request timed out")), StringComparison.Ordinal);
+
+        Assert.Null(SuspectReason.Read(null));
+        Assert.Null(SuspectReason.Read("The request timed out"));
+    }
+
+    // The days a line names are the stored copied candles alone, a day of no volume whose prices moved not among them, and the
+    // row beside the name says the same in a few words.
+    [Fact]
+    public async Task ASuspectNamesCopiedDaysAreReadFromItsStoredBarsAndItsRowSaysSo()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
+            "('MOGA', '2026-07-20', '390', '396', '389', '395.68', 100, 'bulk', 'x', '395.68'), " +
+            "('MOGA', '2026-07-21', '395.68', '395.68', '395.68', '395.68', 0, 'bulk', 'x', '395.68'), " +
+            "('MOGA', '2026-07-22', '395.68', '395.68', '395.68', '395.68', 0, 'bulk', 'x', '395.68'), " +
+            "('MOGA', '2026-07-23', '396', '401', '395', '400', 0, 'bulk', 'x', '400'), " +
+            "('MOGA', '2026-07-24', '400', '402', '399', '401', 100, 'bulk', 'x', '401');");
+
+        store.Execute(
+            "INSERT INTO series_state (ticker, state, reason, checked_at, retries) VALUES " +
+            $"('MOGA', 'suspect', '{SuspectReason.Copied([new(2026, 7, 21), new(2026, 7, 22)])}', '2026-11-05T00:00:41Z', 0), " +
+            $"('HOS', 'suspect', '{SuspectReason.Behind(new(2026, 11, 3))}', '2026-11-05T00:00:41Z', 1);");
+
+        var rows = await new ReadApi(store.DatabaseFile, FixedClock.At(new DateTimeOffset(2026, 11, 5, 3, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates)).SuspectSeriesAsync();
+
+        Assert.Null(rows.Single(row => row.Ticker == "HOS").Copied);
+        Assert.Equal([new DateOnly(2026, 7, 21), new DateOnly(2026, 7, 22)], rows.Single(row => row.Ticker == "MOGA").Copied);
+
+        var line = new EquityBrief.Web.Marks.MarkRenderer().PricesSuspect("MOGA", NameScreen.Suspect(rows.Single(row => row.Ticker == "MOGA")));
+
+        Assert.Contains("The provider's prices for 2026-07-21 and 2026-07-22 are copies", line, StringComparison.Ordinal);
     }
 
     // Every name that fired on one night, read off the store.

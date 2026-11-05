@@ -506,7 +506,7 @@ public sealed class CorporateActionChecker : IComponent
                 connection,
                 ticker,
                 Suspect,
-                FormattableString.Invariant($"past the {FaultAskLimit} members a night asks for: {(behindAll.TryGetValue(ticker, out var newest) ? BehindWords(newest) : CopiedWords(copiedAll[ticker]))}"),
+                SuspectReason.PastTheLimit(FaultAskLimit, behindAll.TryGetValue(ticker, out var newest) ? SuspectReason.Behind(newest) : SuspectReason.Copied(copiedAll[ticker])),
                 observed,
                 0);
             suspect.Add(ticker);
@@ -768,7 +768,7 @@ public sealed class CorporateActionChecker : IComponent
 
         if (ExchangeClosures.SessionsBetween(newest, session.AddDays(1)).Count > 0)
         {
-            return BehindWords(newest);
+            return SuspectReason.Behind(newest);
         }
 
         var copied = Enumerable.Range(1, ordered.Length - 1)
@@ -776,14 +776,8 @@ public sealed class CorporateActionChecker : IComponent
             .Select(at => ordered[at].SessionDate)
             .ToArray();
 
-        return copied.Length > 0 ? CopiedWords(copied) : null;
+        return copied.Length > 0 ? SuspectReason.Copied(copied) : null;
     }
-
-    static string BehindWords(DateOnly newest) =>
-        FormattableString.Invariant($"its newest bar is {Text(newest)}, behind the night, and the provider holds no later session");
-
-    static string CopiedWords(IReadOnlyList<DateOnly> sessions) =>
-        FormattableString.Invariant($"its stored year holds {sessions.Count} copied candle(s), no volume at the close before, the newest on {Text(sessions.Max())}");
 
     // The members behind the night, each with its newest stored bar, and the members holding a copied candle in the year,
     // each with the sessions it holds one on.

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Cloudflare;
 using EquityBrief.Core.Providers;
+using EquityBrief.Web.App;
 using EquityBrief.Web.Cloudflare;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Cloudflare;
@@ -65,6 +66,41 @@ public class CopyMethodLeak
         Assert.Empty(SiteCopy.Leaks(Page, "<section class=\"written-section\"><p>revenue at or above the guided range, a multiple falling through the floor of its own range</p></section>", needles));
         Assert.Equal([$"{Page} carries a Loop route: \"#/loop\""], SiteCopy.Leaks(Page, "<section class=\"written-section\"><a href=\"#/loop\">the Loop</a></section>", needles));
         Assert.Empty(SiteCopy.Leaks(Page, "<p>The research model could not be reached for The short version: the response ended.</p>", needles));
+    }
+
+    // DD's headline, which refused the upload of 2026-11-04: a model's headline is prose as a written section is, every other
+    // kind of leak in it still refuses, and a headline code wrote is read as the page is.
+    // see: A headline the model wrote is prose to the copy's method check, and one code wrote is read as the page is
+    [Fact]
+    public void AModelsHeadlineIsProseToTheCheckAndACodeWrittenHeadlineIsReadAsThePageIs()
+    {
+        const string Page = "screens/name/DD.html";
+        const string Guidance = "Guidance was raised, with full-year earnings and organic growth now at or above the prior high end, offsetting deteriorating reported quarters and water demand disruption.";
+        var needles = Needles;
+        var marks = new MarkRenderer();
+
+        Assert.Empty(SiteCopy.Leaks(Page, marks.Lead("DD", new HeadlineView(Guidance, Written: true), null), needles));
+        Assert.Equal(
+            [$"{Page} carries a threshold's words: \"at or above\""],
+            SiteCopy.Leaks(Page, marks.Lead("DD", new HeadlineView("Breadth at or above its setting keeps this stock on the list.", Written: false), null), needles));
+        Assert.Equal(
+            [$"{Page} carries a threshold's words: \"floor of\""],
+            SiteCopy.Leaks(Page, marks.Lead("DD", new HeadlineView("Strength holds over its floor of the setting.", Written: false), null), needles));
+        Assert.Equal(
+            [$"{Page} carries a Loop route: \"#/loop\""],
+            SiteCopy.Leaks(Page, marks.Lead("DD", new HeadlineView("See #/loop for this stock.", Written: true), null), needles));
+
+        // A threshold's words beyond the headline are still read on the same page.
+        Assert.Equal(
+            [$"{Page} carries a threshold's words: \"at or above\""],
+            SiteCopy.Leaks(Page, marks.Lead("DD", new HeadlineView(Guidance, Written: true), null) + "<td>breadth at or above 45%</td>", needles));
+
+        // The copy's rewording leaves the model's headline as accepted and rewords code's own target close beside it.
+        var worded = SiteCopy.Worded(marks.Lead("DD", new HeadlineView("Earnings came in at or above it.", Written: true), null) + "<p>a close at or above 22.13</p>");
+
+        Assert.Contains("Earnings came in at or above it.", worded, StringComparison.Ordinal);
+        Assert.Contains("a close at 22.13 or higher", worded, StringComparison.Ordinal);
+        Assert.Contains("Reads at it or higher.", SiteCopy.Worded(marks.Lead("DD", new HeadlineView("Reads at or above it.", Written: false), null)), StringComparison.Ordinal);
     }
 
     [Fact]
