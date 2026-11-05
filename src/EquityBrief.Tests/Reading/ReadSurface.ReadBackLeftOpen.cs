@@ -100,7 +100,9 @@ public partial class ReadSurface
         store.Execute(
             "INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES " +
             $"('0000000042', 'Revenues', '2026-01-01', '{periods[0]}', '5', '2026-08-15', '10-Q', 'a-1', 'r'), " +
-            $"('0000000042', 'NetIncomeLoss', '2026-01-01', '{periods[1]}', '5', '2026-08-15', '8-K', 'a-2', 'r');");
+            $"('0000000042', 'NetIncomeLoss', '2026-01-01', '{periods[1]}', '5', '2026-08-15', '8-K', 'a-2', 'r'), " +
+            // A later report stating the newest quarter again, as a year's comparatives do: the first filing's day stands.
+            $"('0000000042', 'NetIncomeLoss', '2026-01-01', '{periods[0]}', '5', '2026-11-01', '10-K', 'a-3', 'r');");
 
         var days = await Api(store).SecFiledDaysAsync(Name);
         var drawn = NameScreen.Numbers(filings, secFiled: days);
@@ -128,13 +130,17 @@ public partial class ReadSurface
 
         var without = await client.GetStringAsync($"/screens/name/{Name}");
 
-        Assert.Contains("<span class=\"dl-k\">Filing date</span><b>not on file</b>", without, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filing date</span><b>not on file</b>", without, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"lbl\">Segments</div><div class=\"dl\"><span class=\"dl-k\">Filing date</span><b>not on file</b>", without, StringComparison.Ordinal);
         Assert.DoesNotContain(FormattableString.Invariant($"<span class=\"dl-k\">Filed</span><b>{newest.FilingDate:yyyy-MM-dd}</b>"), without, StringComparison.Ordinal);
 
         store.Execute($"INSERT INTO company (ticker, fetched_at, cik) VALUES ('{Name}', '2026-09-08T21:00:00Z', '0000000042');");
         store.Execute($"INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('0000000042', 'Revenues', '2026-01-01', '{period}', '5', '2026-08-15', '10-Q', 'a-1', 'r');");
 
-        Assert.Contains("<span class=\"dl-k\">Filed</span><b>2026-08-15</b>", await client.GetStringAsync($"/screens/name/{Name}"), StringComparison.Ordinal);
+        var with = await client.GetStringAsync($"/screens/name/{Name}");
+
+        Assert.Contains("<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>2026-08-15</b>", with, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"lbl\">Segments</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>2026-08-15</b>", with, StringComparison.Ordinal);
     }
 
     // The quarters a night's readings read draw the SEC's day too, and a reason left out for an old table names none where it states none.
