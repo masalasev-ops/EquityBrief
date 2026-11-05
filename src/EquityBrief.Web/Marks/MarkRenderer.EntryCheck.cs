@@ -45,7 +45,11 @@ public sealed partial class MarkRenderer
 
     // A figure dated before the newest report says so.
     // see: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
-    public static string SetBeforeWords(DateOnly report) => FormattableString.Invariant($"Set before the {report:yyyy-MM-dd} report");
+    public static string SetBeforeWords(DateOnly report) => FormattableString.Invariant($"Set before the {report:d MMM} report");
+
+    // Whether a figure fetched on a day was fetched before the newest report, the words saying so where it was.
+    public static string? SetBeforeOf(DateOnly? fetched, DateOnly? report) =>
+        fetched is { } day && report is { } newest && day < newest ? SetBeforeWords(newest) : null;
 
     public static string SetBefore(DateOnly? set, DateOnly? report) =>
         set is { } day && report is { } newest && day < newest ? $"<p class=\"set-before\" data-report=\"{DayOf(newest)}\">{Escaped(SetBeforeWords(newest))}</p>" : string.Empty;

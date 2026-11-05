@@ -16,6 +16,19 @@ Now:
 > Entry reader also reads levels and swings for a provisional wait plan, which the region draws; `loop-entry-check --index` hands the index to the ledger's read-only measurement; ten roster rows hold each reading, each fix, the wait plan and the card's line over a committed fixture of a real night
 Why: the operator's entry check order of 2026-11-04 and their answers of 2026-11-05, and their word of that day that the rest of the entry check lands in the one pull request.
 
+### 2026-11-05 - docs/ARCHITECTURE.html - each card's line under its sell price, and the chart page's market value
+Decision: A card's line under its sell price is worded from its family's own exit rule
+Decision: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
+Was:
+> Home: from 22.18 for a plan selling on a rising give-up price no fixed target and one line saying its give-up price rises; the close past which it can no longer lose;
+> The card: from 22.18 for a plan selling on a rising give-up price with no target, its stop's tile the give-up price rising as the stock makes new highs and never moving down,
+> The chart page's figures: the provider's market value; the newest share count its filer's cover states
+Now:
+> Home: from 22.18 for a plan selling on a rising give-up price no fixed target and one line saying its give-up price rises, and from the 22.42 correction every other card's line under its sell price worded from its family's own exit rule; the close past which it can no longer lose;
+> The card: from 22.18 for a breakout, whose plan sells on a rising give-up price with no target, its stop's tile the give-up price rising as the stock makes new highs and never moving down, and from the 22.42 correction a family whose stop never moves its tile saying the give-up price stays where it is,
+> The chart page's figures: the market value, the stored close times the filed shares with the shares' date; the newest share count its filer's cover states
+Why: the operator's answers of 2026-11-05 to the afternoon's report, and their read-back of that day.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - Home's line of the entry check, and how the readings reach the test
 Decision: Home's line of an idea's entry check says each flag in plain words, and dates a day as d Mon yyyy
 Was:

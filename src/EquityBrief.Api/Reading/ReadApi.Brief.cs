@@ -17,6 +17,11 @@ public sealed partial class ReadApi
         GROUP BY ticker;
     ";
 
+    // One stock's newest report on or before a night, as the cards read it, its quarter filed or not.
+    // see: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
+    public async Task<DateOnly?> NewestReportAsync(string ticker, DateOnly night) =>
+        (await NewestReportsAsync(night)).TryGetValue(ticker, out var newest) ? newest : null;
+
     // The newest report of every stock on or before a night, which a page's cards say a stock reported on.
     // see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning
     public async Task<IReadOnlyDictionary<string, DateOnly>> NewestReportsAsync(DateOnly night)

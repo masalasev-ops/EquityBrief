@@ -31,7 +31,7 @@ public sealed partial class MarkRenderer
     public string LeadTiles(TilesView tiles) =>
         Formatted($"<div class=\"lead-tiles\" data-live=\"{(tiles.Live ? "yes" : "no")}\">")
         + EarningsTile(tiles.Earnings)
-        + GrowthTile(tiles.Growth)
+        + GrowthTile(tiles.Growth, tiles.NewestReport)
         + YieldTile(tiles.Yield, tiles.Price, tiles.Live, tiles.PaysNone)
         + HighTile(tiles.High, tiles.Live)
         + "</div>";
@@ -48,7 +48,7 @@ public sealed partial class MarkRenderer
                     : "no estimate was filed")
                 + (tile.OnTheYear is { } year ? "; " + Signed(year, "year") + " on a year" : tile.YearBefore is null ? "; no quarter a year before" : "; a year before read no change"));
 
-    static string GrowthTile(EquityBrief.Core.Tiles.GrowthTile? growth) =>
+    static string GrowthTile(EquityBrief.Core.Tiles.GrowthTile? growth, DateOnly? newestReport) =>
         growth switch
         {
             null => LeadTile("growth", "Sales, the last four quarters on the four before", "<span class=\"v none\">not read</span>", "Eight quarters of sales are not stored for it yet."),
@@ -58,7 +58,8 @@ public sealed partial class MarkRenderer
                 Signed(tile.Percent, "growth", "v"),
                 "on the year before, for the year to " + DayOf(tile.Through)
                     + (tile.Analysts is { } count ? Formatted($", {count} {(count == 1 ? "analyst" : "analysts")}") : string.Empty)
-                    + (tile.FetchedOn is { } fetched ? ", as fetched on " + DayOf(fetched) : string.Empty)),
+                    + (tile.FetchedOn is { } fetched ? ", as fetched on " + DayOf(fetched) : string.Empty)
+                    + (SetBeforeOf(tile.FetchedOn, newestReport) is { } setBefore ? ". " + setBefore : string.Empty)),
             { } tile => LeadTile(
                 "growth",
                 "Sales, the last four quarters on the four before",

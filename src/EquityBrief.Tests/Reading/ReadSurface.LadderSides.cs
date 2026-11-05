@@ -37,7 +37,7 @@ public partial class ReadSurface
         // A name above every band it holds: nothing above the price to sell into.
         var over = marks.LadderFigure("XYZ", [new LadderBand(100m, 102m, "support", 1.2, 2, new DateOnly(2026, 9, 1), "tranche 1 buys here")], 110m, live: false);
 
-        Assert.Contains("data-side=\"above\">No band stands above the price, so the plan has nothing above it to sell into.</text>", over, StringComparison.Ordinal);
+        Assert.Contains("data-side=\"above\">No resistance level in the last year of bars, so the plan has nothing above it to sell into.</text>", over, StringComparison.Ordinal);
         Assert.DoesNotContain("data-side=\"below\">No band", over, StringComparison.Ordinal);
 
         // Two tranches stating a risk and a third stating none: 26 above the bars, 20 a bar, 8 between the two tranches'

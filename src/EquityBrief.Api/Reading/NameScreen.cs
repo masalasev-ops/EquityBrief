@@ -1847,9 +1847,10 @@ public static partial class NameScreen
             shownPrice is { } highAt && year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(highAt, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
             shownPrice,
             live is not null,
-            EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, reportInputs?.Dividends ?? [], tilesNight));
+            EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, reportInputs?.Dividends ?? [], tilesNight),
+            ReportedOn(tilesNight));
         var reportView = reportInputs is { } inputs
-            ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue), secFiled)
+            ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue), secFiled) with { NewestReport = ReportedOn(tilesNight) }
             : null;
 
         // A quarter its results release reports before its filing is stored reads its segments from the release's own
@@ -1971,7 +1972,7 @@ public static partial class NameScreen
             news,
             TonightScreen.ListedUnder(ticker, familyPicks ?? []),
             TonightScreen.HeldAsAHeavyweight(ticker, heavyweights ?? []),
-            memberReading is null ? null : Member(memberReading, ratings),
+            memberReading is null ? null : Member(memberReading, ratings) with { SharesFiledOn = sharesFiledOn },
             cards,
             warmed is { Count: > 0 } ? new AveragesFrom(warmed[0].Pull, warmed[0].Reason) : null,
             quote: live,

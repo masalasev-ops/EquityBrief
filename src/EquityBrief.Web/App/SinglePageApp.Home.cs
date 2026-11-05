@@ -9,8 +9,9 @@ namespace EquityBrief.Web.App;
 // One idea Home draws: its family, its stock and company, the sentence saying why in the reader's words, the three prices
 // its plan set tonight, none where the plan sets none, whether its give-up price rises with the stock in place of a
 // target, and what it risks against what it aims for; and from 22.18, for a plan selling on a rising give-up price with no
-// target, the distance it rises behind the highest close at and its rule's winning trades.
-public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null);
+// target, the distance it rises behind the highest close at and its rule's winning trades; whether an exit changed on the
+// Loop page moves its give-up price; and for the Fundamentals family the setting its index's rule stands at.
+public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null);
 
 // How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
 // many made money; the combined paper account's return, the day it counts from and the index's fund over the same days; and
@@ -62,6 +63,29 @@ public sealed partial class SinglePageApp
     public const string IdeasNote = "These are ideas found by fixed rules from prices and company filings, not advice. A rule's record is shown on its own page and is never a promise about any one stock.";
 
     public const string RisesLine = "The give-up price rises as the stock climbs, so a winner can keep running.";
+
+    // What the Fundamentals family's card says in a give-up price's place: it sets none and sells on its filings.
+    public const string FilingsWeaken = "its filings weaken";
+
+    // The line under a card's sell price, from its family's own exit rule: the Fundamentals family's filings and time limit,
+    // its figures left off the read-only copy, a give-up price rising or staying where it is; none where a plan holds no
+    // give-up price or an exit changed on the Loop page moves it.
+    // see: A card's line under its sell price is worded from its family's own exit rule
+    public static string? SellLine(HomeIdea idea, bool copying)
+    {
+        if (idea.Family == ImprovingRule.Name)
+        {
+            var setting = idea.Setting ?? ImprovingGrid.Starting;
+
+            return copying
+                ? "No price is set in advance: it sells when a new filing weakens its score, or at its time limit."
+                : Invariant($"No price is set in advance: it sells when a new filing drops its score below {setting.HoldInNine} of 9 checks,{(setting.SoldUnderAverage ? " on a close under its 200-day average," : string.Empty)} or after {setting.Sessions} trading days.");
+        }
+
+        return idea.Rises || idea.Trail is not null ? RisesLine
+            : idea.Stop is null || idea.StopMoves ? null
+            : MarkRenderer.StaysWords;
+    }
 
     // The lines of Home's idea cards that open mid-sentence, on a small letter or on punctuation, as a reader would read them. A
     // ticker or a company's name is no line, since a company may spell itself with a small letter.
@@ -246,7 +270,7 @@ public sealed partial class SinglePageApp
 
             foreach (var idea in view.Ideas)
             {
-                region.Append(Idea(idea));
+                region.Append(Idea(idea, marks.Copying));
             }
 
             region.Append("</div>");
@@ -299,7 +323,7 @@ public sealed partial class SinglePageApp
     static string Signal(string key, string label, string tone, string word, string meaning, bool plainWord = false) =>
         Invariant($"<div class=\"home-signal\" data-signal=\"{key}\" data-tone=\"{tone}\"><span class=\"st-label\"><span class=\"home-dot {tone}\" aria-hidden=\"true\"></span>{Escaped(label)}</span><span class=\"home-word{(plainWord ? string.Empty : " " + tone)}\">{Escaped(word)}</span><span class=\"home-meaning\">{Escaped(meaning)}</span></div>");
 
-    static string Idea(HomeIdea idea)
+    static string Idea(HomeIdea idea, bool copying)
     {
         var card = new StringBuilder();
         var family = Escaped(idea.Family);
@@ -309,25 +333,24 @@ public sealed partial class SinglePageApp
         card.Append(Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
         card.Append("<div class=\"home-prices\">");
         card.Append(Invariant($"<div><span>Buy at about</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
-        card.Append(Invariant($"<div><span>Sell if it falls to</span><b class=\"stop\">{(idea.Stop is { } stop ? Dollars(stop) : idea.Rises ? "below its 200-day average" : NoFigure)}</b></div>"));
+        card.Append(idea.Family == ImprovingRule.Name
+            ? Invariant($"<div><span>Sell when</span><b class=\"stop\">{FilingsWeaken}</b></div>")
+            : Invariant($"<div><span>Sell if it falls to</span><b class=\"stop\">{(idea.Stop is { } stop ? Dollars(stop) : NoFigure)}</b></div>"));
 
         card.Append(Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
         card.Append("</div>");
 
         card.Append(MarkRenderer.HomeEntryCheckLine(idea.EntryCheck, idea.Ticker));
 
+        // see: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence
+        card.Append(SellLine(idea, copying) is { } line ? Invariant($"<div class=\"home-odds\" data-sell-line>{Escaped(line)}</div>") : string.Empty);
+
         if (idea.Trail is { } trail && idea.Buy is { } entered && idea.Stop is not null)
         {
-            // see: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence
-            card.Append(Invariant($"<div class=\"home-odds\">{Escaped(RisesLine)}</div>"));
             card.Append(Invariant($"<div class=\"home-odds home-noloss\" data-no-loss=\"{EquityBrief.Core.Families.TrailingExit.NoLossAt(entered, trail).ToString(CultureInfo.InvariantCulture)}\">{Escaped(MarkRenderer.NoLossLine(entered, trail))}</div>"));
             card.Append(idea.Record is { } record ? Invariant($"<div class=\"home-odds home-winners\" data-finished=\"{record.Finished}\">{Escaped(MarkRenderer.WinnersLine(idea.Family, record))}</div>") : string.Empty);
         }
-        else if (idea.Rises || idea.Target is null)
-        {
-            card.Append(Invariant($"<div class=\"home-odds\">{Escaped(RisesLine)}</div>"));
-        }
-        else if (idea.Buy is { } bought && idea.Stop is { } give && idea.Target is { } aim && bought > give && aim > bought)
+        else if (!idea.Rises && idea.Buy is { } bought && idea.Stop is { } give && idea.Target is { } aim && bought > give && aim > bought)
         {
             var said = Invariant($"Risks $1 to make about ${(idea.RewardPerRisk ?? (aim - bought) / (bought - give)):0.00}");
 

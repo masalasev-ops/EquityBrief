@@ -49,7 +49,8 @@ public sealed record TilesView(
     EquityBrief.Core.Tiles.HighTile? High,
     decimal? Price,
     bool Live,
-    bool PaysNone = false);
+    bool PaysNone = false,
+    DateOnly? NewestReport = null);
 
 // The quotes stored in one session and the quote job's runs over it by what each came to, against the day's cap, with
 // how many asks the name pages wrote in it and each ask no run of the job answered: the Run page's row for the quote runs.
@@ -2287,7 +2288,7 @@ public sealed partial class SinglePageApp : IComponent
                 analystBody.ToString(),
                 title: "What the analysts expect, labelled as theirs",
                 filed: true,
-                note: analysts.FetchedOn is { } fetchedThen && report?.Quarter is { Reported: { } reportedSince } && reportedSince > fetchedThen ? MarkRenderer.SetBeforeWords(reportedSince) : "the analysts' figures",
+                note: MarkRenderer.SetBeforeOf(analysts.FetchedOn, report.NewestReport) ?? "the analysts' figures",
                 id: "analysts"),
                 analysts.FetchedOn);
         }

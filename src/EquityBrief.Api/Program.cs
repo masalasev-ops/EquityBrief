@@ -350,7 +350,9 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         await read.ProviderSharesAsync(ticker),
         reactions,
         priceDrawn,
-        await read.ChartNotesAsync(ticker)));
+        await read.ChartNotesAsync(ticker),
+        (await read.MemberReadingAsync(ticker, night))?.CompanyValue,
+        await read.SharesFiledOnAsync(ticker, night)));
 
     // From 20.13 the analysts as Yahoo and TipRanks last answered for the stock, the month's TipRanks calls, and whether
     // the page asks Yahoo again, which it does where no answer of this New York day is stored.
@@ -364,7 +366,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         {
             Graphs = graphs with
             {
-                NewestReport = report.Quarter?.Reported,
+                NewestReport = await read.NewestReportAsync(ticker, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue)),
                 Yahoo = yahoo,
                 AsksYahoo = !copying && indexCode is not null && (yahoo is null || yahoo.AskedAt < EquityBrief.Core.Analysts.AnalystLimits.DayOf(now, clock.SessionZone).From),
                 TipRanks = copying ? null : await read.NewestRatingsAsync(ticker),
@@ -1000,7 +1002,8 @@ app.MapGet(SinglePageApp.QuoteRoute + "{ticker}", async (string ticker, ReadApi 
         year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(quote.Price, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
         quote.Price,
         Live: true,
-        PaysNone: EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, inputs.Dividends, today));
+        PaysNone: EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, inputs.Dividends, today),
+        NewestReport: await read.NewestReportAsync(named, today));
 
     return Results.Json(new
     {
@@ -1539,7 +1542,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         score,
         fundamentalsHeldThrough,
         sized && saved is null,
-        planned?.ShortWhy));
+        planned?.ShortWhy,
+        await read.NewestReportAsync(ticker, night)));
 }
 
 // A heavyweights card with its standing tonight, read off tonight's closes once: each holding's and each sector fund's
@@ -2823,7 +2827,7 @@ async Task<IResult> HomeAsync(
         // its rule's winning trades off its card.
         decimal? trail = pick.Trailing && pick.Target is null && pick.Buy is { } buy && pick.Stop is { } stop && buy > stop ? pick.Card?.Trail ?? buy - stop : null;
 
-        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners, EntryCheck: pick.Card?.EntryCheck);
+        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners, EntryCheck: pick.Card?.EntryCheck, StopMoves: MarkRenderer.ApprovedExitMovesTheStop(pick.Card?.Approved));
     }
 
     HomeIdea[] fundamentals =
@@ -2838,8 +2842,9 @@ async Task<IResult> HomeAsync(
             cells.GetValueOrDefault(row.Ticker)?.Close,
             null,
             null,
-            true,
-            null)),
+            false,
+            null,
+            Setting: improving?.Setting is { } setting ? setting with { SoldUnderAverage = improving.Rule.Contains(EquityBrief.Core.Families.ImprovingRule.UnderItsAverage, StringComparison.Ordinal) } : null)),
     ];
     HomeIdea[] ideas =
     [
