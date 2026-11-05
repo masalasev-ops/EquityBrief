@@ -1199,7 +1199,7 @@ public static partial class NameScreen
                 continue;
             }
 
-            html.Append(FormattableString.Invariant($"<tr class=\"segment-group\" data-segment=\"{label}\"><th colspan=\"2\">{FieldWords.FilerLabel(label)}</th></tr>"));
+            html.Append(FormattableString.Invariant($"<tr class=\"segment-group\" data-segment=\"{label}\"><th colspan=\"2\">{FieldWords.Spaced(FieldWords.FilerLabel(label))}</th></tr>"));
 
             foreach (var figure in quarter)
             {

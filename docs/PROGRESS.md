@@ -15673,6 +15673,17 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             3295 of 3295 tests ran with none failed, migrations 0 to 124 with none pending, schema version 124, against `data-ci` and never `data`; the phase report 65 tables, 1522 claims, 1522 passing, none out
             of scope and none unexamined, 1537 placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
 
+### 22.40 - correction: a day at or before a period's end is no filing of that period, and the filed table's group headings are split   2026-11-05
+
+Not a checkpoint entry: it corrects what the last correction of 22.40 carried into shipped source, and lands nothing.
+Corrected:  reading every changed page back on 5152 found 16 Filed cells still at or before their quarter's end, against the order's sweep: BMI, EFC, LNN and NSSC one each and PMT 12, each a fact the SEC's archive holds of a period ahead of the report stating it, as PMT's reports of 2021 state 2026's periods. The read of the SEC's first day now leaves out a day at or before the period's end. The same read-back found DHI's HomeBuildingOps still drawn whole, the operator's own example: the group headings of the table as filed draw through a path the correction did not reach. They are split now, and UniFirst, DoorDash, NextEra, DownREIT and ExxonMobil join the kept spellings, 44 in all.
+Read back:  the rest of that read-back, over 1,504 pages against the night's pages before the merge: Filed cells changed on 526 members, 285 of 7,085 cells drawing "Filing date not on file" and 9 cards; the one-segment line on 27; the insider's title split on 10, APH, CF, CPAY, DUK, EL, HON, MTDR, QCOM, TTMI and WHD; the segment heading on DHI and WMB; a next report estimated on 785, and FDXF, HOS, VGNT and VSNT with none. The proof over all three indexes, after the off-peak run of the night: `newest-quarter` 1,502 passing, none failing and 3 with no card to read; `news-labelled` 1,500 passing, 895 of them with stories waiting for the labeller, and 5 failing, FDS, PWR, WRB, CVLT and RXO, each holding a story the labeller read and could not label.
+Tests:      3295, as before; the test of the SEC's day holds the planted fact and the joined names' test the filed table's heading.
+Mutation:   chosen before the run by this rule, each property the correction adds: the clause taken out, red in `ThePageDrawsTheDayTheStoresSecFactsStateAndTheNightsPageNothingTheyStatedAfterIt`; the heading drawn whole and each new spelling left out, red in `AJoinedNameIsSplitAtItsCapitalsWithNoAbbreviationExpandedAndACompanysOwnSpellingKept`.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before that run: all six steps, 0 warnings, 0 errors,
+            3295 of 3295 tests ran with none failed, migrations 0 to 124 with none pending, schema version 124, against `data-ci` and never `data`; the phase report 65 tables, 1522 claims, 1522 passing, none out
+            of scope and none unexamined, 1537 placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
+
 ### 22.41 ruling - the entry check as phase 22's last checkpoints, and what its verification found
 
 Not a checkpoint entry: it records the operator's order of 2026-11-04 and the verification it asks for before any code, and lands nothing.

@@ -3113,7 +3113,8 @@ public sealed partial class ReadApi : IComponent
         return await command.ExecuteScalarAsync() is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
     }
 
-    // The first day the SEC's archive states each period of the stock's filer in a quarterly or annual report, to the night asked about.
+    // The first day the SEC's archive states each period of the stock's filer in a quarterly or annual report, to the night asked
+    // about. A filing states periods ahead of it too, a debt's maturity among them, which are no filing of that period.
     // see: A quarter's filing date is read from the SEC's own filings, and where they hold none the page says so
     const string SecFiledOf = @"
         SELECT period_end, MIN(filed) FROM filed_fact
@@ -3122,6 +3123,7 @@ public sealed partial class ReadApi : IComponent
                 (SELECT s.cik FROM sec_ticker s WHERE s.ticker = $ticker ORDER BY s.read_at DESC LIMIT 1))
           AND form IN ('10-Q', '10-K', '10-Q/A', '10-K/A', '10-KT', '20-F', '40-F', '6-K')
           AND filed <= $on
+          AND filed > period_end
         GROUP BY period_end;
     ";
 
