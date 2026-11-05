@@ -303,7 +303,7 @@ public sealed partial class MarkRenderer
         text.Append(Invariant, $"<p class=\"ledger-answers-said\" data-run=\"{Escaped(table.RunId)}\" data-month=\"{Escaped(table.Month)}\" data-cutoff=\"{table.Cutoff:yyyy-MM-dd}\">Worked by the monthly run for {Escaped(table.Month)}, split at the local model's cutoff of {table.Cutoff:yyyy-MM-dd} by the day the SEC accepted each release.</p>");
         text.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"ledger-answers\" data-family=\"{Escaped(family)}\" data-rows=\"{answers.Length}\"><thead><tr>");
         text.Append(TippedHeading("Question", "what the local model was asked of the release"));
-        text.Append(TippedHeading("Answer", "the word it answered, or not read where its reading was refused or is not held"));
+        text.Append(TippedHeading("Answer", "the word it answered, or not read where its reading was refused or is not stored"));
         text.Append(TippedHeading("After: setups", "the settled setups whose release the SEC accepted after the cutoff", "r"));
         text.Append(TippedHeading("Won", "of those, the ones whose edge was above nothing", "r"));
         text.Append(TippedHeading(result, "their mean result", "r"));

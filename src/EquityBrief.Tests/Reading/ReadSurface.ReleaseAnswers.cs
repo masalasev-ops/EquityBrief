@@ -84,6 +84,11 @@ public partial class ReadSurface
             table,
             StringComparison.Ordinal);
         Assert.Contains("Result, risks", table, StringComparison.Ordinal);
+
+        // The Answer heading's tip as the page draws it, in the reader's words: a reading the store holds no row of is not
+        // stored, and never "not met", which the reader's words make of "not held".
+        Assert.Contains("<span class=\"head-tip\" role=\"tooltip\">the word it answered, or not read where its reading was refused or is not stored</span>", table, StringComparison.Ordinal);
+        Assert.DoesNotContain("is not met", table, StringComparison.Ordinal);
         Assert.DoesNotContain("data-result-mean=\"9\"", table, StringComparison.Ordinal);
         Assert.DoesNotContain("data-result-mean=\"8\"", table, StringComparison.Ordinal);
 
