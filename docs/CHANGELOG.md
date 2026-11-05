@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-05 - docs/ARCHITECTURE.html - a segment table read again without the filer's own label for its segments
+Decision: A segment table whose segments carry the filer's own label for the consolidation's segments is read again without it and its subsegments, standing only where that sums
+Was:
+> The name page's rules: no paragraph on reading a segment table again
+Now:
+> The name page's rules: a paragraph from the 18.2 correction of 2026-11-05, a table whose segments miss the company's revenue read once more without the filer's own label for the consolidation's segments and its subsegments, drawn only where that sums
+Why: the fifth review of phase 20's sign-off found HPQ's segments summed to -$2.0M against the company's $15.7B, every segment's label carrying HP's own name for the consolidation's segments.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html - a version's line held like with like
 Decision: A version's line holds its qualifying stocks against the live rule's where the night stores both, and its picks against the live rule's picks where it does not
 Was:
