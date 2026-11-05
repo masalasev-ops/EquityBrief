@@ -433,6 +433,15 @@ public static class Nightly
                 return $"{outcome.RowsWritten} move(s) written for {outcome.NamesExamined} name(s), " +
                     $"{outcome.RowsDropped} dropped";
             }),
+            // The entry check's readings of every member, which no rule reads.
+            // see: The entry check reads a member's bars every night into a table of its own, and no rule reads it
+            new(EquityBrief.Worker.EntryCheck.EntryReader.Stage, async () =>
+            {
+                var outcome = await new EquityBrief.Worker.EntryCheck.EntryReader(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return $"{outcome.Read} member(s) read, {outcome.WithoutABar} holding no bar on the night";
+            }),
             // Section 14's step 13. The readings the swing filter's gates are measured
             // against, for every member, and the night's breadth. It reads the bars and
             // the indicators every stage before it wrote and makes no request.

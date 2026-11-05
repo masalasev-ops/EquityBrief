@@ -237,7 +237,7 @@ public static class BriefScreen
             ? "inside its resistance band"
             : Distances.InTypicalDays(close, member.NearestResistance, member.TypicalMove) is { } above
                 ? Away(above, "below its nearest resistance", "at its nearest resistance")
-                : "with no resistance band above it";
+                : "with no resistance level in the last year of bars";
 
         return support + " and " + resistance;
     }
@@ -312,7 +312,7 @@ public static class BriefScreen
                 : Distances.InTypicalDays(close, top, member.TypicalMove) is { } above
                     ? Invariant($"resistance at {Price(top)}, ") + Away(above, "above", "at the price")
                     : Invariant($"resistance at {Price(top)}, its distance not read")
-            : "no resistance band above";
+            : "no resistance level in the last year of bars";
 
         return new BriefLine("bands", Capitalised(support) + "; " + resistance + ".");
     }

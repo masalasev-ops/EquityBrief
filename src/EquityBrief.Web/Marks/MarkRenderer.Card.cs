@@ -98,6 +98,9 @@ public sealed record DecisionCardView(
     EquityBrief.Core.Cards.PaperWinners? Winners = null)
 {
     // The id the card's row and the control opening it share.
+    // The entry check's reading of the stock on the night, which the card's line of flags reads and nothing the card decides.
+    public EquityBrief.Core.EntryCheck.EntryReading? EntryCheck { get; init; }
+
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
 }
 
@@ -191,6 +194,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(CardSummary(card, setup))}</p>");
         body.Append(WhyItQualified(card));
         body.Append(ThePlan(card, setup, pick, levels is not null));
+        body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
         body.Append(card.Fill is { } fill ? Formatted($"<p class=\"card-fill\" data-fill>{Escaped(fill)}</p>") : string.Empty);
         body.Append(levels ?? string.Empty);
         body.Append(OtherChecks(card));
@@ -223,6 +227,7 @@ public sealed partial class MarkRenderer
         body.Append("</div>");
         body.Append(TrailLines(card, pick));
         body.Append("</section>");
+        body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
         body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"#/name/{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
 
         return body.Append("</div>").ToString();

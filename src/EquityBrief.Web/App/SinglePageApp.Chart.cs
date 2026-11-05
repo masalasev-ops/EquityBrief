@@ -37,7 +37,12 @@ public sealed record ChartGraphs(
     bool AsksYahoo = false,
     EquityBrief.Core.Analysts.TipRanksView? TipRanks = null,
     EquityBrief.Core.Analysts.TipRanksCalls? Calls = null,
-    DateTimeOffset? Now = null);
+    DateTimeOffset? Now = null)
+{
+    // The newest report, which the analysts' targets and actions are read against.
+    public DateOnly? NewestReport { get; init; }
+}
+
 
 // The chart page as the shell draws it: the stock, the interval shown, its candles with the averages at each, the night's
 // bands, a listing rule's plan as lines, the report and ex-dividend marks, the stretches holding no daily row, the line
@@ -171,7 +176,9 @@ public sealed partial class SinglePageApp
         SuspectPrices? suspect,
         bool? watched,
         string? universe,
-        IReadOnlyList<DividendWait>? dividendWaits = null)
+        IReadOnlyList<DividendWait>? dividendWaits = null,
+        // What the page's region under "If you want in" draws of a stock a family lists on the night.
+        string? entryCheck = null)
     {
         var ticker = view.Ticker;
         var kept = universe is { Length: > 0 } index ? "&universe=" + Uri.EscapeDataString(index) : string.Empty;
@@ -192,6 +199,7 @@ public sealed partial class SinglePageApp
         // see: The chart page opens on a brief read written by code from stored figures, and no rule reads it
         if (view.Brief is { } brief)
         {
+            region.Append(entryCheck ?? string.Empty);
             region.Append(Cards.Computed("In brief", marks.BriefRead(ticker, brief), title: FormattableString.Invariant($"{Escaped(ticker)} in brief"), stamp: Cards.Night(bars.Count > 0 ? bars[^1].SessionDate : null), id: "brief", region: "chart-page-brief"));
         }
 
@@ -319,6 +327,7 @@ public sealed partial class SinglePageApp
 
         if (graphs.Yahoo is { } answer)
         {
+            section.Append(MarkRenderer.SetBefore(answer.Answer.Actions.Select(action => (DateTimeOffset?)action.GradedAt).DefaultIfEmpty(answer.AskedAt).Max() is { } newestAction ? DateOnly.FromDateTime(newestAction.UtcDateTime) : null, graphs.NewestReport));
             section.Append("<div class=\"fig\">").Append(marks.TargetRange(ticker, answer, graphs.Price)).Append("</div>");
             section.Append("<div class=\"fig\">").Append(marks.RatingBars(MarkRenderer.YahooMonths(answer))).Append("</div>");
             section.Append("<div class=\"fig\">").Append(marks.FirmActions(ticker, answer)).Append("</div>");

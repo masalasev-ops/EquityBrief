@@ -45,6 +45,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Ticker joins"),
     ];
 
+    // 22.41's one: the entry check's reader.
+    internal static string[] EntryReaderRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Entry reader"),
+        CheckReach.Key(Scope.MatrixTable, "Entry reader"),
+    ];
+
     // 22.40's two: the late bars' ask and their readings.
     internal static string[] LateBarRows =>
     [
@@ -225,6 +232,7 @@ public partial class ComponentAccess
             // 22.38, the session marks.
             .. SessionMarkRows,
             .. LateBarRows,
+            .. EntryReaderRows,
 
             // 22.37, the chart checker.
             .. ChartCheckRows,

@@ -23,7 +23,7 @@ public sealed record StoredPick(string Ticker, bool SameIndustry, double? Likene
 // What each concept's one value is worked from on a page: the night's stored close and its session, the company's value
 // at that close from the shares filed before the night, and the scorecard's multiple over the earnings filed with the SEC.
 // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
-public sealed record ConceptFigures(decimal? Close, DateOnly? CloseOn, decimal? CompanyValue, double? FiledMultiple, double? NightsMultiple = null)
+public sealed record ConceptFigures(decimal? Close, DateOnly? CloseOn, decimal? CompanyValue, double? FiledMultiple, double? NightsMultiple = null, DateOnly? SharesFiledOn = null)
 {
     // The one trailing multiple: the scorecard's where it holds one, and the night's reading of the provider's quarters
     // otherwise.
@@ -278,7 +278,7 @@ public static partial class NameScreen
         }
         else
         {
-            Fact("Market value", Scaled(newest is null ? null : Text(newest.RootElement, "marketCapitalisation")));
+            Fact("Market value", Scaled(newest is null ? null : Text(newest.RootElement, "marketCapitalisation")), newest is null ? null : "the provider's");
         }
 
         html.Append(year is { } high
@@ -441,7 +441,7 @@ public static partial class NameScreen
     // consensus estimate is drawn beside it and named for what it is: what analysts
     // expect rather than what management said.
     // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
-    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null, EquityBrief.Core.Report.ReleaseOpening? newestRelease = null, (DateOnly From, DateOnly Estimated)? nextEstimated = null, IReadOnlyList<QuarterDatesRow>? storedQuarters = null, IReadOnlyList<DateOnly>? calendarReports = null, bool earlierNight = false, IReadOnlyDictionary<DateOnly, DateOnly>? secFiled = null)
+    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null, EquityBrief.Core.Report.ReleaseOpening? newestRelease = null, (DateOnly From, DateOnly Estimated)? nextEstimated = null, IReadOnlyList<QuarterDatesRow>? storedQuarters = null, IReadOnlyList<DateOnly>? calendarReports = null, bool earlierNight = false, IReadOnlyDictionary<DateOnly, DateOnly>? secFiled = null, DateOnly? fetchedOn = null)
     {
         var html = new System.Text.StringBuilder();
 
@@ -485,6 +485,7 @@ public static partial class NameScreen
 
         html.Append(Snapshot(newest.RootElement, currency, figures, nextEstimated, reportedDays, reportedDay, calendarSays, earlierNight && fromTheCalendar, StatedOf(filings)));
 
+        html.Append(MarkRenderer.FetchedBefore(fetchedOn, reportedDay.On));
         html.Append(Invariant($"<div class=\"sub\">The last {shown} quarters</div><div class=\"tbl-wrap\">"));
         html.Append("<table class=\"numbers-quarters\"><tr><th>Quarter</th><th>Revenue</th>");
         html.Append("<th>Gross margin</th><th>Net margin</th><th>Net income</th><th>Filed</th></tr>");
@@ -879,7 +880,7 @@ public static partial class NameScreen
         {
             var stated = Number(Text(payload, "marketCapitalisation"));
 
-            Concept("Market value", "marketCapitalisation", ConceptCheck.MarketValue, Figures.Money(companyValue), "the shares filed before the night times " + atTheClose, OneValue.StruckValue(stated, shares, close), stated is { } value ? Figures.Money(value) : string.Empty);
+            Concept("Market value", "marketCapitalisation", ConceptCheck.MarketValue, Figures.Money(companyValue), (figures.SharesFiledOn is { } sharesOn ? Invariant($"the shares filed on {sharesOn:yyyy-MM-dd} times ") : "the shares filed before the night times ") + atTheClose, OneValue.StruckValue(stated, shares, close), stated is { } value ? Figures.Money(value) : string.Empty);
         }
         else
         {
@@ -1700,7 +1701,12 @@ public static partial class NameScreen
         // The night's bar where it arrived after the night's day file.
         LateBarRow? lateBar = null,
         // The first day the SEC's filings state each of the stock's periods.
-        IReadOnlyDictionary<DateOnly, DateOnly>? secFiled = null)
+        IReadOnlyDictionary<DateOnly, DateOnly>? secFiled = null,
+        // The day the provider's snapshot was fetched and the day the shares were filed.
+        DateOnly? fetchedOn = null,
+        DateOnly? sharesFiledOn = null,
+        // The entry check's reading of the stock on the night.
+        EquityBrief.Core.EntryCheck.EntryReading? entryCheck = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1922,7 +1928,7 @@ public static partial class NameScreen
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            says is null ? Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null, secFiled) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null, secFiled)),
+            says is null ? Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null, secFiled, fetchedOn) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null, secFiled, fetchedOn)),
             cells,
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
             previousOnTheList,
@@ -1997,7 +2003,8 @@ public static partial class NameScreen
             held: heldTrade,
             dividendWaits: dividendWaits,
             lateBar: lateBar,
-            filedShown: FiledShown(filings, secFiled));
+            filedShown: FiledShown(filings, secFiled),
+            entryCheck: entryCheck);
     }
 
     // The trade a family holds the name on: the newest of the earlier picks still open, with its card from the night it was

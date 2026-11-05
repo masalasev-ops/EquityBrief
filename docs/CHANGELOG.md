@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-05 - docs/ARCHITECTURE.html, docs/SCHEMA.md, src reading "no resistance band above" - the entry check's bar readings and its two fixes
+Decision: The entry check reads a member's bars every night into a table of its own, and no rule reads it
+Decision: A page with no resistance level in the last year of bars says so and draws the nearest older band, for display alone
+Decision: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
+Was:
+> | `entry_reading` not a table; and a page saying "no resistance band above"
+Now:
+> a new table and its reader; "no resistance level in the last year of bars", with the nearest older band drawn with its year where older prices stand above; a figure from before the newest report saying so
+Why: the operator's entry check order of 2026-11-04, its first pull request.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html - five rows of the name page: the filing date, a placeholder segment, joined capitals, a next report estimated and the proof
 Decision: A quarter's filing date is read from the SEC's own filings, and where they hold none the page says so
 Decision: A company whose one segment is filed under a placeholder name is told so with no name

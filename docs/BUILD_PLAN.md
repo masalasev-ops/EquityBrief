@@ -2434,6 +2434,31 @@ Same answers, and their word on KVUE in 22.38's ruling entry. Where a refetch's 
 
 **Done when** the gap is worked by hand on both sides of its limit and a later split's restated amount is read at what was paid; a dividend the answer does not carry waits over a constructed store, its state ok, asked for over its nightly retries, not between its weekly asks and again when the next falls due, an answer carrying it ending the wait; a stock that leaves the index is not asked and takes its row with it; the name page, the chart page and the run page say so while it waits and draw nothing after; a refetch answer is refused on both sides of each limit, a real move the store shows, a split the store has not applied and a stored session with no volume standing; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.41 The entry check's region, its card line, its bar readings and its two fixes
+On the operator's order of 2026-11-04, word for word in `prompts/2026-11-04-22-entry-check-order.md`. Everything in it is arithmetic over stored data, and it changes no pick, plan, record, paper account or family setting.
+
+**Done when** each bar reading is worked by hand over a constructed series and read back on the region and the card line, a stock no rule picked holds its row, the read-only copy draws the sentences with no outline, and the two fixes are read back on the page.
+
+### 22.42 The entry check's one-off reading
+From the stored release text, by fixed phrases, a per-share amount and its share of the stored surprise.
+
+**Done when** a release naming an item, one naming none and a stock holding no release each read as the order's words state.
+
+### 22.43 The entry check's wait plan
+For every pick from the existing ladder alone, marked provisional.
+
+**Done when** the zone, the stop, the first exit and the reward to risk are worked by hand on a gap day and on a day with no gap, and the entry states where the code's zone differs from the order's hand-worked case and why.
+
+### 22.44 The entry check's test through the loop
+The readings and the wait entries reach the loop's tester as the order states, once the operator has ruled on the pins the catalogue carries.
+
+**Done when** the first run's report states per family, per index and before and from 2025 each reading in its bands and each entry against the next-open buy.
+
+### 22.45 The entry check's harness rows and fixture
+One roster row per reading, per fix and for the card line, and a committed fixture whose expected values are written by hand from the rule text.
+
+**Done when** the fixture's cases hold and `tools/verify-phase` covers them.
+
 ---
 
 ## Tabled for phase 23

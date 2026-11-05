@@ -364,6 +364,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         {
             Graphs = graphs with
             {
+                NewestReport = report.Quarter?.Reported,
                 Yahoo = yahoo,
                 AsksYahoo = !copying && indexCode is not null && (yahoo is null || yahoo.AskedAt < EquityBrief.Core.Analysts.AnalystLimits.DayOf(now, clock.SessionZone).From),
                 TipRanks = copying ? null : await read.NewestRatingsAsync(ticker),
@@ -416,7 +417,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
             NameScreen.Suspect((await read.SuspectSeriesAsync()).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal))),
             (await read.WatchedAsync()).Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
             universe,
-            await read.DividendWaitsAsync(ticker)),
+            await read.DividendWaitsAsync(ticker),
+            cards.FirstOrDefault(card => card.EntryCheck is not null) is { } picked ? marks.EntryCheck(picked.EntryCheck, picked.Entry, picked.Stop, picked.Family) : null),
         "text/html; charset=utf-8");
 });
 
@@ -759,7 +761,10 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             : null,
         dividendWaits: await read.DividendWaitsAsync(ticker),
         lateBar: bars.Count > 0 ? await read.LateBarOfAsync(ticker, bars[^1].SessionDate) : null,
-        secFiled: await read.SecFiledDaysAsync(ticker, on));
+        secFiled: await read.SecFiledDaysAsync(ticker, on),
+        fetchedOn: await read.SnapshotFetchedOnAsync(ticker, on),
+        sharesFiledOn: await read.SharesFiledOnAsync(ticker, on),
+        entryCheck: bars.Count > 0 ? await read.EntryReadingOfAsync(ticker, bars[^1].SessionDate) : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -2818,7 +2823,7 @@ async Task<IResult> HomeAsync(
         // its rule's winning trades off its card.
         decimal? trail = pick.Trailing && pick.Target is null && pick.Buy is { } buy && pick.Stop is { } stop && buy > stop ? pick.Card?.Trail ?? buy - stop : null;
 
-        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners);
+        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners, EntryCheck: pick.Card?.EntryCheck);
     }
 
     HomeIdea[] fundamentals =

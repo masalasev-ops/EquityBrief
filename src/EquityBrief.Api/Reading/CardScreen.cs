@@ -110,7 +110,10 @@ public static class CardScreen
             row.Approved,
             Cap: row.Cap,
             Trail: row.Trail,
-            OpenFloor: row.Index == ReadApi.OpenFloorIndex && string.Equals(row.Family, EquityBrief.Core.Families.DriftRule.Name, StringComparison.Ordinal) ? given.OpenFloor : null);
+            OpenFloor: row.Index == ReadApi.OpenFloorIndex && string.Equals(row.Family, EquityBrief.Core.Families.DriftRule.Name, StringComparison.Ordinal) ? given.OpenFloor : null)
+        {
+            EntryCheck = row.EntryCheck,
+        };
     }
 
     // What could hit the trade, as the night stored it on the card.

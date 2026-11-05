@@ -98,6 +98,11 @@ public partial class ArchitectureConformance
 
         // What the PR 640 read-back left open: five rows of the name page.
         .. Reading.ReadSurface.ReadBackRows,
+
+        // 22.41's reader, its store and its five rows of the pages.
+        .. ComponentAccess.EntryReaderRows,
+        .. SchemaColumns.EntryReadingStoreRows,
+        .. Reading.ReadSurface.EntryCheckRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

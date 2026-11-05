@@ -10,7 +10,7 @@ namespace EquityBrief.Web.App;
 // its plan set tonight, none where the plan sets none, whether its give-up price rises with the stock in place of a
 // target, and what it risks against what it aims for; and from 22.18, for a plan selling on a rising give-up price with no
 // target, the distance it rises behind the highest close at and its rule's winning trades.
-public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null);
+public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null);
 
 // How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
 // many made money; the combined paper account's return, the day it counts from and the index's fund over the same days; and
@@ -306,6 +306,8 @@ public sealed partial class SinglePageApp
         card.Append(idea.Trail is not null && idea.Stop is not null ? Invariant($"<p class=\"home-rising\">{Escaped(MarkRenderer.RisingWords)}</p>") : string.Empty);
         card.Append(Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
         card.Append("</div>");
+
+        card.Append(MarkRenderer.EntryCheckLine(idea.EntryCheck, idea.Ticker));
 
         if (idea.Trail is { } trail && idea.Buy is { } entered && idea.Stop is not null)
         {

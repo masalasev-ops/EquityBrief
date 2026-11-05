@@ -196,6 +196,7 @@ public partial class ReadSurface
             .. BriefRows,
             .. LateBarRows,
             .. ReadBackRows,
+            .. EntryCheckRows,
 
             // 22.6, Tonight in one minute and the page's words at its foot.
             .. TonightRows,

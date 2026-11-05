@@ -35,6 +35,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `membership` | MembershipLoader | MembershipLoader | none |
 | `bar` | Backfill, BarFetcher, CorporateActionChecker, LateBarAsker | none | BarFetcher, CorporateActionChecker |
 | `late_bar_ask` | LateBarAsker | LateBarAsker, LateBarReadings | none |
+| `entry_reading` | EntryReader, LateBarReadings | none | EntryReader |
 | `kept_bar` | BarFetcher | none | none |
 | `market_bar` | MarketSeriesFetcher | MarketSeriesFetcher | none |
 | `live_quote` | QuoteJob | none | none |
@@ -346,6 +347,36 @@ Grain: one row per stock and ex-date whose dividend the provider's answer did no
 Primary key: `ticker`, `ex_date`.
 
 **A dividend the answer did not carry, asked for again on the five nights after and weekly, and removed when an answer carries it or the stock leaves the index** (see: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits). Its stock's state stays ok, so no rule stops; the stock's pages and the run page read it.
+
+### entry_reading
+Grain: one row per member and session holding a bar on it.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the night |
+| `close` | TEXT | decimal in code, the night's close |
+| `typical_day` | REAL | the night's 14-session average true range |
+| `stretch_percent` | REAL | the close over its 20-session average, in per cent |
+| `stretch_days` | REAL | the same distance in typical days |
+| `stretch_share` | REAL | the share of the stock's stored days holding the average that stood this far above it or more, in per cent |
+| `gain_twenty` | REAL | the gain over 20 sessions, in per cent |
+| `rsi` | REAL | the night's 14-session RSI |
+| `largest_gain` | INTEGER | 1 where the night's one-day gain is the largest of 250 sessions, null where fewer are held |
+| `volume_ratio` | REAL | the night's volume over its 50-session mean |
+| `gap_high` | TEXT | decimal in code, the prior session's high where the night's low stands above it |
+| `gap_low` | TEXT | decimal in code, the night's low where it does |
+| `highest_since` | TEXT | the most recent earlier session closing at or above the night's close, over the stored and pulled history |
+| `history_start` | TEXT | the first session the stored and pulled history holds |
+| `older_low` | TEXT | decimal in code, the nearest band above the close from the pulled history |
+| `older_high` | TEXT | decimal in code, its top |
+| `older_on` | TEXT | the session the pulled prices turned at |
+| `older_days` | REAL | its distance above the close in typical days |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `ticker`, `session_date`.
+
+**Read by the pages alone** (see: The entry check reads a member's bars every night into a table of its own, and no rule reads it). A night run again replaces its own rows, and no rule, plan, list or gate reads the table until the test through the loop earns one and the operator approves it. A bar that arrives in the off-peak run has its row written then by the late bar readings.
 
 ### late_bar_ask
 Grain: one row per member, session and stage asked for a bar the night's day file did not carry.

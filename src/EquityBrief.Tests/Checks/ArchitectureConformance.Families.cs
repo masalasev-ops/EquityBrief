@@ -413,10 +413,10 @@ public partial class ArchitectureConformance
         // catalogue and matrix rows and paper trading's tone variant's line, and 1497 from 22.16, Home's six regions, and 1498
         // from the 18.4 correction of 2026-11-02, section 17's row of the report page's day limits, and 1501 from 22.33, the
         // ticker joins' catalogue, matrix and store rows, and 1506 from 22.37, the chart's line, the chart checker's catalogue
-        // and matrix rows and its two stores, and 1510 from 22.38's session marks' catalogue, matrix and store rows, 1517 from the late bars' two catalogue and two matrix rows, their store and the two page rows, 1522 from what the read-back left open, and 22.40's
+        // and matrix rows and its two stores, and 1510 from 22.38's session marks' catalogue, matrix and store rows, 1517 from the late bars' two catalogue and two matrix rows, their store and the two page rows, 1522 from what the read-back left open, 1530 from 22.41's reader, store and five rows of the pages, and 22.40's
         // dividend waits' store row.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1522),
+            (789, 853, 6, 4, 855, 876, 1530),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

@@ -1511,7 +1511,9 @@ public sealed partial class SinglePageApp : IComponent
         // The night's bar where it arrived after the night's day file.
         LateBarRow? lateBar = null,
         // The day the SEC's filings state for the newest filing's quarter, which the cards dated by the filing draw.
-        DateOnly? filedShown = null)
+        DateOnly? filedShown = null,
+        // The entry check's reading of a stock a family lists on the night.
+        EquityBrief.Core.EntryCheck.EntryReading? entryCheck = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -2285,7 +2287,7 @@ public sealed partial class SinglePageApp : IComponent
                 analystBody.ToString(),
                 title: "What the analysts expect, labelled as theirs",
                 filed: true,
-                note: "the analysts' figures",
+                note: analysts.FetchedOn is { } fetchedThen && report?.Quarter is { Reported: { } reportedSince } && reportedSince > fetchedThen ? MarkRenderer.SetBeforeWords(reportedSince) : "the analysts' figures",
                 id: "analysts"),
                 analysts.FetchedOn);
         }
@@ -2385,6 +2387,7 @@ public sealed partial class SinglePageApp : IComponent
         // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
         if (decision is not null)
         {
+            region.Append(marks.EntryCheck(entryCheck, decision.Entry, decision.Stop, decision.Family));
             Card("card", "card", "The decision card", Invariant($"<section class=\"card name-card\" id=\"card\" data-role=\"{Cards.Buy}\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
         }
         else if (held is not null)
