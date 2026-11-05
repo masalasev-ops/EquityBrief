@@ -7,6 +7,19 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-05 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - Home's line of the entry check, and how the readings reach the test
+Decision: Home's line of an idea's entry check says each flag in plain words, and dates a day as d Mon yyyy
+Was:
+> An idea's entry check: the same line of flags and the same link on each idea's card
+> 22.44: The readings and the wait entries reach the loop's tester as the order states, once the operator has ruled on the pins the catalogue carries.
+> 22.44's done condition: ... each entry against the next-open buy.
+Now:
+> An idea's entry check: the same flags in Home's plain words and the same link on each idea's card
+> 22.44: no pinned file touched, the bands report a read-only measurement through a tester entry point no live rule pins, the wait entries registered only if no live rule's version moves
+> 22.44's done condition: ... each entry against the next-open buy, and no version of a live rule moved.
+> A paragraph added under "Tabled for phase 23" for the readings' registration in the ledger.
+Why: the operator's answers of 2026-11-05 to the report of that day.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html, docs/SCHEMA.md, src reading "no resistance band above" - the entry check's bar readings and its two fixes
 Decision: The entry check reads a member's bars every night into a table of its own, and no rule reads it
 Decision: A page with no resistance level in the last year of bars says so and draws the nearest older band, for display alone

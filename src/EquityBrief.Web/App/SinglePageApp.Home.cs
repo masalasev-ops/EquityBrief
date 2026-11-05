@@ -307,7 +307,7 @@ public sealed partial class SinglePageApp
         card.Append(Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
         card.Append("</div>");
 
-        card.Append(MarkRenderer.EntryCheckLine(idea.EntryCheck, idea.Ticker));
+        card.Append(MarkRenderer.HomeEntryCheckLine(idea.EntryCheck, idea.Ticker));
 
         if (idea.Trail is { } trail && idea.Buy is { } entered && idea.Stop is not null)
         {

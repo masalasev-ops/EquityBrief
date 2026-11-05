@@ -39,7 +39,7 @@ public static class EntryReadings
     // How rare a stretch this far above the average must be among the stock's own stored days for the card to name it, and how
     // long ago a highest close must be for the card to name it. Provisional, and display alone: the state a stock is in is not
     // set by them, and the test over stored history is what would.
-    public const double StretchedShare = 10;
+    public const double StretchedShare = 5;
     public const int HighestCloseDays = 365;
 
     // `older` is the sessions pulled before the stored year at the store's scale, oldest first, and `stored` the stored year,

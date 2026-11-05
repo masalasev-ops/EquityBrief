@@ -45,5 +45,15 @@ public sealed partial class MarkRenderer
     public static string EntryCheckLine(EntryReading? reading, string ticker) =>
         reading is null
             ? string.Empty
-            : $"<p class=\"entry-card-line\" data-entry-flags=\"{EntryWords.Flags(reading).Count.ToString(Invariant)}\">{Escaped(EntryWords.CardLine(reading))} <a href=\"#/name/{Uri.EscapeDataString(ticker)}\">{Escaped(EntryWords.See)}</a></p>";
+            : EntryLine(EntryWords.Flags(reading).Count, EntryWords.CardLine(reading), ticker);
+
+    // An idea's line on Home, in Home's plain words.
+    // see: Home's line of an idea's entry check says each flag in plain words, and dates a day as d Mon yyyy
+    public static string HomeEntryCheckLine(EntryReading? reading, string ticker) =>
+        reading is null
+            ? string.Empty
+            : EntryLine(EntryWords.HomeFlags(reading).Count, EntryWords.HomeLine(reading), ticker);
+
+    static string EntryLine(int flags, string line, string ticker) =>
+        $"<p class=\"entry-card-line\" data-entry-flags=\"{flags.ToString(Invariant)}\">{Escaped(line)} <a href=\"#/name/{Uri.EscapeDataString(ticker)}\">{Escaped(EntryWords.See)}</a></p>";
 }

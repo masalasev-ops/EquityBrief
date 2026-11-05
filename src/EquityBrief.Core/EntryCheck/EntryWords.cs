@@ -116,6 +116,38 @@ public static class EntryWords
     public static string CardLine(EntryReading reading) =>
         Flags(reading) is { Count: > 0 } flags ? string.Join(" · ", flags) : NothingFlagged;
 
+    // The same flags in Home's plain words, for a reader new to investing, its days as Home writes a day.
+    // see: Home's line of an idea's entry check says each flag in plain words, and dates a day as d Mon yyyy
+    public static IReadOnlyList<string> HomeFlags(EntryReading reading)
+    {
+        var flags = new List<string>();
+
+        if (EntryReadings.Stretched(reading) && reading.StretchPercent is { } percent)
+        {
+            flags.Add(I($"Stretched: {Tenth(percent)}% above its average price of the last 20 trading days"));
+        }
+
+        if (reading.LargestGain == true)
+        {
+            flags.Add("Biggest one-day rise in a year");
+        }
+
+        if (reading.GapHigh is not null)
+        {
+            flags.Add("Jumped at the open, leaving a gap below the buy price");
+        }
+
+        if (EntryReadings.HighestLongSince(reading))
+        {
+            flags.Add(reading.HighestSince is { } since ? I($"Highest close since {HomeDay(since)}") : I($"Highest close in its history held, back to {HomeDay(reading.HistoryStart!.Value)}"));
+        }
+
+        return flags;
+    }
+
+    public static string HomeLine(EntryReading reading) =>
+        HomeFlags(reading) is { Count: > 0 } flags ? string.Join(" · ", flags) : NothingFlagged;
+
     static string I(FormattableString text) => text.ToString(CultureInfo.InvariantCulture);
 
     static string Tenth(double value) => value.ToString("0.0", CultureInfo.InvariantCulture);
@@ -127,4 +159,6 @@ public static class EntryWords
     static string Dollars(decimal value) => "$" + value.ToString("0.00", CultureInfo.InvariantCulture);
 
     static string Day(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    static string HomeDay(DateOnly day) => day.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
 }

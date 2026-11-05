@@ -57,6 +57,9 @@ public partial class ReadSurface
 
     static EntryReading EntryWorked() => EntryReadings.Of("HAND", EntryYear(), EntryOlder(), 2.5, 70, 1000)!;
 
+    // The worked stock stood this far on 1 of its 11 days, over the card's line; this one reads the flag as a stock under it does.
+    static EntryReading EntryFlagged() => EntryWorked() with { StretchShare = 4 };
+
     [Fact]
     public void TheEntryCheckReadsTheBarsAsWorkedByHand()
     {
@@ -126,7 +129,7 @@ public partial class ReadSurface
     [Fact]
     public void TheCardsLineNamesTheFlagsThatApplyOrThatNoneDoes()
     {
-        var reading = EntryWorked();
+        var reading = EntryFlagged();
 
         Assert.Equal(
             "Stretched: 3.8 typical days above its 20-session average · Largest one-day gain in 250 sessions · Gap below the buy · Highest close since 2024-08-20",
@@ -136,10 +139,11 @@ public partial class ReadSurface
 
         Assert.Equal("Entry check: nothing flagged", EntryWords.CardLine(quiet));
 
-        // A tenth of its days is the last share the card names, a year the last age it does not.
-        Assert.False(EntryReadings.Stretched(quiet with { StretchShare = 10.01 }));
-        Assert.True(EntryReadings.Stretched(quiet with { StretchShare = 10 }));
-        Assert.False(EntryReadings.Stretched(quiet with { StretchShare = 5, StretchDays = -1 }));
+        // A twentieth of its days is the last share the card names, a year the last age it does not.
+        Assert.False(EntryReadings.Stretched(EntryWorked()));
+        Assert.False(EntryReadings.Stretched(quiet with { StretchShare = 5.01 }));
+        Assert.True(EntryReadings.Stretched(quiet with { StretchShare = 5 }));
+        Assert.False(EntryReadings.Stretched(quiet with { StretchShare = 1, StretchDays = -1 }));
         Assert.False(EntryReadings.HighestLongSince(quiet with { HighestSince = EntryNight.AddDays(-365) }));
         Assert.True(EntryReadings.HighestLongSince(quiet with { HighestSince = EntryNight.AddDays(-366) }));
         Assert.True(EntryReadings.HighestLongSince(quiet with { HighestSince = null }));
@@ -188,7 +192,7 @@ public partial class ReadSurface
     [Fact]
     public async Task ACardAndAnIdeaCarryTheLineAndTheReadHandsItTheStocksReadingOfItsNight()
     {
-        var row = new DecisionCardRow("GSPC", EntryNight, EquityBrief.Core.Families.DriftRule.Name, "HAND", 1, 110m, 109m, 130m, "the drift rule", "{}", "[]", null, Cap: 60, EntryCheck: EntryWorked());
+        var row = new DecisionCardRow("GSPC", EntryNight, EquityBrief.Core.Families.DriftRule.Name, "HAND", 1, 110m, 109m, 130m, "the drift rule", "{}", "[]", null, Cap: 60, EntryCheck: EntryFlagged());
         var view = CardScreen.View(row, CardContext.None);
         const string Line = "Stretched: 3.8 typical days above its 20-session average";
 
@@ -213,9 +217,37 @@ public partial class ReadSurface
         Assert.Equal(9.5, (await Api(store).EntryReadingOfAsync("HAND", EntryNight))!.StretchPercent);
         Assert.Null(await Api(store).EntryReadingOfAsync("NONE", EntryNight));
 
-        var region = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(EquityBrief.Core.Families.SetupFamilies.Pullback, "HAND", null, "A dip.", 100m, 90m, 125m, false, null, EntryCheck: EntryWorked())], IdeasCount = 1 }, string.Empty);
+        var region = System.Net.WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(EquityBrief.Core.Families.SetupFamilies.Pullback, "HAND", null, "A dip.", 100m, 90m, 125m, false, null, EntryCheck: EntryFlagged())], IdeasCount = 1 }, string.Empty));
 
-        Assert.Contains(Line, System.Net.WebUtility.HtmlDecode(region), StringComparison.Ordinal);
+        Assert.Contains(EntryWords.HomeLine(EntryFlagged()), region, StringComparison.Ordinal);
+        Assert.DoesNotContain(Line, region, StringComparison.Ordinal);
+    }
+
+    // Home's line says each flag as the operator worded it, and none of the words Home's reader is not expected to know.
+    [Fact]
+    public void HomesLineSaysEachFlagInPlainWordsAndDatesADayAsDMonYyyy()
+    {
+        var reading = EntryFlagged();
+        var line = EntryWords.HomeLine(reading);
+
+        Assert.Equal(
+            "Stretched: 9.5% above its average price of the last 20 trading days · Biggest one-day rise in a year · Jumped at the open, leaving a gap below the buy price · Highest close since 20 Aug 2024",
+            line);
+
+        foreach (var word in new[] { "typical", "stop", "session", "setup" })
+        {
+            Assert.DoesNotContain(word, line, StringComparison.OrdinalIgnoreCase);
+        }
+
+        Assert.Equal(
+            "Highest close in its history held, back to 3 Mar 2019",
+            EntryWords.HomeLine(reading with { StretchShare = 50, LargestGain = false, GapHigh = null, GapLow = null, HighestSince = null, HistoryStart = new DateOnly(2019, 3, 3) }));
+        Assert.Equal(
+            "Entry check: nothing flagged",
+            EntryWords.HomeLine(reading with { StretchShare = 50, LargestGain = false, GapHigh = null, GapLow = null, HighestSince = EntryNight.AddDays(-30) }));
+        Assert.Equal(string.Empty, MarkRenderer.HomeEntryCheckLine(null, "BF.B"));
+        Assert.Contains("data-entry-flags=\"4\"", MarkRenderer.HomeEntryCheckLine(reading, "HAND"), StringComparison.Ordinal);
+        Assert.Contains("See the entry check", MarkRenderer.HomeEntryCheckLine(reading, "HAND"), StringComparison.Ordinal);
     }
 
     // The company's value names the day its shares were filed where one is read, on the numbers and on the fact strip.

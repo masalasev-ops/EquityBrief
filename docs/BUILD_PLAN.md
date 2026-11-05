@@ -2450,9 +2450,9 @@ For every pick from the existing ladder alone, marked provisional.
 **Done when** the zone, the stop, the first exit and the reward to risk are worked by hand on a gap day and on a day with no gap, and the entry states where the code's zone differs from the order's hand-worked case and why.
 
 ### 22.44 The entry check's test through the loop
-The readings and the wait entries reach the loop's tester as the order states, once the operator has ruled on the pins the catalogue carries.
+On the operator's answers of 2026-11-05: no pinned file is touched and the readings stay in their own table. The bands report runs as a read-only measurement over the stored years, through a tester entry point no live rule pins. The wait entries are registered if that moves no live rule's version, and otherwise are said not to be and are measured read-only too.
 
-**Done when** the first run's report states per family, per index and before and from 2025 each reading in its bands and each entry against the next-open buy.
+**Done when** the first run's report states per family, per index and before and from 2025 each reading in its bands and each entry against the next-open buy, and no version of a live rule moved.
 
 ### 22.45 The entry check's harness rows and fixture
 One roster row per reading, per fix and for the card line, and a committed fixture whose expected values are written by hand from the rule text.
@@ -2462,6 +2462,8 @@ One roster row per reading, per fix and for the card line, and a committed fixtu
 ---
 
 ## Tabled for phase 23
+
+On the operator's answers of 2026-11-05, in 22.41's second ruling entry: at phase 23's restart the entry check's readings are registered in the ledger, and the wait entries with them if they could not be registered without moving a live rule's version at 22.44. Any later reading or wait entry that would need a level read from the pulled history moves pinned code and belongs to the same restart.
 
 On the operator's answer of 2026-11-03, in 21.21's ruling entry in `PROGRESS.md`: phase 23's plan includes one restart point, at which every file still holding a rule's screen wording, which the check `RuleWordingOutOfThePins` names with the rules pinned to each, has its words moved to the one file no version pins. Until then a wording fix on those rules waits for it and restarts no rule. If phase 23 restarts nothing, each file's words move the next time a rule pinned to it changes version for a real reason (see: A rule's screen wording sits outside the sources its version pins and a file still holding it waits for a restart already happening).
 
