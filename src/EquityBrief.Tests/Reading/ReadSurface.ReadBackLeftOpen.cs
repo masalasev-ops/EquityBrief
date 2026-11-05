@@ -102,7 +102,9 @@ public partial class ReadSurface
             $"('0000000042', 'Revenues', '2026-01-01', '{periods[0]}', '5', '2026-08-15', '10-Q', 'a-1', 'r'), " +
             $"('0000000042', 'NetIncomeLoss', '2026-01-01', '{periods[1]}', '5', '2026-08-15', '8-K', 'a-2', 'r'), " +
             // A later report stating the newest quarter again, as a year's comparatives do: the first filing's day stands.
-            $"('0000000042', 'NetIncomeLoss', '2026-01-01', '{periods[0]}', '5', '2026-11-01', '10-K', 'a-3', 'r');");
+            $"('0000000042', 'NetIncomeLoss', '2026-01-01', '{periods[0]}', '5', '2026-11-01', '10-K', 'a-3', 'r'), " +
+            // A report stating a period ahead of it, as PMT's of 2021 state 2026's: no filing of that period.
+            $"('0000000042', 'Revenues', '2019-01-01', '{periods[2]}', '5', '2020-01-01', '10-Q', 'a-4', 'r');");
 
         var days = await Api(store).SecFiledDaysAsync(Name);
         var drawn = NameScreen.Numbers(filings, secFiled: days);
