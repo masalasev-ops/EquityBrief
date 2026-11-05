@@ -4369,8 +4369,8 @@ internal static class Scope
             Verdict.Pass, "each kind of rule's chips worked by hand from its stored settings, the eight kinds among them, and the chips and the sentence beneath them read off the rendered card", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a chosen variant's differing chips marked")] = new Scoped(
             Verdict.Pass, "a chosen variant's chips read off the rendered card with the ones it differs on marked and no other, and the live rule's none marked", ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "A family's card's rule, one line naming the picks it shares with the live rule's passes tonight and those it adds and drops")] = new Scoped(
-            Verdict.Pass, "the picks a chosen variant shares, adds and drops worked by hand over a constructed night and read off the rendered card's line", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, one line naming the stocks it shares with the live rule tonight and those it adds and drops, the stocks it qualified against the live rule's qualifying stocks on the S&P 500 and its picks against the live rule's picks on the S&P 400 and 600 and for the dip")] = new Scoped(
+            Verdict.Pass, "the stocks a chosen variant shares, adds and drops worked by hand over a constructed night and read off the rendered card's line, its qualifying stocks where the night kept its answers and its picks where it kept none", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, its own picks with their plans and the family's three numbers in place of the live rule's rows")] = new Scoped(
             Verdict.Pass, "a chosen variant's own picks read off the rendered card with their plans and none of the live rule's rows, and each family's three numbers worked by hand from the ledger's readings the night stored, one stored as none drawn so", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so")] = new Scoped(
@@ -6750,7 +6750,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a tab a rule beneath the card's header naming the live rule or the provisional rule first and then each registered variant by the number of its first registration and the settings it differs on in short words written by code from the register's parameters through one table of short words an evaluator")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the chosen rule's settings as chips with its sentence a click away")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a chosen variant's differing chips marked")] = "19.3",
-        [CheckReach.Key("15.7 Tonight", "A family's card's rule, one line naming the picks it shares with the live rule's passes tonight and those it adds and drops")] = "19.3",
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, one line naming the stocks it shares with the live rule tonight and those it adds and drops, the stocks it qualified against the live rule's qualifying stocks on the S&P 500 and its picks against the live rule's picks on the S&P 400 and 600 and for the dip")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, its own picks with their plans and the family's three numbers in place of the live rule's rows")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, behind an expander naming the count forming")] = "19.3",
@@ -7392,7 +7392,7 @@ internal static class Scope
             "a chosen variant's differing chips marked",
             "a variant chosen redraws the card from that rule's rows under the band saying it is scored in the background and not the live rule and its picks are not tonight's list",
             "its words written by code from its parameters with the clauses the live rule's words lack marked",
-            "one line naming the picks it shares with the live rule's passes tonight and those it adds and drops",
+            "one line naming the stocks it shares with the live rule tonight and those it adds and drops, the stocks it qualified against the live rule's qualifying stocks on the S&P 500 and its picks against the live rule's picks on the S&P 400 and 600 and for the dip",
             "its own picks with their plans and the family's three numbers in place of the live rule's rows",
             "the chosen rule's funnel with each gate and how many members passed it and every gate before, or that the night did not evaluate the rule",
             "the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so",

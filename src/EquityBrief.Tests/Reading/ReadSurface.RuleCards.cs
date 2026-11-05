@@ -46,6 +46,33 @@ public partial class ReadSurface
             "INSERT INTO rule_night (index_code, session_date, family, rule, evaluated, listed, gates, stretch, mark, flagged, completed, sessions, source) VALUES " +
             $"('{index}', '{night}', '{family}', '{Doubled(rule)}', 1, {listed}, {(gates is null ? "NULL" : $"'{gates}'")}, {(stretch is { } held ? held : "NULL")}, {(mark is { } level ? level : "NULL")}, {(flagged ? 1 : 0)}, {completed}, {sessions}, 'night');");
 
+    // The 19.3 correction of 2026-11-05: the S&P 500's night kept the neighbour's answer on each member, firing on K1 and
+    // K2, the live rule's two qualifying stocks, while its own list kept K1 alone. Held like with like, its qualifying
+    // stocks against the live rule's, it shares K1 and K2 and drops none, where its one pick against the live rule's two
+    // read that it dropped K2, a stock it qualified.
+    // see: A version's line holds its qualifying stocks against the live rule's where the night stores both, and its picks against the live rule's picks where it does not
+    [Fact]
+    public async Task AVersionsLineHoldsItsQualifyingStocksAgainstTheLiveRulesAndNeverDropsOneItQualifiedButDidNotPick()
+    {
+        using var store = await FamilyPagesStore();
+
+        RegisteredRule(store, 101, TheSetupFamilies.Breakouts[0], "2026-01-02T12:00:00Z");
+        RegisteredRule(store, 103, TheSetupFamilies.Breakouts[1], "2026-01-02T12:00:00Z");
+        Kept(store, NeighbourBreakout, "breakout", "K1", TheSwitch, null, null, null);
+        store.Execute($"UPDATE family_result SET shadow = '{{\"candidates\":[{{\"candidate\":\"{NeighbourBreakout}\",\"fired\":true,\"values\":{{}}}}]}}' WHERE session_date = '{TheSwitch}' AND family = 'breakout' AND ticker IN ('K1', 'K2');");
+        RuleNightRow(store, "GSPC", TheSwitch, "breakout", LiveBreakout, 2, null, 0, null, false, 0, 1);
+        RuleNightRow(store, "GSPC", TheSwitch, "breakout", NeighbourBreakout, 1, null, 0, null, false, 0, 1);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var card = Section(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?breakout={RunScreen.Slug(NeighbourBreakout)}")), "breakout");
+
+        Assert.Contains("<tr data-ticker=\"K1\" data-variant-pick=\"true\">", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("<tr data-ticker=\"K2\" data-variant-pick=\"true\">", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"rule-share\" data-shared=\"K1,K2\" data-added=\"\" data-dropped=\"\">Beside the live setup's qualifying stocks tonight, it shares K1, K2, adds none and drops none.</p>", card, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task AVariantChosenInTheLinkRedrawsTheCardUnderTheBandWithItsOwnPicksAndTheDifferingClausesMarkedAndTheDefaultIsTheLiveRule()
     {
@@ -90,11 +117,12 @@ public partial class ReadSurface
         Assert.Contains("251", Marked(card).Single(), StringComparison.Ordinal);
         Assert.DoesNotContain("126", Marked(card).Single(), StringComparison.Ordinal);
 
-        // Its own pick, K3, which the live rule does not list, and none of the live rule's rows: beside the live rule's
-        // passes tonight, K1 and K2, it shares none, adds K3 and drops both.
+        // Its own pick, K3, which the live rule does not list, and none of the live rule's rows. The night kept no answer of
+        // the version's on any member, so its picks are held against the live rule's picks, K1 and K2: it shares none, adds
+        // K3 and drops both.
         Assert.Contains("<tr data-ticker=\"K3\" data-variant-pick=\"true\">", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"K1\"", card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"rule-share\" data-shared=\"\" data-added=\"K3\" data-dropped=\"K1,K2\">Beside the live setup's qualifying stocks tonight, it shares none, adds K3 and drops K1, K2.</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"rule-share\" data-shared=\"\" data-added=\"K3\" data-dropped=\"K1,K2\">Beside the live setup's picks tonight, it shares none, adds K3 and drops K1, K2.</p>", card, StringComparison.Ordinal);
 
         // Its funnel as one bar a gate, the gate stopping the most of those reaching it marked and named: of the 10 the
         // market passed, 3 made a new high, 7 stopped there, where the volume, the tightening and the trade stopped 1, 1 and

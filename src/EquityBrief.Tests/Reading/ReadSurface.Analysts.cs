@@ -268,6 +268,45 @@ public partial class ReadSurface
         }
     }
 
+    // The newest count TipRanks stated as starting again at 2026-11-01T00:00:00Z: at that instant and a second after, the
+    // count has rolled to November and starts again on 2026-12-01; a month and a day after it, on 2027-01-01. A count read
+    // with no call allowed is spent past the reset too, and its refusal names the next month's first instant.
+    [Fact]
+    public async Task TheCallsLineAndTheSpentRefusalNameTheNextMonthOnceTheStatedResetHasPassed()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var name = FiredNamesOn(store, NightIn(store))[0];
+        var reset = new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero);
+
+        store.Execute($"INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES ('{AnalystLimits.RatingsStage}-one', '{AnalystLimits.RatingsStage}', '2026-10-27T14:30:00Z', '2026-10-27T14:30:06Z', 'answered', 1, 0, 4, '0', '{{\"ticker\":\"{name}\",\"askedAt\":\"2026-10-27T14:30:00Z\",\"detail\":\"x\",\"used\":3,\"limit\":100,\"resetsAt\":\"2026-11-01T00:00:00Z\",\"readAt\":\"2026-10-27T14:30:06Z\"}}');");
+
+        foreach (var (at, day) in new[] { (reset, "2026-12-01"), (reset.AddSeconds(1), "2026-12-01"), (new DateTimeOffset(2026, 12, 2, 0, 0, 0, TimeSpan.Zero), "2027-01-01") })
+        {
+            using var host = new PassHost(store.Root) { Clock = FixedClock.At(at, SessionZones.UnitedStates) };
+            using var client = host.CreateClient();
+            var page = await client.GetStringAsync($"/screens/chart/{name}");
+
+            Assert.Contains($"<span class=\"ratings-calls\" data-used=\"0\" data-left=\"100\" data-limit=\"100\">TipRanks: 0 used, 100 left this month, starting again on {day}</span>", page, StringComparison.Ordinal);
+        }
+
+        // A second before the reset the count still starts again at the instant TipRanks stated.
+        Assert.Equal(reset, AnalystLimits.CountStartsAgain(new TipRanksCalls(3, 100, reset, reset), reset.AddSeconds(-1)));
+
+        store.Execute($"INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES ('{AnalystLimits.RatingsStage}-none', '{AnalystLimits.RatingsStage}', '2026-10-28T14:30:00Z', '2026-10-28T14:30:02Z', 'limit reached', 0, 0, 3, '0', '{{\"ticker\":\"{name}\",\"askedAt\":\"2026-10-28T14:30:00Z\",\"detail\":\"x\",\"used\":0,\"limit\":0,\"resetsAt\":\"2026-11-01T00:00:00Z\",\"readAt\":\"2026-10-28T14:30:01Z\"}}');");
+
+        var hosts = new Dictionary<DateTimeOffset, PassHost>();
+        var spent = await AnalystPress(hosts, store, new RecordingLauncher(), SinglePageApp.RatingsRoute + name, reset.AddSeconds(2), fromThePage: true);
+
+        Assert.Equal(HttpStatusCode.Conflict, spent.Status);
+        Assert.Contains("The month&#39;s 0 TipRanks calls are used until 2026-12-01T00:00:00Z, so no call was made.", spent.Body, StringComparison.Ordinal);
+
+        foreach (var host in hosts.Values)
+        {
+            host.Dispose();
+        }
+    }
+
     // TipRanks sends some words with an ampersand already written as an entity and others with it bare, as its first
     // answer for PG did, and each is drawn as its characters escaped once: the analyst, the article's title and the firm.
     [Fact]

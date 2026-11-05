@@ -15790,3 +15790,63 @@ Queue:      done, the entry check's pull requests and the gates over main; in pr
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before that run: all six steps, 0 warnings, 0 errors,
             3458 of 3458 tests ran with none failed, migrations 0 to 128 with none pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing, none out
             of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 56 checks on the roster run and passed.
+
+### 20.10 ruling - the operator's answer on what a version's line holds on the S&P 400 and 600, during the corrections the fifth review of phase 20's sign-off found
+
+Not a checkpoint entry: it records the operator's answer and lands nothing.
+Ruled:      the fifth review, by equitybrief-35 over main at 6f3b5b89, signed nothing and found four defects and one in another phase's region, kept whole in `prompts/2026-11-05-20.10-phase-20-signoff-fifth-findings.md`; the handoff of that day gave their corrections to this session, which therefore does not sign phase 20. Asked on 2026-11-05 at about 23:04 UTC what a version's line should hold on the S&P 400 and 600, where the night keeps the live rule's answers alone and each version's picks, they answered "Picks vs picks (Recommended)", landed as the decision a version's line now holds (see: A version's line holds its qualifying stocks against the live rule's where the night stores both, and its picks against the live rule's picks where it does not).
+Queue:      done, the entry check's pull requests and PR 648; in progress, these corrections in one pull request; next, the review of these fixes and the correction table by equitybrief-35, then the sign-offs of phases 21 and 22 and phase 23, in that order.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this pull request's last.
+
+### 20.13 - correction: the TipRanks calls line and the spent refusal name the next month's first day once the count TipRanks stated has started again   2026-11-05
+
+Found:      the fifth review of phase 20's sign-off: every chart page on 2026-11-05 read "TipRanks: 0 used, 100 left this month, starting again on 2026-11-01", the newest count, PEP's of 2026-10-27, stating its reset at 2026-11-01T00:00:00Z, while the calls used and left had already rolled to November.
+Corrected:  `AnalystLimits.CountStartsAgain` gives the reset TipRanks stated while it is ahead and the first day of the month after the instant in UTC once it has passed; the line and the press's refusal over a spent month read it.
+Tests:      1 new, worked by hand: at the reset and a second after it the line reads 0 used, 100 left, starting again on 2026-12-01, a month and a day after it on 2027-01-01, a second before it the stated reset, and a count read with no call allowed refused two seconds after the reset until 2026-12-01T00:00:00Z.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 the line drawing the stated reset again: red. m2 the rollover a day short, the last day of the month: red. m1b the refusal naming the stated reset: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this pull request's last.
+
+### 19.3 - correction: a version's line holds its qualifying stocks against the live rule's where the night stores both, and its picks against the live rule's picks where it does not   2026-11-05
+
+Found:      the fifth review of phase 20's sign-off: the line beneath a chosen version's chips held the version's picks, its top five, against the live rule's qualifying stocks and called both qualifying stocks, on every version of every family on every index; on the night of 2026-11-04 the S&P 500 drift's tone variant, which fired on 13 of the live rule's 15 and failed only PRU and FISV, read that it dropped PRU, COR, DD, FISV, GWW, IDXX, MCD, MLM, WAT and ZBH.
+Corrected:  the read surface reads each S&P 500 version's answers off the night's shadow, the breakout's and the drift's in their family results and the swing filter's in its gate results, and holds the stocks a version fired on, its picks first, against the live rule's qualifying stocks; where the night keeps no answer of a version's, on the S&P 400 and 600 and for the dip, its picks against the live rule's picks, the line saying picks, on the operator's answer above; a book's holdings against the live book's as they stood. The decision, the card row's clause in the architecture and its claim key, and the changelog.
+Tests:      1 new, a constructed S&P 500 night whose version fired on K1 and K2, the live rule's two, and kept K1 alone: it shares both and drops none. The card test whose version the night kept no answer for reads its line as picks against picks.
+Claims:     none new: the clause is reworded in place.
+Pins:       none move: the read surface's sources are none a rule pins.
+Mutated:    the rule, stated before the run: m3 the line back on the live rule's qualifying stocks against the version's picks, filtered to the card tests by their names: red at the new test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this pull request's last.
+
+### 20.8 - correction: the tone walk's hand-off test holds two complete reading versions with the variant registered at the older   2026-11-05
+
+Found:      the fifth review of phase 20's sign-off: handing the tone walk only the newest complete reading version, `.Take(1)` over the versions in `SetupLedger.CompleteReleasesAsync`, survived all 19 tests of the tone and ledger-release files, the hand-off test storing one version. Nothing is wrong today: every tone rule reads version 5, the newest complete one.
+Corrected:  no shipped source moves. The hand-off test stores versions 1 and 2, each with its history read complete, gives A and B a filer and a release each, version 1 reading both and version 2 A's alone, and registers the tone variant at version 1; it holds each version's own line, 2 of the history's 3 stocks and 2 releases each, every stored release of a stock holding a filer handed whether its version read it or not, and the variant walked.
+Tests:      none new, one extended.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: m4 `.Take(1)` over the versions, filtered to the hand-off test by its name: red, where it survived before.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this pull request's last.
+
+### 22.5 - correction: the Ledger page's Answer tip says a reading not stored is not stored, where the reader's words made it not met   2026-11-05
+
+Found:      the fifth review of phase 20's sign-off: the Ledger page's Answer heading tip read "refused or is not met", 22.5's reader's words rewriting the "not held" 20.8's source wrote, which means not stored.
+Corrected:  the source says "is not stored", which the reader's words leave as written; labelled under 22.5, whose word list drew the wrong word.
+Tests:      none new, one extended: the Ledger page's release answers test reads the tip as the page draws it and no "is not met".
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: m5 "not held" back at the source, filtered to the Ledger page's test by its name: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this pull request's last.
+
+### 18.2 - correction: a segment table whose segments carry the filer's own label for the consolidation's segments is read again without it and its subsegments, standing only where that sums   2026-11-05
+
+Found:      the fifth review of phase 20's sign-off, in 18.2's region: HPQ's name page said its segments "sum to -$2.0M against the company's $15.7B" where its filing of 2026-08-27 states Personal Systems $11.77B and Printing $3.91B. Read off the store: HP labels the consolidation's operating segments "Total segment net revenue" and every segment's group carries that label as a part, so each read as naming a total and only "Other", a reconciling line at -$2M, stood. Over the newest filing of each of the 556 companies holding a fundamentals row, 496 holding a segment table, 178 drew a clean table and 226 the table as filed with a sum; six summed negative or under a tenth of revenue, CAT, HON and HPQ and ALL, EL and INTC, the other five other shapes the reader states as filed.
+Corrected:  a table whose segments miss the total or where none stands is read once more with the filer's own label for the consolidation's segments taken off as the axis's words are and each subsegment's line left out, and that reading stands only where it sums. Measured over the same 496: 4 moved to a clean table, HPQ's at 15,677 million, SYY's at 84,553 million, VMC's at 2,155.8 million and CROX's at 1,042.583 million, each its company's revenue, and none the other way. The decision, the architecture's paragraph and the changelog.
+Tests:      2 new, worked by hand from HPQ's filing: Other -2, Personal Systems 11,767 and Printing 3,912 summing to 15,677 exactly, Personal Systems 75.06% of it; a table whose first reading sums keeping it; and one where neither sums keeping the first with what it summed to. 3462 in all.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the two new tests by their names. m6a no second reading, the reader taking the row it took for HPQ: red. m6b subsegments kept: red. m6c the label not taken off: red. m6d the second reading in the first's place: red. m6e the second taken where it does not sum: red.
+Carried:    the store's pages draw the corrected table once the read surface restarts from main after the merge; no row is written.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors,
+            3462 of 3462 tests ran with none failed, migrations 0 to 128 with none pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing, none out
+            of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 56 checks on the roster run and passed.

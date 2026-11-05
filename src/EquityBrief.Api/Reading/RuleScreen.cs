@@ -57,11 +57,12 @@ public static class RuleScreen
         IReadOnlyList<FormingRow> forming,
         bool marketOpen,
         IndexRuleSettings? provisional = null,
-        DateTimeOffset? asOf = null) =>
+        DateTimeOffset? asOf = null,
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? qualifiers = null) =>
     [
         .. cards.Select(card => card with
         {
-            RuleChoice = Of(card, indexName, large, night, register, chosen(QueryKey(card.Family)), nights, picks, forming, marketOpen, provisional, asOf),
+            RuleChoice = Of(card, indexName, large, night, register, chosen(QueryKey(card.Family)), nights, picks, forming, marketOpen, provisional, asOf, qualifiers),
         }),
     ];
 
@@ -77,7 +78,8 @@ public static class RuleScreen
         IReadOnlyList<FormingRow> forming,
         bool marketOpen,
         IndexRuleSettings? provisional,
-        DateTimeOffset? asOf)
+        DateTimeOffset? asOf,
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? qualifiers)
     {
         var standing = Standing(card.Family, large, indexName, register, night, asOf);
         var (live, variants) = LiveAndVariants(standing);
@@ -105,7 +107,7 @@ public static class RuleScreen
             row?.Evaluated ?? false,
             large || live is not null || variants.Length > 0 ? null : NoVariantLine(indexName),
             Chips: ChipViews(liveChips, chosen.Live ? liveChips : ChipsOf(chosenRow!), !chosen.Live),
-            Share: own is null ? null : ShareOf(large || live is not null, card.Passes ?? [], [.. own.Select(pick => pick.Ticker)]),
+            Share: own is null ? null : ShareOf(large || live is not null, card, ruleName, [.. own.Select(pick => pick.Ticker)], qualifiers),
             Words: words,
             Reached: row?.Gates is { } stored ? RuleRows.ReachedOf(stored) : null);
     }
@@ -140,6 +142,25 @@ public static class RuleScreen
             .. chosen.Select(chip => new RuleChipView(chip.Words, differing.Contains(chip.Words))),
             .. RuleChips.Differing(live, chosen).Where(chip => chosen.All(own => own.Key != chip.Key)).Select(chip => new RuleChipView(chip.Words, true)),
         ];
+    }
+
+    // A chosen version beside the live or provisional rule tonight, like with like: where the night kept the version's
+    // answers, the stocks it qualified, its picks first in their places, against the live rule's qualifying stocks; where
+    // it did not, its picks against the live rule's picks; and a book's holdings against the live book's, as they stand.
+    // see: A version's line holds its qualifying stocks against the live rule's where the night stores both, and its picks against the live rule's picks where it does not
+    static RuleShareView ShareOf(bool live, FamilyCardView card, string rule, IReadOnlyList<string> picks, IReadOnlyDictionary<string, IReadOnlyList<string>>? qualifiers)
+    {
+        if (card.Family == HeavyweightRule.Name)
+        {
+            return ShareOf(live, card.Passes ?? [], picks);
+        }
+
+        if (qualifiers?.GetValueOrDefault(rule) is { } fired)
+        {
+            return ShareOf(live, card.Passes ?? [], [.. picks.Where(fired.Contains), .. fired.Where(ticker => !picks.Contains(ticker, StringComparer.Ordinal))]) with { Of = RuleShareView.Qualifying };
+        }
+
+        return ShareOf(live, [.. card.Picks.Select(pick => pick.Row.Ticker)], picks) with { Of = RuleShareView.Picks };
     }
 
     // A chosen variant's picks or holdings beside the live or provisional rule's passes tonight: those both hold, those

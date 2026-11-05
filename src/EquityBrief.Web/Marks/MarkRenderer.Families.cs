@@ -66,7 +66,13 @@ public sealed record RuleChipView(string Words, bool Differs);
 
 // A chosen variant's picks or holdings beside the live rule's passes tonight: the live rule's word, those both hold,
 // those the variant adds and those it drops.
-public sealed record RuleShareView(string Against, IReadOnlyList<string> Shared, IReadOnlyList<string> Added, IReadOnlyList<string> Dropped);
+public sealed record RuleShareView(string Against, IReadOnlyList<string> Shared, IReadOnlyList<string> Added, IReadOnlyList<string> Dropped, string Of = RuleShareView.Qualifying)
+{
+    // What the line holds against the live rule's: the stocks each rule qualified, or each rule's picks.
+    public const string Qualifying = "qualifying stocks";
+
+    public const string Picks = "picks";
+}
 
 // One clause of a rule's words, marked where the live rule's words do not carry it.
 public sealed record RulePartView(string Text, bool Differs);
@@ -1022,7 +1028,7 @@ public sealed partial class MarkRenderer
         var against = share.Against == "live" ? "the live setup's" : "the starting setup's";
 
         return Formatted($"<p class=\"rule-share\" data-shared=\"{Escaped(string.Join(",", share.Shared))}\" data-added=\"{Escaped(string.Join(",", share.Added))}\" data-dropped=\"{Escaped(string.Join(",", share.Dropped))}\">")
-            + Escaped(FormattableString.Invariant($"Beside {against} {(what == "picks" ? "qualifying stocks" : "holdings")} tonight, it shares {Named(share.Shared)}, adds {Named(share.Added)} and drops {Named(share.Dropped)}."))
+            + Escaped(FormattableString.Invariant($"Beside {against} {(what == "picks" ? share.Of : "holdings")} tonight, it shares {Named(share.Shared)}, adds {Named(share.Added)} and drops {Named(share.Dropped)}."))
             + "</p>";
     }
 

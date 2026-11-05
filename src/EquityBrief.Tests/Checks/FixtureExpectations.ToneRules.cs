@@ -70,17 +70,23 @@ public partial class FixtureExpectations
     [Fact]
     public async Task ThePerRuleVerbHandsTheWalkEveryCompleteVersionsReleaseReadingsSoTheToneVariantIsWalked()
     {
-        // The S&P 400's history above, reading version 1's history read complete, and the drift's tone variant registered
-        // on the S&P 400 at version 1 beside its provisional rule.
+        // The S&P 400's history above, reading versions 1 and 2 each with its history read complete, and the drift's tone
+        // variant registered on the S&P 400 at the older, version 1, beside its provisional rule, so a walk handed the
+        // newest complete version alone would hand the variant nothing.
         using var store = ToneRulesStore();
 
         PinVersion(store, complete: true);
+        PinVersion(store, complete: true);
 
-        // A's filer and one release of it the version read, which the walk is handed as the history's own stock's; B and C
-        // hold no filer.
+        // A's and B's filers and one release of each: version 1 read both, version 2 read A's alone, and each version
+        // hands the walk the history's own stocks' releases it read; C holds no filer.
         store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('A', '2021-01-04T00:00:00Z', '0000000001');");
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('B', '2021-01-04T00:00:00Z', '0000000002');");
         store.Execute("INSERT INTO release_document (accession, cik, form, filed, accepted_at, exhibit, url, text_gzip, text_sha256, text_length, run_id, release) VALUES ('0000000001-22-000001', '0000000001', '8-K', '2022-02-10', '2022-02-10T21:05:00Z', 'ex99.htm', 'https://www.sec.gov/x.htm', zeroblob(4), 'x', 4, 'constructed', 1);");
+        store.Execute("INSERT INTO release_document (accession, cik, form, filed, accepted_at, exhibit, url, text_gzip, text_sha256, text_length, run_id, release) VALUES ('0000000002-22-000001', '0000000002', '8-K', '2022-02-11', '2022-02-11T21:05:00Z', 'ex99.htm', 'https://www.sec.gov/y.htm', zeroblob(4), 'y', 4, 'constructed', 1);");
         ReadRelease(store, "0000000001-22-000001", 1, new Core.Releases.ReleaseAnswer("better", "raised", "confident", "stronger"));
+        ReadRelease(store, "0000000002-22-000001", 1, new Core.Releases.ReleaseAnswer("better", "maintained", "confident", "stronger"));
+        ReadRelease(store, "0000000001-22-000001", 2, new Core.Releases.ReleaseAnswer("better", "raised", "confident", "stronger"));
 
         var registered = await RegisterVerbAt(store, new DateTimeOffset(2026, 10, 18, 12, 0, 0, TimeSpan.Zero), RegisterVerb.IndexVariants, "drift", "--index", "MID", "--variants", "readingVersion=1");
 
@@ -106,8 +112,11 @@ public partial class FixtureExpectations
         Assert.Contains($"its opposite, {RuleTests.OppositeWords}, walked unregistered and written nowhere", sides, StringComparison.Ordinal);
         Assert.Equal(2, variant.Length);
 
-        // The version hands the walk the history's own stocks' releases: A's one, of the three stocks it holds.
-        Assert.Contains($"{WalkForwardTester.RulesVerb}: reading version 1 hands the tone walk the releases of 1 of the history's 3 stock(s), 1 release(s)", said);
+        // Each complete version hands the walk every one of the history's stocks holding a filer, A and B of the three, with
+        // every release stored for them, each with its reading under that version where it holds one: version 2's line
+        // counts B's release it never read.
+        Assert.Equal($"{WalkForwardTester.RulesVerb}: reading version 1 hands the tone walk the releases of 2 of the history's 3 stock(s), 2 release(s)", Assert.Single(said, line => line.Contains("reading version 1 hands", StringComparison.Ordinal)));
+        Assert.Equal($"{WalkForwardTester.RulesVerb}: reading version 2 hands the tone walk the releases of 2 of the history's 3 stock(s), 2 release(s)", Assert.Single(said, line => line.Contains("reading version 2 hands", StringComparison.Ordinal)));
 
         // From 21.5 the per-rule test walks no rule of the fundamentals-first family, which the night computes no longer,
         // while the index's other families' rules each print a line of their own.

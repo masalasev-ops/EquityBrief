@@ -4487,6 +4487,52 @@ public sealed partial class ReadApi : IComponent
         return rows;
     }
 
+    // Each version's answer on the S&P 500's members on a night as the shadow kept it: the breakout's and the drift's in
+    // their family results and the swing filter's in its gate results, a row a version with no stock where it fired on
+    // none, and a row a stock it fired on. No other index keeps a version's answers.
+    // see: A version's line holds its qualifying stocks against the live rule's where the night stores both, and its picks against the live rule's picks where it does not
+    const string VersionQualifiersOn = @"
+        SELECT DISTINCT json_extract(c.value, '$.candidate'), CASE WHEN json_extract(c.value, '$.fired') THEN f.ticker END
+        FROM family_result f, json_each(COALESCE(f.shadow, '{}'), '$.candidates') c
+        WHERE $index = 'GSPC' AND f.session_date = $on
+        UNION
+        SELECT DISTINCT json_extract(c.value, '$.candidate'), CASE WHEN json_extract(c.value, '$.fired') THEN g.ticker END
+        FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
+        WHERE $index = 'GSPC' AND g.session_date = $on;
+    ";
+
+    // The stocks each version the night kept an answer for qualified on, none for a version that fired on none.
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<string>>> VersionQualifiersAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = VersionQualifiersOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            if (reader.IsDBNull(0))
+            {
+                continue;
+            }
+
+            var stocks = rows.TryGetValue(reader.GetString(0), out var held) ? held : rows[reader.GetString(0)] = [];
+
+            if (!reader.IsDBNull(1))
+            {
+                stocks.Add(reader.GetString(1));
+            }
+        }
+
+        return rows.ToDictionary(row => row.Key, row => (IReadOnlyList<string>)[.. row.Value.Order(StringComparer.Ordinal)], StringComparer.Ordinal);
+    }
+
     const string FormingRowsOn = @"
         SELECT rule, place, ticker, close, high, moves_under, volume_needed, volume, range_ratio, missing, next_earnings, forming
         FROM forming_row

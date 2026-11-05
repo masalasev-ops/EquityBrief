@@ -43,7 +43,7 @@ public partial class ReadSurface
             "a tab a rule beneath the card's header naming the live rule or the provisional rule first and then each registered variant by the number of its first registration and the settings it differs on in short words written by code from the register's parameters through one table of short words an evaluator",
             "the chosen rule's settings as chips with its sentence a click away",
             "a chosen variant's differing chips marked",
-            "one line naming the picks it shares with the live rule's passes tonight and those it adds and drops",
+            "one line naming the stocks it shares with the live rule tonight and those it adds and drops, the stocks it qualified against the live rule's qualifying stocks on the S&P 500 and its picks against the live rule's picks on the S&P 400 and 600 and for the dip",
             "its own picks with their plans and the family's three numbers in place of the live rule's rows",
             "the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so",
             "behind an expander naming the count forming",
