@@ -746,7 +746,21 @@ public static class SchemaMigrations
         new Migration(123, "create dividend_wait", CreateDividendWait),
         new Migration(124, "create late_bar_ask", CreateLateBarAsk),
         new Migration(125, "create entry_reading", CreateEntryReading),
+        new Migration(126, "add entry_reading's one-off reading", AddEntryOneOff),
+        new Migration(127, "create split_name", CreateSplitName),
+        new Migration(128, "add entry_reading's wait plan", AddEntryWaitPlan),
     ];
+
+    // From 22.43 the provisional plan the entry check draws from the ladder's own bands and stop.
+    const string AddEntryWaitPlan = @"
+        ALTER TABLE entry_reading ADD COLUMN wait_low TEXT;
+        ALTER TABLE entry_reading ADD COLUMN wait_high TEXT;
+        ALTER TABLE entry_reading ADD COLUMN wait_stop TEXT;
+        ALTER TABLE entry_reading ADD COLUMN wait_exit TEXT;
+        ALTER TABLE entry_reading ADD COLUMN wait_reward REAL;
+        ALTER TABLE entry_reading ADD COLUMN zone_days REAL;
+        ALTER TABLE entry_reading ADD COLUMN wait_why TEXT;
+    ";
 
     // From 22.41 the entry check's readings of a member on a night, which no rule reads.
     const string CreateEntryReading = @"
@@ -775,7 +789,32 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
-    // From 22.40 each ask for a member the night's day file carried nothing for, at the end of the fetch and in the off-peak
+    // From 22.42 each name a page splits at its capitals, once, with the night it first appeared.
+    const string CreateSplitName = @"
+        CREATE TABLE split_name (
+            name         TEXT NOT NULL PRIMARY KEY,
+            spaced       TEXT NOT NULL,
+            ticker       TEXT NOT NULL,
+            source       TEXT NOT NULL,
+            first_night  TEXT NOT NULL,
+            baseline     INTEGER NOT NULL,
+            read_at      TEXT NOT NULL,
+            run_id       TEXT NOT NULL
+        ) STRICT;
+        CREATE INDEX split_name_by_night ON split_name (first_night);
+    ";
+
+    // From 22.42 what the entry check reads of a member's newest results release.
+    const string AddEntryOneOff = @"
+        ALTER TABLE entry_reading ADD COLUMN release_on TEXT;
+        ALTER TABLE entry_reading ADD COLUMN one_off_sentence TEXT;
+        ALTER TABLE entry_reading ADD COLUMN one_off_amount TEXT;
+        ALTER TABLE entry_reading ADD COLUMN one_off_tied INTEGER;
+        ALTER TABLE entry_reading ADD COLUMN one_off_direction INTEGER;
+        ALTER TABLE entry_reading ADD COLUMN beat TEXT;
+    ";
+
+    // From 22.40 each ask for a member the night's day file carried nothing for, at the end of thefetch and in the off-peak
     // run, and the rules a bar that arrived in the off-peak run would have passed.
     const string CreateLateBarAsk = @"
         CREATE TABLE late_bar_ask (

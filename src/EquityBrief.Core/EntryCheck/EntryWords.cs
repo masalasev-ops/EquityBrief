@@ -11,6 +11,61 @@ public static class EntryWords
     public const string See = "See the entry check";
     public const string StateNotSet = "not set yet: thresholds come from the test over stored history";
     public const string NoOlderBand = "none above in the history held";
+    public const string Provisional = "Provisional, and it sets nothing.";
+
+    public const string OneOffPhrasesMiss = "This reads fixed phrases and can miss an item.";
+    public const string NoItemFound = "no per-share item found by these phrases";
+    public const string NoReleaseStored = "No results release is stored for this stock, so no one-off item can be read.";
+
+    // What the newest results release names, none where no release is stored, which the region draws as an outline. Its share of
+    // the beat stands only where the sentence ties the item to earnings per share, says which way it moved them and a beat is
+    // stored for the release.
+    // see: The entry check's one-off reading reads a stored release by fixed phrases, and says it can miss an item
+    public static string? OneOff(EntryReading reading)
+    {
+        if (reading.ReleaseOn is not { } on)
+        {
+            return null;
+        }
+
+        if (reading is not { OneOffAmount: { } amount, OneOffSentence: { } sentence })
+        {
+            return I($"The results release of {Day(on)}: {NoItemFound}.");
+        }
+
+        var share = reading is { OneOffTied: true, OneOffDirection: { } direction, Beat: { } beat } && beat > 0
+            ? I($" That is {Whole(Statistic.FromPrice(amount / beat * 100))}% of the {Dollars(beat)} beat. ") + (beat - (direction * amount) > 0 ? I($"Without it the beat is {Dollars(beat - (direction * amount))}.") : "Without it there is no beat.")
+            : string.Empty;
+
+        return I($"The results release of {Day(on)} says: \"{sentence}\" The release names an item worth about {Dollars(amount)} a share.") + share + " " + OneOffPhrasesMiss;
+    }
+
+    // The wait plan as one sentence marked provisional, or why the ladder draws none, none where the plan was never read.
+    // see: The wait plan is drawn from the ladder's own bands and stop, is provisional and sets nothing
+    public static string? Wait(EntryReading reading)
+    {
+        if (reading.WaitWhy is { } why)
+        {
+            return $"{Provisional} No wait plan: {why}.";
+        }
+
+        if (reading is not { WaitLow: { } low, WaitHigh: { } high })
+        {
+            return null;
+        }
+
+        var below = reading.ZoneDays is { } days ? I($", {Tenth(days)} typical days below tonight's close") : string.Empty;
+        var said = I($"{Provisional} Wait to buy between {Dollars(low)} and {Dollars(high)}{below}.");
+
+        if (reading.WaitStop is not { } stop)
+        {
+            return said + " The ladder places no stop under this zone, so it draws no exit.";
+        }
+
+        return said + I($" Stop {Dollars(stop)}.") + (reading is { WaitExit: { } exit, WaitReward: { } reward }
+            ? I($" First exit {Dollars(exit)}, about {Tenth(reward)} to 1.")
+            : " No resistance band in the year stands at twice the risk, so it draws no first exit.");
+    }
 
     public static string? Stretch(EntryReading reading)
     {
@@ -110,6 +165,11 @@ public static class EntryWords
             flags.Add(reading.HighestSince is { } since ? I($"Highest close since {Day(since)}") : I($"Highest close since its history starts on {Day(reading.HistoryStart!.Value)}"));
         }
 
+        if (reading.OneOffAmount is not null)
+        {
+            flags.Add("Release names a one-off item");
+        }
+
         return flags;
     }
 
@@ -140,6 +200,11 @@ public static class EntryWords
         if (EntryReadings.HighestLongSince(reading))
         {
             flags.Add(reading.HighestSince is { } since ? I($"Highest close since {HomeDay(since)}") : I($"Highest close in its history held, back to {HomeDay(reading.HistoryStart!.Value)}"));
+        }
+
+        if (reading.OneOffAmount is not null)
+        {
+            flags.Add("The company's report includes a one-off item");
         }
 
         return flags;

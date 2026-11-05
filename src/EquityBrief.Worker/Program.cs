@@ -57,6 +57,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-score-audit" => await ScoreAuditRun(args),
     "drift-surprises" => await DriftSurprisesRun(),
     "loop-open-floor" => await LoopOpenFloorRun(args),
+    "loop-entry-check" => await LoopEntryCheckRun(args),
     "ledger-night" => await LedgerNightRun(),
     "scores" => await ScoresRun(),
     "fill" => await FillRun(args),
@@ -92,6 +93,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "refetch" => await RefetchRun(args),
     "late-bars" => await LateBarsRun(args),
     "entry-readings" => await EntryReadingsRun(),
+    "split-names" => await SplitNamesRun(),
     "ticker-join" => await TickerJoinRun(args),
     "session-mark" => await SessionMarkRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
@@ -136,6 +138,29 @@ static async Task<int> EntryReadingsRun()
     var outcome = await new EquityBrief.Worker.EntryCheck.EntryReader(clock, store.DatabaseFile).RunAsync(FormattableString.Invariant($"entry-readings-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
 
     Console.WriteLine($"entry-readings: {outcome.Read} member(s) read, {outcome.WithoutABar} holding no bar on the night");
+
+    return 0;
+}
+
+// The names a page splits at their capitals, read as the night's own step reads them; the first read keeps what stands as the baseline.
+// see: A name split for the first time is listed on the run page the night it first appears
+static async Task<int> SplitNamesRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"split-names: no store at '{store.DatabaseFile}', so there is nothing to read.");
+
+        return 1;
+    }
+
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+    var night = NightSession.NewestStored(store.DatabaseFile) ?? clock.SessionDateAt(clock.UtcNow);
+    var outcome = await new EquityBrief.Worker.Names.SplitNameReader(clock, store.DatabaseFile).RunAsync(FormattableString.Invariant($"split-names-{clock.UtcNow:yyyyMMddTHHmmssZ}"), night);
+
+    Console.WriteLine($"split-names: {outcome.New} name(s) kept of {outcome.Read} read{(outcome.Baseline ? " as the baseline" : string.Empty)}");
 
     return 0;
 }
@@ -239,7 +264,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 66 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 68 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -348,6 +373,9 @@ static int NoVerb()
         "'drift-surprises' reads every S&P 500 drift row a night stored a surprise on against the calendar's figure " +
         "today for the same print, and the pulled surprises the history reads, and prints how many differ and by how " +
         "much, writing nothing, " +
+        "'loop-entry-check --index <GSPC, MID or SML>' reads the entry check's readings of each live pass as of its " +
+        "session in bands and walks each live pullback, drift and breakout at two wait entries beside the next-open " +
+        "buy, on a page under the loop folder, registering nothing and writing no store row, " +
         "'loop-open-floor --index <GSPC, MID or SML>' walks the drift's rules standing on the index as the per-rule " +
         "test walks them with the open floor beside the live or provisional rule, skipping a fill whose reward to " +
         "risk at the open is under 1, and judges it against that rule in the drift's own correction over the test " +
@@ -456,6 +484,7 @@ static int NoVerb()
         "check's own path, one request a stock, " +
         "'late-bars --live' asks once more for each member the night's day file carried nothing for, as the off-peak run does, " +
         "'entry-readings' reads the entry check's readings of the newest night, as the night's own step does, " +
+        "'split-names' keeps each name a page splits at its capitals, as the night's own step does, " +
         "'ticker-join --ticker <code> --earlier <code>' records that a stock's earlier sessions sit under another ticker at the " +
         "provider, 'session-mark --ticker <code> --session <yyyy-MM-dd> --kind <kind> --says <words>' records the operator's word on a " +
         "session of its pulled history, and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
@@ -1092,6 +1121,23 @@ static async Task<int> LoopOpenFloorRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out).OpenFloorAsync(index);
+}
+
+// The entry check's read-only measurement by hand on an index, on a page under the loop folder.
+// see: The entry check's measurement is read-only over the stored years and registers nothing
+static async Task<int> LoopEntryCheckRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("loop-entry-check: give '--index <GSPC, MID or SML>'.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out).EntryCheckAsync(index);
 }
 
 // The walk-forward tester by hand on the S&P 400 or 600, Part 0's procedures run inside every fold, reading the pulled
@@ -2978,6 +3024,14 @@ static async Task<int> LabelNews(string[] args)
     }
 
     var labeller = new NewsLabeller(LmStudioReadingFeed.Live(local), local, limits, clock, store.DatabaseFile, store.DataRoot);
+
+    // '--ask-again-sentences' forgets the stories kept as unreadable for not being one sentence, for the next run to ask again.
+    if (args.Contains("--ask-again-sentences"))
+    {
+        Console.WriteLine($"label-news: {await labeller.AskAgainNotOneSentenceAsync()} story or stories to ask again");
+
+        return 0;
+    }
 
     // '--pin' writes the version the labeller labels under.
     if (args.Contains("--pin"))

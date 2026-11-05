@@ -527,6 +527,8 @@ The night reads them after the moves. By hand, it reads the newest night again a
 
 ```
 dotnet run --project src/EquityBrief.Worker -- entry-readings
+dotnet run --project src/EquityBrief.Worker -- split-names
+dotnet run --project src/EquityBrief.Worker -- label-news --ask-again-sentences
 ```
 
 ### The late bars' ask
@@ -1041,6 +1043,14 @@ dotnet run --project src/EquityBrief.Worker -- loop-open-floor --index GSPC
 ```
 
 `ledger-exits` prices each settled swing setup of the index three ways from the history's bars with its stored stop, target, trail and cap, bought at the open after its session as the ledger buys it: sold at the close that triggered its exit as the ledger sells it, sold at the open of the session after that close, and with the target as a resting order filled on the first session whose high reaches it, the stop still a close and sold at the next open, the time limit at its own close either way; it prints and writes the results and the edges after costs under each pricing by family and year, the dip as it already prices. `ledger-score-audit` scores each settled swing setup entered in a test year by that year's stored model, places it among the model's own hundredths in five groups and states each group's setups, winning share, mean edge after costs and the rule's own picks, the setups since the first monthly run by the newest model fitted before their night; from 21.8 it scores the dip's as well, and ends on a line a family, the pullback, the breakout, the drift and the dip, naming the order its ranking variant takes, the learned score or the expected value of the setups like each, or that none is built, with the learned score's top and bottom fifths and the expected value's of the same setups (see: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders). `loop-open-floor` walks the drift's rules standing on the index as `loop-rules` walks them, the live or provisional rule carrying the open floor beside it, a fill whose reward to risk at the open is under 1 skipped and its place on the night spent, and judges the open floor against that rule in the drift's own correction over the test years, printing each rule's line as `loop-rules` prints it; it is refused while a night holds the store or where a run would reach the night's window, as `loop-rules` is. None registers a rule, moves a version or restarts a record; a change any of them suggests waits for 21.14 and the operator's word (see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word). From 21.14 `ledger-exits` reproduces the stored result by the next open's pricing, which the ledger then stores, and reads the benchmark beside the stored one with each member sold as the trade is, the edge at the next open against each.
+
+From 22.44 the entry check's read-only measurement by hand on an index, writing a page with its figures as JSON beside it under `data/loop/checks/` and no store row, refused while a night holds the store or where a run would reach the night's window:
+
+```
+dotnet run --project src/EquityBrief.Worker -- loop-entry-check --index GSPC
+```
+
+It reads each live pass's entry check readings as of its session in bands, walks each live pullback, drift and breakout at the wait plan's zone and the 20-session average beside the next-open buy, and counts each night's picks each flag fires on over the newest 20 stored nights. It registers nothing (see: The entry check's measurement is read-only over the stored years and registers nothing).
 
 From 21.14, on the operator's ruling of 2026-10-30, one more read-only check by hand, printing and writing nothing, not even a run log row:
 

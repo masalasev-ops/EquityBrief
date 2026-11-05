@@ -71,6 +71,16 @@ public class CoverageReported
         ["plain-words"] = "PlainWords",
         ["rule-wording-out-of-pins"] = "RuleWordingOutOfThePins",
         ["copy-method-leak"] = "CopyMethodLeak",
+        ["entry-stretch"] = "EntryCheckFixture",
+        ["entry-hot-run"] = "EntryCheckFixture",
+        ["entry-gap"] = "EntryCheckFixture",
+        ["entry-one-off"] = "EntryCheckFixture",
+        ["entry-highest-close"] = "EntryCheckFixture",
+        ["entry-older-resistance"] = "EntryCheckFixture",
+        ["entry-overhead-fix"] = "EntryCheckFixture",
+        ["entry-stale-fix"] = "EntryCheckFixture",
+        ["entry-wait-plan"] = "EntryCheckFixture",
+        ["entry-card-line"] = "EntryCheckFixture",
     };
 
     internal static IReadOnlyList<RosterRow> Roster()

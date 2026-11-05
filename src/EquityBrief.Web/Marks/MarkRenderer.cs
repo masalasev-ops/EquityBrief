@@ -588,6 +588,10 @@ public sealed record NewsRow(
 {
     public const string Labelled = "labelled";
     public const string Unreadable = "unreadable";
+
+    // What a story the labeller read and could not label says, with why.
+    // see: A story the labeller read and could not label says so with why, and the proof passes a page that states it
+    public const string CouldNotBeLabelled = "This story could not be labelled: ";
     public const string Refused = "refused";
     public const string Unlabelled = "unlabelled";
 }
@@ -7666,7 +7670,7 @@ public sealed partial class MarkRenderer : IComponent
             region.Append(row.State switch
             {
                 NewsRow.Labelled => Formatted($"<span class=\"tag kind\">{Escaped(row.Kind ?? string.Empty)}</span><span class=\"tag dir\">{Escaped(row.Direction ?? string.Empty)}</span>"),
-                NewsRow.Unreadable => Formatted($"<span class=\"tag state\">unreadable: {Escaped(row.Cause ?? string.Empty)}</span>"),
+                NewsRow.Unreadable => Formatted($"<span class=\"tag state\">{Escaped(NewsRow.CouldNotBeLabelled)}{Escaped(EquityBrief.Core.News.NewsInstruction.WhyNotLabelled(row.Cause))}</span>"),
                 NewsRow.Refused => Formatted($"<span class=\"tag state\">refused: {Escaped(row.Admissibility ?? string.Empty)}</span>"),
                 _ => "<span class=\"tag state\">unlabelled</span>",
             });

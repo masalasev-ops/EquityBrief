@@ -81,7 +81,7 @@ public static partial class ReportProof
         ("rules-family", "How the rules read it opens on the checks of the family that picked the stock."),
         ("trend-words", "A trend gate that failed is said in plain words."),
         ("news-matched", "The news region states how many stories it left out as another company's, and its counts add up over the stories it kept."),
-        ("news-labelled", "No story the news region keeps was read by the labeller and left unlabelled; a story it has not reached waits for it."),
+        ("news-labelled", "No story the news region keeps was read by the labeller and left unlabelled without saying why; a story it has not reached waits for it."),
         ("industry-label", "The peer group is labelled as the provider's classification or the stock's override."),
         ("industry-mismatch", "A peer group naming none of the business that the company's own clean segment table puts more than half the quarter's revenue in is flagged, and one naming it is not."),
         ("sources-relevant", "The page's sources list is held to the documents naming the company or its industry, the rest folded apart beneath it, and says where fewer than two remain."),
@@ -250,13 +250,15 @@ public static partial class ReportProof
         // A story the labeller read and left without a label fails; one it has not reached yet waits for it, and says so.
         // see: The proof reads a results release newer than the filed quarter as passing where the page says that quarter is awaited, and a story the labeller has not reached as waiting
         var waiting = NewsRow().Matches(page).Count(row => row.Groups[1].Value == "unlabelled");
-        var left = NewsRow().Matches(page).Count(row => row.Groups[1].Value == "unreadable");
+        var unlabelled = NewsRow().Matches(page).Count(row => row.Groups[1].Value == "unreadable");
+        var left = Math.Max(0, unlabelled - Regex.Count(page, Regex.Escape(EquityBrief.Web.Marks.NewsRow.CouldNotBeLabelled)));
 
         Add(
             "news-labelled",
             news.Success ? left == 0 : null,
             !news.Success ? "no news region is drawn"
-            : left > 0 ? string.Create(CultureInfo.InvariantCulture, $"the labeller read {left} admitted {(left == 1 ? "story" : "stories")} and left {(left == 1 ? "it" : "them")} unlabelled")
+            : left > 0 ? string.Create(CultureInfo.InvariantCulture, $"the labeller read {left} admitted {(left == 1 ? "story" : "stories")} and left {(left == 1 ? "it" : "them")} unlabelled with no word why")
+            : unlabelled > 0 ? string.Create(CultureInfo.InvariantCulture, $"{unlabelled} {(unlabelled == 1 ? "story" : "stories")} could not be labelled and the page says why")
             : waiting > 0 ? string.Create(CultureInfo.InvariantCulture, $"{waiting} admitted {(waiting == 1 ? "story waits" : "stories wait")} for the labeller")
             : null);
 

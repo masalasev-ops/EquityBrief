@@ -289,7 +289,7 @@ public static partial class NameScreen
         // see: A member with no dated event shows its next report as an estimate where one exists
         Fact(
             "Next dated event",
-            nextEvent is { } coming ? Day(coming) : nextEstimated is { } estimate ? "not on file; the next report estimated about " + Day(estimate.Estimated) : NotOnFile,
+            nextEvent is { } coming ? Day(coming) : nextEstimated is { } estimate ? "not on file; the next report estimated about " + Day(estimate.Estimated) : NoNextReport,
             nextEvent is not null && earlierNight ? CalendarToday : nextEvent is null && nextEstimated is { } from ? "from its report of " + Day(from.From) + " a year on" : null);
 
         var forwardNote = forwardWorked is { } worked
@@ -385,6 +385,10 @@ public static partial class NameScreen
             : "none";
 
     const string NotOnFile = "not on file";
+
+    // What a page says of a member the calendar dates no next report for and no report a year back can estimate one from.
+    // see: A member with no dated event and no estimate says it holds neither
+    public const string NoNextReport = "No next report date or estimate on file yet.";
 
     // A figure as the fact grid reads it: a price to two places, a money figure in its scale, a
     // multiple to one place. Each is the stored value rounded to be read, and the strip's own
@@ -843,7 +847,7 @@ public static partial class NameScreen
 
             html.Append(reportedDay.NextOn is { } dated
                 ? Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"{dated:yyyy-MM-dd}\"><b>{dated:yyyy-MM-dd}</b><small>{calendarSays}</small>{said}</dd></div>")
-                : Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"{(nextEstimated is { } next ? Invariant($" data-estimated=\"{next.Estimated:yyyy-MM-dd}\"") : " data-estimated=\"none\"")}><b>not announced</b>{(nextEstimated is { } shown ? Invariant($"<small class=\"estimated\">estimated about {shown.Estimated:yyyy-MM-dd}, from its report of {shown.From:yyyy-MM-dd} a year on</small>") : Invariant($"<small class=\"estimated-none\">{NotEstimated(reportedOn, reportedDays, figures?.CloseOn)}</small>"))}{said}</dd></div>"));
+                : Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"{(nextEstimated is { } next ? Invariant($" data-estimated=\"{next.Estimated:yyyy-MM-dd}\"") : " data-estimated=\"none\"")}><b>{(nextEstimated is null ? NoNextReport : "not announced")}</b>{(nextEstimated is { } shown ? Invariant($"<small class=\"estimated\">estimated about {shown.Estimated:yyyy-MM-dd}, from its report of {shown.From:yyyy-MM-dd} a year on</small>") : Invariant($"<small class=\"estimated-none\">{NotEstimated(reportedOn, reportedDays, figures?.CloseOn)}</small>"))}{said}</dd></div>"));
         }
         else if (reportedDay.NextOn is null && nextEstimated is { } unfiled)
         {
@@ -853,6 +857,11 @@ public static partial class NameScreen
         {
             var day = reportedDay.NextOn is { } nextOn ? Invariant($"{nextOn:yyyy-MM-dd}") : null;
 
+            if (day is null)
+            {
+                html.Append(Invariant($"<div><dt>Next report</dt><dd class=\"degraded\" data-reportDate=\"absent\">{NoNextReport}</dd></div>"));
+            }
+            else
             Row(
                 "Next report",
                 "reportDate",

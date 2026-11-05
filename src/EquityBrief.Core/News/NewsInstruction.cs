@@ -16,7 +16,7 @@ public sealed record NewsLabel(string Kind, string Direction, string Reason);
 // reason to no digit by the schema the local model answers in, so no answer outside them comes back.
 // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
 // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
-public static class NewsInstruction
+public static partial class NewsInstruction
 {
     public const int Version = 2;
 
@@ -79,6 +79,20 @@ public static class NewsInstruction
     public const string NotOneSentence = "not one sentence";
     public const string CutOff = "cut off at the budget";
     public const string Refused = "refused by the model";
+
+    // Why a story could not be labelled, as its page says it.
+    // see: A story the labeller read and could not label says so with why, and the proof passes a page that states it
+    public static string WhyNotLabelled(string? cause) => cause switch
+    {
+        NotJson => "the model's answer could not be read",
+        KindOutsideTheSet => "the model named a kind of story outside the nine",
+        DirectionOutsideTheSet => "the model named a direction outside the three",
+        DigitInTheReason => "the model's reason kept a figure, and a label's reason may hold none",
+        NotOneSentence => "the model's reason was not one sentence",
+        CutOff => "the model's answer ran past its length limit",
+        Refused => "the model refused it",
+        _ => cause ?? "the labeller gave no cause",
+    };
 
     public static readonly string[] Causes = [NotJson, KindOutsideTheSet, DirectionOutsideTheSet, DigitInTheReason, NotOneSentence, CutOff, Refused];
 
@@ -166,8 +180,9 @@ public static class NewsInstruction
         return (new NewsLabel(kind, direction, reason), null);
     }
 
-    // One sentence: some words, ending on at most one full stop, with no sentence end before it. A stop
-    // inside an abbreviation or a decimal would read as a second sentence, and a digit is refused anyway.
+    // One sentence: some words, ending on at most one full stop, with no sentence end before it. A stop inside a company's name is
+    // no end, whether a small letter follows it, as in "Rollins, Inc. and", or it closes initials, as in "C.H. Robinson" or "N.V.";
+    // a question or an exclamation mark ends a sentence wherever it stands, and a digit is refused anyway.
     static bool IsOneSentence(string reason)
     {
         var body = reason.TrimEnd('.', '!', '?').TrimEnd();
@@ -179,6 +194,11 @@ public static class NewsInstruction
 
         var ends = reason.Length - reason.TrimEnd('.', '!', '?').Length;
 
-        return ends <= 1 && !body.Contains(". ", StringComparison.Ordinal) && !body.Contains("! ", StringComparison.Ordinal) && !body.Contains("? ", StringComparison.Ordinal) && !body.Contains('\n');
+        return ends <= 1 && !body.Contains('\n') && !SentenceEnd().IsMatch(body);
     }
+
+    // A question or an exclamation mark before a space, or a stop before a space and anything but a small letter, unless what the
+    // stop closes is initials.
+    [System.Text.RegularExpressions.GeneratedRegex(@"[!?]\s|(?<!(?:^|[\s(,])(?:[A-Z]\.)*[A-Z])\.\s+[^a-z]")]
+    private static partial System.Text.RegularExpressions.Regex SentenceEnd();
 }

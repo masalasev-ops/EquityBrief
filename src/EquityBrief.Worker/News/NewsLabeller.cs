@@ -219,6 +219,26 @@ public sealed class NewsLabeller : IComponent
         ON CONFLICT (ticker, article_id, profile, instruction_version) DO NOTHING;
     ";
 
+    // A story kept as unreadable for a read that has since been mended, which the next run asks of the model again.
+    // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
+    const string ForgetNotOneSentence = @"
+        DELETE FROM news_label
+        WHERE outcome = 'unreadable' AND cause = $cause AND instruction_version = $version;
+    ";
+
+    public async Task<int> AskAgainNotOneSentenceAsync(CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ForgetNotOneSentence;
+        command.Parameters.AddWithValue("$cause", NewsInstruction.NotOneSentence);
+        command.Parameters.AddWithValue("$version", NewsInstruction.Version);
+
+        return await command.ExecuteNonQueryAsync(cancellation);
+    }
+
     // A label whose article the counter has dropped goes with it.
     const string DropOrphanLabels = @"
         DELETE FROM news_label

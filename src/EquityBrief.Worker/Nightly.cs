@@ -442,6 +442,15 @@ public static class Nightly
 
                 return $"{outcome.Read} member(s) read, {outcome.WithoutABar} holding no bar on the night";
             }),
+            // The names a page splits at their capitals, kept with the night each first appeared, for the run page's list.
+            // see: A name split for the first time is listed on the run page the night it first appears
+            new(EquityBrief.Worker.Names.SplitNameReader.Stage, async () =>
+            {
+                var outcome = await new EquityBrief.Worker.Names.SplitNameReader(clock, store.DatabaseFile)
+                    .RunAsync(runId, clock.SessionDateAt(clock.UtcNow), night.Token);
+
+                return $"{outcome.New} name(s) kept of {outcome.Read} read{(outcome.Baseline ? " as the baseline" : string.Empty)}";
+            }),
             // Section 14's step 13. The readings the swing filter's gates are measured
             // against, for every member, and the night's breadth. It reads the bars and
             // the indicators every stage before it wrote and makes no request.

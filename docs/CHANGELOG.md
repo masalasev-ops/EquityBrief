@@ -7,6 +7,15 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-05 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the entry check's wait plan, its measurement and its harness rows
+Decision: The wait plan is drawn from the ladder's own bands and stop, is provisional and sets nothing
+Decision: The entry check's measurement is read-only over the stored years and registers nothing
+Was:
+> Entry reader reads membership, bar store, pulled bars, indicators, calendar, companies, release documents; the Entry check region draws no plan for waiting; the walk-forward tester holds no entry check verb; the roster holds no row of the entry check
+Now:
+> Entry reader also reads levels and swings for a provisional wait plan, which the region draws; `loop-entry-check --index` hands the index to the ledger's read-only measurement; ten roster rows hold each reading, each fix, the wait plan and the card's line over a committed fixture of a real night
+Why: the operator's entry check order of 2026-11-04 and their answers of 2026-11-05, and their word of that day that the rest of the entry check lands in the one pull request.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - Home's line of the entry check, and how the readings reach the test
 Decision: Home's line of an idea's entry check says each flag in plain words, and dates a day as d Mon yyyy
 Was:
@@ -19,6 +28,16 @@ Now:
 > 22.44's done condition: ... each entry against the next-open buy, and no version of a live rule moved.
 > A paragraph added under "Tabled for phase 23" for the readings' registration in the ledger.
 Why: the operator's answers of 2026-11-05 to the report of that day.
+
+### 2026-11-05 - docs/ARCHITECTURE.html, docs/SCHEMA.md - the entry check's one-off reading, split names, stories that could not be labelled
+Decision: The entry check's one-off reading reads a stored release by fixed phrases, and says it can miss an item
+Decision: A name split for the first time is listed on the run page the night it first appears
+Decision: A story the labeller read and could not label says so with why, and the proof passes a page that states it
+Was:
+> Entry reader reads membership, bar store, pulled bars, indicators, and no one-off item; a row refused by admissibility or answered unreadably saying so; no record of a split name
+Now:
+> Entry reader also reads calendar, companies and release documents, for the one-off reading; a row the labeller could not label says why; a new table, its reader and a list on the run page
+Why: the operator's entry check order of 2026-11-04 and their answers of 2026-11-05.
 
 ### 2026-11-05 - docs/ARCHITECTURE.html - Home's card for a plan with a rising give-up price
 Decision: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence

@@ -161,20 +161,11 @@ public static partial class FieldWords
             return match.Index == 0 ? char.ToUpperInvariant(words[0]) + words[1..] : words;
         });
 
-    // A segment name or insider title filed as one run of joined capitals, split at its capitals for the reader with no
-    // abbreviation expanded and the stored value unchanged: "HomeBuildingOps" reads "Home Building Ops" and "IntlVehiclePmts"
-    // "Intl Vehicle Pmts". A name a company itself writes joined keeps its spelling.
+    // A name filed as one run of joined capitals, split for the reader by the core, which the night's reader of split names reads too.
     // see: A name filed as one run of joined capitals is split at its capitals for the reader, and a company's own joined names keep their spelling
-    public static string Spaced(string name) =>
-        JoinedRun().Replace(name, match => CompanysOwnSpelling.Contains(match.Value) ? match.Value : Capital().Replace(match.Value, " "));
+    public static string Spaced(string name) => EquityBrief.Core.Report.JoinedNames.Spaced(name);
 
-    public static IReadOnlySet<string> CompanysOwnSpelling { get; } = new HashSet<string>(StringComparer.Ordinal)
-    {
-        "AmeriGas", "BioPharm", "BioPharma", "CardioVascular", "CarelonRx", "CenterWell", "CoreSite", "CrossLab", "DoorDash", "DownREIT", "EchoStar", "ExxonMobil", "FootJoy", "GovDeals",
-        "HomeGoods", "InPost", "IoT", "LiveWire", "LongHorn", "McDonald", "McLane", "MedSurg", "MedTech", "NextEra", "NorthStar", "OptiFreight", "PayPal", "PepsiCo",
-        "PharMerica", "PrimeLending", "ProQuad", "ProTax", "QuickBooks", "RotaTeq", "SaaS", "SendTech", "SmartCover", "SpinCo", "TheFork", "TurboTax",
-        "UniFirst", "UnitedHealthcare", "UpLift", "YouTube",
-    };
+    public static IReadOnlySet<string> CompanysOwnSpelling => EquityBrief.Core.Report.JoinedNames.CompanysOwnSpelling;
 
     // A rule version's stored settings in words: {"nightsTheNewLabelHolds": 1} reads "nights the new label holds 1".
     public static string Settings(string stored)
@@ -205,12 +196,6 @@ public static partial class FieldWords
 
     [GeneratedRegex("[A-Z]")]
     private static partial Regex Humps();
-
-    [GeneratedRegex(@"\b[A-Z][a-z]+(?:[A-Z]+[a-z]*)+\b")]
-    private static partial Regex JoinedRun();
-
-    [GeneratedRegex("(?<=[a-z])(?=[A-Z])")]
-    private static partial Regex Capital();
 
     [GeneratedRegex("<(script|style)\\b.*?</\\1>", RegexOptions.Singleline)]
     private static partial Regex Unread();
