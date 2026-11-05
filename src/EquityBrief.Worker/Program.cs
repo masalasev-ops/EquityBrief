@@ -57,6 +57,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-score-audit" => await ScoreAuditRun(args),
     "drift-surprises" => await DriftSurprisesRun(),
     "loop-open-floor" => await LoopOpenFloorRun(args),
+    "loop-entry-check" => await LoopEntryCheckRun(args),
     "ledger-night" => await LedgerNightRun(),
     "scores" => await ScoresRun(),
     "fill" => await FillRun(args),
@@ -263,7 +264,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 66 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 68 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -372,6 +373,9 @@ static int NoVerb()
         "'drift-surprises' reads every S&P 500 drift row a night stored a surprise on against the calendar's figure " +
         "today for the same print, and the pulled surprises the history reads, and prints how many differ and by how " +
         "much, writing nothing, " +
+        "'loop-entry-check --index <GSPC, MID or SML>' reads the entry check's readings of each live pass as of its " +
+        "session in bands and walks each live pullback, drift and breakout at two wait entries beside the next-open " +
+        "buy, on a page under the loop folder, registering nothing and writing no store row, " +
         "'loop-open-floor --index <GSPC, MID or SML>' walks the drift's rules standing on the index as the per-rule " +
         "test walks them with the open floor beside the live or provisional rule, skipping a fill whose reward to " +
         "risk at the open is under 1, and judges it against that rule in the drift's own correction over the test " +
@@ -1117,6 +1121,23 @@ static async Task<int> LoopOpenFloorRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out).OpenFloorAsync(index);
+}
+
+// The entry check's read-only measurement by hand on an index, on a page under the loop folder.
+// see: The entry check's measurement is read-only over the stored years and registers nothing
+static async Task<int> LoopEntryCheckRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("loop-entry-check: give '--index <GSPC, MID or SML>'.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out).EntryCheckAsync(index);
 }
 
 // The walk-forward tester by hand on the S&P 400 or 600, Part 0's procedures run inside every fold, reading the pulled

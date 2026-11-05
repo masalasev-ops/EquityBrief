@@ -7,6 +7,15 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-05 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the entry check's wait plan, its measurement and its harness rows
+Decision: The wait plan is drawn from the ladder's own bands and stop, is provisional and sets nothing
+Decision: The entry check's measurement is read-only over the stored years and registers nothing
+Was:
+> Entry reader reads membership, bar store, pulled bars, indicators, calendar, companies, release documents; the Entry check region draws no plan for waiting; the walk-forward tester holds no entry check verb; the roster holds no row of the entry check
+Now:
+> Entry reader also reads levels and swings for a provisional wait plan, which the region draws; `loop-entry-check --index` hands the index to the ledger's read-only measurement; ten roster rows hold each reading, each fix, the wait plan and the card's line over a committed fixture of a real night
+Why: the operator's entry check order of 2026-11-04 and their answers of 2026-11-05, and their word of that day that the rest of the entry check lands in the one pull request.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - Home's line of the entry check, and how the readings reach the test
 Decision: Home's line of an idea's entry check says each flag in plain words, and dates a day as d Mon yyyy
 Was:

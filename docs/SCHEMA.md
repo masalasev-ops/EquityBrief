@@ -380,6 +380,13 @@ Grain: one row per member and session holding a bar on it.
 | `one_off_tied` | INTEGER | 1 where the sentence ties it to earnings per share, 0 where it does not |
 | `one_off_direction` | INTEGER | 1 where the sentence says it raised earnings, -1 where it lowered them, null where it does not say |
 | `beat` | TEXT | decimal in code, the actual less the estimate the calendar stores for the report within 7 days of the release, null where it holds neither |
+| `wait_low` | TEXT | from 22.43 decimal in code, the bottom of the provisional wait plan's zone, null where it draws none |
+| `wait_high` | TEXT | decimal in code, the zone's top |
+| `wait_stop` | TEXT | decimal in code, the ladder's stop for the band under the zone, null where it places none |
+| `wait_exit` | TEXT | decimal in code, the first resistance at twice the risk from the zone's middle, null where none stands in the year |
+| `wait_reward` | REAL | that exit's reward to risk from the zone's middle |
+| `zone_days` | REAL | the zone's top under the close, in typical days |
+| `wait_why` | TEXT | why the ladder draws no plan, null where it draws one |
 
 Primary key: `ticker`, `session_date`.
 

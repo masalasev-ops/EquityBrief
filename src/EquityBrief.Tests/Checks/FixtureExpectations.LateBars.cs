@@ -321,6 +321,39 @@ public partial class FixtureExpectations
             $"('b1', '0000000002', '8-K', '2026-10-01', '2026-10-01T12:00:00Z', 'e', 'u', {Hex("Sales rose this quarter.")}, 's', 1, 'r', 1);");
         store.Execute("INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('IA', '2026-09-29', 'earnings', 'before', '{\"estimate\":\"1.54\",\"actual\":\"2.31\"}', '2026-10-01T00:00:00Z');");
 
+        // IA's wait plan by hand: a range, its close of 102 between averages of 103 and 100. Its gap runs from 100.5 to 101 and a band's top of
+        // 99 stands 1.5 under it, within the typical day of 2.5, so the zone is 99 to 101, its middle 100. The band's low of 97 has 90 beneath
+        // it, the stop, a risk of 10; twice that needs 120, so the exit is 125, 2.5 to 1, the zone's top 1 under the close, 0.4 typical days.
+        // An older night's band and one row of IB's trend say the night's own bands are read. IB holds no averages, so it draws why it has none.
+        store.Execute("DELETE FROM level WHERE ticker = 'IA';");
+        store.Execute(
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) VALUES " +
+            "('IA', '2026-10-01', '100', '100.4', 'support', 0, 1, 1, '[]'), " +
+            "('IA', '2026-10-02', '90', '92', 'support', 0, 1, 1, '[]'), " +
+            "('IA', '2026-10-02', '97', '99', 'support', 0, 1, 1, '[]'), " +
+            "('IA', '2026-10-02', '110', '112', 'resistance', 0, 1, 1, '[]'), " +
+            "('IA', '2026-10-02', '125', '127', 'resistance', 0, 1, 1, '[]');");
+        store.Execute("DELETE FROM indicator WHERE ticker IN ('IA', 'IB') AND name IN ('sma50', 'sma200');");
+        store.Execute("INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES ('IA', '2026-10-02', 'sma50', 103, 50), ('IA', '2026-10-02', 'sma200', 100, 200);");
+        store.Execute("DELETE FROM swing WHERE ticker = 'IA';");
+        store.Execute(
+            "INSERT INTO swing (ticker, session_date, direction, price, confirmed_on) VALUES " +
+            "('IA', '2026-09-01', 'low', '90', '2026-09-08'), ('IA', '2026-09-15', 'low', '91', '2026-09-22'), " +
+            "('IA', '2026-09-08', 'high', '110', '2026-09-15'), ('IA', '2026-09-22', 'high', '112', '2026-09-29');");
+
+        // ID's by hand, an uptrend, each price set from its close: its close over a 50-session average over a 200-session one, and its lows rising.
+        // The band under the close has one 10 lower beneath it. The last low under the band stands above that, so the stop trails at it, and not
+        // at the one swing high under the band, which is what a read of the wrong swings would trail.
+        var idClose = FamilyRows(store, "SELECT close FROM bar WHERE ticker = 'ID' AND session_date = '2026-10-02';").Single();
+        var idLow = decimal.Parse(idClose, CultureInfo.InvariantCulture) - 2m;
+
+        store.Execute("DELETE FROM level WHERE ticker = 'ID';");
+        store.Execute(FormattableString.Invariant($"INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) VALUES ('ID', '2026-10-02', '{idLow}', '{idLow + 1m}', 'support', 0, 1, 1, '[]'), ('ID', '2026-10-02', '{idLow - 10m}', '{idLow - 9m}', 'support', 0, 1, 1, '[]');"));
+        store.Execute("DELETE FROM indicator WHERE ticker = 'ID' AND session_date = '2026-10-02' AND name IN ('atr14', 'sma50', 'sma200');");
+        store.Execute(FormattableString.Invariant($"INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES ('ID', '2026-10-02', 'atr14', 2.5, 14), ('ID', '2026-10-02', 'sma50', {idLow - 20m}, 50), ('ID', '2026-10-02', 'sma200', {idLow - 30m}, 200);"));
+        store.Execute("DELETE FROM swing WHERE ticker = 'ID';");
+        store.Execute(FormattableString.Invariant($"INSERT INTO swing (ticker, session_date, direction, price, confirmed_on) VALUES ('ID', '2026-09-01', 'low', '{idLow - 6m}', '2026-09-08'), ('ID', '2026-09-15', 'low', '{idLow - 3m}', '2026-09-22'), ('ID', '2026-09-20', 'high', '{idLow - 2m}', '2026-09-25');"));
+
         var written = new[] { "family_result", "family_pick", "gate_result", "index_family_result", "index_family_pick", "dip_result", "listing", "setup", "ledger_reading" };
         var counts = written.ToDictionary(table => table, table => FamilyRows(store, $"SELECT COUNT(*) FROM {table};").Single());
         var reader = new EquityBrief.Worker.EntryCheck.EntryReader(FixedClock.At(AtTheFetch, SessionZones.UnitedStates), store.DatabaseFile);
@@ -340,6 +373,10 @@ public partial class FixtureExpectations
         Assert.StartsWith("EPS of $1.83", FamilyRows(store, "SELECT one_off_sentence FROM entry_reading WHERE ticker = 'IA';").Single(), StringComparison.Ordinal);
         Assert.Equal(["2026-10-01|none|none"], FamilyRows(store, "SELECT release_on || '|' || COALESCE(one_off_amount, 'none') || '|' || COALESCE(beat, 'none') FROM entry_reading WHERE ticker = 'IB';"));
         Assert.Equal(["none"], FamilyRows(store, "SELECT COALESCE(release_on, 'none') FROM entry_reading WHERE ticker = 'IC';"));
+
+        Assert.Equal(["99|101|90|125|2.5|0.4|none"], FamilyRows(store, "SELECT wait_low || '|' || wait_high || '|' || wait_stop || '|' || wait_exit || '|' || printf('%.1f', wait_reward) || '|' || printf('%.1f', zone_days) || '|' || COALESCE(wait_why, 'none') FROM entry_reading WHERE ticker = 'IA';"));
+        Assert.Equal(["none|the trend could not be classified, so the ladder places nothing"], FamilyRows(store, "SELECT COALESCE(wait_low, 'none') || '|' || wait_why FROM entry_reading WHERE ticker = 'IB';"));
+        Assert.Equal([(idLow - 3m).ToString(CultureInfo.InvariantCulture)], FamilyRows(store, "SELECT wait_stop FROM entry_reading WHERE ticker = 'ID';"));
 
         // A report on the calendar more than a week from the release is another report's, and no beat is read from it.
         store.Execute("UPDATE calendar SET event_date = '2026-09-23' WHERE ticker = 'IA';");

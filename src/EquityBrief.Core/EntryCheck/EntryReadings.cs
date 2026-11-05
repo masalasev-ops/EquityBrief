@@ -32,7 +32,14 @@ public sealed record EntryReading(
     decimal? OneOffAmount = null,
     bool? OneOffTied = null,
     int? OneOffDirection = null,
-    decimal? Beat = null);
+    decimal? Beat = null,
+    decimal? WaitLow = null,
+    decimal? WaitHigh = null,
+    decimal? WaitStop = null,
+    decimal? WaitExit = null,
+    double? WaitReward = null,
+    double? ZoneDays = null,
+    string? WaitWhy = null);
 
 // The entry check's readings of the bars, arithmetic over stored data alone.
 // see: The entry check reads a member's bars every night into a table of its own, and no rule reads it

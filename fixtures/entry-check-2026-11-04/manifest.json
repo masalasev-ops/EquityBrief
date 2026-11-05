@@ -1,0 +1,56 @@
+{
+  "fixture": "entry-check-2026-11-04",
+  "capturedFor": "2026-11-04",
+  "noCredentials": true,
+  "inputs": [
+    {
+      "file": "SWK.json",
+      "endpoint": "the operator's store as it stood on 2026-11-05: the stored bars, the pull's bars before them, the night's indicators and levels, the swings, the calendar, the company's filer, the newest results release and the newest analysts' answer",
+      "query": "SWK as of the session 2026-11-04",
+      "fetchedAt": "2026-11-05T16:00:00Z",
+      "trimmedTo": "one stock's rows and its newest release alone, the rows no reading of the night reads left out"
+    },
+    {
+      "file": "SN.json",
+      "endpoint": "the operator's store as it stood on 2026-11-05: the stored bars, the pull's bars before them, the night's indicators and levels, the swings, the calendar, the company's filer, the newest results release and the newest analysts' answer",
+      "query": "SN as of the session 2026-11-04",
+      "fetchedAt": "2026-11-05T16:00:00Z",
+      "trimmedTo": "one stock's rows and its newest release alone, the rows no reading of the night reads left out"
+    },
+    {
+      "file": "COR.json",
+      "endpoint": "the operator's store as it stood on 2026-11-05: the stored bars, the pull's bars before them, the night's indicators and levels, the swings, the calendar, the company's filer, the newest results release and the newest analysts' answer",
+      "query": "COR as of the session 2026-11-04",
+      "fetchedAt": "2026-11-05T16:00:00Z",
+      "trimmedTo": "one stock's rows and its newest release alone, the rows no reading of the night reads left out"
+    },
+    {
+      "file": "AIZ.json",
+      "endpoint": "the operator's store as it stood on 2026-11-05: the stored bars, the pull's bars before them, the night's indicators and levels, the swings, the calendar, the company's filer, the newest results release and the newest analysts' answer",
+      "query": "AIZ as of the session 2026-11-04",
+      "fetchedAt": "2026-11-05T16:00:00Z",
+      "trimmedTo": "one stock's rows and its newest release alone, the rows no reading of the night reads left out"
+    },
+    {
+      "file": "CDW.json",
+      "endpoint": "the operator's store as it stood on 2026-11-05: the stored bars, the pull's bars before them, the night's indicators and levels, the swings, the calendar, the company's filer, the newest results release and the newest analysts' answer",
+      "query": "CDW as of the session 2026-11-04",
+      "fetchedAt": "2026-11-05T16:00:00Z",
+      "trimmedTo": "one stock's rows and its newest release alone, the rows no reading of the night reads left out"
+    },
+    {
+      "file": "PTEN.json",
+      "endpoint": "the operator's store as it stood on 2026-11-05: the stored bars, the pull's bars before them, the night's indicators and levels, the swings, the calendar, the company's filer, the newest results release and the newest analysts' answer",
+      "query": "PTEN as of the session 2026-11-04",
+      "fetchedAt": "2026-11-05T16:00:00Z",
+      "trimmedTo": "one stock's rows and its newest release alone, the rows no reading of the night reads left out"
+    },
+    {
+      "file": "AR.json",
+      "endpoint": "the operator's store as it stood on 2026-11-05: the stored bars, the pull's bars before them, the night's indicators and levels, the swings, the calendar, the company's filer, the newest results release and the newest analysts' answer",
+      "query": "AR as of the session 2026-11-04",
+      "fetchedAt": "2026-11-05T16:00:00Z",
+      "trimmedTo": "one stock's rows and its newest release alone, the rows no reading of the night reads left out"
+    }
+  ]
+}

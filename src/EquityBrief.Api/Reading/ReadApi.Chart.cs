@@ -69,7 +69,7 @@ public sealed partial class ReadApi
         return waits;
     }
 
-    const string EntryColumns = "ticker, session_date, close, typical_day, stretch_percent, stretch_days, stretch_share, gain_twenty, rsi, largest_gain, volume_ratio, gap_high, gap_low, highest_since, history_start, older_low, older_high, older_on, older_days, release_on, one_off_sentence, one_off_amount, one_off_tied, one_off_direction, beat";
+    const string EntryColumns = "ticker, session_date, close, typical_day, stretch_percent, stretch_days, stretch_share, gain_twenty, rsi, largest_gain, volume_ratio, gap_high, gap_low, highest_since, history_start, older_low, older_high, older_on, older_days, release_on, one_off_sentence, one_off_amount, one_off_tied, one_off_direction, beat, wait_low, wait_high, wait_stop, wait_exit, wait_reward, zone_days, wait_why";
 
     static EquityBrief.Core.EntryCheck.EntryReading EntryRow(SqliteDataReader reader)
     {
@@ -102,7 +102,14 @@ public sealed partial class ReadApi
             Price(reader, 21),
             reader.IsDBNull(22) ? null : reader.GetInt64(22) == 1,
             reader.IsDBNull(23) ? null : (int)reader.GetInt64(23),
-            Price(reader, 24));
+            Price(reader, 24),
+            Price(reader, 25),
+            Price(reader, 26),
+            Price(reader, 27),
+            Price(reader, 28),
+            Figure(reader, 29),
+            Figure(reader, 30),
+            reader.IsDBNull(31) ? null : reader.GetString(31));
     }
 
     // The entry check's reading of a stock on a night, and of every member on one for the cards.

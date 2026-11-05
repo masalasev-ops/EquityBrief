@@ -198,7 +198,7 @@ public partial class ReadSurface
         // No report a year before: the first report the page knows, the one reported, is the day it started reporting.
         var started = FormattableString.Invariant($"No report a year earlier is stored to estimate it from: it started reporting as its own company on {reportDate:yyyy-MM-dd}");
 
-        Assert.Contains("<dd data-reportDate=\"reported\" data-estimated=\"none\"><b>not announced</b><small class=\"estimated-none\">" + started + "</small>", bare, StringComparison.Ordinal);
+        Assert.Contains("<dd data-reportDate=\"reported\" data-estimated=\"none\"><b>" + NameScreen.NoNextReport + "</b><small class=\"estimated-none\">" + started + "</small>", bare, StringComparison.Ordinal);
         Assert.Contains("and the next report is not announced. " + started + ".</p>", bare, StringComparison.Ordinal);
         Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate(Name, bare), "next-report-estimated"));
 

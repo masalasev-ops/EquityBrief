@@ -11,6 +11,7 @@ public static class EntryWords
     public const string See = "See the entry check";
     public const string StateNotSet = "not set yet: thresholds come from the test over stored history";
     public const string NoOlderBand = "none above in the history held";
+    public const string Provisional = "Provisional, and it sets nothing.";
 
     public const string OneOffPhrasesMiss = "This reads fixed phrases and can miss an item.";
     public const string NoItemFound = "no per-share item found by these phrases";
@@ -37,6 +38,33 @@ public static class EntryWords
             : string.Empty;
 
         return I($"The results release of {Day(on)} says: \"{sentence}\" The release names an item worth about {Dollars(amount)} a share.") + share + " " + OneOffPhrasesMiss;
+    }
+
+    // The wait plan as one sentence marked provisional, or why the ladder draws none, none where the plan was never read.
+    // see: The wait plan is drawn from the ladder's own bands and stop, is provisional and sets nothing
+    public static string? Wait(EntryReading reading)
+    {
+        if (reading.WaitWhy is { } why)
+        {
+            return $"{Provisional} No wait plan: {why}.";
+        }
+
+        if (reading is not { WaitLow: { } low, WaitHigh: { } high })
+        {
+            return null;
+        }
+
+        var below = reading.ZoneDays is { } days ? I($", {Tenth(days)} typical days below tonight's close") : string.Empty;
+        var said = I($"{Provisional} Wait to buy between {Dollars(low)} and {Dollars(high)}{below}.");
+
+        if (reading.WaitStop is not { } stop)
+        {
+            return said + " The ladder places no stop under this zone, so it draws no exit.";
+        }
+
+        return said + I($" Stop {Dollars(stop)}.") + (reading is { WaitExit: { } exit, WaitReward: { } reward }
+            ? I($" First exit {Dollars(exit)}, about {Tenth(reward)} to 1.")
+            : " No resistance band in the year stands at twice the risk, so it draws no first exit.");
     }
 
     public static string? Stretch(EntryReading reading)

@@ -29,6 +29,7 @@ public sealed partial class MarkRenderer
             Line("highest", EntryWords.Highest(reading)) +
             Line("older", EntryWords.Older(reading)) +
             (reading.ReleaseOn is null ? $"<p class=\"entry-state\" data-entry=\"one-off\">{Escaped(EntryWords.NoReleaseStored)}</p>" : Line("one-off", EntryWords.OneOff(reading))) +
+            Line("wait", EntryWords.Wait(reading)) +
             (Copying ? string.Empty : $"<p class=\"entry-state\">{Escaped(EntryWords.StateNotSet)}</p>") +
             "</section>";
     }

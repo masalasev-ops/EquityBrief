@@ -245,6 +245,8 @@ public partial class FixtureExpectations
             "src/EquityBrief.Worker/Loop/ScoreAudit.cs",
             "src/EquityBrief.Worker/Ledger/SetupLedger.Exits.cs",
             "src/EquityBrief.Worker/Loop/WalkForwardTester.OpenFloor.cs",
+            "src/EquityBrief.Worker/Loop/WalkForwardTester.EntryCheck.cs",
+            "src/EquityBrief.Worker/Ledger/SetupLedger.EntryCheck.cs",
             "src/EquityBrief.Worker/Loop/CheckReports.cs",
             "src/EquityBrief.Core/Ledger/ExitPricings.cs",
         ];

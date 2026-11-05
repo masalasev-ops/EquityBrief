@@ -748,7 +748,19 @@ public static class SchemaMigrations
         new Migration(125, "create entry_reading", CreateEntryReading),
         new Migration(126, "add entry_reading's one-off reading", AddEntryOneOff),
         new Migration(127, "create split_name", CreateSplitName),
+        new Migration(128, "add entry_reading's wait plan", AddEntryWaitPlan),
     ];
+
+    // From 22.43 the provisional plan the entry check draws from the ladder's own bands and stop.
+    const string AddEntryWaitPlan = @"
+        ALTER TABLE entry_reading ADD COLUMN wait_low TEXT;
+        ALTER TABLE entry_reading ADD COLUMN wait_high TEXT;
+        ALTER TABLE entry_reading ADD COLUMN wait_stop TEXT;
+        ALTER TABLE entry_reading ADD COLUMN wait_exit TEXT;
+        ALTER TABLE entry_reading ADD COLUMN wait_reward REAL;
+        ALTER TABLE entry_reading ADD COLUMN zone_days REAL;
+        ALTER TABLE entry_reading ADD COLUMN wait_why TEXT;
+    ";
 
     // From 22.41 the entry check's readings of a member on a night, which no rule reads.
     const string CreateEntryReading = @"
