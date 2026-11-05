@@ -13,8 +13,10 @@ Decision: A page with no resistance level in the last year of bars says so and d
 Decision: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
 Was:
 > | `entry_reading` not a table; and a page saying "no resistance band above"
+> CLAUDE.md, the rule on bars: the chart check's clause followed by "and the setup ledger's valuation reading alone"
 Now:
 > a new table and its reader; "no resistance level in the last year of bars", with the nearest older band drawn with its year where older prices stand above; a figure from before the newest report saying so
+> the entry check's reader named between those two clauses of the rule on bars, whose readings only the pages draw
 Why: the operator's entry check order of 2026-11-04, its first pull request.
 
 ### 2026-11-05 - docs/ARCHITECTURE.html - five rows of the name page: the filing date, a placeholder segment, joined capitals, a next report estimated and the proof
