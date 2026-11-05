@@ -127,6 +127,13 @@ public partial class ReadSurface
             Assert.DoesNotContain("when it was asked", unasked, StringComparison.Ordinal);
         }
 
+        // The mark beside a name on a list says the same in a few words.
+        var marks = new EquityBrief.Web.Marks.MarkRenderer();
+
+        Assert.Contains(">some prices are copies of the session before</span>", marks.SuspectMark(new SuspectPrices(At, SuspectReason.Copied(sessions), sessions)), StringComparison.Ordinal);
+        Assert.Contains(">no price after 2026-11-03</span>", marks.SuspectMark(new SuspectPrices(At, SuspectReason.Behind(new(2026, 11, 3)))), StringComparison.Ordinal);
+        Assert.Contains(">prices may not reflect a dividend or split</span>", marks.SuspectMark(new SuspectPrices(At, "The request timed out")), StringComparison.Ordinal);
+
         Assert.Null(SuspectReason.Read(null));
         Assert.Null(SuspectReason.Read("The request timed out"));
     }

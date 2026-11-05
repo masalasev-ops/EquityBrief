@@ -2929,7 +2929,7 @@ public sealed partial class MarkRenderer : IComponent
     }
 
     // A suspect name beside its row, the instant and the reason as its title, in the words of what is wrong with its prices.
-    string SuspectMark(SuspectPrices suspect) =>
+    public string SuspectMark(SuspectPrices suspect) =>
         $" <span class=\"prices-suspect\" data-last-asked-at=\"{Escaped(suspect.LastAskedAt)}\" title=\"last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}\">" +
         (EquityBrief.Core.Bars.SuspectReason.Read(suspect.Reason) switch
         {
