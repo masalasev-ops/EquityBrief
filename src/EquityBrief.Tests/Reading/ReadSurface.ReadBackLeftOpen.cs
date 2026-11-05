@@ -196,7 +196,7 @@ public partial class ReadSurface
         Assert.Equal("Chief Corp Aff Off", FieldWords.Spaced("ChiefCorpAffOff"));
         Assert.Equal("Sr VP", FieldWords.Spaced("SrVP"));
 
-        foreach (var name in new[] { "YouTube", "PepsiCo", "QuickBooks", "PayPal", "IoT", "SaaS", "McDonald", "UnitedHealthcare", "NVIDIA", "iPhone", "Auto Parts" })
+        foreach (var name in new[] { "YouTube", "PepsiCo", "QuickBooks", "PayPal", "IoT", "SaaS", "McDonald", "UnitedHealthcare", "ExxonMobil", "DoorDash", "NextEra", "UniFirst", "DownREIT", "NVIDIA", "iPhone", "Auto Parts" })
         {
             Assert.Equal(name, FieldWords.Spaced(name));
         }
@@ -216,6 +216,12 @@ public partial class ReadSurface
 
         Assert.Contains("data-segment=\"HomeBuildingOps\"><td>Home Building Ops</td>", table, StringComparison.Ordinal);
         Assert.Contains("data-segment=\"YouTube\"><td>YouTube</td>", table, StringComparison.Ordinal);
+
+        // The table as filed: the operator's own example is one of its group headings, and its element keeps the value as stored.
+        const string Filed = "{\"periodEnd\":\"2026-06-30\",\"currency\":\"USD\",\"segments\":{\"report\":\"R1.htm\",\"groups\":[{\"label\":\"HomeBuildingOps\",\"figures\":[{\"lineItem\":\"Revenues\",\"months\":3,\"ended\":\"2026-06-30\",\"value\":\"5\",\"unit\":null}]}]}}";
+        var raw = NameScreen.RawSegments([new FilingRow("DHI", new DateOnly(2026, 7, 30), Filed, "{}")]);
+
+        Assert.Contains("<tr class=\"segment-group\" data-segment=\"HomeBuildingOps\"><th colspan=\"2\">Home Building Ops</th></tr>", raw, StringComparison.Ordinal);
 
         // The bars beside the table, a one-segment line naming a business and an insider's title read the same way.
         Assert.Contains(">Home Building Ops</text>", marks.ShareBars(new SegmentReading("R1.htm", new DateOnly(2026, 6, 30), 2, 100m, 100m, [new SegmentRow("HomeBuildingOps", 60m, null, null, null, null, null, 60), new SegmentRow("YouTube", 40m, null, null, null, null, null, 40)], null)), StringComparison.Ordinal);
