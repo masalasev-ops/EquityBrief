@@ -103,6 +103,11 @@ public partial class ArchitectureConformance
         .. ComponentAccess.EntryReaderRows,
         .. SchemaColumns.EntryReadingStoreRows,
         .. Reading.ReadSurface.EntryCheckRows,
+
+        // 22.42's reader of split names, its store and its row of the run page.
+        .. ComponentAccess.SplitNameRows,
+        .. SchemaColumns.SplitNameStoreRows,
+        .. Reading.ReadSurface.SplitNameRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

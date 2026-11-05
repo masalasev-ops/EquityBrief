@@ -132,7 +132,7 @@ public partial class ReadSurface
         Assert.Equal(("labelled", "all neutral"), (rows["a3"].State, rows["a3"].Tabs));
         Assert.Equal(("labelled", "opinion"), (rows["a4"].State, rows["a4"].Tabs));
         Assert.Equal(("unreadable", "all unlabelled"), (rows["a5"].State, rows["a5"].Tabs));
-        Assert.Contains("<span class=\"tag state\">unreadable: a digit in the reason</span>", rows["a5"].Markup, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"tag state\">This story could not be labelled: the model&#39;s reason kept a figure, and a label&#39;s reason may hold none</span>", rows["a5"].Markup, StringComparison.Ordinal);
         Assert.Equal(("refused", "all unlabelled"), (rows["a6"].State, rows["a6"].Tabs));
         Assert.Contains("<span class=\"tag state\">refused: algorithmic price forecast</span>", rows["a6"].Markup, StringComparison.Ordinal);
         Assert.Equal(("unlabelled", "all unlabelled"), (rows["a0"].State, rows["a0"].Tabs));

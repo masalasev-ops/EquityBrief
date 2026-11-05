@@ -36,6 +36,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `bar` | Backfill, BarFetcher, CorporateActionChecker, LateBarAsker | none | BarFetcher, CorporateActionChecker |
 | `late_bar_ask` | LateBarAsker | LateBarAsker, LateBarReadings | none |
 | `entry_reading` | EntryReader, LateBarReadings | none | EntryReader |
+| `split_name` | SplitNameReader | none | none |
 | `kept_bar` | BarFetcher | none | none |
 | `market_bar` | MarketSeriesFetcher | MarketSeriesFetcher | none |
 | `live_quote` | QuoteJob | none | none |
@@ -373,10 +374,32 @@ Grain: one row per member and session holding a bar on it.
 | `older_on` | TEXT | the session the pulled prices turned at |
 | `older_days` | REAL | its distance above the close in typical days |
 | `run_id` | TEXT | the run that wrote it |
+| `release_on` | TEXT | from 22.42 the day the SEC accepted the member's newest results release on or before the night, null where none is stored |
+| `one_off_sentence` | TEXT | the sentence of that release naming the largest one-off item the fixed phrases find, null where none |
+| `one_off_amount` | TEXT | decimal in code, that item's amount a share |
+| `one_off_tied` | INTEGER | 1 where the sentence ties it to earnings per share, 0 where it does not |
+| `one_off_direction` | INTEGER | 1 where the sentence says it raised earnings, -1 where it lowered them, null where it does not say |
+| `beat` | TEXT | decimal in code, the actual less the estimate the calendar stores for the report within 7 days of the release, null where it holds neither |
 
 Primary key: `ticker`, `session_date`.
 
 **Read by the pages alone** (see: The entry check reads a member's bars every night into a table of its own, and no rule reads it). A night run again replaces its own rows, and no rule, plan, list or gate reads the table until the test through the loop earns one and the operator approves it. A bar that arrives in the off-peak run has its row written then by the late bar readings.
+
+### split_name
+Grain: one row per name a page splits at its capitals, from 22.42.
+
+| Column | Type | Notes |
+|---|---|---|
+| `name` | TEXT | the name as filed |
+| `spaced` | TEXT | as a page draws it |
+| `ticker` | TEXT | the first member it was read of |
+| `source` | TEXT | `filing`, a segment in a stored filing, or `insider`, an insider's title |
+| `first_night` | TEXT | the night it was first read |
+| `baseline` | INTEGER | 1 where the reader's first read kept it as standing already, which no run page lists |
+| `read_at` | TEXT | UTC instant of the read, from which the next read takes the filings fetched since |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `name`. Index `split_name_by_night` on (`first_night`). Insert by the split name reader in the night and never updated (see: A name split for the first time is listed on the run page the night it first appears).
 
 ### late_bar_ask
 Grain: one row per member, session and stage asked for a bar the night's day file did not carry.

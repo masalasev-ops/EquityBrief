@@ -416,7 +416,7 @@ public partial class ArchitectureConformance
         // and matrix rows and its two stores, and 1510 from 22.38's session marks' catalogue, matrix and store rows, 1517 from the late bars' two catalogue and two matrix rows, their store and the two page rows, 1522 from what the read-back left open, 1530 from 22.41's reader, store and five rows of the pages, and 22.40's
         // dividend waits' store row.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1530),
+            (789, 853, 6, 4, 855, 876, 1534),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

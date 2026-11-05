@@ -20,6 +20,16 @@ Now:
 > A paragraph added under "Tabled for phase 23" for the readings' registration in the ledger.
 Why: the operator's answers of 2026-11-05 to the report of that day.
 
+### 2026-11-05 - docs/ARCHITECTURE.html, docs/SCHEMA.md - the entry check's one-off reading, split names, stories that could not be labelled
+Decision: The entry check's one-off reading reads a stored release by fixed phrases, and says it can miss an item
+Decision: A name split for the first time is listed on the run page the night it first appears
+Decision: A story the labeller read and could not label says so with why, and the proof passes a page that states it
+Was:
+> Entry reader reads membership, bar store, pulled bars, indicators, and no one-off item; a row refused by admissibility or answered unreadably saying so; no record of a split name
+Now:
+> Entry reader also reads calendar, companies and release documents, for the one-off reading; a row the labeller could not label says why; a new table, its reader and a list on the run page
+Why: the operator's entry check order of 2026-11-04 and their answers of 2026-11-05.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html - Home's card for a plan with a rising give-up price
 Decision: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence
 Was:

@@ -39,6 +39,9 @@ public class SchemaColumns
     // 22.41's one: the entry check's readings.
     internal static string[] EntryReadingStoreRows => [CheckReach.Key(Scope.StoresTable, "Entry readings")];
 
+    // 22.42's: each name a page splits at its capitals.
+    internal static string[] SplitNameStoreRows => [CheckReach.Key(Scope.StoresTable, "Split names")];
+
     // 22.40's other: each ask for a member the night's day file did not carry.
     internal static string[] LateBarAskStoreRows => [CheckReach.Key(Scope.StoresTable, "Late bar asks")];
 
@@ -283,6 +286,7 @@ public class SchemaColumns
             .. DividendWaitStoreRows,
             .. LateBarAskStoreRows,
             .. EntryReadingStoreRows,
+            .. SplitNameStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

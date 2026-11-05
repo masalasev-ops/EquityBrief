@@ -69,7 +69,7 @@ public sealed partial class ReadApi
         return waits;
     }
 
-    const string EntryColumns = "ticker, session_date, close, typical_day, stretch_percent, stretch_days, stretch_share, gain_twenty, rsi, largest_gain, volume_ratio, gap_high, gap_low, highest_since, history_start, older_low, older_high, older_on, older_days";
+    const string EntryColumns = "ticker, session_date, close, typical_day, stretch_percent, stretch_days, stretch_share, gain_twenty, rsi, largest_gain, volume_ratio, gap_high, gap_low, highest_since, history_start, older_low, older_high, older_on, older_days, release_on, one_off_sentence, one_off_amount, one_off_tied, one_off_direction, beat";
 
     static EquityBrief.Core.EntryCheck.EntryReading EntryRow(SqliteDataReader reader)
     {
@@ -96,7 +96,13 @@ public sealed partial class ReadApi
             Price(reader, 15),
             Price(reader, 16),
             On(reader, 17),
-            Figure(reader, 18));
+            Figure(reader, 18),
+            On(reader, 19),
+            reader.IsDBNull(20) ? null : reader.GetString(20),
+            Price(reader, 21),
+            reader.IsDBNull(22) ? null : reader.GetInt64(22) == 1,
+            reader.IsDBNull(23) ? null : (int)reader.GetInt64(23),
+            Price(reader, 24));
     }
 
     // The entry check's reading of a stock on a night, and of every member on one for the cards.
@@ -146,6 +152,28 @@ public sealed partial class ReadApi
         SELECT ticker, session_date, stage, asked_at, outcome, detail, qualified FROM late_bar_ask
         WHERE session_date = $session
         ORDER BY ticker, stage DESC;";
+
+    // The names split for the first time on a night, none of those the first read kept as what stood already.
+    // see: A name split for the first time is listed on the run page the night it first appears
+    public async Task<IReadOnlyList<SplitNameRow>> SplitNamesOnAsync(DateOnly session)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT name, spaced, ticker, source FROM split_name WHERE first_night = $session AND baseline = 0 ORDER BY name;";
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var names = new List<SplitNameRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            names.Add(new SplitNameRow(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3)));
+        }
+
+        return names;
+    }
 
     static LateBarRow LateRow(SqliteDataReader reader) => new(
         reader.GetString(0),

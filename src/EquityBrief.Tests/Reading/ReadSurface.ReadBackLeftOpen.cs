@@ -245,7 +245,7 @@ public partial class ReadSurface
         Assert.Contains("<dt>Next dated event</dt><dd>not on file; the next report estimated about 2027-01-21 <small>from its report of 2026-01-22 a year on</small></dd>", estimated, StringComparison.Ordinal);
         Assert.Contains("data-next-event=\"none\"", estimated, StringComparison.Ordinal);
 
-        Assert.Contains("<dt>Next dated event</dt><dd>not on file</dd>", NameScreen.FactStrip("HOS", 6m, null, null, [], []), StringComparison.Ordinal);
+        Assert.Contains("<dt>Next dated event</dt><dd>No next report date or estimate on file yet.</dd>", NameScreen.FactStrip("HOS", 6m, null, null, [], []), StringComparison.Ordinal);
 
         // A dated event is the event, whatever is estimated.
         Assert.Contains("<dt>Next dated event</dt><dd>2026-11-20</dd>", NameScreen.FactStrip("AA", 40m, new DateOnly(2026, 11, 20), null, [], [], nextEstimated: (new DateOnly(2026, 1, 22), new DateOnly(2027, 1, 21))), StringComparison.Ordinal);
@@ -278,6 +278,6 @@ public partial class ReadSurface
         var left = ReportProof.Evaluate("ROP", News + Labelled + Left).Verdicts.Single(verdict => verdict.Rule == "news-labelled");
 
         Assert.Equal(ReportProof.Failed, left.Verdict);
-        Assert.Equal("the labeller read 1 admitted story and left it unlabelled", left.Why);
+        Assert.Equal("the labeller read 1 admitted story and left it unlabelled with no word why", left.Why);
     }
 }

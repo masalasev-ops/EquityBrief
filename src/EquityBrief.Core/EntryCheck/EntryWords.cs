@@ -12,6 +12,33 @@ public static class EntryWords
     public const string StateNotSet = "not set yet: thresholds come from the test over stored history";
     public const string NoOlderBand = "none above in the history held";
 
+    public const string OneOffPhrasesMiss = "This reads fixed phrases and can miss an item.";
+    public const string NoItemFound = "no per-share item found by these phrases";
+    public const string NoReleaseStored = "No results release is stored for this stock, so no one-off item can be read.";
+
+    // What the newest results release names, none where no release is stored, which the region draws as an outline. Its share of
+    // the beat stands only where the sentence ties the item to earnings per share, says which way it moved them and a beat is
+    // stored for the release.
+    // see: The entry check's one-off reading reads a stored release by fixed phrases, and says it can miss an item
+    public static string? OneOff(EntryReading reading)
+    {
+        if (reading.ReleaseOn is not { } on)
+        {
+            return null;
+        }
+
+        if (reading is not { OneOffAmount: { } amount, OneOffSentence: { } sentence })
+        {
+            return I($"The results release of {Day(on)}: {NoItemFound}.");
+        }
+
+        var share = reading is { OneOffTied: true, OneOffDirection: { } direction, Beat: { } beat } && beat > 0
+            ? I($" That is {Whole(Statistic.FromPrice(amount / beat * 100))}% of the {Dollars(beat)} beat. ") + (beat - (direction * amount) > 0 ? I($"Without it the beat is {Dollars(beat - (direction * amount))}.") : "Without it there is no beat.")
+            : string.Empty;
+
+        return I($"The results release of {Day(on)} says: \"{sentence}\" The release names an item worth about {Dollars(amount)} a share.") + share + " " + OneOffPhrasesMiss;
+    }
+
     public static string? Stretch(EntryReading reading)
     {
         if (reading is not { StretchPercent: { } percent, StretchShare: { } share })
@@ -110,6 +137,11 @@ public static class EntryWords
             flags.Add(reading.HighestSince is { } since ? I($"Highest close since {Day(since)}") : I($"Highest close since its history starts on {Day(reading.HistoryStart!.Value)}"));
         }
 
+        if (reading.OneOffAmount is not null)
+        {
+            flags.Add("Release names a one-off item");
+        }
+
         return flags;
     }
 
@@ -140,6 +172,11 @@ public static class EntryWords
         if (EntryReadings.HighestLongSince(reading))
         {
             flags.Add(reading.HighestSince is { } since ? I($"Highest close since {HomeDay(since)}") : I($"Highest close in its history held, back to {HomeDay(reading.HistoryStart!.Value)}"));
+        }
+
+        if (reading.OneOffAmount is not null)
+        {
+            flags.Add("The company's report includes a one-off item");
         }
 
         return flags;

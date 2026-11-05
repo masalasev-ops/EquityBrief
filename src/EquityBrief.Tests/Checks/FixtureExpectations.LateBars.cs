@@ -250,6 +250,44 @@ public partial class FixtureExpectations
     // The entry check's reader over the constructed night, read by hand: a row for each of the seven members with a bar, no row for
     // one holding none, and a second run replacing its own and writing nothing a rule reads.
     // see: The entry check reads a member's bars every night into a table of its own, and no rule reads it
+    // Its first read keeps what stands as a baseline; a later read keeps a new name with its night, from a filing fetched since or a
+    // title, keeps a name once however often it is read, and takes a company's own spelling for no split.
+    [Fact]
+    public async Task ANameSplitForTheFirstTimeIsKeptWithItsNightAndTheFirstReadIsABaseline()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        static string Filing(string ticker, string fetched, string label) =>
+            $"('{ticker}', '{fetched[..10]}', '{fetched}', '{{\"segments\":{{\"report\":\"r\",\"title\":\"t\",\"periods\":[],\"groups\":[{{\"label\":\"{label}\",\"figures\":[]}}],\"consolidated\":[]}}}}', 's')";
+
+        store.Execute($"INSERT INTO fundamentals (ticker, filing_date, fetched_at, payload, source) VALUES {Filing("OLD", "2026-10-01T00:00:00Z", "HomeBuildingOps")};");
+        store.Execute(
+            "INSERT INTO insider_trade (cik, ticker, accession, filed, form, owners, owner_ciks, director, officer, title, ten_percent, sequence, security, traded, code, shares, acquired, direct, source, run_id) VALUES " +
+            "('1', 'OLD', 'a', '2026-01-01', '4', 'x', '[]', 0, 1, 'ViceChairman', 0, 1, 'Common', '2026-01-01', 'P', '1', 1, 1, 's', 'r');");
+
+        var first = new DateTimeOffset(2026, 10, 2, 22, 0, 0, TimeSpan.Zero);
+        var reader = new EquityBrief.Worker.Names.SplitNameReader(FixedClock.At(first, SessionZones.UnitedStates), store.DatabaseFile);
+        var baseline = await reader.RunAsync("night-one", new DateOnly(2026, 10, 2));
+
+        Assert.Equal((2, 2, true), (baseline.Read, baseline.New, baseline.Baseline));
+        Assert.Equal(["HomeBuildingOps|Home Building Ops|OLD|filing|1", "ViceChairman|Vice Chairman|OLD|insider|1"], FamilyRows(store, "SELECT name || '|' || spaced || '|' || ticker || '|' || source || '|' || baseline FROM split_name ORDER BY name;"));
+        Assert.Empty(await Reading.ReadSurface.ApiOf(store).SplitNamesOnAsync(new DateOnly(2026, 10, 2)));
+
+        store.Execute($"INSERT INTO fundamentals (ticker, filing_date, fetched_at, payload, source) VALUES {Filing("NEW", "2026-10-05T00:00:00Z", "IntlVehiclePmts")}, {Filing("OWN", "2026-10-05T00:00:00Z", "YouTube")}, {Filing("OLD", "2026-10-05T00:00:00Z", "HomeBuildingOps")};");
+
+        var later = new EquityBrief.Worker.Names.SplitNameReader(FixedClock.At(first.AddDays(4), SessionZones.UnitedStates), store.DatabaseFile);
+        var night = await later.RunAsync("night-two", new DateOnly(2026, 10, 6));
+
+        Assert.Equal((1, false), (night.New, night.Baseline));
+        Assert.Equal(["IntlVehiclePmts|2026-10-06|0"], FamilyRows(store, "SELECT name || '|' || first_night || '|' || baseline FROM split_name WHERE run_id = 'night-two';"));
+        Assert.Equal("IntlVehiclePmts", Assert.Single(await Reading.ReadSurface.ApiOf(store).SplitNamesOnAsync(new DateOnly(2026, 10, 6))).Name);
+        Assert.Equal(3, FamilyRows(store, "SELECT name FROM split_name;").Count);
+
+        // A filing fetched before the last read is not read again.
+        store.Execute($"INSERT INTO fundamentals (ticker, filing_date, fetched_at, payload, source) VALUES {Filing("BACK", "2026-10-03T00:00:00Z", "BackDatedOps")};");
+        Assert.Equal(0, (await later.RunAsync("night-three", new DateOnly(2026, 10, 7))).New);
+    }
+
     [Fact]
     public async Task TheEntryReaderWritesARowForEveryMemberWithABarAndNothingARuleReads()
     {
@@ -270,6 +308,19 @@ public partial class FixtureExpectations
             "INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES " +
             "('IA', '2026-10-02', 'atr14', 2.5, 14), ('IA', '2026-10-02', 'rsi14', 70, 14), ('IA', '2026-10-02', 'vol_avg50', 1000000, 50);");
 
+        // IA's newest stored release names an item, one of the day before it and one after the night being read past; IB's names none;
+        // the calendar stores IA's report two days before its release, an actual of 2.31 against an estimate of 1.54; IC holds no release.
+        static string Hex(string text) => "X'" + Convert.ToHexString(EquityBrief.Core.Releases.ResultsReleases.Compressed(text).Gzip) + "'";
+
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('IA', '2026-10-01T00:00:00Z', '0000000001'), ('IB', '2026-10-01T00:00:00Z', '0000000002');");
+        store.Execute(
+            "INSERT INTO release_document (accession, cik, form, filed, accepted_at, exhibit, url, text_gzip, text_sha256, text_length, run_id, release) VALUES " +
+            $"('a1', '0000000001', '8-K', '2026-09-30', '2026-09-30T12:00:00Z', 'e', 'u', {Hex("It took a restructuring charge of $0.11 per share.")}, 's', 1, 'r', 1), " +
+            $"('a2', '0000000001', '8-K', '2026-10-01', '2026-10-01T12:00:00Z', 'e', 'u', {Hex("EPS of $1.83; adjusted EPS* of $2.31; both included a benefit of approximately $0.67 from net tariff refunds.")}, 's', 1, 'r', 1), " +
+            $"('a3', '0000000001', '8-K', '2026-10-09', '2026-10-09T12:00:00Z', 'e', 'u', {Hex("A one-time gain on sale added $0.99 per share.")}, 's', 1, 'r', 1), " +
+            $"('b1', '0000000002', '8-K', '2026-10-01', '2026-10-01T12:00:00Z', 'e', 'u', {Hex("Sales rose this quarter.")}, 's', 1, 'r', 1);");
+        store.Execute("INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('IA', '2026-09-29', 'earnings', 'before', '{\"estimate\":\"1.54\",\"actual\":\"2.31\"}', '2026-10-01T00:00:00Z');");
+
         var written = new[] { "family_result", "family_pick", "gate_result", "index_family_result", "index_family_pick", "dip_result", "listing", "setup", "ledger_reading" };
         var counts = written.ToDictionary(table => table, table => FamilyRows(store, $"SELECT COUNT(*) FROM {table};").Single());
         var reader = new EquityBrief.Worker.EntryCheck.EntryReader(FixedClock.At(AtTheFetch, SessionZones.UnitedStates), store.DatabaseFile);
@@ -282,6 +333,21 @@ public partial class FixtureExpectations
         // twice its volume against an average of 1,000,000; the RSI and the typical day as stored; and last this high in the pull.
         Assert.Equal(["102|2.5|70.0|2.0|100.5|101"], FamilyRows(store, "SELECT close || '|' || typical_day || '|' || printf('%.1f', rsi) || '|' || printf('%.1f', volume_ratio) || '|' || gap_high || '|' || gap_low FROM entry_reading WHERE ticker = 'IA';"));
         Assert.Equal(["2026-01-23|2026-01-23"], FamilyRows(store, "SELECT highest_since || '|' || history_start FROM entry_reading WHERE ticker = 'IA';"));
+
+        Assert.Equal(
+            ["2026-10-01|0.67|1|1|0.77"],
+            FamilyRows(store, "SELECT release_on || '|' || one_off_amount || '|' || one_off_tied || '|' || one_off_direction || '|' || beat FROM entry_reading WHERE ticker = 'IA';"));
+        Assert.StartsWith("EPS of $1.83", FamilyRows(store, "SELECT one_off_sentence FROM entry_reading WHERE ticker = 'IA';").Single(), StringComparison.Ordinal);
+        Assert.Equal(["2026-10-01|none|none"], FamilyRows(store, "SELECT release_on || '|' || COALESCE(one_off_amount, 'none') || '|' || COALESCE(beat, 'none') FROM entry_reading WHERE ticker = 'IB';"));
+        Assert.Equal(["none"], FamilyRows(store, "SELECT COALESCE(release_on, 'none') FROM entry_reading WHERE ticker = 'IC';"));
+
+        // A report on the calendar more than a week from the release is another report's, and no beat is read from it.
+        store.Execute("UPDATE calendar SET event_date = '2026-09-23' WHERE ticker = 'IA';");
+        await reader.RunAsync("night-far");
+        Assert.Equal(["none"], FamilyRows(store, "SELECT COALESCE(beat, 'none') FROM entry_reading WHERE ticker = 'IA';"));
+        store.Execute("UPDATE calendar SET event_date = '2026-09-24' WHERE ticker = 'IA';");
+        await reader.RunAsync("night-near");
+        Assert.Equal(["0.77"], FamilyRows(store, "SELECT beat FROM entry_reading WHERE ticker = 'IA';"));
 
         await reader.RunAsync("night-again");
 

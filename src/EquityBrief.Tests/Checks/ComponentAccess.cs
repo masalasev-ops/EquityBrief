@@ -52,6 +52,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Entry reader"),
     ];
 
+    // 22.42's one: the reader of split names.
+    internal static string[] SplitNameRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Split name reader"),
+        CheckReach.Key(Scope.MatrixTable, "Split name reader"),
+    ];
+
     // 22.40's two: the late bars' ask and their readings.
     internal static string[] LateBarRows =>
     [
@@ -233,6 +240,7 @@ public partial class ComponentAccess
             .. SessionMarkRows,
             .. LateBarRows,
             .. EntryReaderRows,
+            .. SplitNameRows,
 
             // 22.37, the chart checker.
             .. ChartCheckRows,

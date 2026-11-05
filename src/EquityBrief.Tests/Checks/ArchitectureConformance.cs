@@ -1495,7 +1495,7 @@ public partial class ArchitectureConformance
         // 278 at the 22.40 correction of 2026-11-05: the name page's late bar and the run page's list of the night's asks.
         // 283 at the correction after it: five rows of the name page from what the PR 640 read-back left open.
         // 288 at 22.41: the entry check's five rows of the pages.
-        Assert.Equal(288, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        Assert.Equal(289, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1672,7 +1672,7 @@ public partial class ArchitectureConformance
         // 680 at the 22.40 correction of 2026-11-05: the name page's late bar and the run page's list of the night's asks.
         // 685 at the correction after it: five rows of the name page from what the PR 640 read-back left open.
         // 690 at 22.41: the entry check's five rows of the pages.
-        Assert.Equal(690, inDocument.Length);
+        Assert.Equal(691, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

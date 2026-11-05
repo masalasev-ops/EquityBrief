@@ -3790,7 +3790,7 @@ app.MapGet("/screens/run/{night?}", async (
         var runResults = await read.IndexResultsAsync(reading.Code, dated);
 
         return Results.Content(
-            marks.LateBars(await read.LateBarsOnAsync(dated)) + page.IndexRunRegion(
+            marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + page.IndexRunRegion(
                 marks,
                 dated,
                 reading,
@@ -3884,7 +3884,7 @@ app.MapGet("/screens/run/{night?}", async (
     var monthlyHeld = new LoopDecided(monthlyDecisions, [], [], null, await read.ModelCutoffAsync(), monthlyRun is null ? [] : await read.LoopTestsAsync(monthlyRun));
 
     return Results.Content(
-        marks.LateBars(await read.LateBarsOnAsync(dated)) + page.RunRegion(
+        marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + page.RunRegion(
             marks,
             dated,
             stages,

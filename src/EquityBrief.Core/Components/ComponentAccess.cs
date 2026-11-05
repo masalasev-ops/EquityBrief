@@ -40,6 +40,7 @@ public enum Store
     DividendWait,
     LateBarAsk,
     EntryReading,
+    SplitName,
     ChartCheck,
     SplitEvent,
     PulledRevenue,

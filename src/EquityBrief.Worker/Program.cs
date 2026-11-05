@@ -2979,6 +2979,14 @@ static async Task<int> LabelNews(string[] args)
 
     var labeller = new NewsLabeller(LmStudioReadingFeed.Live(local), local, limits, clock, store.DatabaseFile, store.DataRoot);
 
+    // '--ask-again-sentences' forgets the stories kept as unreadable for not being one sentence, for the next run to ask again.
+    if (args.Contains("--ask-again-sentences"))
+    {
+        Console.WriteLine($"label-news: {await labeller.AskAgainNotOneSentenceAsync()} story or stories to ask again");
+
+        return 0;
+    }
+
     // '--pin' writes the version the labeller labels under.
     if (args.Contains("--pin"))
     {

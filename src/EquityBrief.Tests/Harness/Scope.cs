@@ -4589,6 +4589,22 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(CatalogueTable, "Split name reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and the split names and run log it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Split name reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Split names")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns are asserted against the schema document",
+            ByMigration),
+        [CheckReach.Key("15.10 Run", "Names split for the first time")] = new Scoped(
+            Verdict.Pass,
+            "each name, its drawn words, its stock and its source read back off the list, and none listed where none was",
+            ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Entry reader")] = new Scoped(
             Verdict.Pass,
             "the class declares the stores it reads and the readings and run log it writes, and asks no feed",
@@ -6387,6 +6403,8 @@ internal static class Scope
         ["Session marks"] = "22.38",
         ["Dividend waits"] = "22.40",
         ["Entry reader"] = "22.41",
+        ["Split name reader"] = "22.42",
+        ["Split names"] = "22.42",
         ["Entry readings"] = "22.41",
         ["Late bar asker"] = "22.40",
         ["Late bar readings"] = "22.40",
@@ -7240,6 +7258,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "A next report estimated")] = "22.40",
         [CheckReach.Key("15.9 Name", "The proof's awaited quarter and waiting story")] = "22.40",
         [CheckReach.Key("15.9 Name", "Entry check")] = "22.41",
+        [CheckReach.Key("15.10 Run", "Names split for the first time")] = "22.42",
         [CheckReach.Key("15.9 Name", "No resistance level in the year")] = "22.41",
         [CheckReach.Key("15.9 Name", "A figure from before the newest report")] = "22.41",
         [CheckReach.Key("15.18 The decision card", "The entry check's line")] = "22.41",

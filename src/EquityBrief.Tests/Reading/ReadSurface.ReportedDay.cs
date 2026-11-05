@@ -138,7 +138,7 @@ public partial class ReadSurface
 
         var neither = NameScreen.Numbers(unfiled, onTheDay);
 
-        Assert.Contains("<dd class=\"degraded\" data-reportDate=\"absent\">not filed</dd>", neither, StringComparison.Ordinal);
+        Assert.Contains("<dd class=\"degraded\" data-reportDate=\"absent\">No next report date or estimate on file yet.</dd>", neither, StringComparison.Ordinal);
 
         // The filing's line on a consensus stays true of a filing naming none.
         Assert.Contains("data-absent=\"estimate\"", onTheCalendar, StringComparison.Ordinal);
@@ -284,7 +284,7 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Passed, Verdict(Row("2026-11-03") + Around("2026-11-03", "yes")));
 
         // RLI: not filed where the calendar lists one, dated or estimated, and passing where it lists none.
-        const string NotFiled = "<div><dt>Next report</dt><dd class=\"degraded\" data-reportDate=\"absent\">not filed</dd></div>";
+        const string NotFiled = "<div><dt>Next report</dt><dd class=\"degraded\" data-reportDate=\"absent\">No next report date or estimate on file yet.</dd></div>";
 
         Assert.Equal(ReportProof.Failed, Verdict(NotFiled + Around("2027-01-20", "no")));
         Assert.Equal(ReportProof.Passed, Verdict(NotFiled));

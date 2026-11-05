@@ -2,6 +2,9 @@ using EquityBrief.Core.EntryCheck;
 
 namespace EquityBrief.Web.Marks;
 
+// A name split for the first time, as the night's reader kept it.
+public sealed record SplitNameRow(string Name, string Spaced, string Ticker, string Source);
+
 public sealed partial class MarkRenderer
 {
     // The Entry check region of a stock a family lists: every reading as a plain sentence, and the state a dashed outline saying
@@ -25,9 +28,19 @@ public sealed partial class MarkRenderer
             Line("gap", EntryWords.Gap(reading, buy, stop, rule)) +
             Line("highest", EntryWords.Highest(reading)) +
             Line("older", EntryWords.Older(reading)) +
+            (reading.ReleaseOn is null ? $"<p class=\"entry-state\" data-entry=\"one-off\">{Escaped(EntryWords.NoReleaseStored)}</p>" : Line("one-off", EntryWords.OneOff(reading))) +
             (Copying ? string.Empty : $"<p class=\"entry-state\">{Escaped(EntryWords.StateNotSet)}</p>") +
             "</section>";
     }
+
+    // The names a page split for the first time on this night, none where none was; the source a filing's segment or an insider's title.
+    // see: A name split for the first time is listed on the run page the night it first appears
+    public static string SplitNames(IReadOnlyList<SplitNameRow> names) =>
+        names.Count == 0
+            ? string.Empty
+            : $"<section class=\"split-names\" data-names=\"{names.Count.ToString(Invariant)}\"><h3>Names split for the first time tonight</h3><ul>" +
+                string.Concat(names.Select(name => $"<li data-name=\"{Escaped(name.Name)}\">{Escaped(name.Name)} reads \"{Escaped(name.Spaced)}\": {Escaped(name.Ticker)}, {(name.Source == "insider" ? "an insider's title" : "a segment in its filing")}</li>")) +
+                "</ul></section>";
 
     // A figure dated before the newest report says so.
     // see: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
