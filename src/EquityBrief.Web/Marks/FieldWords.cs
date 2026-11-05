@@ -170,10 +170,10 @@ public static partial class FieldWords
 
     public static IReadOnlySet<string> CompanysOwnSpelling { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
-        "AmeriGas", "BioPharm", "BioPharma", "CardioVascular", "CarelonRx", "CenterWell", "CoreSite", "CrossLab", "EchoStar", "FootJoy", "GovDeals",
-        "HomeGoods", "InPost", "IoT", "LiveWire", "LongHorn", "McDonald", "McLane", "MedSurg", "MedTech", "NorthStar", "OptiFreight", "PayPal", "PepsiCo",
+        "AmeriGas", "BioPharm", "BioPharma", "CardioVascular", "CarelonRx", "CenterWell", "CoreSite", "CrossLab", "DoorDash", "DownREIT", "EchoStar", "ExxonMobil", "FootJoy", "GovDeals",
+        "HomeGoods", "InPost", "IoT", "LiveWire", "LongHorn", "McDonald", "McLane", "MedSurg", "MedTech", "NextEra", "NorthStar", "OptiFreight", "PayPal", "PepsiCo",
         "PharMerica", "PrimeLending", "ProQuad", "ProTax", "QuickBooks", "RotaTeq", "SaaS", "SendTech", "SmartCover", "SpinCo", "TheFork", "TurboTax",
-        "UnitedHealthcare", "UpLift", "YouTube",
+        "UniFirst", "UnitedHealthcare", "UpLift", "YouTube",
     };
 
     // A rule version's stored settings in words: {"nightsTheNewLabelHolds": 1} reads "nights the new label holds 1".
