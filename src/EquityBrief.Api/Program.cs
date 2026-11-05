@@ -2164,7 +2164,8 @@ async Task<IResult> TonightScreenAsync(
             await read.RuleNightsAsync(reading.Code, dated),
             await read.RulePicksAsync(reading.Code, dated),
             await read.FormingRowsAsync(reading.Code, dated),
-            ruleView.MarketOpen);
+            ruleView.MarketOpen,
+            qualifiers: await read.VersionQualifiersAsync(reading.Code, dated));
 
     // The fundamentals-first family, which the index families' step reads on the S&P 500 under its own rows, draws no card
     // and counts no pass on the page, its rule running out of sight.
