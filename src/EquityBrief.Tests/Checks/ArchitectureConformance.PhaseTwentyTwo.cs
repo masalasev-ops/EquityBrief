@@ -95,6 +95,9 @@ public partial class ArchitectureConformance
         .. ComponentAccess.LateBarRows,
         .. SchemaColumns.LateBarAskStoreRows,
         .. Reading.ReadSurface.LateBarRows,
+
+        // What the PR 640 read-back left open: five rows of the name page.
+        .. Reading.ReadSurface.ReadBackRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

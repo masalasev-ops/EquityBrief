@@ -7354,7 +7354,7 @@ public sealed partial class MarkRenderer : IComponent
             foreach (var quarter in view.Quarters)
             {
                 block.Append(Invariant, $"<tr data-quarter=\"{DayOf(quarter.PeriodEnd)}\"><td class=\"num\">{DayOf(quarter.PeriodEnd)}</td>");
-                block.Append(Invariant, $"<td class=\"num\">{(quarter.FilingDate is { } filed ? DayOf(filed) : "<span class=\"degraded\">not filed</span>")}</td>");
+                block.Append(Invariant, $"<td class=\"num\">{(quarter.FilingDate is { } filed ? DayOf(filed) : "<span class=\"degraded\">" + EquityBrief.Core.Report.SecFiled.NotOnFile + "</span>")}</td>");
                 block.Append(Invariant, $"<td class=\"num\">{(quarter.ReportDate is { } reported ? DayOf(reported) : "<span class=\"degraded\">not stated</span>")}</td></tr>");
             }
 

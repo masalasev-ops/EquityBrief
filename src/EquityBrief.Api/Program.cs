@@ -758,7 +758,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             ? await read.WrittenFromReleaseSegmentsAsync(ticker, commentary.AsOf)
             : null,
         dividendWaits: await read.DividendWaitsAsync(ticker),
-        lateBar: bars.Count > 0 ? await read.LateBarOfAsync(ticker, bars[^1].SessionDate) : null);
+        lateBar: bars.Count > 0 ? await read.LateBarOfAsync(ticker, bars[^1].SessionDate) : null,
+        secFiled: await read.SecFiledDaysAsync(ticker, on));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

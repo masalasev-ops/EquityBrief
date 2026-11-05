@@ -318,7 +318,7 @@ public sealed partial class MarkRenderer
 
         // see: A company reporting one segment is told so with its revenue and its quarter and the table as filed stays beneath
         var oneSegment = segments.OneSegment is { } only && segments.Quarter is { } itsQuarter
-            ? Formatted($"<p class=\"one-segment\" data-one-segment=\"{Escaped(only.Name)}\" data-revenue=\"{only.Revenue.ToString(Invariant)}\">This company reports one business segment: {Escaped(only.Name)}, with revenue of {Figures.Money(only.Revenue, currency)} in the quarter to {DayOf(itsQuarter)}.</p>")
+            ? Formatted($"<p class=\"one-segment\" data-one-segment=\"{Escaped(only.Name)}\" data-revenue=\"{only.Revenue.ToString(Invariant)}\">This company reports one business segment{(EquityBrief.Core.Report.SegmentTable.IsPlaceholder(only.Name) ? string.Empty : ": " + Escaped(FieldWords.Spaced(only.Name)))}, with revenue of {Figures.Money(only.Revenue, currency)} in the quarter to {DayOf(itsQuarter)}.</p>")
             : string.Empty;
 
         if (!segments.Clean && oneSegment.Length > 0)
@@ -342,7 +342,7 @@ public sealed partial class MarkRenderer
 
         foreach (var row in segments.Rows)
         {
-            table.Append(Formatted($"<tr data-segment=\"{Escaped(row.Segment)}\"><td>{Escaped(row.Segment)}</td>"));
+            table.Append(Formatted($"<tr data-segment=\"{Escaped(row.Segment)}\"><td>{Escaped(FieldWords.Spaced(row.Segment))}</td>"));
             table.Append(Formatted($"<td class=\"num\" data-revenue=\"{row.Revenue.ToString(Invariant)}\">{Figures.MoneyIn(row.Revenue, scale, currency)}</td>"));
             table.Append(row.RevenueChange is { } revenue ? "<td class=\"num\">" + Signed(revenue, "revenue-change") + "</td>" : "<td class=\"num degraded\">none</td>");
             table.Append(row.Earnings is { } earnings ? Formatted($"<td class=\"num\" data-earnings=\"{earnings.ToString(Invariant)}\">{Figures.MoneyIn(earnings, scale, currency)}</td>") : "<td class=\"num degraded\" data-earnings=\"absent\">not filed</td>");
@@ -376,7 +376,7 @@ public sealed partial class MarkRenderer
             var row = segments.Rows[at];
             var y = 4 + (at * Row);
 
-            svg.Append(Formatted($"<text class=\"m-row\" x=\"0\" y=\"{Number(y + 15)}\">{Escaped(Shortened(row.Segment, 30))}</text>"));
+            svg.Append(Formatted($"<text class=\"m-row\" x=\"0\" y=\"{Number(y + 15)}\">{Escaped(Shortened(FieldWords.Spaced(row.Segment), 30))}</text>"));
             svg.Append(Formatted($"<rect class=\"sb-bar\" x=\"{Number(Label)}\" y=\"{Number(y + 4)}\" width=\"{Number(Math.Max(wide * row.Share / 100, 1))}\" height=\"14\" rx=\"3\" data-share=\"{row.Share.ToString(Invariant)}\"><title>{Escaped(row.Segment)}: {Tenth(row.Share)}% of revenue</title></rect>"));
             svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(Label + (wide * row.Share / 100) + 6)}\" y=\"{Number(y + 15)}\">{Tenth(row.Share)}%</text>"));
 

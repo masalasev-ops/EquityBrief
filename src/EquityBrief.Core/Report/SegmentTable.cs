@@ -206,6 +206,28 @@ public static class SegmentTable
             : null;
     }
 
+    // The names a filing gives a company's one segment that name no business, which the page's line leaves out.
+    // see: A company whose one segment is filed under a placeholder name is told so with no name
+    public static IReadOnlySet<string> PlaceholderNames { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "Reportable Segment",
+        "Reportable Segments",
+        "Single Segment",
+        "Single Reportable Segment",
+        "Single Operating Segment",
+        "One Segment",
+        "One Reportable Segment",
+        "One Operating Segment",
+        "Segment",
+        "Segments",
+        "Operating Segment",
+        "Operating Segments",
+        "Business Segment",
+        "Consolidated Segment",
+    };
+
+    public static bool IsPlaceholder(string name) => PlaceholderNames.Contains(name.Trim());
+
     // A group's segment name: its label's parts with those naming the consolidation's axis taken off, joined; none where
     // nothing is left or a part names no segment of its own.
     public static string? NameOf(string label)

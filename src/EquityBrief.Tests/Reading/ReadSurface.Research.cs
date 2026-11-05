@@ -269,10 +269,8 @@ public partial class ReadSurface
         Assert.NotEmpty(stamps);
         Assert.All(stamps, stamp => Assert.Equal($"Computed for {through}", stamp));
 
-        // The numbers, on the spine of their own card, as of the newest filing stored.
-        var filed = Rows(store, "SELECT MAX(filing_date) FROM fundamentals WHERE ticker = 'KEYS';").Single()[0];
-
-        Assert.Contains($"<span class=\"dl-k\">Filed</span><b>{filed}</b>", region, StringComparison.Ordinal);
+        // The numbers, on the spine of their own card, as of the newest filing stored, which this store holds no SEC fact of.
+        Assert.Contains("<span class=\"dl-k\">Filing date</span><b>not on file</b>", region, StringComparison.Ordinal);
 
         // Each written section, on its own card and again beneath its prose: the newest
         // accepted version of each, which is what a reader is shown.

@@ -231,8 +231,8 @@ public partial class ReadSurface
         var page = ReportProof.Evaluate("BA", Card + line + Release);
 
         Assert.Equal(ReportProof.Passed, VerdictOf(page, "quarter-wait"));
-        Assert.Equal(ReportProof.Failed, VerdictOf(page, "newest-quarter"));
-        Assert.EndsWith("; expected to clear by 2026-10-28", page.Verdicts.Single(verdict => verdict.Rule == "newest-quarter").Why, StringComparison.Ordinal);
+        Assert.Equal(ReportProof.Passed, VerdictOf(page, "newest-quarter"));
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("BA", Card + Release), "newest-quarter"));
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("BA", Card + Release), "quarter-wait"));
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("BA", Card), "quarter-wait"));
 

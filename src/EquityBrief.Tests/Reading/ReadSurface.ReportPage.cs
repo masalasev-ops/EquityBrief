@@ -641,7 +641,7 @@ public partial class ReadSurface
         var reported = Rows(store, "SELECT report_date FROM reported_quarter WHERE ticker = 'MSFT' AND fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = 'MSFT') ORDER BY period_end DESC LIMIT 1;").Single()[0];
 
         // As stored, the quarter is the newest filing's.
-        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>{filed[0]}</b><span>from the filing</span>", await NameRoute(store, "MSFT"), StringComparison.Ordinal);
+        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filing date</span><b>not on file</b><span>from the filing</span>", await NameRoute(store, "MSFT"), StringComparison.Ordinal);
 
         store.Execute($"DELETE FROM fundamentals WHERE ticker = 'MSFT' AND filing_date = '{filed[0]}';");
 

@@ -820,6 +820,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.DividendWait, Touch.Read),
             new StoreTouch(Store.LateBarAsk, Touch.Read),
+            new StoreTouch(Store.SecTicker, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
@@ -3082,6 +3083,39 @@ public sealed partial class ReadApi : IComponent
         WHERE ticker = $ticker
         ORDER BY session_date, asked_at;
     ";
+
+    // The first day the SEC's archive states each period of the stock's filer in a quarterly or annual report, to the night asked about.
+    // see: A quarter's filing date is read from the SEC's own filings, and where they hold none the page says so
+    const string SecFiledOf = @"
+        SELECT period_end, MIN(filed) FROM filed_fact
+        WHERE cik = COALESCE(
+                (SELECT c.cik FROM company c WHERE c.ticker = $ticker AND c.cik IS NOT NULL ORDER BY c.fetched_at DESC LIMIT 1),
+                (SELECT s.cik FROM sec_ticker s WHERE s.ticker = $ticker ORDER BY s.read_at DESC LIMIT 1))
+          AND form IN ('10-Q', '10-K', '10-Q/A', '10-K/A', '10-KT', '20-F', '40-F', '6-K')
+          AND filed <= $on
+        GROUP BY period_end;
+    ";
+
+    public async Task<IReadOnlyDictionary<DateOnly, DateOnly>> SecFiledDaysAsync(string ticker, DateOnly? asOf = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SecFiledOf;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
+
+        var days = new Dictionary<DateOnly, DateOnly>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            days[DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture)] = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        }
+
+        return days;
+    }
 
     const string FirstFiledOf = @"
         SELECT period_end, MIN(filed), form FROM filed_fact

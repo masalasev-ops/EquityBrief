@@ -4609,6 +4609,26 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key("15.9 Name", "A quarter's filing date")] = new Scoped(
+            Verdict.Pass,
+            "the SEC's day read back off a page, a quarter it states none for saying so and the provider's date drawn nowhere, in values written by hand before the code ran",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "A segment filed under a placeholder name")] = new Scoped(
+            Verdict.Pass,
+            "each listed name read back with no name on the line and a named business kept, in words written by hand before the code ran",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "A name filed in joined capitals")] = new Scoped(
+            Verdict.Pass,
+            "the operator's two names split, a company's own spelling kept and the stored value left on its element, in words written by hand before the code ran",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "A next report estimated")] = new Scoped(
+            Verdict.Pass,
+            "a stock with no event and an estimate read back off its fact strip, and one with neither drawing not on file",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The proof's awaited quarter and waiting story")] = new Scoped(
+            Verdict.Pass,
+            "a page saying its quarter is awaited passing and one missing the line failing, a story waiting passing with a note and one the labeller left failing",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "A bar that arrived late")] = new Scoped(
             Verdict.Pass,
             "a bar written at the fetch and one written in the off-peak run each read back off its stock's page in words written by hand before the code ran, the rule named on the second, and a stock still missing saying nothing of an arrival",
@@ -7180,6 +7200,11 @@ internal static class Scope
         [CheckReach.Key(LedgerPage, "The short-term dip's setups")] = "22.2",
         // 22.4's one, which the plan names as section 15's chart page rows.
         [CheckReach.Key("15.22 Chart", "In brief")] = "22.4",
+        [CheckReach.Key("15.9 Name", "A quarter's filing date")] = "22.40",
+        [CheckReach.Key("15.9 Name", "A segment filed under a placeholder name")] = "22.40",
+        [CheckReach.Key("15.9 Name", "A name filed in joined capitals")] = "22.40",
+        [CheckReach.Key("15.9 Name", "A next report estimated")] = "22.40",
+        [CheckReach.Key("15.9 Name", "The proof's awaited quarter and waiting story")] = "22.40",
         [CheckReach.Key("15.9 Name", "A bar that arrived late")] = "22.40",
         [CheckReach.Key("15.10 Run", "Members missing from the night's day file")] = "22.40",
         // 22.6's two, which the addendum names as Tonight in one minute and the page's words at its foot.

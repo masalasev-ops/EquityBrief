@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-05 - docs/ARCHITECTURE.html - five rows of the name page: the filing date, a placeholder segment, joined capitals, a next report estimated and the proof
+Decision: A quarter's filing date is read from the SEC's own filings, and where they hold none the page says so
+Decision: A company whose one segment is filed under a placeholder name is told so with no name
+Decision: A name filed as one run of joined capitals is split at its capitals for the reader, and a company's own joined names keep their spelling
+Decision: The proof reads a results release newer than the filed quarter as passing where the page says that quarter is awaited, and a story the labeller has not reached as waiting
+Decision: A member with no dated event shows its next report as an estimate where one exists
+Was:
+> no row of its own, the Filed column drawing the provider's filing date, the one-segment line naming a placeholder, a joined name drawn as filed, the next dated event reading not on file beside an estimate the calendar drew, and the proof failing an awaited quarter and a story the labeller had not reached
+Now:
+> five rows of 15.9
+Why: the operator's order of 2026-11-05 on what the PR 640 read-back left open.
+
 ### 2026-11-05 - CLAUDE.md, docs/SCHEMA.md, docs/ARCHITECTURE.html - a member missing from the night's day file is asked again
 Decision: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night
 Was:
