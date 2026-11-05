@@ -1303,8 +1303,10 @@ public partial class NightlyRun
 
         var stages = RunLog(store, "night-market");
         var bars = stages.ToList().FindIndex(row => row.Stage == BarFetcher.Stage);
-        var market = stages[bars + 1];
+        var market = stages[bars + 2];
 
+        // The late bars' ask between them, the night's file carrying every member the fixture's night asks for here.
+        Assert.Equal(LateBarAsker.Stage, stages[bars + 1].Stage);
         Assert.Equal((MarketSeriesFetcher.Stage, "ok"), (market.Stage, market.Outcome));
         Assert.Contains("GSPC: nothing was stored for it, No captured response for the GSPC series.", market.Detail, StringComparison.Ordinal);
         Assert.Contains("VIX: nothing was stored for it, No captured response for the VIX series.", market.Detail, StringComparison.Ordinal);
@@ -2320,7 +2322,7 @@ public partial class NightlyRun
         // loader reads it for the spans it closes when the feed stops listing them. From 21.6 the short interest reader
         // reads it for the stocks it asks FINRA about at a settlement, every stock held on or after it.
         Assert.Equal(
-            ["Backfill", "BarFetcher", "CorporateActionChecker", "CorporateActionChecker", "CorporateActionChecker", "CorporateActionChecker", "MembershipLoader", "MembershipLoader", "ShortInterestReader"],
+            ["Backfill", "BarFetcher", "CorporateActionChecker", "CorporateActionChecker", "CorporateActionChecker", "CorporateActionChecker", "LateBarReadings", "MembershipLoader", "MembershipLoader", "ShortInterestReader"],
             stored.Order(StringComparer.Ordinal));
 
         // Every other read asks the join date as well. Stated as a set, and a

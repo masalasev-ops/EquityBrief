@@ -4589,6 +4589,34 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(CatalogueTable, "Late bar asker")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the historical price feed it asks, the bars it appends, the asks it states and the suspect mark it sets back, and the declaration matches this row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Late bar asker")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Late bar readings")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the readings it copies back and the rule answers it reads off the scratch store, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Late bar readings")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Late bar asks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key("15.9 Name", "A bar that arrived late")] = new Scoped(
+            Verdict.Pass,
+            "a bar written at the fetch and one written in the off-peak run each read back off its stock's page in words written by hand before the code ran, the rule named on the second, and a stock still missing saying nothing of an arrival",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Members missing from the night's day file")] = new Scoped(
+            Verdict.Pass,
+            "every ask read back off the run page in words written by hand before the code ran, a member past the limit among them, and a night with no ask drawing no list",
+            ByReadSurface),
         [CheckReach.Key(StoresTable, "Dividend events")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
@@ -6306,6 +6334,9 @@ internal static class Scope
         ["Ticker joins"] = "22.33",
         ["Session marks"] = "22.38",
         ["Dividend waits"] = "22.40",
+        ["Late bar asker"] = "22.40",
+        ["Late bar readings"] = "22.40",
+        ["Late bar asks"] = "22.40",
         ["Chart checks"] = "22.37",
         ["Split events"] = "22.37",
         ["Dividend events"] = "18.2",
@@ -7149,6 +7180,8 @@ internal static class Scope
         [CheckReach.Key(LedgerPage, "The short-term dip's setups")] = "22.2",
         // 22.4's one, which the plan names as section 15's chart page rows.
         [CheckReach.Key("15.22 Chart", "In brief")] = "22.4",
+        [CheckReach.Key("15.9 Name", "A bar that arrived late")] = "22.40",
+        [CheckReach.Key("15.10 Run", "Members missing from the night's day file")] = "22.40",
         // 22.6's two, which the addendum names as Tonight in one minute and the page's words at its foot.
         [CheckReach.Key("15.7 Tonight", "Tonight in one minute")] = "22.6",
         [CheckReach.Key("15.7 Tonight", "The market strip")] = "21.13",

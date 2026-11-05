@@ -3,6 +3,7 @@ using EquityBrief.Core.Chart;
 using EquityBrief.Data;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
+using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Api.Reading;
 
@@ -66,6 +67,61 @@ public sealed partial class ReadApi
         }
 
         return waits;
+    }
+
+    const string LateOfStock = @"
+        SELECT ticker, session_date, stage, asked_at, outcome, detail, qualified FROM late_bar_ask
+        WHERE ticker = $ticker AND session_date = $session AND outcome = 'arrived'
+        ORDER BY stage;";
+
+    const string LateOnNight = @"
+        SELECT ticker, session_date, stage, asked_at, outcome, detail, qualified FROM late_bar_ask
+        WHERE session_date = $session
+        ORDER BY ticker, stage DESC;";
+
+    static LateBarRow LateRow(SqliteDataReader reader) => new(
+        reader.GetString(0),
+        DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+        reader.GetString(2),
+        reader.IsDBNull(3) ? null : reader.GetString(3),
+        reader.GetString(4),
+        reader.GetString(5),
+        EquityBrief.Core.Bars.LateBars.Qualified(reader.IsDBNull(6) ? null : reader.GetString(6)));
+
+    // The stock's bar of the night where one of the asks wrote it, which the stock's page says.
+    public async Task<LateBarRow?> LateBarOfAsync(string ticker, DateOnly session)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LateOfStock;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync() ? LateRow(reader) : null;
+    }
+
+    // Every ask of the night, which the run page states one by one.
+    public async Task<IReadOnlyList<LateBarRow>> LateBarsOnAsync(DateOnly session)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LateOnNight;
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var asks = new List<LateBarRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            asks.Add(LateRow(reader));
+        }
+
+        return asks;
     }
 
     public async Task<IReadOnlyList<ChartNote>> ChartNotesAsync(string ticker)

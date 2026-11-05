@@ -772,21 +772,26 @@ public class RegisterAppendOnly
         // from a night, and hands them to no evaluation and to no store, its component declaring that it writes
         // nothing; and the chart averages step's, which computes the chart's averages over the history pulled before
         // the store's year into a store of its own that the read surface alone reads, so no evaluation reaches what it
-        // computes. The files left out are named, each shown to be one the reader finds and to hand nothing on.
+        // computes; and the late bars' readings, which runs the night's own steps unchanged over a scratch store, so a change
+        // to what they compute is a change to those steps' files, and its own hands no evaluation anything but a stock's rows
+        // of the night as those steps wrote them. The files left out are named, each shown to be one the reader finds and to
+        // hand nothing on.
         // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw
         const string Sweep = "src/EquityBrief.Worker/Sweep/SweepColumns.cs";
         const string ChartAverages = "src/EquityBrief.Worker/Indicators/ChartAverager.cs";
+        const string LateBarReadings = "src/EquityBrief.Worker/Bars/LateBarReadings.cs";
 
         var found = Repository.SourceFiles()
             .Where(file => !file.Contains(Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
             .Where(file => EvaluationCall.IsMatch(SourceStatements.WithoutComments(File.ReadAllText(file))))
             .Select(file => Path.GetRelativePath(Repository.Root, file).Replace(Path.DirectorySeparatorChar, '/'))
             .ToArray();
-        var onThePath = found.Where(path => path != Sweep && path != ChartAverages).ToArray();
+        var onThePath = found.Where(path => path != Sweep && path != ChartAverages && path != LateBarReadings).ToArray();
 
         Assert.Contains(Sweep, found);
         Assert.DoesNotContain(EquityBrief.Worker.Sweep.SweepHistory.Access.Stores, touch => touch.Touch != EquityBrief.Core.Components.Touch.Read);
         Assert.Contains(ChartAverages, found);
+        Assert.Contains(LateBarReadings, found);
         Assert.Equal(
             ["ChartAverager:Insert, Delete", "ChartChecker:Read", "ReadApi:Read"],
             ShippedComponents.All()

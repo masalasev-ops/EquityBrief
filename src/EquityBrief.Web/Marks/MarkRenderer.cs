@@ -942,6 +942,10 @@ public sealed record SuspectPrices(string LastAskedAt, string Reason, IReadOnlyL
 // A dividend the provider's answer does not yet carry: its ex-date, the amount as paid and the session it was last asked for.
 public sealed record DividendWait(DateOnly ExDate, decimal Amount, DateOnly AskedOn);
 
+// One ask for a member the night's day file carried nothing for: when it was asked and at which stage, what the provider's
+// answer came to and why, and the rules a bar that arrived in the off-peak run would have passed, none where they were not read.
+public sealed record LateBarRow(string Ticker, DateOnly Session, string Stage, string? AskedAt, string Outcome, string Detail, IReadOnlyList<string>? Qualified);
+
 // Where the chart's averages over its first sessions came from, as the night stored it: the pull read through the
 // sessions before the store's year, or why none was read.
 public sealed record AveragesFrom(string? Pull, string? Reason);
@@ -2895,6 +2899,47 @@ public sealed partial class MarkRenderer : IComponent
             FormattableString.Invariant($"<p class=\"dividend-waits\" data-ticker=\"{Escaped(ticker)}\" data-ex-date=\"{wait.ExDate:yyyy-MM-dd}\" data-asked-on=\"{wait.AskedOn:yyyy-MM-dd}\">") +
             FormattableString.Invariant($"{Escaped(ticker)}'s prices before {wait.ExDate:yyyy-MM-dd} do not yet carry its dividend of {Price(wait.Amount)} a share, so they stand a little high. ") +
             FormattableString.Invariant($"The provider is asked again on each of the five nights after and weekly until its answer carries it, last on {wait.AskedOn:yyyy-MM-dd}.</p>")));
+
+    // see: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night
+    public string LateBar(LateBarRow? late) =>
+        late is null
+            ? string.Empty
+            : FormattableString.Invariant($"<p class=\"late-bar\" data-ticker=\"{Escaped(late.Ticker)}\" data-session=\"{late.Session:yyyy-MM-dd}\" data-stage=\"{Escaped(late.Stage)}\" data-arrived-at=\"{Escaped(late.AskedAt ?? string.Empty)}\">") +
+              Escaped(LateBarSaid(late)) + "</p>";
+
+    static string LateBarSaid(LateBarRow late)
+    {
+        var said = $"{late.Ticker}'s bar for {DayOf(late.Session)} was not in the night's day file and arrived late, at {late.AskedAt}";
+
+        if (late.Stage == EquityBrief.Core.Bars.LateBars.AtTheFetch)
+        {
+            return said + ", asked with a request of its own at the end of the night's fetch, before the night's rules read it.";
+        }
+
+        return said + ", in the off-peak run. Its readings and levels were worked then, and the night's picks, lists, trades and ledger stand as the night wrote them." + (late.Qualified switch
+        {
+            null => " Whether it would have qualified under a rule was not read, as the run page says.",
+            { Count: 0 } => string.Empty,
+            var rules => " It " + EquityBrief.Core.Bars.LateBars.WouldHaveQualified(rules) + ".",
+        });
+    }
+
+    // Each ask of the night on the run page, in stock and then stage order, stating each.
+    // see: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night
+    public string LateBars(IReadOnlyList<LateBarRow>? asks) =>
+        asks is not { Count: > 0 }
+            ? string.Empty
+            : FormattableString.Invariant($"<section class=\"late-bars\" data-asks=\"{asks.Count(ask => ask.AskedAt is not null)}\"><h2>Members missing from the night's day file</h2><ol>") +
+              string.Concat(asks.Select(ask =>
+                  $"<li data-ticker=\"{Escaped(ask.Ticker)}\" data-stage=\"{Escaped(ask.Stage)}\" data-outcome=\"{Escaped(ask.Outcome)}\">" +
+                  $"<a href=\"#/name/{Escaped(ask.Ticker)}\">{Escaped(ask.Ticker)}</a>, " +
+                  (ask.AskedAt is { } at
+                      ? (ask.Stage == EquityBrief.Core.Bars.LateBars.AtTheFetch ? "asked at the end of the fetch at " : "asked in the off-peak run at ") + Escaped(at)
+                      : ask.Stage == EquityBrief.Core.Bars.LateBars.AtTheFetch ? "not asked at the end of the fetch" : "not asked in the off-peak run") +
+                  $": {Escaped(ask.Outcome)}, {Escaped(ask.Detail)}" +
+                  (ask.Outcome == EquityBrief.Core.Bars.LateBars.Arrived && ask.Qualified is { Count: > 0 } rules ? ". It " + Escaped(EquityBrief.Core.Bars.LateBars.WouldHaveQualified(rules)) : string.Empty) +
+                  ".</li>")) +
+              "</ol></section>";
 
     // see: A suspect name's line says what the provider's answer held, and says a download failed only where one did
     public string PricesSuspect(string ticker, SuspectPrices? suspect) =>

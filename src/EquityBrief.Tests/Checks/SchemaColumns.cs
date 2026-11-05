@@ -36,6 +36,9 @@ public class SchemaColumns
     // 22.38's one: the operator's word on a session of the pulled history.
     internal static string[] SessionMarkStoreRows => [CheckReach.Key(Scope.StoresTable, "Session marks")];
 
+    // 22.40's other: each ask for a member the night's day file did not carry.
+    internal static string[] LateBarAskStoreRows => [CheckReach.Key(Scope.StoresTable, "Late bar asks")];
+
     // 22.40's one: the dividends an answer has not carried.
     internal static string[] DividendWaitStoreRows => [CheckReach.Key(Scope.StoresTable, "Dividend waits")];
 
@@ -275,6 +278,7 @@ public class SchemaColumns
             .. ChartCheckStoreRows,
             .. SessionMarkStoreRows,
             .. DividendWaitStoreRows,
+            .. LateBarAskStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

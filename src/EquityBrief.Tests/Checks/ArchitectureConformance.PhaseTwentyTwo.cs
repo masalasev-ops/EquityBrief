@@ -90,6 +90,11 @@ public partial class ArchitectureConformance
         // 22.38's session marks and 22.40's dividend waits, after phase 21's as well.
         .. FixtureExpectations.SessionMarkRows,
         .. SchemaColumns.DividendWaitStoreRows,
+
+        // 22.40's late bars' two components, their store and the two page rows, after phase 21's as well.
+        .. ComponentAccess.LateBarRows,
+        .. SchemaColumns.LateBarAskStoreRows,
+        .. Reading.ReadSurface.LateBarRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

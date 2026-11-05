@@ -8,12 +8,13 @@
 # of its own. A main holding a commit origin/main does not have is refused before any worker exists; a checkout on
 # a branch is not, since the run builds a commit and never the working tree.
 #
-# The worker then labels the newest night's list, refreshes the analysts' ratings of the members asked longest ago
+# The worker then asks once more for each member the night's day file carried nothing for, labels the newest night's
+# list, refreshes the analysts' ratings of the members asked longest ago
 # under the New York day's cap, reads FINRA's newest short interest, and then drains the report requests the night
 # queued, each a run of its own whose calls and spend are on its own rows; the drain waits out any peak window it
 # starts in, as every drain does, and a step before it that stops leaves the rest to run.
 #
-#   tools/offpeak            the labeller, the ratings refresh, the short interest and then the drain
+#   tools/offpeak            the late bars' ask, the labeller, the ratings refresh, the short interest and then the drain
 #   tools/offpeak --check    print what a run would build and run, and run nothing
 set -euo pipefail
 
@@ -87,7 +88,7 @@ if [ "$check" = 1 ]; then
     echo "offpeak: copy $copy, ${built:+built already}${built:-to build}"
     echo "offpeak: data root $data"
     echo "offpeak: secrets read from $secrets, none copied"
-    echo "offpeak: would label the newest night's list, refresh the analysts' ratings, read FINRA's short interest and then drain the queued reports"
+    echo "offpeak: would ask once more for the members the night's day file carried nothing for, label the newest night's list, refresh the analysts' ratings, read FINRA's short interest and then drain the queued reports"
     exit 0
 fi
 
@@ -118,6 +119,13 @@ echo "offpeak: $note"
 
 export EquityBrief__DataRoot="$data"
 export EquityBrief__SecretsFile="$secrets"
+
+late=0
+dotnet "$built" late-bars --live || late=$?
+
+if [ "$late" != 0 ]; then
+    echo "offpeak: the late bars' ask stopped with $late, and the rest runs" >&2
+fi
 
 labelled=0
 dotnet "$built" label-news || labelled=$?

@@ -33,7 +33,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | Table | Insert | Update | Delete |
 |---|---|---|---|
 | `membership` | MembershipLoader | MembershipLoader | none |
-| `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
+| `bar` | Backfill, BarFetcher, CorporateActionChecker, LateBarAsker | none | BarFetcher, CorporateActionChecker |
+| `late_bar_ask` | LateBarAsker | LateBarAsker, LateBarReadings | none |
 | `kept_bar` | BarFetcher | none | none |
 | `market_bar` | MarketSeriesFetcher | MarketSeriesFetcher | none |
 | `live_quote` | QuoteJob | none | none |
@@ -54,18 +55,18 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_income` | HistoryPull | none | HistoryPull |
 | `pulled_snapshot` | HistoryPull | none | HistoryPull |
 | `pulled_holding` | HistoryPull | HistoryPull | HistoryPull |
-| `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
+| `indicator` | IndicatorEngine, LateBarReadings | IndicatorEngine | IndicatorEngine |
 | `chart_average` | ChartAverager | none | ChartAverager |
 | `earnings_move` | PageHistoryReader | none | PageHistoryReader |
 | `long_view` | PageHistoryReader | none | PageHistoryReader |
-| `swing` | SwingFinder | SwingFinder | SwingFinder |
-| `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
-| `level` | LevelBuilder | LevelBuilder | LevelBuilder |
-| `ladder` | LadderBuilder | LadderBuilder | LadderBuilder |
+| `swing` | SwingFinder, LateBarReadings | SwingFinder | SwingFinder |
+| `volume_profile` | VolumeProfileBuilder, LateBarReadings | VolumeProfileBuilder | VolumeProfileBuilder |
+| `level` | LevelBuilder, LateBarReadings | LevelBuilder | LevelBuilder |
+| `ladder` | LadderBuilder, LateBarReadings | LadderBuilder | LadderBuilder, LateBarReadings |
 | `move` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `peer_reading` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `earnings_reaction` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
-| `swing_reading` | SwingReader | none | SwingReader |
+| `swing_reading` | SwingReader, LateBarReadings | none | SwingReader, LateBarReadings |
 | `market_reading` | SwingReader | SwingReader | SwingReader |
 | `gate_result` | SwingFilter, FilterHistory | none | SwingFilter, FilterHistory |
 | `filter_version` | ShapeCommand | ShapeCommand | none |
@@ -146,7 +147,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `quarter_ask` | QuarterFetcher | none | none |
 | `company` | QuarterFetcher | none | none |
 | `fundamental_reading` | FundamentalReader | none | FundamentalReader |
-| `member_reading` | MemberReader | none | MemberReader |
+| `member_reading` | MemberReader | LateBarReadings | MemberReader |
 | `fundamental_score` | FundamentalScorer | none | FundamentalScorer |
 | `quality_night` | QualityFamily | none | QualityFamily |
 | `quality_result` | QualityFamily | none | QualityFamily |
@@ -167,7 +168,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `rule_version` | RuleVersionScorer | RuleVersionScorer | none |
 | `version_score` | RuleVersionScorer | RuleVersionScorer | RuleVersionScorer |
 | `version_block` | RuleVersionScorer | none | none |
-| `series_state` | CorporateActionChecker | CorporateActionChecker | none |
+| `series_state` | CorporateActionChecker | CorporateActionChecker, LateBarAsker | none |
 | `ticker_join` | TickerJoins | none | none |
 | `session_mark` | SessionMarks | none | none |
 | `dividend_wait` | CorporateActionChecker | CorporateActionChecker | CorporateActionChecker |
@@ -179,7 +180,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `analyst_request` | ReadApi | none | none |
 | `run_log` | every component that writes appends | RunLog | none |
 
-**`bar` has three inserters and two deleters, and that is the one exception this file argues for.** Backfill inserts a name's first year, once, on the run that finds it holding none. BarFetcher inserts the day's bars and drops the sessions that fall out of the retention window on the night they fall out of it. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices.
+**`bar` has four inserters and two deleters, and that is the one exception this file argues for.** Backfill inserts a name's first year, once, on the run that finds it holding none. BarFetcher inserts the day's bars and drops the sessions that fall out of the retention window on the night they fall out of it. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices. LateBarAsker appends a member's one bar of the night, which the day file did not carry, and moves no stored bar (see: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night).
 
 **Two removals are sanctioned, and neither takes a bar out of a series it leaves standing.** Retention removes every session below a date boundary, for every name at once, and what remains is still a contiguous series ending tonight. A refetch removes one name's whole year and writes it back inside the same transaction, so the series is replaced rather than shortened. The hard rule that bars are append-only is about the third thing, a bar inside a stored series being deleted or edited while the rest stands, and that is what stays forbidden: no update to a bar by anything, and no delete by any component this table does not name. `bar-append-only` asserts it over the shipped source and over every migration, permitting a delete only in the file of a component declared here as a deleter of `bar`, and its negative proof plants one in a file that is not.
 
@@ -345,6 +346,24 @@ Grain: one row per stock and ex-date whose dividend the provider's answer did no
 Primary key: `ticker`, `ex_date`.
 
 **A dividend the answer did not carry, asked for again on the five nights after and weekly, and removed when an answer carries it or the stock leaves the index** (see: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits). Its stock's state stays ok, so no rule stops; the stock's pages and the run page read it.
+
+### late_bar_ask
+Grain: one row per member, session and stage asked for a bar the night's day file did not carry.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the night's session |
+| `stage` | TEXT | `fetch` or `off-peak` |
+| `asked_at` | TEXT | UTC instant of the ask, null for a member past the limit, asked nothing |
+| `outcome` | TEXT | `arrived`, `still missing`, `refused`, `failed` or `past the limit` |
+| `detail` | TEXT | why, in words |
+| `qualified` | TEXT | JSON, the rules a bar that arrived in the off-peak run would have passed, null where they were not read or the bar did not arrive there |
+| `run_id` | TEXT | the run that asked |
+
+Primary key: `ticker`, `session_date`, `stage`.
+
+**Each ask stated, at most 20 a night across the two stages** (see: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night). A row is written for a member past the limit too, so a member the night left unasked reads on the run page as that. A bar it wrote carries the source `late` on `bar`. The `qualified` names no pick and no trade, and nothing a rule reads reads this table (see: A late bar's readings are worked over a scratch store by the night's own components, and no pick or ledger row moves).
 
 ### kept_bar
 Grain: one row per ticker and session the fetcher dropped as it fell out of the year it keeps.
