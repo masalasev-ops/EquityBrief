@@ -81,7 +81,7 @@ public static partial class ReportProof
         ("rules-family", "How the rules read it opens on the checks of the family that picked the stock."),
         ("trend-words", "A trend gate that failed is said in plain words."),
         ("news-matched", "The news region states how many stories it left out as another company's, and its counts add up over the stories it kept."),
-        ("news-labelled", "Every story the news region keeps that admissibility admitted is labelled."),
+        ("news-labelled", "No story the news region keeps was read by the labeller and left unlabelled; a story it has not reached waits for it."),
         ("industry-label", "The peer group is labelled as the provider's classification or the stock's override."),
         ("industry-mismatch", "A peer group naming none of the business that the company's own clean segment table puts more than half the quarter's revenue in is flagged, and one naming it is not."),
         ("sources-relevant", "The page's sources list is held to the documents naming the company or its industry, the rest folded apart beneath it, and says where fewer than two remain."),
@@ -247,10 +247,18 @@ public static partial class ReportProof
             news.Success ? adds : null,
             !news.Success ? "no news region is drawn" : !leftOutStated ? "the region states no count of the stories it left out" : adds ? null : "its counts do not add up over the stories it kept");
 
-        // Every story the region keeps that admissibility admitted is labelled: none drawn as holding no label at all.
+        // A story the labeller read and left without a label fails; one it has not reached yet waits for it, and says so.
+        // see: The proof reads a results release newer than the filed quarter as passing where the page says that quarter is awaited, and a story the labeller has not reached as waiting
         var waiting = NewsRow().Matches(page).Count(row => row.Groups[1].Value == "unlabelled");
+        var left = NewsRow().Matches(page).Count(row => row.Groups[1].Value == "unreadable");
 
-        Add("news-labelled", news.Success ? waiting == 0 : null, !news.Success ? "no news region is drawn" : waiting > 0 ? string.Create(CultureInfo.InvariantCulture, $"{waiting} admitted {(waiting == 1 ? "story holds" : "stories hold")} no label") : null);
+        Add(
+            "news-labelled",
+            news.Success ? left == 0 : null,
+            !news.Success ? "no news region is drawn"
+            : left > 0 ? string.Create(CultureInfo.InvariantCulture, $"the labeller read {left} admitted {(left == 1 ? "story" : "stories")} and left {(left == 1 ? "it" : "them")} unlabelled")
+            : waiting > 0 ? string.Create(CultureInfo.InvariantCulture, $"{waiting} admitted {(waiting == 1 ? "story waits" : "stories wait")} for the labeller")
+            : null);
 
         var group = PeerGroup().Match(page);
 
@@ -314,18 +322,19 @@ public static partial class ReportProof
 
         Add(
             "newest-quarter",
-            !quarterCard.Success || following is null ? null : quarterCard.Groups[1].Value == "Reported" || !newer,
+            // A page saying its newer quarter is awaited names it; only one naming the older as the newest, or missing that line, fails.
+            // see: The proof reads a results release newer than the filed quarter as passing where the page says that quarter is awaited, and a story the labeller has not reached as waiting
+            !quarterCard.Success || following is null ? null : quarterCard.Groups[1].Value == "Reported" || !newer || wait.Success,
             !quarterCard.Success ? "no latest quarter is drawn"
             : following is null ? "the latest quarter names no quarter"
-            : quarterCard.Groups[1].Value == "Filed" && newer
-                ? "a results release of " + newestRelease + ", after the quarter to " + following + " ended, is newer than the quarter the filing of " + quarterCard.Groups[2].Value + " reports"
-                    + (wait.Success ? "; expected to clear by " + wait.Groups["clears"].Value : string.Empty)
+            : quarterCard.Groups[1].Value != "Reported" && newer && !wait.Success
+                ? "a results release of " + newestRelease + ", after the quarter to " + following + " ended, is newer than the quarter the filing of " + quarterCard.Groups[2].Value + " reports, and the page does not say that quarter is awaited"
                 : null);
 
         // A page drawing an older quarter than its newest release reports names the quarter it awaits and the day it is
         // expected to draw it, that quarter being the one after the drawn quarter's.
         // see: A page drawing an older quarter than its newest results release reports names the quarter it awaits and the first day it is expected to read it
-        var awaits = quarterCard.Success && following is not null && quarterCard.Groups[1].Value == "Filed" && newer;
+        var awaits = quarterCard.Success && following is not null && quarterCard.Groups[1].Value != "Reported" && newer;
 
         Add(
             "quarter-wait",
@@ -359,7 +368,7 @@ public static partial class ReportProof
         // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
         var estimatedRow = NextReportEstimated().Match(page);
         DateOnly? estimatedOn = estimatedRow.Success ? DateOnly.ParseExact(estimatedRow.Groups["day"].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
-        DateOnly? newestDrawn = new[] { saidReported.Success ? saidReported.Groups["day"].Value : null, quarterCard.Success ? quarterCard.Groups[2].Value : null }
+        DateOnly? newestDrawn = new[] { saidReported.Success ? saidReported.Groups["day"].Value : null, quarterCard.Success && quarterCard.Groups[2].Value != "not on file" ? quarterCard.Groups[2].Value : null }
             .OfType<string>()
             .Select(day => (DateOnly?)DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture))
             .Max();
@@ -700,7 +709,7 @@ public static partial class ReportProof
     private static partial Regex RulesOpenOnTheFamily();
 
     // The latest quarter's card: whether it is dated as filed or as reported, and its day.
-    [GeneratedRegex("id=\"quarter\"><div class=\"spine\">.*?<span class=\"dl-k\">(Filed|Reported)</span><b>(\\d{4}-\\d{2}-\\d{2})</b>", RegexOptions.Singleline)]
+    [GeneratedRegex("id=\"quarter\"><div class=\"spine\">.*?<span class=\"dl-k\">(Filed|Filing date|Reported)</span><b>(\\d{4}-\\d{2}-\\d{2}|not on file)</b>", RegexOptions.Singleline)]
     private static partial Regex QuarterCard();
 
     // A written section's drawn prose, joined, none where the page draws no such section or it holds no prose.

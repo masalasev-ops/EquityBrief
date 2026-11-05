@@ -300,7 +300,7 @@ public partial class ReadSurface
         const string Waiting = "<li class=\"news-row\" data-article=\"675afc98361468a3\" data-state=\"unlabelled\" data-tabs=\"all\">";
         const string Refused = "<li class=\"news-row\" data-article=\"eda56412a9bf8d11\" data-state=\"refused\" data-tabs=\"all\">";
 
-        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", News + Labelled + Waiting), "news-labelled"));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", News + Labelled + Waiting), "news-labelled"));
         Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", News + Labelled + Refused), "news-labelled"));
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", Labelled), "news-labelled"));
 

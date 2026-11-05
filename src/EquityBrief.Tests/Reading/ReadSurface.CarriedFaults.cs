@@ -38,7 +38,7 @@ public partial class ReadSurface
 
             var drawn = marks.SegmentsTable(read, "USD");
 
-            Assert.Contains("This company reports one business segment: Reportable Segment, with revenue of $3.6B in the quarter to 2026-06-30.</p>", drawn, StringComparison.Ordinal);
+            Assert.Contains("This company reports one business segment, with revenue of $3.6B in the quarter to 2026-06-30.</p>", drawn, StringComparison.Ordinal);
             Assert.DoesNotContain("states no segment's revenue", drawn, StringComparison.Ordinal);
             Assert.DoesNotContain("data-segments=\"raw\"", drawn, StringComparison.Ordinal);
             Assert.Contains(SegmentTable.OneSegmentReads, marks.ShareBars(read), StringComparison.Ordinal);

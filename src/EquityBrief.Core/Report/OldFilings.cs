@@ -30,8 +30,8 @@ public static class OldFilings
     public static bool GuidanceTooOld(JsonElement root, DateOnly filed) => GuidanceFiled(root) is { } on && TooOld(on, filed);
 
     // What the page says of a part left out.
-    public static string Why(string what, DateOnly stated, DateOnly filed) =>
-        FormattableString.Invariant($"{what} {stated:yyyy-MM-dd}, more than {MostDays} days before this filing of {filed:yyyy-MM-dd}, so it is left out until the company next files");
+    public static string Why(string what, DateOnly stated, DateOnly? filed) =>
+        FormattableString.Invariant($"{what} {stated:yyyy-MM-dd}, more than {MostDays} days before this filing{(filed is { } on ? FormattableString.Invariant($" of {on:yyyy-MM-dd}") : string.Empty)}, so it is left out until the company next files");
 
     static DateOnly? Day(JsonElement element, string name) =>
         element.TryGetProperty(name, out var day) && day.ValueKind == JsonValueKind.String

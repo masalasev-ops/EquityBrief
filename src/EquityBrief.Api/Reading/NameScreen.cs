@@ -229,7 +229,8 @@ public static partial class NameScreen
         double? filedMultiple = null,
         double? nightsMultiple = null,
         ConceptFigures? figures = null,
-        bool earlierNight = false)
+        bool earlierNight = false,
+        (DateOnly From, DateOnly Estimated)? nextEstimated = null)
     {
         var latest = indicators
             .GroupBy(row => row.Name, StringComparer.Ordinal)
@@ -284,7 +285,12 @@ public static partial class NameScreen
             ? Invariant($"<div><dt>Year's high</dt><dd data-concept=\"{ConceptCheck.YearsHigh}\" data-concept-value=\"{Read(high.High)}\">{Read(high.High)} <small>on {Day(high.HighOn)}</small></dd></div>")
             : Invariant($"<div><dt>Year's high</dt><dd>{NotOnFile}</dd></div>"));
         Fact("Year's low", year is { } bottom ? Read(bottom.Low) : NotOnFile, year is { } madeLow ? $"on {Day(madeLow.LowOn)}" : null);
-        Fact("Next dated event", nextEvent is { } coming ? Day(coming) : NotOnFile, nextEvent is not null && earlierNight ? CalendarToday : null);
+        // An estimate of the next report where no event is dated, said as an estimate.
+        // see: A member with no dated event shows its next report as an estimate where one exists
+        Fact(
+            "Next dated event",
+            nextEvent is { } coming ? Day(coming) : nextEstimated is { } estimate ? "not on file; the next report estimated about " + Day(estimate.Estimated) : NotOnFile,
+            nextEvent is not null && earlierNight ? CalendarToday : nextEvent is null && nextEstimated is { } from ? "from its report of " + Day(from.From) + " a year on" : null);
 
         var forwardNote = forwardWorked is { } worked
             ? Invariant($"forward {worked.ToString("0.0", CultureInfo.InvariantCulture)} at the close over the analysts' estimate for next year")
@@ -435,7 +441,7 @@ public static partial class NameScreen
     // consensus estimate is drawn beside it and named for what it is: what analysts
     // expect rather than what management said.
     // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
-    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null, EquityBrief.Core.Report.ReleaseOpening? newestRelease = null, (DateOnly From, DateOnly Estimated)? nextEstimated = null, IReadOnlyList<QuarterDatesRow>? storedQuarters = null, IReadOnlyList<DateOnly>? calendarReports = null, bool earlierNight = false)
+    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null, EquityBrief.Core.Report.ReleaseOpening? newestRelease = null, (DateOnly From, DateOnly Estimated)? nextEstimated = null, IReadOnlyList<QuarterDatesRow>? storedQuarters = null, IReadOnlyList<DateOnly>? calendarReports = null, bool earlierNight = false, IReadOnlyDictionary<DateOnly, DateOnly>? secFiled = null)
     {
         var html = new System.Text.StringBuilder();
 
@@ -496,7 +502,7 @@ public static partial class NameScreen
             html.Append(Cell(quarter, "grossMargin", Figures.Percent));
             html.Append(Cell(quarter, "netMargin", Figures.Percent));
             html.Append(Cell(quarter, "netIncome", value => Figures.Money(value, currency)));
-            html.Append(CultureInfo.InvariantCulture, $"<td data-filed=\"{Day(filing.FilingDate)}\">{Day(filing.FilingDate)}</td></tr>");
+            html.Append(CultureInfo.InvariantCulture, $"<td data-filed=\"{Day(filing.FilingDate)}\">{FiledCell(period, secFiled)}</td></tr>");
         }
 
         html.Append("</table></div>");
@@ -513,7 +519,7 @@ public static partial class NameScreen
         }
 
         html.Append(EquityBrief.Core.Report.OldFilings.GuidanceFiled(newest.RootElement) is { } guidanceOn && EquityBrief.Core.Report.OldFilings.TooOld(guidanceOn, filings[0].FilingDate)
-            ? Invariant($"<p class=\"degraded\" data-absent=\"guidance\" data-old-filed=\"{guidanceOn:yyyy-MM-dd}\">What management said is left out: {EquityBrief.Core.Report.OldFilings.Why("the release stored with this filing was filed on", guidanceOn, filings[0].FilingDate)}.</p>")
+            ? Invariant($"<p class=\"degraded\" data-absent=\"guidance\" data-old-filed=\"{guidanceOn:yyyy-MM-dd}\">What management said is left out: {EquityBrief.Core.Report.OldFilings.Why("the release stored with this filing was filed on", guidanceOn, FiledShown(filings, secFiled))}.</p>")
             : Guidance(newest.RootElement, Attribution(filings[0].Source)));
 
         // Every other figure the filing carries, closed beneath the snapshot, which states the
@@ -590,7 +596,8 @@ public static partial class NameScreen
         decimal? price,
         decimal? forwardRate,
         IReadOnlyList<BarRow> bars,
-        DateOnly night)
+        DateOnly night,
+        IReadOnlyDictionary<DateOnly, DateOnly>? secFiled = null)
     {
         string currency = "USD";
         EquityBrief.Core.Report.SegmentReading? segments = null;
@@ -604,7 +611,7 @@ public static partial class NameScreen
 
             if (newest.RootElement.TryGetProperty("segments", out var old) && EquityBrief.Core.Report.OldFilings.TableEnded(old) is { } oldEnded && EquityBrief.Core.Report.OldFilings.TooOld(oldEnded, filings[0].FilingDate))
             {
-                segments = new EquityBrief.Core.Report.SegmentReading(Text(old, "report") ?? string.Empty, oldEnded, 0, null, null, [], EquityBrief.Core.Report.OldFilings.Why("the table stored with this filing ends on", oldEnded, filings[0].FilingDate)) { LeftOut = true };
+                segments = new EquityBrief.Core.Report.SegmentReading(Text(old, "report") ?? string.Empty, oldEnded, 0, null, null, [], EquityBrief.Core.Report.OldFilings.Why("the table stored with this filing ends on", oldEnded, FiledShown(filings, secFiled))) { LeftOut = true };
             }
             else if (newest.RootElement.TryGetProperty("segments", out var table) && table.ValueKind == JsonValueKind.Object)
             {
@@ -1281,6 +1288,28 @@ public static partial class NameScreen
     // The balance sheet, from the newest filing and labelled with its date. The
     // figures on this block are as of a filing rather than as of the fetch, which is
     // why the date is drawn beside them.
+    // A quarter's Filed cell: the day the SEC's filings state, and where they state none, words saying so.
+    // see: A quarter's filing date is read from the SEC's own filings, and where they hold none the page says so
+    public static string FiledCell(string period, IReadOnlyDictionary<DateOnly, DateOnly>? secFiled) =>
+        DateOnly.TryParseExact(period, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end) && EquityBrief.Core.Report.SecFiled.Of(end, secFiled) is { } filed
+            ? Day(filed)
+            : "<span class=\"degraded\">" + EquityBrief.Core.Report.SecFiled.NotOnFile + "</span>";
+
+    // The day the SEC's filings state for the newest filing's quarter, none where they state none.
+    public static DateOnly? FiledShown(IReadOnlyList<FilingRow> filings, IReadOnlyDictionary<DateOnly, DateOnly>? secFiled)
+    {
+        if (filings.Count == 0)
+        {
+            return null;
+        }
+
+        using var newest = JsonDocument.Parse(filings[0].Payload);
+
+        return DateOnly.TryParseExact(Text(newest.RootElement, "periodEnd"), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end)
+            ? EquityBrief.Core.Report.SecFiled.Of(end, secFiled)
+            : null;
+    }
+
     static string Sheet(JsonElement payload, DateOnly filed, string currency)
     {
         if (!payload.TryGetProperty("balanceSheet", out var sheet) || sheet.ValueKind != JsonValueKind.Object)
@@ -1669,7 +1698,9 @@ public static partial class NameScreen
         // The dividends the provider's answer does not yet carry.
         IReadOnlyList<DividendWait>? dividendWaits = null,
         // The night's bar where it arrived after the night's day file.
-        LateBarRow? lateBar = null)
+        LateBarRow? lateBar = null,
+        // The first day the SEC's filings state each of the stock's periods.
+        IReadOnlyDictionary<DateOnly, DateOnly>? secFiled = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1697,7 +1728,7 @@ public static partial class NameScreen
         var newest = Pass(pass);
         var notWritten = NotWritten(pass, accepted, leftOut);
         var reportQuarters = reportedQuarters ?? readQuarters;
-        var says = reading is null ? null : WhatTheNumbersSay(reading, readQuarters ?? [], StatedOf(fundamentals ?? []), reportQuarters);
+        var says = reading is null ? null : WhatTheNumbersSay(reading, readQuarters ?? [], StatedOf(fundamentals ?? []), reportQuarters, secFiled);
 
         // The latest quarter's lines checked against the filing's facts as first filed.
         // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
@@ -1803,7 +1834,7 @@ public static partial class NameScreen
             live is not null,
             EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, reportInputs?.Dividends ?? [], tilesNight));
         var reportView = reportInputs is { } inputs
-            ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue))
+            ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue), secFiled)
             : null;
 
         // A quarter its results release reports before its filing is stored reads its segments from the release's own
@@ -1885,12 +1916,13 @@ public static partial class NameScreen
                 score?.Multiple,
                 reportView?.Valuation?.Multiple,
                 concepts,
-                night is not null),
+                night is not null,
+                nextEstimated),
             PlanRows(ladder),
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            says is null ? Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null)),
+            says is null ? Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null, secFiled) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease, nextEstimated, reportQuarters, calendarReports, night is not null, secFiled)),
             cells,
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
             previousOnTheList,
@@ -1964,7 +1996,8 @@ public static partial class NameScreen
             aloneLine: Alone(aloneDetail),
             held: heldTrade,
             dividendWaits: dividendWaits,
-            lateBar: lateBar);
+            lateBar: lateBar,
+            filedShown: FiledShown(filings, secFiled));
     }
 
     // The trade a family holds the name on: the newest of the earlier picks still open, with its card from the night it was
@@ -2197,7 +2230,7 @@ public static partial class NameScreen
     // one sentence per reading, and the quarters any reading read with the dates each was filed and
     // reported on, newest first.
     // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
-    public static NumbersSayView WhatTheNumbersSay(FundamentalReadingRow reading, IReadOnlyList<QuarterDatesRow> quarters, EquityBrief.Core.Report.StatedQuarters? stated = null, IReadOnlyList<QuarterDatesRow>? newestQuarters = null)
+    public static NumbersSayView WhatTheNumbersSay(FundamentalReadingRow reading, IReadOnlyList<QuarterDatesRow> quarters, EquityBrief.Core.Report.StatedQuarters? stated = null, IReadOnlyList<QuarterDatesRow>? newestQuarters = null, IReadOnlyDictionary<DateOnly, DateOnly>? secFiled = null)
     {
         stated ??= new EquityBrief.Core.Report.StatedQuarters([]);
 
@@ -2229,7 +2262,7 @@ public static partial class NameScreen
                 .. quarters
                     .Where(quarter => read.Contains(quarter.PeriodEnd))
                     .OrderByDescending(quarter => quarter.PeriodEnd)
-                    .Select(quarter => new QuarterFiled(stated.Of(quarter.PeriodEnd), quarter.FilingDate, quarter.ReportDate)),
+                    .Select(quarter => new QuarterFiled(stated.Of(quarter.PeriodEnd), EquityBrief.Core.Report.SecFiled.Of(quarter.PeriodEnd, secFiled), quarter.ReportDate)),
             ]);
     }
 

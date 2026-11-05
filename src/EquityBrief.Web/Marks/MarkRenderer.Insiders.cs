@@ -29,7 +29,7 @@ public sealed partial class MarkRenderer
                 var kind = line.Purchase ? "purchase" : "sale";
 
                 html.Append(Formatted($"<tr class=\"{(line.Purchase ? "gain" : "loss")}\" data-kind=\"{kind}\" data-planned=\"{(line.Planned ? "1" : "0")}\" data-traded=\"{DayOf(line.Traded)}\" data-filed=\"{DayOf(line.Filed)}\">"));
-                html.Append($"<td>{Escaped(line.Owners)}</td><td>{Escaped(line.Role)}</td>");
+                html.Append($"<td>{Escaped(line.Owners)}</td><td>{Escaped(FieldWords.Spaced(line.Role))}</td>");
                 html.Append($"<td class=\"nw\">{DayOf(line.Traded)}</td><td class=\"nw\">{DayOf(line.Filed)}</td>");
                 html.Append(Formatted($"<td data-shares=\"{line.Shares}\">{line.Shares.ToString("#,##0.###", CultureInfo.InvariantCulture)}</td>"));
                 html.Append(line.Price is { } price ? Formatted($"<td data-price=\"{price}\">{Figures.Price(price)}</td>") : "<td data-price=\"\">not stated</td>");

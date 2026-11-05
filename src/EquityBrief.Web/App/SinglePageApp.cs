@@ -1509,7 +1509,9 @@ public sealed partial class SinglePageApp : IComponent
         // The dividends the provider's answer does not yet carry.
         IReadOnlyList<DividendWait>? dividendWaits = null,
         // The night's bar where it arrived after the night's day file.
-        LateBarRow? lateBar = null)
+        LateBarRow? lateBar = null,
+        // The day the SEC's filings state for the newest filing's quarter, which the cards dated by the filing draw.
+        DateOnly? filedShown = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -2111,8 +2113,8 @@ public sealed partial class SinglePageApp : IComponent
 
         Card("quarter", "quarter", "The latest quarter", Cards.Dated(
             "The latest quarter",
-            releasedFirst is null ? "Filed" : "Reported",
-            releasedFirst ?? filedOn,
+            releasedFirst is not null ? "Reported" : filedShown is null && filedOn is not null ? "Filing date" : "Filed",
+            releasedFirst ?? filedShown,
             quarterBody + Cards.Key(
                 "Where these come from.",
                 releasedFirst is null
@@ -2222,8 +2224,8 @@ public sealed partial class SinglePageApp : IComponent
 
             Card("segments", "segments", "Segments", Cards.Dated(
                 "Segments",
-                filedOn is null && writtenOn is not null ? "Written" : "Filed",
-                filedOn ?? writtenOn,
+                filedOn is null && writtenOn is not null ? "Written" : filedShown is null && filedOn is not null ? "Filing date" : "Filed",
+                filedOn is null ? writtenOn : filedShown,
                 segmentBody.ToString(),
                 title: "What it sells and where the revenue comes from",
                 filed: filedOn is not null,
