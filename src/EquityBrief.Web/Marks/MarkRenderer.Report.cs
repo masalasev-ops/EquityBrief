@@ -39,6 +39,10 @@ public sealed record ReportView(
     // The quarter ends the name's filings state, for the words of a part the page builds apart from this view.
     // see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
     public StatedQuarters? Stated { get; init; }
+
+    // The newest report by the night the page draws, its quarter filed or not, which an analysts' figure fetched before it says.
+    // see: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
+    public DateOnly? NewestReport { get; init; }
 }
 
 // From 20.3 the newest results release's reading a name's page draws under what management said: the day the SEC accepted

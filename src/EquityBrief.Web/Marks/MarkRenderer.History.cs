@@ -290,7 +290,7 @@ public sealed partial class MarkRenderer
 
         if (above.Length == 0)
         {
-            Nothing("No band stands above the price, so the plan has nothing above it to sell into.", "above");
+            Nothing("No resistance level in the last year of bars, so the plan has nothing above it to sell into.", "above");
         }
 
         foreach (var band in above)

@@ -256,7 +256,7 @@ public sealed partial class SinglePageApp
         {
             var drawn = new StringBuilder("<div class=\"chart-graphs\">");
 
-            drawn.Append("<section class=\"chart-graph\" data-graph=\"earnings\"><h3>Earnings a share against the estimate</h3><div class=\"fig\">").Append(marks.EarningsDots(ticker, graphs.Prints, graphs.Next)).Append("</div></section>");
+            drawn.Append("<section class=\"chart-graph\" data-graph=\"earnings\"><h3>Earnings a share against the estimate</h3>").Append(graphs.Next is null ? string.Empty : MarkRenderer.SetBefore(graphs.Analysts?.FetchedOn, graphs.NewestReport)).Append("<div class=\"fig\">").Append(marks.EarningsDots(ticker, graphs.Prints, graphs.Next)).Append("</div></section>");
             drawn.Append("<section class=\"chart-graph\" data-graph=\"income\"><h3>Revenue against net income</h3><div class=\"fig\">").Append(marks.IncomeBars(ticker, graphs.Income, graphs.Currency)).Append("</div></section>");
             drawn.Append(AnalystsSection(marks, ticker, graphs));
             drawn.Append(RatingsSection(marks, ticker, graphs.TipRanks, graphs.Calls, graphs.Now ?? DateTimeOffset.MinValue));
@@ -334,6 +334,7 @@ public sealed partial class SinglePageApp
         }
         else
         {
+            section.Append(MarkRenderer.SetBefore(graphs.Analysts?.FetchedOn, graphs.NewestReport));
             section.Append("<div class=\"fig\">").Append(marks.TargetMarker(ticker, graphs.Analysts, graphs.Price)).Append("</div><div class=\"fig\">");
             section.Append(graphs.Analysts is { } analysts
                 ? marks.RatingBars(analysts)

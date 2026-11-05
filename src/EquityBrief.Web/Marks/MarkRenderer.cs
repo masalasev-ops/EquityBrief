@@ -358,7 +358,8 @@ public sealed record MemberReadingsView(
     double? IndustryMonth,
     double? IndustryQuarter,
     double? PeerSurprise,
-    RatingsView? Ratings = null);
+    RatingsView? Ratings = null,
+    DateOnly? SharesFiledOn = null);
 
 // A company's analysts' rating counts as its newest fetch filed them, with the day of the fetch and their total.
 public sealed record RatingsView(DateOnly Fetched, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell, int? Total, bool BeforeCounts = false);
@@ -6990,7 +6991,7 @@ public sealed partial class MarkRenderer : IComponent
             "company-value",
             "Its company's value, the share count filed before the night times the close",
             Stored(view.CompanyValue),
-            view.CompanyValue is { } value ? Formatted($"<span data-concept=\"{EquityBrief.Core.Report.ConceptCheck.MarketValue}\" data-concept-value=\"{Escaped(Figures.Money(value))}\">{Figures.Money(value)}</span>")
+            view.CompanyValue is { } value ? Formatted($"<span data-concept=\"{EquityBrief.Core.Report.ConceptCheck.MarketValue}\" data-concept-value=\"{Escaped(Figures.Money(value))}\">{Figures.Money(value)}</span>{(view.SharesFiledOn is { } filedOn ? Formatted($" <small>the shares filed on {DayOf(filedOn)}</small>") : string.Empty)}")
                 : barred ? Short("not available: no share count filed before the night") : noBar);
         Row(
             "cost",

@@ -37,7 +37,9 @@ public sealed record ChartInputs(
     (DateOnly Quarter, decimal Shares)? ProviderShares = null,
     IReadOnlyList<ReactionRow>? Reactions = null,
     decimal? PriceDrawn = null,
-    IReadOnlyList<ChartNote>? Notes = null);
+    IReadOnlyList<ChartNote>? Notes = null,
+    decimal? CompanyValue = null,
+    DateOnly? SharesFiledOn = null);
 
 // The chart page's figures, worked when the page is read from what the store holds: the candles at the interval shown,
 // rolled up in the core, each with the averages the name page draws at its last session; and the grid, every figure
@@ -211,7 +213,7 @@ public static class ChartScreen
         {
             return
             [
-                Company(inputs, newest),
+                Company(inputs),
                 Valuation(inputs, newest),
                 Earnings(inputs),
                 Dividend(inputs),
@@ -233,10 +235,9 @@ public static class ChartScreen
             ? value.ToString()
             : null;
 
-    static GridGroup Company(ChartInputs inputs, JsonDocument? newest)
+    static GridGroup Company(ChartInputs inputs)
     {
         var member = inputs.Member;
-        var capitalisation = newest is null ? null : Text(newest.RootElement, "marketCapitalisation");
         var count = inputs.FiledFacts
             .Where(fact => FiledFacts.SharesOutstanding.Contains(fact.Concept, StringComparer.Ordinal))
             .OrderBy(fact => fact.End)
@@ -248,9 +249,9 @@ public static class ChartScreen
             inputs.IndexName is { Length: > 0 } index ? new GridFigure("Index", index) : Missing("Index"),
             member?.Sector is { Length: > 0 } sector ? new GridFigure("GICS sector", sector, Href: "#/universe?sector=" + Uri.EscapeDataString(sector)) : Missing("GICS sector"),
             member?.Industry is { Length: > 0 } industry ? new GridFigure("Industry", industry) : Missing("Industry"),
-            capitalisation is { } stated && decimal.TryParse(stated, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
-                ? new GridFigure("Market value, the provider's", Figures.Money(value), stated)
-                : Missing("Market value, the provider's"),
+            inputs.CompanyValue is { } value
+                ? new GridFigure("Market value", (inputs.SharesFiledOn is { } filedOn ? FormattableString.Invariant($"{Figures.Money(value)}, the shares filed on {filedOn:yyyy-MM-dd} times the close") : $"{Figures.Money(value)}, the shares filed before the night times the close"), value.ToString(CultureInfo.InvariantCulture))
+                : Missing("Market value"),
             count is { } shares
                 ? new GridFigure("Shares outstanding", FormattableString.Invariant($"{Figures.Shares(shares.Value)} as of {shares.End:yyyy-MM-dd}"), shares.Value.ToString(CultureInfo.InvariantCulture))
                 : inputs.ProviderShares is { } provided

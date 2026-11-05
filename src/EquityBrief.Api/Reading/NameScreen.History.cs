@@ -152,7 +152,7 @@ public static partial class NameScreen
         return new RiskLines(
             above is { } resistance
                 ? FormattableString.Invariant($"A close above the nearest resistance band{Named(resistance)}, {MarkRenderer.Away(resistance.Away, above: true)}.")
-                : "No resistance band stands above the price, so no close above one is read.",
+                : "No resistance level in the last year of bars, so no close above one is read.",
             invalidation is { } floor
                 ? FormattableString.Invariant($"A close below the plan's invalidation at {Figures.Price(floor)}, where the whole position is sold.")
                 : below is { } support

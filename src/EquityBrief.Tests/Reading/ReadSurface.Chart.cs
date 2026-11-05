@@ -509,7 +509,7 @@ public partial class ReadSurface
             // The fixture's capture of AAPL files no market value, which the name page states as none and the chart page
             // as not stored.
             Assert.Equal("none", Fact("data-market-capitalisation"));
-            Assert.Contains($"<dt>Market value, the provider's</dt><dd class=\"degraded\">{SinglePageApp.NotStored}</dd>", daily, StringComparison.Ordinal);
+            Assert.Contains($"<dt>Market value</dt><dd class=\"degraded\">{SinglePageApp.NotStored}</dd>", daily, StringComparison.Ordinal);
             Assert.Contains(
                 FormattableString.Invariant($"<dt>Relative strength</dt><dd>{double.Parse(Grid("Relative strength"), CultureInfo.InvariantCulture):0.0}</dd>"),
                 Regex.Match(name, "<dl class=\"facts\">.*?</dl>", RegexOptions.Singleline).Value.Replace("<div>", string.Empty, StringComparison.Ordinal).Replace("</div>", string.Empty, StringComparison.Ordinal),

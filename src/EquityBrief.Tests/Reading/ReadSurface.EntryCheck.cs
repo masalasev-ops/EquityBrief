@@ -265,8 +265,8 @@ public partial class ReadSurface
     {
         var report = new DateOnly(2026, 10, 30);
 
-        Assert.Equal("Set before the 2026-10-30 report", MarkRenderer.SetBeforeWords(report));
-        Assert.Contains(">Set before the 2026-10-30 report</p>", MarkRenderer.SetBefore(new DateOnly(2026, 10, 29), report), StringComparison.Ordinal);
+        Assert.Equal("Set before the 30 Oct report", MarkRenderer.SetBeforeWords(report));
+        Assert.Contains(">Set before the 30 Oct report</p>", MarkRenderer.SetBefore(new DateOnly(2026, 10, 29), report), StringComparison.Ordinal);
         Assert.Equal(string.Empty, MarkRenderer.SetBefore(report, report));
         Assert.Equal(string.Empty, MarkRenderer.SetBefore(new DateOnly(2026, 10, 29), null));
 

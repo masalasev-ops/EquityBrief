@@ -108,7 +108,7 @@ public partial class ReadSurface
             new(SetupFamilies.Pullback, "AAA", "Alpha Inc", "A strong stock that dipped.", 100m, 90m, 125m, false, null),
             // From 22.18 a breakout buying at 50 with its give-up price 4 beneath: it can no longer lose once a close reaches 54.
             new(BreakoutRule.Name, "BBB", null, "Closed above its highest price of the last 6 months.", 50m, 46m, null, true, null, 4m, new EquityBrief.Core.Cards.PaperWinners(3, 300, null)),
-            new(ImprovingRule.Name, "CCC", "Gamma Co", "Its newest filing shows the business getting stronger: 8 of 9 checks, up from 6.", 20m, null, null, true, null),
+            new(ImprovingRule.Name, "CCC", "Gamma Co", "Its newest filing shows the business getting stronger: 8 of 9 checks, up from 6.", 20m, null, null, false, null),
         };
         var view = Day() with
         {
@@ -134,7 +134,7 @@ public partial class ReadSurface
         Assert.Contains("S&P 400 down 1.2% and S&P 600 up 0.4%.", text, StringComparison.Ordinal);
 
         // The ideas: the count and the session, each card's prices, the bar sized 10 to 25, a trailing plan's line in the
-        // target's place, and a Fundamentals buy giving up below its 200-day average.
+        // target's place, and a Fundamentals buy selling when its filings weaken.
         Assert.Contains("Tonight's ideas: 7 stocks to buy Monday morning", text, StringComparison.Ordinal);
         Assert.Equal(["AAA", "BBB", "CCC"], Regex.Matches(page, "<article class=\"home-idea fam-edge\" data-family=\"[a-z]+\" data-ticker=\"([A-Z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("Bounce in an uptrend", text, StringComparison.Ordinal);
@@ -145,8 +145,8 @@ public partial class ReadSurface
         Assert.Single(Regex.Matches(page, "class=\"home-rr\""));
         Assert.Contains("<b class=\"aim\">No fixed target</b>", page, StringComparison.Ordinal);
 
-        // The breakout and the Fundamentals buy, each with no target, each say the one line and nothing else of how it rises.
-        Assert.Equal(2, Regex.Matches(text, Regex.Escape("The give-up price rises as the stock climbs, so a winner can keep running.")).Count);
+        // The breakout alone says the one line, and nothing else of how it rises.
+        Assert.Single(Regex.Matches(text, Regex.Escape("The give-up price rises as the stock climbs, so a winner can keep running.")));
         Assert.DoesNotContain("rising as the stock", text, StringComparison.Ordinal);
         Assert.DoesNotContain("home-rising", page, StringComparison.Ordinal);
         Assert.DoesNotContain("Breakouts earn most", text, StringComparison.Ordinal);
@@ -155,7 +155,7 @@ public partial class ReadSurface
         // The read-only copy's Home says the same.
         var copied = new SinglePageApp().HomeRegion(new MarkRenderer { Copying = true }, view, string.Empty);
 
-        Assert.Equal(2, Regex.Matches(TextOf(copied), Regex.Escape("The give-up price rises as the stock climbs, so a winner can keep running.")).Count);
+        Assert.Single(Regex.Matches(TextOf(copied), Regex.Escape("The give-up price rises as the stock climbs, so a winner can keep running.")));
         Assert.DoesNotContain("rising as the stock", TextOf(copied), StringComparison.Ordinal);
         Assert.DoesNotContain("Breakouts earn most", TextOf(copied), StringComparison.Ordinal);
         Assert.Empty(SinglePageApp.HomeLinesStartingMidSentence(copied));
@@ -165,7 +165,7 @@ public partial class ReadSurface
         Assert.Contains("<b class=\"stop\">$46.00</b></div>", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"home-odds home-noloss\" data-no-loss=\"54\">The trade can no longer lose once the stock reaches about $54.00.</div>", page, StringComparison.Ordinal);
         Assert.Contains("The breakout rule has 3 of the 300 finished trades its record needs.", text, StringComparison.Ordinal);
-        Assert.Contains("<b class=\"stop\">below its 200-day average</b>", page, StringComparison.Ordinal);
+        Assert.Contains("<div><span>Sell when</span><b class=\"stop\">its filings weaken</b></div>", page, StringComparison.Ordinal);
         Assert.Contains("<a href=\"#/chart/AAA\">See the plan</a>", page, StringComparison.Ordinal);
         Assert.Contains("<a href=\"#/tonight\">See all 7 with their full plans</a>", page, StringComparison.Ordinal);
         Assert.Contains(SinglePageApp.IdeasNote, text, StringComparison.Ordinal);

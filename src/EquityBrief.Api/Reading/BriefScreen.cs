@@ -83,7 +83,8 @@ public sealed record BriefInputs(
     FundamentalScoreRow? Score = null,
     DateOnly? FundamentalsHeldThrough = null,
     bool SizedOnExample = false,
-    string? ShortHistoryWhy = null);
+    string? ShortHistoryWhy = null,
+    DateOnly? NewestReport = null);
 
 // A stock's brief read, written by code from templates over the figures the full page and the decision card already
 // work: each through the same core function, none worked out a second way, and a figure not stored said so in its line.
@@ -100,7 +101,7 @@ public static class BriefScreen
             Summary(inputs),
             [
                 new BriefPanel("chart", "The chart says", [Trend(member), Bands(member), Momentum(inputs.Latest), HalfYear(inputs)]),
-                new BriefPanel("business", "The business says", [FundamentalsScreen.Line(inputs.Score), Sales(inputs.Business), Margin(inputs.Business), Multiple(inputs), Analysts(inputs.Analysts)]),
+                new BriefPanel("business", "The business says", [FundamentalsScreen.Line(inputs.Score), Sales(inputs.Business), Margin(inputs.Business), Multiple(inputs), Analysts(inputs.Analysts, inputs.NewestReport)]),
                 new BriefPanel("way-in", "If you want in", WayIn(inputs, plan)),
             ],
             [.. inputs.Standing.Select(Chip)],
@@ -417,7 +418,7 @@ public static class BriefScreen
 
     // The analysts' figures each labelled as theirs and dated by the fetch that kept them.
     // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
-    static BriefLine Analysts(AnalystReading? analysts)
+    static BriefLine Analysts(AnalystReading? analysts, DateOnly? newestReport)
     {
         if (analysts?.Target is not { } target || analysts.TargetAgainstPrice is not { } against)
         {
@@ -431,7 +432,7 @@ public static class BriefScreen
 
         return new BriefLine(
             "analysts",
-            Invariant($"The analysts' mean target, as fetched on {analysts.FetchedOn:yyyy-MM-dd}: {Price(target)}, {Math.Abs(against):0.0}% {(against >= 0 ? "above" : "below")} the price{moved}."),
+            Invariant($"The analysts' mean target, as fetched on {analysts.FetchedOn:yyyy-MM-dd}: {Price(target)}, {Math.Abs(against):0.0}% {(against >= 0 ? "above" : "below")} the price{moved}.{(EquityBrief.Web.Marks.MarkRenderer.SetBeforeOf(analysts.FetchedOn, newestReport) is { } setBefore ? " " + setBefore + "." : string.Empty)}"),
             target.ToString(CultureInfo.InvariantCulture));
     }
 

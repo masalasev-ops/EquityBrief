@@ -344,7 +344,7 @@ public class EntryCheckFixture
         static DateOnly Answered(string ticker) => DateOnly.ParseExact(Text(Cases.GetProperty(ticker), "analystAnswered")[..10], "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         // COR's answer of 2026-11-03 predates its report of 2026-11-04, and SWK's of 2026-11-05 does not predate its report of 2026-11-04.
-        Assert.Contains("Set before the 2026-11-04 report", MarkRenderer.SetBefore(Answered("COR"), Day(Cases.GetProperty("COR"), "report")), StringComparison.Ordinal);
+        Assert.Contains("Set before the 4 Nov report", MarkRenderer.SetBefore(Answered("COR"), Day(Cases.GetProperty("COR"), "report")), StringComparison.Ordinal);
         Assert.Contains("fetched on 2026-11-03, before the 2026-11-04 report", MarkRenderer.FetchedBefore(Answered("COR"), Day(Cases.GetProperty("COR"), "report")), StringComparison.Ordinal);
         Assert.Empty(MarkRenderer.SetBefore(Answered("SWK"), Day(Cases.GetProperty("SWK"), "report")));
         Assert.Empty(MarkRenderer.FetchedBefore(Answered("SWK"), Day(Cases.GetProperty("SWK"), "report")));

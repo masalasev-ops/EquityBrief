@@ -222,7 +222,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(CardSummary(card, SetupOf(card.Family)))}</p>");
         body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\"><h5>The plan</h5><div class=\"plan-tiles\">");
         body.Append(PlanTile("buy", "Buy at about", card.Entry is { } entry ? Price(entry) : "Not stored", "at the next day's open"));
-        body.Append(card.Stop is { } stop && TrailOf(card, pick) is null ? PlanTile("stop", "Sell if it closes below", Price(stop), null, "loss") : StopTile(card, pick));
+        body.Append(card.Stop is { } stop && TrailOf(card, pick) is null ? PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is null ? StaysUnlessChanged(card) : null, "loss") : StopTile(card, pick));
         body.Append(card.Target is { } target ? PlanTile("target", "Sell if it reaches", Price(target), null, "gain") : TargetTile(card, pick));
         body.Append("</div>");
         body.Append(TrailLines(card, pick));
@@ -450,7 +450,56 @@ public sealed partial class MarkRenderer
 
     public const string RisingWords = "rising as the stock makes new highs; it never moves down.";
 
+    // What a plan says under a give-up price its family's rule never moves.
+    // see: A card's line under its sell price is worded from its family's own exit rule
+    public const string StaysWords = "The give-up price stays where it is.";
+
     public const string NotTheStocksChance = "That is the rule's record, not this stock's chance.";
+
+    // Whether a card's plan was changed on the Loop page to an exit that moves its give-up price, read off the words the
+    // change carries, as the target standing as a sell order is.
+    public static bool ApprovedExitMovesTheStop(string? approved) =>
+        approved is not null && EquityBrief.Core.Loop.ExitMenu.Swing.Any(choice =>
+            choice.Kind is EquityBrief.Core.Loop.ExitKind.BreakEven or EquityBrief.Core.Loop.ExitKind.HalfBreakEven or EquityBrief.Core.Loop.ExitKind.Trail or EquityBrief.Core.Loop.ExitKind.HalfTarget
+            && approved.Contains(choice.Words, StringComparison.Ordinal));
+
+    // The cards of a page whose line under the sell price contradicts their family's own exit rule: a line of a rising
+    // give-up price on a family whose rule sets one that never moves or none, a line of one staying put on a family whose rule
+    // raises it or sets none, and a price to fall to on the Fundamentals family, which sets none. Each is named by its family,
+    // its stock and the line.
+    // see: A card's line under its sell price is worded from its family's own exit rule
+    public static IReadOnlyList<string> SellLinesContradictingTheirRule(string page)
+    {
+        string[] rising = ["The give-up price rises as the stock climbs", "rising as the stock makes new highs"];
+        var found = new List<string>();
+        var cards = System.Text.RegularExpressions.Regex.Matches(page, "<(?:article class=\"home-idea[^\"]*\"|div class=\"decision-card[^\"]*\"(?: data-index=\"[^\"]*\")?) data-family=\"([^\"]+)\" data-ticker=\"([^\"]+)\"");
+
+        for (var at = 0; at < cards.Count; at++)
+        {
+            var family = cards[at].Groups[1].Value;
+            var ticker = cards[at].Groups[2].Value;
+            var card = page[cards[at].Index..(at + 1 < cards.Count ? cards[at + 1].Index : page.Length)];
+            var trails = EquityBrief.Core.Families.SetupFamilies.Named(family) is { Trails: true };
+            var setsAPrice = EquityBrief.Core.Families.SetupFamilies.Named(family) is { } && !trails;
+
+            foreach (var line in rising.Where(line => !trails && card.Contains(line, StringComparison.Ordinal)))
+            {
+                found.Add($"{family} {ticker}: {line}");
+            }
+
+            if (!setsAPrice && card.Contains(StaysWords, StringComparison.Ordinal))
+            {
+                found.Add($"{family} {ticker}: {StaysWords}");
+            }
+
+            if (family == EquityBrief.Core.Families.ImprovingRule.Name && card.Contains("Sell if it falls to", StringComparison.Ordinal))
+            {
+                found.Add($"{family} {ticker}: Sell if it falls to");
+            }
+        }
+
+        return found;
+    }
 
     // A price as the operator's sentences name it, in dollars.
     public static string Usd(decimal price) => "$" + Figures.Price(price);
@@ -500,10 +549,16 @@ public sealed partial class MarkRenderer
     // sells on one with no target, or none.
     static string StopTile(DecisionCardView card, FamilyPickCell? pick = null) =>
         card.Stop is { } stop
-            ? TrailOf(card, pick) is not null
+            ? TrailOf(card, pick) is not null && TrailsByItsRule(card)
                 ? PlanTile("stop", "Sell if it falls to", Usd(stop), RisingWords, "loss")
-                : PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null ? "raised after each higher close, never lowered, and sold at the next day's open" : "sold at the next day's open", "loss")
+                : PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null ? "raised after each higher close, never lowered, and sold at the next day's open" : StaysUnlessChanged(card) is { } stays ? stays + " Sold at the next day's open." : "sold at the next day's open", "loss")
             : PlanTile("stop", "Stop", "None", card.Family == EquityBrief.Core.Families.HeavyweightRule.Name ? "nothing sells it at a price set in advance" : "no stop stored");
+
+    // Whether a card's family sells on a rising give-up price by its own rule, the breakout today.
+    static bool TrailsByItsRule(DecisionCardView card) => EquityBrief.Core.Families.SetupFamilies.Named(card.Family) is { Trails: true };
+
+    // The line of a give-up price that stays where it is, none where an exit changed on the Loop page moves it.
+    static string? StaysUnlessChanged(DecisionCardView card) => ApprovedExitMovesTheStop(card.Approved) ? null : StaysWords;
 
     // The plan's target tile: the target, or from 22.18 no fixed target and why for a plan selling on a rising give-up price,
     // the dip's exit or the heavyweights' reshuffle where the rule sets none.
@@ -513,7 +568,7 @@ public sealed partial class MarkRenderer
         card.Target is { } target
             ? PlanTile("target", "Sell if it reaches", Price(target), StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open", "gain")
             : card.Trail is not null || pick?.Trailing == true
-                ? PlanTile("target", "Aim to sell at", NoFixedTarget, RunsWords)
+                ? PlanTile("target", "Aim to sell at", NoFixedTarget, TrailsByItsRule(card) ? RunsWords : "The rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.")
                 : card.Family == EquityBrief.Core.Families.DipRule.Name
                     ? PlanTile("target", "No target", "Its exit", pick?.Exit is { } exit ? ReaderWords.Plain(exit) : "a close back above its short average")
                     : card.Family == EquityBrief.Core.Families.HeavyweightRule.Name
