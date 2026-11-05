@@ -15534,7 +15534,8 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Not a checkpoint entry: it corrects what 22.8 carried into shipped source, and lands nothing.
 Corrected:  F. `Figures.Share`, read from a double, kept the sign of a value rounding to nothing; so did a segment's share bar, the short version's margins and a heavyweight's own return. The numbers' and the
             brief's signed change drew "+0.0%". Each reads the format's third section or the renderer's rounding. The proof gains `signed-zero`.
-Measured:   over the same pages, 4 before, ADAM, MTX, BWXT and ESNT, none in the final build's read back.
+Measured:   over the same pages, 4 before, ADAM, MTX, BWXT and ESNT. A first read back on the branch still drew BWXT's and ESNT's share bars, drawn bare since and held by a test; the read back over the
+            merged build is carried by the last entry of this pull request.
 Tests:      in `ReadSurface.CarriedFaults`.
 Mutation:   stated in the last entry of this pull request.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
@@ -15543,21 +15544,24 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 
 Not a checkpoint entry: it corrects what 22.5 carried into shipped source, and lands nothing.
 Corrected:  G. `FieldWords` holds each compound reading with the reader's words, in both directions to the ledger's catalogue; the card's stored reason, FCN's and FDXF's, and the Loop page's, the Ledger's and
-            paper trading's phrases read through it, stored rows unchanged. Reading for the same shape found more: every page's momentum headings, a filer's tag in the figures checked on 268 pages, an absent
-            average on 7 and a raw table's label on 3, each worded; and the Run page's trend labels and settings. The Run page's log details stand as the log wrote them. The proof gains `field-names`, and
-            plain-words reads the same reader over the three pages. A decision; the architecture's paragraph, and plain-words' row, with prior text in the changelog.
+            paper trading's phrases read through it, stored rows unchanged. Reading for the same shape found more: every page's momentum headings, a filer's tag in the figures checked on 261 pages, an absent
+            average on 7 and a raw table's heading or line on 7, a standard tag on APOG, TSN and WMB, the filer's own on LVS and a tag's whole name on FCX, LYV and PLTR, each worded; and the Run page's trend
+            labels and settings. The Run page's log details stand as the log wrote them, and a shorter run of capitals a filing states, DHI's segment HomeBuildingOps or an insider's title on CPAY and DUK, stands
+            as filed, as a company's name does. The proof gains `field-names`, and plain-words reads the same reader over the three pages. A decision; the architecture's paragraph, and plain-words' row, with
+            prior text in the changelog.
 Measured:   over the same pages, every one of the 1,504 drew a code name before.
-Tests:      3271, from 3251; 20 tests and theories in `ReadSurface.CarriedFaults` and the three pages' read. The suite's three that stated the old words moved with them.
-Mutation:   chosen before the runs by this rule, each property the seven add, filtered to their tests, 35 in all. Red, 33: the analysts drawing the label, handed no stated end, the figures checked keeping
+Tests:      3274, from 3251; 23 tests and theories' cases in `ReadSurface.CarriedFaults` and the three pages' read. The suite's three that stated the old words moved with them.
+Mutation:   chosen before the runs by this rule, each property the seven add, filtered to their tests, 44 in all. Red, 42: the analysts drawing the label, handed no stated end, the figures checked keeping
             it, a tag drawn; the plural read as one segment, one drawn as a row, a named one-row table told nothing, the old words beside the line; the next event from the last session alone and on the
             night; any results kind read as the calendar; the newest fetch past the night, the page handed the reading's fetch, stored days and the calendar each unread, a day after the night counted, the
             awaited line on the reading's fetch, a filed quarter worded as the release; `Share`, the numbers' `Signed`, the proof and a share bar each with a signed zero; the card and the three pages
-            unworded, the proof reading no compound name, no tag and the attributes, a file name read as a code name, the shorter name first, the heading naming the store, a raw label and an absent average.
+            unworded, the proof reading no compound name, no tag and the attributes, a file name read as a code name, the shorter name first, the heading naming the store, a raw label and an absent average; a label's filer's own prefix and whole name each unread, a shorter
+            run read as a tag, a label's opening left lower case, a raw table's line as filed, the proof reading neither the prefix nor the whole name, and the proof failing a shorter run or a word before a colon.
             A label beside a word naming no segment survived its first run, a missing property, and went red once that case was written. Survived, 2: `Figures.Percent` and the numbers' `Percent` with no third
             section, each equivalent, a decimal rounding to nothing carrying no sign, so both changes came out as an 18.2 correction once ruled the same way. Not mutated: the brief's `Signed`, the short
             version's margins, a heavyweight's own return, the chart's next report and quarter, the Run page's two; the page reads above hold each.
 Carried:    the operator's read back on 5152 and every page changed, after the merge, in the report to them. The "Filed" column of 4 pages' oldest quarters, MRVL, PENG, RVTY and VLTO, where the provider's
             filing date is its quarter's own label, as it stored it.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors,
-            3271 of 3271 tests ran with none failed, migrations 0 to 123 with none pending, schema version 123, against `data-ci` and never `data`; the phase report 65 tables, 1510 claims, 1510 passing, none out
+            3274 of 3274 tests ran with none failed, migrations 0 to 123 with none pending, schema version 123, against `data-ci` and never `data`; the phase report 65 tables, 1510 claims, 1510 passing, none out
             of scope and none unexamined, 1525 placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
