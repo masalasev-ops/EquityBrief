@@ -1507,7 +1507,9 @@ public sealed partial class SinglePageApp : IComponent
         // The trade a family holds the name on where the night lists it under none, with the card its own night stored.
         HeldTradeView? held = null,
         // The dividends the provider's answer does not yet carry.
-        IReadOnlyList<DividendWait>? dividendWaits = null)
+        IReadOnlyList<DividendWait>? dividendWaits = null,
+        // The night's bar where it arrived after the night's day file.
+        LateBarRow? lateBar = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1612,6 +1614,7 @@ public sealed partial class SinglePageApp : IComponent
         // the exported report carries it.
         region.Append(marks.PricesSuspect(ticker, suspect));
         region.Append(marks.DividendWaits(ticker, dividendWaits));
+        region.Append(marks.LateBar(lateBar));
         region.Append(marks.NoYearServed(ticker, noYear));
 
         // A page about an earlier night says so above every figure it draws, and links to

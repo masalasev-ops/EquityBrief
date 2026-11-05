@@ -7,6 +7,34 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-05 - CLAUDE.md, docs/SCHEMA.md, docs/ARCHITECTURE.html - a member missing from the night's day file is asked again
+Decision: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night
+Was:
+> Twelve carve-outs are named rather than left to be discovered
+> | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
+> **`bar` has three inserters and two deleters, and that is the one exception this file argues for.**
+> | `series_state` | CorporateActionChecker | CorporateActionChecker | none |
+Now:
+> Thirteen carve-outs are named rather than left to be discovered, the thirteenth added at the end of the rule's list
+> | `bar` | Backfill, BarFetcher, CorporateActionChecker, LateBarAsker | none | BarFetcher, CorporateActionChecker |
+> **`bar` has four inserters and two deleters, and that is the one exception this file argues for.**, with a sentence on LateBarAsker after the three
+> | `series_state` | CorporateActionChecker | CorporateActionChecker, LateBarAsker | none |
+Why: the provider posts some members after its day file is read, and a stock's page went a day stale for it.
+
+### 2026-11-05 - docs/SCHEMA.md - a late bar's readings are copied back by a component of its own
+Decision: A late bar's readings are worked over a scratch store by the night's own components, and no pick or ledger row moves
+Was:
+> | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
+> | `swing` | SwingFinder | SwingFinder | SwingFinder |
+> | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
+> | `level` | LevelBuilder | LevelBuilder | LevelBuilder |
+> | `ladder` | LadderBuilder | LadderBuilder | LadderBuilder |
+> | `swing_reading` | SwingReader | none | SwingReader |
+> | `member_reading` | MemberReader | none | MemberReader |
+Now:
+> LateBarReadings an inserter of the first six and an updater of the last
+Why: a bar arriving in the off-peak run updates that stock's readings and levels and nothing else, on the operator's order.
+
 ### 2026-11-04 - docs/ARCHITECTURE.html, .claude/rules/checks.md - a headline the model wrote is prose to the copy's method check
 Decision: A headline the model wrote is prose to the copy's method check, and one code wrote is read as the page is
 Was:

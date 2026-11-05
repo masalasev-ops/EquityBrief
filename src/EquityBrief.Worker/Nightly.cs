@@ -258,6 +258,12 @@ public static class Nightly
             {
                 var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile, feeds.Substitutes)
                     .RunAsync(indexCode, runId, night.Token, wider);
+
+                // Each member the night's file carried nothing for asked with a request of its own, so a bar the provider
+                // has posted since its file is read by every step after this one.
+                // see: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night
+                var late = await new LateBarAsker(historical, clock, store.DatabaseFile)
+                    .AtTheFetchAsync(runId, outcome.Session, outcome.Unaccounted, night.Token);
                 var series = await new MarketSeriesFetcher(market, clock, store.DatabaseFile, feeds.Oil, line => output.WriteLine("market-series: " + line))
                     .RunAsync(runId, night.Token);
                 var refused = outcome.Refused ?? [];
@@ -272,8 +278,8 @@ public static class Nightly
                     $"{(outcome.CaughtUp ?? []).Count} missed session(s) caught up, " +
                     $"{(outcome.CaughtUpShort ?? new Dictionary<DateOnly, IReadOnlyList<string>>()).Values.Sum(names => names.Count)} " +
                     "member-session(s) a caught-up file carried nothing for, " +
-                    $"{outcome.Requests} request(s); market series {series.Detail}";
-            }, [BarFetcher.Stage, MarketSeriesFetcher.Stage]),
+                    $"{outcome.Requests} request(s); {late.Arrived} of {late.Answers.Count} asked again arrived; market series {series.Detail}";
+            }, [BarFetcher.Stage, LateBarAsker.Stage, MarketSeriesFetcher.Stage]),
             // And the dividends the answer carried for the names the night stores, kept for the name page's dividend
             // history with no request of their own.
             // see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read

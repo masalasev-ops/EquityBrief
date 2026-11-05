@@ -757,7 +757,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         commentaryFromRelease: written.FirstOrDefault(section => string.Equals(section.Section, EquityBrief.Core.Research.Evidence.Segments, StringComparison.Ordinal)) is { } commentary
             ? await read.WrittenFromReleaseSegmentsAsync(ticker, commentary.AsOf)
             : null,
-        dividendWaits: await read.DividendWaitsAsync(ticker));
+        dividendWaits: await read.DividendWaitsAsync(ticker),
+        lateBar: bars.Count > 0 ? await read.LateBarOfAsync(ticker, bars[^1].SessionDate) : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -3783,7 +3784,7 @@ app.MapGet("/screens/run/{night?}", async (
         var runResults = await read.IndexResultsAsync(reading.Code, dated);
 
         return Results.Content(
-            page.IndexRunRegion(
+            marks.LateBars(await read.LateBarsOnAsync(dated)) + page.IndexRunRegion(
                 marks,
                 dated,
                 reading,
@@ -3877,7 +3878,7 @@ app.MapGet("/screens/run/{night?}", async (
     var monthlyHeld = new LoopDecided(monthlyDecisions, [], [], null, await read.ModelCutoffAsync(), monthlyRun is null ? [] : await read.LoopTestsAsync(monthlyRun));
 
     return Results.Content(
-        page.RunRegion(
+        marks.LateBars(await read.LateBarsOnAsync(dated)) + page.RunRegion(
             marks,
             dated,
             stages,

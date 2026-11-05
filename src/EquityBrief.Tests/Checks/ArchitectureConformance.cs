@@ -1492,7 +1492,8 @@ public partial class ArchitectureConformance
         // 269 at 21.14: paper trading's tone variant's line.
         // 275 at 22.16: Home's six regions.
         // 276 at 22.36: the chart's line for each real event.
-        Assert.Equal(276, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 278 at the 22.40 correction of 2026-11-05: the name page's late bar and the run page's list of the night's asks.
+        Assert.Equal(278, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the

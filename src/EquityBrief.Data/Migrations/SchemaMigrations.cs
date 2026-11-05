@@ -744,7 +744,24 @@ public static class SchemaMigrations
         new Migration(121, "create chart_check and split_event", CreateChartCheck),
         new Migration(122, "create session_mark", CreateSessionMark),
         new Migration(123, "create dividend_wait", CreateDividendWait),
+        new Migration(124, "create late_bar_ask", CreateLateBarAsk),
     ];
+
+    // From 22.40 each ask for a member the night's day file carried nothing for, at the end of the fetch and in the off-peak
+    // run, and the rules a bar that arrived in the off-peak run would have passed.
+    const string CreateLateBarAsk = @"
+        CREATE TABLE late_bar_ask (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            stage         TEXT NOT NULL CHECK (stage IN ('fetch', 'off-peak')),
+            asked_at      TEXT,
+            outcome       TEXT NOT NULL CHECK (outcome IN ('arrived', 'still missing', 'refused', 'failed', 'past the limit')),
+            detail        TEXT NOT NULL,
+            qualified     TEXT,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date, stage)
+        ) STRICT;
+    ";
 
     // From 22.40 a dividend the provider's answer did not carry, one row while it waits for an answer that does.
     const string CreateDividendWait = @"

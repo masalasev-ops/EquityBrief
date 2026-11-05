@@ -120,6 +120,7 @@ public class StoreNeverDeleted
                 "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, FiguresFile))",
                 "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, SweepAnswer.File))",
                 "IndexSweepRunner.cs: File.WriteAllText(report)",
+                "LateBarReadings.cs: Directory.Delete(scratchRoot)",
                 "LocalComparison.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
                 "LocalRun.Probes.cs: File.WriteAllLinesAsync(Path.Combine(folder, \"sample.txt\"))",
                 "LocalRun.Probes.cs: File.WriteAllTextAsync(Path.Combine(folder, accession + \".txt\"))",

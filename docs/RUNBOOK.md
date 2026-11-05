@@ -521,6 +521,16 @@ It asks nothing for a stock TipRanks answered for in the 15 days before; otherwi
 
 **Where to look.** Each run writes one row under the stage `analysts` or `analyst-ratings` and its own run, `analysts-<instant>-<TICKER>` or `analyst-ratings-<instant>-<TICKER>`, with its requests; a ratings run's detail carries the month's calls as it last read them, used, the limit, when the count starts again and when it was read, which the chart page draws beside the press. Where a run after an ask stores nothing, the chart page says so with the run's own words.
 
+### The late bars' ask
+
+A member the night's day file carried nothing for is asked for at the end of the fetch with a request of its own and once more first in the off-peak run, at most 20 asks a night across the two, so nothing needs doing by hand; by hand it asks what the first off-peak run after the night would, and nothing where that run has asked or the night has not finished:
+
+```
+dotnet run --project src/EquityBrief.Worker -- late-bars --live
+```
+
+**Where to look.** The run page lists each ask of the night with its time and answer, and each stock's page says when its bar arrived and, where it arrived in the off-peak run, what it would have qualified under. The step's row sits under the night's run at the fetch and under `late-bars-<instant>` in the off-peak run, named by each stock. Over a week the count is `SELECT session_date, ticker, stage, outcome FROM late_bar_ask` read from the store (see: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night).
+
 ### The ratings refresh
 
 From 21.6 the off-peak run asks Yahoo for the analysts of the members the analyst job has never asked about, and then of those it asked longest ago, after the labeller and never in the night, so the ledger's rating actions hold every member's history from about nineteen days after the first run and refresh in turn after (see: The ratings refresh asks Yahoo for the members whose stored answer is oldest or none after the labeller, under the chart page's daily cap less the page's reserve). It runs by hand the same way, with nothing more to say:

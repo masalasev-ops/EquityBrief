@@ -90,6 +90,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "compare-reviews" => await CompareReviewsVerb(),
     "publish-site" => await PublishSiteVerb(args),
     "refetch" => await RefetchRun(args),
+    "late-bars" => await LateBarsRun(args),
     "ticker-join" => await TickerJoinRun(args),
     "session-mark" => await SessionMarkRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
@@ -120,6 +121,32 @@ static async Task<int> RefetchRun(string[] args)
         store.DatabaseFile).RefetchNamesAsync(names, FormattableString.Invariant($"refetch-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
 
     Console.WriteLine(FormattableString.Invariant($"refetch: {outcome.Refetched} of {names.Length} year(s) replaced, {outcome.Requests} request(s), {outcome.RowsReplaced} row(s) more than before{(outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect))}"));
+
+    return 0;
+}
+
+// The off-peak run's second ask for each member the night's day file carried nothing for.
+// see: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night
+static async Task<int> LateBarsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"late-bars: no store at '{store.DatabaseFile}', so there is nothing to ask for.");
+
+        return 1;
+    }
+
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var feeds = NightFeeds.Resolve(args.Contains("--live") ? NightFeeds.LiveSource : configuration[NightFeeds.SourceKey], Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey], configuration[EodhdBulkPriceFeed.BaseAddressKey], configuration[ProviderCredentials.ApiKeyName]);
+    var outcome = await new EquityBrief.Worker.Bars.LateBarAsker(
+        EquityBrief.Worker.Bars.TickerJoins.Over(feeds.Historical, store.DatabaseFile),
+        clock,
+        store.DatabaseFile).OffPeakAsync(FormattableString.Invariant($"late-bars-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.WriteLine("late-bars: " + EquityBrief.Worker.Bars.LateBarAsker.Detail(outcome));
 
     return 0;
 }
@@ -197,7 +224,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 64 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 65 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -412,6 +439,7 @@ static int NoVerb()
         "uploading the folder to its own Cloudflare Pages project once the report refuses nothing, " +
         "'refetch --names <codes> --live' asks the provider for each stock's year and replaces it through the corporate action " +
         "check's own path, one request a stock, " +
+        "'late-bars --live' asks once more for each member the night's day file carried nothing for, as the off-peak run does, " +
         "'ticker-join --ticker <code> --earlier <code>' records that a stock's earlier sessions sit under another ticker at the " +
         "provider, 'session-mark --ticker <code> --session <yyyy-MM-dd> --kind <kind> --says <words>' records the operator's word on a " +
         "session of its pulled history, and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
