@@ -216,6 +216,7 @@ public partial class FixtureExpectations
 
         var written = new[] { "family_result", "family_pick", "family_trade", "gate_result", "index_family_result", "index_family_pick", "index_family_trade", "index_rule_trade", "dip_result", "dip_pick", "dip_trade", "rule_pick", "listing", "setup", "ledger_reading", "trade_fill", "index_family_night" };
         var counts = written.ToDictionary(table => table, table => FamilyRows(store, $"SELECT COUNT(*) FROM {table};").Single());
+        var scratches = Scratches();
         var outcome = await Asker(store, new ScriptedBars(answers), InTheOffPeakRun).OffPeakAsync("late-bars-run");
 
         Assert.Equal(4, outcome.Arrived);
@@ -241,7 +242,56 @@ public partial class FixtureExpectations
         Assert.Equal(["IA|ok|0", "NH|suspect|0", "PR|suspect|0"], FamilyRows(store, "SELECT ticker || '|' || state || '|' || retries FROM series_state ORDER BY ticker;"));
 
         // The scratch store is gone.
-        Assert.False(Directory.Exists(Path.Combine(Path.GetTempPath(), "equitybrief-late-bars")) && Directory.EnumerateFileSystemEntries(Path.Combine(Path.GetTempPath(), "equitybrief-late-bars")).Any(), "A scratch store was left behind.");
+        Assert.Equal(scratches, Scratches());
+    }
+
+    // The scratch stores under the machine's temporary folder, which a run adds none to.
+    static IReadOnlyList<string> Scratches()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "equitybrief-late-bars");
+
+        return Directory.Exists(folder) ? [.. Directory.EnumerateFileSystemEntries(folder).Order(StringComparer.Ordinal)] : [];
+    }
+
+    // A mark of copied candles stands whatever session they fell on: the newest copy on the very session before the night is
+    // not the answer ending short that a bar for the night answers.
+    [Fact]
+    public async Task ACopiedCandleMarkStandsEvenWhereItsDayIsTheSessionBeforeTheNight()
+    {
+        using var store = NightMissing("IA");
+
+        store.Execute("INSERT INTO late_bar_ask (ticker, session_date, stage, asked_at, outcome, detail, run_id) VALUES ('IA', '2026-10-02', 'fetch', '2026-10-03T00:00:40Z', 'still missing', 'x', 'night-test');");
+        store.Execute("INSERT INTO series_state (ticker, state, reason, checked_at, retries) VALUES ('IA', 'suspect', 'its stored year holds 1 copied candle(s), no volume at the close before, the newest on 2026-10-01', '2026-10-03T00:00:41Z', 0);");
+        TheNightFinished(store);
+
+        await Asker(store, new ScriptedBars(new Dictionary<string, IReadOnlyList<ProviderBar>> { ["IA"] = Holds(102m, 2_000_000) }), InTheOffPeakRun).OffPeakAsync("late-bars-run");
+
+        Assert.Equal(["IA|suspect"], FamilyRows(store, "SELECT ticker || '|' || state FROM series_state;"));
+    }
+
+    // An index's own breadth is read over the rest of its members: IA breaks out as in the constructed night, while the
+    // other three of the index's four stand far under their 200-day averages, so the breadth is 25%, under the floor of 45%,
+    // and the market check closed. Read over IA alone it would be 100% and the check open.
+    [Fact]
+    public async Task AStocksRulesReadTheBreadthOfItsWholeIndexAndNotItsOwnBarsAlone()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        foreach (var (ticker, close) in new[] { ("IA", 102m), ("LO", 50m), ("LP", 50m), ("LQ", 50m) })
+        {
+            StoreYear(store, ticker, IndexYear(close, 2_000_000));
+            store.Execute($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', '{ticker}', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+            Quarters(store, ticker, 10m, 10m, 10m, 10m);
+        }
+
+        store.Execute("UPDATE bar SET source = 'bulk' WHERE session_date = '2026-10-02';");
+        store.Execute("DELETE FROM bar WHERE ticker = 'IA' AND session_date = '2026-10-02';");
+        store.Execute("INSERT INTO late_bar_ask (ticker, session_date, stage, asked_at, outcome, detail, run_id) VALUES ('IA', '2026-10-02', 'fetch', '2026-10-03T00:00:40Z', 'still missing', 'x', 'night-test');");
+        TheNightFinished(store);
+
+        await Asker(store, new ScriptedBars(new Dictionary<string, IReadOnlyList<ProviderBar>> { ["IA"] = Holds(102m, 2_000_000) }), InTheOffPeakRun).OffPeakAsync("late-bars-run");
+
+        Assert.Equal(["[]"], FamilyRows(store, "SELECT COALESCE(qualified, 'not read: ' || detail) FROM late_bar_ask WHERE ticker = 'IA' AND stage = 'off-peak';"));
     }
 
     // The S&P 500's breakout reads the night's stored breadth, which the scratch store's own readers could read only over
@@ -251,7 +301,8 @@ public partial class FixtureExpectations
     {
         using var store = new TemporaryStore().Migrated();
 
-        foreach (var (ticker, close, volume) in new[] { ("LA", 102m, 2_000_000L), ("LB", 100.2m, 1_000_000L) })
+        // LA and five others, whom the scratch store holds no indicators for, so over it the breadth is not available.
+        foreach (var (ticker, close, volume) in new[] { ("LA", 102m, 2_000_000L), ("LB", 100.2m, 1_000_000L), ("LC", 100.2m, 1_000_000L), ("LD", 100.2m, 1_000_000L), ("LE", 100.2m, 1_000_000L), ("LF", 100.2m, 1_000_000L) })
         {
             StoreYear(store, ticker, IndexYear(close, volume));
             store.Execute($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', '{ticker}', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");

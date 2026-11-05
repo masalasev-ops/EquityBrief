@@ -15605,3 +15605,16 @@ Carried:    the three lines read back on 5152, after the merge, in the report to
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors,
             3277 of 3277 tests ran with none failed, migrations 0 to 123 with none pending, schema version 123, against `data-ci` and never `data`; the phase report 65 tables, 1510 claims, 1510 passing, none out
             of scope and none unexamined, 1525 placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
+
+### 22.40 ruling - late posts, what the PR 640 read-back left open and the entry check, in that order before the sign-offs and phase 23
+
+Not a checkpoint entry: it records the operator's orders of 2026-11-04 and 2026-11-05 and lands nothing.
+Ruled:      word for word in `prompts/2026-11-04-23.30-late-posts-from-the-provider.md` and `prompts/2026-11-05-22-what-the-pr-640-read-back-left-open.md`, gitignored, and here for what the late posts land. "a member missing from the
+            night's day file is asked again with its own per-stock request at the end of the night's fetch, and once more in the off-peak run. If the bar has arrived, it is written as the night's bar would have been (the ordinary append, no
+            stored bar changed) and the stock's readings for that night are worked then; the page and the run page say it arrived late, with the time. If it is still missing, the existing suspect path applies. At most 20 such asks a night,
+            stating each. Report how often this happens over the next week (HOS, INDV and KVUE so far)." "Picks, family lists, trades and the ledger stay as the night wrote them; a bar arriving in the off-peak run updates only that stock's
+            readings, levels and page. One addition: where the late bar's readings would have passed a live rule, the stock's page and the run page say 'would have qualified under <rule> had its bar arrived before the night', with no trade
+            or record written."
+Queue:      done, phase 18's sign-off, the seven faults, the publish refusal and the suspect wording; in progress, the late posts; next, what the PR 640 read-back left open, then the entry check as phase 22's last checkpoints, then the
+            sign-offs of phases 20, 21 and 22 and phase 23, in that order.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
