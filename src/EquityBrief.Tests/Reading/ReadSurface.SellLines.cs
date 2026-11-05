@@ -292,16 +292,18 @@ public partial class ReadSurface
 
             var night = Assert.Single(Rows(store, "SELECT MAX(session_date) FROM bar WHERE ticker = 'AAPL';"))[0];
             var reported = Day(night).AddDays(-1);
-            var fetched = reported.AddDays(-21);
-            var label = $"Set before the {reported.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture)} report";
+            var reportedOn = reported.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            var fetchedOn = reported.AddDays(-21).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            var periodEnd = Day(night).AddMonths(2).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            var label = "Set before the " + reported.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture) + " report";
 
             store.Execute($"DELETE FROM estimate_trend WHERE ticker = 'AAPL';");
             store.Execute(
                 "INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, eps_average, eps_year_ago, eps_analysts, eps_now, eps_thirty_days_ago) VALUES " +
-                $"('AAPL', '{fetched:yyyy-MM-dd}T22:00:00Z', '0y', '{Day(night).AddMonths(2):yyyy-MM-dd}', '7.00', '6.00', 10, '7.00', '6.50'), " +
-                $"('AAPL', '{fetched:yyyy-MM-dd}T22:00:00Z', '0q', '{Day(night).AddMonths(2):yyyy-MM-dd}', '1.80', '1.50', 10, '1.80', '1.70');");
+                $"('AAPL', '{fetchedOn}T22:00:00Z', '0y', '{periodEnd}', '7.00', '6.00', 10, '7.00', '6.50'), " +
+                $"('AAPL', '{fetchedOn}T22:00:00Z', '0q', '{periodEnd}', '1.80', '1.50', 10, '1.80', '1.70');");
             store.Execute($"UPDATE company SET target_price = '200' WHERE ticker = 'AAPL';");
-            store.Execute($"INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('AAPL', '{reported:yyyy-MM-dd}', 'earnings', 'AfterMarket', '{{}}', '{reported:yyyy-MM-dd}T22:00:00Z');");
+            store.Execute($"INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('AAPL', '{reportedOn}', 'earnings', 'AfterMarket', '{{}}', '{reportedOn}T22:00:00Z');");
 
             using var host = new Host(store.Root);
             using var client = host.CreateClient();
@@ -318,7 +320,7 @@ public partial class ReadSurface
             Assert.Contains(label, Regex.Match(name, "<div class=\"lead-tile\" data-tile=\"growth\">.*?</div>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
             Assert.Contains(label, Regex.Match(name, "id=\"analysts\".*?class=\"consensus-table\"", RegexOptions.Singleline).Value, StringComparison.Ordinal);
 
-            store.Execute($"UPDATE estimate_trend SET fetched_at = '{reported:yyyy-MM-dd}T22:00:00Z' WHERE ticker = 'AAPL';");
+            store.Execute($"UPDATE estimate_trend SET fetched_at = '{reportedOn}T22:00:00Z' WHERE ticker = 'AAPL';");
 
             Assert.DoesNotContain(label, WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AAPL")), StringComparison.Ordinal);
         }
