@@ -27,17 +27,19 @@ public partial class ReadSurface
 
     static readonly DateOnly EntryNight = new(2026, 11, 4);
 
-    // Twenty-nine sessions closing at 100, each with a high of 101 and a low of 99, and the night closing at 110 with a low of 109
-    // on 2,000 shares against an average of 1,000. The twenty-session average on the night is (19 x 100 + 110) / 20 = 100.5, so the
-    // close stands 9.4527% above it, which at a typical day of 2.5 is 9.5 / 2.5 = 3.8 days; of the eleven days holding the average,
-    // ten stood 0% above and the night alone this far, 1 in 11, 9.09%. The close twenty sessions back is 100, a gain of 10%.
+    // Twenty-nine sessions closing at 100, but for the one twenty sessions back closing at 95, each with a high of 101 and a low of 94,
+    // and the night closing at 110 with a low of 109 on 2,000 shares against an average of 1,000. The twenty-session average on the
+    // night is (19 x 100 + 110) / 20 = 100.5, so the close stands 9.4527% above it, which at a typical day of 2.5 is 9.5 / 2.5 = 3.8
+    // days; of the eleven days holding the average none but the night stood over 1% above it, 1 in 11, 9.09%. The close twenty sessions
+    // back is 95, a gain of 15.7895%.
     static IReadOnlyList<EntryBar> EntryYear() =>
     [
-        .. Enumerable.Range(0, 29).Select(at => new EntryBar(EntryNight.AddDays(at - 29), 101m, 99m, 100m, 1000)),
+        .. Enumerable.Range(0, 29).Select(at => new EntryBar(EntryNight.AddDays(at - 29), 101m, 94m, at == 9 ? 95m : 100m, 1000)),
         new EntryBar(EntryNight, 111m, 109m, 110m, 2000),
     ];
 
-    // Three hundred older sessions at 100, one of them, 2024-08-20, over 250 sessions back, turning at a high of 130 and closing at 115.
+    // Three hundred older sessions at 100, one of them, 2024-08-20, over 250 sessions back, turning at a high of 130 and closing at 115,
+    // and another, 2024-09-20, turning further off at a high of 150.
     static IReadOnlyList<EntryBar> EntryOlder()
     {
         var first = new DateOnly(2024, 8, 1);
@@ -48,7 +50,7 @@ public partial class ReadSurface
             {
                 var day = first.AddDays(at);
 
-                return day == new DateOnly(2024, 8, 20) ? new EntryBar(day, 130m, 100m, 115m, 1000) : new EntryBar(day, 101m, 99m, 100m, 1000);
+                return day == new DateOnly(2024, 8, 20) ? new EntryBar(day, 130m, 100m, 115m, 1000) : day == new DateOnly(2024, 9, 20) ? new EntryBar(day, 150m, 100m, 100m, 1000) : new EntryBar(day, 101m, 99m, 100m, 1000);
             }),
         ];
     }
@@ -63,7 +65,7 @@ public partial class ReadSurface
         Assert.Equal(9.4527, reading.StretchPercent!.Value, 3);
         Assert.Equal(3.8, reading.StretchDays!.Value, 6);
         Assert.Equal(100d / 11, reading.StretchShare!.Value, 6);
-        Assert.Equal(10, reading.GainTwenty!.Value, 6);
+        Assert.Equal(15.7895, reading.GainTwenty!.Value, 3);
         Assert.Equal(70, reading.Rsi);
         Assert.True(reading.LargestGain);
         Assert.Equal(2, reading.VolumeRatio);
@@ -96,7 +98,7 @@ public partial class ReadSurface
         var reading = EntryWorked();
 
         Assert.Equal("Price is 9.5% above its 20-session average, which is 3.8 typical days. 9% of this stock's days have been this far above it or more.", EntryWords.Stretch(reading));
-        Assert.Equal("The price moved +10.0% over 20 sessions; its relative strength reads 70.0 of 100; tonight was the largest one-day gain in 250 sessions; volume was 2.0 times its 50-session mean.", EntryWords.HotRun(reading));
+        Assert.Equal("The price moved +15.8% over 20 sessions; its relative strength reads 70.0 of 100; tonight was the largest one-day gain in 250 sessions; volume was 2.0 times its 50-session mean.", EntryWords.HotRun(reading));
         Assert.Equal("Tonight's close was last matched or passed on 2024-08-20.", EntryWords.Highest(reading));
         Assert.Equal("The nearest band above tonight's close from the pulled history is $128.75 to $130.00, from 2024, 7.5 typical days above.", EntryWords.Older(reading));
 
