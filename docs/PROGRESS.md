@@ -15565,3 +15565,43 @@ Carried:    the operator's read back on 5152 and every page changed, after the m
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors,
             3274 of 3274 tests ran with none failed, migrations 0 to 123 with none pending, schema version 123, against `data-ci` and never `data`; the phase report 65 tables, 1510 claims, 1510 passing, none out
             of scope and none unexamined, 1525 placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.
+
+### 22.40 ruling - the publish refusal, the suspect wording, late posts and the entry check, in that order before phase 23
+
+Not a checkpoint entry: it records the operator's orders of 2026-11-04 and lands nothing.
+Ruled:      word for word in `prompts/2026-11-04-23.05-the-publish-refusal-and-the-suspect-wording.md`, `prompts/2026-11-04-23.30-late-posts-from-the-provider.md` and `prompts/2026-11-04-22-entry-check-order.md`, gitignored,
+            and here for what this pull request lands. "A model-written headline is prose like the rest of the report, as I ruled; a code-written headline stays checked. Add a test with DD's headline that passes and a
+            planted threshold phrase in a code-written headline that is refused." "where the refetch succeeded but the provider served the same faulty candles (MOG-A, MSGR), the page says 'The provider's prices for
+            <dates> are copies of the session before, with no trades. They are asked for again on the next five nights and weekly after.' Keep 'downloading its year of prices again failed' only where the download
+            failed (HOS: say instead that the provider holds nothing after 11-03, if that is what happened)." "Yes to the HOS wording with the ask's time." "I want the public site to be refreshed too after everything".
+Checked:    all three refetches of the night of 2026-11-04 succeeded, each stored year carrying that night's instant. HOS shows no delisting, halt, merger or ticker change around 11-03: the provider lists it and marks
+            it not delisted, the SEC's latest filing is a 13G/A of 2026-10-27, and its name change from Helix Energy Solutions took effect on 2026-08-31.
+Queue:      done, phase 18's sign-off and the seven faults; in progress, this pull request; next, late posts, then the entry check as phase 22's last checkpoints, then the sign-offs of phases 20, 21 and 22 and phase 23,
+            in that order.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 22.17 - correction: a headline the model wrote is prose to the copy's method check   2026-11-04
+
+Not a checkpoint entry: it corrects what 22.17 carried into shipped source, and lands nothing.
+Corrected:  the check read "at or above" and "floor of" outside a report's written sections, and a headline stands above them, so DD's headline on its guidance refused every upload from the night of 2026-11-03. It reads
+            the page's own mark: a model's headline is prose, one code wrote is read as the page is, every other leak in either still refuses, and the copy's rewording leaves a model's headline as accepted. A decision,
+            the architecture's paragraph and `copy-method-leak`'s row, with prior text in the changelog.
+Tests:      in `CopyMethodLeak`, DD's headline passing and a threshold's words planted in a code-written headline refused.
+Mutation:   stated in the last entry of this pull request.
+Carried:    the upload itself, after the merge, in the report to the operator.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with the figures it states.
+
+### 22.33 - correction: a suspect name's line says what the provider's answer held, and a failed download only where one failed   2026-11-04
+
+Not a checkpoint entry: it corrects what 22.33 carried into shipped source, and lands nothing.
+Corrected:  a refetch that answered short or with copied candles was drawn as a failed download. The reasons now go through one place in the core, read back by the pages: copied candles name their dates, read from the
+            stored bars; an answer ending short names its day and the instant of the ask; a name past the night's limit claims no answer; a failure keeps its words. The mark beside a name on a list says the same in a
+            few words. A decision and the architecture's row, with prior text in the changelog. No stored reason changes, and no pinned source is edited.
+Tests:      3277, from 3274; 3 tests in `CopyMethodLeak` and `ReadSurface.Suspect`.
+Mutation:   chosen before the run by this rule, each property the two corrections add, filtered to their tests, 11 in all, all red: a model's headline read as the page, a code headline read as prose, the copy rewording
+            a model's headline, every line saying a download failed, a failure read as a fault, the limit unread, the ask's time left out, every day of no volume named, the copied days not handed on, the mark keeping
+            the old words and the mark naming no day. The last two survived their first run, a missing property, and went red once the mark was tested.
+Carried:    the three lines read back on 5152, after the merge, in the report to the operator. The late posts the order goes on to, next in the queue.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors,
+            3277 of 3277 tests ran with none failed, migrations 0 to 123 with none pending, schema version 123, against `data-ci` and never `data`; the phase report 65 tables, 1510 claims, 1510 passing, none out
+            of scope and none unexamined, 1525 placements and verdicts reconciled against a floor of 34, 46 checks on the roster run and passed.

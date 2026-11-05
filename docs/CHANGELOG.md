@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-04 - docs/ARCHITECTURE.html, .claude/rules/checks.md - a headline the model wrote is prose to the copy's method check
+Decision: A headline the model wrote is prose to the copy's method check, and one code wrote is read as the page is
+Was:
+> a settings line and, outside a report's written prose, the two phrases a threshold is stated in, each leak named by its file and its text;
+> a settings line, and "floor of" and "at or above" outside a report's written prose, each leak named by its file and its text, and a leak refuses the upload; a test plants each kind of leak in a page and sees each named, passes a clean page and the two phrases in a report's prose, sees the upload refused
+Now:
+> a settings line and, outside a report's written prose and a headline the model wrote, the two phrases a threshold is stated in, a headline code wrote being read as the page is (see: A headline the model wrote is prose to the copy's method check, and one code wrote is read as the page is), each leak named by its file and its text;
+> a settings line, and "floor of" and "at or above" outside a report's written prose and a headline the model wrote, each leak named by its file and its text, and a leak refuses the upload; a test plants each kind of leak in a page and sees each named, passes a clean page and the two phrases in a report's prose and a model's headline, refuses them in a headline code wrote, sees the upload refused
+Why: the check refused the copy over a sentence about a company's guidance, so nothing had uploaded since the night of 2026-11-02.
+
+### 2026-11-04 - docs/ARCHITECTURE.html - a suspect name's line says what the provider's answer held
+Decision: A suspect name's line says what the provider's answer held, and says a download failed only where one did
+Was:
+> one line saying its prices may not reflect a recent dividend or split, with when the refetch was last tried and why it failed, above everything the page draws from those prices
+Now:
+> one line above everything the page draws from those prices, saying what the provider's answer held where the refetch succeeded, the sessions whose prices are copies of the one before or the day it held nothing after and when it was asked, and that it is asked again; and where the download failed, that its prices may not reflect a recent dividend or split, with when the refetch was last tried and why it failed (see: A suspect name's line says what the provider's answer held, and says a download failed only where one did)
+Why: the line said a download failed on stocks whose download had succeeded.
+
 ### 2026-11-04 - .claude/rules/checks.md - plain-words states that three pages draw no field's code name
 Decision: A page draws every field in the reader's words, and the proof fails a page drawing a field's code name
 Was:
