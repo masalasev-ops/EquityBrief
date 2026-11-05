@@ -82,6 +82,23 @@ public partial class ReadSurface
     static string TextOf(string fragment) =>
         WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(fragment, "<(script|style|svg)\\b.*?</\\1>", " ", RegexOptions.Singleline), "<[^>]+>", " "));
 
+    // A line of an idea's card opening mid-sentence is found wherever it stands, and a company or ticker written in lower case is
+    // no line.
+    [Fact]
+    public void AHomeCardLineStartingMidSentenceIsFound()
+    {
+        static string Card(string lines) =>
+            $"<article class=\"home-idea fam-edge\" data-family=\"breakout\" data-ticker=\"ETSY\"><div class=\"home-idea-h\"><div><div class=\"home-ticker\">ETSY</div><div class=\"home-co\">eBay Inc</div></div></div>{lines}</article><p class=\"elsewhere\">outside any card.</p>";
+
+        Assert.Empty(SinglePageApp.HomeLinesStartingMidSentence(Card("<p class=\"home-why\">A strong stock that dipped.</p><div class=\"home-odds\">Risks $1 to make about $2.50</div>")));
+        Assert.Equal(
+            ["rising as the stock makes new highs; it never moves down."],
+            SinglePageApp.HomeLinesStartingMidSentence(Card("<div class=\"home-prices\"><div><span>Sell if it falls to</span><b>$46.00</b></div><p class=\"home-rising\">rising as the stock makes new highs; it never moves down.</p></div>")));
+        Assert.Equal(["and sells at a loss."], SinglePageApp.HomeLinesStartingMidSentence(Card("<div class=\"home-odds\">and sells at a loss.</div>")));
+        Assert.Equal([", so a winner runs."], SinglePageApp.HomeLinesStartingMidSentence(Card("<p class=\"home-why\"><b></b>, so a winner runs.</p>")));
+        Assert.Equal(string.Empty, SinglePageApp.HomeLinesStartingMidSentence(Card("<p class=\"home-why\">Closed high.</p>")).FirstOrDefault() ?? string.Empty);
+    }
+
     [Fact]
     public void HomesRegionsDrawTheDayTheIdeasThePastTheWayItWorksAndTheFoot()
     {
@@ -127,12 +144,25 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"home-rr\" role=\"img\" aria-label=\"Risks $1 to make about $2.50\"><div class=\"risk\" style=\"flex:10\"></div><div class=\"reward\" style=\"flex:25\"></div></div>", page, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(page, "class=\"home-rr\""));
         Assert.Contains("<b class=\"aim\">No fixed target</b>", page, StringComparison.Ordinal);
-        Assert.Single(Regex.Matches(text, Regex.Escape(SinglePageApp.RisesLine)));
 
-        // From 22.18 the breakout's give-up price rising beneath its price, why it has no target, the close past which it
-        // can no longer lose, 50 and its distance of 4, and its rule's record below the count it needs.
-        Assert.Contains("<b class=\"stop\">$46.00</b></div><p class=\"home-rising\">rising as the stock makes new highs; it never moves down.</p>", page, StringComparison.Ordinal);
-        Assert.Contains("Breakouts earn most from the few that keep running, so the rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.", text, StringComparison.Ordinal);
+        // The breakout and the Fundamentals buy, each with no target, each say the one line and nothing else of how it rises.
+        Assert.Equal(2, Regex.Matches(text, Regex.Escape("The give-up price rises as the stock climbs, so a winner can keep running.")).Count);
+        Assert.DoesNotContain("rising as the stock", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("home-rising", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("Breakouts earn most", text, StringComparison.Ordinal);
+        Assert.Empty(SinglePageApp.HomeLinesStartingMidSentence(page));
+
+        // The read-only copy's Home says the same.
+        var copied = new SinglePageApp().HomeRegion(new MarkRenderer { Copying = true }, view, string.Empty);
+
+        Assert.Equal(2, Regex.Matches(TextOf(copied), Regex.Escape("The give-up price rises as the stock climbs, so a winner can keep running.")).Count);
+        Assert.DoesNotContain("rising as the stock", TextOf(copied), StringComparison.Ordinal);
+        Assert.DoesNotContain("Breakouts earn most", TextOf(copied), StringComparison.Ordinal);
+        Assert.Empty(SinglePageApp.HomeLinesStartingMidSentence(copied));
+
+        // From 22.18 the close past which the breakout can no longer lose, 50 and its distance of 4, and its rule's record below
+        // the count it needs.
+        Assert.Contains("<b class=\"stop\">$46.00</b></div>", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"home-odds home-noloss\" data-no-loss=\"54\">The trade can no longer lose once the stock reaches about $54.00.</div>", page, StringComparison.Ordinal);
         Assert.Contains("The breakout rule has 3 of the 300 finished trades its record needs.", text, StringComparison.Ordinal);
         Assert.Contains("<b class=\"stop\">below its 200-day average</b>", page, StringComparison.Ordinal);

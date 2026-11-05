@@ -82,7 +82,10 @@ public sealed partial class MarkRenderer
             FormattableString.Invariant($"<tr class=\"band older\" data-older-role=\"{Escaped(band.Role)}\" data-low-edge=\"{band.Low.ToString(Invariant)}\" data-high-edge=\"{band.High.ToString(Invariant)}\" data-made-on=\"{band.MadeOn:yyyy-MM-dd}\"><td>{Escaped(band.Role)}, older</td><td class=\"num\">{Price(band.Low)} to {Price(band.High)}</td><td>{band.MadeOn:yyyy-MM-dd}</td></tr>")));
 
         return Formatted($"<div class=\"sub\">Older bands, from the history before the stored year</div><p class=\"older-bands-note\">These are the prices the history pulled before the stored year turned at {(bands.Any(band => band.Role == "resistance") && bands.Any(band => band.Role == "support") ? "on either side of the price" : bands.Any(band => band.Role == "resistance") ? "above the price" : "below the price")}{(price is { } at ? Formatted($" of {Price(at)}") : string.Empty)}, where the stored year holds no band or none as far as a pick's target or stop. They are older and drawn here alone: no rule, plan or listing reads them.</p>")
-            + "<div class=\"tbl-wrap\"><table class=\"older-bands\"><thead><tr><th>Band</th><th>Edges</th><th>Turned at on</th></tr></thead><tbody>" + rows + "</tbody></table></div>";
+            + "<div class=\"tbl-wrap\"><table class=\"older-bands\"><thead><tr><th>Band</th><th>Edges</th><th>Turned at on</th></tr></thead><tbody>" + rows + "</tbody></table></div>"
+            + (bands.Where(band => band.Role == "resistance").OrderBy(band => band.Low).FirstOrDefault() is { } nearest
+                ? FormattableString.Invariant($"<p class=\"older-overhead\" data-made-on=\"{nearest.MadeOn:yyyy-MM-dd}\">The nearest older band above is {Price(nearest.Low)} to {Price(nearest.High)}, from {nearest.MadeOn.Year}. Prices above this traded on {nearest.MadeOn:yyyy-MM-dd}. The plan's levels read one year, so they do not use these.</p>")
+                : string.Empty);
     }
 
     // Where a pick's or a held trade's target lies above every band the levels draw, stored and older, or its stop below every

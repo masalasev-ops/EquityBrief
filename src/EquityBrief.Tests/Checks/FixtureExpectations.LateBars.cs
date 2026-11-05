@@ -235,6 +235,8 @@ public partial class FixtureExpectations
         Assert.Equal(["IA", "IB", "NH", "PR"], FamilyRows(store, "SELECT DISTINCT ticker FROM volume_profile WHERE as_of = '2026-10-02' ORDER BY ticker;"));
         Assert.Equal(["IA", "IB", "NH", "PR"], FamilyRows(store, "SELECT DISTINCT ticker FROM level WHERE as_of = '2026-10-02' ORDER BY ticker;"));
 
+        Assert.Equal(["IA", "IB", "NH", "PR"], FamilyRows(store, "SELECT ticker FROM entry_reading WHERE session_date = '2026-10-02' ORDER BY ticker;"));
+
         // Nothing a night's rules write moved: a would-have-qualified writes no trade or record.
         Assert.All(written, table => Assert.Equal(counts[table], FamilyRows(store, $"SELECT COUNT(*) FROM {table};").Single()));
 
@@ -243,6 +245,50 @@ public partial class FixtureExpectations
 
         // The scratch store is gone.
         Assert.Equal(scratches, Scratches());
+    }
+
+    // The entry check's reader over the constructed night, read by hand: a row for each of the seven members with a bar, no row for
+    // one holding none, and a second run replacing its own and writing nothing a rule reads.
+    // see: The entry check reads a member's bars every night into a table of its own, and no rule reads it
+    [Fact]
+    public async Task TheEntryReaderWritesARowForEveryMemberWithABarAndNothingARuleReads()
+    {
+        using var store = IndexStore();
+
+        // GONE's newest bar stands before the night. IA's history is pulled to the session before its first stored one, closing at 150, its pull holding
+        // its first stored session at the store's scale.
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'GONE', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+        store.Execute("INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('GONE', '2026-10-01', '10', '10', '10', '10', 5, 'test', '2026-10-01T21:00:00Z', '10');");
+
+        var first = FamilyRows(store, "SELECT MIN(session_date) || '|' || (SELECT close FROM bar b WHERE b.ticker = 'IA' AND b.session_date = (SELECT MIN(session_date) FROM bar c WHERE c.ticker = 'IA')) FROM bar WHERE ticker = 'IA';").Single().Split('|');
+
+        store.Execute(
+            "INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES " +
+            "('IA', '2026-01-23', '150', '151', '149', '150', '150', 5, 'p1'), " +
+            $"('IA', '{first[0]}', '{first[1]}', '{first[1]}', '{first[1]}', '{first[1]}', '{first[1]}', 5, 'p1');");
+        store.Execute(
+            "INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES " +
+            "('IA', '2026-10-02', 'atr14', 2.5, 14), ('IA', '2026-10-02', 'rsi14', 70, 14), ('IA', '2026-10-02', 'vol_avg50', 1000000, 50);");
+
+        var written = new[] { "family_result", "family_pick", "gate_result", "index_family_result", "index_family_pick", "dip_result", "listing", "setup", "ledger_reading" };
+        var counts = written.ToDictionary(table => table, table => FamilyRows(store, $"SELECT COUNT(*) FROM {table};").Single());
+        var reader = new EquityBrief.Worker.EntryCheck.EntryReader(FixedClock.At(AtTheFetch, SessionZones.UnitedStates), store.DatabaseFile);
+        var outcome = await reader.RunAsync("night-test");
+
+        Assert.Equal((LateNight, 7, 1), (outcome.Night!.Value, outcome.Read, outcome.WithoutABar));
+        Assert.Equal(["FL", "IA", "IB", "IC", "ID", "NH", "PR"], FamilyRows(store, "SELECT ticker FROM entry_reading WHERE session_date = '2026-10-02' ORDER BY ticker;"));
+
+        // IA's night: 102 on 2,000,000 shares after a year near 100. Its low of 101 stands above the prior high of 100.5, so it gapped;
+        // twice its volume against an average of 1,000,000; the RSI and the typical day as stored; and last this high in the pull.
+        Assert.Equal(["102|2.5|70.0|2.0|100.5|101"], FamilyRows(store, "SELECT close || '|' || typical_day || '|' || printf('%.1f', rsi) || '|' || printf('%.1f', volume_ratio) || '|' || gap_high || '|' || gap_low FROM entry_reading WHERE ticker = 'IA';"));
+        Assert.Equal(["2026-01-23|2026-01-23"], FamilyRows(store, "SELECT highest_since || '|' || history_start FROM entry_reading WHERE ticker = 'IA';"));
+
+        await reader.RunAsync("night-again");
+
+        Assert.Equal(["7"], FamilyRows(store, "SELECT COUNT(*) FROM entry_reading;"));
+        Assert.Equal(["night-again"], FamilyRows(store, "SELECT DISTINCT run_id FROM entry_reading;"));
+        Assert.All(written, table => Assert.Equal(counts[table], FamilyRows(store, $"SELECT COUNT(*) FROM {table};").Single()));
+        Assert.Equal(["7 member(s) read for 2026-10-02, 1 holding no bar on it"], FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'night-test' AND stage = 'entry-readings';"));
     }
 
     // The scratch stores under the machine's temporary folder, which a run adds none to.

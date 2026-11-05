@@ -91,6 +91,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "publish-site" => await PublishSiteVerb(args),
     "refetch" => await RefetchRun(args),
     "late-bars" => await LateBarsRun(args),
+    "entry-readings" => await EntryReadingsRun(),
     "ticker-join" => await TickerJoinRun(args),
     "session-mark" => await SessionMarkRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
@@ -121,6 +122,20 @@ static async Task<int> RefetchRun(string[] args)
         store.DatabaseFile).RefetchNamesAsync(names, FormattableString.Invariant($"refetch-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
 
     Console.WriteLine(FormattableString.Invariant($"refetch: {outcome.Refetched} of {names.Length} year(s) replaced, {outcome.Requests} request(s), {outcome.RowsReplaced} row(s) more than before{(outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect))}"));
+
+    return 0;
+}
+
+// The entry check's readings of the newest night, by hand, as the night's own step reads them.
+// see: The entry check reads a member's bars every night into a table of its own, and no rule reads it
+static async Task<int> EntryReadingsRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var outcome = await new EquityBrief.Worker.EntryCheck.EntryReader(clock, store.DatabaseFile).RunAsync(FormattableString.Invariant($"entry-readings-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.WriteLine($"entry-readings: {outcome.Read} member(s) read, {outcome.WithoutABar} holding no bar on the night");
 
     return 0;
 }
@@ -224,7 +239,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 65 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 66 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -440,6 +455,7 @@ static int NoVerb()
         "'refetch --names <codes> --live' asks the provider for each stock's year and replaces it through the corporate action " +
         "check's own path, one request a stock, " +
         "'late-bars --live' asks once more for each member the night's day file carried nothing for, as the off-peak run does, " +
+        "'entry-readings' reads the entry check's readings of the newest night, as the night's own step does, " +
         "'ticker-join --ticker <code> --earlier <code>' records that a stock's earlier sessions sit under another ticker at the " +
         "provider, 'session-mark --ticker <code> --session <yyyy-MM-dd> --kind <kind> --says <words>' records the operator's word on a " +
         "session of its pulled history, and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +

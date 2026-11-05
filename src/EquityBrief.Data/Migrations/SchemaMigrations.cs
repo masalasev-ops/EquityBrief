@@ -745,7 +745,35 @@ public static class SchemaMigrations
         new Migration(122, "create session_mark", CreateSessionMark),
         new Migration(123, "create dividend_wait", CreateDividendWait),
         new Migration(124, "create late_bar_ask", CreateLateBarAsk),
+        new Migration(125, "create entry_reading", CreateEntryReading),
     ];
+
+    // From 22.41 the entry check's readings of a member on a night, which no rule reads.
+    const string CreateEntryReading = @"
+        CREATE TABLE entry_reading (
+            ticker           TEXT NOT NULL,
+            session_date     TEXT NOT NULL,
+            close            TEXT NOT NULL,
+            typical_day      REAL,
+            stretch_percent  REAL,
+            stretch_days     REAL,
+            stretch_share    REAL,
+            gain_twenty      REAL,
+            rsi              REAL,
+            largest_gain     INTEGER,
+            volume_ratio     REAL,
+            gap_high         TEXT,
+            gap_low          TEXT,
+            highest_since    TEXT,
+            history_start    TEXT,
+            older_low        TEXT,
+            older_high       TEXT,
+            older_on         TEXT,
+            older_days       REAL,
+            run_id           TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
 
     // From 22.40 each ask for a member the night's day file carried nothing for, at the end of the fetch and in the off-peak
     // run, and the rules a bar that arrived in the off-peak run would have passed.

@@ -69,6 +69,74 @@ public sealed partial class ReadApi
         return waits;
     }
 
+    const string EntryColumns = "ticker, session_date, close, typical_day, stretch_percent, stretch_days, stretch_share, gain_twenty, rsi, largest_gain, volume_ratio, gap_high, gap_low, highest_since, history_start, older_low, older_high, older_on, older_days";
+
+    static EquityBrief.Core.EntryCheck.EntryReading EntryRow(SqliteDataReader reader)
+    {
+        static double? Figure(SqliteDataReader row, int at) => row.IsDBNull(at) ? null : row.GetDouble(at);
+        static decimal? Price(SqliteDataReader row, int at) => row.IsDBNull(at) ? null : Money.FromStorage(row.GetString(at));
+        static DateOnly? On(SqliteDataReader row, int at) => row.IsDBNull(at) ? null : DateOnly.ParseExact(row.GetString(at), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        return new(
+            reader.GetString(0),
+            DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            Money.FromStorage(reader.GetString(2)),
+            Figure(reader, 3),
+            Figure(reader, 4),
+            Figure(reader, 5),
+            Figure(reader, 6),
+            Figure(reader, 7),
+            Figure(reader, 8),
+            reader.IsDBNull(9) ? null : reader.GetInt64(9) == 1,
+            Figure(reader, 10),
+            Price(reader, 11),
+            Price(reader, 12),
+            On(reader, 13),
+            On(reader, 14),
+            Price(reader, 15),
+            Price(reader, 16),
+            On(reader, 17),
+            Figure(reader, 18));
+    }
+
+    // The entry check's reading of a stock on a night, and of every member on one for the cards.
+    // see: The entry check reads a member's bars every night into a table of its own, and no rule reads it
+    public async Task<EquityBrief.Core.EntryCheck.EntryReading?> EntryReadingOfAsync(string ticker, DateOnly session)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT " + EntryColumns + " FROM entry_reading WHERE ticker = $ticker AND session_date = $session;";
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync() ? EntryRow(reader) : null;
+    }
+
+    public async Task<IReadOnlyDictionary<string, EquityBrief.Core.EntryCheck.EntryReading>> EntryReadingsOnAsync(DateOnly session)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT " + EntryColumns + " FROM entry_reading WHERE session_date = $session;";
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var readings = new Dictionary<string, EquityBrief.Core.EntryCheck.EntryReading>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var reading = EntryRow(reader);
+
+            readings[reading.Ticker] = reading;
+        }
+
+        return readings;
+    }
+
     const string LateOfStock = @"
         SELECT ticker, session_date, stage, asked_at, outcome, detail, qualified FROM late_bar_ask
         WHERE ticker = $ticker AND session_date = $session AND outcome = 'arrived'

@@ -521,6 +521,14 @@ It asks nothing for a stock TipRanks answered for in the 15 days before; otherwi
 
 **Where to look.** Each run writes one row under the stage `analysts` or `analyst-ratings` and its own run, `analysts-<instant>-<TICKER>` or `analyst-ratings-<instant>-<TICKER>`, with its requests; a ratings run's detail carries the month's calls as it last read them, used, the limit, when the count starts again and when it was read, which the chart page draws beside the press. Where a run after an ask stores nothing, the chart page says so with the run's own words.
 
+### The entry check's readings
+
+The night reads them after the moves. By hand, it reads the newest night again and replaces that night's rows:
+
+```
+dotnet run --project src/EquityBrief.Worker -- entry-readings
+```
+
 ### The late bars' ask
 
 A member the night's day file carried nothing for is asked for at the end of the fetch with a request of its own and once more first in the off-peak run, at most 20 asks a night across the two, so nothing needs doing by hand; by hand it asks what the first off-peak run after the night would, and nothing where that run has asked or the night has not finished:

@@ -551,7 +551,8 @@ public sealed record DecisionCardRow(
     string? Hits = null,
     int? ScoreRank = null,
     string? Similar = null,
-    string? Approved = null);
+    string? Approved = null,
+    EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null);
 
 // The operator's own record of one family on one index as the night's follower wrote it: the unit its results are read
 // in, the trades won at the target and lost at the stop where the rule sets a target, every trade ended, those open, and
@@ -820,6 +821,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.DividendWait, Touch.Read),
             new StoreTouch(Store.LateBarAsk, Touch.Read),
+            new StoreTouch(Store.EntryReading, Touch.Read),
             new StoreTouch(Store.SecTicker, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
@@ -3084,6 +3086,33 @@ public sealed partial class ReadApi : IComponent
         ORDER BY session_date, asked_at;
     ";
 
+    // The day the provider's newest snapshot was fetched, to the night asked about, and the day the shares a company's value is
+    // worked from were filed.
+    // see: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
+    public async Task<DateOnly?> SnapshotFetchedOnAsync(string ticker, DateOnly? asOf = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT substr(MAX(fetched_at), 1, 10) FROM fundamentals_snapshot WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on;";
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
+
+        return await command.ExecuteScalarAsync() is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+    }
+
+    public async Task<DateOnly?> SharesFiledOnAsync(string ticker, DateOnly? asOf = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT MAX(filing_date) FROM reported_quarter WHERE ticker = $ticker AND shares IS NOT NULL AND filing_date < $on;";
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
+
+        return await command.ExecuteScalarAsync() is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+    }
+
     // The first day the SEC's archive states each period of the stock's filer in a quarterly or annual report, to the night asked
     // about. A filing states periods ahead of it too, a debt's maturity among them, which are no filing of that period.
     // see: A quarter's filing date is read from the SEC's own filings, and where they hold none the page says so
@@ -3965,7 +3994,15 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(20) ? null : reader.GetString(20)));
         }
 
-        return rows;
+        var nights = rows.Select(row => row.Night).Distinct().ToArray();
+        var entry = new Dictionary<DateOnly, IReadOnlyDictionary<string, EquityBrief.Core.EntryCheck.EntryReading>>();
+
+        foreach (var night in nights)
+        {
+            entry[night] = await EntryReadingsOnAsync(night);
+        }
+
+        return [.. rows.Select(row => row with { EntryCheck = entry[row.Night].GetValueOrDefault(row.Ticker) })];
     }
 
     // ---- the operator's taken trades, written by a card's presses alone ----

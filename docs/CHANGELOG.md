@@ -7,6 +7,39 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-05 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - Home's line of the entry check, and how the readings reach the test
+Decision: Home's line of an idea's entry check says each flag in plain words, and dates a day as d Mon yyyy
+Was:
+> An idea's entry check: the same line of flags and the same link on each idea's card
+> 22.44: The readings and the wait entries reach the loop's tester as the order states, once the operator has ruled on the pins the catalogue carries.
+> 22.44's done condition: ... each entry against the next-open buy.
+Now:
+> An idea's entry check: the same flags in Home's plain words and the same link on each idea's card
+> 22.44: no pinned file touched, the bands report a read-only measurement through a tester entry point no live rule pins, the wait entries registered only if no live rule's version moves
+> 22.44's done condition: ... each entry against the next-open buy, and no version of a live rule moved.
+> A paragraph added under "Tabled for phase 23" for the readings' registration in the ledger.
+Why: the operator's answers of 2026-11-05 to the report of that day.
+
+### 2026-11-05 - docs/ARCHITECTURE.html - Home's card for a plan with a rising give-up price
+Decision: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence
+Was:
+> from 22.18 for a plan selling on a rising give-up price no fixed target and why in the operator's words; how its give-up price rises; the close past which it can no longer lose;
+Now:
+> from 22.18 for a plan selling on a rising give-up price no fixed target and one line saying its give-up price rises; the close past which it can no longer lose;
+Why: the operator's message of 2026-11-05 on COR's card, whose line under the give-up price read as a broken fragment.
+
+### 2026-11-05 - docs/ARCHITECTURE.html, docs/SCHEMA.md, src reading "no resistance band above" - the entry check's bar readings and its two fixes
+Decision: The entry check reads a member's bars every night into a table of its own, and no rule reads it
+Decision: A page with no resistance level in the last year of bars says so and draws the nearest older band, for display alone
+Decision: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
+Was:
+> | `entry_reading` not a table; and a page saying "no resistance band above"
+> CLAUDE.md, the rule on bars: the chart check's clause followed by "and the setup ledger's valuation reading alone"
+Now:
+> a new table and its reader; "no resistance level in the last year of bars", with the nearest older band drawn with its year where older prices stand above; a figure from before the newest report saying so
+> the entry check's reader named between those two clauses of the rule on bars, whose readings only the pages draw
+Why: the operator's entry check order of 2026-11-04, its first pull request.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html - five rows of the name page: the filing date, a placeholder segment, joined capitals, a next report estimated and the proof
 Decision: A quarter's filing date is read from the SEC's own filings, and where they hold none the page says so
 Decision: A company whose one segment is filed under a placeholder name is told so with no name

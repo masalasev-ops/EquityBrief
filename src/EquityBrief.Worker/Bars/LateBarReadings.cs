@@ -40,6 +40,7 @@ public sealed class LateBarReadings : IComponent
             new StoreTouch(Store.Swing, Touch.Read | Touch.Insert),
             new StoreTouch(Store.VolumeProfile, Touch.Read | Touch.Insert),
             new StoreTouch(Store.Level, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.EntryReading, Touch.Read | Touch.Insert),
             new StoreTouch(Store.Ladder, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.SwingReading, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.MemberReading, Touch.Read | Touch.Update),
@@ -65,6 +66,7 @@ public sealed class LateBarReadings : IComponent
     const string CopyIndicators = "INSERT INTO indicator SELECT * FROM scratch.indicator WHERE ticker = $ticker AND session_date = $session ON CONFLICT DO NOTHING;";
     const string CopySwings = "INSERT INTO swing SELECT * FROM scratch.swing WHERE ticker = $ticker ON CONFLICT DO NOTHING;";
     const string CopyProfile = "INSERT INTO volume_profile SELECT * FROM scratch.volume_profile WHERE ticker = $ticker AND as_of = $session ON CONFLICT DO NOTHING;";
+    const string CopyEntry = "INSERT INTO entry_reading SELECT * FROM scratch.entry_reading WHERE ticker = $ticker AND session_date = $session ON CONFLICT DO NOTHING;";
     const string CopyLevels = "INSERT INTO level SELECT * FROM scratch.level WHERE ticker = $ticker AND as_of = $session ON CONFLICT DO NOTHING;";
 
     // The night wrote these two for an S&P 500 member holding no bar, and the bar's replace them.
@@ -144,6 +146,7 @@ public sealed class LateBarReadings : IComponent
             await new SwingFinder(night, scratch).RunAsync("late-bars-swings", cancellation);
             await new VolumeProfileBuilder(night, scratch).RunAsync("late-bars-profile", cancellation);
             await new LevelBuilder(night, scratch).RunAsync("late-bars-levels", cancellation);
+            await new EquityBrief.Worker.EntryCheck.EntryReader(night, scratch).RunAsync("late-bars-entry", cancellation);
 
             var large = indexOf.Where(pair => pair.Value == IndexFamilies.LargeIndex).Select(pair => pair.Key).ToArray();
 
@@ -348,7 +351,7 @@ public sealed class LateBarReadings : IComponent
         {
             foreach (var ticker in tickers)
             {
-                foreach (var statement in new[] { CopyIndicators, CopySwings, CopyProfile, CopyLevels, CopyLadder, CopyReading, CopyMember })
+                foreach (var statement in new[] { CopyIndicators, CopySwings, CopyProfile, CopyLevels, CopyEntry, CopyLadder, CopyReading, CopyMember })
                 {
                     await using var command = connection.CreateCommand();
 

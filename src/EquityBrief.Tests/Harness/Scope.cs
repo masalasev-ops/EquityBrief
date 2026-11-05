@@ -4589,6 +4589,38 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(CatalogueTable, "Entry reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and the readings and run log it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Entry reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Entry readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key("15.9 Name", "Entry check")] = new Scoped(
+            Verdict.Pass,
+            "each reading worked by hand over a constructed series and read back on the region, and the copy leaving out the outline",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "No resistance level in the year")] = new Scoped(
+            Verdict.Pass,
+            "the words and the nearest older band with its year and day read back in words written by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "A figure from before the newest report")] = new Scoped(
+            Verdict.Pass,
+            "each label read back on both sides of the report's day in words written by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.18 The decision card", "The entry check's line")] = new Scoped(
+            Verdict.Pass,
+            "the flags that apply and that none does, read back off a card in words written by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.24 Home", "An idea's entry check")] = new Scoped(
+            Verdict.Pass,
+            "the line read back off an idea's card",
+            ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Late bar asker")] = new Scoped(
             Verdict.Pass,
             "the class declares the historical price feed it asks, the bars it appends, the asks it states and the suspect mark it sets back, and the declaration matches this row",
@@ -6354,6 +6386,8 @@ internal static class Scope
         ["Ticker joins"] = "22.33",
         ["Session marks"] = "22.38",
         ["Dividend waits"] = "22.40",
+        ["Entry reader"] = "22.41",
+        ["Entry readings"] = "22.41",
         ["Late bar asker"] = "22.40",
         ["Late bar readings"] = "22.40",
         ["Late bar asks"] = "22.40",
@@ -7205,6 +7239,11 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "A name filed in joined capitals")] = "22.40",
         [CheckReach.Key("15.9 Name", "A next report estimated")] = "22.40",
         [CheckReach.Key("15.9 Name", "The proof's awaited quarter and waiting story")] = "22.40",
+        [CheckReach.Key("15.9 Name", "Entry check")] = "22.41",
+        [CheckReach.Key("15.9 Name", "No resistance level in the year")] = "22.41",
+        [CheckReach.Key("15.9 Name", "A figure from before the newest report")] = "22.41",
+        [CheckReach.Key("15.18 The decision card", "The entry check's line")] = "22.41",
+        [CheckReach.Key("15.24 Home", "An idea's entry check")] = "22.41",
         [CheckReach.Key("15.9 Name", "A bar that arrived late")] = "22.40",
         [CheckReach.Key("15.10 Run", "Members missing from the night's day file")] = "22.40",
         // 22.6's two, which the addendum names as Tonight in one minute and the page's words at its foot.
