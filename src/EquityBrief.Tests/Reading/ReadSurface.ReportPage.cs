@@ -674,7 +674,7 @@ public partial class ReadSurface
         var after = NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null));
 
         Assert.DoesNotContain("data-reportDate=\"reported\"", before, StringComparison.Ordinal);
-        Assert.Contains(FormattableString.Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\" data-estimated=\"none\"><b>not announced</b><small class=\"estimated-none\">{NameScreen.NoYearEarlier}: it started reporting as its own company on {reportDate:yyyy-MM-dd}</small><small>the quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}</small></dd></div>"), after, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\" data-estimated=\"none\"><b>No next report date or estimate on file yet.</b><small class=\"estimated-none\">{NameScreen.NoYearEarlier}: it started reporting as its own company on {reportDate:yyyy-MM-dd}</small><small>the quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}</small></dd></div>"), after, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"The quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}, and the next report is not announced."), after, StringComparison.Ordinal);
 
         // A release a year after the guidance's opens the box on its sentence saying what the company reported; one before
