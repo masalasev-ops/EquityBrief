@@ -205,8 +205,8 @@ public partial class ReadSurface
         // A stock with no bands says so in its summary and its line.
         var unbanded = BriefScreen.Of(BriefOf(BriefMember(bands: false)));
 
-        Assert.StartsWith("XYZ is in an uptrend, with no support band below it and with no resistance band above it.", unbanded.Summary, StringComparison.Ordinal);
-        Assert.Equal("No support band below; no resistance band above.", LinesOf(unbanded, "chart")[1]);
+        Assert.StartsWith("XYZ is in an uptrend, with no support band below it and with no resistance level in the last year of bars.", unbanded.Summary, StringComparison.Ordinal);
+        Assert.Equal("No support band below; no resistance level in the last year of bars.", LinesOf(unbanded, "chart")[1]);
 
         // The account not set: the size line links the settings.
         var unset = BriefScreen.Of(BriefOf(BriefMember(), PullbackListed())).Panels.Single(one => one.Key == "way-in").Lines[^1];

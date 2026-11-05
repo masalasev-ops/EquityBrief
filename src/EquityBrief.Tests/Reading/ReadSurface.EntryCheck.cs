@@ -114,6 +114,9 @@ public partial class ReadSurface
         Assert.Equal("This is the highest close since its history starts on 2026-10-06.", EntryWords.Highest(alone));
         Assert.Equal("Older resistance: none above in the history held.", EntryWords.Older(alone));
 
+        // A share under one per cent says so rather than rounding to nothing.
+        Assert.EndsWith("Under 1% of this stock's days have been this far above it or more.", EntryWords.Stretch(reading with { StretchShare = 0.4 })!, StringComparison.Ordinal);
+
         // Below its average the sentence says below.
         Assert.StartsWith("Price is 1.0% below its 20-session average", EntryWords.Stretch(reading with { StretchPercent = -1 })!, StringComparison.Ordinal);
     }
@@ -211,6 +214,16 @@ public partial class ReadSurface
         var region = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(EquityBrief.Core.Families.SetupFamilies.Pullback, "HAND", null, "A dip.", 100m, 90m, 125m, false, null, EntryCheck: EntryWorked())], IdeasCount = 1 }, string.Empty);
 
         Assert.Contains(Line, System.Net.WebUtility.HtmlDecode(region), StringComparison.Ordinal);
+    }
+
+    // The company's value names the day its shares were filed where one is read, on the numbers and on the fact strip.
+    [Fact]
+    public void ACompanysValueNamesTheDayItsSharesWereFiled()
+    {
+        var figures = new ConceptFigures(100m, EntryNight, 1000m, null, null, new DateOnly(2026, 10, 15));
+
+        Assert.Contains("the shares filed on 2026-10-15 times the close</small>", NameScreen.FactStrip("AA", 100m, null, null, [], [], figures: figures), StringComparison.Ordinal);
+        Assert.Contains("the shares filed before the night times the close</small>", NameScreen.FactStrip("AA", 100m, null, null, [], [], figures: figures with { SharesFiledOn = null }), StringComparison.Ordinal);
     }
 
     [Fact]

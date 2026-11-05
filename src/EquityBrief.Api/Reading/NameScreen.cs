@@ -274,7 +274,7 @@ public static partial class NameScreen
 
         if (figures?.CompanyValue is { } companyValue)
         {
-            html.Append(Invariant($"<div><dt>Market value</dt><dd data-concept=\"{ConceptCheck.MarketValue}\" data-concept-value=\"{Escaped(Figures.Money(companyValue))}\">{Escaped(Figures.Money(companyValue))} <small>the shares filed before the night times the close</small></dd></div>"));
+            html.Append(Invariant($"<div><dt>Market value</dt><dd data-concept=\"{ConceptCheck.MarketValue}\" data-concept-value=\"{Escaped(Figures.Money(companyValue))}\">{Escaped(Figures.Money(companyValue))} <small>{(figures?.SharesFiledOn is { } filedThen ? Invariant($"the shares filed on {filedThen:yyyy-MM-dd} times the close") : "the shares filed before the night times the close")}</small></dd></div>"));
         }
         else
         {
@@ -1890,7 +1890,8 @@ public static partial class NameScreen
             memberReading?.SessionDate ?? (bars.Count > 0 ? bars[^1].SessionDate : null),
             memberReading?.CompanyValue,
             score?.Multiple,
-            reportView?.Valuation?.Multiple);
+            reportView?.Valuation?.Multiple,
+            sharesFiledOn);
 
         return page.NameRegion(
             marks,

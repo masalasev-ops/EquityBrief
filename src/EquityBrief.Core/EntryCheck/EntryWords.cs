@@ -22,7 +22,7 @@ public static class EntryWords
         var side = percent >= 0 ? "above" : "below";
         var days = reading.StretchDays is { } read ? I($", which is {Tenth(Math.Abs(read))} typical days") : string.Empty;
 
-        return I($"Price is {Tenth(Math.Abs(percent))}% {side} its 20-session average{days}. {Whole(share)}% of this stock's days have been this far above it or more.");
+        return I($"Price is {Tenth(Math.Abs(percent))}% {side} its 20-session average{days}. {(share < 1 ? "Under 1" : Whole(share))}% of this stock's days have been this far above it or more.");
     }
 
     public static string? HotRun(EntryReading reading)
