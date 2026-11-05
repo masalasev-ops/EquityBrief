@@ -269,15 +269,15 @@ public partial class FixtureExpectations
         Assert.Equal(["IA|suspect"], FamilyRows(store, "SELECT ticker || '|' || state FROM series_state;"));
     }
 
-    // An index's own breadth is read over the rest of its members: IA breaks out as in the constructed night, while the
-    // other three of the index's four stand far under their 200-day averages, so the breadth is 25%, under the floor of 45%,
-    // and the market check closed. Read over IA alone it would be 100% and the check open.
+    // An index's own breadth is read over the rest of its members: IA and IB break out as in the constructed night, while the
+    // other three of the index's five stand far under their 200-day averages, so the breadth is 40%, under the floor of 45%,
+    // and the market check closed. Read over the two alone it would be 100% and the check open.
     [Fact]
     public async Task AStocksRulesReadTheBreadthOfItsWholeIndexAndNotItsOwnBarsAlone()
     {
         using var store = new TemporaryStore().Migrated();
 
-        foreach (var (ticker, close) in new[] { ("IA", 102m), ("LO", 50m), ("LP", 50m), ("LQ", 50m) })
+        foreach (var (ticker, close) in new[] { ("IA", 102m), ("IB", 102m), ("LO", 50m), ("LP", 50m), ("LQ", 50m) })
         {
             StoreYear(store, ticker, IndexYear(close, 2_000_000));
             store.Execute($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', '{ticker}', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
@@ -285,13 +285,13 @@ public partial class FixtureExpectations
         }
 
         store.Execute("UPDATE bar SET source = 'bulk' WHERE session_date = '2026-10-02';");
-        store.Execute("DELETE FROM bar WHERE ticker = 'IA' AND session_date = '2026-10-02';");
-        store.Execute("INSERT INTO late_bar_ask (ticker, session_date, stage, asked_at, outcome, detail, run_id) VALUES ('IA', '2026-10-02', 'fetch', '2026-10-03T00:00:40Z', 'still missing', 'x', 'night-test');");
+        store.Execute("DELETE FROM bar WHERE ticker IN ('IA', 'IB') AND session_date = '2026-10-02';");
+        store.Execute("INSERT INTO late_bar_ask (ticker, session_date, stage, asked_at, outcome, detail, run_id) VALUES ('IA', '2026-10-02', 'fetch', '2026-10-03T00:00:40Z', 'still missing', 'x', 'night-test'), ('IB', '2026-10-02', 'fetch', '2026-10-03T00:00:40Z', 'still missing', 'x', 'night-test');");
         TheNightFinished(store);
 
-        await Asker(store, new ScriptedBars(new Dictionary<string, IReadOnlyList<ProviderBar>> { ["IA"] = Holds(102m, 2_000_000) }), InTheOffPeakRun).OffPeakAsync("late-bars-run");
+        await Asker(store, new ScriptedBars(new Dictionary<string, IReadOnlyList<ProviderBar>> { ["IA"] = Holds(102m, 2_000_000), ["IB"] = Holds(102m, 2_000_000) }), InTheOffPeakRun).OffPeakAsync("late-bars-run");
 
-        Assert.Equal(["[]"], FamilyRows(store, "SELECT COALESCE(qualified, 'not read: ' || detail) FROM late_bar_ask WHERE ticker = 'IA' AND stage = 'off-peak';"));
+        Assert.Equal(["[]", "[]"], FamilyRows(store, "SELECT COALESCE(qualified, 'not read: ' || detail) FROM late_bar_ask WHERE stage = 'off-peak' ORDER BY ticker;"));
     }
 
     // The S&P 500's breakout reads the night's stored breadth, which the scratch store's own readers could read only over
