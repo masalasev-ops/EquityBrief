@@ -594,11 +594,11 @@ public partial class ReadSurface
             Regex.Matches(page, "<circle class=\"mb-dot\"[^>]*data-quarter=\"([^\"]+)\" data-multiple=\"([^\"]+)\">")
                 .Select(match => (DateOnly.ParseExact(match.Groups[1].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture), Held(match.Groups[2].Value))));
 
-        // Each region dated as its row says: the quarter by the newest filing, the margins and the analysts by the fetch.
-        var filed = Rows(store, "SELECT MAX(filing_date) FROM fundamentals WHERE ticker = 'MSFT';").Single()[0];
+        // Each region dated as its row says: the quarter by the newest filing, which this store holds no SEC fact of, and
+        // the margins and the analysts by the fetch.
         var fetched = Rows(store, "SELECT substr(MAX(fetched_at), 1, 10) FROM reported_quarter WHERE ticker = 'MSFT';").Single()[0];
 
-        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>{filed}</b>", page, StringComparison.Ordinal);
+        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filing date</span><b>not on file</b>", page, StringComparison.Ordinal);
         Assert.Contains($"<div class=\"lbl\">Margins</div><div class=\"dl\"><span class=\"dl-k\">Fetched</span><b>{fetched}</b>", page, StringComparison.Ordinal);
         Assert.Contains($"<div class=\"lbl\">Analysts</div><div class=\"dl\"><span class=\"dl-k\">Fetched</span><b>{fetched}</b><span>the analysts' figures</span>", page, StringComparison.Ordinal);
 

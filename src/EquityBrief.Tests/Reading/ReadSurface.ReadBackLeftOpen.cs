@@ -114,6 +114,47 @@ public partial class ReadSurface
         Assert.Single(await Api(store).SecFiledDaysAsync(Name, new DateOnly(2026, 8, 15)));
     }
 
+    // The cards dated by the filing, read off the page: where the SEC states nothing for the newest quarter they say so, and
+    // where it states a day they draw it.
+    [Fact]
+    public async Task TheCardsDatedByTheFilingDrawTheSecsDayOrSaySo()
+    {
+        using var store = await WithFundamentals();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var newest = (await Api(store).FundamentalsAsync(Name))[0];
+        var period = Regex.Match(newest.Payload, "\"periodEnd\":\"([^\"]+)\"").Groups[1].Value;
+
+        var without = await client.GetStringAsync($"/screens/name/{Name}");
+
+        Assert.Contains("<span class=\"dl-k\">Filing date</span><b>not on file</b>", without, StringComparison.Ordinal);
+        Assert.DoesNotContain(FormattableString.Invariant($"<span class=\"dl-k\">Filed</span><b>{newest.FilingDate:yyyy-MM-dd}</b>"), without, StringComparison.Ordinal);
+
+        store.Execute($"INSERT INTO company (ticker, fetched_at, cik) VALUES ('{Name}', '2026-09-08T21:00:00Z', '0000000042');");
+        store.Execute($"INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('0000000042', 'Revenues', '2026-01-01', '{period}', '5', '2026-08-15', '10-Q', 'a-1', 'r');");
+
+        Assert.Contains("<span class=\"dl-k\">Filed</span><b>2026-08-15</b>", await client.GetStringAsync($"/screens/name/{Name}"), StringComparison.Ordinal);
+    }
+
+    // The quarters a night's readings read draw the SEC's day too, and a reason left out for an old table names none where it states none.
+    [Fact]
+    public void TheQuartersAReadingReadAndAnOldTablesReasonDrawTheSecsDay()
+    {
+        var readings = EquityBrief.Core.Quarters.QuarterReadings.Of(FixtureExpectations.Quarters(4), null, null) with { ReadFrom = new DateOnly(2026, 6, 30) };
+        var reading = new FundamentalReadingRow("BTSG", new DateOnly(2026, 11, 2), readings.State, new DateOnly(2026, 6, 30), "2026-10-11T01:29:16.095Z", null, readings.ToJson());
+        var ends = System.Text.Json.JsonDocument.Parse(readings.ToJson());
+        QuarterDatesRow[] quarters = [.. FixtureExpectations.Quarters(4).Select(quarter => new QuarterDatesRow(quarter.PeriodEnd, new DateOnly(2000, 1, 1), new DateOnly(2000, 1, 2)))];
+        var read = NameScreen.WhatTheNumbersSay(reading, quarters, secFiled: quarters.ToDictionary(quarter => quarter.PeriodEnd, _ => new DateOnly(2026, 8, 15))).Quarters;
+
+        Assert.NotEmpty(read);
+        Assert.All(read, quarter => Assert.Equal(new DateOnly(2026, 8, 15), quarter.FilingDate));
+        Assert.All(NameScreen.WhatTheNumbersSay(reading, quarters).Quarters, quarter => Assert.Null(quarter.FilingDate));
+
+        Assert.Equal("the table ends on 2020-09-30, more than 200 days before this filing, so it is left out until the company next files", OldFilings.Why("the table ends on", new DateOnly(2020, 9, 30), null));
+        Assert.Equal("the table ends on 2020-09-30, more than 200 days before this filing of 2026-08-05, so it is left out until the company next files", OldFilings.Why("the table ends on", new DateOnly(2020, 9, 30), new DateOnly(2026, 8, 5)));
+    }
+
     [Fact]
     public void AOneSegmentCompanyFiledUnderAPlaceholderIsToldSoWithNoNameAndANamedBusinessKeepsItsName()
     {
@@ -167,6 +208,19 @@ public partial class ReadSurface
 
         Assert.Contains("data-segment=\"HomeBuildingOps\"><td>Home Building Ops</td>", table, StringComparison.Ordinal);
         Assert.Contains("data-segment=\"YouTube\"><td>YouTube</td>", table, StringComparison.Ordinal);
+
+        // The bars beside the table, a one-segment line naming a business and an insider's title read the same way.
+        Assert.Contains(">Home Building Ops</text>", marks.ShareBars(new SegmentReading("R1.htm", new DateOnly(2026, 6, 30), 2, 100m, 100m, [new SegmentRow("HomeBuildingOps", 60m, null, null, null, null, null, 60), new SegmentRow("YouTube", 40m, null, null, null, null, null, 40)], null)), StringComparison.Ordinal);
+        Assert.Contains(
+            ">This company reports one business segment: Home Building Ops, with revenue of $4.8B in the quarter to 2026-06-30.</p>",
+            marks.SegmentsTable(new SegmentReading("R1.htm", new DateOnly(2026, 6, 30), 0, null, null, [], SegmentTable.OneSegmentReads) { OneSegment = ("HomeBuildingOps", 4_800_000_000m) }, "USD"),
+            StringComparison.Ordinal);
+
+        var day = new DateOnly(2026, 10, 1);
+        var totals = new EquityBrief.Core.Insiders.InsiderTotals(0m, 1000m, 0, 1);
+        var trades = marks.InsiderTrades(new EquityBrief.Core.Insiders.InsiderView([new EquityBrief.Core.Insiders.InsiderTradeLine("A Person", "President, IntlVehiclePmts", day, day, false, 100m, 10m, 1000m, false)], totals, totals, 0, 0, 0, 0, null));
+
+        Assert.Contains("<td>A Person</td><td>President, Intl Vehicle Pmts</td>", trades, StringComparison.Ordinal);
     }
 
     [Fact]
