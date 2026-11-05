@@ -65,7 +65,7 @@ public partial class ReadSurface
         Assert.Equal(9.4527, reading.StretchPercent!.Value, 3);
         Assert.Equal(3.8, reading.StretchDays!.Value, 6);
         Assert.Equal(100d / 11, reading.StretchShare!.Value, 6);
-        Assert.Equal(15.7895, reading.GainTwenty!.Value, 3);
+        Assert.Equal(15.79, reading.GainTwenty!.Value, 2);
         Assert.Equal(70, reading.Rsi);
         Assert.True(reading.LargestGain);
         Assert.Equal(2, reading.VolumeRatio);

@@ -255,7 +255,7 @@ public partial class FixtureExpectations
     {
         using var store = IndexStore();
 
-        // GONE's newest bar stands before the night. IA's history is pulled to a session a year back closing at 150, its pull holding
+        // GONE's newest bar stands before the night. IA's history is pulled to the session before its first stored one, closing at 150, its pull holding
         // its first stored session at the store's scale.
         store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'GONE', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
         store.Execute("INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('GONE', '2026-10-01', '10', '10', '10', '10', 5, 'test', '2026-10-01T21:00:00Z', '10');");
@@ -264,7 +264,7 @@ public partial class FixtureExpectations
 
         store.Execute(
             "INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES " +
-            "('IA', '2025-06-02', '150', '151', '149', '150', '150', 5, 'p1'), " +
+            "('IA', '2026-01-23', '150', '151', '149', '150', '150', 5, 'p1'), " +
             $"('IA', '{first[0]}', '{first[1]}', '{first[1]}', '{first[1]}', '{first[1]}', '{first[1]}', 5, 'p1');");
         store.Execute(
             "INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES " +
@@ -281,7 +281,7 @@ public partial class FixtureExpectations
         // IA's night: 102 on 2,000,000 shares after a year near 100. Its low of 101 stands above the prior high of 100.5, so it gapped;
         // twice its volume against an average of 1,000,000; the RSI and the typical day as stored; and last this high in the pull.
         Assert.Equal(["102|2.5|70.0|2.0|100.5|101"], FamilyRows(store, "SELECT close || '|' || typical_day || '|' || printf('%.1f', rsi) || '|' || printf('%.1f', volume_ratio) || '|' || gap_high || '|' || gap_low FROM entry_reading WHERE ticker = 'IA';"));
-        Assert.Equal(["2025-06-02|2025-06-02"], FamilyRows(store, "SELECT highest_since || '|' || history_start FROM entry_reading WHERE ticker = 'IA';"));
+        Assert.Equal(["2026-01-23|2026-01-23"], FamilyRows(store, "SELECT highest_since || '|' || history_start FROM entry_reading WHERE ticker = 'IA';"));
 
         await reader.RunAsync("night-again");
 
