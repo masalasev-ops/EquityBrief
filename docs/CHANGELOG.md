@@ -22,7 +22,7 @@ Decision: A suspect name's line says what the provider's answer held, and says a
 Was:
 > one line saying its prices may not reflect a recent dividend or split, with when the refetch was last tried and why it failed, above everything the page draws from those prices
 Now:
-> one line above everything the page draws from those prices, saying what the provider's answer held where the refetch succeeded, the sessions whose prices are copies of the one before or the day it held nothing after and when it was asked, and that it is asked again; and where the download failed, that its prices may not reflect a recent dividend or split, with when the refetch was last tried and why it failed (see: A suspect name's line says what the provider's answer held, and says a download failed only where one did)
+> one line saying its prices may not reflect a recent dividend or split, with when the refetch was last tried and why it failed, above everything the page draws from those prices. Where the refetch succeeded and the provider's answer ended short or held copied candles the line says instead what the answer held and when it is asked again (see: A suspect name's line says what the provider's answer held, and says a download failed only where one did)
 Why: the line said a download failed on stocks whose download had succeeded.
 
 ### 2026-11-04 - .claude/rules/checks.md - plain-words states that three pages draw no field's code name
