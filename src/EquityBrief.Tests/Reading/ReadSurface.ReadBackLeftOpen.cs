@@ -218,7 +218,7 @@ public partial class ReadSurface
         Assert.Contains("data-segment=\"YouTube\"><td>YouTube</td>", table, StringComparison.Ordinal);
 
         // The table as filed: the operator's own example is one of its group headings, and its element keeps the value as stored.
-        const string Filed = "{\"periodEnd\":\"2026-06-30\",\"currency\":\"USD\",\"segments\":{\"report\":\"R1.htm\",\"groups\":[{\"label\":\"HomeBuildingOps\",\"figures\":[{\"lineItem\":\"Revenues\",\"months\":3,\"ended\":\"2026-06-30\",\"value\":\"5\",\"unit\":null}]}]}}";
+        const string Filed = "{\"periodEnd\":\"2026-06-30\",\"currency\":\"USD\",\"segments\":{\"report\":\"R1.htm\",\"periods\":[{\"months\":3,\"ended\":\"2026-06-30\"}],\"consolidated\":[{\"lineItem\":\"Revenues\",\"months\":3,\"ended\":\"2026-06-30\",\"value\":\"5\",\"unit\":null}],\"groups\":[{\"label\":\"HomeBuildingOps\",\"figures\":[{\"lineItem\":\"Revenues\",\"months\":3,\"ended\":\"2026-06-30\",\"value\":\"5\",\"unit\":null}]}]}}";
         var raw = NameScreen.RawSegments([new FilingRow("DHI", new DateOnly(2026, 7, 30), Filed, "{}")]);
 
         Assert.Contains("<tr class=\"segment-group\" data-segment=\"HomeBuildingOps\"><th colspan=\"2\">Home Building Ops</th></tr>", raw, StringComparison.Ordinal);
