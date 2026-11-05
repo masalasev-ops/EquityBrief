@@ -2429,7 +2429,7 @@ public static partial class NameScreen
     // A suspect row as the page states it, and nothing for a name whose series is trusted.
     // The instant and the reason are the row's, and a row carrying no reason says so.
     public static SuspectPrices? Suspect(SuspectSeriesRow? row) =>
-        row is null ? null : new SuspectPrices(row.CheckedAt, row.Reason ?? NoReason);
+        row is null ? null : new SuspectPrices(row.CheckedAt, row.Reason ?? NoReason, row.Copied);
 
     public const string NoReason = "no reason was recorded";
 

@@ -1309,9 +1309,7 @@ public sealed partial class MarkRenderer
             cells.Append(Invariant, $"<span class=\"co\">{Escaped(company)}</span>");
         }
 
-        cells.Append(row.Suspect is { } suspect
-            ? $" <span class=\"prices-suspect\" data-last-asked-at=\"{Escaped(suspect.LastAskedAt)}\" title=\"last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}\">prices may not reflect a dividend or split</span></td>"
-            : "</td>");
+        cells.Append(row.Suspect is { } suspect ? SuspectMark(suspect) + "</td>" : "</td>");
 
         return cells.ToString();
     }
