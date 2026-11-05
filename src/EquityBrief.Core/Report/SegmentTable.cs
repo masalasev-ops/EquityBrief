@@ -76,7 +76,40 @@ public static class SegmentTable
     }
 
     // The rule over a table read from its stored form, with the quarter's reported revenue where the table states no total.
+    // Where its segments miss the total or none is left, the table is read once more with the filer's own label for the
+    // consolidation's operating segments taken off as the axis's words are and each subsegment's line left out, and that
+    // reading stands only where its segments sum to the total.
+    // see: A segment table whose segments carry the filer's own label for the consolidation's segments is read again without it and its subsegments, standing only where that sums
     public static SegmentReading Read(SegmentBreakdown table, decimal? reportedRevenue = null)
+    {
+        var read = ReadAs(table, reportedRevenue, NoParts, linesLeftOut: false);
+
+        if (read.Raw is NoSegmentRevenue or NoSum && ReadAs(table, reportedRevenue, ConsolidationLabels(table), linesLeftOut: true) is { Clean: true } again)
+        {
+            return again;
+        }
+
+        return read;
+    }
+
+    // The dimension of the group whose label is the filer's own name for the consolidation's operating segments, and the
+    // axis a subsegment's line is filed on.
+    const string ConsolidationSegments = "srt_ConsolidationItemsAxis=us-gaap_OperatingSegmentsMember";
+
+    const string SubsegmentAxis = "us-gaap_SubsegmentsAxis=";
+
+    static readonly IReadOnlySet<string> NoParts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    // The labels the table's own groups give the consolidation's operating segments, each a label of one part.
+    static IReadOnlySet<string> ConsolidationLabels(SegmentBreakdown table) =>
+        table.Groups
+            .Where(group => string.Equals(group.Dimension, ConsolidationSegments, StringComparison.Ordinal))
+            .Select(group => Parts(group.Label))
+            .Where(parts => parts.Length == 1)
+            .Select(parts => parts[0])
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    static SegmentReading ReadAs(SegmentBreakdown table, decimal? reportedRevenue, IReadOnlySet<string> takenOff, bool linesLeftOut)
     {
         var shortest = ShortestMonths(table.Periods.Select(period => period.Months));
         DateOnly? quarter = table.Periods.Where(period => period.Months == shortest).Select(period => (DateOnly?)period.Ended).Max();
@@ -105,7 +138,8 @@ public static class SegmentTable
         var total = First(table.Consolidated, IsRevenue, ended) ?? reportedRevenue;
 
         var segments = table.Groups
-            .Select(group => (Name: NameOf(group.Label), group.Figures))
+            .Where(group => !linesLeftOut || group.Dimension?.StartsWith(SubsegmentAxis, StringComparison.Ordinal) != true)
+            .Select(group => (Name: NameOf(group.Label, takenOff), group.Figures))
             .Where(group => group.Name is not null)
             .GroupBy(group => group.Name!, StringComparer.Ordinal)
             .Select(named => (Name: named.Key, Figures: named.SelectMany(group => group.Figures).ToArray()))
@@ -136,7 +170,7 @@ public static class SegmentTable
 
         if (segments.Length == 0)
         {
-            return new SegmentReading(table.Report, ended, shortest, total, null, [], "the table states no segment's revenue for the quarter");
+            return new SegmentReading(table.Report, ended, shortest, total, null, [], NoSegmentRevenue);
         }
 
         var sum = segments.Sum(segment => segment.Revenue!.Value);
@@ -157,7 +191,7 @@ public static class SegmentTable
                 whole,
                 sum,
                 [],
-                "the segments' revenue does not sum to the company's within rounding");
+                NoSum);
         }
 
         (string Name, decimal Revenue)? one = segments.Length == 1 ? (segments[0].Name, segments[0].Revenue!.Value) : null;
@@ -190,6 +224,11 @@ public static class SegmentTable
 
     // Why no segment's share is drawn for a company that reports one.
     public const string OneSegmentReads = "the company reports one segment";
+
+    // Why the raw table stands where no group's revenue is read for the quarter, and where the segments miss the total.
+    public const string NoSegmentRevenue = "the table states no segment's revenue for the quarter";
+
+    public const string NoSum = "the segments' revenue does not sum to the company's within rounding";
 
     // The name a group's label gives the company's one segment: the singular of the axis as filed, where the label holds
     // nothing but the axis; none for a label naming a business, and none for the plural, which says nothing of how many.
@@ -230,17 +269,27 @@ public static class SegmentTable
 
     // A group's segment name: its label's parts with those naming the consolidation's axis taken off, joined; none where
     // nothing is left or a part names no segment of its own.
-    public static string? NameOf(string label)
+    public static string? NameOf(string label) => NameOf(label, NoParts);
+
+    // The same, with the parts given taken off too.
+    static string? NameOf(string label, IReadOnlySet<string> takenOff)
     {
-        var parts = label.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(part => part.Replace("[Member]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim())
-            .Where(part => part.Length > 0 && !AxisParts.Contains(part.ToLowerInvariant()))
+        var parts = Parts(label)
+            .Where(part => !AxisParts.Contains(part.ToLowerInvariant()) && !takenOff.Contains(part))
             .ToArray();
 
         return parts.Length == 0 || parts.Any(part => NotASegment.Any(word => part.Contains(word, StringComparison.OrdinalIgnoreCase)))
             ? null
             : string.Join(", ", parts);
     }
+
+    // A group label's parts, with the renderer's "[Member]" taken off.
+    static string[] Parts(string label) =>
+        [
+            .. label.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(part => part.Replace("[Member]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim())
+                .Where(part => part.Length > 0),
+        ];
 
     static bool IsRevenue(SegmentFigure figure) =>
         SecEdgarArchive.SegmentRevenue.Any(revenue => figure.Concept.EndsWith("_" + revenue, StringComparison.Ordinal));
