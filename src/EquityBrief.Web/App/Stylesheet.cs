@@ -1442,7 +1442,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .home-rr .risk{background:var(--down-fill);border:1px solid var(--down)} .home-rr .reward{background:var(--up-fill);border:1px solid var(--up)}
 .home-odds{font-size:14px;color:var(--ink-2)}
 .entry-check{margin:0 0 14px;padding:12px 14px;border:1px solid var(--line);border-radius:8px} .entry-check h3{margin:0 0 6px} .entry-line{margin:4px 0;font-size:14px} .entry-state{margin:8px 0 0;padding:6px 10px;border:1px dashed var(--soft);border-radius:6px;font-size:13px;color:var(--soft)} .entry-card-line{margin:6px 0;font-size:13px;color:var(--soft)} .set-before,.fetched-before,.older-overhead{margin:4px 0;font-size:13px;color:var(--soft)}
-.home-rising{margin:0;font-size:13px;color:var(--soft);text-align:right} .home-noloss{font-weight:600;color:var(--ink)}
+.home-noloss{font-weight:600;color:var(--ink)}
 .home-note{margin:14px 0 0;padding:10px 14px;border-radius:8px;background:var(--warn-fill);font-size:14px;color:var(--ink)}
 .home-results{display:flex;flex-wrap:wrap;gap:24px}
 .home-results>div{flex:1 1 320px}

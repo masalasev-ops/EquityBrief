@@ -20,6 +20,14 @@ Now:
 > A paragraph added under "Tabled for phase 23" for the readings' registration in the ledger.
 Why: the operator's answers of 2026-11-05 to the report of that day.
 
+### 2026-11-05 - docs/ARCHITECTURE.html - Home's card for a plan with a rising give-up price
+Decision: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence
+Was:
+> from 22.18 for a plan selling on a rising give-up price no fixed target and why in the operator's words; how its give-up price rises; the close past which it can no longer lose;
+Now:
+> from 22.18 for a plan selling on a rising give-up price no fixed target and one line saying its give-up price rises; the close past which it can no longer lose;
+Why: the operator's message of 2026-11-05 on COR's card, whose line under the give-up price read as a broken fragment.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html, docs/SCHEMA.md, src reading "no resistance band above" - the entry check's bar readings and its two fixes
 Decision: The entry check reads a member's bars every night into a table of its own, and no rule reads it
 Decision: A page with no resistance level in the last year of bars says so and draws the nearest older band, for display alone

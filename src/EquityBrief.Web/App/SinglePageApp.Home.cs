@@ -63,6 +63,16 @@ public sealed partial class SinglePageApp
 
     public const string RisesLine = "The give-up price rises as the stock climbs, so a winner can keep running.";
 
+    // The lines of Home's idea cards that open mid-sentence, on a small letter or on punctuation, as a reader would read them. A
+    // ticker or a company's name is no line, since a company may spell itself with a small letter.
+    // see: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence
+    public static IReadOnlyList<string> HomeLinesStartingMidSentence(string page) =>
+        [.. System.Text.RegularExpressions.Regex.Matches(page, "<article class=\"home-idea.*?</article>", System.Text.RegularExpressions.RegexOptions.Singleline)
+            .SelectMany(card => System.Text.RegularExpressions.Regex.Matches(card.Value, "<(p|div)(?: class=\"([^\"]*)\")?[^>]*>((?:(?!</?(?:p|div)\\b).)*)</\\1>", System.Text.RegularExpressions.RegexOptions.Singleline))
+            .Where(line => line.Groups[2].Value is not ("home-ticker" or "home-co"))
+            .Select(line => System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(line.Groups[3].Value, "<[^>]+>", string.Empty)).Trim())
+            .Where(line => line.Length > 0 && (char.IsLower(line[0]) || char.IsPunctuation(line[0]) && line[0] is not ('(' or '"' or '\'')))];
+
     public const string FootLine = "Want every number, every rule and every version being tested?";
 
     // From 22.17 the foot's line on the read-only copy, which draws no version.
@@ -301,9 +311,6 @@ public sealed partial class SinglePageApp
         card.Append(Invariant($"<div><span>Buy at about</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
         card.Append(Invariant($"<div><span>Sell if it falls to</span><b class=\"stop\">{(idea.Stop is { } stop ? Dollars(stop) : idea.Rises ? "below its 200-day average" : NoFigure)}</b></div>"));
 
-        // From 22.18 a plan selling on a rising give-up price says how it rises beneath its price.
-        // see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
-        card.Append(idea.Trail is not null && idea.Stop is not null ? Invariant($"<p class=\"home-rising\">{Escaped(MarkRenderer.RisingWords)}</p>") : string.Empty);
         card.Append(Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
         card.Append("</div>");
 
@@ -311,7 +318,8 @@ public sealed partial class SinglePageApp
 
         if (idea.Trail is { } trail && idea.Buy is { } entered && idea.Stop is not null)
         {
-            card.Append(Invariant($"<div class=\"home-odds\">{Escaped(MarkRenderer.RunsWords)}</div>"));
+            // see: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence
+            card.Append(Invariant($"<div class=\"home-odds\">{Escaped(RisesLine)}</div>"));
             card.Append(Invariant($"<div class=\"home-odds home-noloss\" data-no-loss=\"{EquityBrief.Core.Families.TrailingExit.NoLossAt(entered, trail).ToString(CultureInfo.InvariantCulture)}\">{Escaped(MarkRenderer.NoLossLine(entered, trail))}</div>"));
             card.Append(idea.Record is { } record ? Invariant($"<div class=\"home-odds home-winners\" data-finished=\"{record.Finished}\">{Escaped(MarkRenderer.WinnersLine(idea.Family, record))}</div>") : string.Empty);
         }
