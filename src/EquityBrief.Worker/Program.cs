@@ -92,6 +92,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "refetch" => await RefetchRun(args),
     "late-bars" => await LateBarsRun(args),
     "entry-readings" => await EntryReadingsRun(),
+    "split-names" => await SplitNamesRun(),
     "ticker-join" => await TickerJoinRun(args),
     "session-mark" => await SessionMarkRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
@@ -136,6 +137,29 @@ static async Task<int> EntryReadingsRun()
     var outcome = await new EquityBrief.Worker.EntryCheck.EntryReader(clock, store.DatabaseFile).RunAsync(FormattableString.Invariant($"entry-readings-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
 
     Console.WriteLine($"entry-readings: {outcome.Read} member(s) read, {outcome.WithoutABar} holding no bar on the night");
+
+    return 0;
+}
+
+// The names a page splits at their capitals, read as the night's own step reads them; the first read keeps what stands as the baseline.
+// see: A name split for the first time is listed on the run page the night it first appears
+static async Task<int> SplitNamesRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"split-names: no store at '{store.DatabaseFile}', so there is nothing to read.");
+
+        return 1;
+    }
+
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+    var night = NightSession.NewestStored(store.DatabaseFile) ?? clock.SessionDateAt(clock.UtcNow);
+    var outcome = await new EquityBrief.Worker.Names.SplitNameReader(clock, store.DatabaseFile).RunAsync(FormattableString.Invariant($"split-names-{clock.UtcNow:yyyyMMddTHHmmssZ}"), night);
+
+    Console.WriteLine($"split-names: {outcome.New} name(s) kept of {outcome.Read} read{(outcome.Baseline ? " as the baseline" : string.Empty)}");
 
     return 0;
 }
@@ -456,6 +480,7 @@ static int NoVerb()
         "check's own path, one request a stock, " +
         "'late-bars --live' asks once more for each member the night's day file carried nothing for, as the off-peak run does, " +
         "'entry-readings' reads the entry check's readings of the newest night, as the night's own step does, " +
+        "'split-names' keeps each name a page splits at its capitals, as the night's own step does, " +
         "'ticker-join --ticker <code> --earlier <code>' records that a stock's earlier sessions sit under another ticker at the " +
         "provider, 'session-mark --ticker <code> --session <yyyy-MM-dd> --kind <kind> --says <words>' records the operator's word on a " +
         "session of its pulled history, and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +

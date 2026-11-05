@@ -527,6 +527,8 @@ The night reads them after the moves. By hand, it reads the newest night again a
 
 ```
 dotnet run --project src/EquityBrief.Worker -- entry-readings
+dotnet run --project src/EquityBrief.Worker -- split-names
+dotnet run --project src/EquityBrief.Worker -- label-news --ask-again-sentences
 ```
 
 ### The late bars' ask
