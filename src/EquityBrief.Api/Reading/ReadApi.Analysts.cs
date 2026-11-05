@@ -87,7 +87,7 @@ public sealed partial class ReadApi
 
         if (await CallsAsync(connection) is { } calls && calls.Spent(now))
         {
-            return new AnalystAsk(false, now, $"The month's {calls.Limit} TipRanks calls are used until {AskStamp(calls.ResetsAt)}, so no call was made.");
+            return new AnalystAsk(false, now, $"The month's {calls.Limit} TipRanks calls are used until {AskStamp(AnalystLimits.CountStartsAgain(calls, now))}, so no call was made.");
         }
 
         return await WriteAskAsync(connection, ticker, FromTipRanks, now, $"TipRanks is being asked for {ticker}'s ratings, one of the month's calls.");

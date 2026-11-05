@@ -220,7 +220,7 @@ public sealed partial class MarkRenderer
     public static string TipRanksCallsLine(TipRanksCalls? calls, DateTimeOffset now) =>
         calls is null
             ? "<span class=\"ratings-calls\" data-calls=\"none\">TipRanks: no call read yet this month</span>"
-            : Formatted($"<span class=\"ratings-calls\" data-used=\"{calls.UsedAt(now)}\" data-left=\"{calls.Left(now)}\" data-limit=\"{calls.Limit}\">TipRanks: {calls.UsedAt(now)} used, {calls.Left(now)} left this month, starting again on {DayOf(Day(calls.ResetsAt))}</span>");
+            : Formatted($"<span class=\"ratings-calls\" data-used=\"{calls.UsedAt(now)}\" data-left=\"{calls.Left(now)}\" data-limit=\"{calls.Limit}\">TipRanks: {calls.UsedAt(now)} used, {calls.Left(now)} left this month, starting again on {DayOf(Day(AnalystLimits.CountStartsAgain(calls, now)))}</span>");
 
     static string SpanWords(string span) =>
         span switch

@@ -40,6 +40,21 @@ public static class AnalystLimits
     // The run log's stage of the ratings refresh's own row, one a run, which the Run page counts its runs from.
     public const string RefreshStage = "analysts-refresh";
 
+    // The instant the month's TipRanks count next starts again as of an instant: the one TipRanks stated while it is still
+    // ahead, and once it has passed, the first day of the month after the instant in UTC, as the count's used and left
+    // have already rolled to the new month.
+    public static DateTimeOffset CountStartsAgain(TipRanksCalls calls, DateTimeOffset now)
+    {
+        if (now < calls.ResetsAt)
+        {
+            return calls.ResetsAt;
+        }
+
+        var utc = now.UtcDateTime;
+
+        return new DateTimeOffset(utc.Year, utc.Month, 1, 0, 0, 0, TimeSpan.Zero).AddMonths(1);
+    }
+
     // The New York day an instant falls in, as the two instants that bound it, the first inside and the second after.
     public static (DateTimeOffset From, DateTimeOffset To) DayOf(DateTimeOffset instant, TimeZoneInfo zone)
     {
