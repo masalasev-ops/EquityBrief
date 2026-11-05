@@ -1667,7 +1667,8 @@ public partial class ArchitectureConformance
         // 671 at 21.14: paper trading's tone variant's line.
         // 677 at 22.16: Home's six regions.
         // 678 at 22.36: the chart's line for each real event.
-        Assert.Equal(678, inDocument.Length);
+        // 680 at the 22.40 correction of 2026-11-05: the name page's late bar and the run page's list of the night's asks.
+        Assert.Equal(680, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
