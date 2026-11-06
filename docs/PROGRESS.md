@@ -16310,3 +16310,49 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 129, against `data-ci` and never `data`; the phase report 66 tables, 1546 claims, 1546 passing,
             none out of scope and none unexamined, 1561 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.2 - one verdict across the three indices, beside each index's own   2026-11-06
+
+Built:      `loop-pooled`, the pooled test, writing `loop_pooled`, and the monthly run's step `pooled` after the three per-rule
+            tests and before the report. Migration 130 adds `loop_rule`'s cap, span, newest session and judged year and creates
+            `loop_rule_unit`, every unit of each walked rule's evidence over the test years, which the per-rule test now writes
+            with its run. Each of the seven families' live or provisional rules on the three indices, each at its own settings,
+            summed into blocks of 63 sessions counted from the test span's first session and read by the gate at the bar and the
+            three screens; each kind of change, the settings a registered variant moves from its family's live rule on its
+            index and which way, registered on two or more indices, summed beside them, a family's kinds read together by the
+            step-down; a book's months counted once a calendar month; a rule reading a release reading judged from its cutoff's
+            year; the index carrying a pass named. Tests whose sessions do not line up write nothing and say which; an index
+            whose test kept no units adds nothing and is named. The Loop page's summary gains the column All three indexes
+            together and, beneath what a change must pass, the passes luck alone would bring; the scorecard draws the head's
+            verdict across the indexes beneath its two halves and a variant's same change beside its verdict. The decision
+            superseding the one that judged each family on each index on its own index's history alone, its four citations
+            repointed. The word list gains pooled. The guide's section. No rule's code version moves; no source a rule's version
+            or the readings' version pins moves.
+Found:      the word list puts the operator's "families" into the reader's "setups", so the line reads "about 0.35 a year
+            across the 7 setups: one pass in about three years may be luck". The per-rule tests of October were written before
+            units were kept, so the first verdicts across the indices come from the monthly run of 2026-11-07, whose per-rule
+            tests write them; those October runs also hold the fundamentals-first family's provisional rule, which the pooled
+            step leaves out as the loop does.
+Measured:   October's per-rule tests of 2026-10-27 read 25,560, 1,966 and 1,656 units of the rules' own side on the S&P 500, 400
+            and 600, so `loop_rule_unit` takes about 58,000 rows a month with the compared side beside them. Seven families stand
+            on the register, so the passes luck alone would bring are 0.35 a year.
+Read:       the Loop page's summary and the scorecard rendered by the page's own code from constructed pooled rows inside its
+            stylesheet, at 1440 and a true 390 in both palettes: no page wider than its screen, the summary's table scrolling in
+            its own frame at 390. The first read-back squeezed the summary's two written columns to a word a line at 390 and
+            drew counts with no separators; both columns now hold at least 200 pixels and the counts carry separators.
+Tests:      3522, from 3508, 14 new: 12 in the fixture's expectations and 2 in the read surface, the blocks, the step-down and
+            the gate's p-values worked by hand over constructed units.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its tests by name, 10 in all,
+            each red at its test: one index's units alone summed; each kind read alone with no step-down; a book's month keyed
+            by its day; the cutoff read off the first rule alone; the carrying index named on a verdict that did not pass; a
+            kind's off and on swapped; the passes a year read at the bar a run; sessions out of line summed; the per-rule test
+            keeping no units; the summary's cell naming no carrying index.
+Remedy:     `tools/remedies/2026-11-06-23.2-the-verdict-across-the-indices.txt`, `migrate` alone, no request, to run from main
+            after the merge; the monthly run of 2026-11-07 writes the first units and verdicts.
+Carried:    the first verdicts across the indices, read back on the Loop page and the scorecard after the monthly run of
+            2026-11-07; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3522 of 3522 tests ran with none failed, migrations 0 to 130 with none
+            pending, schema version 130, against `data-ci` and never `data`; the phase report 66 tables, 1555 claims, 1555 passing,
+            none out of scope and none unexamined, 1570 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

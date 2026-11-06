@@ -4666,6 +4666,43 @@ internal static class Scope
             Verdict.Pass,
             "an unexplained jump listed with its words and its chart's link, and a fold counting none",
             ByReadSurface),
+        // 23.2's verdict across the three indices, its two stores, section 17's row, section 18's row and the three page rows.
+        [CheckReach.Key(CatalogueTable, "Pooled test")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the rule tests, their units and the register it reads and the pooled verdicts and run log it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Pooled test")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Rule test units")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Pooled verdicts")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The verdict across the indices")] = new Scoped(
+            Verdict.Pass,
+            "three constructed indices' blocks summed and flipped by one sign vector worked by hand, two kinds read together by the step-down, the count screen on both sides of 300 trades summed, and the passes a year worked from the bar and a count of families; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The per-rule tests summed across the indices do not line up")] = new Scoped(
+            Verdict.Pass,
+            "two constructed tests placing one session at different counts refused with both named and nothing written, an index whose test kept no units named and the others summed, and a month holding no test writing nothing",
+            ByExpectations),
+        [CheckReach.Key(LoopPage, "All three indexes together")] = new Scoped(
+            Verdict.Pass,
+            "each family's verdict across the indexes read back off the rendered summary from a constructed pooled run, passed or not with its p, its years better, its trades and the indexes, the index that carried a pass, and a family no run summed saying so",
+            ByReadSurface),
+        [CheckReach.Key(LoopPage, "The passes luck alone would bring")] = new Scoped(
+            Verdict.Pass,
+            "the line read back beneath what a change must pass with the passes a year and the years a pass worked from the bar and the setups the run read, and no line where the month holds no pooled run",
+            ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "An account's verdict across the indexes")] = new Scoped(
+            Verdict.Pass,
+            "the head's verdict across the indexes read back off the rendered scorecard beneath its halves with its years better, its trades, the index that carried it, the line on each index's own verdict and the passes luck alone would bring, a variant's same change beside its verdict, and a family no run summed saying so",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "Entry check")] = new Scoped(
             Verdict.Pass,
             "each reading worked by hand over a constructed series and read back on the region, and the copy leaving out the outline",
@@ -6331,6 +6368,7 @@ internal static class Scope
         // 23.1's two, which the plan describes as a worker verb of its own and as a history's end read from the SEC's filings.
         ["Data checker"] = "23.1",
         ["History end filings"] = "23.1",
+        ["Pooled test"] = "23.2",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -6459,6 +6497,8 @@ internal static class Scope
         ["Split names"] = "22.42",
         ["Entry readings"] = "22.41",
         ["Data checks"] = "23.1",
+        ["Rule test units"] = "23.2",
+        ["Pooled verdicts"] = "23.2",
         ["Late bar asker"] = "22.40",
         ["Late bar readings"] = "22.40",
         ["Late bar asks"] = "22.40",
@@ -7337,6 +7377,9 @@ internal static class Scope
         [CheckReach.Key("15.24 Home", "How it works")] = "22.16",
         [CheckReach.Key("15.25 History", "Counts by class and era")] = "23.1",
         [CheckReach.Key("15.25 History", "To read against the filings")] = "23.1",
+        [CheckReach.Key(LoopPage, "All three indexes together")] = "23.2",
+        [CheckReach.Key(LoopPage, "The passes luck alone would bring")] = "23.2",
+        [CheckReach.Key("15.21 Paper trading", "An account's verdict across the indexes")] = "23.2",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
@@ -8136,6 +8179,7 @@ internal static class Scope
         // 21.4's one, a history build asked for a span reaching the night's own rows.
         ["A history build asked for a session the night wrote"] = "21.4",
         ["A pulled series the data check cannot read"] = "23.1",
+        ["The per-rule tests summed across the indices do not line up"] = "23.2",
         // 21.6's two, which the plan names as section 18's rows for a source refusing and a member unanswered.
         ["A new reading's source refuses"] = "21.6",
         ["A member a new reading's source answers nothing for"] = "21.6",
@@ -8455,6 +8499,7 @@ internal static class Scope
         ["The data check's volume"] = "23.1",
         ["The data check's jumps"] = "23.1",
         ["The data check's starts to read"] = "23.1",
+        ["The verdict across the indices"] = "23.2",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

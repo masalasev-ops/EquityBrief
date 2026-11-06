@@ -13,7 +13,8 @@ public sealed record LoopSummaryRow(
     LoopProposalRow? Strongest,
     LoopProposalRow? Put,
     string Presses,
-    string? Waiting);
+    string? Waiting,
+    LoopPooledRow? Pooled = null);
 
 // The Loop page's summary and its proposal rows from 19.7: a row a family in the one order, each strongest proposal's
 // adjusted p drawn as a meter against the bar the tester reads, one line saying what a change must pass, each proposal a
@@ -60,6 +61,7 @@ public sealed partial class MarkRenderer
         html.Append(TippedHeading("Tested", "the proposals this run tested against the rule today", "r"));
         html.Append(TippedHeading("Strongest", "the proposal with the lowest adjusted p, drawn against the bar on a scale from a ten-thousandth to one, with the complete test years it was better in"));
         html.Append(TippedHeading("Put to you", "the strongest proposal that passed and states a change, with its presses"));
+        html.Append(TippedHeading(PooledHeading, "the setup's rules on the three indexes summed into one test, each keeping its own settings, read by the same bar; beside each index's own verdict, and changing no rule"));
         html.Append("</tr></thead><tbody>");
 
         foreach (var row in rows)
@@ -83,6 +85,7 @@ public sealed partial class MarkRenderer
             html.Append(row.Put is { } put
                 ? $"<td><b>{Escaped(Capitalised(put.Proposal))}</b>{row.Presses}</td>"
                 : $"<td class=\"degraded\" data-waiting=\"{Escaped(row.Waiting ?? "none")}\">{Escaped(row.Waiting ?? "Nothing is put to you.")}</td>");
+            html.Append("<td>" + PooledCell(row.Pooled) + "</td>");
             html.Append("</tr>");
         }
 

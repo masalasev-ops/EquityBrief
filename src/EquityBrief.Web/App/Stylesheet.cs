@@ -562,6 +562,9 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .score-variants{padding:6px 14px 12px;border-top:1px solid var(--hair)}
 .score-variants>summary{cursor:pointer;font:600 13.5px var(--sans);padding:8px 0;min-height:32px}
 .score-none{padding:8px 14px;margin:0}
+.score-pooled{padding:6px 14px 12px;border-top:1px solid var(--hair)}
+.score-pooled h4{margin:6px 0 4px}
+.pooled-luck{font-size:13px;color:var(--ink-2);margin:6px 0 0}
 .paper-yours p{margin:4px 0;font-size:14px}
 .paper-yours .paper-count{font-variant-numeric:tabular-nums;font-weight:600}
 @media (max-width:560px){
@@ -580,6 +583,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .p-meter .pm-track{fill:var(--s1)}
 .p-meter .pm-bar{stroke:var(--ink);stroke-width:1.5}
 .loop-summary td{vertical-align:top}
+.loop-summary td:nth-child(5),.loop-summary td:nth-child(6){min-width:200px}
 .loop-summary .loop-better{display:block;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .loop-must{font-size:13px;color:var(--ink-2);margin:10px 0 0}
 .loop-row{border-top:1px solid var(--hair);padding:6px 0}

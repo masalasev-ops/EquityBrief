@@ -7,6 +7,52 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - the per-rule test keeps its units, the monthly run sums the three indices, and the superseded decision's citation repointed
+Decision: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+Was:
+> 13.13: ... one family on one index at a time (see: Each family on each index is proposed for, tested on and approved separately, on its own index's history alone). Its first engine ...
+> 13.16: ... from 19.4 each index's per-rule test, after every tester run (see: ...); and the month's report under the data root, which names ...
+> Walk-forward tester, the catalogue's writes: loop runs, ..., rule tests, rule test years, reading links, release answer edges, run log
+> Walk-forward tester, the catalogue's text: ... registering nothing and writing no store row (see: The entry check's measurement is read-only over the stored years and registers nothing)
+> Monthly run, the catalogue: ... from 19.4 each index's per-rule test by the walk-forward tester after every tester run (see: ...), and then the month's report under the data root naming ...; ... holds the drain's lock while a step runs but for the history's, the readings', the generator's, the testers' and the per-rule tests', which take it themselves as they write; ...
+> Rule tests, the stores: ... whether its units are enough, whether it passed, and why the history cannot walk it where it cannot
+Now:
+> 13.13: ... one family on one index at a time (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule). Its first engine ...
+> 13.16: the same, then: from 23.2 the one verdict across the three indices after the three per-rule tests, each family's rules summed across them beside each index's own (see: ...); and the month's report ...
+> Walk-forward tester, the catalogue's writes: the same, rule test units after rule test years
+> Walk-forward tester, the catalogue's text: the same, then: and from 23.2 its per-rule test writes with each rule the sessions a block of its waits, ... and each unit of its evidence by its session ..., which the pooled test sums across the indices (see: ...)
+> Monthly run, the catalogue: the same, then: from 23.2 the one verdict across the three indices by the pooled test after the three per-rule tests (see: ...), and then the month's report ...; ... the per-rule tests' and from 23.2 the pooled test's, which take it themselves as they write; ...
+> Rule tests, the stores: the same, then: from 23.2 the sessions a block of its waits, the sessions from the test span's first to the history's newest, that newest session and the year its verdict was judged from where it reads a release reading
+Why: 23.2, the one verdict across the three indices as the phase 23 plan writes it, and the decision it supersedes cited no more.
+
+### 2026-11-06 - docs/BUILD_PLAN.md - the superseded decision's citations repointed
+Decision: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+Was:
+> Phase 17's purpose: ... (see: Every change to a rule waits for the operator's approval on the Loop page, and the automatic mode ships off) (see: Each family on each index is proposed for, tested on and approved separately, on its own index's history alone) (see: A change is adopted ...
+> 23.2: ... Writes the decision superseding (see: Each family on each index is proposed for, tested on and approved separately, on its own index's history alone) with its citations repointed, the store and `SCHEMA.md`, ...
+Now:
+> Phase 17's purpose: ... (see: Every change to a rule waits ...) (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule) (see: A change is adopted ...
+> 23.2: ... Writes the decision superseding the one that judged each family on each index on its own index's history alone, with its citations repointed (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule), the store and `SCHEMA.md`, ...
+Why: 23.2 supersedes the decision, and a spec cites none under Previously decided.
+
+### 2026-11-06 - docs/RUNBOOK.md - the per-rule test keeps its units and the monthly run sums the three indices
+Decision: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+Was:
+> loop-rules: ... and the same for a proposal put whose change reads one, which the Loop page draws beneath it.
+> The monthly run: ... each index's tester run, from 19.4 each index's per-rule test, and the month's report, a step at a time ...
+Now:
+> loop-rules: the same, then: From 23.2 it also writes `loop_rule`'s cap, span, newest session and judged year, and every unit of each walked rule's evidence to `loop_rule_unit`, in the same transaction. Then `loop-pooled` and what it does, a section of its own
+> The monthly run: ... from 19.4 each index's per-rule test, from 23.2 the one verdict across the three indices, and the month's report, a step at a time ...
+Why: 23.2, the runbook's verb the phase 23 plan names.
+
+### 2026-11-06 - .claude/rules/checks.md - fixture-expectations reaches the verdict across the three indices
+Decision: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+Was:
+> `fixture-expectations`: ... and no source a rule's version pins among those 23.1 writes
+Now:
+> `fixture-expectations`: the same, then: and from 23.2 the one verdict across the three indices worked by hand over constructed units of three indices, ..., and no source a rule's version pins among those 23.2 writes
+Why: 23.2, the roster's row the phase 23 plan names.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - the session marks gain the session a history ends on, and the History page's route
 Decision: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger; The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row
 Was:

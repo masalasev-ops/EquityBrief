@@ -4,6 +4,34 @@ namespace EquityBrief.Core.Loop;
 // started and how many folds it tested.
 public sealed record LoopRunRow(string RunId, string Month, string Index, DateOnly Through, string StartedAt, int Folds);
 
+// From 23.2 one verdict across the three indices as the pooled step stored it: its run and month, its family, the kind it
+// reads, the family's own rules or a kind of change, the indices and the rules it summed, its unit and units, its blocks,
+// its adjusted p-value, the gate's and the screens' parts, whether it passed, the year it was judged from and the index
+// that carried a pass.
+public sealed record LoopPooledRow(
+    string RunId,
+    string Month,
+    string Family,
+    string Kind,
+    IReadOnlyList<string> Indices,
+    IReadOnlyList<string> Rules,
+    string Unit,
+    int Units,
+    int Blocks,
+    double? Adjusted,
+    bool Gate,
+    bool Stable,
+    int Counted,
+    int Better,
+    double? Trimmed,
+    bool Counts,
+    bool Passed,
+    int? JudgedFrom,
+    string? CarriedBy)
+{
+    public bool Own => Kind == PooledJudge.Own;
+}
+
 // A proposal as the run stored it: its family and name, the change in words or none, the rule today in words, its unit
 // and units, its blocks, its adjusted p-value and whether it is at or under the bar, the stability screen's counted and
 // better years and whether it passed, the paired total with the largest left out, whether its units are enough, the

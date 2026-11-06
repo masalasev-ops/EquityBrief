@@ -198,6 +198,8 @@ public partial class FixtureExpectations
             .. ImprovingHistoryClaims,
             // 23.1, the data check: section 17's four rows and section 18's row.
             .. DataCheckClaims,
+            // 23.2, the verdict across the three indices: section 17's row and section 18's row.
+            .. PooledClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

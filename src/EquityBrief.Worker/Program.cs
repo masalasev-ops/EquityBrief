@@ -67,6 +67,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sec-tickers" => await SecTickersRun(args),
     "loop-test" => await LoopTestRun(args),
     "loop-rules" => await LoopRulesRun(args),
+    "loop-pooled" => await LoopPooledRun(args),
     "loop-links" => await LoopLinksRun(args),
     "loop-apply" => await LoopApplyRun(),
     "loop-month" => await LoopMonthRun(args),
@@ -303,7 +304,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 69 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 70 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -450,6 +451,9 @@ static int NoVerb()
         "the test years and stores each variant's verdict against its live or provisional rule and each of those against " +
         "its benchmark, a rule the history cannot walk stored with why, with '--month <yyyy-MM>' and '--print' as " +
         "'loop-test' reads them, " +
+        "'loop-pooled --month <yyyy-MM>' sums each family's rules across the three indices' per-rule tests of the month " +
+        "into one verdict, and each kind of change registered on two or more indices beside it, and stores each, with " +
+        "'--print' printing each verdict and writing nothing, " +
         "'loop-links --index <GSPC, MID or SML>' works which readings go with winners over each family's settled setups " +
         "on the index and stores every reading's row, with '--month <yyyy-MM>' and '--print' as 'loop-test' reads them, " +
         "'loop-apply' applies each change the operator approved on the Loop page that no apply has answered, as the " +
@@ -1220,6 +1224,31 @@ static async Task<int> LoopRulesRun(string[] args)
         .RulesAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal));
 }
 
+// The one verdict across the three indices by hand for a month, each index's newest per-rule test of the month summed,
+// writing its own table.
+// see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+static async Task<int> LoopPooledRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+    var month = VerbArguments.Value(args, "--month") ?? clock.SessionDateAt(clock.UtcNow).ToString("yyyy-MM", CultureInfo.InvariantCulture);
+
+    if (!DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+    {
+        Console.Error.WriteLine($"loop-pooled: '--month' takes a month as yyyy-MM, not '{month}'");
+
+        return 1;
+    }
+
+    var (held, words) = await new EquityBrief.Worker.Loop.PooledTest(clock, store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(month, print: args.Contains("--print", StringComparer.Ordinal));
+
+    Console.WriteLine($"loop-pooled: {words}");
+
+    return held ? 0 : 2;
+}
+
 // Which readings go with winners by hand on one index, every family's settled setups read from the ledger and every
 // reading's row worked over them, writing its own table.
 // see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule
@@ -1461,6 +1490,13 @@ static async Task<int> LoopMonthRun(string[] args)
                     : (false, "the per-rule test did not finish its run"),
             TakesTheLock: true));
     }
+
+    // From 23.2 the one verdict across the three indices, after each index's own.
+    // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+    steps.Add(new(
+        EquityBrief.Worker.Loop.MonthlyRun.Pooled,
+        (_, cancellation) => new EquityBrief.Worker.Loop.PooledTest(clock, store.DatabaseFile, store.DataRoot, Console.Out).RunAsync(month, cancellation: cancellation),
+        TakesTheLock: true));
 
     steps.Add(new("report", (_, cancellation) => run!.ReportAsync(month, cancellation)));
 

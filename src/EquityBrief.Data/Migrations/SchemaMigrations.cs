@@ -750,7 +750,53 @@ public static class SchemaMigrations
         new Migration(127, "create split_name", CreateSplitName),
         new Migration(128, "add entry_reading's wait plan", AddEntryWaitPlan),
         new Migration(129, "create data_check, and rebuild session_mark with the session a history ends on", CreateDataCheck),
+        new Migration(130, "add loop_rule's cap, span, newest session and judged year, and create loop_rule_unit and loop_pooled", CreatePooledVerdict),
     ];
+
+    // From 23.2 what the per-rule test keeps of each rule for the pooled step, each unit of its evidence by its session, and
+    // the pooled step's verdicts across the three indices.
+    const string CreatePooledVerdict = @"
+        ALTER TABLE loop_rule ADD COLUMN cap INTEGER;
+        ALTER TABLE loop_rule ADD COLUMN span INTEGER;
+        ALTER TABLE loop_rule ADD COLUMN through TEXT;
+        ALTER TABLE loop_rule ADD COLUMN judged_from INTEGER;
+
+        CREATE TABLE loop_rule_unit (
+            run_id        TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            rule          TEXT NOT NULL,
+            unit          INTEGER NOT NULL,
+            session_date  TEXT NOT NULL,
+            place         INTEGER NOT NULL,
+            figure        REAL,
+            compared      REAL,
+            PRIMARY KEY (run_id, index_code, family, rule, unit)
+        ) STRICT;
+
+        CREATE TABLE loop_pooled (
+            run_id       TEXT NOT NULL,
+            month        TEXT NOT NULL,
+            family       TEXT NOT NULL,
+            kind         TEXT NOT NULL,
+            indices      TEXT NOT NULL,
+            rules        TEXT NOT NULL,
+            unit         TEXT NOT NULL,
+            units        INTEGER NOT NULL,
+            blocks       INTEGER NOT NULL,
+            adjusted     REAL,
+            gate         INTEGER NOT NULL,
+            stable       INTEGER NOT NULL,
+            counted      INTEGER NOT NULL,
+            better       INTEGER NOT NULL,
+            trimmed      REAL,
+            counts       INTEGER NOT NULL,
+            passed       INTEGER NOT NULL,
+            judged_from  INTEGER,
+            carried_by   TEXT,
+            PRIMARY KEY (run_id, family, kind)
+        ) STRICT;
+    ";
 
     // From 23.1 what the data check finds of each stock's pulled sessions, and the marks gaining the session a company's history
     // ends on, which SQLite can add to the kinds a table was created with only by building it again.

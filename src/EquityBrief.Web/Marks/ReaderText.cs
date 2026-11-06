@@ -27,6 +27,7 @@ public static class ReaderText
         (@"winners against losers", "what the winning picks had in common"),
         (@"the idea generator", "an idea the local model put"),
         (@"idea generator", "idea the local model put"),
+        (@"pooled", "all three indexes together"),
         (@"the learned score", "the score fitted to past setups"),
         (@"learned scores?", "score fitted to past setups"),
         (@"the autopsy's exits?", "the exit its trades' paths suggested"),

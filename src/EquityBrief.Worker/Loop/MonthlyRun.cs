@@ -77,7 +77,8 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
     // The steps' names in the order they run: the facts, the dividends no run kept, the indices' history written again
     // together, each index's check, which readings go with winners on each index, the idea generator on each index, each
-    // index's tester run, each index's per-rule test, and the report.
+    // index's tester run, each index's per-rule test, from 23.2 the one verdict across the three indices, and the report.
+    // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
     public static IReadOnlyList<string> StepNames { get; } =
     [
         "facts",
@@ -88,8 +89,12 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
         .. Indices.Select(index => "ideas-" + index),
         .. Indices.Select(index => "test-" + index),
         .. Indices.Select(index => "rules-" + index),
+        Pooled,
         "report",
     ];
+
+    // The step summing each family's rules across the three indices after their own per-rule tests.
+    public const string Pooled = "pooled";
 
     public static string RunOf(string month, DateTimeOffset started) =>
         FormattableString.Invariant($"{Verb}-{month}-{started:yyyyMMddTHHmmssZ}");

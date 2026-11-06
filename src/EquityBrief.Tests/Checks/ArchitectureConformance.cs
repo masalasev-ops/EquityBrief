@@ -1496,7 +1496,8 @@ public partial class ArchitectureConformance
         // 283 at the correction after it: five rows of the name page from what the PR 640 read-back left open.
         // 288 at 22.41: the entry check's five rows of the pages.
         // 291 at 23.1: the History page's two regions.
-        Assert.Equal(291, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 294 at 23.2: the Loop page's verdict across the three indexes and the passes luck would bring, and the scorecard's.
+        Assert.Equal(294, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1674,7 +1675,8 @@ public partial class ArchitectureConformance
         // 685 at the correction after it: five rows of the name page from what the PR 640 read-back left open.
         // 690 at 22.41: the entry check's five rows of the pages.
         // 693 at 23.1: the History page's two regions.
-        Assert.Equal(693, inDocument.Length);
+        // 696 at 23.2: the Loop page's verdict across the three indexes and the passes luck would bring, and the scorecard's.
+        Assert.Equal(696, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

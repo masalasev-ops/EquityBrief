@@ -24,7 +24,7 @@ namespace EquityBrief.Worker.Loop;
 // see: A fitted statistical model is a rule
 // see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
 // see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs
-// see: Each family on each index is proposed for, tested on and approved separately, on its own index's history alone
+// see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
 public sealed partial class WalkForwardTester(IClock clock, string databaseFile, string dataRoot, TextWriter output, Func<TimeSpan, CancellationToken, Task>? pause = null) : IComponent
 {
     public static ComponentAccess Access => new(
@@ -59,6 +59,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             new StoreTouch(Store.LoopReference, Touch.Insert),
             new StoreTouch(Store.LoopRule, Touch.Insert),
             new StoreTouch(Store.LoopRuleYear, Touch.Insert),
+            new StoreTouch(Store.LoopRuleUnit, Touch.Insert),
             new StoreTouch(Store.LoopLink, Touch.Insert),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
@@ -655,8 +656,14 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     ";
 
     const string InsertRule = @"
-        INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why)
-        VALUES ($run_id, $month, $index_code, $family, $rule, $standing, $words, $against, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $why);
+        INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why, cap, span, through, judged_from)
+        VALUES ($run_id, $month, $index_code, $family, $rule, $standing, $words, $against, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $why, $cap, $span, $through, $judged_from);
+    ";
+
+    // From 23.2 each unit of a walked rule's evidence over the test years, which the pooled step sums across the indices.
+    const string InsertRuleUnit = @"
+        INSERT INTO loop_rule_unit (run_id, index_code, family, rule, unit, session_date, place, figure, compared)
+        VALUES ($run_id, $index_code, $family, $rule, $unit, $session_date, $place, $figure, $compared);
     ";
 
     const string InsertRuleYear = @"
@@ -864,7 +871,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         if (!print)
         {
-            await WriteRulesAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, cancellation);
+            await WriteRulesAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, read.Calendar, read.Opens, cancellation);
         }
 
         foreach (var one in tested)
@@ -1051,8 +1058,11 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     }
 
     // The per-rule test's rows, each rule's and each of its test years', with its run log row, in one transaction under
-    // the drain's lock.
-    public async Task WriteRulesAsync(string runId, string month, string index, DateOnly through, DateTimeOffset started, int folds, IReadOnlyList<RuleTested> tested, CancellationToken cancellation = default)
+    // the drain's lock; from 23.2 each rule with the sessions a block of its waits, the sessions from the test span's first
+    // to the history's newest, the year its verdict was judged from, and each unit of its evidence by its session and that
+    // session's place from the test span's first, which the pooled step sums across the indices.
+    // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+    public async Task WriteRulesAsync(string runId, string month, string index, DateOnly through, DateTimeOffset started, int folds, IReadOnlyList<RuleTested> tested, IReadOnlyList<DateOnly> calendar, int opens, CancellationToken cancellation = default)
     {
         using var held = await DrainLock.AcquireAsync(dataRoot, () => (pause ?? Task.Delay)(Poll, cancellation), cancellation);
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -1061,6 +1071,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         await using var transaction = connection.BeginTransaction();
         var years = 0;
+        var units = 0;
 
         static object Or(object? value) => value ?? DBNull.Value;
 
@@ -1090,7 +1101,29 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 ("$counts", Or(verdict is null ? null : verdict.Counts ? 1 : 0)),
                 ("$passed", one.Passed ? 1 : 0),
                 ("$why", Or(one.Why)),
+                ("$cap", one.Rule.Cap),
+                ("$span", calendar.Count - 1 - opens),
+                ("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                ("$judged_from", Or(one.JudgedFrom)),
             ], cancellation);
+
+            foreach (var (unit, at) in (one.Evidence?.Units ?? []).Select((unit, at) => (unit, at)))
+            {
+                units++;
+
+                await ExecuteAsync(connection, transaction, InsertRuleUnit,
+                [
+                    ("$run_id", runId),
+                    ("$index_code", index),
+                    ("$family", one.Rule.Family),
+                    ("$rule", one.Rule.Rule),
+                    ("$unit", at),
+                    ("$session_date", calendar[unit.Session].ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                    ("$place", unit.Session - opens),
+                    ("$figure", Or(unit.Proposed)),
+                    ("$compared", Or(unit.Current)),
+                ], cancellation);
+            }
 
             foreach (var year in one.Evidence?.Years ?? [])
             {
@@ -1118,7 +1151,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             ("$stage", RulesVerb),
             ("$started_at", started.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)),
             ("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)),
-            ("$rows_written", tested.Count + years),
+            ("$rows_written", tested.Count + years + units),
             ("$detail", RulesDetail(tested, index, month, through, folds)),
         ], cancellation);
 

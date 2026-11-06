@@ -119,7 +119,7 @@ public partial class FixtureExpectations
         var clock = FixedClock.At(new DateTimeOffset(2026, 10, 13, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
         var tester = new WalkForwardTester(clock, store.DatabaseFile, store.Root, output, (_, _) => Task.CompletedTask);
 
-        await tester.WriteRulesAsync("loop-rules-MID-20261013T120000Z", "2026-10", "MID", calendar[^1], clock.UtcNow, folds.Count, tested);
+        await tester.WriteRulesAsync("loop-rules-MID-20261013T120000Z", "2026-10", "MID", calendar[^1], clock.UtcNow, folds.Count, tested, calendar, opens);
 
         Assert.Equal(
             [
@@ -148,8 +148,22 @@ public partial class FixtureExpectations
         Assert.Equal(
             ["2022|1|260|194.75|260|0.0", "2023|1|260|195.0|260|0.0", "2024|0|50|37.75|50|0.0"],
             Query(store, "SELECT year || '|' || complete || '|' || units || '|' || total || '|' || compared_units || '|' || compared_total FROM loop_rule_year WHERE rule = 'provisional' ORDER BY year;"));
+        // From 23.2 each walked rule's units: its 570 trades and as many of what it was read against, each a unit of its own
+        // side, 1,140 a rule and none for a rule not walked; each rule with its cap, the 569 sessions from the span's first
+        // to the newest, and that newest session.
         Assert.Equal(
-            ["loop-rules|ok|20"],
+            ["pullback|provisional|1140", "pullback|the richer variant|1140", "pullback|the same variant|1140", "pullback|the mixed variant|1140"],
+            Query(store, "SELECT family || '|' || rule || '|' || COUNT(*) FROM loop_rule_unit GROUP BY family, rule ORDER BY MIN(rowid);"));
+        Assert.Equal(
+            ["0|569|2024-03-08|null"],
+            Query(store, "SELECT DISTINCT cap || '|' || span || '|' || through || '|' || COALESCE(judged_from, 'null') FROM loop_rule;"));
+        Assert.Equal(
+            ["2022-01-03|0|0.5|null", "2022-01-03|0|null|0.0"],
+            Query(store, "SELECT session_date || '|' || place || '|' || COALESCE(figure, 'null') || '|' || COALESCE(compared, 'null') FROM loop_rule_unit WHERE rule = 'provisional' AND place = 0 ORDER BY unit;"));
+
+        // The eight rules, the twelve test years and the 4,560 units.
+        Assert.Equal(
+            ["loop-rules|ok|4580"],
             Query(store, "SELECT stage || '|' || outcome || '|' || rows_written FROM run_log WHERE run_id = 'loop-rules-MID-20261013T120000Z';"));
     }
 
