@@ -2511,6 +2511,11 @@ Their answers' second item, its first part. A newest fundamentals row whose stor
 
 **Done when** a row read under Trane's filer for Ingersoll Rand draws both parts not on file naming the two filers and no figure of the table, and draws them once the filers agree; a facts file holds no segment figure of such a row; a research pass over it names the archive unread and stores no release; the filers compare by their digits; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.56 On the operator's answers of 2026-11-06: a segment table missing the company's revenue is drawn as filed
+Their answers' second item, its second part. A quarter's table whose total misses the company's quarter revenue by more than 5% is drawn as filed with its segments' sum against that revenue and no share (see: A quarter's segment table whose total misses the company's quarter revenue by more than 5% is drawn as filed with what its rows sum to).
+
+**Done when** WELL's table worked by hand from its stored figures draws as filed with $2,984.9M against $3,544.6M and no share where it drew Seniors Housing Operating as 100.0%, HOG's and NTRS's and a one-segment company's likewise; a miss of 5% stands and one past it does not, a year's table reading against its own total; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23
