@@ -9,7 +9,7 @@ namespace EquityBrief.Tests.Checks;
 // configuration and the read-only copy's check with its name, line and byte and nothing it holds, because a parser's own
 // message quotes the text it stopped at and the file once reached a session's output that way.
 // see: The secrets file is read by the worker alone, and no script or command or error prints any of it
-public class SecretsUnread
+public class KeysUnread
 {
     // A line naming the secrets file, the variable holding its path in the scripts, or the variable handing that path
     // to the worker.

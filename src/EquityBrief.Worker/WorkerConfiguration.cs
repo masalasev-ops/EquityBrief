@@ -35,7 +35,7 @@ public static class WorkerConfiguration
     {
         source.Path = path;
         source.Optional = true;
-        source.OnLoadException = failed => throw SecretsFile.Unreadable(path, failed.Exception);
+        source.OnLoadException = failed => throw KeysFile.Unreadable(path, failed.Exception);
     }
 
     public static IConfiguration Build() =>

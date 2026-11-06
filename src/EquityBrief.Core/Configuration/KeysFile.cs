@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Configuration;
 // into a shell or a log. A file that will not parse stops either read with its name, its line and its byte and none of
 // what it holds, since a parser's own message quotes the text it stopped at.
 // see: The secrets file is read by the worker alone, and no script or command or error prints any of it
-public static class SecretsFile
+public static class KeysFile
 {
     public static InvalidOperationException Unreadable(string file, Exception? failure) =>
         JsonFailureIn(failure) is { } json

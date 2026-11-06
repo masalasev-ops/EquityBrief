@@ -48,7 +48,7 @@ public class CoverageReported
         ["api-isolation"] = "ApiIsolation",
         ["bar-append-only"] = "StoreWrites",
         ["store-never-deleted"] = "StoreNeverDeleted",
-        ["secrets-unread"] = "SecretsUnread",
+        ["secrets-unread"] = "KeysUnread",
         ["rules-choose-the-stocks"] = "RulesChooseTheStocks",
         ["bar-bounds"] = "BarBounds",
         ["read-surface"] = "ReadSurface",

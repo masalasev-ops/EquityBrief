@@ -236,7 +236,7 @@ public static partial class SiteChecks
         }
         catch (System.Text.Json.JsonException failed)
         {
-            throw EquityBrief.Core.Configuration.SecretsFile.Unreadable(file, failed);
+            throw EquityBrief.Core.Configuration.KeysFile.Unreadable(file, failed);
         }
     }
 
