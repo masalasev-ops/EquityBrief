@@ -1,0 +1,8 @@
+# The remedy of 23.1, the data check over the years the pull holds. Migration 129 creates the data check's table and builds the
+# session marks again with the session a history ends on among their kinds, their rows copied across. The check reads every
+# stock's pulled sessions and writes its findings, about three minutes on the store's disk, with no request to any provider and
+# no model call. No pulled row, bar or mark moves, and no source a rule's version or the readings' version pins moves. The History
+# page draws what it wrote. Run from main after the merge, when no night, off-peak run, local run, ledger build or monthly run is
+# writing, and restart the read surface after it.
+migrate
+data-check

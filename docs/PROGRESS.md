@@ -16259,3 +16259,54 @@ Queue:      done, phase 20's sign-off; in progress, 23.1 with this ruling in its
             phases 21 and 22 between phase 23's pull requests when the operator calls them.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
             the figures it states.
+
+### 23.1 - the data check, its rules stated and proved on the years held   2026-11-06
+
+Built:      `data-check`, the data checker, writing `data_check`, migration 129, which builds `session_mark` again with `history
+            ends` among its kinds, its 12 rows copied across. Every stock's pulled sessions, each from the newest pull holding it,
+            on the calendar the stocks that traded each day give, classified by section 17's rules: a missing session, a candle
+            with no volume, a jump, a split or dividend the closes do not carry, and the ticker changes, when-issued starts and
+            emergences a person reads against the filings. A run's rows written whole, the run before's removed with them; `--print`
+            writes nothing, `--each` prints every finding; a stock whose series it cannot read left out and named. The core's
+            rule for a history's end over a filer's filings, and `--end <cik> --into <folder>` keeping the filing index, its older
+            pages and its documents as sent, through a feed of its own. The History page under Records. The guide's bar figure
+            and a section on the page. No pulled row, bar or mark moves; no source a rule's version pins moves.
+Found:      Merrill's merger 8-K of 2009-01-02 carries items 3.01, 5.01, 5.03 and 9.01 and not 2.01, so the report of a merger
+            complete is the 8-K carrying 5.01 with 2.01 or 3.01; PepsiCo's Form 25 of 2018-05-29 removed its common stock from the
+            Chicago Stock Exchange while it traded on at Nasdaq, so a removal ends a history only from the stock's own exchange;
+            a note exchangeable into another company's common stock names common stock, so a class is read from the document's
+            own field or caption. Each stated in the data check's decision.
+Measured:   a print over the live store opened read-only, 2,278 stocks and 5,344,718 sessions from 2015-10-01 to 2026-11-03, in 2
+            minutes 36 seconds, nothing written: 18,165 findings. Missing 5,454 on 82, 3,998 thin and 1,456 liquid; no volume 7,959
+            on 282, 7,521 thin, 381 copied and 57 liquid; jumps 4,571 on 1,153, 3 a stored action, 10 the operator's word, 526
+            thin, 3,711 on volume, 215 wide, 15 spike backs and 91 unexplained; 21 actions not carried on 12, 6 splits and 15
+            dividends; 20 ticker changes, 112 when-issued starts and 28 emergences on 13 to read.
+Against:    the audit's counts beside the check's over the audit's own population, the members' pulled years: the chart check's
+            rows of 2026-11-05 for the jumps and the empty candles, and the members' missing sessions read as the audit read them.
+            Jumps 657 on 213 then, 604 on 208 now: 449 on volume against 485, 118 thin against 151, 2 wide at more than 25%
+            against 7 at 15%, 4 unexplained against 11, 1 the operator's word, and 30 the check reads as the move back of the jump
+            before it, which the audit counted again. The 53 gone: 40 on the sessions 22.38's twelve marks name, 12 on INDV, which
+            held no bar that night, and 1 on YOU, pulled again by 22.38's remedy. No volume 4,982 on 77 then, 4,351 on 72 now:
+            4,271 thin against 4,893, and 80 copied or liquid against 88; the 631 gone: 622 on INDV, 7 on YOU, CNC and SNDR,
+            pulled again by that remedy, and 2 on INSW before its start. Missing 2,812 on 29 then, 2,957 on 21 now, the check's
+            the same 2,957: 2,942 thin against 2,788 and 15 liquid on 9 as before; the 9 mended, all 2023-04-06, gone with that
+            remedy's pulls, and 154 more on PARA, whose stored year and pull are another company's prices and wait on the operator.
+Read:       the History page over a store migrated fresh in the scratchpad holding 189 stocks' pulled years copied read-only from
+            the live store, at 1440 and a true 390 in both palettes: no page wider than its screen, the counts' table scrolling in
+            its own frame at 390.
+Tests:      3508, from 3493, 15 new: 14 in the fixture's expectations and 1 in the read surface, over the fixture
+            `history-ends-2026-11-06`, Merrill's and PepsiCo's filings as captured with expectations derived by hand.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its tests by name, 9 in all,
+            each red at its test: the thin median read as at most the limit; heavy volume read past the multiple; a spike's
+            move back counted as a jump; any exchange's removal an end; the merger's 8-K needing the completed acquisition; the
+            run before's rows kept; the era boundary a year late; an unreadable series stopping the run; the unexplained jumps
+            left off the page's list.
+Remedy:     `tools/remedies/2026-11-06-23.1-the-data-check.txt`, `migrate` and `data-check`, no request, to run from main after
+            the merge.
+Carried:    the marks of a history's end, written at 23.4 once each filer is matched; the flags to read against the filings and
+            PARA's pull, the operator's; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3508 of 3508 tests ran with none failed, migrations 0 to 129 with none
+            pending, schema version 129, against `data-ci` and never `data`; the phase report 66 tables, 1546 claims, 1546 passing,
+            none out of scope and none unexamined, 1561 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
