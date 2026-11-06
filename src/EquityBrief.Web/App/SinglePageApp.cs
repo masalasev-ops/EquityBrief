@@ -594,7 +594,7 @@ public sealed partial class SinglePageApp : IComponent
           else if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }
           else if (query.get('name') && document.getElementById('selected')) { document.getElementById('selected').scrollIntoView({ block: 'start' }); }
           else if (setupRow) { setupRow.scrollIntoView({ block: 'center' }); }
-          else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { screen.querySelector('.buy-points tr.sel[data-fold]').scrollIntoView({ block: 'start' }); }
+          else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { const buyRow = screen.querySelector('.buy-points tr.sel[data-fold]'); const buyFold = document.getElementById(buyRow.getAttribute('data-fold')); const buyPlan = buyFold ? buyFold.querySelector('.card-plan') : null; (buyPlan || buyRow).scrollIntoView({ block: 'start' }); }
           else if (reasonRow) { reasonRow.scrollIntoView({ block: 'center' }); }
           else if (query.get('{{{HomeSetupKey}}}') && document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}'))) { document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')).scrollIntoView({ block: 'start' }); }
           else { scrollTo(0, 0); }

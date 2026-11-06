@@ -328,7 +328,7 @@ public sealed partial class SinglePageApp
 
             foreach (var idea in view.Ideas)
             {
-                region.Append(Idea(idea, marks.Copying));
+                region.Append(Idea(idea, marks.Copying, view.Reading));
             }
 
             region.Append("</div>");
@@ -382,7 +382,7 @@ public sealed partial class SinglePageApp
     static string Signal(string key, string label, string tone, string word, string meaning, bool plainWord = false) =>
         Invariant($"<div class=\"home-signal\" data-signal=\"{key}\" data-tone=\"{tone}\"><span class=\"st-label\"><span class=\"home-dot {tone}\" aria-hidden=\"true\"></span>{Escaped(label)}</span><span class=\"home-word{(plainWord ? string.Empty : " " + tone)}\">{Escaped(word)}</span><span class=\"home-meaning\">{Escaped(meaning)}</span></div>");
 
-    static string Idea(HomeIdea idea, bool copying)
+    static string Idea(HomeIdea idea, bool copying, UniverseChoice reading)
     {
         var card = new StringBuilder();
         var family = Escaped(idea.Family);
@@ -419,7 +419,11 @@ public sealed partial class SinglePageApp
             card.Append(Invariant($"<div class=\"home-odds\">{said}</div>"));
         }
 
-        card.Append(Invariant($"<a href=\"{ChartRoute}{Uri.EscapeDataString(idea.Ticker)}\">See the plan</a>"));
+        // A plan's idea opens Tonight at its row, its plan opened and in view; one no plan sells opens its row on its own card.
+        // see: See the plan opens Tonight at the stock's row with its plan in view, and a buy no plan sells opens its row on its own card
+        card.Append(Planless(idea.Family)
+            ? Invariant($"<a class=\"home-how\" href=\"{TonightHref(reading, idea.Family, idea.Ticker)}\">How it sells</a>")
+            : Invariant($"<a class=\"home-plan\" href=\"{TonightHref(reading, null, idea.Ticker)}\">See the plan</a>"));
         card.Append("</article>");
 
         return card.ToString();

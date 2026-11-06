@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - See the plan opens Tonight at the stock's row
+Decision: See the plan opens Tonight at the stock's row with its plan in view, and a buy no plan sells opens its row on its own card
+Was:
+> Tonight's ideas: ... what it risks for each dollar it aims for; the link to its chart page; the link to Tonight; ...
+> Tonight's buy points: ... Its columns are Stock with Open plan and the report or the control asking for one; Setup; ...
+Now:
+> Tonight's ideas: ... what it risks for each dollar it aims for; the link to its chart page, from 22.49 See the plan opening Tonight at the stock's row with its plan opened and in view, and for a buy no plan sells How it sells opening its row on its own card (see: ...); the link to Tonight; ...
+> Tonight's buy points: ... Its columns are Stock with Open plan and the report or the control asking for one, from 22.49 the report's label standing apart from Open plan as Report: written on its day or Report: not written yet; Setup; ...
+Why: the operator's order of 2026-11-06, its fifth item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - Home's ideas in Tonight's order, the rest named
 Decision: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
 Was:

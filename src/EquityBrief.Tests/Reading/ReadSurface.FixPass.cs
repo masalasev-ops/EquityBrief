@@ -80,6 +80,28 @@ public partial class ReadSurface
         Assert.Equal("1 more on Tonight: NUE (Quick rebound), not drawn here to keep this page short.", SinglePageApp.LeftOutLine([Idea("dip", "NUE")]));
     }
 
+    // Home's See the plan opened the stock's chart page; it opens Tonight at the stock's row, and an idea no plan sells opens
+    // its row on its own card with How it sells. Tonight's row ran its plan's control and its report's word together, "Open
+    // plan report"; the report's label says what it opens.
+    // see: See the plan opens Tonight at the stock's row with its plan in view, and a buy no plan sells opens its row on its own card
+    [Fact]
+    public void SeeThePlanOpensTonightAtTheRowAndABuyNoPlanSellsSaysHowItSells()
+    {
+        HomeIdea Idea(string family, string ticker) => new(family, ticker, null, "Why.", 10m, family == "drift" ? 9m : null, family == "drift" ? 12m : null, false, null);
+
+        var home = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Reading = Universes.Mid, Ideas = [Idea("drift", "HL"), Idea("improving", "AVNT"), Idea("quality", "QQ")], IdeasCount = 3 }, string.Empty);
+
+        Assert.Contains("<a class=\"home-plan\" href=\"#/tonight?universe=400&amp;name=HL\">See the plan</a>", home, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"home-how\" href=\"#/tonight?universe=400&amp;setup=improving&amp;name=AVNT\">How it sells</a>", home, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"home-how\" href=\"#/tonight?universe=400&amp;setup=quality&amp;name=QQ\">How it sells</a>", home, StringComparison.Ordinal);
+        Assert.DoesNotContain("#/chart/HL\">See the plan", home, StringComparison.Ordinal);
+
+        var buys = new MarkRenderer().TomorrowsBuys([Point("drift", "Earnings drift", "HL", 50m, 45m, 60m)], null, night: FixNight);
+
+        Assert.Contains(">Report: not written yet</a>", buys, StringComparison.Ordinal);
+        Assert.DoesNotContain(">not written</a>", buys, StringComparison.Ordinal);
+    }
+
     // The card opens with its buys named, marks each on its table and never folds one behind the first ten rows.
     [Fact]
     public void TheFundamentalsCardOpensWithItsBuysAndNeverFoldsOneBehindItsShownRows()

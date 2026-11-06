@@ -305,6 +305,7 @@ main{padding-block:8px 64px}
 .improving-table tr.improving-buy{background:var(--fam-improving-tint)}
 .buy-mark{display:inline-block;margin-left:6px;font:700 11px var(--sans);color:var(--sup-ink);border:1px solid var(--sup-ink);border-radius:999px;padding:0 7px;white-space:nowrap}
 .improving-bought{margin:12px 0 0} .improving-bought-h{margin:0 0 4px} .improving-bought-list{margin:0;padding-left:22px}
+.list-table td.c-nm a.open{display:inline-block;margin-left:8px;font:600 11.5px var(--sans);color:var(--ink-2);border:1px solid var(--hair-2);border-radius:5px;padding:1px 8px;white-space:nowrap}
 .list-table a.how-sells{display:inline-block;margin-left:6px;font:600 11.5px var(--sans);color:var(--ink-2);border:1px solid var(--hair-2);border-radius:5px;padding:1px 8px;white-space:nowrap}
 .buy-points td.plan-sells{color:var(--ink-2);white-space:normal}
 @media (max-width:560px){

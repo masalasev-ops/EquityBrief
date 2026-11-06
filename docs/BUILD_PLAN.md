@@ -2476,6 +2476,11 @@ Their order's fourth item. Home's ideas are read from the function Tonight's buy
 
 **Done when** the S&P 500's buys of 2026-11-05 run in Tonight's order, the Fundamentals' after the drift's and before the dip's, Home draws the first six and its line names CVS and ODFL under their tag and NUE under its own; no line stands where nothing is left out; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.49 On the operator's order of 2026-11-06: See the plan opens Tonight at the stock's row
+Their order's fifth item. Home's See the plan opens Tonight at the stock's row with its plan in view, a buy no plan sells draws How it sells opening its row on its own card, and Tonight's row draws its report's label apart from Open plan (see: See the plan opens Tonight at the stock's row with its plan in view, and a buy no plan sells opens its row on its own card).
+
+**Done when** Home's card for a drift links to Tonight naming the stock and a Fundamentals and a quality holding's to Tonight naming the stock and its family, none to the chart page; Tonight's row reads Report: not written yet; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23
