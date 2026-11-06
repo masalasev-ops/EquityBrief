@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - the research runner reads the companies
+Decision: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
+Was:
+> Research runner ... reads: membership, facts, fundamentals, ladders, filings archive, ...
+Now:
+> Research runner ... reads: membership, facts, fundamentals, companies, ladders, filings archive, ...
+Why: a research pass reads the company's own filer to read no release by a row read under another.
+
 ### 2026-11-06 - CLAUDE.md - the secrets paragraph says only the worker reads the file and nothing prints it
 Decision: The secrets file is read by the worker alone, and no script or command or error prints any of it
 Was:

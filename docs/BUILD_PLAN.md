@@ -2506,6 +2506,11 @@ Their answers' first item, word for word in `prompts/2026-11-06-22.54-answers-to
 
 **Done when** every file under `tools/` and the workflow names the secrets file only in the three forms, eighteen lines, and the reader finds a constructed script reading it in either shell; a malformed secrets file named by path or beside the build, and one handed to the read-only copy's check, stops with its name, line and byte and no part of it; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.55 On the operator's answers of 2026-11-06: a fundamentals row read under another filer is not on file
+Their answers' second item, its first part. A newest fundamentals row whose stored filer is not the company's own draws its segment table and what management said not on file, hands no writer the archive's parts, and lets a research pass read no release by that filer (see: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again). IR's fundamentals are then fetched once, on the operator's word, and its page read back.
+
+**Done when** a row read under Trane's filer for Ingersoll Rand draws both parts not on file naming the two filers and no figure of the table, and draws them once the filers agree; a facts file holds no segment figure of such a row; a research pass over it names the archive unread and stores no release; the filers compare by their digits; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23
