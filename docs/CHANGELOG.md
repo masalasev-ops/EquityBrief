@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - Home's ideas in Tonight's order, the rest named
+Decision: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
+Was:
+> Tonight's ideas: ... up to six cards in Tonight's order the Fundamentals family's after the drift's; each card's ticker ...
+Now:
+> Tonight's ideas: ... up to six cards in Tonight's order the Fundamentals family's after the drift's; from 22.48 that order read by the one function Tonight's buys are drawn in, a monthly book's holdings to buy after the dip's, and the buys left out named beneath the cards with their families' tags (see: ...); each card's ticker ...
+Why: the operator's order of 2026-11-06, its fourth item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - Tonight's buys name every buy on the index
 Decision: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
 Was:

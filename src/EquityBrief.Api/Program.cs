@@ -1951,7 +1951,7 @@ async Task<IResult> TonightScreenAsync(
 
             var high = indexSettings.Breakout.GetValueOrDefault("high") is { } sessions && int.TryParse(sessions, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) ? parsed : (int?)null;
 
-            return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, indexLine, indexCards, await ImprovingCardAsync(read, reading.Code, dated, indexCells), indexCells, (family, ticker) => indexGates.GetValueOrDefault((family, ticker)), indexNight.Breadth, high);
+            return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, indexLine, indexCards, await ImprovingCardAsync(read, reading.Code, dated, indexCells), indexCells, (family, ticker) => indexGates.GetValueOrDefault((family, ticker)), indexNight.Breadth, high, heavyweightCard, await QualityCardAsync(read, reading.Code, dated, indexCells));
         }
 
         return Results.Content(
@@ -2347,7 +2347,7 @@ async Task<IResult> TonightScreenAsync(
             homeGates.TryAdd((result.Family, result.Ticker), result.Gates);
         }
 
-        return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, line, cards ?? [], cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells), cells, (family, ticker) => homeGates.GetValueOrDefault((family, ticker)));
+        return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, line, cards ?? [], cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells), cells, (family, ticker) => homeGates.GetValueOrDefault((family, ticker)), heavyweights: heavyweights, quality: cards is null ? null : await QualityCardAsync(read, reading.Code, dated, cells));
     }
 
     return Results.Content(
@@ -2773,7 +2773,9 @@ async Task<IResult> HomeAsync(
     IReadOnlyDictionary<string, UniverseCell> cells,
     Func<string, string, string?> gatesOf,
     double? ownShare = null,
-    int? highSessions = null)
+    int? highSessions = null,
+    HeavyweightCardView? heavyweights = null,
+    QualityCardView? quality = null)
 {
     var running = aboutNight.Session > dated && aboutNight.State is NightStates.Running or NightStates.Waiting or NightStates.Unfinished;
     var stored = await read.StripAsync(dated, MarketStripScreen.Series, MarketStripScreen.VixSessions);
@@ -2832,27 +2834,26 @@ async Task<IResult> HomeAsync(
         return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners, EntryCheck: pick.Card?.EntryCheck, StopMoves: MarkRenderer.ApprovedExitMovesTheStop(pick.Card?.Approved));
     }
 
-    HomeIdea[] fundamentals =
-    [
-        .. (improving?.Improving ?? []).Where(row => row.Status == MarkRenderer.BoughtWords).Select(row => new HomeIdea(
-            EquityBrief.Core.Families.ImprovingRule.Name,
-            row.Ticker,
-            row.Company ?? cells.GetValueOrDefault(row.Ticker)?.Name,
-            row.BeforePassed is { } before
-                ? FormattableString.Invariant($"Its newest filing shows the business getting stronger: {row.Passed} of {row.Applied} checks, up from {before}.")
-                : FormattableString.Invariant($"Its newest filing shows the business getting stronger: {row.Passed} of {row.Applied} checks."),
-            cells.GetValueOrDefault(row.Ticker)?.Close,
-            null,
-            null,
-            false,
-            null,
-            Setting: improving?.Setting is { } setting ? setting with { SoldUnderAverage = improving.Rule.Contains(EquityBrief.Core.Families.ImprovingRule.UnderItsAverage, StringComparison.Ordinal) } : null)),
-    ];
+    // A buy no plan sells, the Fundamentals family's or a monthly book's, as Tonight's buys draw it.
+    HomeIdea PlanlessIdeaOf(PlanlessBuyView buy) => new(
+        buy.Family,
+        buy.Ticker,
+        buy.Company ?? cells.GetValueOrDefault(buy.Ticker)?.Name,
+        buy.Why,
+        buy.Close ?? cells.GetValueOrDefault(buy.Ticker)?.Close,
+        null,
+        null,
+        false,
+        null,
+        EntryCheck: buy.EntryCheck,
+        Setting: buy.Family == EquityBrief.Core.Families.ImprovingRule.Name && improving?.Setting is { } setting ? setting with { SoldUnderAverage = improving.Rule.Contains(EquityBrief.Core.Families.ImprovingRule.UnderItsAverage, StringComparison.Ordinal) } : null);
+
+    // Every buy in Tonight's order, read by the one function Tonight's buys draw them in.
+    // see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
     HomeIdea[] ideas =
     [
-        .. points.Where(point => point.Family != EquityBrief.Core.Families.DipRule.Name).Select(IdeaOf),
-        .. fundamentals,
-        .. points.Where(point => point.Family == EquityBrief.Core.Families.DipRule.Name).Select(IdeaOf),
+        .. MarkRenderer.BuysInOrder(points, SinglePageApp.PlanlessBuys(reading.Word, improving, heavyweights, quality))
+            .Select(buy => buy.Point is { } point ? IdeaOf(point) : PlanlessIdeaOf(buy.Planless!)),
     ];
     var opens = MarkRenderer.OpenDay(dated);
 
@@ -2901,7 +2902,10 @@ async Task<IResult> HomeAsync(
         (checks is { Count: > 0 } ? checks.All(check => !check.Open) : line is { Open: false }) ? "The market was too weak for the rules to buy tonight." : "No stock met every rule tonight.",
         past,
         checks is { Count: > 0 } ? checks.Count(check => check.Open) : null,
-        checks is { Count: > 0 } ? checks.Count : null);
+        checks is { Count: > 0 } ? checks.Count : null)
+    {
+        LeftOut = [.. ideas.Skip(SinglePageApp.HomeIdeas)],
+    };
 
     return Results.Content(
         page.HomeRegion(marks, view, Cards.Universe(reading, await read.MembersByIndexAsync(dated), SinglePageApp.HomeRoute)),

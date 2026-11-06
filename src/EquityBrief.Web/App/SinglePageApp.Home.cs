@@ -41,7 +41,11 @@ public sealed record HomeView(
     string? NoIdeas,
     HomePast? Past,
     int? RulesOpen = null,
-    int? Rules = null);
+    int? Rules = null)
+{
+    // The buys Tonight draws after the ideas Home draws, in Tonight's order.
+    public IReadOnlyList<HomeIdea> LeftOut { get; init; } = [];
+}
 
 // Home, from 22.16: the landing page for a reader new to investing, the day, tonight's ideas, how past ideas have done and
 // how the rules work, then the way to Tonight and the page's disclaimer. Every sentence is written here from templates over
@@ -64,8 +68,11 @@ public sealed partial class SinglePageApp
 
     public const string RisesLine = "The give-up price rises as the stock climbs, so a winner can keep running.";
 
-    // What the Fundamentals family's card says in a give-up price's place: it sets none and sells on its filings.
+    // What the Fundamentals family's card says in a give-up price's place: it sets none and sells on its filings; and a
+    // monthly book's, which sells at a reshuffle.
     public const string FilingsWeaken = "its filings weaken";
+
+    public const string ReshuffleDrops = "a monthly reshuffle drops it";
 
     // The line under a card's sell price, from its family's own exit rule: the Fundamentals family's filings and time limit,
     // its figures left off the read-only copy, a give-up price rising or staying where it is; none where a plan holds no
@@ -80,6 +87,11 @@ public sealed partial class SinglePageApp
             return copying
                 ? "No price is set in advance: it sells when a new filing weakens its score, or at its time limit."
                 : Invariant($"No price is set in advance: it sells when a new filing drops its score below {setting.HoldInNine} of 9 checks,{(setting.SoldUnderAverage ? " on a close under its 200-day average," : string.Empty)} or after {setting.Sessions} trading days.");
+        }
+
+        if (Planless(idea.Family))
+        {
+            return "No price is set in advance: it sells when " + ReshuffleDrops + ".";
         }
 
         return idea.Rises || idea.Trail is not null ? RisesLine
@@ -112,8 +124,44 @@ public sealed partial class SinglePageApp
         DriftRule.Name => "Strong earnings",
         ImprovingRule.Name => "Getting stronger as a business",
         DipRule.Name => "Quick rebound",
+        HeavyweightRule.Name => "Leader of its sector",
+        QualityRule.Name => "Strong business at a fair price",
         _ => "Idea",
     };
+
+    // The buys Home leaves out, named in Tonight's order with their families' tags: "3 more on Tonight: CVS and ODFL (Getting
+    // stronger as a business), NUE (Quick rebound), not drawn here to keep this page short."
+    // see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
+    public static string? LeftOutLine(IReadOnlyList<HomeIdea> left)
+    {
+        if (left.Count == 0)
+        {
+            return null;
+        }
+
+        static string Listed(IReadOnlyList<string> names) =>
+            names.Count == 1 ? names[0] : string.Join(", ", names.Take(names.Count - 1)) + " and " + names[^1];
+
+        var groups = new List<(string Tag, List<string> Tickers)>();
+
+        foreach (var idea in left)
+        {
+            if (groups.Count > 0 && groups[^1].Tag == IdeaTag(idea.Family))
+            {
+                groups[^1].Tickers.Add(idea.Ticker);
+            }
+            else
+            {
+                groups.Add((IdeaTag(idea.Family), [idea.Ticker]));
+            }
+        }
+
+        return Invariant($"{left.Count} more on Tonight: {string.Join(", ", groups.Select(group => Listed(group.Tickers) + " (" + group.Tag + ")"))}, not drawn here to keep this page short.");
+    }
+
+    // A family whose buys sell on no price set in advance: the Fundamentals family's on its filings and a monthly book's at a
+    // reshuffle, which draw How it sells in a plan's place.
+    public static bool Planless(string family) => family is ImprovingRule.Name or HeavyweightRule.Name or QualityRule.Name;
 
     // Which headline the day reads: weak where no rule buys, shaky where the rules buy after a fall of a percent or more,
     // mixed where some of an S&P 400's or 600's rules buy and healthy where all do.
@@ -284,6 +332,7 @@ public sealed partial class SinglePageApp
             }
 
             region.Append("</div>");
+            region.Append(LeftOutLine(view.LeftOut) is { } more ? Invariant($"<p class=\"home-more\" data-more=\"{view.LeftOut.Count}\">{Escaped(more)}</p>") : string.Empty);
             region.Append(Invariant($"<p style=\"margin:12px 0 0\"><a href=\"{TonightHref(view.Reading)}\">See all {view.IdeasCount} with their full plans</a></p>"));
         }
 
@@ -345,6 +394,8 @@ public sealed partial class SinglePageApp
         card.Append(Invariant($"<div><span>Buy at about</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
         card.Append(idea.Family == ImprovingRule.Name
             ? Invariant($"<div><span>Sell when</span><b class=\"stop\">{FilingsWeaken}</b></div>")
+            : Planless(idea.Family)
+            ? Invariant($"<div><span>Sell when</span><b class=\"stop\">{ReshuffleDrops}</b></div>")
             : Invariant($"<div><span>Sell if it falls to</span><b class=\"stop\">{(idea.Stop is { } stop ? Dollars(stop) : NoFigure)}</b></div>"));
 
         card.Append(Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));

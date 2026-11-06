@@ -52,6 +52,34 @@ public partial class ReadSurface
         Assert.Contains("1 stock to buy at tomorrow's open", WebUtility.HtmlDecode(new MarkRenderer().TomorrowsBuys([points[0]], null, night: FixNight)), StringComparison.Ordinal);
     }
 
+    // The S&P 500's buys of the night: five drifts, the Fundamentals family's AIG, CVS and ODFL and the dip's NUE. Home drew
+    // six and named none of the three it left out; it draws Tonight's first six and names the rest with their families.
+    // see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
+    [Fact]
+    public void HomesIdeasAreTonightsBuysInTonightsOrderAndTheRestAreNamed()
+    {
+        BuyPointView[] points =
+        [
+            .. new[] { "EVRG", "STE", "EW", "APP", "GWW" }.Select(ticker => Point("drift", "Earnings drift", ticker, 50m, 45m, 60m)),
+            Point("dip", "Short-term dip", "NUE", 150m, 140m, 160m),
+        ];
+        var card = FundamentalsCard([Improver("AIG", 6, 6, MarkRenderer.BoughtWords, 80.93m), Improver("CVS", 8, 9, MarkRenderer.BoughtWords), Improver("ODFL", 9, 9, MarkRenderer.BoughtWords)]);
+        var order = MarkRenderer.BuysInOrder(points, SinglePageApp.PlanlessBuys("500", card, null, null))
+            .Select(buy => buy.Point?.Pick.Row.Ticker ?? buy.Planless!.Ticker)
+            .ToArray();
+
+        Assert.Equal(["EVRG", "STE", "EW", "APP", "GWW", "AIG", "CVS", "ODFL", "NUE"], order);
+
+        HomeIdea Idea(string family, string ticker) => new(family, ticker, null, "Why.", 10m, null, null, false, null);
+
+        var left = new[] { Idea("improving", "CVS"), Idea("improving", "ODFL"), Idea("dip", "NUE") };
+        var home = WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [Idea("drift", "EVRG")], IdeasCount = 9, LeftOut = left }, string.Empty));
+
+        Assert.Contains("<p class=\"home-more\" data-more=\"3\">3 more on Tonight: CVS and ODFL (Getting stronger as a business), NUE (Quick rebound), not drawn here to keep this page short.</p>", home, StringComparison.Ordinal);
+        Assert.Null(SinglePageApp.LeftOutLine([]));
+        Assert.Equal("1 more on Tonight: NUE (Quick rebound), not drawn here to keep this page short.", SinglePageApp.LeftOutLine([Idea("dip", "NUE")]));
+    }
+
     // The card opens with its buys named, marks each on its table and never folds one behind the first ten rows.
     [Fact]
     public void TheFundamentalsCardOpensWithItsBuysAndNeverFoldsOneBehindItsShownRows()
