@@ -139,11 +139,11 @@ public partial class ReadSurface
         // A rule an approval sold under its 200-day average says so among its exits, and a card handed no setting reads the
         // family's starting one.
         Assert.Contains(
-            "below 6 of 9 checks, on a close under its 200-day average, or after 252 trading days.",
+            "below 6 in every 9 of the checks that apply, on a close under its 200-day average, or after 252 trading days.",
             OneHomeCard(idea with { Setting = idea.Setting! with { SoldUnderAverage = true } }, copying: false),
             StringComparison.Ordinal);
         Assert.Contains(
-            "below 7 of 9 checks, or after 126 trading days.",
+            "below 7 in every 9 of the checks that apply, or after 126 trading days.",
             OneHomeCard(idea with { Setting = null }, copying: false),
             StringComparison.Ordinal);
 

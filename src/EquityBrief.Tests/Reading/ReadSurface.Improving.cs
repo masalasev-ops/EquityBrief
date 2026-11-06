@@ -229,8 +229,8 @@ public partial class ReadSurface
         // The stock page's line beneath the contents, worked from the rows above: M1's filing of 1 Oct lifting it from 5 of 9
         // to 8 of 9, M3 bought on 2 Oct and kept at 7 of 9, and M2's release of 30 Sep waiting for its filing.
         Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals buys it at the next open: its filing of 2026-10-01 lifted its score to 8 of 9 apply, from 5 of 9.</p>", await Name("M1"), StringComparison.Ordinal);
-        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals bought it on 2026-10-02 and keeps it while its score stays at 7 of 9 or more.</p>", await Name("M3"), StringComparison.Ordinal);
-        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals flagged it: its results release of 2026-09-30 reads results better than expected. The Fundamentals family buys it only if its filing lifts it to 8 of 9, and that buy waits for the filing; no other family's buy waits on it.</p>", await Name("M2"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals bought it on 2026-10-02 and keeps it while its score stays at 7 in every 9 of the checks that apply or more.</p>", await Name("M3"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals flagged it: its results release of 2026-09-30 reads results better than expected. The Fundamentals family buys it only if its filing lifts it to at least 8 in every 9 of the checks that apply, and that buy waits for the filing; no other family's buy waits on it.</p>", await Name("M2"), StringComparison.Ordinal);
 
         // The chart page's chip in the fundamentals-first family's place, its summary and, for the stock it bought, its way in
         // with no stop.
@@ -246,7 +246,7 @@ public partial class ReadSurface
         Assert.Contains("Tonight Fundamentals flagged it from its results release, waiting for its filing.", m2, StringComparison.Ordinal);
         Assert.Contains("Tonight it is in the Fundamentals setup's holdings.", m3, StringComparison.Ordinal);
         Assert.Contains("Picked tonight by Fundamentals: buy at the next open.", m1, StringComparison.Ordinal);
-        Assert.Contains("It sets no stop: it sells at the close when a new filing drops its score under 7 of 9.", m1, StringComparison.Ordinal);
+        Assert.Contains("It sets no stop: it sells at the close when a new filing drops its score below 7 in every 9 of the checks that apply.", m1, StringComparison.Ordinal);
         Assert.Contains("Otherwise at the close of its 126th trading day, or of its last day in the index.", m1, StringComparison.Ordinal);
     }
 
