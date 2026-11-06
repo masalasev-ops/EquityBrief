@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/BUILD_PLAN.md - the tabled data check's market or sector wide rule at more than 25%
+Decision: Phase 23's plan stands before the three sign-offs still owed and none of it is built until they are signed
+Was:
+> Tabled for phase 23, the data check's rules: ... A session is market or sector wide where 10 or more members moved 15% on it. ...
+Now:
+> Tabled for phase 23, the data check's rules: ... A session is market or sector wide where 10 or more members moved more than 25% on it, on the operator's word of 2026-11-04, the counts below having been read at 15%. ...
+Why: the operator's change of 2026-11-04 to the phase 23 plan, word for word in `prompts/2026-11-04-23.0-operator-answers.md`: "a session is market or sector wide where 10 or more members moved more than 25%, as ruled after the chart audit, not 15%." The counts the paragraph states were read at 15% and stand as read, 23.1 stating them again at 25%.
+
 ### 2026-11-05 - docs/ARCHITECTURE.html - a segment table read again without the filer's own label for its segments
 Decision: A segment table whose segments carry the filer's own label for the consolidation's segments is read again without it and its subsegments, standing only where that sums
 Was:

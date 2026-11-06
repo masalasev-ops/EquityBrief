@@ -15850,3 +15850,42 @@ Carried:    the store's pages draw the corrected table once the read surface res
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last, the figures below stated before that run: all six steps, 0 warnings, 0 errors,
             3462 of 3462 tests ran with none failed, migrations 0 to 128 with none pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing, none out
             of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 56 checks on the roster run and passed.
+
+### 23.0 planning - phase 23 planned: a history back to 2005 for every stock ever a member, the data check first, one verdict across the three indices and one restart, with the operator's answers folded in   2026-11-06
+
+Not a checkpoint entry. It lands 23.0, the pass that plans phase 23, and builds none of it.
+Queue:      done, phase 18's sign-off, the seven faults, the publish refusal, the suspect wording, the late posts, what the PR 640
+            read-back left open, the entry check and the corrections the fifth review of phase 20's sign-off found; in progress, this
+            pass; next, the sign-offs of phases 20, 21 and 22, then 23.1, no phase 23 checkpoint built before those three are signed and
+            the queued work has merged.
+Ruled:      the operator's brief of 2026-11-04, kept whole in `prompts/2026-11-04-23.0-phase-23-brief.md`, in its words on the order:
+            "the plan may be written before the sign-offs of phases 20, 21 and 22, which stay owed. No phase 23 checkpoint is built
+            until those three are signed and the queued work has merged." (see: Phase 23's plan stands before the three sign-offs still
+            owed and none of it is built until they are signed)
+Answered:   word for word in `prompts/2026-11-04-23.0-operator-answers.md` and `prompts/2026-11-05-23.0-operator-additions.md`, the plan
+            as approved in `prompts/2026-11-04-23.0-phase-23-plan.md`: IVV's holdings before 2012; the drift judged from the first year
+            surprises cover 80% of an index's since-gone members, the S&P 500's from 2019 where none does; a search every third test
+            year; the three code paths kept, the S&P 500's swing filter and heavyweight book learning the hooks; Countrywide left out; a
+            history's end set by rule from the SEC's filings; the wide rule at more than 25%; the luck line beside the approvals; each
+            filing-based family's first test year measured first; and at the one restart the profit check, the entry check's readings,
+            three wait-entry variants and six ledger conditions, tested by the loop and not adopted.
+Planned:    `BUILD_PLAN.md`'s phase 23 section, 23.0 to 23.11; the tabled list's line taking its four paragraphs up and its wide rule at
+            more than 25%, its prior text in the changelog; two operating rows; section 20's row; eight decisions.
+Measured:   read-only on 2026-11-04 and 2026-11-05 on the code at 7f1494d4, the live store, the provider and the SEC, 308 weighted calls
+            and 18 SEC requests, no store row written and no paid call. The provider's S&P 500 answer: 911 spans, 163 with no start, one
+            leave before 2012. The trust's schedules: IVV, IJH and IJR at 500, 400 and 600 on 2005-06-30, 500, 400 and 603 on 2008-03-31,
+            499, 403 and 601 on 2008-09-30 and 501, 400 and 602 on 2012-06-30, no CUSIP or ISIN. A name alone gives one code to 313, 251 and
+            432 of them on 2005-06-30, and a price at two quarter ends named 15 of 17 sampled holdings no name reached. Members since gone
+            hold prints for 12 to 17 in every 100 in 2005's first quarter and 28 to 31 in 2012's second, and surprises for 65 to 78 on the
+            S&P 500 from 2018 and 95 to 99 on the 400 and 600 from 2019. 10 of the operator's 11 named failures are priced, Countrywide
+            not. The 35 wording files reach all 137 rules and the 8 ladder windows, and every other change moving a pin sits in the
+            restart. Runs, scaled: about 3,300 stocks priced at about 10,060 weighted calls in about 50 minutes, the older schedules about
+            50, the filers and their filings about 80, the ledger history about 4 h 15 alone, the monthly test about 5 h more, the
+            searches about 45 h. Migrations about seven from 129; claims about 1,602 from 1,534.
+Opened:     two operating rows, the monthly run's time over the longer history and the industry news mood split read once every member
+            holds its labels.
+Verified:   `tools/ci.ps1` green over main at 586e22ec as the 18.2 correction's entry above records, 3462 of 3462 tests; documents alone
+            change, so the checks reading them run filtered over the tree carrying this entry, 179 of 179 passed.
+Carried:    the sign-offs of phases 20, 21 and 22, each owed by a fresh session and discharged by no checkpoint of phase 23; and for
+            23.10, each step's provider and model cost stated before it runs and the six conditions read as the entry check's note of
+            2026-11-05 names them, each leaving its band out, in `prompts/2026-11-05-22.46-addition-for-the-phase-23-plan.md`.
