@@ -2496,6 +2496,11 @@ Their order's eighth item. Home's account line names the day the current rules' 
 
 **Done when** the S&P 500's Home of 2026-11-05 reads its account from 2 Oct with the replay's words and "All versions since 25 Sep: 48 ideas bought and sold on paper, 21 made money." apart; the copy and an account carried back by nothing say no replay; the proof of the counts reads Home's new line; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.53 On the operator's order of 2026-11-06: an account counting from before its version says so
+Their order's ninth item. A Paper trading tile whose account counts from before its version's start says beside its date that its earlier trades replay the same under this version (see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same).
+
+**Done when** an account counting from 2 Oct under a version from 3 Nov says so beneath its date, one counting from its version's start says nothing more, and the copy says neither; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

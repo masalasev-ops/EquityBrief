@@ -176,6 +176,22 @@ public partial class ReadSurface
         Assert.EndsWith("the day their first trade counts.", SinglePageApp.AccountLine(past, copying: true), StringComparison.Ordinal);
     }
 
+    // The breakout's account on Paper trading read "Down 0.7% since 2 Oct" while its version counts from 3 Nov, carried back
+    // by a replay; beside the date it says so.
+    // see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same
+    [Fact]
+    public void AnAccountCountingFromBeforeItsVersionSaysSoBesideTheDate()
+    {
+        PaperAccountView Account(string family, DateOnly since, DateOnly? version) =>
+            new(family, family, PaperAccountView.Live, "Live", "words", "verdict", null, "risks", [], null, 1, 0, null, since) { VersionFrom = version };
+
+        var tiles = new MarkRenderer().PaperTiles([Account("breakout", new DateOnly(2026, 10, 2), new DateOnly(2026, 11, 3)), Account("drift", new DateOnly(2026, 10, 30), new DateOnly(2026, 10, 30))], null);
+
+        Assert.Contains("<div class=\"pt-carried\" data-carried=\"2026-10-02\">counts from 2 Oct: its earlier trades replay the same under this version</div>", tiles, StringComparison.Ordinal);
+        Assert.Single(Regex.Matches(tiles, "class=\"pt-carried\""));
+        Assert.DoesNotContain("pt-carried", new MarkRenderer { Copying = true }.PaperTiles([Account("breakout", new DateOnly(2026, 10, 2), new DateOnly(2026, 11, 3))], null), StringComparison.Ordinal);
+    }
+
     // The card opens with its buys named, marks each on its table and never folds one behind the first ten rows.
     [Fact]
     public void TheFundamentalsCardOpensWithItsBuysAndNeverFoldsOneBehindItsShownRows()

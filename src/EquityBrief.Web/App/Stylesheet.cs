@@ -506,6 +506,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-tile .pt-name{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--ink)}
 .paper-tile .pt-figure{font:600 22px var(--sans);font-variant-numeric:tabular-nums}
 .paper-tile .pt-sub{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.paper-tile .pt-carried{font-size:12px;color:var(--soft);margin-top:2px}
 .paper .day,.paper-variants .too-few{white-space:nowrap}
 .paper-tabs,.paper-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px}
 .paper-bought,.paper-variants,.paper-only,.score-table{min-width:720px}

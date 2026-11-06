@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - an account counting from before its version says so
+Decision: A paper account counting from before its version's start says beside the date that its earlier trades replay the same
+Was:
+> The tiles: ... from 21.13 each tile opening on its return since the day it counts from on the account's size with the trades it holds open, "Up n.n% since dd mmm on $nnn,nnn, with n trades open."
+Now:
+> The tiles: ... "Up n.n% since dd mmm on $nnn,nnn, with n trades open."; from 22.53 a tile whose account counts from before its version's start saying beneath its date that its earlier trades replay the same under this version, which the read-only copy leaves off (see: ...)
+Why: the operator's order of 2026-11-06, its ninth item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - Home's paper account and the system's total apart
 Decision: Home's paper account counts from the day the current rules' first trade counts, and the system's every version stands apart and labelled
 Was:

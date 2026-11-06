@@ -34,6 +34,10 @@ public sealed record PaperAccountSource(
     bool ReadsReleases = false,
     int? JudgedFrom = null)
 {
+    // The first session its version's registration counts from, none for an account no registration starts; an account
+    // starting before it was carried back by a replay that reproduced every trade.
+    public DateOnly? VersionFrom { get; init; }
+
     // Whether a stored trade is one of this account's: kept under its name, or under its name and the filter version it
     // was listed from.
     public bool Keeps(PaperRow row) =>
@@ -190,7 +194,7 @@ public static class PaperScreen
     {
         var start = StartOf(standing, replays);
 
-        return Split(account, trades, start, CountedWords(standing, start), lineage);
+        return Split(account, trades, start, CountedWords(standing, start), lineage) with { VersionFrom = FamilyRecords.FirstSession(standing.RegisteredAt) };
     }
 
     static PaperAccountSource Split(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly start, string version, IReadOnlyList<CandidateRow> lineage) =>
@@ -702,6 +706,7 @@ public static class PaperScreen
                 account.ReadsReleases ? ToneNote : null)
             {
                 JudgedFrom = account.JudgedFrom,
+                VersionFrom = account.VersionFrom,
             };
         });
 

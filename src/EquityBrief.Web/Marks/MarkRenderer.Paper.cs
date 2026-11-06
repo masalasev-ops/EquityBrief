@@ -60,6 +60,12 @@ public sealed record PaperAccountView(
 
     // From 21.17 the local model's cutoff's year a rule reading a release reading is judged from, none for any other.
     public int? JudgedFrom { get; init; }
+
+    // The first session its version's registration counts from, none where no registration starts the account.
+    public DateOnly? VersionFrom { get; init; }
+
+    // Whether the account counts from before its version's own start, carried back by a replay that reproduced every trade.
+    public bool CarriedBack => Since is { } from && VersionFrom is { } registered && from < registered;
 }
 
 // One trade of an account's trade log: its stock, its buy session and price, its stop where it holds one, the session it
@@ -250,6 +256,10 @@ public sealed partial class MarkRenderer
     static string PaperPercent(double fraction) =>
         SignedFigure(fraction * 100, 1, Formatted($"{Unsigned(fraction * 100, 1):+0.0;-0.0;0.0}%"));
 
+    // What an account counting from before its version's start says beside its date.
+    public static string CarriedWords(DateOnly from) =>
+        FormattableString.Invariant($"counts from {from:d MMM}: its earlier trades replay the same under this version");
+
     // A tile a family's live or provisional account in the one family order: its return since its record began, the trades
     // its walk holds open and has closed and the day it counts from, the version it counts under the pointer; and the
     // index's fund over the same days.
@@ -279,7 +289,12 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<div class=\"paper-tile\" data-family=\"{Escaped(head.Family)}\" data-standing=\"{head.Standing}\" data-return=\"{(made is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{head.Open}\" data-closed=\"{head.Closed}\" data-since=\"{(head.Since is { } since ? DayOf(since) : "none")}\" title=\"{Escaped(Copying ? FamilyName(head.Family) : Capitalised(head.Words) + (head.Version is { } version ? "; counts " + version : string.Empty))}\">");
             html.Append(Invariant, $"<div class=\"pt-name\"><span class=\"fam-swatch\" data-family=\"{Escaped(head.Family)}\"></span>{Escaped(FamilyName(head.Family))} <span class=\"status-pill {head.Standing}\">{Escaped(head.Name)}</span></div>");
             html.Append(made is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
-            html.Append(Invariant, $"<div class=\"pt-sub\">{Escaped(TileSaid(made, head.Since, size, head.Open))}{(head.Since is null || made is null ? string.Empty : Formatted($" {head.Closed} closed."))}</div></div>");
+            html.Append(Invariant, $"<div class=\"pt-sub\">{Escaped(TileSaid(made, head.Since, size, head.Open))}{(head.Since is null || made is null ? string.Empty : Formatted($" {head.Closed} closed."))}</div>");
+
+            // An account counting from before its version's start says so beside the date; the read-only copy names no version.
+            // see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same
+            html.Append(!Copying && head is { CarriedBack: true, Since: { } carried } ? Formatted($"<div class=\"pt-carried\" data-carried=\"{DayOf(carried)}\">{Escaped(CarriedWords(carried))}</div>") : string.Empty);
+            html.Append("</div>");
         }
 
         if (fund is { } index)
