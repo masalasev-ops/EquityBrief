@@ -951,6 +951,8 @@ public sealed partial class MarkRenderer
     // newest first, with the setup each came from, the shares it bought, and its return on the position, so far where it
     // is open, or why it was skipped.
     // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+    public const string CombinedFillLine = "<p class=\"paper-combined-fill\">Each session's picks are bought in Tonight's order, each position at most a tenth of the account, so a pick the free cash cannot cover is skipped where it stands in that order and a later one the cash covers is still bought.</p>";
+
     public string PaperCombined(PaperCombinedView? combined)
     {
         if (combined is not { } all)
@@ -964,9 +966,11 @@ public sealed partial class MarkRenderer
         html.Append(all.Skipped == 0
             ? "<p class=\"paper-combined-skips\">It has taken every pick it was handed.</p>"
             : Formatted($"<p class=\"paper-combined-skips\">It skipped {all.Skipped} pick(s): {all.AlreadyHeld} because another setup already owned the stock, {all.SectorFull} because three positions in the stock's sector were already open, and {all.UnderCash} because the free cash could not cover the buy.</p>"));
+        html.Append(CombinedFillLine);
         html.Append("<div class=\"tbl-wrap\"><table class=\"paper-combined-table\"><thead><tr><th>Setup</th><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Shares</th><th>Ended</th><th class=\"r\">Return</th></tr></thead><tbody>");
 
-        foreach (var trade in all.Trades.OrderByDescending(trade => trade.Bought).ThenBy(trade => SetupFamilies.OrderOf(trade.Family)).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
+        // Each session's trades in the order the account filled them, Tonight's, so a skipped pick stands where it was reached.
+        foreach (var trade in all.Trades.Select((trade, at) => (Trade: trade, At: at)).OrderByDescending(one => one.Trade.Bought).ThenBy(one => one.At).Select(one => one.Trade))
         {
             html.Append(Invariant, $"<tr data-family=\"{Escaped(trade.Family)}\" data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\"{(trade.Skipped is null ? string.Empty : " data-skipped=\"" + Escaped(trade.Skipped) + "\"")}>");
             html.Append(Invariant, $"<td><span class=\"fam-swatch\" data-family=\"{Escaped(trade.Family)}\"></span>{Escaped(FamilyName(trade.Family))}</td><td><a href=\"#/chart/{Uri.EscapeDataString(trade.Ticker)}\">{Escaped(trade.Ticker)}</a></td><td>{DayOf(trade.Bought)}</td>");

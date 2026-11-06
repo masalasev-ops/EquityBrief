@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - the combined account caps a position at a tenth and fills in Tonight's order
+Decision: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+Was:
+> The combined paper account (section 17): ... one position a stock and the account's own most-in-one-stock limit for every trade (see: ...)
+> The combined paper account (paper trading): ... from 21.13 its card opening on one sentence of its return since its first day with the positions it holds open and the picks it skipped
+Now:
+> ... one position a stock, and at most 0.1 of the account's value in one stock for every trade whatever the settings state for each rule's own account, each session's picks filled in Tonight's order (see: ...)
+> ... the same, then: from 22.59 each position at most a tenth of the account's value whatever the settings state, each session's picks filled in Tonight's order, a line saying so beneath the sentence and each session's trades drawn in the order it filled them, a pick the free cash cannot cover standing skipped where it was reached
+Why: the operator's answers of 2026-11-06, their third item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - a pick's card reads its quarters as the pages do
 Decision: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file
 Was:

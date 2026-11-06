@@ -31,42 +31,90 @@ public partial class ReadSurface
     [Fact]
     public void TheCombinedAccountIsWorkedByHandOverAStockTwoFamiliesPickedASectorAtItsCapABuyTheCashCannotCoverAndTwoBooks()
     {
-        // $10,000, 1 per cent a trade and at most a fifth in one stock: a swing trade risks $100 and holds at most $2,000.
+        // $10,000, 1 per cent a trade, and from 22.59 at most a tenth of the account in one stock whatever the settings state:
+        // a swing trade risks $100 and holds at most $1,000, the settings' fifth no longer read.
         var account = new AccountSettings(10_000m, 1m, 0.2m);
 
-        // On the first session, in the families' order: the pullback's A at 100 over a stop of 99, $10,000 by its risk and
-        // so the cap's 20 shares; the breakout's A, already held; its B at 50 over 49, the cap's 40 shares; the drift's C at
-        // 20 over 19, 100 shares at the cap and its risk alike; its D at 10, a fourth open in sector S1, skipped; the dip's E
-        // at 25 over 24, the cap's 80 shares in S2; quality's F at 40, a book of 10 sized at a tenth of a fifth of the
-        // account, $200, 5 shares; and the Fundamentals family's G at 30, $200 at 30, 6 shares. Cash left $1,620.
-        // On the second session the pullback's H at 100 over 99 sizes the cap's 20 shares, $2,000, over the free $1,620,
-        // and is skipped. On the third A is sold at 110 first, $2,200, and then the drift's I at 50 over 49 is bought, the
-        // cap now a fifth of $10,200, 40 shares at $2,000.
+        // On the first session, in Tonight's order: the pullback's A at 100 over a stop of 99, $10,000 by its risk and so the
+        // cap's 10 shares; the breakout's A, already held; its B at 50 over 49, the cap's 20 shares; the drift's C at 20 over
+        // 19, the cap's 50 shares; its D at 10, a fourth open in sector S1, skipped; the Fundamentals family's G at 30, a book
+        // of 10 sized at a tenth of a fifth of the account, $200, 6 shares; the dip's E at 25 over 24, the cap's 40 shares in
+        // S2; and quality's F at 40, $200, 5 shares. Cash left $5,620.
+        // On the second session, the account worth $10,000 at its buys, the pullback's H1 to H5 at 100 over 99 take the cap's
+        // 10 shares each, $5,000, and H6's $1,000 is over the free $620 and is skipped where it stands; quality's J after it,
+        // $200 at 40, is still bought, leaving $420. On the third A is sold at 110 first, $1,100, and the drift's I at 50 over
+        // 49 is bought, the cap now a tenth of $10,100, 20 shares at $1,000.
         CombinedTrade[] trades =
         [
-            Handed("A", CombinedDay1, 100m, 99m, "pullback", 0, "S1", ended: CombinedDay3, sale: 110m),
-            Handed("A", CombinedDay1, 100m, 99m, "breakout", 1, "S1"),
-            Handed("B", CombinedDay1, 50m, 49m, "breakout", 1, "S1", place: 2),
-            Handed("C", CombinedDay1, 20m, 19m, "drift", 2, "S1"),
-            Handed("D", CombinedDay1, 10m, 9.5m, "drift", 2, "S1", place: 2),
-            Handed("E", CombinedDay1, 25m, 24m, "dip", 3, "S2"),
-            Handed("F", CombinedDay1, 40m, null, "quality", 4, "S3", book: 10),
-            Handed("G", CombinedDay1, 30m, null, "improving", 5, "S4", book: 10),
-            Handed("H", CombinedDay2, 100m, 99m, "pullback", 0, "S5"),
-            Handed("I", CombinedDay3, 50m, 49m, "drift", 2, "S6"),
+            Handed("A", CombinedDay1, 100m, 99m, "pullback", BuyOrder.Of("pullback"), "S1", ended: CombinedDay3, sale: 110m),
+            Handed("A", CombinedDay1, 100m, 99m, "breakout", BuyOrder.Of("breakout"), "S1"),
+            Handed("B", CombinedDay1, 50m, 49m, "breakout", BuyOrder.Of("breakout"), "S1", place: 2),
+            Handed("C", CombinedDay1, 20m, 19m, "drift", BuyOrder.Of("drift"), "S1"),
+            Handed("D", CombinedDay1, 10m, 9.5m, "drift", BuyOrder.Of("drift"), "S1", place: 2),
+            Handed("E", CombinedDay1, 25m, 24m, "dip", BuyOrder.Of("dip"), "S2"),
+            Handed("F", CombinedDay1, 40m, null, "quality", BuyOrder.Of("quality"), "S3", book: 10),
+            Handed("G", CombinedDay1, 30m, null, "improving", BuyOrder.Of("improving"), "S4", book: 10),
+            .. Enumerable.Range(1, 6).Select(at => Handed("H" + at, CombinedDay2, 100m, 99m, "pullback", BuyOrder.Of("pullback"), "S" + (4 + at), place: at)),
+            Handed("J", CombinedDay2, 40m, null, "quality", BuyOrder.Of("quality"), "S11", book: 10),
+            Handed("I", CombinedDay3, 50m, 49m, "drift", BuyOrder.Of("drift"), "S12"),
         ];
         var buys = trades.GroupBy(one => one.Trade.Ticker, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First().Trade.Buy, StringComparer.Ordinal);
         var walked = PaperAccount.Combined(account, trades, [CombinedDay1, CombinedDay2, CombinedDay3], (ticker, _) => buys[ticker]);
 
+        Assert.Equal(0.1m, PaperAccount.CombinedCap);
         Assert.Equal(
-            ["pullback|A|20|", $"breakout|A|0|{PaperAccount.AlreadyHeld}", "breakout|B|40|", "drift|C|100|", $"drift|D|0|{PaperAccount.SectorFull}", "dip|E|80|", "quality|F|5|", "improving|G|6|", $"pullback|H|0|{PaperAccount.UnderTheCash}", "drift|I|40|"],
+            [
+                "pullback|A|10|", $"breakout|A|0|{PaperAccount.AlreadyHeld}", "breakout|B|20|", "drift|C|50|", $"drift|D|0|{PaperAccount.SectorFull}", "improving|G|6|", "dip|E|40|", "quality|F|5|",
+                "pullback|H1|10|", "pullback|H2|10|", "pullback|H3|10|", "pullback|H4|10|", "pullback|H5|10|", $"pullback|H6|0|{PaperAccount.UnderTheCash}", "quality|J|5|",
+                "drift|I|20|",
+            ],
             walked.Trades.Select(one => $"{one.From.Family}|{one.Taken.Trade.Ticker}|{one.Taken.Shares}|{one.Taken.Skipped}"));
         Assert.Equal((1, 1, 1), (walked.AlreadyHeld, walked.SectorFull, walked.UnderCash));
-        Assert.Equal((7, 3), (walked.Walk.Taken, walked.Walk.Skipped));
+        Assert.Equal((13, 3), (walked.Walk.Taken, walked.Walk.Skipped));
 
-        // Marked at their buys, the account stands at $10,000 on the first two sessions and at $10,200 once A is sold.
-        Assert.Equal([10_000m, 10_000m, 10_200m], walked.Walk.Values.Select(one => one.Value));
-        Assert.Equal(0.02, walked.Walk.Return!.Value, 12);
+        // Marked at their buys, the account stands at $10,000 on the first two sessions and at $10,100 once A is sold.
+        Assert.Equal([10_000m, 10_000m, 10_100m], walked.Walk.Values.Select(one => one.Value));
+        Assert.Equal(0.01, walked.Walk.Return!.Value, 12);
+    }
+
+    // Paper trading hands the account each family's place in Tonight's order: the Fundamentals family's buy of a session
+    // before the dip's, where the families' page order placed it after.
+    [Fact]
+    public void PaperTradingHandsTheCombinedAccountEachFamilysPlaceInTonightsOrder()
+    {
+        EquityBrief.Api.Reading.PaperAccountSource Account(string family, string ticker, bool book) =>
+            new(family, family, PaperAccountView.Live, family, family, null, book, [(new PaperTrade(ticker, CombinedDay1, 100m, book ? null : 99m, null, null, null, 1, book ? 10 : null), null)], CombinedDay1);
+
+        var view = EquityBrief.Api.Reading.PaperScreen.Combined(
+            [Account("dip", "E", book: false), Account("improving", "G", book: true)],
+            new AccountSettings(10_000m, 1m, 0.2m),
+            [CombinedDay1, CombinedDay2],
+            CombinedDay2,
+            (_, _) => 100m,
+            _ => 100m,
+            new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal));
+
+        Assert.Equal(["improving G", "dip E"], view!.Trades.Select(trade => trade.Family + " " + trade.Ticker));
+    }
+
+    // Tonight's order of a night's buys, as the combined account fills a session and Tonight draws them, held by one order.
+    [Fact]
+    public void TheCombinedAccountFillsASessionInTheOrderTonightDrawsItsBuysIn()
+    {
+        Assert.Equal(
+            ["pullback", "breakout", "drift", "fundamentals", "improving", "dip", "heavyweight", "quality"],
+            BuyOrder.Families);
+        Assert.Equal(BuyOrder.Families.Count - 1, BuyOrder.Of("quality"));
+
+        BuyPointView Point(string family) => new(family, family, new FamilyPickCell(new ListingCell("T" + family, CombinedDay1, 1, 0, 10m, []), 1, 10m, 9m, 12m, false, 2m, "why", []));
+
+        PlanlessBuyView Planless(string family) => new(family, family, "P" + family, null, "why", "business", 10m, "sells", "#/");
+
+        var drawn = MarkRenderer.BuysInOrder(
+            [Point("pullback"), Point("breakout"), Point("drift"), Point("fundamentals"), Point("dip")],
+            [Planless("improving"), Planless("heavyweight"), Planless("quality")]);
+
+        Assert.Equal(BuyOrder.Families, drawn.Select(buy => buy.Point?.Family ?? buy.Planless!.Family));
     }
 
     [Fact]
@@ -88,20 +136,22 @@ public partial class ReadSurface
             0,
             0,
             [
-                new("pullback", "A", CombinedDay1, 100m, 20, null, null, 0.03, true),
+                new("pullback", "A", CombinedDay1, 100m, 10, null, null, 0.03, true),
                 new("breakout", "A", CombinedDay1, 100m, 0, PaperAccount.AlreadyHeld, null, null, true),
+                new("improving", "G", CombinedDay1, 30m, 6, null, null, 0.01, true),
+                new("dip", "E", CombinedDay1, 25m, 40, null, null, 0.0, true),
             ]);
         var marks = new MarkRenderer();
         var tiles = WebUtility.HtmlDecode(marks.PaperTiles([], null, combined));
         var chart = WebUtility.HtmlDecode(marks.PaperChart([], null, combined));
         var card = WebUtility.HtmlDecode(marks.PaperCombined(combined));
 
-        // The tile: its return on the size, +0.6% with A up 3 per cent on its $2,000, what it holds and what it skipped.
+        // The tile: its return on the size, +0.3% with A up 3 per cent on its $1,000, what it holds and what it skipped.
         Assert.Contains("<div class=\"paper-tile combined\" data-standing=\"combined\"", tiles, StringComparison.Ordinal);
         Assert.Contains("data-skipped=\"1\"", tiles, StringComparison.Ordinal);
         Assert.Contains(">All setups together<", tiles, StringComparison.Ordinal);
-        Assert.Contains("+0.6%", tiles, StringComparison.Ordinal);
-        Assert.Contains("Up 0.6% since 2 Nov, with 1 trade open. 0 closed, 1 skipped.", tiles, StringComparison.Ordinal);
+        Assert.Contains("+0.3%", tiles, StringComparison.Ordinal);
+        Assert.Contains("Up 0.3% since 2 Nov, with 1 trade open. 0 closed, 1 skipped.", tiles, StringComparison.Ordinal);
 
         // Its line in the chart, keyed by its own name.
         Assert.Contains("data-standing=\"combined\"", chart, StringComparison.Ordinal);
@@ -111,8 +161,15 @@ public partial class ReadSurface
         Assert.Contains("It skipped 1 pick(s): 1 because another setup already owned the stock, 0 because three positions in the stock's sector were already open, and 0 because the free cash could not cover the buy.", card, StringComparison.Ordinal);
         Assert.Contains($"data-family=\"breakout\" data-ticker=\"A\" data-bought=\"2026-11-02\" data-open=\"true\" data-skipped=\"{PaperAccount.AlreadyHeld}\"", card, StringComparison.Ordinal);
         Assert.Contains($"skipped: {PaperAccount.AlreadyHeld}", card, StringComparison.Ordinal);
-        Assert.Contains(">20</td>", card, StringComparison.Ordinal);
+        Assert.Contains(">10</td>", card, StringComparison.Ordinal);
         Assert.Contains("+3.0%", card, StringComparison.Ordinal);
+
+        // From 22.59 the session's rows in the order the account filled them, Tonight's, the Fundamentals' G before the dip's E
+        // where the families' page order drew the dip first, under the line saying how it fills.
+        Assert.Contains(WebUtility.HtmlDecode(MarkRenderer.CombinedFillLine), card, StringComparison.Ordinal);
+        Assert.Equal(
+            ["pullback A", "breakout A", "improving G", "dip E"],
+            System.Text.RegularExpressions.Regex.Matches(card, "<tr data-family=\"([a-z]+)\" data-ticker=\"([A-Z]+)\"").Select(row => row.Groups[1].Value + " " + row.Groups[2].Value));
 
         // The card's words carry no term of 15.23's word list.
         var said = PlainWords.Visible(marks.PaperCombined(combined));

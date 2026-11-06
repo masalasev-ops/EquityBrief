@@ -2526,6 +2526,11 @@ Their answers' second item, its fourth part. No rule pins the decision cards' so
 
 **Done when** quarters the provider files as a profit and the filings as a loss read the loss and warn where the provider's ticked; a newest quarter with no filing and no release reads not on file; one drawn from its release reads no cover and says why; the S&P 400's card reads the filings its store holds; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.59 On the operator's answers of 2026-11-06: the combined account caps a position at a tenth and fills in Tonight's order
+Their answers' third item. The combined account sizes each position to at most a tenth of its value whatever the settings state, fills each session's picks in Tonight's order, the order Tonight's buys are drawn in held by one statement, and its card draws each session's trades in the order it filled them under a line saying so; each rule's own account stands as it was (see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it).
+
+**Done when** the account worked by hand over constructed trades sizes each swing position at a tenth, skips the sixth $1,000 buy over the free $620 where it stands and still buys the $200 holding after it, and fills the Fundamentals family's buy before the dip's; Tonight's buys and the account read one order; the card draws a session's rows in the order filled; section 17's figure is pinned; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23
