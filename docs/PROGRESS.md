@@ -16196,3 +16196,20 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
             none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.0 - correction: 23.10 holds the provider's quarters read as the pages read them and the tight stop's skip on three families   2026-11-06
+
+Found:      the operator's answers of 2026-11-06, their fourth item, word for word in
+            `prompts/2026-11-06-22.54-answers-to-the-fix-pass-report.md`: the plan's one restart did not yet hold either change.
+Corrected:  23.10's parts, its done condition and the restart's paragraph: the member reader, the fundamentals reader and the
+            S&P 400's and 600's family steps read each quarter from its filing, then its release, then nothing, the picks moved stated on each
+            index with EW's, OHI's, SBRA's and LTC's of 2026-11-05 named; a pick whose give-up price sits within one typical daily
+            move of its buy skipped, a variant on the S&P 500's drift and pullback and the S&P 600's pullback and on neither the
+            S&P 400's drift nor the S&P 600's, each counted in its family's correction, a family holding nine walking it
+            unregistered. Two decisions; the prior text in the changelog. Labelled under 23.0, the pass that planned the phase.
+            Documents alone; nothing of phase 23 is built.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3493 of 3493 tests ran with none failed, migrations 0 to 128 with none
+            pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
+            none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
