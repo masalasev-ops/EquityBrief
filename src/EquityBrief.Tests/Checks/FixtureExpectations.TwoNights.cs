@@ -36,7 +36,9 @@ public partial class FixtureExpectations
     static readonly DateTimeOffset EarlierEvening = new(2026, 9, 3, 21, 10, 0, TimeSpan.Zero);
     static readonly DateTimeOffset FixtureEvening = new(2026, 9, 4, 21, 10, 0, TimeSpan.Zero);
 
-    internal static async Task<TemporaryStore> WithTwoNights()
+    internal static Task<TemporaryStore> WithTwoNights() => StoreSnapshots.CopyOf(TwoNightsBuilt);
+
+    static async Task<TemporaryStore> TwoNightsBuilt()
     {
         var store = new TemporaryStore().Migrated();
         var backfill = FixedClock.At(Instant, SessionZones.UnitedStates);

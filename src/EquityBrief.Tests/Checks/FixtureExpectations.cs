@@ -484,7 +484,9 @@ public partial class FixtureExpectations
         JsonDocument.Parse(File.ReadAllText(
             Path.Combine(Folder(), "expectations", stage + ".json"))).RootElement;
 
-    static async Task<TemporaryStore> Replayed()
+    static Task<TemporaryStore> Replayed() => StoreSnapshots.CopyOf(ReplayedBuilt);
+
+    static async Task<TemporaryStore> ReplayedBuilt()
     {
         var store = new TemporaryStore().Migrated();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -780,7 +782,9 @@ public partial class FixtureExpectations
     // the wrong window would agree with a figure taken from itself, which is the
     // whole difference between an expectation and a regression baseline.
 
-    static async Task<TemporaryStore> WithIndicators()
+    static Task<TemporaryStore> WithIndicators() => StoreSnapshots.CopyOf(IndicatorsBuilt);
+
+    static async Task<TemporaryStore> IndicatorsBuilt()
     {
         var store = await Replayed();
 
@@ -1035,7 +1039,9 @@ public partial class FixtureExpectations
 
     // ---- 3.2, the swings ----
 
-    static async Task<TemporaryStore> WithSwings()
+    static Task<TemporaryStore> WithSwings() => StoreSnapshots.CopyOf(SwingsBuilt);
+
+    static async Task<TemporaryStore> SwingsBuilt()
     {
         var store = await Replayed();
 
@@ -1302,7 +1308,9 @@ public partial class FixtureExpectations
 
     // ---- 3.3, the volume profile ----
 
-    static async Task<TemporaryStore> WithProfile()
+    static Task<TemporaryStore> WithProfile() => StoreSnapshots.CopyOf(ProfileBuilt);
+
+    static async Task<TemporaryStore> ProfileBuilt()
     {
         var store = await Replayed();
 
@@ -1858,7 +1866,9 @@ public partial class FixtureExpectations
 
     // ---- 3.4, the level bands ----
 
-    static async Task<TemporaryStore> WithLevels()
+    static Task<TemporaryStore> WithLevels() => StoreSnapshots.CopyOf(LevelsBuilt);
+
+    static async Task<TemporaryStore> LevelsBuilt()
     {
         var store = await WithSwings();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -2623,7 +2633,9 @@ public partial class FixtureExpectations
 
     static readonly DateOnly CalendarSession = new(2026, 9, 8);
 
-    static async Task<TemporaryStore> WithCalendar()
+    static Task<TemporaryStore> WithCalendar() => StoreSnapshots.CopyOf(CalendarBuilt);
+
+    static async Task<TemporaryStore> CalendarBuilt()
     {
         var store = await Replayed();
 
@@ -2892,7 +2904,9 @@ public partial class FixtureExpectations
 
     // ---- 4.1, the trend state and the ladder row ----
 
-    static async Task<TemporaryStore> WithLadders()
+    static Task<TemporaryStore> WithLadders() => StoreSnapshots.CopyOf(LaddersBuilt);
+
+    static async Task<TemporaryStore> LaddersBuilt()
     {
         var store = await WithLevels();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -2913,7 +2927,9 @@ public partial class FixtureExpectations
 
     // The chain through the facts file, which is the ladder chain plus the two
     // components that write and then compare it.
-    static async Task<TemporaryStore> WithFacts()
+    static Task<TemporaryStore> WithFacts() => StoreSnapshots.CopyOf(FactsBuilt);
+
+    static async Task<TemporaryStore> FactsBuilt()
     {
         var store = await WithLadders();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -2928,7 +2944,9 @@ public partial class FixtureExpectations
     // that reads it. Internal because `listings-coverage` runs against the same
     // chain rather than a copy of it: two replays of one pipeline disagree
     // eventually, and the two checks would be the pair.
-    internal static async Task<TemporaryStore> WithListings()
+    internal static Task<TemporaryStore> WithListings() => StoreSnapshots.CopyOf(ListingsBuilt);
+
+    static async Task<TemporaryStore> ListingsBuilt()
     {
         var store = await WithFacts();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -2940,7 +2958,9 @@ public partial class FixtureExpectations
 
     // The chain through the forward returns and the news pulse, which is the
     // listings chain plus the two components that read them.
-    internal static async Task<TemporaryStore> WithReturns()
+    internal static Task<TemporaryStore> WithReturns() => StoreSnapshots.CopyOf(ReturnsBuilt);
+
+    static async Task<TemporaryStore> ReturnsBuilt()
     {
         var store = await WithListings();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -6772,7 +6792,9 @@ public partial class FixtureExpectations
 
     // ---- 6.1, the fundamentals ----
 
-    static async Task<TemporaryStore> WithFundamentals()
+    static Task<TemporaryStore> WithFundamentals() => StoreSnapshots.CopyOf(FundamentalsBuilt);
+
+    static async Task<TemporaryStore> FundamentalsBuilt()
     {
         var store = await WithCalendar();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);

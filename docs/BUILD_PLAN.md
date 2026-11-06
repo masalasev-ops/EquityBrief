@@ -2531,6 +2531,11 @@ Their answers' third item. The combined account sizes each position to at most a
 
 **Done when** the account worked by hand over constructed trades sizes each swing position at a tenth, skips the sixth $1,000 buy over the free $620 where it stands and still buys the $200 holding after it, and fills the Fundamentals family's buy before the dip's; Tonight's buys and the account read one order; the card draws a session's rows in the order filled; section 17's figure is pinned; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.60 On the operator's word of 2026-11-06: the suite builds each fixture store once a run
+Word for word in `prompts/2026-11-06-22.60-operator-ci-too-slow.md`. Each store a chain of components writes over the fixture at a fixed instant is built once a run and every test asking for it gets a copy of its own, a new store's file starts as a copy of one the migrations built once, and the checks reading the history read it through one git process each (see: The suite builds each store a chain of components writes over the fixture once a run and hands every test a copy of its own).
+
+**Done when** a kept store is built once and a write into one copy is in no other copy nor in one taken after it, every file beside the store copied; a chain built by a lambda or over a value is refused; a new store's migrated copy holds the schema the migrations build at the latest version; the changelog's walk reads each of the newest eighty commits' diffs as `git show` reads them, merges among them; the batch reads each revision as `git show` does and refuses one missing; the whole suite runs its same tests green; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

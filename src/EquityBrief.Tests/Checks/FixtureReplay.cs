@@ -61,7 +61,12 @@ public class FixtureReplay
     // Every stage that exists, in the order the night runs them. A stage added
     // to the night and not here is a stage this check does not replay, which
     // the count below is what catches.
-    internal static async Task<TemporaryStore> ReplayedAsync(ILocalModelFeed? model = null)
+    internal static Task<TemporaryStore> ReplayedAsync(ILocalModelFeed? model = null) =>
+        model is null ? StoreSnapshots.CopyOf(ReplayedBuilt) : ReplayedBuilt(model);
+
+    static Task<TemporaryStore> ReplayedBuilt() => ReplayedBuilt(null);
+
+    static async Task<TemporaryStore> ReplayedBuilt(ILocalModelFeed? model)
     {
         var store = new TemporaryStore().Migrated();
         var backfill = FixedClock.At(Backfilled, SessionZones.UnitedStates);
@@ -309,13 +314,26 @@ public class FixtureReplay
     // section paid, or every section local, reads recordings of its own. The run is the
     // replay's own name, or the one a pass started by hand carries where a reader of
     // those asks for it.
-    internal static async Task<TemporaryStore> ResearchedAsync(
+    internal static Task<TemporaryStore> ResearchedAsync(
         IReadOnlyList<string>? lane = null,
         bool paidForLocal = false,
         RecordedLocalModelFeed? local = null,
         RecordedResearchModelFeed? paid = null,
         int retries = ClaimChecker.Retries,
-        string runId = "replay-research")
+        string runId = "replay-research") =>
+        lane is null && !paidForLocal && local is null && paid is null && retries == ClaimChecker.Retries && runId == "replay-research"
+            ? StoreSnapshots.CopyOf(ResearchedBuilt)
+            : ResearchedBuilt(lane, paidForLocal, local, paid, retries, runId);
+
+    static Task<TemporaryStore> ResearchedBuilt() => ResearchedBuilt(null, false, null, null, ClaimChecker.Retries, "replay-research");
+
+    static async Task<TemporaryStore> ResearchedBuilt(
+        IReadOnlyList<string>? lane,
+        bool paidForLocal,
+        RecordedLocalModelFeed? local,
+        RecordedResearchModelFeed? paid,
+        int retries,
+        string runId)
     {
         var store = await ReplayedForResearchAsync();
 
@@ -330,7 +348,9 @@ public class FixtureReplay
     // the theme store is written by the second step, over the industry the list covers.
     internal const string RecordedTheme = "Semiconductors";
 
-    internal static async Task<TemporaryStore> ReplayedWholeAsync()
+    internal static Task<TemporaryStore> ReplayedWholeAsync() => StoreSnapshots.CopyOf(ReplayedWholeBuilt);
+
+    static async Task<TemporaryStore> ReplayedWholeBuilt()
     {
         var store = await ResearchedAsync();
         var night = FixedClock.At(Night, SessionZones.UnitedStates);
@@ -363,7 +383,12 @@ public class FixtureReplay
     // The store a research pass over the fixture starts from: the replay, and the night's
     // facts assembled again and its changes read again once the opens' fundamentals are
     // stored, which is what the research verb does after a fetch.
-    internal static async Task<TemporaryStore> ReplayedForResearchAsync(ILocalModelFeed? model = null)
+    internal static Task<TemporaryStore> ReplayedForResearchAsync(ILocalModelFeed? model = null) =>
+        model is null ? StoreSnapshots.CopyOf(ReplayedForResearchBuilt) : ReplayedForResearchBuilt(model);
+
+    static Task<TemporaryStore> ReplayedForResearchBuilt() => ReplayedForResearchBuilt(null);
+
+    static async Task<TemporaryStore> ReplayedForResearchBuilt(ILocalModelFeed? model)
     {
         var store = await ReplayedAsync(model);
         var night = FixedClock.At(Night, SessionZones.UnitedStates);

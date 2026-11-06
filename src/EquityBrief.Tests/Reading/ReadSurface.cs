@@ -686,7 +686,9 @@ public partial class ReadSurface
     static string FixtureFolder() => Path.Combine(Repository.Root, "fixtures", Fixture);
 
     // The fixture's year in a temporary store. Nothing here reaches data/.
-    static async Task<TemporaryStore> Populated()
+    static Task<TemporaryStore> Populated() => StoreSnapshots.CopyOf(PopulatedBuilt);
+
+    static async Task<TemporaryStore> PopulatedBuilt()
     {
         var store = new TemporaryStore().Migrated();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -908,7 +910,9 @@ public partial class ReadSurface
 
     // ---- the moving averages, the third of the level chart's four elements ----
 
-    static async Task<TemporaryStore> WithIndicators()
+    static Task<TemporaryStore> WithIndicators() => StoreSnapshots.CopyOf(IndicatorsBuilt);
+
+    static async Task<TemporaryStore> IndicatorsBuilt()
     {
         var store = await Populated();
 
@@ -1329,7 +1333,9 @@ public partial class ReadSurface
 
     // ---- 3.5, the momentum panel and the level summary table ----
 
-    static async Task<TemporaryStore> WithLadders()
+    static Task<TemporaryStore> WithLadders() => StoreSnapshots.CopyOf(LaddersBuilt);
+
+    static async Task<TemporaryStore> LaddersBuilt()
     {
         var store = await WithBands();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -1348,7 +1354,9 @@ public partial class ReadSurface
         return store;
     }
 
-    static async Task<TemporaryStore> WithBands()
+    static Task<TemporaryStore> WithBands() => StoreSnapshots.CopyOf(BandsBuilt);
+
+    static async Task<TemporaryStore> BandsBuilt()
     {
         var store = await WithIndicators();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -3949,7 +3957,9 @@ public partial class ReadSurface
     // A store the whole pipeline filled with the fixture's sections checked by the
     // shipped checker, so what the page draws is what the checker decided rather
     // than a status a test wrote.
-    static async Task<TemporaryStore> WithCheckedSections()
+    static Task<TemporaryStore> WithCheckedSections() => StoreSnapshots.CopyOf(CheckedSectionsBuilt);
+
+    static async Task<TemporaryStore> CheckedSectionsBuilt()
     {
         var store = await ClaimAdmissibility.WithSources();
         var checker = new EquityBrief.Worker.Research.ClaimChecker(
