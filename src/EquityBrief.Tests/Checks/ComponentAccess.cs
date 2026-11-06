@@ -77,6 +77,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "History end filings"),
     ];
 
+    // 23.2's one: the pooled test.
+    internal static string[] PooledTestRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Pooled test"),
+        CheckReach.Key(Scope.MatrixTable, "Pooled test"),
+    ];
+
     // 22.38's one: the session marks.
     internal static string[] SessionMarkRows =>
     [
@@ -250,6 +257,9 @@ public partial class ComponentAccess
 
             // 23.1, the data checker and the history end filings.
             .. DataCheckerRows,
+
+            // 23.2, the pooled test.
+            .. PooledTestRows,
             .. LateBarRows,
             .. EntryReaderRows,
             .. SplitNameRows,

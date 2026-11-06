@@ -707,6 +707,7 @@ public static class PaperScreen
             {
                 JudgedFrom = account.JudgedFrom,
                 VersionFrom = account.VersionFrom,
+                Tested = test?.Rule,
             };
         });
 

@@ -61,6 +61,10 @@ public sealed record PaperAccountView(
     // From 21.17 the local model's cutoff's year a rule reading a release reading is judged from, none for any other.
     public int? JudgedFrom { get; init; }
 
+    // From 23.2 the rule as the newest per-rule test stored it, which a verdict across the three indices names; none where
+    // no test read it.
+    public string? Tested { get; init; }
+
     // The first session its version's registration counts from, none where no registration starts the account.
     public DateOnly? VersionFrom { get; init; }
 
@@ -120,7 +124,11 @@ public sealed record PaperPageView(
     PaperFundView? Fund,
     PaperCombinedView? Combined = null,
     IReadOnlyList<PaperComingView>? Coming = null,
-    TradeGroupsView? Groups = null);
+    TradeGroupsView? Groups = null)
+{
+    // From 23.2 the newest pooled run's verdicts across the three indices, which the scorecard draws beside the index's own.
+    public IReadOnlyList<LoopPooledRow> Pooled { get; init; } = [];
+}
 
 // From 21.20 a variant registered after the newest night, which no night has read yet: its family, its number and what it
 // changes as its card will number it, the day it was registered and the night that first reads it, none where the closure
@@ -663,6 +671,11 @@ public sealed partial class MarkRenderer
         html.Append(SinceLive(head));
         html.Append("</div>");
 
+        // From 23.2 the setup's rules summed across the three indices beside the index's own verdict, with the passes luck
+        // alone would bring a year.
+        // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+        html.Append(PooledPart(page.Pooled.FirstOrDefault(row => row.Own && row.Family == head.Family), PooledSetups(page.Pooled)));
+
         if (variants.Length == 0)
         {
             html.Append("<p class=\"degraded score-none\" data-score-variants=\"none\">No variant is registered for this rule.</p>");
@@ -680,7 +693,7 @@ public sealed partial class MarkRenderer
             {
                 html.Append(Invariant, $"<tr data-account=\"{Escaped(variant.Key)}\" data-verdict=\"{Escaped(variant.Verdict)}\" data-better=\"{(variant.Better is { } better ? better.ToString(Invariant) : "none")}\">");
                 html.Append(Invariant, $"<td><b>{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{AccountNote(variant)}</td>");
-                html.Append(Invariant, $"<td><span class=\"pill\"{(variant.Adjusted is { } p ? Formatted($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span></td>");
+                html.Append(Invariant, $"<td><span class=\"pill\"{(variant.Adjusted is { } p ? Formatted($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span>{(variant.Tested is { } tested ? PooledChangeNote(tested, page.Pooled) : string.Empty)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{(variant.Better is { } of && variant.Counted is { } counted ? Formatted($"{of} of {counted}") : "<span class=\"degraded\">not read</span>")}{JudgedFromNote(variant)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Progressed(variant.Progress, variant.Standing)}</td></tr>");
             }

@@ -114,6 +114,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `loop_reference` | WalkForwardTester | none | none |
 | `loop_rule` | WalkForwardTester | none | none |
 | `loop_rule_year` | WalkForwardTester | none | none |
+| `loop_rule_unit` | WalkForwardTester | none | none |
+| `loop_pooled` | PooledTest | none | none |
 | `loop_link` | WalkForwardTester | none | none |
 | `release_answer_edge` | WalkForwardTester | none | none |
 | `loop_decision` | ReadApi | none | none |
@@ -2114,6 +2116,10 @@ Grain: one row per per-rule test run, index, family and rule.
 | `counts` | INTEGER | 1 where its units reach the count its family is judged on; null where it is not testable |
 | `passed` | INTEGER | 1 where all four parts held |
 | `why` | TEXT | why the history cannot walk it, naming the reading it lacks; null where it was walked |
+| `cap` | INTEGER | from 23.2, from migration 130, the sessions a block of its waits after its last before it is read; null on a row written before |
+| `span` | INTEGER | from 23.2, the sessions from the test span's first to the history's newest; null on a row written before |
+| `through` | TEXT | from 23.2, the history's newest session, as `yyyy-MM-dd`; null on a row written before |
+| `judged_from` | INTEGER | from 23.2, the year its verdict was judged from where it reads a release reading; null where every test year counted and on a row written before |
 
 Primary key: `run_id`, `index_code`, `family`, `rule`.
 
@@ -2138,6 +2144,54 @@ Grain: one row per per-rule test run, index, family, rule and test year.
 Primary key: `run_id`, `index_code`, `family`, `rule`, `year`.
 
 **Written once by the walk-forward tester's per-rule test with its run**, a row a test year for each rule it walked and none for a rule it could not, so paper trading's test years read each year as the run read it (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark).
+
+### loop_rule_unit
+Grain: one row per per-rule test run, index, family, rule and unit of its evidence over the test years, from migration 130.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run, as `loop_rule` carries it |
+| `index_code` | TEXT | as `loop_rule` carries it |
+| `family` | TEXT | as `loop_rule` carries it |
+| `rule` | TEXT | as `loop_rule` carries it |
+| `unit` | INTEGER | the unit's place in the rule's evidence, from 0 |
+| `session_date` | TEXT | the session the trade was entered on, or a book's month opened on, as `yyyy-MM-dd` |
+| `place` | INTEGER | that session's count from the test span's first session, which the blocks of 63 are keyed on |
+| `figure` | REAL | the rule's edge after costs on the unit; null where it held nothing there |
+| `compared` | REAL | the edge after costs of what it was read against on the unit, its benchmark's an edge of nothing; null where that side held nothing there |
+
+Primary key: `run_id`, `index_code`, `family`, `rule`, `unit`.
+
+**Written once by the walk-forward tester's per-rule test with its run**, from 23.2 in the same transaction as the run's `loop_rule` rows, every unit of each walked rule's evidence over the test years and none for a rule it could not walk, and read by the pooled test alone, which sums each family's units across the three indices (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule). Every figure is a statistic and stored as the double it is.
+
+### loop_pooled
+Grain: one row per pooled run, family and kind, from migration 130.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run, naming the verb `loop-pooled` and its start |
+| `month` | TEXT | the month the per-rule tests it summed are for, as `yyyy-MM` |
+| `family` | TEXT | as `loop_rule` carries it |
+| `kind` | TEXT | `its rules` for the family's live or provisional rules on the indices, or a kind of change: each setting a variant moves from its family's live rule on its index with `raised`, `lowered`, `off` or `on`, in the settings' order |
+| `indices` | TEXT | the indices it summed, their codes separated by a space |
+| `rules` | TEXT | JSON: the rules it summed, as `loop_rule` names them, in the indices' order |
+| `unit` | TEXT | `risks` for a swing family, `points` for a book |
+| `units` | INTEGER | its trades over the test years, or a book's months counted once a calendar month |
+| `blocks` | INTEGER | the blocks of 63 sessions the gate read |
+| `adjusted` | REAL | its adjusted p-value, a kind's step-down corrected across its family's kinds; null under the block floor |
+| `gate` | INTEGER | 1 where the adjusted p-value is at or under the bar |
+| `stable` | INTEGER | 1 where the stability screen held |
+| `counted` | INTEGER | the complete test years the screen counted |
+| `better` | INTEGER | of those, the years its total stood above what it was read against |
+| `trimmed` | REAL | its total less what it was read against's with the five largest results left out of each side; null where neither side holds one |
+| `counts` | INTEGER | 1 where its units reach the count its family is judged on |
+| `passed` | INTEGER | 1 where all four parts held |
+| `judged_from` | INTEGER | the year it was judged from where a rule it summed reads a release reading; null where every test year counted |
+| `carried_by` | TEXT | for a pass, the index whose units hold the largest paired total where the other indices' together stand at or under nothing; null otherwise |
+
+Primary key: `run_id`, `family`, `kind`.
+
+**Written once by the pooled test with its run log row**, from 23.2, in one transaction under the drain's lock, and never updated, so a later run for the same month stands beside it and the pages read the newest. It reads each index's newest per-rule test of the month, changes no rule, and is read by the Loop page's summary and paper trading's scorecard beside each index's own verdict (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule). Every figure is a statistic and stored as the double it is.
 
 ### loop_link
 Grain: one row per run, index, family and reading of which readings go with winners, from migration 95.

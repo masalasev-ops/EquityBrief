@@ -70,6 +70,9 @@ public sealed record OwnReads(
 public sealed record RuleTested(RuleUnderTest Rule, string Against, LoopEvidence? Evidence, LoopVerdict? Verdict, string? Why)
 {
     public bool Passed => Why is null && Verdict is { Passes: true };
+
+    // From 23.2 the year its verdict was judged from where it reads a release reading, none where every test year counted.
+    public int? JudgedFrom { get; init; }
 }
 
 // What the per-rule test walks an index's rules over: the history as it stood, the register's rules standing when the
@@ -224,7 +227,7 @@ public static class RuleTests
                 {
                     var evidence = Against(read, head, null);
 
-                    tested.Add(new RuleTested(head, Benchmark, evidence, LoopJudge.Judge([Judged(head, evidence)], read.Opens, read.Newest, head.Cap)[0], null));
+                    tested.Add(new RuleTested(head, Benchmark, evidence, LoopJudge.Judge([Judged(head, evidence)], read.Opens, read.Newest, head.Cap)[0], null) { JudgedFrom = CutoffOf(head, newest)?.Year });
                 }
             }
 
@@ -238,7 +241,7 @@ public static class RuleTests
                 var at = Array.IndexOf(walked, variant);
 
                 tested.Add(at >= 0
-                    ? new RuleTested(variant, head!.Rule, evidences[at], verdicts[at], null)
+                    ? new RuleTested(variant, head!.Rule, evidences[at], verdicts[at], null) { JudgedFrom = CutoffOf(variant, newest)?.Year }
                     : new RuleTested(variant, head?.Rule ?? NoHead, null, null, variant.Why ?? (head is null ? "no live or provisional rule of its family stands on the index" : HeadUnwalked(head))));
             }
         }

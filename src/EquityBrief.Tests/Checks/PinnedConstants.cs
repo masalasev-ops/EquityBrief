@@ -912,6 +912,11 @@ public class PinnedConstants
             new("The data check's starts to read", "20", Core.History.DataCheck.EmergenceGap, "DataCheck.EmergenceGap"),
             new("A history's end", "10", Core.History.HistoryEnd.RemovalTakesEffect, "HistoryEnd.RemovalTakesEffect"),
             new("A history's end", "30", Core.History.HistoryEnd.ListingMoveDays, "HistoryEnd.ListingMoveDays"),
+            new("The verdict across the indices", "63", Core.Returns.Blocks.Sessions, "Blocks.Sessions"),
+            new("The verdict across the indices", "0.05", (decimal)Core.Loop.LoopGate.Level, "LoopGate.Level"),
+            new("The verdict across the indices", "12", Core.Loop.LoopGate.RunsAYear, "LoopGate.RunsAYear"),
+            new("The verdict across the indices", "2", Core.Loop.PooledJudge.FewestIndices, "PooledJudge.FewestIndices"),
+            new("The verdict across the indices", "0.05", (decimal)Core.Loop.PooledJudge.FalsePassesAYear(1), "PooledJudge.FalsePassesAYear(1)"),
         ];
     }
 

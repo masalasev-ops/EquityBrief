@@ -217,6 +217,9 @@ public partial class ReadSurface
             // 23.1, the History page.
             .. DataCheckPageRows,
 
+            // 23.2, the verdict across the three indexes on the Loop page and paper trading's scorecard.
+            .. PooledPageRows,
+
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 

@@ -2603,6 +2603,10 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
         };
     }
 
+    // From 23.2 the newest verdicts across the three indices, which the scorecard draws beside the index's own.
+    // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+    drawn = drawn with { Pooled = await read.PooledAsync() };
+
     return Results.Content(
         page.PaperRegion(
             marks,
@@ -3616,7 +3620,11 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
             .Select(row => new EquityBrief.Web.Marks.LoopChoiceView(row.Family, row.Rule, row.Words, row.Units, row.Adjusted, row.Passed, row.Why)),
     ];
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered), chips, choices), "text/html; charset=utf-8");
+    // From 23.2 the month's newest verdicts across the three indices, beside each family's own.
+    // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
+    var pooled = run is null ? [] : await read.PooledAsync(run.Month);
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered), chips, choices, pooled), "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.

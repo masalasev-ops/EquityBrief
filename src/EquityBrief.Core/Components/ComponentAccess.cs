@@ -123,6 +123,8 @@ public enum Store
     LoopReference,
     LoopRule,
     LoopRuleYear,
+    LoopRuleUnit,
+    LoopPooled,
     LoopLink,
     LoopDecision,
     LoopApplied,

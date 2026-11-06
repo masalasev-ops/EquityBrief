@@ -1,0 +1,6 @@
+# The remedy of 23.2, the one verdict across the three indices. Migration 130 adds the per-rule test's cap, span, newest session
+# and judged year to its rules and creates the units it keeps and the pooled verdicts. No row moves, no request is made and no
+# model is called. The per-rule tests of October were written before units were kept, so the pooled step sums nothing over
+# them; the monthly run's per-rule tests write their units and its pooled step sums them. Run from main after the merge, when
+# no night, off-peak run, local run, ledger build or monthly run is writing, and restart the read surface after it.
+migrate

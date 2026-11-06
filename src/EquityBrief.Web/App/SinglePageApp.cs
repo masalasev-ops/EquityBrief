@@ -3949,7 +3949,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<EquityBrief.Core.Loop.LoopRankRow>? ranks = null,
         LoopDecided? decided = null,
         IReadOnlyDictionary<string, IReadOnlyList<string>>? chips = null,
-        IReadOnlyList<LoopChoiceView>? choices = null)
+        IReadOnlyList<LoopChoiceView>? choices = null,
+        IReadOnlyList<EquityBrief.Core.Loop.LoopPooledRow>? pooled = null)
     {
         static string Named(string word) => word switch
         {
@@ -4028,7 +4029,8 @@ public sealed partial class SinglePageApp : IComponent
                 own.Where(proposal => proposal.Adjusted is not null).MinBy(proposal => proposal.Adjusted) ?? own.FirstOrDefault(),
                 put,
                 presses,
-                put is not null ? null : LoopWaiting(family, run, own, decided)));
+                put is not null ? null : LoopWaiting(family, run, own, decided),
+                (pooled ?? []).FirstOrDefault(row => row.Own && row.Family == family)));
 
             body.Append(marks.LoopReadings(family, [.. (spreads ?? []).Where(spread => spread.Family == family)]));
             body.Append(marks.LoopScore(family, own, (models ?? []).FirstOrDefault(model => model.Family == family), [.. (ranks ?? []).Where(rank => rank.Family == family)], run.Month));
@@ -4044,7 +4046,8 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append(Cards.Computed(
             "Loop",
-            MarkRenderer.CardSummary(MarkRenderer.LoopSummarySaid(run.Month, summary)) + Guide(LoopGuide) + marks.LoopSummary(summary) + MarkRenderer.LoopChangeLine(),
+            MarkRenderer.CardSummary(MarkRenderer.LoopSummarySaid(run.Month, summary)) + Guide(LoopGuide) + marks.LoopSummary(summary) + MarkRenderer.LoopChangeLine()
+                + (pooled is { Count: > 0 } summed ? MarkRenderer.PooledLuckLine(MarkRenderer.PooledSetups(summed)) : string.Empty),
             title: Invariant($"What the run for {Escaped(run.Month)} found"),
             lede: "A row a setup: the rule today, what was tested against it, the strongest proposal against the bar, and the one put to you.",
             stamp: Cards.Night(night),

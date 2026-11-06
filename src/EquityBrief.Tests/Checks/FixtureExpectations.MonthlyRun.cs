@@ -51,9 +51,10 @@ public partial class FixtureExpectations
         var failing = "history";
         var steps = MonthlySteps(ran, name => name != failing);
 
-        // From 19.4 each index's per-rule test runs after every tester run and before the report, and from 20.9 which
-        // readings go with winners and the idea generator run on each index before its tester.
-        Assert.Equal(["facts", "dividends", "history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "report"], MonthlyRun.StepNames);
+        // From 19.4 each index's per-rule test runs after every tester run and before the report, from 20.9 which readings
+        // go with winners and the idea generator run on each index before its tester, and from 23.2 the verdict across the
+        // three indices after their per-rule tests.
+        Assert.Equal(["facts", "dividends", "history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "pooled", "report"], MonthlyRun.StepNames);
 
         // The first Saturday of October: the facts hold and the history does not, so the run stops there.
         var first = await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, steps).RunAsync("2026-10");
@@ -75,7 +76,7 @@ public partial class FixtureExpectations
 
         var second = await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, steps).RunAsync("2026-10");
 
-        Assert.Equal(["history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "report"], ran);
+        Assert.Equal(["history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "pooled", "report"], ran);
         Assert.Equal(["facts", "dividends"], second.Skipped);
         Assert.Null(second.Stopped);
 
@@ -121,7 +122,7 @@ public partial class FixtureExpectations
         var again = await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, MonthlySteps(ran, _ => true)).RunAsync("2026-10");
 
         Assert.Equal(["facts"], again.Skipped);
-        Assert.Equal(["dividends", "history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "report"], ran);
+        Assert.Equal(["dividends", "history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "pooled", "report"], ran);
         Assert.Null(again.Stopped);
     }
 

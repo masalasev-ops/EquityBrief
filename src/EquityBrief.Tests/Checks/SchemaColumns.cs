@@ -42,6 +42,9 @@ public class SchemaColumns
     // 23.1's one: the data checks.
     internal static string[] DataCheckStoreRows => [CheckReach.Key(Scope.StoresTable, "Data checks")];
 
+    // 23.2's two: the rule test units and the pooled verdicts.
+    internal static string[] PooledStoreRows => [CheckReach.Key(Scope.StoresTable, "Rule test units"), CheckReach.Key(Scope.StoresTable, "Pooled verdicts")];
+
     // 22.42's: each name a page splits at its capitals.
     internal static string[] SplitNameStoreRows => [CheckReach.Key(Scope.StoresTable, "Split names")];
 
@@ -290,6 +293,7 @@ public class SchemaColumns
             .. LateBarAskStoreRows,
             .. EntryReadingStoreRows,
             .. DataCheckStoreRows,
+            .. PooledStoreRows,
             .. SplitNameStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.

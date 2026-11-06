@@ -58,6 +58,7 @@ public static class ReaderWords
         ("winners against losers", "what the winning picks had in common"),
         ("learned score", "a score fitted to past setups by code"),
         ("idea generator", "an idea the local model put, turned into a rule by code"),
+        ("pooled", "all three indexes together"),
     ];
 
     // Each step by the setup whose rule stores it and its name as stored, with what a stock that passed it did and what a
