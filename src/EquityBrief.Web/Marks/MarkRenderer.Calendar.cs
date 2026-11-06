@@ -34,7 +34,7 @@ public sealed record CalendarView(DateOnly Night, DateOnly Through, IReadOnlyLis
 // table and a timeline beside the dated items the research read, and every document the written regions cite with the
 // figures two sources state differently and the line naming what is computed.
 // see: The calendar draws a name's next ninety days of results, ex-dividend dates and the Fed's and the CPI's dates beside the dated items the research read
-// see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+// see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's
 public sealed partial class MarkRenderer
 {
     // The lanes the timeline draws, top to bottom, each a kind of event with its name at the lane's start.
@@ -235,7 +235,7 @@ public sealed partial class MarkRenderer
             }
         }
 
-        region.Append("<div class=\"sub\">Figures checked and not used</div>");
+        region.Append("<div class=\"sub\">The provider's figures checked and not used</div>");
 
         if (conflicts.Count > 0)
         {
@@ -244,7 +244,7 @@ public sealed partial class MarkRenderer
             foreach (var conflict in conflicts)
             {
                 region.Append(Formatted($"<tr data-line=\"{Escaped(conflict.Line)}\" data-concept=\"{Escaped(conflict.Concept)}\" data-filed=\"{conflict.Filed.ToString(Invariant)}\" data-fetched=\"{conflict.Fetched.ToString(Invariant)}\"><td>{Escaped(conflict.Line)}</td><td>{DayOf(conflict.PeriodEnd)}</td>"));
-                region.Append(Formatted($"<td class=\"num\">{Figures.Money(conflict.Filed)}, first filed {DayOf(conflict.FiledOn)}</td><td class=\"num\">{Figures.Money(conflict.Fetched)}</td><td>the fetch's</td></tr>"));
+                region.Append(Formatted($"<td class=\"num\">{Figures.Money(conflict.Filed)}, first filed {DayOf(conflict.FiledOn)}</td><td class=\"num\">{Figures.Money(conflict.Fetched)}</td><td>the filing's</td></tr>"));
             }
 
             region.Append("</table></div>");

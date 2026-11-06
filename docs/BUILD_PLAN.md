@@ -2461,6 +2461,11 @@ One roster row per reading, per fix and for the card line, and a committed fixtu
 
 **Done when** the fixture's cases hold and `tools/verify-phase` covers them.
 
+### 22.46 On the operator's order of 2026-11-06: a quarter's lines from its filing, then its release, and otherwise not on file
+Their order's first item, word for word in `prompts/2026-11-06-22.46-fix-pass-order.md`. Each quarter's income and cash lines on the name page, the chart page and the export are its SEC filing's as first filed where stored, else for the newest quarter its results release's own rows read by fixed line names and marked so, else not on file until the filing; a filed revenue stating a part of the company is refused by its own figures, and the provider's quarterly income and cash figures are drawn for no quarter (see: A quarter's lines are drawn from its filing where stored and then from its results release's own tables, and are not on file until the filing otherwise) (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's). No rule, reading, record or facts file moves.
+
+**Done when** AIG's quarter of 2026-11-05, copied from the store, draws its filing's $7,443M and $849M where the page drew the provider's $1.1B and -$1.7B; a quarter with no stored filing draws its release's rows marked so and the rest not on file, and one with neither draws every line not on file; a release row is read only where its year-earlier column is the filed quarter, in a pair of two or four or a trend of five, and a segment's row, a trend of another shape, a row with no unit and the noncontrolling interests' share are not; a fiscal quarter weeks from its label reads its filing and no filed quarter is drawn for two labels; a filed revenue below net income or at nought is not drawn; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

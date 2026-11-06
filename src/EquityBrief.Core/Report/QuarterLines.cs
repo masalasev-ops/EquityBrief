@@ -58,11 +58,18 @@ public sealed record QuarterLine(
     string? NotRead,
     string? EstimateAbsent,
     ImpliedEstimate? Implied,
-    string? YearEarlierAbsent = null);
+    string? YearEarlierAbsent = null,
+    string? From = null);
 
 // The latest quarter: its end, the day it was reported, the quarter a year earlier it is read against, and its lines.
 public sealed record LatestQuarter(DateOnly Quarter, DateOnly? Reported, DateOnly? YearEarlier, IReadOnlyList<QuarterLine> Lines)
 {
+    // Where its lines are drawn from, none where the page was handed no sources, and the day its filing was first filed
+    // where they are the filing's.
+    public QuarterSource? Source { get; init; }
+
+    public DateOnly? FiledOn { get; init; }
+
     // The two ends as the page draws them, each as its filing states it; Quarter and YearEarlier stay what quarters match on.
     // see: A page draws a quarter's end as the company's filing states it, and matches quarters on the provider's label
     public DateOnly DrawnQuarter { get; init; } = Quarter;
@@ -174,12 +181,16 @@ public static class QuarterLines
     // against the quarter's own estimate, and where none was kept against the one its fiscal year's estimate implies: the
     // year's less its three earlier quarters as reported, read only where all three hold a revenue and it stands above
     // nought. A company whose sector is Financials reads its revenue against neither.
-    public static LatestQuarter? Latest(IReadOnlyList<QuarterRow> quarters, KeptEstimates? estimates = null, string? sector = null)
+    // Handed each quarter's source, an income or cash line reading nothing says why by its quarter's source, and a figure
+    // from the results release is marked so; earnings a share keep the fetch's words.
+    public static LatestQuarter? Latest(IReadOnlyList<QuarterRow> quarters, KeptEstimates? estimates = null, string? sector = null, SourcedQuarters? sourced = null)
     {
-        if (quarters.Where(quarter => quarter.Revenue is not null || quarter.EpsActual is not null).MaxBy(quarter => quarter.PeriodEnd) is not { } newest)
+        if (quarters.Where(quarter => quarter.Revenue is not null || quarter.EpsActual is not null || sourced is not null).MaxBy(quarter => quarter.PeriodEnd) is not { } newest)
         {
             return null;
         }
+
+        QuarterSource? SourceOf(QuarterRow? quarter) => quarter is not null ? sourced?.SourceOf(quarter.PeriodEnd) : null;
 
         var earlier = Near(quarters, newest.PeriodEnd.AddYears(-1));
         var (revenueEstimate, revenueAbsent, revenueImplied) = string.Equals(sector, FinancialsSector, StringComparison.Ordinal)
@@ -190,8 +201,9 @@ public static class QuarterLines
         {
             var reported = read(newest);
             var before = earlier is null ? null : read(earlier);
-            var notRead = reported is not null ? null : kept && !newest.LinesRead ? FetchedBefore : NotFiled;
-            var earlierAbsent = before is not null ? null : earlier is null ? NoYearEarlier : kept && !earlier.LinesRead ? FetchedBefore : NotFiled;
+            var (source, sourceBefore) = perShare ? (null, null) : (SourceOf(newest), SourceOf(earlier));
+            var notRead = reported is not null ? null : source is not null ? sourced!.AbsentOf(newest.PeriodEnd, line) : kept && !newest.LinesRead ? FetchedBefore : NotFiled;
+            var earlierAbsent = before is not null ? null : earlier is null ? NoYearEarlier : sourceBefore is not null ? sourced!.AbsentOf(earlier.PeriodEnd, line) : kept && !earlier.LinesRead ? FetchedBefore : NotFiled;
 
             return new QuarterLine(
                 line,
@@ -207,7 +219,8 @@ public static class QuarterLines
                 notRead,
                 estimate is null ? absent : null,
                 implied,
-                earlierAbsent);
+                earlierAbsent,
+                reported is not null && source == QuarterSource.Release ? QuarterSources.FromRelease : null);
         }
 
         return new LatestQuarter(
@@ -222,7 +235,10 @@ public static class QuarterLines
                 Line(Eps, quarter => quarter.EpsActual, NotFiled, perShare: true, estimate: newest.EpsEstimate),
                 Line(OperatingCashFlow, quarter => quarter.OperatingCashFlow, NonePublished),
                 Line(FreeCashFlow, quarter => quarter.FreeCashFlow, NonePublished, kept: true),
-            ]);
+            ])
+        {
+            Source = SourceOf(newest),
+        };
     }
 
     // The revenue estimate the newest quarter is read against, why none is read where it is not, and what an implied one

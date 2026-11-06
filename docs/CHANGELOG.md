@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html, docs/SCHEMA.md - a quarter's lines from its filing, then its release, and otherwise not on file
+Decision: A quarter's lines are drawn from its filing where stored and then from its results release's own tables, and are not on file until the filing otherwise
+Was:
+> The latest quarter's row: The lines, their margins and the growth worked by one function in the core from the newest fetch's quarters the quarter fetcher stored and the revenue estimates fetches made before the quarter's release kept, ...
+> The name page's rules: Where the latest quarter was reported after the newest filing the store holds, its region is dated by the report and labelled as from the results release with its filing not stored yet, and the segments read from the older filing say whose they are; ...
+> The Sources rows, both, and the Figures checked row of section 17: ... (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's)
+> filed_fact: ... to check the latest quarter's lines against the provider's fetch (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's). ...
+Now:
+> The latest quarter's row: The lines, their margins and the growth worked by one function in the core from the newest fetch's quarters the quarter fetcher stored, each quarter's revenue, gross profit, operating income, net income and cash from operations from its SEC filing as first filed where stored, else for the newest quarter from its results release's own rows read by fixed line names and marked so, else not on file until the filing, a filed revenue stating a part of the company refused, and earnings a share the fetch's (see: ...), and the revenue estimates ...
+> The name page's rules: The latest quarter's region is dated by its SEC filing's first-filed day and labelled from the filing where its lines are the filing's, and otherwise dated by its report and labelled from the results release with its filing not stored yet, or not on file until the filing where the release states no line that can be read (see: ...); where the latest quarter was reported after the newest filing the provider's snapshot holds, the segments read from that older filing say whose they are; ...
+> The Sources rows, both, and the Figures checked row of section 17: ... (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's)
+> filed_fact: ... (see: ..., and the page draws the filing's), and from 22.46 the name page, the chart page and the export read the filer's figures for the periods ending from 400 days before the fetch's oldest quarter, filed on or before the night, for every quarter's lines (see: A quarter's lines are drawn from its filing where stored and then from its results release's own tables, and are not on file until the filing otherwise). ...
+Why: the operator's order of 2026-11-06, its first item: AIG's page drew the provider's revenue of $1.1B and net income of -$1.7B for the quarter its 10-Q of 2026-11-04 states at $7,443M and $849M.
+
 ### 2026-11-06 - docs/BUILD_PLAN.md - the tabled data check's market or sector wide rule at more than 25%
 Decision: Phase 23's plan stands before the three sign-offs still owed and none of it is built until they are signed
 Was:

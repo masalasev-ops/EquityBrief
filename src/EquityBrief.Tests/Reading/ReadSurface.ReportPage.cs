@@ -628,27 +628,30 @@ public partial class ReadSurface
         Assert.Equal("\"Adjusted operating income\" rose and its adjusted margin widened from a year earlier. Net income attributable to stockholders fell from a year earlier.", MarkRenderer.Readable(Short, EquityBrief.Core.Research.Directions.For(quarter, new DateOnly(2026, 10, 11))));
     }
 
-    // A quarter reported after the newest filing the store holds is dated by its report and labelled as the results
-    // release's, and its segments say they are the older filing's: MSFT's newest filing taken out of a replayed store, as
-    // a release stands before its filing is stored.
-    // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
+    // A quarter whose SEC filing is stored is dated by that filing's first-filed day and labelled as the filing's; one
+    // reported before its filing is stored, with no results release to read, is dated by its report and its lines are not
+    // on file until the filing: MSFT's newest quarter's facts taken out of a replayed store, as a report stands before its
+    // filing is stored.
+    // see: A quarter's lines are drawn from its filing where stored and then from its results release's own tables, and are not on file until the filing otherwise
     [Fact]
     public async Task AQuarterReportedAfterTheNewestStoredFilingIsDatedByItsReportAndLabelledAsTheReleases()
     {
         using var store = await FixtureReplay.ReplayedAsync();
 
-        var filed = Rows(store, "SELECT filing_date FROM fundamentals WHERE ticker = 'MSFT' ORDER BY filing_date DESC;").Select(row => row[0]).ToArray();
-        var reported = Rows(store, "SELECT report_date FROM reported_quarter WHERE ticker = 'MSFT' AND fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = 'MSFT') ORDER BY period_end DESC LIMIT 1;").Single()[0];
+        FiledAsFetched(sql => store.Execute(sql), "MSFT");
 
-        // As stored, the quarter is the newest filing's.
-        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filing date</span><b>not on file</b><span>from the filing</span>", await NameRoute(store, "MSFT"), StringComparison.Ordinal);
+        var newest = Rows(store, "SELECT period_end, report_date FROM reported_quarter WHERE ticker = 'MSFT' AND fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = 'MSFT') ORDER BY period_end DESC LIMIT 1;").Single();
+        var (quarter, reported) = (newest[0], newest[1]);
 
-        store.Execute($"DELETE FROM fundamentals WHERE ticker = 'MSFT' AND filing_date = '{filed[0]}';");
+        // As stored, the quarter is its filing's, dated by the day it was first filed.
+        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>{reported}</b><span>from the filing</span>", await NameRoute(store, "MSFT"), StringComparison.Ordinal);
+
+        store.Execute($"DELETE FROM filed_fact WHERE period_end = '{quarter}' AND accession = 'test-{quarter}';");
 
         var page = await NameRoute(store, "MSFT");
 
-        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Reported</span><b>{reported}</b><span>from the results release, filing not stored yet</span>", page, StringComparison.Ordinal);
-        Assert.Equal(filed.Length > 1, page.Contains("<span>from the filing before the newest quarter, whose filing is not stored yet</span>", StringComparison.Ordinal));
+        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Reported</span><b>{reported}</b><span>{EquityBrief.Core.Report.QuarterSources.NotOnFile}</span>", page, StringComparison.Ordinal);
+        Assert.Contains($"<td class=\"num degraded\" data-reported=\"absent\">{EquityBrief.Core.Report.QuarterSources.NotOnFile}</td>", page, StringComparison.Ordinal);
         Assert.Equal(ReportProof.Passed, ReportProof.Evaluate("MSFT", page).Verdicts.Single(verdict => verdict.Rule == "newest-quarter").Verdict);
     }
 

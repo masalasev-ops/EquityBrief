@@ -4,16 +4,15 @@ using EquityBrief.Core.Ledger;
 namespace EquityBrief.Core.Report;
 
 // One line of the latest quarter two sources state differently: the line, the quarter's end, the filing's figure with the
-// concept it was filed under and the day it was first filed, and the fetch's figure the page draws.
+// concept it was filed under and the day it was first filed, which the page draws, and the fetch's figure.
 public sealed record FigureConflict(string Line, DateOnly PeriodEnd, decimal Filed, string Concept, DateOnly FiledOn, decimal Fetched);
 
 // The latest quarter's lines checked against the SEC's facts as first filed: revenue, gross profit, operating income, net
 // income and cash from operations, each the filing's quarter read by the revenue rule over the line's own concepts, a
 // fiscal fourth quarter the year less its first nine months, beside the provider's fetch of the same quarter. Two figures
 // agree where they differ by no more than half a million dollars or a tenth of a per cent of the larger, which is a
-// rounding; a line they state beyond it is listed, the filing first. The page draws the fetch's figure in every region,
-// since every quarter a reading reads shares one fetch's basis and a filing's concept is not always the company's total.
-// see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+// rounding; a line they state beyond it is listed, the filing first. The page draws the filing's figure in every region.
+// see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's
 public static class FiguresChecked
 {
     // The days before the night whose periods are read: a year and a quarter, which holds a fiscal fourth quarter's year and

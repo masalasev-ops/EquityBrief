@@ -598,7 +598,7 @@ public partial class ReadSurface
     }
 
     // see: The calendar draws a name's next ninety days of results, ex-dividend dates and the Fed's and the CPI's dates beside the dated items the research read
-    // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+    // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's
     [Fact]
     public async Task TheCalendarDrawsTheNinetyDaysAfterTheNightAndTheSourcesEveryDocumentTheWrittenSectionsCite()
     {

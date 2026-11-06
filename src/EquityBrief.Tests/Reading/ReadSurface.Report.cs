@@ -492,6 +492,9 @@ public partial class ReadSurface
     {
         using var store = await FixtureReplay.ReplayedAsync();
 
+        // Its quarters' filing standing at the figures the fetch states, so each line read off the filing is the store's.
+        FiledAsFetched(sql => store.Execute(sql), "MSFT");
+
         // MSFT, whose bars run to the night and which pays: every region but what management said, which no pass wrote,
         // drawn after the card in section 4's order and before the earnings reactions.
         var page = await NameRoute(store, "MSFT");
@@ -514,13 +517,16 @@ public partial class ReadSurface
         // The latest quarter: each line's reported figure and its year earlier whole on the line, in the store's own text.
         Assert.Contains(FormattableString.Invariant($"data-quarter=\"{newest.End:yyyy-MM-dd}\" data-year-earlier=\"{yearEarlier.End:yyyy-MM-dd}\""), page, StringComparison.Ordinal);
 
-        foreach (var (line, column) in new[] { (QuarterLines.Revenue, 1), (QuarterLines.GrossProfit, 2), (QuarterLines.OperatingIncome, 3), (QuarterLines.NetIncome, 4), (QuarterLines.Eps, 5), (QuarterLines.OperatingCashFlow, 6), (QuarterLines.FreeCashFlow, 7) })
+        foreach (var (line, column) in new[] { (QuarterLines.Revenue, 1), (QuarterLines.GrossProfit, 2), (QuarterLines.OperatingIncome, 3), (QuarterLines.NetIncome, 4), (QuarterLines.Eps, 5), (QuarterLines.OperatingCashFlow, 6) })
         {
             var drawn = Regex.Match(page, $"<tr data-line=\"{line}\"[^>]*><td>{line}</td><td class=\"num\" data-reported=\"([^\"]+)\">.*?<td class=\"num\" data-year-earlier=\"([^\"]+)\">", RegexOptions.Singleline);
 
             Assert.True(drawn.Success, $"MSFT's latest quarter draws no line {line} with its figures.");
             Assert.Equal((Held(newest.Row[column]), Held(yearEarlier.Row[column])), (Held(drawn.Groups[1].Value), Held(drawn.Groups[2].Value)));
         }
+
+        // Free cash flow is the provider's alone, which the filings stored carry no capital spending for, so it is not drawn.
+        Assert.Contains($"<tr data-line=\"{QuarterLines.FreeCashFlow}\"><td>{QuarterLines.FreeCashFlow}</td><td class=\"num degraded\" data-reported=\"absent\">{QuarterSources.NoCapitalSpending}</td>", page, StringComparison.Ordinal);
 
         // The growth bars: each of the eight newest quarters' revenue on the quarter within a week of a year before it,
         // worked here from the stored revenue.
@@ -594,11 +600,12 @@ public partial class ReadSurface
             Regex.Matches(page, "<circle class=\"mb-dot\"[^>]*data-quarter=\"([^\"]+)\" data-multiple=\"([^\"]+)\">")
                 .Select(match => (DateOnly.ParseExact(match.Groups[1].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture), Held(match.Groups[2].Value))));
 
-        // Each region dated as its row says: the quarter by the newest filing, which this store holds no SEC fact of, and
-        // the margins and the analysts by the fetch.
+        // Each region dated as its row says: the quarter by the day its SEC filing was first filed, and the margins and the
+        // analysts by the fetch.
         var fetched = Rows(store, "SELECT substr(MAX(fetched_at), 1, 10) FROM reported_quarter WHERE ticker = 'MSFT';").Single()[0];
+        var firstFiled = Rows(store, $"SELECT MIN(filed) FROM filed_fact WHERE period_end = '{newest.Row[0]}' AND accession = 'test-{newest.Row[0]}';").Single()[0];
 
-        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filing date</span><b>not on file</b>", page, StringComparison.Ordinal);
+        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>{firstFiled}</b><span>from the filing</span>", page, StringComparison.Ordinal);
         Assert.Contains($"<div class=\"lbl\">Margins</div><div class=\"dl\"><span class=\"dl-k\">Fetched</span><b>{fetched}</b>", page, StringComparison.Ordinal);
         Assert.Contains($"<div class=\"lbl\">Analysts</div><div class=\"dl\"><span class=\"dl-k\">Fetched</span><b>{fetched}</b><span>the analysts' figures</span>", page, StringComparison.Ordinal);
 
