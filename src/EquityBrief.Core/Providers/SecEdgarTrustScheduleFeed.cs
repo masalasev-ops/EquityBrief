@@ -92,27 +92,37 @@ public sealed class SecEdgarTrustScheduleFeed(HttpClient client, TimeSpan pause)
     public Task<string> DocumentAsync(string cik, string accession, string document, CancellationToken cancellation = default) =>
         GetAsync($"https://{SecEdgarArchive.DocumentHost}/{Folder(cik, accession)}/{document}", cancellation);
 
-    public async Task<byte[]> DocumentBytesAsync(string cik, string accession, string document, CancellationToken cancellation = default)
+    public Task<byte[]> DocumentBytesAsync(string cik, string accession, string document, CancellationToken cancellation = default) =>
+        SendAsync($"https://{SecEdgarArchive.DocumentHost}/{Folder(cik, accession)}/{document}", content => content.ReadAsByteArrayAsync(cancellation), cancellation);
+
+    Task<string> GetAsync(string address, CancellationToken cancellation) =>
+        SendAsync(address, content => content.ReadAsStringAsync(cancellation), cancellation);
+
+    // How many times a request the archive answers as busy is asked, the wait doubling from the first.
+    public const int Tries = 5;
+
+    public static readonly TimeSpan Busy = TimeSpan.FromSeconds(2);
+
+    async Task<T> SendAsync<T>(string address, Func<HttpContent, Task<T>> read, CancellationToken cancellation)
     {
         Requests++;
-        await Task.Delay(pause, cancellation).ConfigureAwait(false);
 
-        using var response = await client.GetAsync(new Uri($"https://{SecEdgarArchive.DocumentHost}/{Folder(cik, accession)}/{document}"), cancellation).ConfigureAwait(false);
+        for (var tried = 1; ; tried++)
+        {
+            await Task.Delay(pause, cancellation).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+            using var response = await client.GetAsync(new Uri(address), cancellation).ConfigureAwait(false);
 
-        return await response.Content.ReadAsByteArrayAsync(cancellation).ConfigureAwait(false);
-    }
+            if (tried < Tries && response.StatusCode is HttpStatusCode.ServiceUnavailable or HttpStatusCode.TooManyRequests)
+            {
+                await Task.Delay(Busy * (1 << (tried - 1)), cancellation).ConfigureAwait(false);
 
-    async Task<string> GetAsync(string address, CancellationToken cancellation)
-    {
-        Requests++;
-        await Task.Delay(pause, cancellation).ConfigureAwait(false);
+                continue;
+            }
 
-        using var response = await client.GetAsync(new Uri(address), cancellation).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
 
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
+            return await read(response.Content).ConfigureAwait(false);
+        }
     }
 }

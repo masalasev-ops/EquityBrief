@@ -316,7 +316,7 @@ public sealed class LongScheduleFilings(ITrustScheduleFeed feed) : IComponent
 
                     await File.WriteAllTextAsync(Path.Combine(kept, filing.Accession + "-" + IndexFile), listing, cancellation);
 
-                    foreach (var document in PagesOf(listing).Except(wanted, StringComparer.Ordinal))
+                    foreach (var document in PagesOf(listing, filing.Accession).Except(wanted, StringComparer.Ordinal))
                     {
                         await KeepAsync(kept, filing.Accession, document, progress, cancellation);
                     }
@@ -329,8 +329,9 @@ public sealed class LongScheduleFilings(ITrustScheduleFeed feed) : IComponent
 
     public const string IndexFile = "index.json";
 
-    // The pages a filing's folder listing holds, its HTML documents and text files, its listing's own files left out.
-    public static IReadOnlyList<string> PagesOf(string listing)
+    // The pages a filing's folder listing holds, its HTML documents and text files, its listing's own files and the complete
+    // submission repeating every document left out.
+    public static IReadOnlyList<string> PagesOf(string listing, string accession)
     {
         using var document = JsonDocument.Parse(listing);
 
@@ -339,7 +340,8 @@ public sealed class LongScheduleFilings(ITrustScheduleFeed feed) : IComponent
             .. document.RootElement.GetProperty("directory").GetProperty("item").EnumerateArray()
                 .Select(item => item.GetProperty("name").GetString() ?? string.Empty)
                 .Where(name => (name.EndsWith(".htm", StringComparison.OrdinalIgnoreCase) || name.EndsWith(".html", StringComparison.OrdinalIgnoreCase) || name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
-                    && !name.Contains("index", StringComparison.OrdinalIgnoreCase)),
+                    && !name.Contains("index", StringComparison.OrdinalIgnoreCase)
+                    && name != accession + ".txt"),
         ];
     }
 
