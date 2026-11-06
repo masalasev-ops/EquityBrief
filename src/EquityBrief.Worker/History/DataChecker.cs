@@ -291,7 +291,7 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
     // What the run read, as its row on the run log and the History page say it: the stocks and sessions, the span, the findings, and
     // each stock whose series it could not read.
     public static string Read(DataCheckOutcome outcome, int findings) =>
-        FormattableString.Invariant($"{outcome.Stocks} stock(s) and {outcome.Sessions} session(s) read from {outcome.First:yyyy-MM-dd} to {outcome.Last:yyyy-MM-dd}, {findings} finding(s)")
+        FormattableString.Invariant($"{outcome.Stocks:N0} stock(s) and {outcome.Sessions:N0} session(s) read from {outcome.First:yyyy-MM-dd} to {outcome.Last:yyyy-MM-dd}, {findings:N0} finding(s)")
         + (outcome.Unread is { Count: > 0 } unread ? FormattableString.Invariant($"; {unread.Count} stock(s) not read: {string.Join(", ", unread)}") : string.Empty);
 
     // Every finding a line, as the store would hold it, for a print a person reads beside another count.

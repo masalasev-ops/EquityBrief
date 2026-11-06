@@ -1078,6 +1078,7 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
 
 /* history */
 .history-table td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.history-table th.r{text-align:right}
 .history-table .on{color:var(--soft);font-size:12px}
 .history-table tr.cls td{font-weight:700;border-top:1px solid var(--hair-2)}
 .history-table td.kind{padding-left:18px;color:var(--ink-2)}

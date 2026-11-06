@@ -35,7 +35,8 @@ public sealed partial class ReadApi
 
             if (await reader.ReadAsync())
             {
-                (run, ranAt, read) = (reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2));
+                // The day the run ended, the date of its UTC instant.
+                (run, ranAt, read) = (reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1)[..10], reader.IsDBNull(2) ? null : reader.GetString(2));
             }
         }
 

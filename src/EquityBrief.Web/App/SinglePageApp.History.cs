@@ -32,7 +32,7 @@ public sealed partial class SinglePageApp
     ];
 
     public const string HistoryLede =
-        "Every stock's pulled sessions classified by the rules section 17 states, so the counts are read before anything is tested on the longer history. Nothing here moves a price: a bad print or a start becomes a mark on the operator's word.";
+        "Every stock's pulled sessions sorted by fixed rules, so the counts are read before anything is tested on the longer history. Nothing here changes a price: a bad print or a start is marked only on the operator's word.";
 
     public string HistoryRegion(DataCheckView view)
     {
