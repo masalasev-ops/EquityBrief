@@ -173,6 +173,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `series_state` | CorporateActionChecker | CorporateActionChecker, LateBarAsker | none |
 | `ticker_join` | TickerJoins | none | none |
 | `session_mark` | SessionMarks | none | none |
+| `data_check` | DataChecker | none | DataChecker |
 | `dividend_wait` | CorporateActionChecker | CorporateActionChecker | CorporateActionChecker |
 | `chart_check` | ChartChecker | none | ChartChecker |
 | `split_event` | CorporateActionChecker | none | none |
@@ -324,14 +325,31 @@ Grain: one row per stock and session of its pulled history the operator gave the
 |---|---|---|
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the session |
-| `kind` | TEXT | starts here, bad print or checked and kept |
+| `kind` | TEXT | starts here, bad print, checked and kept, or from migration 129 history ends |
 | `says` | TEXT | the words a person reads beneath the chart |
 | `ruled` | TEXT | UTC instant the operator's word was recorded |
 | `run_id` | TEXT | the run that recorded it |
 
 Primary key: `ticker`, `session_date`.
 
-**Written once by `session-mark` on the operator's word, a second word changing nothing, and no pulled row moves** (see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart). A session a history starts on leaves the sessions before it out of the chart's and the name page's reads of the pull, the chart's averages and the page history reader; a bad print is read past by the chart check's moves and draws a small mark; a move checked and kept is a line and no flag. No rule reads it until phase 23's restart.
+**Written once by `session-mark` on the operator's word, a second word changing nothing, and no pulled row moves** (see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart). A session a history starts on leaves the sessions before it out of the chart's and the name page's reads of the pull, the chart's averages and the page history reader; a bad print is read past by the chart check's moves and draws a small mark; a move checked and kept is a line and no flag. No rule reads it until phase 23's restart. From migration 129, which builds the table again with its rows copied across since SQLite can add to the kinds a table was created with only that way, a mark may be the session a company's history ends on, set by rule from its filings and on the operator's word only where no such filing is found (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger).
+
+### data_check
+Grain: one row per stock, session, class and kind the data check found in the stock's pulled sessions.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the session it stands on |
+| `class` | TEXT | missing session, no volume, jump, action not carried, ticker change, when-issued start or bankruptcy emergence |
+| `kind` | TEXT | what the class found, as thin, copied or liquid, a stored action, the operator's word, on volume, market or sector wide, spike back or unexplained, split or dividend, or to read against the filings |
+| `era` | TEXT | the session's era as the History page draws it: 2005 to 2009, 2010 to 2014, 2015 to 2019 or 2020 on |
+| `says` | TEXT | the words a person reads |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `ticker`, `session_date`, `class`, `kind`.
+
+**What the data check found, read by the History page and by no rule** (see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row). From 23.1 `data-check` writes a run's rows whole and removes the run before's in the same transaction, so the table holds one run; `--print` writes nothing. No pulled row, bar or mark moves.
 
 ### dividend_wait
 Grain: one row per stock and ex-date whose dividend the provider's answer did not carry.

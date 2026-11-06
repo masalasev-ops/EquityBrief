@@ -749,7 +749,40 @@ public static class SchemaMigrations
         new Migration(126, "add entry_reading's one-off reading", AddEntryOneOff),
         new Migration(127, "create split_name", CreateSplitName),
         new Migration(128, "add entry_reading's wait plan", AddEntryWaitPlan),
+        new Migration(129, "create data_check, and rebuild session_mark with the session a history ends on", CreateDataCheck),
     ];
+
+    // From 23.1 what the data check finds of each stock's pulled sessions, and the marks gaining the session a company's history
+    // ends on, which SQLite can add to the kinds a table was created with only by building it again.
+    const string CreateDataCheck = @"
+        CREATE TABLE data_check (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            class         TEXT NOT NULL,
+            kind          TEXT NOT NULL,
+            era           TEXT NOT NULL,
+            says          TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date, class, kind)
+        ) STRICT;
+
+        CREATE TABLE session_mark_rebuilt (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            kind          TEXT NOT NULL CHECK (kind IN ('starts here', 'bad print', 'checked and kept', 'history ends')),
+            says          TEXT NOT NULL,
+            ruled         TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+
+        INSERT INTO session_mark_rebuilt (ticker, session_date, kind, says, ruled, run_id)
+        SELECT ticker, session_date, kind, says, ruled, run_id FROM session_mark;
+
+        DROP TABLE session_mark;
+
+        ALTER TABLE session_mark_rebuilt RENAME TO session_mark;
+    ";
 
     // From 22.43 the provisional plan the entry check draws from the ladder's own bands and stop.
     const string AddEntryWaitPlan = @"

@@ -135,6 +135,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdSymbolListFeed.cs",
         "src/EquityBrief.Core/Providers/FinraShortInterestFeed.cs",
         "src/EquityBrief.Core/Providers/LmStudioReadingFeed.cs",
+        "src/EquityBrief.Core/Providers/SecEdgarFilerFilingsFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFundSnapshotFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
@@ -346,11 +347,12 @@ public partial class NightlyCost
         // off-peak run's step asks and no night does, and thirty-one from 21.13, Yahoo's chart of WTI crude, one request a
         // night in the fetch step, and Yahoo's spark of the market strip, which Tonight opened in the session asks and no
         // night does, and thirty-two from 21.19, DeepSeek's search tool, which the measurement asks by hand and no night
-        // does.
+        // does, and thirty-three from 23.1, a filer's filing index and documents at the archive, which the data check's
+        // read of a history's end asks by hand and no night does.
         Assert.True(
-            MayHoldAClient.Length <= 32,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirty-two feed " +
-            "implementations. A thirty-third is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 33,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirty-three feed " +
+            "implementations. A thirty-fourth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: four files, the local lane's client, the local
         // run's reading feed and the paid model's live feed in each of its two formats.

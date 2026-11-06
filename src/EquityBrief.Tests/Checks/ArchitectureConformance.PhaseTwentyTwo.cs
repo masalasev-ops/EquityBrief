@@ -108,6 +108,10 @@ public partial class ArchitectureConformance
         .. ComponentAccess.SplitNameRows,
         .. SchemaColumns.SplitNameStoreRows,
         .. Reading.ReadSurface.SplitNameRows,
+
+        // Phase 23's from 23.1: the data checker and the history end filings, their store, section 17's four rows, section 18's
+        // row and the History page's two.
+        .. FixtureExpectations.DataCheckRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

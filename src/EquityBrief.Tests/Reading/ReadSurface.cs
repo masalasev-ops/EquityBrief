@@ -214,6 +214,9 @@ public partial class ReadSurface
             // 22.16, Home.
             .. HomeRows,
 
+            // 23.1, the History page.
+            .. DataCheckPageRows,
+
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 

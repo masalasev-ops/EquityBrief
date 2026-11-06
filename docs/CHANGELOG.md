@@ -7,6 +7,44 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - the session marks gain the session a history ends on, and the History page's route
+Decision: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger; The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row
+Was:
+> Session marks, the catalogue: records the operator's word on a session of a stock's pulled history after the check against its filings: where its history starts, a print that is not the market's, or a move checked and kept; no pulled row moves (see: ...)
+> Session marks, the stores: per stock and session, the operator's word on a session of its pulled history, what a person reads of it, the instant it was recorded and its run
+> 15.3: ... <code>#/universe</code>, <code>#/ledger</code>, <code>#/loop</code>, ...
+Now:
+> Session marks, the catalogue: the same, then: and from 23.1 the session a company's history ends on where no filing settles it; and the history end decision cited
+> Session marks, the stores: the same, then: and from 23.1 the session a company's history ends on among its kinds
+> 15.3: ... <code>#/ledger</code>, <code>#/history</code> from 23.1, <code>#/loop</code>, ...
+Why: 23.1, the data check and the marks' new kind as the phase 23 plan writes them.
+
+### 2026-11-06 - docs/SCHEMA.md - session_mark's kinds gain history ends at migration 129
+Decision: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger
+Was:
+> session_mark, kind: starts here, bad print or checked and kept
+> session_mark's paragraph: ... No rule reads it until phase 23's restart.
+Now:
+> session_mark, kind: starts here, bad print, checked and kept, or from migration 129 history ends
+> session_mark's paragraph: the same, then: From migration 129, which builds the table again with its rows copied across ..., a mark may be the session a company's history ends on, set by rule from its filings and on the operator's word only where no such filing is found
+Why: 23.1, the marks gaining one kind as the phase 23 plan writes it; SQLite adds to a CHECK's kinds only by building the table again.
+
+### 2026-11-06 - docs/RUNBOOK.md - session-mark's kinds gain history ends
+Decision: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger
+Was:
+> `--kind` is `starts here`, `bad print` or `checked and kept`, and `--says` is the line a person reads beneath the chart. ...
+Now:
+> `--kind` is `starts here`, `bad print`, `checked and kept` or, from 23.1, `history ends` for a company whose filings give no end, and `--says` is the line a person reads beneath the chart. ...
+Why: 23.1, the operator's word deciding a history's end only where no filing gives one.
+
+### 2026-11-06 - .claude/rules/checks.md - fixture-expectations reaches the data check
+Decision: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row
+Was:
+> `fixture-expectations`: ... and no source a rule's version pins among those 21.13 writes
+Now:
+> `fixture-expectations`: the same, then: and from 23.1 each of the data check's classes and kinds worked by hand on both sides of its thresholds ..., a history's end read from Merrill Lynch's and PepsiCo's filings as captured ..., and no source a rule's version pins among those 23.1 writes
+Why: 23.1, the roster's row the phase 23 plan names.
+
 ### 2026-11-06 - docs/BUILD_PLAN.md - phase 23 built before the sign-offs of phases 21 and 22
 Decision: Phase 23 is built before the sign-offs of phases 21 and 22, which stay owed and run between its pull requests
 Was:

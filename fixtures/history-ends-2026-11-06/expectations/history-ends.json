@@ -1,0 +1,19 @@
+{
+  "derivation": "derived",
+  "derivedFrom": "each filer's captured filing index and documents read by a person against the rule in section 17, before the rule's code read them; none frozen from a run. The documents folders keep the documents the cases turn on, 13 of the 120 the read of Merrill Lynch fetched and 9 of PepsiCo's 21, the rest being removals and registrations of notes; a removal whose document is not kept reads as no end.",
+  "cases": {
+    "mer": {
+      "cik": "0000065100",
+      "endsBefore": "2009-01-02",
+      "readFrom": "0000950123-09-000005",
+      "lastSession": "2008-12-31",
+      "why": "the 8-K filed 2009-01-02 carries item 5.01, a change in control, with item 3.01, notice of delisting: Bank of America's merger with Merrill Lynch completed on 2009-01-01, a holiday, so the last regular session is 2008-12-31. The New York Stock Exchange's Form 25-NSE for the common stock, filed 2009-01-05 (0000876661-09-000017), takes effect on 2009-01-15 and is later. Its eight others that day remove depositary shares of preferred stock; the Chicago Stock Exchange's of 2009-01-05 removes the common stock from a regional exchange; the American exchange's of 2008-09-30 removes convertible securities exchangeable into The Coca-Cola Company's common stock; the issuer's Form 25 of 2008-11-10 withdraws notes; each is no end."
+    },
+    "pep": {
+      "cik": "0000077476",
+      "endsBefore": null,
+      "readFrom": null,
+      "why": "no end: the Form 25 of 2017-12-19 removes the common stock from the New York Stock Exchange and the Form 8-A12B of the same day registers it on Nasdaq, a move of listing; the Form 25 of 2018-05-29 removes it from the Chicago Stock Exchange, a regional exchange beside its own; the Form 25 of 2018-12-07 withdraws senior notes; and Nasdaq's Forms 25-NSE of 2021 to 2026 remove notes."
+    }
+  }
+}

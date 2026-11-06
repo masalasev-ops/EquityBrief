@@ -592,7 +592,7 @@ public partial class ReadSurface
             shell,
             StringComparison.Ordinal);
         Assert.Contains(
-            $"<div class=\"m-group\" data-group=\"records\"><button type=\"button\" class=\"m-group-btn\" aria-expanded=\"false\">Records</button><div class=\"m-drop\"><a href=\"{SinglePageApp.PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{SinglePageApp.RunRoute}\" data-view=\"run\">Run</a><a href=\"{SinglePageApp.LedgerRoute}\" data-view=\"ledger\">Ledger</a></div></div></nav>",
+            $"<div class=\"m-group\" data-group=\"records\"><button type=\"button\" class=\"m-group-btn\" aria-expanded=\"false\">Records</button><div class=\"m-drop\"><a href=\"{SinglePageApp.PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{SinglePageApp.RunRoute}\" data-view=\"run\">Run</a><a href=\"{SinglePageApp.LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{SinglePageApp.HistoryRoute}\" data-view=\"history\">History</a></div></div></nav>",
             shell,
             StringComparison.Ordinal);
 

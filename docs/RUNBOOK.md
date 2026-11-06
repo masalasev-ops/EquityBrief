@@ -1985,8 +1985,18 @@ The operator's word on a session of a stock's pulled history, after the check ag
 dotnet run --project src/EquityBrief.Worker -- session-mark --ticker CHRD --session 2020-11-20 --kind "starts here" --says "Its history starts here."
 ```
 
-`--kind` is `starts here`, `bad print` or `checked and kept`, and `--says` is the line a person reads beneath the chart. A second word on the same session changes nothing. A refetch answer with a day's move over 25% that the stored closes miss by over 25 points is refused and the stock keeps its year and reads suspect: read the provider's answer and the filings before anything else moves it. A dividend the provider's answer does not carry is asked for again on its own on the five nights after and weekly, and reads on the stock's pages and the actions row of the Run page while it waits.
+`--kind` is `starts here`, `bad print`, `checked and kept` or, from 23.1, `history ends` for a company whose filings give no end, and `--says` is the line a person reads beneath the chart. A second word on the same session changes nothing. A refetch answer with a day's move over 25% that the stored closes miss by over 25 points is refused and the stock keeps its year and reads suspect: read the provider's answer and the filings before anything else moves it. A dividend the provider's answer does not carry is asked for again on its own on the five nights after and weekly, and reads on the stock's pages and the actions row of the Run page while it waits.
  `outcomes-again` removes the named stocks' outcomes decided on or after the day and scores them again, the one way a decided outcome moves, for a remedy that names the stock (see: An outcome decided over bars a ruled correction replaced is scored again by a remedy that names the stock, and no other outcome is rewritten).
+
+From 23.1 the data check classifies every stock's pulled sessions by the rules section 17 states, with no request and no pulled row, bar or mark moved, and the History page under Records draws what it wrote (see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row):
+
+```
+dotnet run --project src/EquityBrief.Worker -- data-check
+dotnet run --project src/EquityBrief.Worker -- data-check --print --each
+dotnet run --project src/EquityBrief.Worker -- data-check --end 65100 --into <folder>
+```
+
+`data-check` writes the run's findings whole and removes the run before's in one transaction, about three minutes over the pull of 2026-10-25 on the store's disk. `--print` opens the store read-only, writes nothing and prints the counts, and `--each` prints every finding a line beside them. `--end` reads one filer's filings from the SEC under the archive's fair access, a request a file, keeps them in the folder as sent and prints where its common stock's history ends, or that the operator rules on it; nothing in the store is read or written (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger). Run none of it while a night, the off-peak run, the local run, a ledger build or the monthly run is writing.
 
 ## Store maintenance
 

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<notificationOfRemoval>
+
+    <schemaVersion>X0203</schemaVersion>
+
+    <exchange>
+        <cik>0000876882</cik>
+        <entityName>CHICAGO STOCK EXCHANGE INC</entityName>
+    </exchange>
+
+    <issuer>
+        <cik>0000065100</cik>
+        <entityName>MERRILL LYNCH &amp; CO., INC.</entityName>
+        <fileNumber>001-7182</fileNumber>
+        <address>
+            <street1>222 Broadway</street1>
+            <street2>17th floor</street2>
+            <city>New York</city>
+            <stateOrCountryCode>NY</stateOrCountryCode>
+            <stateOrCountry>NEW YORK</stateOrCountry>
+            <zipCode>10038</zipCode>
+        </address>
+        <telephoneNumber>2126700420</telephoneNumber>
+    </issuer>
+
+    <descriptionClassSecurity>common stock</descriptionClassSecurity>
+
+    <ruleProvision>17 CFR 240.12d2-2(a)(3)</ruleProvision>
+
+    <signatureData>
+        <signatureName>Eileen Daut</signatureName>
+        <signatureTitle>Manager</signatureTitle>
+        <signatureDate>2009-05-06</signatureDate>
+    </signatureData>
+</notificationOfRemoval>

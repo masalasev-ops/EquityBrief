@@ -1076,6 +1076,14 @@ nav.walk a[rel='next']{text-align:right;align-items:flex-end}
 nav.walk a[rel='next']::before{content:"Next on the list"}
 nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
 
+/* history */
+.history-table td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.history-table .on{color:var(--soft);font-size:12px}
+.history-table tr.cls td{font-weight:700;border-top:1px solid var(--hair-2)}
+.history-table td.kind{padding-left:18px;color:var(--ink-2)}
+.history-table td.says{font-size:13px;color:var(--ink-2)}
+.history details summary,.history p.read{cursor:pointer;color:var(--ink-2);font-size:13.5px}
+
 /* run */
 .stage-table td.detail{font-size:12px;color:var(--ink-2);max-width:340px;overflow-wrap:anywhere}
 .stage-table tr[data-outcome='failed'] td{font-weight:700}

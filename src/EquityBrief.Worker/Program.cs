@@ -96,6 +96,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "split-names" => await SplitNamesRun(),
     "ticker-join" => await TickerJoinRun(args),
     "session-mark" => await SessionMarkRun(args),
+    "data-check" => await DataCheckRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -237,6 +238,44 @@ static async Task<int> SessionMarkRun(string[] args)
     return 0;
 }
 
+// The data check over every stock's pulled sessions, written whole for the run or, with '--print', printed and written nowhere;
+// or one filer's filings read from the SEC into a folder and the end its history takes from them.
+// see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row
+// see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger
+static async Task<int> DataCheckRun(string[] args)
+{
+    var configuration = Configuration();
+    var clock = SystemClock.ForUnitedStatesSessions();
+
+    if (VerbArguments.Value(args, "--end") is { } cik)
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("data-check: give '--end <cik> --into <folder>'.");
+
+            return 2;
+        }
+
+        var filings = new EquityBrief.Worker.History.HistoryEndFilings(SecEdgarFilerFilingsFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty)));
+        var end = await filings.CaptureAsync(cik, folder);
+
+        Console.WriteLine(FormattableString.Invariant($"data-check: {filings.Requests} request(s) to the SEC; {end.Says}"));
+
+        return 0;
+    }
+
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var checker = new EquityBrief.Worker.History.DataChecker(clock, store.DatabaseFile);
+    var outcome = await checker.RunAsync(FormattableString.Invariant($"data-check-{clock.UtcNow:yyyyMMddTHHmmssZ}"), write: !args.Contains("--print"));
+
+    foreach (var line in EquityBrief.Worker.History.DataChecker.Lines(outcome).Concat(args.Contains("--each") ? EquityBrief.Worker.History.DataChecker.Each(outcome) : []))
+    {
+        Console.WriteLine(line);
+    }
+
+    return 0;
+}
+
 // The named stocks' outcomes decided on or after a day, scored again over the bars a ruled correction replaced.
 // see: An outcome decided over bars a ruled correction replaced is scored again by a remedy that names the stock, and no other outcome is rewritten
 static async Task<int> OutcomesAgainRun(string[] args)
@@ -264,7 +303,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 68 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 69 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -487,7 +526,10 @@ static int NoVerb()
         "'split-names' keeps each name a page splits at its capitals, as the night's own step does, " +
         "'ticker-join --ticker <code> --earlier <code>' records that a stock's earlier sessions sit under another ticker at the " +
         "provider, 'session-mark --ticker <code> --session <yyyy-MM-dd> --kind <kind> --says <words>' records the operator's word on a " +
-        "session of its pulled history, and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
+        "session of its pulled history, 'data-check' classifies every stock's pulled sessions into the data check's rows, with " +
+        "'--print' writing nothing and printing the counts, '--each' printing every finding a line besides, and '--end <cik> --into <folder>' reading a filer's filings from the SEC " +
+        "into the folder and printing where its history ends, " +
+        "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");

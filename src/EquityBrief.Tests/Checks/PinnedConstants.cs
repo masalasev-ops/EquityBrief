@@ -897,6 +897,21 @@ public class PinnedConstants
             new("Queue window", "14", Api.Reading.QueueScreen.Window, "QueueScreen.Window"),
             new("Report page's day limits", "45", Core.Cards.CardLines.ClearOfTheNewest, "CardLines.ClearOfTheNewest"),
             new("Report page's day limits", "200", Core.Report.OldFilings.MostDays, "OldFilings.MostDays"),
+            // The data check, 23.1.
+            new("The data check's volume", "31", Core.History.DataCheck.Around, "DataCheck.Around"),
+            new("The data check's volume", "31", Core.History.DataCheck.Around, "DataCheck.Around"),
+            new("The data check's volume", "100,000", (decimal)Core.History.DataCheck.ThinMedian, "DataCheck.ThinMedian"),
+            new("The data check's volume", "0.25", (decimal)Core.History.DataCheck.NoVolumeShare, "DataCheck.NoVolumeShare"),
+            new("The data check's volume", "1.5", (decimal)Core.History.DataCheck.HeavyMultiple, "DataCheck.HeavyMultiple"),
+            new("The data check's jumps", "0.25", Core.History.DataCheck.JumpLimit, "DataCheck.JumpLimit"),
+            new("The data check's jumps", "10", Core.History.DataCheck.WideStocks, "DataCheck.WideStocks"),
+            new("The data check's jumps", "3", Core.History.DataCheck.SpikeSessions, "DataCheck.SpikeSessions"),
+            new("The data check's jumps", "0.10", Core.History.DataCheck.SpikeWithin, "DataCheck.SpikeWithin"),
+            new("The data check's starts to read", "0.25", (decimal)Core.History.DataCheck.WhenIssuedShare, "DataCheck.WhenIssuedShare"),
+            new("The data check's starts to read", "31", Core.History.DataCheck.Around, "DataCheck.Around"),
+            new("The data check's starts to read", "20", Core.History.DataCheck.EmergenceGap, "DataCheck.EmergenceGap"),
+            new("A history's end", "10", Core.History.HistoryEnd.RemovalTakesEffect, "HistoryEnd.RemovalTakesEffect"),
+            new("A history's end", "30", Core.History.HistoryEnd.ListingMoveDays, "HistoryEnd.ListingMoveDays"),
         ];
     }
 

@@ -414,9 +414,10 @@ public partial class ArchitectureConformance
         // from the 18.4 correction of 2026-11-02, section 17's row of the report page's day limits, and 1501 from 22.33, the
         // ticker joins' catalogue, matrix and store rows, and 1506 from 22.37, the chart's line, the chart checker's catalogue
         // and matrix rows and its two stores, and 1510 from 22.38's session marks' catalogue, matrix and store rows, 1517 from the late bars' two catalogue and two matrix rows, their store and the two page rows, 1522 from what the read-back left open, 1530 from 22.41's reader, store and five rows of the pages, and 22.40's
-        // dividend waits' store row.
+        // dividend waits' store row, and 1546 from 23.1, the data checker's and the history end filings' catalogue and matrix
+        // rows, the data checks' store, section 17's four rows, section 18's row and the History page's two.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1534),
+            (789, 853, 6, 4, 855, 876, 1546),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }
