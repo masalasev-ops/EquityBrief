@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/BUILD_PLAN.md - 23.10 holds the provider's quarters read as the pages read them and the tight stop's skip
+Decision: At phase 23's restart the rules reading the provider's quarters read each quarter from its filing then its release and otherwise nothing; At phase 23's restart a pick whose give-up price sits within one typical daily move of its buy is skipped as a variant on the three families it helped
+Was:
+> 23.10: ... any rule or plan reading support or resistance levels older than the stored year, read from the history pulled before the store's year, none of which is built before this checkpoint; and what the operator ruled in from 23.6, 23.8 and 23.9. ...
+> **Done when** ... none of the nine is adopted, asserted; no rule or plan reads an older level before this checkpoint, asserted; ...
+> **The restart.** ... Every earlier trade stays visible (see: Every count of trades names its group and one function works the three groups).
+Now:
+> 23.10: the same, then before "and what the operator ruled in": the member reader's, the fundamentals reader's and the S&P 400's and 600's family steps' reads of the provider's quarters reading the filing, then the release, then nothing, the picks the change moves stated with EW's, OHI's, SBRA's and LTC's of 2026-11-05 named; the skip of a pick whose give-up price sits within one typical daily move, a variant on the S&P 500's drift and pullback and the S&P 600's pullback and on neither the S&P 400's drift nor the S&P 600's, each counted in its family's correction, a family holding nine walking it unregistered (see: ...)
+> **Done when** the same, with each read worked by hand three ways, the picks moved stated, and the skip worked on both sides of one typical move on each of its three families
+> **The restart.** the same, then: On the operator's answers of 2026-11-06 it also holds the rules reading the provider's quarters reading the filing, then the release, then nothing, and the tight stop's skip as a variant on the S&P 500's drift and pullback and the S&P 600's pullback.
+Why: the operator's answers of 2026-11-06, their fourth item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - the combined account's parts of 22.59 joined as three
 Decision: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
 Was:
