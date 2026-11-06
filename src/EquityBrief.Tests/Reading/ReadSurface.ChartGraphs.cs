@@ -246,6 +246,12 @@ public partial class ReadSurface
 
         Assert.True(names.Length >= 4, $"The fixture holds {names.Length} names' bars.");
 
+        // Each name's quarters filed at the figures its fetch states, so the income bars read off the filing are the store's.
+        foreach (var ticker in names)
+        {
+            FiledAsFetched(sql => store.Execute(sql), ticker);
+        }
+
         foreach (var ticker in names)
         {
             var page = await client.GetStringAsync($"/screens/chart/{ticker}");

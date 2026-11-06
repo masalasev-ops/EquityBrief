@@ -10,7 +10,7 @@ namespace EquityBrief.Tests.Reading;
 // read-surface, 18.4: the risks' two columns, the calendar and its timeline, and the sources, each over a full input and
 // over the input it degrades on, saying what it cannot draw.
 // see: The calendar draws a name's next ninety days of results, ex-dividend dates and the Fed's and the CPI's dates beside the dated items the research read
-// see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+// see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's
 public partial class ReadSurface
 {
     // The rows 18.4 adds that this check reaches, each as the parts its row states: the headline's two it writes last and
@@ -156,14 +156,16 @@ public partial class ReadSurface
         var marks = new MarkRenderer();
         var conflict = new FigureConflict("Gross profit", new DateOnly(2026, 7, 31), 1_270_000_000m, "GrossProfit", new DateOnly(2026, 9, 2), 1_272_000_000m);
 
-        // The filing's figure first with the day it was first filed, its concept in an attribute a reader does not read,
-        // then the fetch's, which the page draws.
+        // The filing's figure first with the day it was first filed, which the page draws, its concept in an attribute a
+        // reader does not read, then the fetch's.
         var listed = marks.Sources("KEYS", [], [conflict], filedFactsHeld: true);
 
         Assert.Contains("data-conflicts=\"1\"", listed, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"sub\">The provider's figures checked and not used</div>", listed, StringComparison.Ordinal);
         Assert.Contains("<tr data-line=\"Gross profit\" data-concept=\"GrossProfit\" data-filed=\"1270000000\" data-fetched=\"1272000000\"><td>Gross profit</td><td>2026-07-31</td>", listed, StringComparison.Ordinal);
         Assert.Contains(", first filed 2026-09-02</td>", listed, StringComparison.Ordinal);
-        Assert.Contains("<td>the fetch's</td></tr>", listed, StringComparison.Ordinal);
+        Assert.Contains("<td>the filing's</td></tr>", listed, StringComparison.Ordinal);
+        Assert.DoesNotContain("the fetch's", listed, StringComparison.Ordinal);
 
         // Every line agreeing within rounding, and no filed facts to check by, each said in its own words, and the line
         // naming what is computed under every one.

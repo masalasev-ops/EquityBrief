@@ -43,7 +43,8 @@ public static partial class TonightScreen
         IReadOnlyDictionary<string, UniverseCell> cells,
         IReadOnlyList<(string Ticker, DateOnly Date)>? reports,
         DateOnly? liveSince = null,
-        QualityFixedView? fixedView = null)
+        QualityFixedView? fixedView = null,
+        IReadOnlyDictionary<string, EquityBrief.Core.EntryCheck.EntryReading>? entries = null)
     {
         var setting = SettingOf(read?.Settings);
         var settings = new ImprovingSettings(setting.BuyInNine, setting.HoldInNine, setting.Sessions);
@@ -73,7 +74,9 @@ public static partial class TonightScreen
                 row.BeforeApplied,
                 ImprovingChanged(row, checksOf.GetValueOrDefault(row.Ticker)),
                 ImprovingStatusWords(row.Status),
-                ImprovingStatusLine(row, checksOf.GetValueOrDefault(row.Ticker), trades, settings))),
+                ImprovingStatusLine(row, checksOf.GetValueOrDefault(row.Ticker), trades, settings),
+                cells.TryGetValue(row.Ticker, out var cell) ? cell.Close : null,
+                entries?.GetValueOrDefault(row.Ticker))),
         ];
 
         StrongestCell[] strongest =
@@ -189,7 +192,7 @@ public static partial class TonightScreen
 
         if (row is { Status: ImprovingRule.Bought, Filed: { } filed })
         {
-            return FormattableString.Invariant($"Fundamentals buys it at the next open: its filing of {filed:yyyy-MM-dd} lifted its score to {row.PassedChecks} of {row.Applied}") +
+            return FormattableString.Invariant($"Fundamentals buys it at the next open: its filing of {filed:yyyy-MM-dd} lifted its score to {MarkRenderer.ChecksApply(row.PassedChecks, row.Applied)}") +
                 (row is { BeforePassed: { } before, BeforeApplied: { } applied } ? FormattableString.Invariant($", from {before} of {applied}.") : ".");
         }
 
@@ -198,7 +201,7 @@ public static partial class TonightScreen
             return (open.BoughtOn is { } bought
                     ? FormattableString.Invariant($"Fundamentals bought it on {bought:yyyy-MM-dd}")
                     : FormattableString.Invariant($"Fundamentals chose it on {open.ChosenOn:yyyy-MM-dd}"))
-                + FormattableString.Invariant($" and keeps it while its score stays at {settings.HoldInNine} of 9 or more.");
+                + $" and keeps it while its score stays at {MarkRenderer.InEveryNine(settings.HoldInNine)} or more.";
         }
 
         // A note of the Fundamentals family's own, which says so and that only that family's buy waits on the filing.
@@ -207,7 +210,7 @@ public static partial class TonightScreen
             ? (row.Released is { } released
                 ? FormattableString.Invariant($"Fundamentals flagged it: its results release of {released:yyyy-MM-dd} reads results better than expected. ")
                 : "Fundamentals flagged it: its results release reads results better than expected. ")
-              + FormattableString.Invariant($"The Fundamentals family buys it only if its filing lifts it to {settings.BuyInNine} of 9, and that buy waits for the filing; no other family's buy waits on it.")
+              + $"The Fundamentals family buys it only if its filing lifts it to {MarkRenderer.InEveryNine(settings.BuyInNine, atLeast: true)}, and that buy waits for the filing; no other family's buy waits on it."
             : null;
     }
 
@@ -332,10 +335,10 @@ public static partial class TonightScreen
                 return trade is { Released: { } released }
                     ? FormattableString.Invariant($"Its filing of {trade.Filed:d MMM} confirmed the release of {released:d MMM}.")
                     : row.Filed is { } filed
-                        ? FormattableString.Invariant($"Its filing of {filed:d MMM} lifted it to {row.PassedChecks} of {row.Applied}.")
+                        ? FormattableString.Invariant($"Its filing of {filed:d MMM} lifted it to {MarkRenderer.ChecksApply(row.PassedChecks, row.Applied)}.")
                         : "Its new filing lifted it over the bar.";
             case ImprovingRule.Flagged:
-                return FormattableString.Invariant($"Bought only if its filing lifts it to {settings.BuyInNine} of 9.");
+                return $"Bought only if its filing lifts it to {MarkRenderer.InEveryNine(settings.BuyInNine, atLeast: true)}.";
             case ImprovingRule.Held:
                 return trade is { } open
                     ? FormattableString.Invariant($"Chosen on {open.ChosenOn:d MMM}; it holds one trade a stock.")
@@ -344,28 +347,45 @@ public static partial class TonightScreen
 
         return row.Reason switch
         {
-            ImprovingRule.UnderTheBar => FormattableString.Invariant($"Needs {settings.BuyInNine} of 9; {ChecksShort(row.PassedChecks, row.Applied, settings)}")
-                + (checks is null ? "." : $", missing {ImprovingListed([.. ScorecardText.ChecksOf(checks).Where(check => check.Answer == CheckAnswer.Failed).Select(check => CheckChanges[check.Number])])}.")
+            ImprovingRule.UnderTheBar => UnderTheBarLine(row.PassedChecks, row.Applied, settings, checks is null ? null : [.. ScorecardText.ChecksOf(checks).Where(check => check.Answer == CheckAnswer.Failed).Select(check => CheckChanges[check.Number])])
                 + (row.GrowthChange is { } change && change <= 0 ? " Its sales are still slowing too." : string.Empty),
-            ImprovingRule.NotFaster => FormattableString.Invariant($"Has {row.PassedChecks} of {row.Applied}, but its sales are still slowing."),
-            ImprovingRule.GrowthNotRead => FormattableString.Invariant($"Has {row.PassedChecks} of {row.Applied}, but its sales growth could not be read from its filings."),
+            ImprovingRule.NotFaster => $"Has {MarkRenderer.ChecksApply(row.PassedChecks, row.Applied)}, but its sales are still slowing.",
+            ImprovingRule.GrowthNotRead => $"Has {MarkRenderer.ChecksApply(row.PassedChecks, row.Applied)}, but its sales growth could not be read from its filings.",
             ImprovingRule.NoWord => "Too few of its checks could be read for a score.",
             _ => "It falls short of the bar.",
         };
     }
 
-    // How many more checks a stock needs to clear the bar, in words, read through the scorecard's own test of the bar.
-    static string ChecksShort(int passed, int applied, ImprovingSettings settings)
+    // A stock short of the bar in words: the bar, what it is for the checks that apply to the stock, how many more checks it
+    // needs read through the scorecard's own test of the bar, and the checks it fails, where it fails more than it needs
+    // that passing any of them would clear it.
+    // see: The Fundamentals family's rule is said as a score in every nine of the checks that apply, beside each stock's own count
+    public static string UnderTheBarLine(int passed, int applied, ImprovingSettings settings, IReadOnlyList<string>? missing)
     {
         string[] words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
         var more = Enumerable.Range(1, Math.Max(applied - passed, 0)).FirstOrDefault(extra => FundamentalScorecard.Clears(passed + extra, applied, settings.BuyInNine));
-
-        return more switch
+        var needs = $"Needs {MarkRenderer.InEveryNine(settings.BuyInNine, atLeast: true)}";
+        var bar = more == 0 ? needs : FormattableString.Invariant($"{needs}, here {passed + more} of its {applied}");
+        var shortBy = more switch
         {
             0 => "short of the bar",
             1 => "one check short",
             _ => words[more - 1] + " checks short",
         };
+
+        if (missing is not { Count: > 0 })
+        {
+            return bar + "; " + shortBy + ".";
+        }
+
+        if (missing.Count > more && more > 0)
+        {
+            var any = more == 1 ? missing.Count == 2 ? "either" : "any one" : "any " + words[more - 1];
+
+            return $"{bar}; {shortBy}: it misses {words[missing.Count - 1]}, {ImprovingListed(missing)}, and passing {any} clears the bar.";
+        }
+
+        return $"{bar}; {shortBy}, missing {ImprovingListed(missing)}.";
     }
 
     // A stock's business in one sentence: its sales over a year and how that pace moved, and its gross profit over assets.

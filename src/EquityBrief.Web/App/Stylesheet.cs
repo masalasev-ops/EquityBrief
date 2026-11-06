@@ -300,6 +300,14 @@ main{padding-block:8px 64px}
 .improving-from{display:block;font-size:12.5px;color:var(--up)}
 .improving-status span,.improving-quality{display:block;font-size:12.5px;color:var(--ink-2)}
 .improving-table td.improving-status[data-state=bought] b{color:var(--sup-ink)} .improving-table td.improving-status[data-state=flagged] b{color:var(--warn)}
+/* a Fundamentals buy marked on its row and named in the list its card opens with; a buy no plan sells, in tomorrow's buys,
+   saying how it sells across the stop's and the target's columns */
+.improving-table tr.improving-buy{background:var(--fam-improving-tint)}
+.buy-mark{display:inline-block;margin-left:6px;font:700 11px var(--sans);color:var(--sup-ink);border:1px solid var(--sup-ink);border-radius:999px;padding:0 7px;white-space:nowrap}
+.improving-bought{margin:12px 0 0} .improving-bought-h{margin:0 0 4px} .improving-bought-list{margin:0;padding-left:22px}
+.list-table td.c-nm a.open{display:inline-block;margin-left:8px;font:600 11.5px var(--sans);color:var(--ink-2);border:1px solid var(--hair-2);border-radius:5px;padding:1px 8px;white-space:nowrap}
+.list-table a.how-sells{display:inline-block;margin-left:6px;font:600 11.5px var(--sans);color:var(--ink-2);border:1px solid var(--hair-2);border-radius:5px;padding:1px 8px;white-space:nowrap}
+.buy-points td.plan-sells{color:var(--ink-2);white-space:normal}
 @media (max-width:560px){
  .improving-tabname{padding:8px 10px;font-size:14px}
  .list-table.improving-table{display:block} .list-table.improving-table thead{display:none} .list-table.improving-table tbody{display:block}
@@ -498,6 +506,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-tile .pt-name{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--ink)}
 .paper-tile .pt-figure{font:600 22px var(--sans);font-variant-numeric:tabular-nums}
 .paper-tile .pt-sub{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.paper-tile .pt-carried{font-size:12px;color:var(--soft);margin-top:2px}
 .paper .day,.paper-variants .too-few{white-space:nowrap}
 .paper-tabs,.paper-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px}
 .paper-bought,.paper-variants,.paper-only,.score-table{min-width:720px}
@@ -1445,6 +1454,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .home-noloss{font-weight:600;color:var(--ink)}
 .home-note{margin:14px 0 0;padding:10px 14px;border-radius:8px;background:var(--warn-fill);font-size:14px;color:var(--ink)}
 .home-results{display:flex;flex-wrap:wrap;gap:24px}
+.home-results .home-system{flex:1 1 100%;margin:0;padding-top:12px;border-top:1px solid var(--hair);color:var(--ink-2);font-size:14px}
 .home-results>div{flex:1 1 320px}
 .home-bar{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
 .home-bar .row{display:flex;justify-content:space-between;font-size:14px}

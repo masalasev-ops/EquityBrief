@@ -39,7 +39,7 @@ public sealed partial class ReadApi
 
     // The SEC's facts as first filed for the name's filer, of periods ending from a day on and filed by the night, which
     // the sources check the latest quarter's lines against.
-    // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+    // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's
     const string FiledFactsOf = @"
         SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact
         WHERE cik = (SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1)

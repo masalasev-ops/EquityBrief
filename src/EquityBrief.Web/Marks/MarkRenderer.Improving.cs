@@ -3,8 +3,9 @@ using System.Text;
 namespace EquityBrief.Web.Marks;
 
 // One stock on the Fundamentals card's "Improving fastest" tab: the stock, its company, its score tonight and where its
-// newly read filing lifted it from, what changed in one sentence, its status and the line beneath it.
-public sealed record ImprovingRowCell(string Ticker, string? Company, int Passed, int Applied, int? BeforePassed, int? BeforeApplied, string Changed, string Status, string Line);
+// newly read filing lifted it from, what changed in one sentence, its status and the line beneath it, tonight's close and
+// its entry check's reading on the night.
+public sealed record ImprovingRowCell(string Ticker, string? Company, int Passed, int Applied, int? BeforePassed, int? BeforeApplied, string Changed, string Status, string Line, decimal? Close = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null);
 
 // One stock on its "Strongest businesses" tab: the stock, its company, its score tonight, its business in one sentence, its
 // price against its own past, and what the quality book says of it, none where it says nothing.
@@ -48,6 +49,13 @@ public sealed partial class MarkRenderer
 
     // The trading days "Reporting this week" counts after the night.
     public const int ReportingDays = 5;
+
+    // The Fundamentals family's bar in the reader's words, a score in every 9 of the checks that apply to the company, and a
+    // stock's own count of those checks.
+    // see: The Fundamentals family's rule is said as a score in every nine of the checks that apply, beside each stock's own count
+    public static string InEveryNine(int score, bool atLeast = false) => Formatted($"{(atLeast ? "at least " : string.Empty)}{score} in every 9 of the checks that apply");
+
+    public static string ChecksApply(int passed, int applied) => Formatted($"{passed} of {applied} apply");
 
     // A row's status, in the reader's words.
     public const string BoughtWords = "Bought at the next trading day's open";
@@ -136,6 +144,7 @@ public sealed partial class MarkRenderer
             return body.Append("</section>").ToString();
         }
 
+        body.Append(ImprovingBoughtList(card));
         body.Append(ImprovingTiles(card));
 
         // The tabs: two radio inputs the stylesheet shows one panel under, their labels drawn as a tab bar.
@@ -149,7 +158,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<div class=\"improving-panel\" data-tab=\"fastest\" data-rows=\"{card.Improving.Count}\">");
         var setting = card.Setting ?? EquityBrief.Core.Families.ImprovingGrid.Starting;
 
-        body.Append(Invariant, $"<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to at least {settings.BuyInNine} of the 9 checks{(setting.Faster ? " with sales growing faster than the quarter before" : string.Empty)}{(setting.FlagFirst ? ", a flag standing the night before" : string.Empty)}.</p>");
+        body.Append(Invariant, $"<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to {InEveryNine(settings.BuyInNine, atLeast: true)} to the company{(setting.Faster ? ", with sales growing faster than the quarter before" : string.Empty)}{(setting.FlagFirst ? ", a flag standing the night before" : string.Empty)}.</p>");
 
         if (card.Improving.Count == 0)
         {
@@ -157,14 +166,17 @@ public sealed partial class MarkRenderer
         }
         else
         {
-            body.Append(ImprovingTable(card.Improving.Take(ImprovingShown).ToArray()));
+            // The rows drawn open are the first of the rule's order and every buy, so no buy sits behind the fold.
+            // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+            var shown = card.Improving.Where((row, at) => at < ImprovingShown || row.Status == BoughtWords).ToArray();
+            var folded = card.Improving.Except(shown).ToArray();
 
-            if (card.Improving.Count > ImprovingShown)
+            body.Append(ImprovingTable(shown));
+
+            if (folded.Length > 0)
             {
-                var rest = card.Improving.Count - ImprovingShown;
-
-                body.Append(Invariant, $"<details class=\"fold improving-more\" data-more=\"{rest}\"><summary>{Escaped(rest == 1 ? "1 more" : Formatted($"{rest} more"))}</summary>");
-                body.Append(ImprovingTable(card.Improving.Skip(ImprovingShown).ToArray()));
+                body.Append(Invariant, $"<details class=\"fold improving-more\" data-more=\"{folded.Length}\"><summary>{Escaped(folded.Length == 1 ? "1 more" : Formatted($"{folded.Length} more"))}</summary>");
+                body.Append(ImprovingTable(folded));
                 body.Append("</details>");
             }
         }
@@ -192,7 +204,7 @@ public sealed partial class MarkRenderer
             {
                 body.Append(Invariant, $"<tr class=\"improving-row\" data-ticker=\"{Escaped(cell.Ticker)}\">");
                 body.Append(ImprovingStock(cell.Ticker, cell.Company));
-                body.Append(Invariant, $"<td class=\"improving-score\"><b>{cell.Passed} of {cell.Applied}</b></td>");
+                body.Append(Invariant, $"<td class=\"improving-score\"><b>{ChecksApply(cell.Passed, cell.Applied)}</b></td>");
                 body.Append(Invariant, $"<td class=\"improving-changed\">{Escaped(cell.Business)}</td>");
                 body.Append(Invariant, $"<td class=\"improving-status\">{Escaped(cell.Price)}");
 
@@ -240,24 +252,49 @@ public sealed partial class MarkRenderer
             var now = cell.Applied == 0
                 ? Formatted($"<b>{NoChecksRead}</b>")
                 : state == "flagged"
-                ? Formatted($"<b>filing not in yet</b><span class=\"improving-from\">was {cell.Passed} of {cell.Applied}</span>")
+                ? Formatted($"<b>filing not in yet</b><span class=\"improving-from\">was {ChecksApply(cell.Passed, cell.Applied)}</span>")
                 : cell is { BeforePassed: { } before, BeforeApplied: { } applied }
-                    ? Formatted($"<b>{cell.Passed} of {cell.Applied}</b><span class=\"improving-from\">up from {before}{(applied != cell.Applied ? Formatted($" of {applied}") : string.Empty)}</span>")
-                    : Formatted($"<b>{cell.Passed} of {cell.Applied}</b>");
+                    ? Formatted($"<b>{ChecksApply(cell.Passed, cell.Applied)}</b><span class=\"improving-from\">up from {before}{(applied != cell.Applied ? Formatted($" of {applied}") : string.Empty)}</span>")
+                    : Formatted($"<b>{ChecksApply(cell.Passed, cell.Applied)}</b>");
 
-            body.Append(Invariant, $"<tr class=\"improving-row\" data-ticker=\"{Escaped(cell.Ticker)}\" data-status=\"{Escaped(cell.Status)}\">");
-            body.Append(ImprovingStock(cell.Ticker, cell.Company));
+            body.Append(Invariant, $"<tr class=\"improving-row{(state == "bought" ? " improving-buy" : string.Empty)}\" data-ticker=\"{Escaped(cell.Ticker)}\" data-status=\"{Escaped(cell.Status)}\">");
+            body.Append(ImprovingStock(cell.Ticker, cell.Company, state == "bought"));
             body.Append(Invariant, $"<td class=\"improving-score\">{now}</td>");
             body.Append(Invariant, $"<td class=\"improving-changed\">{Escaped(cell.Changed)}</td>");
-            body.Append(Invariant, $"<td class=\"improving-status\" data-state=\"{state}\"><b>{Escaped(cell.Status)}</b><span>{Escaped(cell.Line)}</span></td></tr>");
+            // A buy carries its entry check's line as every pick's card does.
+            // see: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does
+            body.Append(Invariant, $"<td class=\"improving-status\" data-state=\"{state}\"><b>{Escaped(cell.Status)}</b><span>{Escaped(cell.Line)}</span>{(state == "bought" ? EntryCheckLine(cell.EntryCheck, cell.Ticker) : string.Empty)}</td></tr>");
         }
 
         return body.Append("</tbody></table></div>").ToString();
     }
 
-    // A table's stock cell: the ticker opening its chart page and the company beneath it.
-    static string ImprovingStock(string ticker, string? company) =>
-        Formatted($"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(ticker)}\">{Escaped(ticker)}</a>{(company is { Length: > 0 } named ? Formatted($"<span class=\"co\">{Escaped(named)}</span>") : string.Empty)}</td>");
+    // A table's stock cell: the ticker opening its chart page, a buy marked beside it, and the company beneath it.
+    static string ImprovingStock(string ticker, string? company, bool bought = false) =>
+        Formatted($"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(ticker)}\">{Escaped(ticker)}</a>{(bought ? " <span class=\"buy-mark\" data-buy>Buy</span>" : string.Empty)}{(company is { Length: > 0 } named ? Formatted($"<span class=\"co\">{Escaped(named)}</span>") : string.Empty)}</td>");
+
+    // The card's list of tonight's buys, opening what it finds: each stock, its company and its count of the checks that
+    // apply, none where nothing is bought.
+    static string ImprovingBoughtList(ImprovingCardView card)
+    {
+        var bought = card.Improving.Where(row => row.Status == BoughtWords).ToArray();
+
+        if (bought.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<div class=\"improving-bought\" data-bought=\"{bought.Length}\"><p class=\"improving-bought-h\"><b>Bought at {OpenDay(card.Night)} open</b></p><ol class=\"improving-bought-list\">");
+
+        foreach (var row in bought)
+        {
+            body.Append(Invariant, $"<li data-ticker=\"{Escaped(row.Ticker)}\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($" {Escaped(company)}") : string.Empty)}, {Escaped(ChecksApply(row.Passed, row.Applied))}</li>");
+        }
+
+        return body.Append("</ol></div>").ToString();
+    }
 
     // The card's sentence from tonight's figures.
     // The three dials the card's sentences state, read off the rule's own setting where its night states one.
@@ -324,8 +361,8 @@ public sealed partial class MarkRenderer
 
         body.Append("<details class=\"fold fam-rule improving-rule\"><summary>How it picks, and how it will be tested</summary><div class=\"fold-b\">");
         body.Append("<p class=\"record-said\">Flagged: a company whose results release, sent since its last filing, reads results better than expected and an outlook raised or kept. A flag buys nothing.</p>");
-        body.Append(Invariant, $"<p class=\"record-said\">Bought at the next open: a company whose new filing, read tonight for the first time, lifts its score to at least {settings.BuyInNine} of the 9 checks that apply{(setting.Rise ? " and above the score of the filing before it" : string.Empty)}{(setting.Faster ? ", while its sales over a year grow faster than in the quarter before" : string.Empty)}. {(setting.FlagFirst ? "A flag must have stood the night before." : "A flag is not needed.")}</p>");
-        body.Append(Invariant, $"<p class=\"record-said\">Kept while its score stays at {settings.HoldInNine} of 9 or better. Sold at the close of the night a new filing drops it below {settings.HoldInNine}, at the close of its {settings.Sessions}th trading day, or at its last close in the index, whichever comes first. No stop and no target.</p>");
+        body.Append(Invariant, $"<p class=\"record-said\">Bought at the next open: a company whose new filing, read tonight for the first time, lifts its score to {InEveryNine(settings.BuyInNine, atLeast: true)} to the company{(setting.Rise ? " and above the score of the filing before it" : string.Empty)}{(setting.Faster ? ", while its sales over a year grow faster than in the quarter before" : string.Empty)}. {(setting.FlagFirst ? "A flag must have stood the night before." : "A flag is not needed.")}</p>");
+        body.Append(Invariant, $"<p class=\"record-said\">Kept while its score stays at {InEveryNine(settings.HoldInNine)} or better. Sold at the close of the night a new filing drops it below {InEveryNine(settings.HoldInNine)}, at the close of its {settings.Sessions}th trading day, or at its last close in the index, whichever comes first. No stop and no target.</p>");
         body.Append("<p class=\"record-said\">Judged by its return against an equal-weight hold of the index's stocks over the same days, in points, after its trading costs. One trade a stock; a stock it buys may also be bought by another setup.</p>");
         body.Append(card.LiveSince is { } live
             ? FormattableString.Invariant($"<p class=\"record-said\">Its settings were fixed on {live:d MMM yyyy} after its test over the past, and its record counts from then. {EquityBrief.Core.Families.ImprovingRule.ReadingsCaveat}</p>")

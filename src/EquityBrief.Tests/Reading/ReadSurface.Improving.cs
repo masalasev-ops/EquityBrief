@@ -168,27 +168,27 @@ public partial class ReadSurface
 
         var fastest = Assert.Single(Blocks(section, "<div class=\"improving-panel\" data-tab=\"fastest\".*?</table>"));
 
-        Assert.Contains("<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to at least 8 of the 9 checks with sales growing faster than the quarter before.</p>", fastest, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to at least 8 in every 9 of the checks that apply to the company, with sales growing faster than the quarter before.</p>", fastest, StringComparison.Ordinal);
         Assert.Equal(["Stock", "Business now", "What changed on its new report", "Tonight"], Regex.Matches(fastest, "<th[^>]* data-heading=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Equal(["M1", "M3", "M2"], Regex.Matches(fastest, "<tr class=\"improving-row\" data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(["M1", "M3", "M2"], Regex.Matches(fastest, "<tr class=\"improving-row(?: improving-buy)?\" data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
-        var m1 = Assert.Single(Blocks(section, "<tr class=\"improving-row\" data-ticker=\"M1\" data-status.*?</tr>"));
-        var m2 = Assert.Single(Blocks(section, "<tr class=\"improving-row\" data-ticker=\"M2\" data-status.*?</tr>"));
-        var m3 = Assert.Single(Blocks(section, "<tr class=\"improving-row\" data-ticker=\"M3\" data-status.*?</tr>"));
+        var m1 = Assert.Single(Blocks(section, "<tr class=\"improving-row(?: improving-buy)?\" data-ticker=\"M1\" data-status.*?</tr>"));
+        var m2 = Assert.Single(Blocks(section, "<tr class=\"improving-row(?: improving-buy)?\" data-ticker=\"M2\" data-status.*?</tr>"));
+        var m3 = Assert.Single(Blocks(section, "<tr class=\"improving-row(?: improving-buy)?\" data-ticker=\"M3\" data-status.*?</tr>"));
 
         // M1's sentence worked by hand from its rows: its growth of 12% from 12% less its speeding up of 2 points; the four
         // checks its filing passes that the one before did not, each with the figures its own year and the year before
         // stored; and the one it no longer passes.
         Assert.Contains("href=\"#/chart/M1\"", m1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"improving-score\"><b>8 of 9</b><span class=\"improving-from\">up from 5</span></td>", m1, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-score\"><b>8 of 9 apply</b><span class=\"improving-from\">up from 5</span></td>", m1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"improving-changed\">Sales growth sped up from 10.0% to 12.0% on a year. Return on assets rose from 10.4% to 11.8%. It now brings in more cash than it reports as profit. Current assets now cover current liabilities 2.05 times, up from 1.95. Gross margin widened from 52.6% to 53.8%. It no longer shows more sales against its assets.</td>", m1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"improving-status\" data-state=\"bought\"><b>Bought at the next trading day's open</b><span>Its filing of 1 Oct confirmed the release of 29 Sep.</span></td>", m1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"improving-score\"><b>7 of 9</b><span class=\"improving-from\">up from 5</span></td>", m3, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-score\"><b>7 of 9 apply</b><span class=\"improving-from\">up from 5</span></td>", m3, StringComparison.Ordinal);
         Assert.Contains("<td class=\"improving-changed\">Sales growth sped up from 9.0% to 10.0% on a year. Current assets cover more of current liabilities. It issued no new shares beyond the scorecard's allowance. Gross margin widened. It no longer shows less long-term debt against its assets.</td>", m3, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"improving-status\" data-state=\"improved\"><b>Improved, short of the bar</b><span>Needs 8 of 9; one check short, missing less long-term debt against its assets and more sales against its assets.</span></td>", m3, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"improving-score\"><b>filing not in yet</b><span class=\"improving-from\">was 6 of 9</span></td>", m2, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-status\" data-state=\"improved\"><b>Improved, short of the bar</b><span>Needs at least 8 in every 9 of the checks that apply, here 8 of its 9; one check short: it misses two, less long-term debt against its assets and more sales against its assets, and passing either clears the bar.</span></td>", m3, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-score\"><b>filing not in yet</b><span class=\"improving-from\">was 6 of 9 apply</span></td>", m2, StringComparison.Ordinal);
         Assert.Contains("<td class=\"improving-changed\">Its results release of 30 Sep reads results above expectations and a raised outlook.</td>", m2, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"improving-status\" data-state=\"flagged\"><b>Flagged, waiting for its filing</b><span>Bought only if its filing lifts it to 8 of 9.</span></td>", m2, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-status\" data-state=\"flagged\"><b>Flagged, waiting for its filing</b><span>Bought only if its filing lifts it to at least 8 in every 9 of the checks that apply.</span></td>", m2, StringComparison.Ordinal);
 
         // Strongest businesses under its own sentence: the index's three scores, highest first, each its business and its
         // price apart, with what the quality book says of each.
@@ -228,9 +228,9 @@ public partial class ReadSurface
 
         // The stock page's line beneath the contents, worked from the rows above: M1's filing of 1 Oct lifting it from 5 of 9
         // to 8 of 9, M3 bought on 2 Oct and kept at 7 of 9, and M2's release of 30 Sep waiting for its filing.
-        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals buys it at the next open: its filing of 2026-10-01 lifted its score to 8 of 9, from 5 of 9.</p>", await Name("M1"), StringComparison.Ordinal);
-        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals bought it on 2026-10-02 and keeps it while its score stays at 7 of 9 or more.</p>", await Name("M3"), StringComparison.Ordinal);
-        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals flagged it: its results release of 2026-09-30 reads results better than expected. The Fundamentals family buys it only if its filing lifts it to 8 of 9, and that buy waits for the filing; no other family's buy waits on it.</p>", await Name("M2"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals buys it at the next open: its filing of 2026-10-01 lifted its score to 8 of 9 apply, from 5 of 9.</p>", await Name("M1"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals bought it on 2026-10-02 and keeps it while its score stays at 7 in every 9 of the checks that apply or more.</p>", await Name("M3"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals flagged it: its results release of 2026-09-30 reads results better than expected. The Fundamentals family buys it only if its filing lifts it to at least 8 in every 9 of the checks that apply, and that buy waits for the filing; no other family's buy waits on it.</p>", await Name("M2"), StringComparison.Ordinal);
 
         // The chart page's chip in the fundamentals-first family's place, its summary and, for the stock it bought, its way in
         // with no stop.
@@ -246,7 +246,7 @@ public partial class ReadSurface
         Assert.Contains("Tonight Fundamentals flagged it from its results release, waiting for its filing.", m2, StringComparison.Ordinal);
         Assert.Contains("Tonight it is in the Fundamentals setup's holdings.", m3, StringComparison.Ordinal);
         Assert.Contains("Picked tonight by Fundamentals: buy at the next open.", m1, StringComparison.Ordinal);
-        Assert.Contains("It sets no stop: it sells at the close when a new filing drops its score under 7 of 9.", m1, StringComparison.Ordinal);
+        Assert.Contains("It sets no stop: it sells at the close when a new filing drops its score below 7 in every 9 of the checks that apply.", m1, StringComparison.Ordinal);
         Assert.Contains("Otherwise at the close of its 126th trading day, or of its last day in the index.", m1, StringComparison.Ordinal);
     }
 

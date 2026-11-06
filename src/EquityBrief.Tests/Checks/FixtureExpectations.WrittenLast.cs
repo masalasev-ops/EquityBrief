@@ -151,7 +151,7 @@ public partial class FixtureExpectations
         Assert.Empty(PageCalendar.Of(night, [], Kept(through.AddDays(-90)), []).Items);
     }
 
-    // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+    // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's
     [Fact]
     public void AFigureTheFilingAndTheFetchStateDifferentlyBeyondRoundingIsListedFilingFirst()
     {

@@ -647,8 +647,13 @@ public static partial class NameScreen
         var stated = StatedOf(filings);
 
         return new ReportView(
-            EquityBrief.Core.Report.QuarterLines.Latest(inputs.Quarters, inputs.Estimates, inputs.Sector) is { } latest
-                ? latest with { DrawnQuarter = stated.Of(latest.Quarter), DrawnYearEarlier = stated.Of(latest.YearEarlier) }
+            EquityBrief.Core.Report.QuarterLines.Latest(inputs.Quarters, inputs.Estimates, inputs.Sector, inputs.Sourced) is { } latest
+                ? latest with
+                {
+                    DrawnQuarter = stated.Of(latest.Quarter),
+                    DrawnYearEarlier = stated.Of(latest.YearEarlier),
+                    FiledOn = inputs.Sourced is { } sourced && sourced.FiledOn.TryGetValue(latest.Quarter, out var filedOn) ? filedOn : null,
+                }
                 : null,
             [.. EquityBrief.Core.Report.QuarterLines.Growth(inputs.Quarters).Select(quarter => quarter with { Quarter = stated.Of(quarter.Quarter) })],
             inputs.FetchedOn,
@@ -659,8 +664,8 @@ public static partial class NameScreen
             EquityBrief.Core.Report.DividendSafety.Of(
                 forwardRate,
                 price,
-                inputs.Quarters.MaxBy(quarter => quarter.PeriodEnd)?.EpsTrailing,
-                [.. inputs.Quarters.Select(quarter => new EquityBrief.Core.Report.CashQuarter(quarter.PeriodEnd, quarter.FreeCashFlow, quarter.DividendsPaid))],
+                inputs.Fetched.MaxBy(quarter => quarter.PeriodEnd)?.EpsTrailing,
+                [.. inputs.Fetched.Select(quarter => new EquityBrief.Core.Report.CashQuarter(quarter.PeriodEnd, quarter.FreeCashFlow, quarter.DividendsPaid))],
                 inputs.Dividends,
                 inputs.TenYears,
                 [.. bars.Select(bar => (bar.SessionDate, bar.Close))],
@@ -1746,8 +1751,8 @@ public static partial class NameScreen
         var says = reading is null ? null : WhatTheNumbersSay(reading, readQuarters ?? [], StatedOf(fundamentals ?? []), reportQuarters, secFiled);
 
         // The latest quarter's lines checked against the filing's facts as first filed.
-        // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
-        var checkedFigures = EquityBrief.Core.Report.FiguresChecked.Of(filedFacts ?? [], reportInputs?.Quarters.MaxBy(quarter => quarter.PeriodEnd));
+        // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's
+        var checkedFigures = EquityBrief.Core.Report.FiguresChecked.Of(filedFacts ?? [], reportInputs?.Fetched.MaxBy(quarter => quarter.PeriodEnd));
 
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))

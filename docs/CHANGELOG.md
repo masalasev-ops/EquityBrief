@@ -7,6 +7,106 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - an account counting from before its version says so
+Decision: A paper account counting from before its version's start says beside the date that its earlier trades replay the same
+Was:
+> The tiles: ... from 21.13 each tile opening on its return since the day it counts from on the account's size with the trades it holds open, "Up n.n% since dd mmm on $nnn,nnn, with n trades open."
+Now:
+> The tiles: ... "Up n.n% since dd mmm on $nnn,nnn, with n trades open."; from 22.53 a tile whose account counts from before its version's start saying beneath its date that its earlier trades replay the same under this version, which the read-only copy leaves off (see: ...)
+Why: the operator's order of 2026-11-06, its ninth item.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - Home's paper account and the system's total apart
+Decision: Home's paper account counts from the day the current rules' first trade counts, and the system's every version stands apart and labelled
+Was:
+> How past ideas have done: ... the line that each rule needs about 300 finished trades for a fair verdict while any live or provisional rule holds fewer; and the link to Past picks
+Now:
+> How past ideas have done: ... and the link to Past picks; from 22.52 the account named as counting the rules as they stand now from the day their first trade counts with the replay's words beside it where that day comes before the version's start; the system's every version on a line of its own labelled All versions since its first day (see: ...)
+Why: the operator's order of 2026-11-06, its eighth item.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - Tonight counts its new picks and Home draws no reshuffle
+Corrects: 22.47's and 22.48's rows said Tonight's sentence counts every buy and Home draws a monthly book's holdings to buy; `CountsProof` holds both counts to the night's new picks, the reshuffle a group of its own.
+Was:
+> Tonight's buy points: ... From 22.47 it names every buy on the index and counts them all. ...
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in with a monthly book's holdings to buy after the dip's; the buys left out ...
+Now:
+> Tonight's buy points: ... From 22.47 it names every buy on the index and counts the night's new picks, the monthly books' reshuffle said apart. ...
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in; the buys left out ...
+Why: every count of trades names its group, and the proof of the counts reads both pages.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - the entry check's line on every Fundamentals buy
+Decision: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does
+Was:
+> The Fundamentals family's card: ... (see: The Fundamentals family's rule is said as a score in every nine of the checks that apply, beside each stock's own count); on the second ...
+Now:
+> The Fundamentals family's card: ... (see: ...); from 22.51 each buy carrying its entry check's line under its status as Home's idea and its row of tomorrow's buys carry it (see: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does); on the second ...
+Why: the operator's order of 2026-11-06, its seventh item.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - 22.47's and 22.48's sentences stated one claim a clause
+Corrects: the sentences 22.47 and 22.48 added to Tonight's buy points and Home's Tonight's ideas listed their clauses with commas, which `architecture-conformance` reads as parts each owing a verdict of its own.
+Was:
+> Tonight's buy points: ... From 22.47 it names every buy on the index and counts them all: a Fundamentals buy a row after the drift's and before the dip's, and a monthly book's holding chosen and not yet bought a row after the dip's, each with How it sells opening its row on its own card, tonight's close as its buy and how it sells across the stop's and the target's columns; and the Fundamentals card ...
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in, a monthly book's holdings to buy after the dip's, and the buys left out named beneath the cards with their families' tags (see: ...); ...
+Now:
+> Tonight's buy points: ... From 22.47 it names every buy on the index and counts them all. A Fundamentals buy is a row after the drift's and before the dip's; a monthly book's holding chosen and not yet bought is a row after the dip's; such a row carries How it sells opening its row on its own card and draws tonight's close as its buy and how it sells across the stop's and the target's columns; and the Fundamentals card ...
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in with a monthly book's holdings to buy after the dip's; the buys left out named beneath the cards with their families' tags (see: ...); ...
+Why: each statement now stands as a clause the row's verdict reaches, which the tests of 22.47 and 22.48 hold.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - the Fundamentals rule in words
+Decision: The Fundamentals family's rule is said as a score in every nine of the checks that apply, beside each stock's own count
+Was:
+> The Fundamentals family's card: ... each with its score and the one before it and what changed in a sentence from the scorecard's own checks and its status with its line; on the second ...
+Now:
+> The Fundamentals family's card: ... each with its score and the one before it and what changed in a sentence from the scorecard's own checks and its status with its line; from 22.50 its score said as its count of the checks that apply and the rule wherever it is stated as a score in every 9 of the checks that apply to the company; a stock short of the bar saying the bar at its own count and that passing any of the checks it misses clears it where it misses more than it needs (see: ...); on the second ...
+Why: the operator's order of 2026-11-06, its sixth item.
+
+### 2026-11-06 - docs/BUILD_PLAN.md - 23.1's verb named when it is dispatched
+Corrects: phase 23's plan named its data check's worker verb before any worker dispatches it, and `component-access` refuses a verb the documents name that the worker does not dispatch, so `tools/ci.ps1` failed over main at e47e2b79.
+Was:
+> 23.1: A worker verb `data-check`, writing `data_check` rows and moving no price row, classifies each stock's sessions ...
+Now:
+> 23.1: A worker verb of its own, named when 23.1 dispatches it, writing `data_check` rows and moving no price row, classifies each stock's sessions ...
+Why: the check holds every verb the documents name to the worker's own dispatch, and 23.1 builds the verb.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - See the plan opens Tonight at the stock's row
+Decision: See the plan opens Tonight at the stock's row with its plan in view, and a buy no plan sells opens its row on its own card
+Was:
+> Tonight's ideas: ... what it risks for each dollar it aims for; the link to its chart page; the link to Tonight; ...
+> Tonight's buy points: ... Its columns are Stock with Open plan and the report or the control asking for one; Setup; ...
+Now:
+> Tonight's ideas: ... what it risks for each dollar it aims for; the link to its chart page, from 22.49 See the plan opening Tonight at the stock's row with its plan opened and in view, and for a buy no plan sells How it sells opening its row on its own card (see: ...); the link to Tonight; ...
+> Tonight's buy points: ... Its columns are Stock with Open plan and the report or the control asking for one, from 22.49 the report's label standing apart from Open plan as Report: written on its day or Report: not written yet; Setup; ...
+Why: the operator's order of 2026-11-06, its fifth item.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - Home's ideas in Tonight's order, the rest named
+Decision: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
+Was:
+> Tonight's ideas: ... up to six cards in Tonight's order the Fundamentals family's after the drift's; each card's ticker ...
+Now:
+> Tonight's ideas: ... up to six cards in Tonight's order the Fundamentals family's after the drift's; from 22.48 that order read by the one function Tonight's buys are drawn in, a monthly book's holdings to buy after the dip's, and the buys left out named beneath the cards with their families' tags (see: ...); each card's ticker ...
+Why: the operator's order of 2026-11-06, its fourth item.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - Tonight's buys name every buy on the index
+Decision: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+Was:
+> Tonight's buy points: ... (see: Tonight names the session its picks are bought at, tomorrow only where the exchange trades the next day). Its columns are Stock with Open plan ...
+Now:
+> Tonight's buy points: ... (see: Tonight names the session its picks are bought at, tomorrow only where the exchange trades the next day). From 22.47 it names every buy on the index and counts them all: a Fundamentals buy a row after the drift's and before the dip's, and a monthly book's holding chosen and not yet bought a row after the dip's, each with How it sells opening its row on its own card, tonight's close as its buy and how it sells across the stop's and the target's columns; and the Fundamentals card opens with its buys named, marking each on its table and drawing every buy among its rows drawn open (see: ...). Its columns are Stock with Open plan ...
+Why: the operator's order of 2026-11-06, its third item: the S&P 600's card read "3 stocks to buy at tomorrow's open, at about tonight's close: these 1 and the fundamentals' 2 on their own card below." with one row.
+
+### 2026-11-06 - docs/ARCHITECTURE.html, docs/SCHEMA.md - a quarter's lines from its filing, then its release, and otherwise not on file
+Decision: A quarter's lines are drawn from its filing where stored and then from its results release's own tables, and are not on file until the filing otherwise
+Was:
+> The latest quarter's row: The lines, their margins and the growth worked by one function in the core from the newest fetch's quarters the quarter fetcher stored and the revenue estimates fetches made before the quarter's release kept, ...
+> The name page's rules: Where the latest quarter was reported after the newest filing the store holds, its region is dated by the report and labelled as from the results release with its filing not stored yet, and the segments read from the older filing say whose they are; ...
+> The Sources rows, both, and the Figures checked row of section 17: ... (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's)
+> filed_fact: ... to check the latest quarter's lines against the provider's fetch (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's). ...
+Now:
+> The latest quarter's row: The lines, their margins and the growth worked by one function in the core from the newest fetch's quarters the quarter fetcher stored, each quarter's revenue, gross profit, operating income, net income and cash from operations from its SEC filing as first filed where stored, else for the newest quarter from its results release's own rows read by fixed line names and marked so, else not on file until the filing, a filed revenue stating a part of the company refused, and earnings a share the fetch's (see: ...), and the revenue estimates ...
+> The name page's rules: The latest quarter's region is dated by its SEC filing's first-filed day and labelled from the filing where its lines are the filing's, and otherwise dated by its report and labelled from the results release with its filing not stored yet, or not on file until the filing where the release states no line that can be read (see: ...); where the latest quarter was reported after the newest filing the provider's snapshot holds, the segments read from that older filing say whose they are; ...
+> The Sources rows, both, and the Figures checked row of section 17: ... (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's)
+> filed_fact: ... (see: ..., and the page draws the filing's), and from 22.46 the name page, the chart page and the export read the filer's figures for the periods ending from 400 days before the fetch's oldest quarter, filed on or before the night, for every quarter's lines (see: A quarter's lines are drawn from its filing where stored and then from its results release's own tables, and are not on file until the filing otherwise). ...
+Why: the operator's order of 2026-11-06, its first item: AIG's page drew the provider's revenue of $1.1B and net income of -$1.7B for the quarter its 10-Q of 2026-11-04 states at $7,443M and $849M.
+
 ### 2026-11-06 - docs/BUILD_PLAN.md - the tabled data check's market or sector wide rule at more than 25%
 Decision: Phase 23's plan stands before the three sign-offs still owed and none of it is built until they are signed
 Was:

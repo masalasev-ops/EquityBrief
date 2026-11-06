@@ -53,7 +53,7 @@ public sealed partial class SinglePageApp
         var opens = MarkRenderer.OpenDay(night);
 
         region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night, line.Groups, improving?.Bought)), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
-        region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night, improving?.Bought ?? 0, line.Groups?.ToBuyFromReshuffles ?? 0), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
+        region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night, PlanlessBuys(universe, improving, heavyweights, quality)), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
         region.Append(marks.Copying ? string.Empty : marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
 
         // The setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or the
@@ -123,6 +123,48 @@ public sealed partial class SinglePageApp
 
         return region.ToString();
     }
+
+    // The buys no plan with a stop and a target sells: the Fundamentals family's in its card's order, then the sector
+    // heavyweights' and Quality at a fair price's holdings chosen and not yet bought, each linking to its row on its card.
+    // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+    public static IReadOnlyList<PlanlessBuyView> PlanlessBuys(string universe, ImprovingCardView? improving, HeavyweightCardView? heavyweights, QualityCardView? quality) =>
+    [
+        .. (improving?.Improving ?? []).Where(row => row.Status == MarkRenderer.BoughtWords).Select(row => new PlanlessBuyView(
+            EquityBrief.Core.Families.ImprovingRule.Name,
+            EquityBrief.Core.Families.ImprovingRule.Label,
+            row.Ticker,
+            row.Company,
+            FundamentalsWhy(row, (improving!.Setting ?? EquityBrief.Core.Families.ImprovingGrid.Starting).BuyInNine),
+            MarkRenderer.ChecksApply(row.Passed, row.Applied),
+            row.Close,
+            MarkRenderer.SellsOnFilings,
+            TonightHref(universe, EquityBrief.Core.Families.ImprovingRule.Name, row.Ticker),
+            row.EntryCheck)),
+        .. (heavyweights?.Holdings ?? []).Where(holding => holding.SinceBought is null).Select(holding => new PlanlessBuyView(
+            EquityBrief.Core.Families.HeavyweightRule.Name,
+            "Sector heavyweights",
+            holding.Ticker,
+            holding.Company,
+            Invariant($"Chosen at the reshuffle as one of the largest companies leading {holding.Sector}."),
+            "not read",
+            holding.Close,
+            MarkRenderer.SellsAtAReshuffle,
+            TonightHref(universe, EquityBrief.Core.Families.HeavyweightRule.Name, holding.Ticker))),
+        .. (quality?.Cells ?? []).Where(cell => cell.SinceBought is null).Select(cell => new PlanlessBuyView(
+            EquityBrief.Core.Families.QualityRule.Name,
+            EquityBrief.Core.Families.QualityRule.Label,
+            cell.Ticker,
+            cell.Company,
+            "Chosen at the reshuffle: a strong business at a price below its own usual one.",
+            cell is { Passed: { } passed, Applied: { } applied } ? MarkRenderer.ChecksApply(passed, applied) : "not read",
+            cell.Close,
+            MarkRenderer.SellsAtAReshuffle,
+            TonightHref(universe, EquityBrief.Core.Families.QualityRule.Name, cell.Ticker))),
+    ];
+
+    // Why the Fundamentals family bought a stock, in the reader's words: its rule and the checks its newest filing passes.
+    public static string FundamentalsWhy(ImprovingRowCell row, int buyInNine) =>
+        Invariant($"Bought because its newest filing passes {MarkRenderer.InEveryNine(buyInNine, atLeast: true)} to the company: {MarkRenderer.ChecksApply(row.Passed, row.Applied)}{(row is { BeforePassed: { } before } ? Invariant($", up from {before}") : string.Empty)}.");
 
     // The setups card's title, its tiles counted in words.
     static string SetupsTitle(int tiles) =>

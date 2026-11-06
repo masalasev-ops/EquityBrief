@@ -132,7 +132,7 @@ public partial class ReadSurface
         Assert.Empty(TradeGroups.EarlierHoldings(RestartSources(), "NEW1", RestartNight));
     }
 
-    const string HomeAfterTheRestart = "<h2>Tonight's ideas: 1 stock to buy Thursday morning</h2><p>Since the rules went live on 2 Oct, 2 ideas have been bought and sold on paper; 1 made money.</p>";
+    const string HomeAfterTheRestart = "<h2>Tonight's ideas: 1 stock to buy Thursday morning</h2><p>All versions since 2 Oct: 2 ideas bought and sold on paper, 1 made money.</p>";
     const string TonightAfterTheRestart = "<p>1 new pick to buy at tomorrow's open, all from the earnings drift.</p><p>Of the system's trades, 2 are open, 1 of them this version's.</p><p>1 stock to buy at tomorrow's open, at about tonight's close.</p>";
     const string PaperAfterTheRestart = "<p>This version's trades: 1 trade is open and 0 have closed, the newest bought on 4 Nov.</p><p>The system has bought 4 trades since 2 Oct: 2 open, 1 reached their target, 1 hit their stop, +8.8% overall.</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";
 
@@ -147,8 +147,8 @@ public partial class ReadSurface
 
     // A page counting the wrong group after a restart, each of the operator's findings of 2 November.
     [Theory]
-    [InlineData("2 ideas have", "0 ideas have", "home", "Home's ideas bought and sold are the system's closed")]
-    [InlineData("; 1 made money", "; 0 made money", "home", "Home's ideas that made money are the system's")]
+    [InlineData("2 ideas bought", "0 ideas bought", "home", "Home's ideas bought and sold are the system's closed")]
+    [InlineData(", 1 made money", ", 0 made money", "home", "Home's ideas that made money are the system's")]
     [InlineData("ideas: 1 stock", "ideas: 3 stock", "home", "Home's stocks to buy are the new picks")]
     [InlineData("trades, 2 are open", "trades, 1 are open", "tonight", "Tonight's open trades are the system's")]
     [InlineData("1 of them this", "2 of them this", "tonight", "Tonight's open trades of this version are this version's")]
@@ -312,16 +312,6 @@ public partial class ReadSurface
 
         Assert.Empty(EquityBrief.Web.Cloudflare.SiteCopy.Leaks("screens/paper.html", copy, needles));
         Assert.NotEmpty(EquityBrief.Web.Cloudflare.SiteCopy.Leaks("screens/paper.html", read, needles));
-    }
-
-    [Fact]
-    public void TomorrowsBuysDrawsOneCountAndSaysWhereTheFundamentalsAndTheReshuffleAre()
-    {
-        var words = System.Net.WebUtility.HtmlDecode(new MarkRenderer().TomorrowsBuys([], null, night: new DateOnly(2026, 11, 2), fundamentals: 2, reshuffled: 3));
-
-        Assert.Contains("2 stocks to buy at", words, StringComparison.Ordinal);
-        Assert.Contains("these 0 and the fundamentals' 2 on their own card below.", words, StringComparison.Ordinal);
-        Assert.Contains("The monthly books' reshuffle adds 3 more.", words, StringComparison.Ordinal);
     }
 
     [Fact]

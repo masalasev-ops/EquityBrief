@@ -7,6 +7,13 @@ public sealed record SetupTileView(string Family, string Label, int Count, strin
 // One of tonight's buy points as the table across every setup draws it: the setup's word and label and its pick.
 public sealed record BuyPointView(string Family, string Label, FamilyPickCell Pick);
 
+// A buy that no plan with a stop and a target sells, the Fundamentals family's and a monthly book's, as the table across
+// every setup draws it: the setup's word and label, the stock and its company, why it qualified and its business in the
+// reader's words, tonight's close it is bought at about, how it sells, the link to its row on its own card, and its entry
+// check's reading.
+// see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+public sealed record PlanlessBuyView(string Family, string Label, string Ticker, string? Company, string Why, string Business, decimal? Close, string Sells, string Href, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null);
+
 // The parts tomorrow's buys shares with a setup's card: each row's fold and the control opening it, and the reward
 // against the risk as the plan states it.
 // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it

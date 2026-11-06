@@ -3215,7 +3215,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's buy points")] = new Scoped(
             Verdict.Pass,
-            "every family's picks in one table in the one order and each family's own, tagged and numbered from one across the table; from 19.3 each row's report state, business and stories read off the row, and a row opened beneath another held inside the box the table scrolls in by the stylesheet's rule; from the 19.2 correction of 2026-10-21 every row followed by its fold, hidden where the link names no row and open for the row a link names, its control the one in the row's stock cell; and from 22.6 the table's sentence and columns read off the page and each fold holding its pick's card alone with one stop and no levels plan though the night stored a band for the stock, on both kinds of index",
+            "every family's picks in one table in the one order and each family's own, tagged and numbered from one across the table; from 19.3 each row's report state, business and stories read off the row, and a row opened beneath another held inside the box the table scrolls in by the stylesheet's rule; from the 19.2 correction of 2026-10-21 every row followed by its fold, hidden where the link names no row and open for the row a link names, its control the one in the row's stock cell; and from 22.6 the table's sentence and columns read off the page and each fold holding its pick's card alone with one stop and no levels plan though the night stored a band for the stock, on both kinds of index; and from 22.47 every buy of a constructed S&P 600 night a row in the one order, the Fundamentals' between the drift's and the dip's with how they sell, their close, their count of the checks that apply and their link to their own card, and the Fundamentals card naming its buys first and folding none away",
             ByReadSurface),
         // 21.13's market strip, on Tonight and on the copy.
         [CheckReach.Key("15.7 Tonight", "The market strip")] = new Scoped(
@@ -4139,11 +4139,11 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.24 Home", "Tonight's ideas")] = new Scoped(
             Verdict.Pass,
-            "read back off the rendered page over a constructed store: the count and the session, each card in Tonight's order with its tag, sentence, prices and bar worked by hand from the stored plan, a trailing plan's line in the target's place, the link to its chart page and to Tonight, the note beneath, and a night with no buys saying so and why",
+            "read back off the rendered page over a constructed store: the count and the session, each card in Tonight's order with its tag, sentence, prices and bar worked by hand from the stored plan, a trailing plan's line in the target's place, the link to its chart page and to Tonight, the note beneath, and a night with no buys saying so and why; from 22.48 the S&P 500's buys of a night in Tonight's order and the line naming those left out with their families; and from 22.49 See the plan linking to Tonight at the stock's row and How it sells to its row on its own card",
             ByReadSurface),
         [CheckReach.Key("15.24 Home", "How past ideas have done")] = new Scoped(
             Verdict.Pass,
-            "read back off the rendered page over a constructed store: the combined account's day, its closed ideas and those that made money, its return and the equal-weight hold of the index's stocks worked by hand from their closes, the line about 300 finished trades and the link to Past picks",
+            "read back off the rendered page over a constructed store: the combined account's day, its closed ideas and those that made money, its return and the equal-weight hold of the index's stocks worked by hand from their closes, the line about 300 finished trades and the link to Past picks; and from 22.52 the account's line naming the day the current rules' first trade counts with the replay's words where it applies and none on the copy, and the system's every version on a line apart",
             ByReadSurface),
         [CheckReach.Key("15.24 Home", "How it works")] = new Scoped(
             Verdict.Pass,
@@ -4159,7 +4159,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The Fundamentals family's card")] = new Scoped(
             Verdict.Pass,
-            "read back off the rendered page over a constructed store's night: the card in the fundamentals-first family's place with its tile in that slot, its sentence, its four tiles, the two tabs with each improver's score, what changed and its status, the strongest scores with the quality book's words, and its rule a click away; a night its part failed saying so, a store whose step read no night saying so, and the fundamentals-first family's card and tile drawn nowhere",
+            "read back off the rendered page over a constructed store's night: the card in the fundamentals-first family's place with its tile in that slot, its sentence, its four tiles, the two tabs with each improver's score, what changed and its status, the strongest scores with the quality book's words, and its rule a click away; a night its part failed saying so, a store whose step read no night saying so, and the fundamentals-first family's card and tile drawn nowhere; and from 22.50 each score read as its count of the checks that apply, the rule as a score in every 9 of them, and a stock short of the bar worked by hand at its own count; and from 22.51 a buy holding a reading drawing its entry check's line on its card row, its buy row and Home, and a stock held and not bought drawing none",
             ByReadSurface),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.NightlyRun.ImprovingStep)] = new Scoped(
             Verdict.Pass,

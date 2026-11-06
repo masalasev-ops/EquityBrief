@@ -30,7 +30,12 @@ public sealed record ReportInputs(
     InsiderCoverage? InsiderSpans = null,
     NewestReading? Release = null,
     string? ReleaseModel = null,
-    string? Sector = null);
+    string? Sector = null,
+    SourcedQuarters? Sourced = null)
+{
+    // The quarters as the provider's fetch stored them, which the figures checked and the dividend's safety read.
+    public IReadOnlyList<QuarterRow> Fetched => Sourced?.Fetched ?? Quarters;
+}
 
 // The reads of the regions phase 18 added between the card and the earnings reactions. The page draws what they return
 // through the core's functions and computes none of it.
@@ -376,7 +381,18 @@ public sealed partial class ReadApi
         var (insiders, spans) = await InsidersAsync(connection, ticker, night);
         var (release, model) = await ReleaseReadingAsync(connection, ticker, night);
 
-        return new ReportInputs(quarters, fetchedOn, estimates, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans, release, model, sector);
+        // Each quarter's lines from its filing, then from the newest results release's own tables, and otherwise none, the
+        // filings and the release being those stored by the night.
+        // see: A quarter's lines are drawn from its filing where stored and then from its results release's own tables, and are not on file until the filing otherwise
+        var filedBy = on is { } asked && asked < night ? asked : night;
+        var newestRelease = quarters.Count > 0 ? await NewestReleaseAsync(ticker, filedBy) : null;
+        var sourced = QuarterSources.Of(
+            quarters,
+            quarters.Count > 0 ? await FiledFactsAsync(ticker, quarters.Min(quarter => quarter.PeriodEnd).AddDays(-FiguresChecked.DaysRead), filedBy) : [],
+            newestRelease?.Text,
+            newestRelease?.AcceptedOn);
+
+        return new ReportInputs(sourced.Quarters, fetchedOn, estimates, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans, release, model, sector, sourced);
     }
 
     // From 20.3 the newest results release of the stock's filer the night may read, as the local model read it under the

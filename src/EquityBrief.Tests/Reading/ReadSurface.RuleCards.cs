@@ -186,6 +186,10 @@ public partial class ReadSurface
         Assert.Contains($"<p class=\"family-note\">K9 qualified again tonight but its trade from {BeforeTheSwitch} is still open, so it is not listed. One stock, one trade.</p>", live, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"K9\" data-variant-pick=\"true\">", chosen, StringComparison.Ordinal);
         Assert.DoesNotContain("class=\"family-note\"", chosen, StringComparison.Ordinal);
+
+        // The night kept no answer of the version's, so its picks stand against the live rule's picks, K1 and K2, and not
+        // against its qualifying stocks, which hold K9 too: K9, qualifying and held back, is a pick the version adds.
+        Assert.Contains("<p class=\"rule-share\" data-shared=\"\" data-added=\"K9\" data-dropped=\"K1,K2\">Beside the live setup's picks tonight, it shares none, adds K9 and drops K1, K2.</p>", chosen, StringComparison.Ordinal);
     }
 
     [Fact]

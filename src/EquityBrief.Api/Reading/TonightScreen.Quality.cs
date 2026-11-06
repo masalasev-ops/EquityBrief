@@ -53,7 +53,8 @@ public static partial class TonightScreen
                     since,
                     TonightLine(holding, now, night, AnswerOn(lastReshuffle ?? holding.ChosenOn, holding.Ticker)),
                     holding.Fill,
-                    holding.BoughtOn);
+                    holding.BoughtOn,
+                    cellByTicker.TryGetValue(holding.Ticker, out var closing) ? closing.Close : null);
             }),
         ];
 

@@ -5,7 +5,7 @@ namespace EquityBrief.Web.Marks;
 // One holding on Quality at a fair price's card: the stock, its company, the night it was chosen, its score tonight as
 // checks passed of the checks that applied, its valuation's place tonight, its change since it was bought, none before
 // its buy, and tonight's line in the reader's words.
-public sealed record QualityHoldingCell(string Ticker, string? Company, DateOnly ChosenOn, int? Passed, int? Applied, double? Place, double? SinceBought, string Tonight, decimal? Fill = null, DateOnly? BoughtOn = null);
+public sealed record QualityHoldingCell(string Ticker, string? Company, DateOnly ChosenOn, int? Passed, int? Applied, double? Place, double? SinceBought, string Tonight, decimal? Fill = null, DateOnly? BoughtOn = null, decimal? Close = null);
 
 // One stock next in line: qualifying tonight and not held, in the family's order.
 public sealed record QualityNextCell(string Ticker, string? Company, int Passed, int Applied, double? Place);

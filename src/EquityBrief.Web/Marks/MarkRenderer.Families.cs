@@ -1291,13 +1291,15 @@ public sealed partial class MarkRenderer
         cells.Append(Invariant, $" <a class=\"open{(researched ? string.Empty : " unwritten")}\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\" ");
         cells.Append(Invariant, $"data-report-state=\"{ReportState(row)}\" data-researched=\"{(researched ? "true" : "false")}\"");
 
+        // The report's label stands apart from the plan's control, each saying what it opens.
+        // see: See the plan opens Tonight at the stock's row with its plan in view, and a buy no plan sells opens its row on its own card
         if (row.ResearchedOn is { } on)
         {
-            cells.Append(Invariant, $" data-researched-on=\"{on:yyyy-MM-dd}\" title=\"open the report, written {on:yyyy-MM-dd}\">report</a>");
+            cells.Append(Invariant, $" data-researched-on=\"{on:yyyy-MM-dd}\" title=\"open the report, written {on:yyyy-MM-dd}\">Report: written {on.ToString("d MMM", Invariant)}</a>");
         }
         else
         {
-            cells.Append(" title=\"open the name, whose researched sections are not written\">not written</a>");
+            cells.Append(" title=\"open the name, whose researched sections are not written\">Report: not written yet</a>");
 
             if (row.Queue is null)
             {

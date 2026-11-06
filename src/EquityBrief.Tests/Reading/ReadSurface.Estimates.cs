@@ -25,6 +25,7 @@ public partial class ReadSurface
         // EST's quarter to 2026-09-30, reported on 2026-10-14, with three fetches that day: at 00:41 in New York, a
         // millisecond before the open and at the open.
         store.Execute("INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES ('EST', '2026-10-14T23:00:00.000Z', '2026-10-14', '2026-09-30', '2026-10-14', '125');");
+        FiledAsFetched(sql => store.Execute(sql), "EST");
         store.Execute(
             "INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, revenue_average) VALUES "
             + "('EST', '2026-10-14T04:41:38.890Z', '0q', '2026-09-30', '100'), "
@@ -72,6 +73,7 @@ public partial class ReadSurface
             + "('FY4', '2026-10-15T23:00:00.000Z', '2026-10-15', '2026-02-28', '2026-03-19', '2400'), "
             + "('FY4', '2026-10-15T23:00:00.000Z', '2026-10-15', '2026-05-31', '2026-06-18', '2500'), "
             + "('FY4', '2026-10-15T23:00:00.000Z', '2026-10-15', '2026-08-31', '2026-10-15', '2940');");
+        FiledAsFetched(sql => store.Execute(sql), "FY4");
         store.Execute(
             "INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, revenue_average) VALUES "
             + "('FY4', '2026-10-11T01:27:22.778Z', '0y', '2026-09-07', '10000'), "
@@ -94,6 +96,7 @@ public partial class ReadSurface
         // the next one, at 300, beside the quarter before as the current one: the quarter's own estimate is read under
         // either word, and the current quarter's row, ending a quarter before, is not.
         store.Execute("INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES ('NXQ', '2026-10-16T23:00:00.000Z', '2026-10-16', '2026-09-30', '2026-10-16', '310');");
+        FiledAsFetched(sql => store.Execute(sql), "NXQ");
         store.Execute(
             "INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, revenue_average) VALUES "
             + "('NXQ', '2026-10-01T04:00:00.000Z', '0q', '2026-06-30', '280'), "
@@ -105,6 +108,7 @@ public partial class ReadSurface
         // 2026-06-30, reported on 2026-07-20 and fetched on 2026-10-09, with its first estimate fetch on 2026-10-14, says
         // its estimates are kept from 2026-10-14 tonight and that none is kept for it yet on 2026-10-09's page.
         store.Execute("INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES ('KFN', '2026-10-09T23:00:00.000Z', '2026-10-09', '2026-06-30', '2026-07-20', '90');");
+        FiledAsFetched(sql => store.Execute(sql), "KFN");
         store.Execute("INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, revenue_average) VALUES ('KFN', '2026-10-14T04:40:57.322Z', '0q', '2026-09-30', '95');");
 
         var tonight = await read.ReportInputsAsync("KFN", null, EstimatesNight);
@@ -135,6 +139,11 @@ public partial class ReadSurface
             "INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, revenue_average) VALUES "
             + "('M1', '2026-09-10T04:00:00.000Z', '0y', '2026-08-31', '10000'), "
             + "('M2', '2026-07-01T04:00:00.000Z', '0q', '2026-06-30', '500');");
+
+        foreach (var ticker in new[] { "M1", "M2", "M3" })
+        {
+            FiledAsFetched(sql => store.Execute(sql), ticker);
+        }
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -171,6 +180,8 @@ public partial class ReadSurface
             "INSERT INTO company (ticker, fetched_at, sector, industry) VALUES "
             + "('M2', '2026-09-15T23:00:00.000Z', 'Financials', 'Banks'), "
             + "('M1', '2026-09-15T23:00:00.000Z', 'Energy', 'Oil, Gas & Consumable Fuels'), ('M1', '2026-10-03T23:00:00.000Z', 'Financials', 'Banks');");
+        FiledAsFetched(sql => store.Execute(sql), "M1");
+        FiledAsFetched(sql => store.Execute(sql), "M2");
 
         // The earlier page reads M1's first fetch and not the later one, so its revenue is read against 500; the newest
         // night's page reads the later one and none.

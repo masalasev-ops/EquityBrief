@@ -586,12 +586,15 @@ public sealed partial class SinglePageApp : IComponent
           const asked = query.get('reason');
           const reasonRow = asked ? screen.querySelector('.records-table tr[data-reason="' + CSS.escape(asked) + '"]') : null;
           if (reasonRow) { reasonRow.classList.add('hl'); }
+          const setupCard = query.get('{{{HomeSetupKey}}}') ? document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')) : null;
+          const setupRow = setupCard && query.get('name') ? setupCard.querySelector('tr[data-ticker="' + CSS.escape(query.get('name')) + '"]') : null;
           const placed = keptPlace && Date.now() - keptPlace.at < 10000 ? screen.querySelector(keptPlace.find) : null;
           const placedCard = placed ? placed.closest('section.card') : null;
           if (placedCard) { scrollTo(0, placedCard.getBoundingClientRect().top + scrollY - keptPlace.top); }
           else if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }
           else if (query.get('name') && document.getElementById('selected')) { document.getElementById('selected').scrollIntoView({ block: 'start' }); }
-          else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { screen.querySelector('.buy-points tr.sel[data-fold]').scrollIntoView({ block: 'start' }); }
+          else if (setupRow) { setupRow.scrollIntoView({ block: 'center' }); }
+          else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { const buyRow = screen.querySelector('.buy-points tr.sel[data-fold]'); const buyFold = document.getElementById(buyRow.getAttribute('data-fold')); const buyPlan = buyFold ? buyFold.querySelector('.card-plan') : null; (buyPlan || buyRow).scrollIntoView({ block: 'start' }); }
           else if (reasonRow) { reasonRow.scrollIntoView({ block: 'center' }); }
           else if (query.get('{{{HomeSetupKey}}}') && document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}'))) { document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')).scrollIntoView({ block: 'start' }); }
           else { scrollTo(0, 0); }
@@ -2112,23 +2115,46 @@ public sealed partial class SinglePageApp : IComponent
         // A quarter reported after the newest filing the store holds is the results release's, and is labelled so until its
         // filing is stored, where it read as the older filing's.
         // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
-        var releasedFirst = report?.Quarter is { Reported: { } reportedOn } && (filedOn is null || reportedOn > filedOn) ? report.Quarter.Reported : null;
+        // A quarter handed its source is dated and labelled by it: its SEC filing's first-filed day, or its report day while
+        // its lines are the results release's or not on file until the filing.
+        // see: A quarter's lines are drawn from its filing where stored and then from its results release's own tables, and are not on file until the filing otherwise
+        var source = report?.Quarter?.Source;
+        var releasedFirst = source switch
+        {
+            EquityBrief.Core.Report.QuarterSource.Filing => null,
+            EquityBrief.Core.Report.QuarterSource.Release or EquityBrief.Core.Report.QuarterSource.NotOnFile => report!.Quarter!.Reported,
+            _ => report?.Quarter is { Reported: { } reportedOn } && (filedOn is null || reportedOn > filedOn) ? report.Quarter.Reported : null,
+        };
+        var quarterFiled = source == EquityBrief.Core.Report.QuarterSource.Filing ? report!.Quarter!.FiledOn : filedShown;
+        const string Estimated = " The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated.";
 
         Card("quarter", "quarter", "The latest quarter", Cards.Dated(
             "The latest quarter",
-            releasedFirst is not null ? "Reported" : filedShown is null && filedOn is not null ? "Filing date" : "Filed",
-            releasedFirst ?? filedShown,
+            releasedFirst is not null ? "Reported" : quarterFiled is null && filedOn is not null ? "Filing date" : "Filed",
+            releasedFirst ?? quarterFiled,
             quarterBody + Cards.Key(
                 "Where these come from.",
-                releasedFirst is null
-                    ? "Each figure is from the company's own filing, dated as the filing is, as the newest fetch of its quarters stored it. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated."
-                    : "Each figure is from the results release, as the newest fetch of its quarters stored it, the filing of the quarter not stored yet; once it is, the figures checked under the sources set the filing's against these. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated.",
+                source switch
+                {
+                    EquityBrief.Core.Report.QuarterSource.Filing => "Each income and cash figure is the company's own SEC filing's, as first filed, dated by that filing; earnings a share and its estimate are the earnings calendar's." + Estimated,
+                    EquityBrief.Core.Report.QuarterSource.Release => "The quarter's filing is not stored yet, so each figure marked so is read from the results release's own tables by its line's name, its year-earlier column checked against the year-earlier quarter as filed; a line the release does not state that way is not on file until the filing. The year-earlier figures are the filing's, and earnings a share and its estimate are the earnings calendar's." + Estimated,
+                    EquityBrief.Core.Report.QuarterSource.NotOnFile => "The quarter's filing is not stored yet and its results release states no line that can be read by its name, so its income and cash lines are not on file until the filing; earnings a share and its estimate are the earnings calendar's." + Estimated,
+                    _ => releasedFirst is null
+                        ? "Each figure is from the company's own filing, dated as the filing is, as the newest fetch of its quarters stored it." + Estimated
+                        : "Each figure is from the results release, as the newest fetch of its quarters stored it, the filing of the quarter not stored yet; once it is, the figures checked under the sources set the filing's against these." + Estimated,
+                },
                 "These are the company's reported results. Nothing in the plan is computed from them."),
             title: report?.Quarter is { } latest ? "The quarter to " + Cards.Day(latest.DrawnQuarter) + ", line by line" : "The latest quarter, line by line",
             filed: true,
-            note: releasedFirst is null ? "from the filing" : "from the results release, filing not stored yet",
+            note: source switch
+            {
+                EquityBrief.Core.Report.QuarterSource.Filing => "from the filing",
+                EquityBrief.Core.Report.QuarterSource.Release => "from the results release, filing not stored yet",
+                EquityBrief.Core.Report.QuarterSource.NotOnFile => EquityBrief.Core.Report.QuarterSources.NotOnFile,
+                _ => releasedFirst is null ? "from the filing" : "from the results release, filing not stored yet",
+            },
             id: "quarter"),
-            releasedFirst ?? filedOn);
+            releasedFirst ?? (source == EquityBrief.Core.Report.QuarterSource.Filing ? quarterFiled : filedOn));
 
         // What management said with its results, the written section read from the newest and the previous results
         // releases, after the quarter where section 4 lists it; and from 20.3 beneath it the newest results release's four
@@ -2423,7 +2449,7 @@ public sealed partial class SinglePageApp : IComponent
 
         // The sources, before where the research stands: every document the written sections cite, the latest quarter's
         // lines two sources state differently and what is computed rather than sourced.
-        // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+        // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's
         Card("sources", "sources", "Sources", Cards.Computed(
             "Sources",
             marks.Sources(
@@ -2434,7 +2460,7 @@ public sealed partial class SinglePageApp : IComponent
                 relevant)
                 + Cards.Key(
                     "How to read it.",
-                    "Each document is listed with the day it was published and links to it. A line of the latest quarter the company's filing and the provider's fetch state differently by more than half a million dollars or a tenth of a per cent is listed with the filing's figure first; every region draws the fetch's, since every quarter the page reads shares one fetch's basis.",
+                    "Each document is listed with the day it was published and links to it. A line of the latest quarter the company's filing and the provider's fetch state differently by more than half a million dollars or a tenth of a per cent is listed with the filing's figure first; every region draws the filing's, and the provider's quarterly income and cash figures are drawn for no quarter.",
                     "A figure listed under figures checked is one two sources disagree on, so read it with that in mind."),
             title: "What the page rests on",
             stamp: Cards.Night(session),
