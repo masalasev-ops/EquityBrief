@@ -102,6 +102,39 @@ public partial class ReadSurface
         Assert.DoesNotContain(">not written</a>", buys, StringComparison.Ordinal);
     }
 
+    // The Fundamentals rule read "Needs 8 of 9" beside a count of the checks that apply, so EW's 7 of 9, failing two, read
+    // "one check short, missing a higher return on assets and a wider gross margin". The rule says in every 9 of the checks
+    // that apply, beside the stock's own count, and a stock failing more checks than it needs says passing either clears it.
+    // see: The Fundamentals family's rule is said as a score in every nine of the checks that apply, beside each stock's own count
+    [Fact]
+    public void TheFundamentalsRuleIsSaidInEveryNineOfTheChecksThatApplyBesideEachStocksOwnCount()
+    {
+        var starting = EquityBrief.Core.Families.ImprovingRule.Starting;
+
+        Assert.Equal(
+            "Needs at least 8 in every 9 of the checks that apply, here 8 of its 9; one check short: it misses two, a higher return on assets and a wider gross margin, and passing either clears the bar.",
+            EquityBrief.Api.Reading.TonightScreen.UnderTheBarLine(7, 9, starting, ["a higher return on assets", "a wider gross margin"]));
+        Assert.Equal(
+            "Needs at least 8 in every 9 of the checks that apply, here 7 of its 7; two checks short, missing more current assets against current liabilities and a wider gross margin.",
+            EquityBrief.Api.Reading.TonightScreen.UnderTheBarLine(5, 7, starting, ["more current assets against current liabilities", "a wider gross margin"]));
+        Assert.Equal(
+            "Needs at least 8 in every 9 of the checks that apply, here 7 of its 7; one check short, missing more sales against its assets.",
+            EquityBrief.Api.Reading.TonightScreen.UnderTheBarLine(6, 7, starting, ["more sales against its assets"]));
+
+        // The card's lead, its rule and each stock's count, and Home's sell line.
+        var drawn = WebUtility.HtmlDecode(new MarkRenderer().ImprovingCard(FundamentalsCard([Improver("AIG", 6, 6, MarkRenderer.BoughtWords)])));
+
+        Assert.Contains("lifts it to at least 8 in every 9 of the checks that apply to the company", drawn, StringComparison.Ordinal);
+        Assert.Contains("<b>6 of 6 apply</b>", drawn, StringComparison.Ordinal);
+        Assert.Contains("Kept while its score stays at 7 in every 9 of the checks that apply or better.", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("of the 9 checks", drawn, StringComparison.Ordinal);
+        Assert.Contains(
+            "it sells when a new filing drops its score below 7 in every 9 of the checks that apply,",
+            SinglePageApp.SellLine(new HomeIdea("improving", "AIG", null, "Why.", 80m, null, null, false, null), copying: false),
+            StringComparison.Ordinal);
+        Assert.Contains("passes at least 8 in every 9 of the checks that apply to the company: 6 of 6 apply, up from 4.", SinglePageApp.FundamentalsWhy(Improver("AIG", 6, 6, MarkRenderer.BoughtWords), 8), StringComparison.Ordinal);
+    }
+
     // The card opens with its buys named, marks each on its table and never folds one behind the first ten rows.
     [Fact]
     public void TheFundamentalsCardOpensWithItsBuysAndNeverFoldsOneBehindItsShownRows()

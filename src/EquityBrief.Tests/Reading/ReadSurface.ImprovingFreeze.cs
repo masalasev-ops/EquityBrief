@@ -86,8 +86,8 @@ public partial class ReadSurface
         // The line its recorded answer gives, word for word with the operator's words beneath it; its sentences stating the
         // dials its setting asks, a flag first and the growth not; and its fold saying its settings were fixed that day.
         Assert.Contains(MidImprovingFixed, section, StringComparison.Ordinal);
-        Assert.Contains("lifts its score to at least 7 of the 9 checks that apply and above the score of the filing before it. A flag must have stood the night before.", section, StringComparison.Ordinal);
-        Assert.Contains("Kept while its score stays at 7 of 9 or better. Sold at the close of the night a new filing drops it below 7, at the close of its 63th trading day", section, StringComparison.Ordinal);
+        Assert.Contains("lifts its score to at least 7 in every 9 of the checks that apply to the company and above the score of the filing before it. A flag must have stood the night before.", section, StringComparison.Ordinal);
+        Assert.Contains("Kept while its score stays at 7 in every 9 of the checks that apply or better. Sold at the close of the night a new filing drops it below 7 in every 9 of the checks that apply, at the close of its 63th trading day", section, StringComparison.Ordinal);
         Assert.Contains("Its settings were fixed on 30 Sep 2026 after its test over the past, and its record counts from then. " + ImprovingRule.ReadingsCaveat, section, StringComparison.Ordinal);
         Assert.DoesNotContain("with sales growing faster than the quarter before", section, StringComparison.Ordinal);
 

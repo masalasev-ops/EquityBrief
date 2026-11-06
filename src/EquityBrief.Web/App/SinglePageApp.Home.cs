@@ -86,7 +86,7 @@ public sealed partial class SinglePageApp
 
             return copying
                 ? "No price is set in advance: it sells when a new filing weakens its score, or at its time limit."
-                : Invariant($"No price is set in advance: it sells when a new filing drops its score below {setting.HoldInNine} of 9 checks,{(setting.SoldUnderAverage ? " on a close under its 200-day average," : string.Empty)} or after {setting.Sessions} trading days.");
+                : Invariant($"No price is set in advance: it sells when a new filing drops its score below {MarkRenderer.InEveryNine(setting.HoldInNine)},{(setting.SoldUnderAverage ? " on a close under its 200-day average," : string.Empty)} or after {setting.Sessions} trading days.");
         }
 
         if (Planless(idea.Family))

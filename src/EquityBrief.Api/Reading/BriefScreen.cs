@@ -492,7 +492,7 @@ public static class BriefScreen
             return
             [
                 new BriefLine("buy", $"Picked tonight by {Label(bought.Family)}: buy at the next open."),
-                new BriefLine("stop", Invariant($"It sets no stop: it sells at the close when a new filing drops its score under {settings.HoldInNine} of 9.")),
+                new BriefLine("stop", $"It sets no stop: it sells at the close when a new filing drops its score below {MarkRenderer.InEveryNine(settings.HoldInNine)}."),
                 new BriefLine("exit", Invariant($"Otherwise at the close of its {settings.Sessions}th trading day, or of its last day in the index.")),
                 .. Size(inputs, null),
             ];

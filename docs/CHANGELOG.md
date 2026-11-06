@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - 22.47's and 22.48's sentences stated one claim a clause
+Corrects: the sentences 22.47 and 22.48 added to Tonight's buy points and Home's Tonight's ideas listed their clauses with commas, which `architecture-conformance` reads as parts each owing a verdict of its own.
+Was:
+> Tonight's buy points: ... From 22.47 it names every buy on the index and counts them all: a Fundamentals buy a row after the drift's and before the dip's, and a monthly book's holding chosen and not yet bought a row after the dip's, each with How it sells opening its row on its own card, tonight's close as its buy and how it sells across the stop's and the target's columns; and the Fundamentals card ...
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in, a monthly book's holdings to buy after the dip's, and the buys left out named beneath the cards with their families' tags (see: ...); ...
+Now:
+> Tonight's buy points: ... From 22.47 it names every buy on the index and counts them all. A Fundamentals buy is a row after the drift's and before the dip's; a monthly book's holding chosen and not yet bought is a row after the dip's; such a row carries How it sells opening its row on its own card and draws tonight's close as its buy and how it sells across the stop's and the target's columns; and the Fundamentals card ...
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in with a monthly book's holdings to buy after the dip's; the buys left out named beneath the cards with their families' tags (see: ...); ...
+Why: each statement now stands as a clause the row's verdict reaches, which the tests of 22.47 and 22.48 hold.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - the Fundamentals rule in words
+Decision: The Fundamentals family's rule is said as a score in every nine of the checks that apply, beside each stock's own count
+Was:
+> The Fundamentals family's card: ... each with its score and the one before it and what changed in a sentence from the scorecard's own checks and its status with its line; on the second ...
+Now:
+> The Fundamentals family's card: ... each with its score and the one before it and what changed in a sentence from the scorecard's own checks and its status with its line; from 22.50 its score said as its count of the checks that apply and the rule wherever it is stated as a score in every 9 of the checks that apply to the company; a stock short of the bar saying the bar at its own count and that passing any of the checks it misses clears it where it misses more than it needs (see: ...); on the second ...
+Why: the operator's order of 2026-11-06, its sixth item.
+
 ### 2026-11-06 - docs/BUILD_PLAN.md - 23.1's verb named when it is dispatched
 Corrects: phase 23's plan named its data check's worker verb before any worker dispatches it, and `component-access` refuses a verb the documents name that the worker does not dispatch, so `tools/ci.ps1` failed over main at e47e2b79.
 Was:

@@ -158,7 +158,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<div class=\"improving-panel\" data-tab=\"fastest\" data-rows=\"{card.Improving.Count}\">");
         var setting = card.Setting ?? EquityBrief.Core.Families.ImprovingGrid.Starting;
 
-        body.Append(Invariant, $"<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to at least {settings.BuyInNine} of the 9 checks{(setting.Faster ? " with sales growing faster than the quarter before" : string.Empty)}{(setting.FlagFirst ? ", a flag standing the night before" : string.Empty)}.</p>");
+        body.Append(Invariant, $"<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to {InEveryNine(settings.BuyInNine, atLeast: true)} to the company{(setting.Faster ? ", with sales growing faster than the quarter before" : string.Empty)}{(setting.FlagFirst ? ", a flag standing the night before" : string.Empty)}.</p>");
 
         if (card.Improving.Count == 0)
         {
@@ -204,7 +204,7 @@ public sealed partial class MarkRenderer
             {
                 body.Append(Invariant, $"<tr class=\"improving-row\" data-ticker=\"{Escaped(cell.Ticker)}\">");
                 body.Append(ImprovingStock(cell.Ticker, cell.Company));
-                body.Append(Invariant, $"<td class=\"improving-score\"><b>{cell.Passed} of {cell.Applied}</b></td>");
+                body.Append(Invariant, $"<td class=\"improving-score\"><b>{ChecksApply(cell.Passed, cell.Applied)}</b></td>");
                 body.Append(Invariant, $"<td class=\"improving-changed\">{Escaped(cell.Business)}</td>");
                 body.Append(Invariant, $"<td class=\"improving-status\">{Escaped(cell.Price)}");
 
@@ -252,10 +252,10 @@ public sealed partial class MarkRenderer
             var now = cell.Applied == 0
                 ? Formatted($"<b>{NoChecksRead}</b>")
                 : state == "flagged"
-                ? Formatted($"<b>filing not in yet</b><span class=\"improving-from\">was {cell.Passed} of {cell.Applied}</span>")
+                ? Formatted($"<b>filing not in yet</b><span class=\"improving-from\">was {ChecksApply(cell.Passed, cell.Applied)}</span>")
                 : cell is { BeforePassed: { } before, BeforeApplied: { } applied }
-                    ? Formatted($"<b>{cell.Passed} of {cell.Applied}</b><span class=\"improving-from\">up from {before}{(applied != cell.Applied ? Formatted($" of {applied}") : string.Empty)}</span>")
-                    : Formatted($"<b>{cell.Passed} of {cell.Applied}</b>");
+                    ? Formatted($"<b>{ChecksApply(cell.Passed, cell.Applied)}</b><span class=\"improving-from\">up from {before}{(applied != cell.Applied ? Formatted($" of {applied}") : string.Empty)}</span>")
+                    : Formatted($"<b>{ChecksApply(cell.Passed, cell.Applied)}</b>");
 
             body.Append(Invariant, $"<tr class=\"improving-row{(state == "bought" ? " improving-buy" : string.Empty)}\" data-ticker=\"{Escaped(cell.Ticker)}\" data-status=\"{Escaped(cell.Status)}\">");
             body.Append(ImprovingStock(cell.Ticker, cell.Company, state == "bought"));
@@ -359,8 +359,8 @@ public sealed partial class MarkRenderer
 
         body.Append("<details class=\"fold fam-rule improving-rule\"><summary>How it picks, and how it will be tested</summary><div class=\"fold-b\">");
         body.Append("<p class=\"record-said\">Flagged: a company whose results release, sent since its last filing, reads results better than expected and an outlook raised or kept. A flag buys nothing.</p>");
-        body.Append(Invariant, $"<p class=\"record-said\">Bought at the next open: a company whose new filing, read tonight for the first time, lifts its score to at least {settings.BuyInNine} of the 9 checks that apply{(setting.Rise ? " and above the score of the filing before it" : string.Empty)}{(setting.Faster ? ", while its sales over a year grow faster than in the quarter before" : string.Empty)}. {(setting.FlagFirst ? "A flag must have stood the night before." : "A flag is not needed.")}</p>");
-        body.Append(Invariant, $"<p class=\"record-said\">Kept while its score stays at {settings.HoldInNine} of 9 or better. Sold at the close of the night a new filing drops it below {settings.HoldInNine}, at the close of its {settings.Sessions}th trading day, or at its last close in the index, whichever comes first. No stop and no target.</p>");
+        body.Append(Invariant, $"<p class=\"record-said\">Bought at the next open: a company whose new filing, read tonight for the first time, lifts its score to {InEveryNine(settings.BuyInNine, atLeast: true)} to the company{(setting.Rise ? " and above the score of the filing before it" : string.Empty)}{(setting.Faster ? ", while its sales over a year grow faster than in the quarter before" : string.Empty)}. {(setting.FlagFirst ? "A flag must have stood the night before." : "A flag is not needed.")}</p>");
+        body.Append(Invariant, $"<p class=\"record-said\">Kept while its score stays at {InEveryNine(settings.HoldInNine)} or better. Sold at the close of the night a new filing drops it below {InEveryNine(settings.HoldInNine)}, at the close of its {settings.Sessions}th trading day, or at its last close in the index, whichever comes first. No stop and no target.</p>");
         body.Append("<p class=\"record-said\">Judged by its return against an equal-weight hold of the index's stocks over the same days, in points, after its trading costs. One trade a stock; a stock it buys may also be bought by another setup.</p>");
         body.Append(card.LiveSince is { } live
             ? FormattableString.Invariant($"<p class=\"record-said\">Its settings were fixed on {live:d MMM yyyy} after its test over the past, and its record counts from then. {EquityBrief.Core.Families.ImprovingRule.ReadingsCaveat}</p>")
