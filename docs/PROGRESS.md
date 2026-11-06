@@ -15932,3 +15932,129 @@ Mutated:    the rule, stated before the run: N4, `card.Passes` in the picks agai
             filtered to the two card tests by their names: red at the extended test, the other passing.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
             the figures it states.
+
+### 22.46 - a quarter's lines from its filing, then its results release, and otherwise not on file until the filing   2026-11-06
+
+Built:      `QuarterSources` gives each quarter of the newest fetch its revenue, gross profit, operating income, net income and
+            cash from operations from the SEC's facts as first filed, a filed quarter ending within 31 days of the provider's
+            label and nearest it; else for the newest quarter from `ReleaseFigures`, the release's own rows by fixed line names,
+            starting a row, two or four figures ordered by the heading's years or five newest first, read only where the
+            year-earlier column is that quarter as filed within a per cent; else not on file until the filing. A filed revenue
+            at or below nought or under the quarter's net income is a part of the company and not drawn. `ReportInputsAsync`
+            hands every region the sourced quarters; the card is dated and labelled by its source; the figures checked draw
+            the filing's. The figures of the night's readings and the facts file stay as they were.
+Measured:   AIG's page drew the provider's $1.1B and -$1.7B because every quarter region read the fetch, and its "filing not
+            stored yet" came from the provider's own snapshot of 27 Sep, where its scorecard reads the SEC's 10-Q of 4 Nov. Over
+            the 1,065 members that reported from 2026-10-01 to the night of 2026-11-05, 920 drew their filing, 89 their release
+            and 56 none; on 120 the fetch's revenue, operating income or net income differed from the drawn figure by more than
+            5% or by sign. The part guard refused HBAN's, WAL's, CPF's, DCOM's, NBHC's and UCB's filed revenue.
+Tests:      5 new in `ReadSurface.QuarterSources`, AIG's rows copied from the store, and 7 reworked onto stores given the filing.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to the quarter tests by name,
+            19 in all, all red: the fetch drawn for a filed quarter, no release read, a release before the quarter's end, no
+            trend, a trend read oldest first, no row start, a change column kept, no unit needed, the noncontrolling share read,
+            a year-earlier tolerance of 5%, a label within a week, a filed quarter for two labels, no part guard, cash undifferenced,
+            the fetch's words for an absent line, a release figure unmarked, a filed quarter labelled the release's and the
+            figures checked drawing the fetch's. Two edits did not build at first and were rewritten.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.47 - Tonight's buys name every buy on the index   2026-11-06
+
+Built:      `MarkRenderer.BuysInOrder` and `SinglePageApp.PlanlessBuys`: the buy points, the Fundamentals buys after the drift's
+            and before the dip's, the dip's, then the books' holdings to buy, each a row; a Fundamentals or book row draws How it
+            sells, its close and its sell rule across the stop's and the target's columns. The sentence counts the new picks and
+            says the books' reshuffle apart. The Fundamentals card opens with its buys named, marks each and draws every buy open.
+Tests:      2 new in `ReadSurface.FixPass`, the S&P 600's night of 2026-11-05, and the old sentence's test replaced.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to the two tests by name, 6 in
+            all, all red: every point before the Fundamentals, the sell words, the count of points alone, buys folded past ten,
+            no opening list and no mark.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.48 - Home's ideas follow Tonight's order and name the rest   2026-11-06
+
+Built:      Home reads its ideas, the new picks, from `BuysInOrder` and draws six, `SinglePageApp.LeftOutLine` naming the rest
+            with their families' tags beneath the cards.
+Tests:      1 new, the S&P 500's buys of 2026-11-05.
+Mutated:    the rule, stated before the run, filtered to the test by name, 3 in all, all red: groups joined by "and", no family
+            grouping, the line never drawn.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.49 - See the plan opens Tonight at the stock's row   2026-11-06
+
+Built:      Home's See the plan links to Tonight naming the stock, whose row opens and scrolls to its card's plan; a Fundamentals
+            idea links How it sells to its row on its own card, which the page scrolls to; Tonight's row reads Report: written on
+            its day or Report: not written yet, apart from Open plan.
+Tests:      1 new; Home's test reads the new link.
+Mutated:    the rule, stated before the run, filtered to the test by name, 3 in all, all red: the plan to the chart page, no How
+            it sells, the report's old word.
+Carried:    the scroll itself is the page's script, read back on 5152 after the merge.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.50 - the Fundamentals rule in words   2026-11-06
+
+Built:      `MarkRenderer.InEveryNine` and `ChecksApply` say the rule as a score in every 9 of the checks that apply and each
+            count as so many of so many apply, on the card, Home, the brief and the stock page; `TonightScreen.UnderTheBarLine`
+            says the bar at the stock's own count and, where it fails more checks than it needs, that passing any clears it.
+Measured:   EW passes 7 of the 9 that apply against a bar of 8 and fails two, so it is one check short and passing either clears
+            it; the order's "two checks short" would state a number the scorecard does not, and its line says both facts.
+Tests:      1 new; 6 reworked to the rule's new words.
+Mutated:    the rule, stated before the run, filtered to the test by name, 4 in all, all red, one rewritten to build: the misses
+            unsaid, the bar not at its own count, the count without apply, the rule as of the nine.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.51 - the entry check's line on every Fundamentals buy   2026-11-06
+
+Built:      the Fundamentals card's projection hands each improver the night's entry reading, and each buy draws the card line on
+            its card row, its row of tomorrow's buys and its idea on Home.
+Tests:      1 new.
+Mutated:    the rule, stated before the run, filtered to the test by name, 3 in all, all red: no line on the card row, none on
+            the buy row, a line on every row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.52 - Home's paper account and the system's total   2026-11-06
+
+Built:      `SinglePageApp.AccountLine` names the day the current rules' first trade counts, with the replay's words where the
+            rule counting from it is carried back, none on the copy; `SystemLine` stands apart, "All versions since"; the proof of
+            the counts reads the new line.
+Tests:      1 new; the proof's tests and Home's read the new words.
+Mutated:    the rule, stated before the run, filtered to the tests by name, 4 in all, all red: the replay unsaid, the copy naming
+            it, the old words, the proof reading the old line.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.53 - an account counting from before its version says so beside the date   2026-11-06
+
+Built:      a registered account carries its version's first session; a Paper trading tile counting from before it says "counts
+            from" its day and that its earlier trades replay the same under this version, none on the copy. On the S&P 500 on
+            2026-11-05 the breakout, from 2 Oct, and the drift, from 30 Oct, both under versions of 3 Nov.
+Tests:      1 new.
+Mutated:    the rule, stated before the run, filtered to the test by name, 3 in all, all red: carried at its own start, the copy
+            naming it, no words beside the date.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.53 - record: the night's three moves confirmed, the combined account's skips, the tight stop measured and the owed lines   2026-11-06
+
+Not a checkpoint entry: it records what the order's items 2, 10, 11 and 15 asked to be read, and lands nothing. Item 11's
+            measurement was a read-only reading of the stored ledger and built no code, so the ruling's 22.54 is not used.
+Measured:   item 2, the night of 2026-11-05: EODHD's own closes, asked again, are the store's to the cent, GSPC 7,688.62 to
+            7,353.73, -4.36%, QQQ 691.95 to 647.05, -6.49%, the VIX 16.61 to 28.18, +69.66%, SPY 766.81 to 733.00; 430 of 503
+            S&P 500 members fell, median -2.28%; no refetch. Item 10: the S&P 500's 25 skips were all for free cash, the eight
+            open positions holding about $100.7k of the $100k, each sized off its stop to at most a fifth of the account. Item 11,
+            read only off the ledger's live setups: the typical daily move is Wilder's 14-session average true range from the
+            stored adjusted bars, high to low with the close before, and a pick is skipped where the buy, its close, less the stop
+            is under one; the breakout's and the dip's stops never are, and the pullback's and the drift's are on 24% to 64% of
+            setups; the skip lifts the edge after costs of the S&P 500's drift, the 600's pullback and the 500's pullback from
+            2025, and cuts the 400's and 600's drifts; it cannot be registered without moving pinned sources, and joins phase 23's
+            restart in `prompts/2026-11-06-22.46-addition-for-the-phase-23-plan.md`. Item 15: HOS arrived in the off-peak run of
+            2026-11-06 at about 04:10 UTC, the provider then holding its bar for 2026-11-05.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3474 of 3474 tests ran with none failed, migrations 0 to 128 with none
+            pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
+            none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 56 checks on the
+            roster run and passed.
