@@ -136,7 +136,7 @@ global.json       pins the SDK to the 10.0.3xx feature band
 
 The PowerShell and shell versions are not translations of each other. `&&` is a parse error in Windows PowerShell, so the two files differ in syntax by necessity. `ci-parity` asserts they run the same steps in the same order, not that they contain the same text.
 
-**Secrets.** `appsettings.Secrets.json` sits beside `appsettings.json` in each project that needs one. Gitignored, plaintext, never committed, and registered before environment variables so an environment variable still wins.
+**Secrets.** `appsettings.Secrets.json` sits beside `appsettings.json` in each project that needs one. Gitignored, plaintext, never committed, and registered before environment variables so an environment variable still wins. Only the worker reads it: no script, command or log reads or prints it, and a file that will not parse stops the worker with its line and none of its text (see: The secrets file is read by the worker alone, and no script or command or error prints any of it).
 
 ## Hard rules
 

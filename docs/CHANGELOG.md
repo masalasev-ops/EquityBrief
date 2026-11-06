@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - CLAUDE.md - the secrets paragraph says only the worker reads the file and nothing prints it
+Decision: The secrets file is read by the worker alone, and no script or command or error prints any of it
+Was:
+> **Secrets.** `appsettings.Secrets.json` sits beside `appsettings.json` in each project that needs one. Gitignored, plaintext, never committed, and registered before environment variables so an environment variable still wins.
+Now:
+> the same, then: Only the worker reads it: no script, command or log reads or prints it, and a file that will not parse stops the worker with its line and none of its text (see: ...).
+Why: the operator's answers of 2026-11-06, their first item, after a session's own command printed the file.
+
+### 2026-11-06 - .claude/rules/checks.md - the roster carries secrets-unread
+Decision: The secrets file is read by the worker alone, and no script or command or error prints any of it
+Was:
+> no row for the secrets file
+Now:
+> `secrets-unread`, every CI run: no file under `tools/` and not the workflow reads the secrets file, eighteen lines handing its path on, and a malformed file stops the worker's configuration and the copy's check with its name, line and byte alone.
+Why: the operator's answers of 2026-11-06, their first item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - an account counting from before its version says so
 Decision: A paper account counting from before its version's start says beside the date that its earlier trades replay the same
 Was:

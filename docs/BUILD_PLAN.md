@@ -2501,6 +2501,11 @@ Their order's ninth item. A Paper trading tile whose account counts from before 
 
 **Done when** an account counting from 2 Oct under a version from 3 Nov says so beneath its date, one counting from its version's start says nothing more, and the copy says neither; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.54 On the operator's answers of 2026-11-06: nothing prints the secrets file
+Their answers' first item, word for word in `prompts/2026-11-06-22.54-answers-to-the-fix-pass-report.md`. No script reads the secrets file, each naming it only to hand its path to the worker, and a file that will not parse stops the worker's configuration and the read-only copy's check with its name, line and byte and none of it, held by `secrets-unread` (see: The secrets file is read by the worker alone, and no script or command or error prints any of it).
+
+**Done when** every file under `tools/` and the workflow names the secrets file only in the three forms, eighteen lines, and the reader finds a constructed script reading it in either shell; a malformed secrets file named by path or beside the build, and one handed to the read-only copy's check, stops with its name, line and byte and no part of it; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

@@ -195,7 +195,7 @@ public static partial class SiteChecks
 
         foreach (var file in secretsFiles.Where(File.Exists))
         {
-            using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(file), new System.Text.Json.JsonDocumentOptions { CommentHandling = System.Text.Json.JsonCommentHandling.Skip, AllowTrailingCommas = true });
+            using var document = Parsed(file);
 
             foreach (var (key, value) in Leaves(document.RootElement, string.Empty).Where(leaf => leaf.Value.Length >= 8))
             {
@@ -224,6 +224,20 @@ public static partial class SiteChecks
         }
 
         return needles;
+    }
+
+    // A secrets file read for its values, stopping with its name, line and byte alone where it will not parse.
+    // see: The secrets file is read by the worker alone, and no script or command or error prints any of it
+    static System.Text.Json.JsonDocument Parsed(string file)
+    {
+        try
+        {
+            return System.Text.Json.JsonDocument.Parse(File.ReadAllText(file), new System.Text.Json.JsonDocumentOptions { CommentHandling = System.Text.Json.JsonCommentHandling.Skip, AllowTrailingCommas = true });
+        }
+        catch (System.Text.Json.JsonException failed)
+        {
+            throw EquityBrief.Core.Configuration.SecretsFile.Unreadable(file, failed);
+        }
     }
 
     static IEnumerable<(string Key, string Value)> Leaves(System.Text.Json.JsonElement element, string path)
