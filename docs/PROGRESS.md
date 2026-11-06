@@ -15889,3 +15889,21 @@ Verified:   `tools/ci.ps1` green over main at 586e22ec as the 18.2 correction's 
 Carried:    the sign-offs of phases 20, 21 and 22, each owed by a fresh session and discharged by no checkpoint of phase 23; and for
             23.10, each step's provider and model cost stated before it runs and the six conditions read as the entry check's note of
             2026-11-05 names them, each leaving its band out, in `prompts/2026-11-05-22.46-addition-for-the-phase-23-plan.md`.
+
+### 22.46 ruling - the operator's fix pass of 2026-11-06, each item its own checkpoint in phase 22, before the sign-offs
+
+Not a checkpoint entry: it records the operator's order and lands nothing.
+Ruled:      word for word in `prompts/2026-11-06-22.46-fix-pass-order.md`, committed with this entry: "DO it as part of phase 22. One fix
+            pass, in this order, as one PR in reviewable commits (a commit per item), merged only when tools/ci.ps1 and
+            tools/verify-phase.ps1 are green on my machine over the tree being merged, and nothing merged while a night, the off-peak
+            run, the local run, a ledger build or the monthly run is writing." Read back on 5152 on all three indexes at 1440 and a true
+            390 in both palettes, a test per item failing the page as it read on 2026-11-05, one report at the end and nothing signed.
+            And a moment later: "also get latest of main before you start fixing"; the branch was cut from the remote's main at
+            e47e2b79 while the off-peak run's drain wrote from its copy of 586e22ec, the checkout's own main left where it stood.
+Labelled:   in the order built, phase 22's next numbers: item 1 22.46, item 3 22.47, item 4 22.48, item 5 22.49, item 6 22.50, item 7
+            22.51, item 8 22.52, item 9 22.53 and item 11's read-only measurement 22.54. Item 12's parts were built by PR 649 before the
+            order and are read back, its one open test, the S&P 400's picks against picks, a 19.3 correction. Items 2, 10 and 15 are
+            read and reported, and anything item 14's sweep finds is a correction under the checkpoint that built it.
+Queue:      done, phase 23's plan; in progress, this pass; next, the sign-offs of phases 20, 21 and 22, then 23.1.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
