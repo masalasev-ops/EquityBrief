@@ -31,7 +31,7 @@ public sealed partial class MarkRenderer
         };
 
     static string PooledUnits(LoopPooledRow row) =>
-        row.Unit == "points" ? Counted(row.Units, "month", "months") : Counted(row.Units, "trade", "trades");
+        row.Units.ToString("N0", Invariant) + " " + (row.Unit == "points" ? (row.Units == 1 ? "month" : "months") : (row.Units == 1 ? "trade" : "trades"));
 
     // The setups the pooled step read: each one holding a verdict of its own rules in the run.
     public static int PooledSetups(IReadOnlyList<LoopPooledRow> rows) =>

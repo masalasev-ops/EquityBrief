@@ -583,6 +583,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .p-meter .pm-track{fill:var(--s1)}
 .p-meter .pm-bar{stroke:var(--ink);stroke-width:1.5}
 .loop-summary td{vertical-align:top}
+.loop-summary td:nth-child(5),.loop-summary td:nth-child(6){min-width:200px}
 .loop-summary .loop-better{display:block;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .loop-must{font-size:13px;color:var(--ink-2);margin:10px 0 0}
 .loop-row{border-top:1px solid var(--hair);padding:6px 0}

@@ -59,7 +59,7 @@ public partial class ReadSurface
             var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500"));
 
             Assert.Contains("All three indexes together", page, StringComparison.Ordinal);
-            Assert.Contains("<span class=\"pill pooled-pill\" data-pooled=\"passed\" data-indices=\"GSPC MID SML\" title=\"adjusted p 0.0010 against the bar 0.0042\">passed</span> <span class=\"loop-better\" data-better=\"3\" data-counted=\"4\">p 0.0010, better in 3 of 4 years, 1234 trades on the S&P 500, S&P 400 and S&P 600; the S&P 600 carried it</span>", page, StringComparison.Ordinal);
+            Assert.Contains("<span class=\"pill pooled-pill\" data-pooled=\"passed\" data-indices=\"GSPC MID SML\" title=\"adjusted p 0.0010 against the bar 0.0042\">passed</span> <span class=\"loop-better\" data-better=\"3\" data-counted=\"4\">p 0.0010, better in 3 of 4 years, 1,234 trades on the S&P 500, S&P 400 and S&P 600; the S&P 600 carried it</span>", page, StringComparison.Ordinal);
             Assert.Contains("data-pooled=\"did not pass\" data-indices=\"GSPC SML\"", page, StringComparison.Ordinal);
             Assert.Contains("p 0.2500, better in 1 of 4 years, 310 trades on the S&P 500 and S&P 600</span>", page, StringComparison.Ordinal);
             Assert.DoesNotContain("not summed yet", page, StringComparison.Ordinal);
