@@ -261,7 +261,9 @@ public sealed partial class MarkRenderer
             body.Append(ImprovingStock(cell.Ticker, cell.Company, state == "bought"));
             body.Append(Invariant, $"<td class=\"improving-score\">{now}</td>");
             body.Append(Invariant, $"<td class=\"improving-changed\">{Escaped(cell.Changed)}</td>");
-            body.Append(Invariant, $"<td class=\"improving-status\" data-state=\"{state}\"><b>{Escaped(cell.Status)}</b><span>{Escaped(cell.Line)}</span></td></tr>");
+            // A buy carries its entry check's line as every pick's card does.
+            // see: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does
+            body.Append(Invariant, $"<td class=\"improving-status\" data-state=\"{state}\"><b>{Escaped(cell.Status)}</b><span>{Escaped(cell.Line)}</span>{(state == "bought" ? EntryCheckLine(cell.EntryCheck, cell.Ticker) : string.Empty)}</td></tr>");
         }
 
         return body.Append("</tbody></table></div>").ToString();

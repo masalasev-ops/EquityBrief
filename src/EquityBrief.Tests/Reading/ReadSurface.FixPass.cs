@@ -135,6 +135,30 @@ public partial class ReadSurface
         Assert.Contains("passes at least 8 in every 9 of the checks that apply to the company: 6 of 6 apply, up from 4.", SinglePageApp.FundamentalsWhy(Improver("AIG", 6, 6, MarkRenderer.BoughtWords), 8), StringComparison.Ordinal);
     }
 
+    // A Fundamentals buy drew no entry check line on Home or on Tonight's card, every other pick's card drawing one; it draws
+    // the line on its row of the Fundamentals card, on its row of the buys and on its idea on Home.
+    // see: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does
+    [Fact]
+    public void EveryFundamentalsBuyCarriesItsEntryChecksLineOnTonightAndOnHome()
+    {
+        var bought = Improver("AIG", 6, 6, MarkRenderer.BoughtWords, 80.93m) with { EntryCheck = EntryFlagged() };
+        var held = Improver("HELD", 6, 9, MarkRenderer.ImprovedWords) with { EntryCheck = EntryFlagged() };
+        var card = FundamentalsCard([bought, held]);
+        var drawn = new MarkRenderer().ImprovingCard(card);
+        var row = Regex.Match(drawn, "<tr class=\"improving-row improving-buy\" data-ticker=\"AIG\".*?</tr>", RegexOptions.Singleline).Value;
+
+        Assert.Contains("<p class=\"entry-card-line\"", row, StringComparison.Ordinal);
+        Assert.DoesNotContain("<p class=\"entry-card-line\"", Regex.Match(drawn, "<tr class=\"improving-row\" data-ticker=\"HELD\".*?</tr>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+
+        var planless = SinglePageApp.PlanlessBuys("500", card, null, null);
+
+        Assert.Contains("<p class=\"entry-card-line\"", new MarkRenderer().TomorrowsBuys([], null, night: FixNight, planless: planless), StringComparison.Ordinal);
+
+        var idea = new HomeIdea("improving", "AIG", null, planless[0].Why, 80.93m, null, null, false, null, EntryCheck: planless[0].EntryCheck);
+
+        Assert.Contains("<p class=\"entry-card-line\"", new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [idea], IdeasCount = 1 }, string.Empty), StringComparison.Ordinal);
+    }
+
     // The card opens with its buys named, marks each on its table and never folds one behind the first ten rows.
     [Fact]
     public void TheFundamentalsCardOpensWithItsBuysAndNeverFoldsOneBehindItsShownRows()

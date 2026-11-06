@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - the entry check's line on every Fundamentals buy
+Decision: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does
+Was:
+> The Fundamentals family's card: ... (see: The Fundamentals family's rule is said as a score in every nine of the checks that apply, beside each stock's own count); on the second ...
+Now:
+> The Fundamentals family's card: ... (see: ...); from 22.51 each buy carrying its entry check's line under its status as Home's idea and its row of tomorrow's buys carry it (see: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does); on the second ...
+Why: the operator's order of 2026-11-06, its seventh item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - 22.47's and 22.48's sentences stated one claim a clause
 Corrects: the sentences 22.47 and 22.48 added to Tonight's buy points and Home's Tonight's ideas listed their clauses with commas, which `architecture-conformance` reads as parts each owing a verdict of its own.
 Was:

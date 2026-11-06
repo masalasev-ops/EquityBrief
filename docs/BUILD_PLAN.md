@@ -2486,6 +2486,11 @@ Their order's sixth item. Every page stating the Fundamentals rule says it as a 
 
 **Done when** EW's 7 of 9 failing two says one check short and that passing either clears the bar, a stock of 5 of 7 says two checks short with both named and one of 6 of 7 one check short; the card's lead, its rule and its counts, Home's sell line and why read the rule's new words and no "of the 9 checks"; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.51 On the operator's order of 2026-11-06: the entry check's line on every Fundamentals buy
+Their order's seventh item. Each Fundamentals buy draws its entry check's card line on the Fundamentals card, on its row of tomorrow's buys and on Home (see: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does).
+
+**Done when** a Fundamentals buy holding a reading draws the line on its card row, on its buy row and on Home, and a stock the card holds and does not buy draws none; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23
