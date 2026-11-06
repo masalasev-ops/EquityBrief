@@ -584,7 +584,7 @@ public class RecordAppendOnly
         Assert.Equal(files.Select(file => Show(git, file.Item1, file.Item2)), ShowAll(git, files));
 
         // A path the revision does not hold is a revision that could not be read, not an empty one.
-        Assert.ThrowsAny<Exception>(() => ShowAll(git, [(commits[0], Record), (commits[0], "docs/NO-SUCH-RECORD.md")]));
+        Assert.ThrowsAny<Exception>(() => ShowAll(git, [(commits[0], Record), (commits[0], $"{Record}.missing")]));
     }
 
     static string HeaderOf(Stream answers)

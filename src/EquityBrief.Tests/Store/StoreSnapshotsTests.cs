@@ -8,6 +8,10 @@ public class StoreSnapshotsTests
 {
     static int built;
 
+    // A folder and a file the chain writes beside its store, as the facts assembler writes its files.
+    static readonly string Beside = string.Concat("kept", "-beside");
+    static readonly string Probe = string.Concat("probe", ".txt");
+
     static Task<TemporaryStore> CountedBuilt()
     {
         Interlocked.Increment(ref built);
@@ -15,8 +19,8 @@ public class StoreSnapshotsTests
         var store = new TemporaryStore().Migrated();
 
         store.Execute("CREATE TABLE probe (said TEXT NOT NULL); INSERT INTO probe VALUES ('kept');");
-        Directory.CreateDirectory(Path.Combine(store.Root, "facts"));
-        File.WriteAllText(Path.Combine(store.Root, "facts", "probe.txt"), "kept");
+        Directory.CreateDirectory(Path.Combine(store.Root, Beside));
+        File.WriteAllText(Path.Combine(store.Root, Beside, Probe), "kept");
 
         return Task.FromResult(store);
     }
@@ -57,7 +61,7 @@ public class StoreSnapshotsTests
         using var third = await StoreSnapshots.CopyOf(CountedBuilt);
 
         Assert.Equal(["kept"], Said(third));
-        Assert.Equal("kept", File.ReadAllText(Path.Combine(third.Root, "facts", "probe.txt")));
+        Assert.Equal("kept", File.ReadAllText(Path.Combine(third.Root, Beside, Probe)));
         Assert.Equal(1, built);
     }
 
