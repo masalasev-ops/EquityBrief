@@ -416,7 +416,9 @@ public sealed partial class MarkRenderer
         body.Append("</tbody></table></div>");
         body.Append("<p class=\"buys-read\">The business is how the company's reported quarters read: improving, steady or getting worse. News counts the stories of the last 30 days the labeller read as good or bad for the company. Open a row for its full plan, what could go wrong and how its setup has done. Each pick is bought at ");
         body.Append(opens);
-        body.Append(" open, with its stop and target where tonight's close set them; a Fundamentals buy and a monthly book's set none, and How it sells opens its row on its own card.</p>");
+        body.Append(rows.Any(row => row.Planless is not null)
+            ? " open, with its stop and target where tonight's close set them; a Fundamentals buy and a monthly book's set none, and How it sells opens its row on its own card.</p>"
+            : " open, with its stop and target where tonight's close set them.</p>");
 
         return body.ToString();
     }
