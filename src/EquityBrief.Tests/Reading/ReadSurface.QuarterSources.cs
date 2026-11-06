@@ -218,5 +218,14 @@ public partial class ReadSurface
         var gap = QuarterSources.Of([Pep(6, 30, 23_000_000_000m), Pep(9, 30, 1m)], [new("Revenues", new DateOnly(2026, 3, 22), new DateOnly(2026, 6, 13), 22_726_000_000m, new DateOnly(2026, 7, 9), "10-Q", "a")]);
 
         Assert.Equal(QuarterSource.NotOnFile, gap.SourceOf(new DateOnly(2026, 9, 30)));
+
+        // Two labels a month apart, as a company changing its fiscal year leaves them, and one filed quarter ending on the
+        // later: the nearer label draws it and the other none.
+        var moved = QuarterSources.Of(
+            [Pep(8, 31, 1m), Pep(9, 30, 1m)],
+            [new("Revenues", new DateOnly(2026, 7, 1), new DateOnly(2026, 9, 30), 22_855_000_000m, new DateOnly(2026, 10, 28), "10-Q", "c")]);
+
+        Assert.Equal(QuarterSource.Filing, moved.SourceOf(new DateOnly(2026, 9, 30)));
+        Assert.Equal(QuarterSource.NotOnFile, moved.SourceOf(new DateOnly(2026, 8, 31)));
     }
 }
