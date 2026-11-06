@@ -2516,6 +2516,11 @@ Their answers' second item, its second part. A quarter's table whose total misse
 
 **Done when** WELL's table worked by hand from its stored figures draws as filed with $2,984.9M against $3,544.6M and no share where it drew Seniors Housing Operating as 100.0%, HOG's and NTRS's and a one-segment company's likewise; a miss of 5% stands and one past it does not, a year's table reading against its own total; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.57 On the operator's answers of 2026-11-06: Home names the reshuffle's buys
+Their answers' second item, its third part. On a night the monthly books reshuffle, Home names their buys beneath its ideas and says they come from the reshuffle, the ideas' count standing as the new picks (see: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle).
+
+**Done when** Home on a night the books buy XOM, CVX and AAPL names the three in Tonight's order with their tags and says they come from the reshuffle, one buy reading in the singular, while its ideas' count stands; a night no book buys draws no line; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

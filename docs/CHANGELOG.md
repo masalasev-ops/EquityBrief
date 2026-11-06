@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - Home names the reshuffle's buys
+Decision: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle
+Was:
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in; the buys left out named beneath the cards with their families' tags (see: ...); ...
+Now:
+> the same, then: from 22.57 on a night the monthly books reshuffle, a line apart naming the books' buys with their tags and saying they come from the reshuffle and not from the new picks (see: ...); ...
+Why: the operator's answers of 2026-11-06, their second item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - the research runner reads the companies
 Decision: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
 Was:
