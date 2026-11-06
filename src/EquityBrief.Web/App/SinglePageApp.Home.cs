@@ -190,14 +190,16 @@ public sealed partial class SinglePageApp
 
     static string Dollars(decimal price) => "$" + price.ToString("#,##0.00", CultureInfo.InvariantCulture);
 
-    // A link to Tonight on the index read, at a family's card where one is named.
-    static string TonightHref(UniverseChoice reading, string? setup = null)
+    // A link to Tonight on the index read, at a family's card where one is named and at a stock's row, opened, where one is.
+    static string TonightHref(UniverseChoice reading, string? setup = null, string? name = null) => TonightHref(reading.Word, setup, name);
+
+    public static string TonightHref(string word, string? setup, string? name)
     {
         var query = new List<string>();
 
-        if (reading != Universes.Large)
+        if (word != Universes.Large.Word)
         {
-            query.Add(Universes.Query + "=" + reading.Word);
+            query.Add(Universes.Query + "=" + word);
         }
 
         if (setup is not null)
@@ -205,8 +207,16 @@ public sealed partial class SinglePageApp
             query.Add(HomeSetupKey + "=" + setup);
         }
 
+        if (name is not null)
+        {
+            query.Add(NameKey + "=" + Uri.EscapeDataString(name));
+        }
+
         return TonightRoute + (query.Count > 0 ? "?" + string.Join("&amp;", query) : string.Empty);
     }
+
+    // The key a link to Tonight names a stock's row under, which Tonight opens and scrolls to once drawn.
+    public const string NameKey = "name";
 
     // The key a link to Tonight names a family's card under, which Tonight scrolls to once drawn.
     public const string HomeSetupKey = "setup";

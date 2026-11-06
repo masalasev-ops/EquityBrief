@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - Tonight's buys name every buy on the index
+Decision: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+Was:
+> Tonight's buy points: ... (see: Tonight names the session its picks are bought at, tomorrow only where the exchange trades the next day). Its columns are Stock with Open plan ...
+Now:
+> Tonight's buy points: ... (see: Tonight names the session its picks are bought at, tomorrow only where the exchange trades the next day). From 22.47 it names every buy on the index and counts them all: a Fundamentals buy a row after the drift's and before the dip's, and a monthly book's holding chosen and not yet bought a row after the dip's, each with How it sells opening its row on its own card, tonight's close as its buy and how it sells across the stop's and the target's columns; and the Fundamentals card opens with its buys named, marking each on its table and drawing every buy among its rows drawn open (see: ...). Its columns are Stock with Open plan ...
+Why: the operator's order of 2026-11-06, its third item: the S&P 600's card read "3 stocks to buy at tomorrow's open, at about tonight's close: these 1 and the fundamentals' 2 on their own card below." with one row.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html, docs/SCHEMA.md - a quarter's lines from its filing, then its release, and otherwise not on file
 Decision: A quarter's lines are drawn from its filing where stored and then from its results release's own tables, and are not on file until the filing otherwise
 Was:

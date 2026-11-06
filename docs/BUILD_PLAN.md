@@ -2466,6 +2466,11 @@ Their order's first item, word for word in `prompts/2026-11-06-22.46-fix-pass-or
 
 **Done when** AIG's quarter of 2026-11-05, copied from the store, draws its filing's $7,443M and $849M where the page drew the provider's $1.1B and -$1.7B; a quarter with no stored filing draws its release's rows marked so and the rest not on file, and one with neither draws every line not on file; a release row is read only where its year-earlier column is the filed quarter, in a pair of two or four or a trend of five, and a segment's row, a trend of another shape, a row with no unit and the noncontrolling interests' share are not; a fiscal quarter weeks from its label reads its filing and no filed quarter is drawn for two labels; a filed revenue below net income or at nought is not drawn; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.47 On the operator's order of 2026-11-06: Tonight's buys name every buy on the index
+Their order's third item. Tonight's card of buys counts and draws every buy, a Fundamentals buy and a monthly book's holding to buy as rows saying how each sells in the stop's and the target's place, and the Fundamentals card opens with its buys named, marking each and folding none away (see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place).
+
+**Done when** the S&P 600's night of 2026-11-05 counts its three buys and draws three rows, the Fundamentals' after the drift's and before the dip's, each saying it sells when its filings weaken, with no sentence pointing to their own card; one buy alone is counted as one; the Fundamentals card names its buys first and a buy ranked past its tenth row is drawn open and marked; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

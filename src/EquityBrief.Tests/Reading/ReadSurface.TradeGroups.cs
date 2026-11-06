@@ -315,16 +315,6 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public void TomorrowsBuysDrawsOneCountAndSaysWhereTheFundamentalsAndTheReshuffleAre()
-    {
-        var words = System.Net.WebUtility.HtmlDecode(new MarkRenderer().TomorrowsBuys([], null, night: new DateOnly(2026, 11, 2), fundamentals: 2, reshuffled: 3));
-
-        Assert.Contains("2 stocks to buy at", words, StringComparison.Ordinal);
-        Assert.Contains("these 0 and the fundamentals' 2 on their own card below.", words, StringComparison.Ordinal);
-        Assert.Contains("The monthly books' reshuffle adds 3 more.", words, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void PastPicksSaysHowManyOfTheSystemsOpenTradesItsTableHolds()
     {
         Assert.Equal("Of the system's trades, 2 are open: 1 in this table and 1 under the other setups.", RestartGroups().OpenHere(1, "this table"));

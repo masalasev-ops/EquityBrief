@@ -2720,7 +2720,8 @@ async Task<ImprovingCardView> ImprovingCardAsync(ReadApi read, string index, Dat
         cells,
         await read.ImprovingReportsAsync(night, TonightScreen.ReportingThrough(night)),
         liveSince,
-        fixedView);
+        fixedView,
+        await read.EntryReadingsOnAsync(night));
 
     // How many of the family's holdings its current version bought, the rest being an earlier version's.
     // see: Every count of trades names its group and one function works the three groups

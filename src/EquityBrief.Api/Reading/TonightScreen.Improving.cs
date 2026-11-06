@@ -43,7 +43,8 @@ public static partial class TonightScreen
         IReadOnlyDictionary<string, UniverseCell> cells,
         IReadOnlyList<(string Ticker, DateOnly Date)>? reports,
         DateOnly? liveSince = null,
-        QualityFixedView? fixedView = null)
+        QualityFixedView? fixedView = null,
+        IReadOnlyDictionary<string, EquityBrief.Core.EntryCheck.EntryReading>? entries = null)
     {
         var setting = SettingOf(read?.Settings);
         var settings = new ImprovingSettings(setting.BuyInNine, setting.HoldInNine, setting.Sessions);
@@ -73,7 +74,9 @@ public static partial class TonightScreen
                 row.BeforeApplied,
                 ImprovingChanged(row, checksOf.GetValueOrDefault(row.Ticker)),
                 ImprovingStatusWords(row.Status),
-                ImprovingStatusLine(row, checksOf.GetValueOrDefault(row.Ticker), trades, settings))),
+                ImprovingStatusLine(row, checksOf.GetValueOrDefault(row.Ticker), trades, settings),
+                cells.TryGetValue(row.Ticker, out var cell) ? cell.Close : null,
+                entries?.GetValueOrDefault(row.Ticker))),
         ];
 
         StrongestCell[] strongest =

@@ -328,32 +328,47 @@ public sealed partial class MarkRenderer
         ("News, 30 days", "The stories of the last 30 days the labeller read as good or bad for the company."),
     ];
 
+    // Every buy on the index in the order the page draws its setups: the setups' buy points, the Fundamentals family's buys
+    // in its slot after the drift's and before the dip's, the dip's, then the monthly books', each set in its own order.
+    // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+    public static IReadOnlyList<(BuyPointView? Point, PlanlessBuyView? Planless)> BuysInOrder(IReadOnlyList<BuyPointView> points, IReadOnlyList<PlanlessBuyView> planless) =>
+    [
+        .. points.Where(point => point.Family != EquityBrief.Core.Families.DipRule.Name).Select(point => ((BuyPointView?)point, (PlanlessBuyView?)null)),
+        .. planless.Where(buy => buy.Family == EquityBrief.Core.Families.ImprovingRule.Name).Select(buy => ((BuyPointView?)null, (PlanlessBuyView?)buy)),
+        .. points.Where(point => point.Family == EquityBrief.Core.Families.DipRule.Name).Select(point => ((BuyPointView?)point, (PlanlessBuyView?)null)),
+        .. planless.Where(buy => buy.Family != EquityBrief.Core.Families.ImprovingRule.Name).Select(buy => ((BuyPointView?)null, (PlanlessBuyView?)buy)),
+    ];
+
+    // What a buy no plan sells shows in its stop's and target's place: the Fundamentals family's filings, a book's reshuffle.
+    public const string SellsOnFilings = "Sells when its filings weaken";
+
+    public const string SellsAtAReshuffle = "Sells when a monthly reshuffle drops it";
+
     // Tomorrow's buys: one table across every setup, each row whose night wrote its pick's card folding the card beneath it
     // with, where the page hands one, the stock's entry and exit plan drawn inside it beneath its setup's own plan, closed
-    // until a press on the row or its Open plan opens it, the row the link names open; and one line on how to read it.
+    // until a press on the row or its Open plan opens it, the row the link names open; a buy no plan sells drawn as a row
+    // saying how it sells and linking to its row on its own card; and one line on how to read it.
     // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
-    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, DateOnly? night = null, int fundamentals = 0, int reshuffled = 0)
+    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, DateOnly? night = null, IReadOnlyList<PlanlessBuyView>? planless = null)
     {
         var body = new StringBuilder();
         var opens = OpenDay(night);
-        var all = points.Count + fundamentals;
+        var rows = BuysInOrder(points, planless ?? []);
 
-        // One count across the pages: the fundamentals' picks draw on their own card, and the monthly books' reshuffle is said.
+        // One count across the pages, every buy a row of the table.
         // see: Every count of trades names its group and one function works the three groups
-        var summary = (all == 0
+        var summary = rows.Count == 0
             ? "No stock to buy at " + opens + " open: no setup picked one tonight."
-            : Counted(all, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close"
-                + (fundamentals == 0 ? "." : Formatted($": these {points.Count} and the fundamentals' {fundamentals} on their own card below.")))
-            + (reshuffled == 0 ? string.Empty : Formatted($" The monthly books' reshuffle adds {reshuffled} more."));
+            : Counted(rows.Count, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close.";
 
-        body.Append(Invariant, $"<p class=\"card-summary\" data-summary data-buy-points=\"{points.Count}\">{Escaped(summary)}</p>");
+        body.Append(Invariant, $"<p class=\"card-summary\" data-summary data-buy-points=\"{rows.Count}\">{Escaped(summary)}</p>");
 
-        if (points.Count == 0)
+        if (rows.Count == 0)
         {
             return body.ToString();
         }
 
-        body.Append(Invariant, $"<div class=\"tbl-wrap opens-rows\"><table class=\"list-table buy-points\" data-rows=\"{points.Count}\"><thead><tr>");
+        body.Append(Invariant, $"<div class=\"tbl-wrap opens-rows\"><table class=\"list-table buy-points\" data-rows=\"{rows.Count}\"><thead><tr>");
 
         foreach (var (heading, says) in TomorrowHeadings)
         {
@@ -362,8 +377,15 @@ public sealed partial class MarkRenderer
 
         body.Append("</tr></thead><tbody>");
 
-        foreach (var (point, number) in points.Select((point, at) => (point, at + 1)))
+        foreach (var ((drawn, buy), number) in rows.Select((row, at) => (row, at + 1)))
         {
+            if (buy is not null)
+            {
+                body.Append(PlanlessRow(buy, number));
+                continue;
+            }
+
+            var point = drawn!;
             var pick = point.Pick;
             var row = pick.Row;
             var folds = pick.Card is not null;
@@ -391,9 +413,29 @@ public sealed partial class MarkRenderer
         body.Append("</tbody></table></div>");
         body.Append("<p class=\"buys-read\">The business is how the company's reported quarters read: improving, steady or getting worse. News counts the stories of the last 30 days the labeller read as good or bad for the company. Open a row for its full plan, what could go wrong and how its setup has done. Each pick is bought at ");
         body.Append(opens);
-        body.Append(" open, with its stop and target where tonight's close set them.</p>");
+        body.Append(" open, with its stop and target where tonight's close set them; a Fundamentals buy and a monthly book's set none, and How it sells opens its row on its own card.</p>");
 
         return body.ToString();
+    }
+
+    // A buy no plan sells, as a row of tomorrow's buys: its stock with the link to its row on its own card, its setup, why
+    // it qualified with its entry check's line, its business, tonight's close, how it sells across the stop's and the
+    // target's columns, and no reward to risk or news count of its own.
+    string PlanlessRow(PlanlessBuyView buy, int number)
+    {
+        var row = new StringBuilder();
+
+        row.Append(Invariant, $"<tr data-ticker=\"{Escaped(buy.Ticker)}\" data-family=\"{Escaped(buy.Family)}\" data-place=\"{number}\" data-planless>");
+        row.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(buy.Ticker)}\">{Escaped(buy.Ticker)}</a> <a class=\"how-sells\" href=\"{buy.Href}\">How it sells</a>{(buy.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+        row.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(buy.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(buy.Family)}\"></span>{Escaped(buy.Label)}</span></td>");
+        row.Append(Invariant, $"<td class=\"why\">{Escaped(buy.Why)}{EntryCheckLine(buy.EntryCheck, buy.Ticker)}</td>");
+        row.Append(Invariant, $"<td class=\"business-cell\">{Escaped(buy.Business)}</td>");
+        row.Append(PriceCell("buy", buy.Close, null));
+        row.Append(Invariant, $"<td class=\"r plan-sells\" colspan=\"2\" data-sells>{Escaped(buy.Sells)}</td>");
+        row.Append("<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">no stop or target</span></td>");
+        row.Append("<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">not counted</span></td>");
+
+        return row.Append("</tr>").ToString();
     }
 
     // The words this page uses, each with what it means here: what each card's guide said, in one place at the page's

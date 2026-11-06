@@ -586,11 +586,14 @@ public sealed partial class SinglePageApp : IComponent
           const asked = query.get('reason');
           const reasonRow = asked ? screen.querySelector('.records-table tr[data-reason="' + CSS.escape(asked) + '"]') : null;
           if (reasonRow) { reasonRow.classList.add('hl'); }
+          const setupCard = query.get('{{{HomeSetupKey}}}') ? document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')) : null;
+          const setupRow = setupCard && query.get('name') ? setupCard.querySelector('tr[data-ticker="' + CSS.escape(query.get('name')) + '"]') : null;
           const placed = keptPlace && Date.now() - keptPlace.at < 10000 ? screen.querySelector(keptPlace.find) : null;
           const placedCard = placed ? placed.closest('section.card') : null;
           if (placedCard) { scrollTo(0, placedCard.getBoundingClientRect().top + scrollY - keptPlace.top); }
           else if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }
           else if (query.get('name') && document.getElementById('selected')) { document.getElementById('selected').scrollIntoView({ block: 'start' }); }
+          else if (setupRow) { setupRow.scrollIntoView({ block: 'center' }); }
           else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { screen.querySelector('.buy-points tr.sel[data-fold]').scrollIntoView({ block: 'start' }); }
           else if (reasonRow) { reasonRow.scrollIntoView({ block: 'center' }); }
           else if (query.get('{{{HomeSetupKey}}}') && document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}'))) { document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')).scrollIntoView({ block: 'start' }); }
