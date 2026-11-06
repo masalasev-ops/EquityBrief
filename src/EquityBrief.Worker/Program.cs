@@ -264,7 +264,24 @@ static async Task<int> LongMembersRun(string[] args)
         return 0;
     }
 
-    Console.Error.WriteLine("long-members: give '--capture --into <folder>'.");
+    if (VerbArguments.Value(args, "--read") is { } kept)
+    {
+        var (schedules, unread) = EquityBrief.Worker.History.LongScheduleFilings.Read(kept);
+
+        foreach (var schedule in schedules.OrderBy(one => one.Period).ThenBy(one => one.Index, StringComparer.Ordinal))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: {schedule.Period:yyyy-MM-dd} {schedule.Index} {schedule.Holdings.Count} holding(s), {schedule.Holdings.Select(one => one.Industry).Distinct().Count()} heading(s), {schedule.Holdings.Sum(one => one.Value ?? 0m):N0} dollars, off {schedule.Accession}"));
+        }
+
+        foreach (var line in unread)
+        {
+            Console.WriteLine("long-members: not read: " + line);
+        }
+
+        return 0;
+    }
+
+    Console.Error.WriteLine("long-members: give '--capture --into <folder>' or '--read <folder>'.");
 
     return 2;
 }

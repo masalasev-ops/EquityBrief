@@ -152,6 +152,51 @@ public sealed class LongScheduleFilings(ITrustScheduleFeed feed) : IComponent
         return new TrustFiling(accession, form ?? string.Empty, period, filed, [.. series.Distinct(StringComparer.Ordinal)], documents);
     }
 
+    // Each fund's complete schedule at each quarter end read off the documents a capture kept, and each document or fund that
+    // could not be read with why.
+    public static (IReadOnlyList<LongSchedule> Schedules, IReadOnlyList<string> Unread) Read(string folder)
+    {
+        var schedules = new List<LongSchedule>();
+        var unread = new List<string>();
+        var documents = Path.Combine(folder, DocumentsFolder);
+
+        foreach (var header in Directory.GetFiles(Path.Combine(folder, HeadersFolder)).Order(StringComparer.Ordinal))
+        {
+            var accession = Path.GetFileNameWithoutExtension(header);
+            var filing = HeaderOf(accession, File.ReadAllText(header));
+
+            if (filing.Period is not { } period || !QuarterEnds.Contains(period) || !Forms.Contains(filing.Form, StringComparer.Ordinal))
+            {
+                continue;
+            }
+
+            var kept = Directory.Exists(documents)
+                ? Directory.GetFiles(documents, accession + "-*").Where(file => !file.EndsWith(IndexFile, StringComparison.Ordinal)).Order(StringComparer.Ordinal).ToArray()
+                : [];
+
+            if (kept.Length == 0)
+            {
+                continue;
+            }
+
+            var html = string.Concat(kept.Select(File.ReadAllText));
+
+            foreach (var index in Funds.Keys)
+            {
+                try
+                {
+                    schedules.Add(LongSchedules.Parse(html, index, period, accession));
+                }
+                catch (FormatException refused)
+                {
+                    unread.Add(refused.Message);
+                }
+            }
+        }
+
+        return (schedules, unread);
+    }
+
     // Every file the capture asks for, written under the folder as the archive sent it, and the filings its headers name.
     public async Task<IReadOnlyList<TrustFiling>> CaptureAsync(string folder, bool documents, Action<string> progress, CancellationToken cancellation = default)
     {
@@ -260,17 +305,73 @@ public sealed class LongScheduleFilings(ITrustScheduleFeed feed) : IComponent
 
                 foreach (var document in wanted)
                 {
-                    var file = Path.Combine(kept, filing.Accession + "-" + document);
+                    await KeepAsync(kept, filing.Accession, document, progress, cancellation);
+                }
 
-                    if (!File.Exists(file))
+                // Where the documents kept hold no complete schedule of a fund, the filing's other pages are kept too: an annual
+                // or half-year report may carry its complete schedules apart from its shareholder report.
+                if (Unread(kept, filing) && !File.Exists(Path.Combine(kept, filing.Accession + "-" + IndexFile)))
+                {
+                    var listing = await feed.FilingIndexAsync(FundSnapshots.Trust, filing.Accession, cancellation);
+
+                    await File.WriteAllTextAsync(Path.Combine(kept, filing.Accession + "-" + IndexFile), listing, cancellation);
+
+                    foreach (var document in PagesOf(listing).Except(wanted, StringComparer.Ordinal))
                     {
-                        await File.WriteAllTextAsync(file, await feed.DocumentAsync(FundSnapshots.Trust, filing.Accession, document, cancellation), cancellation);
-                        progress($"kept {filing.Accession} {document}");
+                        await KeepAsync(kept, filing.Accession, document, progress, cancellation);
                     }
                 }
             }
         }
 
         return filings;
+    }
+
+    public const string IndexFile = "index.json";
+
+    // The pages a filing's folder listing holds, its HTML documents and text files, its listing's own files left out.
+    public static IReadOnlyList<string> PagesOf(string listing)
+    {
+        using var document = JsonDocument.Parse(listing);
+
+        return
+        [
+            .. document.RootElement.GetProperty("directory").GetProperty("item").EnumerateArray()
+                .Select(item => item.GetProperty("name").GetString() ?? string.Empty)
+                .Where(name => (name.EndsWith(".htm", StringComparison.OrdinalIgnoreCase) || name.EndsWith(".html", StringComparison.OrdinalIgnoreCase) || name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                    && !name.Contains("index", StringComparison.OrdinalIgnoreCase)),
+        ];
+    }
+
+    // Whether the documents kept for a filing leave any of the three funds' complete schedules unread.
+    static bool Unread(string kept, TrustFiling filing)
+    {
+        var html = string.Concat(Directory.GetFiles(kept, filing.Accession + "-*").Where(file => !file.EndsWith(IndexFile, StringComparison.Ordinal)).Order(StringComparer.Ordinal).Select(File.ReadAllText));
+
+        foreach (var index in Funds.Keys)
+        {
+            try
+            {
+                LongSchedules.Parse(html, index, filing.Period!.Value, filing.Accession);
+            }
+            catch (FormatException)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // One document kept as the archive sent it, its bytes unchanged.
+    async Task KeepAsync(string kept, string accession, string document, Action<string> progress, CancellationToken cancellation)
+    {
+        var file = Path.Combine(kept, accession + "-" + document);
+
+        if (!File.Exists(file))
+        {
+            await File.WriteAllBytesAsync(file, await feed.DocumentBytesAsync(FundSnapshots.Trust, accession, document, cancellation), cancellation);
+            progress($"kept {accession} {document}");
+        }
     }
 }

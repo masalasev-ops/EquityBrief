@@ -19,7 +19,12 @@ public interface ITrustScheduleFeed
 
     Task<string> HeaderAsync(string cik, string accession, CancellationToken cancellation = default);
 
+    Task<string> FilingIndexAsync(string cik, string accession, CancellationToken cancellation = default);
+
     Task<string> DocumentAsync(string cik, string accession, string document, CancellationToken cancellation = default);
+
+    // A filing's document as the archive sent its bytes, an older page's own encoding kept.
+    Task<byte[]> DocumentBytesAsync(string cik, string accession, string document, CancellationToken cancellation = default);
 }
 
 // The archive's lists, headers and documents of the trust's older schedules, read once by hand for the long history. Each
@@ -80,8 +85,24 @@ public sealed class SecEdgarTrustScheduleFeed(HttpClient client, TimeSpan pause)
         return string.Empty;
     }
 
+    // A filing's folder listing, each file it holds with its size.
+    public Task<string> FilingIndexAsync(string cik, string accession, CancellationToken cancellation = default) =>
+        GetAsync($"https://{SecEdgarArchive.DocumentHost}/{Folder(cik, accession)}/index.json", cancellation);
+
     public Task<string> DocumentAsync(string cik, string accession, string document, CancellationToken cancellation = default) =>
         GetAsync($"https://{SecEdgarArchive.DocumentHost}/{Folder(cik, accession)}/{document}", cancellation);
+
+    public async Task<byte[]> DocumentBytesAsync(string cik, string accession, string document, CancellationToken cancellation = default)
+    {
+        Requests++;
+        await Task.Delay(pause, cancellation).ConfigureAwait(false);
+
+        using var response = await client.GetAsync(new Uri($"https://{SecEdgarArchive.DocumentHost}/{Folder(cik, accession)}/{document}"), cancellation).ConfigureAwait(false);
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadAsByteArrayAsync(cancellation).ConfigureAwait(false);
+    }
 
     async Task<string> GetAsync(string address, CancellationToken cancellation)
     {
