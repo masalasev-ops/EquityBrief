@@ -2491,6 +2491,11 @@ Their order's seventh item. Each Fundamentals buy draws its entry check's card l
 
 **Done when** a Fundamentals buy holding a reading draws the line on its card row, on its buy row and on Home, and a stock the card holds and does not buy draws none; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.52 On the operator's order of 2026-11-06: Home's paper account and the system's total
+Their order's eighth item. Home's account line names the day the current rules' first trade counts, with the replay beside it where that day comes before the version's start, and the system's every version stands on a line of its own (see: Home's paper account counts from the day the current rules' first trade counts, and the system's every version stands apart and labelled).
+
+**Done when** the S&P 500's Home of 2026-11-05 reads its account from 2 Oct with the replay's words and "All versions since 25 Sep: 48 ideas bought and sold on paper, 21 made money." apart; the copy and an account carried back by nothing say no replay; the proof of the counts reads Home's new line; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - Home's paper account and the system's total apart
+Decision: Home's paper account counts from the day the current rules' first trade counts, and the system's every version stands apart and labelled
+Was:
+> How past ideas have done: ... the line that each rule needs about 300 finished trades for a fair verdict while any live or provisional rule holds fewer; and the link to Past picks
+Now:
+> How past ideas have done: ... and the link to Past picks; from 22.52 the account named as counting the rules as they stand now from the day their first trade counts with the replay's words beside it where that day comes before the version's start; the system's every version on a line of its own labelled All versions since its first day (see: ...)
+Why: the operator's order of 2026-11-06, its eighth item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - Tonight counts its new picks and Home draws no reshuffle
 Corrects: 22.47's and 22.48's rows said Tonight's sentence counts every buy and Home draws a monthly book's holdings to buy; `CountsProof` holds both counts to the night's new picks, the reshuffle a group of its own.
 Was:

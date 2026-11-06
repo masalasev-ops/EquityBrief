@@ -2877,7 +2877,10 @@ async Task<IResult> HomeAsync(
             fund,
             progress.Values.Any(one => one.Progress.Counted < one.Progress.Needed),
             PaperScreen.Fund(reading.Code),
-            combined.Since);
+            combined.Since)
+        {
+            CarriedBack = paper.Sources.Any(source => source.Standing is PaperAccountView.Live or PaperAccountView.Provisional && source.Since == combined.Since && source.Since < source.VersionFrom),
+        };
     }
 
     // On the S&P 400 and 600 each rule checks its own market level, a rule reading none counted open.

@@ -4143,7 +4143,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.24 Home", "How past ideas have done")] = new Scoped(
             Verdict.Pass,
-            "read back off the rendered page over a constructed store: the combined account's day, its closed ideas and those that made money, its return and the equal-weight hold of the index's stocks worked by hand from their closes, the line about 300 finished trades and the link to Past picks",
+            "read back off the rendered page over a constructed store: the combined account's day, its closed ideas and those that made money, its return and the equal-weight hold of the index's stocks worked by hand from their closes, the line about 300 finished trades and the link to Past picks; and from 22.52 the account's line naming the day the current rules' first trade counts with the replay's words where it applies and none on the copy, and the system's every version on a line apart",
             ByReadSurface),
         [CheckReach.Key("15.24 Home", "How it works")] = new Scoped(
             Verdict.Pass,

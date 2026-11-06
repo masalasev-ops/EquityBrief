@@ -171,7 +171,7 @@ public partial class ReadSurface
         Assert.Contains(SinglePageApp.IdeasNote, text, StringComparison.Ordinal);
 
         // The past: the account's day, its ideas and those that made money, and the bars at 3.1% and 1.2%, the larger full.
-        Assert.Contains("Since the rules went live on 2 Oct, 4 ideas have been bought and sold on paper; 3 made money.", text, StringComparison.Ordinal);
+        Assert.Contains("All versions since 2 Oct: 4 ideas bought and sold on paper, 3 made money.", text, StringComparison.Ordinal);
         Assert.Contains("Still early: each rule needs about 300 finished trades for a fair verdict.", text, StringComparison.Ordinal);
         Assert.Contains("+3.1%</b><div class=\"track\"><div class=\"fill ours\" style=\"width:100%\">", Regex.Replace(page, "</b></div>", "</b>"), StringComparison.Ordinal);
         Assert.Contains("+1.2%</b><div class=\"track\"><div class=\"fill index\" style=\"width:38.7%\">", Regex.Replace(page, "</b></div>", "</b>"), StringComparison.Ordinal);

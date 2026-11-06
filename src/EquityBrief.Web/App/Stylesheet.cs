@@ -1453,6 +1453,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .home-noloss{font-weight:600;color:var(--ink)}
 .home-note{margin:14px 0 0;padding:10px 14px;border-radius:8px;background:var(--warn-fill);font-size:14px;color:var(--ink)}
 .home-results{display:flex;flex-wrap:wrap;gap:24px}
+.home-results .home-system{flex:1 1 100%;margin:0;padding-top:12px;border-top:1px solid var(--hair);color:var(--ink-2);font-size:14px}
 .home-results>div{flex:1 1 320px}
 .home-bar{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
 .home-bar .row{display:flex;justify-content:space-between;font-size:14px}
