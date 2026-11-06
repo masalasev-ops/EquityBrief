@@ -107,7 +107,7 @@ public static partial class ReleaseFigures
     // figure, a closing bracket, a per cent sign, a colon, an empty cell's mark or the text's start, never a word, so a
     // segment's or an adjusted line naming the same words is not read. A name ending in "attributable to" runs on to the
     // holders it names, never the noncontrolling interests.
-    const string RowStart = @"(?<=(?:^|[0-9)%:�–—])\s*)";
+    const string RowStart = @"(?<=(?:^|[0-9)%:\p{Pd}\p{So}])\s*)";
 
     static Regex Row(string name) => name.EndsWith("attributable to", StringComparison.Ordinal)
         ? new Regex(RowStart + Regex.Escape(name) + @" (?!noncontrolling|non-controlling)[A-Za-z0-9.,&'’\- ]{1,60}?(?=\s*(?:\(\d\)\s*)?(?:\$\s*)?\(?-?[0-9][0-9,]*(?:\.[0-9]+)?\)?(?:\s|$))", RegexOptions.IgnoreCase)
