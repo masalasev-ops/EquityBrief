@@ -59,7 +59,9 @@ public partial class ClaimAdmissibility
     // fetch belongs, so the facts file is assembled once more afterwards: a re-run
     // replaces a night's facts file where the store now computes a different one.
     // see: A re-run replaces a night's facts file where the store now computes a different one
-    internal static async Task<TemporaryStore> WithSources()
+    internal static Task<TemporaryStore> WithSources() => StoreSnapshots.CopyOf(SourcesBuilt);
+
+    static async Task<TemporaryStore> SourcesBuilt()
     {
         var store = await FixtureReplay.ReplayedAsync();
 

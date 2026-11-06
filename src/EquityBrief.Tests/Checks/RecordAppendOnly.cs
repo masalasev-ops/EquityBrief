@@ -77,18 +77,13 @@ public class RecordAppendOnly
         var everWritten = new Dictionary<string, string>(StringComparer.Ordinal);
         var read = 0;
 
-        foreach (var commit in commits)
+        var revisions = ShowAll(git, [.. commits.Select(commit => (commit, Record))]);
+
+        foreach (var (commit, revision) in commits.Zip(revisions))
         {
-            var show = Shell.Run(git, ["show", $"{commit}:{Record}"]);
-
-            Assert.True(
-                show.ExitCode == 0,
-                $"git show exited {show.ExitCode} for {commit}:{Record}. A revision whose content " +
-                $"could not be read is not a revision that lost nothing. {show.StandardError}");
-
             read++;
 
-            foreach (var heading in HeadingsIn(show.StandardOutput))
+            foreach (var heading in HeadingsIn(revision))
             {
                 if (!everWritten.ContainsKey(heading))
                 {
@@ -173,15 +168,9 @@ public class RecordAppendOnly
 
         var everWritten = new Dictionary<string, string>(StringComparer.Ordinal);
 
-        foreach (var commit in commits)
+        foreach (var (commit, revision) in commits.Zip(ShowAll(git, [.. commits.Select(commit => (commit, Decisions))])))
         {
-            var show = Shell.Run(git, ["show", $"{commit}:{Decisions}"]);
-
-            Assert.True(
-                show.ExitCode == 0,
-                $"git show exited {show.ExitCode} for {commit}:{Decisions}. {show.StandardError}");
-
-            foreach (var name in DecisionNamesIn(show.StandardOutput))
+            foreach (var name in DecisionNamesIn(revision))
             {
                 everWritten.TryAdd(name, commit);
             }
@@ -520,6 +509,94 @@ public class RecordAppendOnly
             $"one that lost nothing. {show.StandardError}");
 
         return show.StandardOutput;
+    }
+
+    // Each revision's file as Show reads it, all through one `git cat-file --batch`, which answers each with its
+    // object's size in bytes and then its bytes, or with "missing" where the revision holds no such file.
+    internal static IReadOnlyList<string> ShowAll(string git, IReadOnlyList<(string Revision, string Path)> files)
+    {
+        var start = new System.Diagnostics.ProcessStartInfo(git)
+        {
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            WorkingDirectory = Repository.Root,
+        };
+
+        start.ArgumentList.Add("cat-file");
+        start.ArgumentList.Add("--batch");
+
+        using var process = System.Diagnostics.Process.Start(start)
+            ?? throw new InvalidOperationException("Could not start git.");
+
+        // Asked for on its own thread while the answers are read here, so neither pipe fills while the other waits.
+        var asking = Task.Run(() =>
+        {
+            foreach (var (revision, path) in files)
+            {
+                process.StandardInput.Write($"{revision}:{path}\n");
+            }
+
+            process.StandardInput.Close();
+        });
+        var errors = process.StandardError.ReadToEndAsync();
+
+        var answers = new BufferedStream(process.StandardOutput.BaseStream);
+        var read = new List<string>(files.Count);
+
+        foreach (var (revision, path) in files)
+        {
+            var header = HeaderOf(answers);
+            var parts = header.Split(' ');
+
+            Assert.True(
+                parts.Length == 3 && parts[1] == "blob" && int.TryParse(parts[2], out _),
+                $"git cat-file answered \"{header}\" for {revision}:{path}. A revision whose content could not be read is not " +
+                "one that lost nothing.");
+
+            var content = new byte[int.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture)];
+
+            answers.ReadExactly(content);
+            answers.ReadByte();
+            read.Add(Encoding.UTF8.GetString(content));
+        }
+
+        asking.Wait();
+        process.WaitForExit();
+
+        Assert.True(process.ExitCode == 0, $"git cat-file exited {process.ExitCode}. {errors.Result}");
+
+        return read;
+    }
+
+    [Fact]
+    public void TheBatchReadsEachRevisionAsGitShowDoesAndRefusesOneMissing()
+    {
+        var git = Shell.Locate("git")!;
+        var log = Shell.Run(git, ["log", "--format=%H", "-n", "6", "--", Record]);
+        var commits = log.StandardOutput.Split((char)10, StringSplitOptions.RemoveEmptyEntries).Select(line => line.Trim()).ToArray();
+
+        // The record and the decisions at six revisions, read back as one revision at a time reads them.
+        (string, string)[] files = [.. commits.SelectMany(commit => new[] { (commit, Record), (commit, Decisions) })];
+
+        Assert.Equal(12, files.Length);
+        Assert.Equal(files.Select(file => Show(git, file.Item1, file.Item2)), ShowAll(git, files));
+
+        // A path the revision does not hold is a revision that could not be read, not an empty one.
+        Assert.ThrowsAny<Exception>(() => ShowAll(git, [(commits[0], Record), (commits[0], $"{Record}.missing")]));
+    }
+
+    static string HeaderOf(Stream answers)
+    {
+        var line = new List<byte>();
+
+        for (var next = answers.ReadByte(); next is not (-1 or 10); next = answers.ReadByte())
+        {
+            line.Add((byte)next);
+        }
+
+        return Encoding.UTF8.GetString([.. line]);
     }
 
     // The commit that wrote an archive, the oldest of those adding it, whose parent holds the record before the move.

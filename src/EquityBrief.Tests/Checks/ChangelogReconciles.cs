@@ -56,6 +56,56 @@ public class ChangelogReconciles
         return (touched, deletedFromSpec);
     }
 
+    // Every commit's numstat by its hash, read in one walk of the history rather than a `git show` a commit, a merge's
+    // against its first parent as `git show` reads it, each commit's opening on a zero byte and its hash.
+    internal static IReadOnlyDictionary<string, string> Diffs(string git, params string[] range)
+    {
+        var stat = Shell.Run(git, ["log", "--numstat", "--diff-merges=first-parent", "--format=%x00%H", .. range]);
+
+        // A failed invocation returns empty output, every commit reads as one
+        // that deleted nothing, and the run stays green. Same shape as the
+        // shallow clone that made git log return one commit where the
+        // working machine has twenty.
+        Assert.True(
+            stat.ExitCode == 0,
+            $"git log exited {stat.ExitCode}. A history whose diffs could not be read is not one that deleted nothing. {stat.StandardError}");
+
+        return stat.StandardOutput
+            .Split((char)0, StringSplitOptions.RemoveEmptyEntries)
+            .Select(chunk => chunk.Split((char)10, 2))
+            .ToDictionary(parts => parts[0].Trim(), parts => parts.Length > 1 ? parts[1] : string.Empty, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void TheWalksDiffOfEachCommitIsTheOneGitShowReads()
+    {
+        var git = Shell.Locate("git")!;
+        var walked = Diffs(git, "-n", "80");
+        var merges = 0;
+
+        // The newest eighty, merges among them, each read again on its own as the check read them before the walk.
+        foreach (var (commit, diff) in walked)
+        {
+            var shown = Shell.Run(git, ["show", "--numstat", "--format=", commit]);
+
+            Assert.Equal(0, shown.ExitCode);
+            Assert.Equal(Numstat(shown.StandardOutput), Numstat(diff), new NumstatComparer());
+
+            merges += Shell.Run(git, ["rev-list", "--parents", "-n", "1", commit]).StandardOutput.Trim().Split(' ').Length > 2 ? 1 : 0;
+        }
+
+        Assert.Equal(80, walked.Count);
+        Assert.True(merges >= 5, $"{merges} merges among the eighty read, expected at least 5.");
+    }
+
+    sealed class NumstatComparer : IEqualityComparer<(IReadOnlyList<string> Touched, bool DeletedFromSpec)>
+    {
+        public bool Equals((IReadOnlyList<string> Touched, bool DeletedFromSpec) x, (IReadOnlyList<string> Touched, bool DeletedFromSpec) y) =>
+            x.DeletedFromSpec == y.DeletedFromSpec && x.Touched.SequenceEqual(y.Touched, StringComparer.Ordinal);
+
+        public int GetHashCode((IReadOnlyList<string> Touched, bool DeletedFromSpec) numstat) => numstat.Touched.Count;
+    }
+
     [Fact]
     public void EveryCommitThatDeletedASpecLineChangedTheChangelog()
     {
@@ -78,23 +128,17 @@ public class ChangelogReconciles
         // Scope, stated in advance and with a floor that only grows.
         Assert.True(commits.Length >= 5, $"Read {commits.Length} commits, expected at least 5.");
 
+        var diffs = Diffs(git, "--reverse");
+
+        // Each commit's diff read, so a walk that stopped short reads as short rather than as commits deleting nothing.
+        Assert.Equal(commits.Length, diffs.Count);
+
         var offenders = new List<string>();
         var deleting = 0;
 
         foreach (var commit in commits)
         {
-            var stat = Shell.Run(git, ["show", "--numstat", "--format=", commit]);
-
-            // A failed invocation returns empty output, the commit reads as one
-            // that deleted nothing, and the run stays green. Same shape as the
-            // shallow clone that made git log return one commit where the
-            // working machine has twenty.
-            Assert.True(
-                stat.ExitCode == 0,
-                $"git show exited {stat.ExitCode} for {commit}. A commit whose diff could not be " +
-                $"read is not a commit that deleted nothing. {stat.StandardError}");
-
-            var (touched, deletedFromSpec) = Numstat(stat.StandardOutput);
+            var (touched, deletedFromSpec) = Numstat(diffs[commit]);
 
             if (!deletedFromSpec)
             {
@@ -179,17 +223,13 @@ public class ChangelogReconciles
         // Against the high-water mark the check goes red when entries are lost
         // and green again when they are put back, which is a check on the record
         // as it stands rather than on a commit that cannot be unmade.
-        var read = 0;
+        var read = commits.Length;
+        var live = RecordAppendOnly.ShowAll(git, [.. commits.Select(commit => (commit, Changelog))]);
+        var archived = commits.Where(holding.Contains).ToArray();
+        var archives = archived.Zip(RecordAppendOnly.ShowAll(git, [.. archived.Select(commit => (commit, archive.File))])).ToDictionary(StringComparer.Ordinal);
 
-        var (highest, setAt) = HighestOf(commits.Select(commit =>
-        {
-            read++;
-
-            return (
-                commit,
-                RecordAppendOnly.Show(git, commit, Changelog),
-                holding.Contains(commit) ? RecordAppendOnly.Show(git, commit, archive.File) : null);
-        }));
+        var (highest, setAt) = HighestOf(commits.Zip(live).Select(revision =>
+            (revision.First, revision.Second, archives.TryGetValue(revision.First, out var held) ? held : null)));
 
         var now = EntriesIn(Corpus.Read(Changelog));
 

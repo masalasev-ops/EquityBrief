@@ -22,10 +22,24 @@ internal sealed class TemporaryStore : IDisposable
 
     internal string DatabaseFile => Path.Combine(Root, StoreLocation.DatabaseFileName);
 
+    // A store with no file yet starts as a copy of one the migrations built once this run, and the runner then finds
+    // nothing pending; one holding a file is migrated from where it stands.
     internal TemporaryStore Migrated()
     {
+        if (!File.Exists(DatabaseFile))
+        {
+            File.Copy(StoreSnapshots.MigratedFile(), DatabaseFile);
+        }
+
         MigrationRunner.Standard().Apply(DatabaseFile);
         return this;
+    }
+
+    // This store's file once its pools are released, so a copy of it is the file as last written.
+    internal string Released()
+    {
+        ReleasePools();
+        return DatabaseFile;
     }
 
     internal SqliteConnection Open()
@@ -53,6 +67,41 @@ internal sealed class TemporaryStore : IDisposable
         command.ExecuteNonQuery();
     }
 
+    // A store of its own holding every file this one holds, read once its pools are released so the copy is the
+    // file as last written.
+    internal TemporaryStore Copy()
+    {
+        ReleasePools();
+
+        var copy = new TemporaryStore();
+
+        foreach (var folder in Directory.EnumerateDirectories(Root, "*", SearchOption.AllDirectories))
+        {
+            Directory.CreateDirectory(Path.Combine(copy.Root, Path.GetRelativePath(Root, folder)));
+        }
+
+        foreach (var file in Directory.EnumerateFiles(Root, "*", SearchOption.AllDirectories))
+        {
+            File.Copy(file, Path.Combine(copy.Root, Path.GetRelativePath(Root, file)));
+        }
+
+        return copy;
+    }
+
+    void ReleasePools()
+    {
+        // Under each string the store is opened with, since a pool is kept per string: the migration
+        // runner's, the one the components share, and the bare one the read surface and a test open it
+        // with. A pool left under any of them holds the file, the delete below is refused, and the
+        // directory is left behind in the temporary folder.
+        foreach (var opened in new[] { MigrationRunner.ConnectionStringFor(DatabaseFile), StoreConnection.For(DatabaseFile), $"Data Source={DatabaseFile}" })
+        {
+            using var connection = new SqliteConnection(opened);
+
+            SqliteConnection.ClearPool(connection);
+        }
+    }
+
     public void Dispose()
     {
         // This store's pool, not every pool in the process.
@@ -69,17 +118,7 @@ internal sealed class TemporaryStore : IDisposable
         // button again instead of reading the result, and on CI it would have
         // arrived as one run in fifteen going red for no reason anyone could
         // reproduce.
-        //
-        // Under each string the store is opened with, since a pool is kept per string: the migration
-        // runner's, the one the components share, and the bare one the read surface and a test open it
-        // with. A pool left under any of them holds the file, the delete below is refused, and the
-        // directory is left behind in the temporary folder.
-        foreach (var opened in new[] { MigrationRunner.ConnectionStringFor(DatabaseFile), StoreConnection.For(DatabaseFile), $"Data Source={DatabaseFile}" })
-        {
-            using var connection = new SqliteConnection(opened);
-
-            SqliteConnection.ClearPool(connection);
-        }
+        ReleasePools();
 
         try
         {

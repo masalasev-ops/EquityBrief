@@ -16172,3 +16172,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
             none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 22.60 - the suite builds each fixture store once a run   2026-11-06
+
+Built:      `StoreSnapshots` builds each store a chain of components writes over the fixture once a run, the first test
+            asking for it building it, and hands every caller a copy of its whole folder; twenty-two chains in the fixture's
+            expectations, the replays, the read surface, the claims and the two nights call it, and one built by a lambda or
+            over a value is refused. `TemporaryStore.Migrated` starts a new store from a copy of one the migrations built once.
+            `changelog-reconciles` reads every commit's diff in one walk and `record-append-only` and the changelog's
+            high-water mark read their revisions through one `git cat-file --batch`. On the operator's word of 2026-11-06, in
+            `prompts/2026-11-06-22.60-operator-ci-too-slow.md`.
+Measured:   the whole suite on this machine 43 minutes 31 seconds before, at 3488 tests over 44c0aa1a, and 4 minutes 40
+            seconds after over the same 3488 with the copies in place, all passing; the fixture's expectations alone 41
+            minutes to 9 minutes 45 seconds.
+Tests:      5 new, 3 in `StoreSnapshotsTests`, 1 in `ChangelogReconciles` and 1 in `RecordAppendOnly`.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test by name, 6 in all.
+            Red: the copy returning the kept store itself, the refusal dropped, the files beside the store left uncopied, the
+            walk reading merges without their first parent, and a missing revision read as empty. The kept schema built a
+            migration short survived, an equivalent mutation, since the runner applies what a copy lacks; the kept schema
+            holding a table the migrations never build, the fault the runner cannot mend, was red in its place.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3493 of 3493 tests ran with none failed, migrations 0 to 128 with none
+            pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
+            none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
