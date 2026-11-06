@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - the combined account's parts of 22.59 joined as three
+Decision: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+Was:
+> ... from 22.59 each position at most a tenth of the account's value whatever the settings state, each session's picks filled in Tonight's order, a line saying so beneath the sentence and each session's trades drawn in the order it filled them, a pick the free cash cannot cover standing skipped where it was reached
+Now:
+> ... from 22.59 each position at most a tenth of the account's value whatever the settings state; each session's picks filled in Tonight's order and its trades drawn in the order filled beneath a line saying so; a pick the free cash cannot cover standing skipped where it was reached
+Why: written as a list, each part read as a claim of its own with no verdict; the row's one verdict holds the three.
+
 ### 2026-11-06 - docs/BUILD_PLAN.md - 22.58 names the card's source without the component's name
 Decision: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file
 Was:

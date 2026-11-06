@@ -4276,7 +4276,7 @@ internal static class Scope
         [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = new Scoped(
             Verdict.Pass, "a trade the walk sized at half drawn in its account's log with its mark and its row's flag, and a trade sized whole with neither, read back off the rendered log", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", PaperCombined)] = new Scoped(
-            Verdict.Pass, "the combined account worked by hand over constructed trades, a stock two families picked, a sector at its cap, a buy the cash cannot cover, two books and a sale before a buy, and its tile, its line and its card with the sentence counting what it skipped read back off the rendered page", ByReadSurface),
+            Verdict.Pass, "the combined account worked by hand over constructed trades, a stock two families picked, a sector at its cap, a buy the cash cannot cover, two books and a sale before a buy, each position at a tenth of the account and a session's picks filled in Tonight's order, and its tile, its line and its card with the sentence counting what it skipped and the line on the order filled read back off the rendered page", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", PaperToneLine)] = new Scoped(
             Verdict.Pass, "the operator's sentence read back beneath the tone variant's words in the variants' table and the scorecard's variants over a constructed register, and no other rule's row carrying it", ByReadSurface),
         [CheckReach.Key(LimitsTable, PaperCombined)] = new Scoped(
