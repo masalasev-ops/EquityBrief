@@ -16058,3 +16058,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
             none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 56 checks on the
             roster run and passed.
+
+### 22.54 ruling - the operator's answers to the fix pass report of 2026-11-06, each fix its own checkpoint in phase 22, the restart's correction in a pull request after it
+
+Not a checkpoint entry: it records the operator's answers and lands nothing.
+Ruled:      word for word in `prompts/2026-11-06-22.54-answers-to-the-fix-pass-report.md`, committed with this entry: the command
+            that printed the secrets file found and named, nothing reading that file into a shell or a log, an error from a script
+            touching it printing none of it, and a check failing any tool or script that echoes or reads its content; the keys are
+            the operator's to rotate and are neither opened, printed nor tried. A guard refusing a stored fundamentals row read
+            under a filer other than the company's own, IR's fundamentals fetched once after it and its page read back, and DOW's
+            and XOM's listed; a segment table whose total misses the company's quarter revenue by more than 5% drawn as filed;
+            Home naming the monthly books' buys on a reshuffle's night; the pick's card reading its quarters as the pages do where
+            no rule pins it; the combined account capping a position at a tenth and filling a session's picks in Tonight's order,
+            each rule's own account as it stands; a test per fix failing the page as it read on 2026-11-06. EW's line stands.
+Labelled:   in the order built, phase 22's next numbers, 22.54 used now as the 22.53 record left it unused: item 1 22.54; item 2's
+            four parts 22.55 the filer, 22.56 the segment total, 22.57 the reshuffle on Home and 22.58 the card's quarters; item 3
+            22.59. Item 4 is a 23.0 correction to the plan, documents alone, in its own pull request after this one.
+Queue:      done, the fix pass of 2026-11-06; in progress, this pass; next, the 23.0 correction, then the sign-offs of phases 20,
+            21 and 22, each by a fresh session, phase 20's checking its five fixes alone, then 23.1.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
