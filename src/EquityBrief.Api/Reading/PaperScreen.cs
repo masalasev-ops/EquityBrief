@@ -848,7 +848,7 @@ public static class PaperScreen
             .. heads.SelectMany(account => account.Trades.Select(one => new CombinedTrade(
                 one.Trade,
                 account.Family,
-                SetupFamilies.OrderOf(account.Family),
+                EquityBrief.Core.Cards.BuyOrder.Of(account.Family),
                 stocks.TryGetValue(one.Trade.Ticker, out var stock) ? stock.Sector : null,
                 account.Book))),
         ];

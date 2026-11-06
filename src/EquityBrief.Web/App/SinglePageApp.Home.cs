@@ -50,6 +50,9 @@ public sealed record HomeView(
 {
     // The buys Tonight draws after the ideas Home draws, in Tonight's order.
     public IReadOnlyList<HomeIdea> LeftOut { get; init; } = [];
+
+    // The monthly books' holdings bought at tonight's reshuffle, each with its book's family, in Tonight's order.
+    public IReadOnlyList<(string Family, string Ticker)> Reshuffled { get; init; } = [];
 }
 
 // Home, from 22.16: the landing page for a reader new to investing, the day, tonight's ideas, how past ideas have done and
@@ -144,25 +147,41 @@ public sealed partial class SinglePageApp
             return null;
         }
 
+        return Invariant($"{left.Count} more on Tonight: {Grouped(left.Select(idea => (idea.Family, idea.Ticker)))}, not drawn here to keep this page short.");
+    }
+
+    // Tickers in their order, the stocks of one family together with its tag after them: "CVS and ODFL (Getting stronger as a
+    // business), NUE (Quick rebound)".
+    static string Grouped(IEnumerable<(string Family, string Ticker)> named)
+    {
         static string Listed(IReadOnlyList<string> names) =>
             names.Count == 1 ? names[0] : string.Join(", ", names.Take(names.Count - 1)) + " and " + names[^1];
 
         var groups = new List<(string Tag, List<string> Tickers)>();
 
-        foreach (var idea in left)
+        foreach (var (family, ticker) in named)
         {
-            if (groups.Count > 0 && groups[^1].Tag == IdeaTag(idea.Family))
+            if (groups.Count > 0 && groups[^1].Tag == IdeaTag(family))
             {
-                groups[^1].Tickers.Add(idea.Ticker);
+                groups[^1].Tickers.Add(ticker);
             }
             else
             {
-                groups.Add((IdeaTag(idea.Family), [idea.Ticker]));
+                groups.Add((IdeaTag(family), [ticker]));
             }
         }
 
-        return Invariant($"{left.Count} more on Tonight: {string.Join(", ", groups.Select(group => Listed(group.Tickers) + " (" + group.Tag + ")"))}, not drawn here to keep this page short.");
+        return string.Join(", ", groups.Select(group => Listed(group.Tickers) + " (" + group.Tag + ")"));
     }
+
+    // The monthly books' buys at tonight's reshuffle, named apart from the new picks: "The monthly books reshuffled tonight
+    // and also buy 3: XOM and CVX (Leader of its sector), AAPL (Strong business at a fair price). These come from the
+    // reshuffle, not from tonight's new picks."; none on a night no book buys.
+    // see: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle
+    public static string? ReshuffleLine(IReadOnlyList<(string Family, string Ticker)> reshuffled) =>
+        reshuffled.Count == 0
+            ? null
+            : Invariant($"The monthly books reshuffled tonight and also buy {reshuffled.Count}: {Grouped(reshuffled)}. {(reshuffled.Count == 1 ? "It comes" : "These come")} from the reshuffle, not from tonight's new picks.");
 
     // A family whose buys sell on no price set in advance: the Fundamentals family's on its filings and a monthly book's at a
     // reshuffle, which draw How it sells in a plan's place.
@@ -340,6 +359,8 @@ public sealed partial class SinglePageApp
             region.Append(LeftOutLine(view.LeftOut) is { } more ? Invariant($"<p class=\"home-more\" data-more=\"{view.LeftOut.Count}\">{Escaped(more)}</p>") : string.Empty);
             region.Append(Invariant($"<p style=\"margin:12px 0 0\"><a href=\"{TonightHref(view.Reading)}\">See all {view.IdeasCount} with their full plans</a></p>"));
         }
+
+        region.Append(ReshuffleLine(view.Reshuffled) is { } reshuffle ? Invariant($"<p class=\"home-more home-reshuffle\" data-reshuffled=\"{view.Reshuffled.Count}\">{Escaped(reshuffle)}</p>") : string.Empty);
 
         region.Append(Invariant($"<p class=\"home-note\">{Escaped(IdeasNote)}</p>"));
         region.Append("</div></section>");

@@ -140,18 +140,21 @@ public sealed class FactsAssembler : IComponent
                (SELECT s.payload FROM fundamentals_snapshot s
                 WHERE s.ticker = f.ticker
                 ORDER BY s.fetched_at DESC
-                LIMIT 1)
+                LIMIT 1),
+               (SELECT c.cik FROM company c WHERE c.ticker = f.ticker AND c.cik IS NOT NULL ORDER BY c.fetched_at DESC LIMIT 1)
         FROM fundamentals f
         WHERE f.ticker = $ticker
         ORDER BY f.filing_date DESC
         LIMIT 1;
     ";
 
-    // The filing stored before the newest, whose guidance passage is the release before's.
+    // The filing stored before the newest, whose guidance passage is the release before's, with the company's own filer.
     const string FilingBeforeFor = @"
-        SELECT payload FROM fundamentals
-        WHERE ticker = $ticker
-        ORDER BY filing_date DESC
+        SELECT f.payload,
+               (SELECT c.cik FROM company c WHERE c.ticker = f.ticker AND c.cik IS NOT NULL ORDER BY c.fetched_at DESC LIMIT 1)
+        FROM fundamentals f
+        WHERE f.ticker = $ticker
+        ORDER BY f.filing_date DESC
         LIMIT 1 OFFSET 1;
     ";
 
@@ -611,12 +614,17 @@ public sealed class FactsAssembler : IComponent
 
         string? filedOn = null;
 
+        // A row whose archive parts were read under another filer is handed on without them.
+        // see: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
         await ReadAsync(connection, LatestFilingFor, ticker, cancellation, reader =>
         {
             filedOn = reader.GetString(0);
+
+            var merged = FundamentalsSnapshot.Over(reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2));
+
             facts.AddRange(Filed(
                 reader.GetString(0),
-                FundamentalsSnapshot.Over(reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2))));
+                OtherFiler.Of(reader.GetString(1), reader.IsDBNull(3) ? null : reader.GetString(3)) is null ? merged : OtherFiler.Without(merged)));
         });
 
         // A quarter its results release reports before its filing is stored: the release's own segment table, read by the
@@ -637,7 +645,9 @@ public sealed class FactsAssembler : IComponent
             using var before = JsonDocument.Parse(reader.GetString(0));
 
             // see: A part filed more than 200 days before the page's own filing is neither drawn nor handed to a writer, and a fetch takes the filer the SEC names
-            if (filedOn is null || !OldFilings.GuidanceTooOld(before.RootElement, DateOnly.ParseExact(filedOn, "yyyy-MM-dd", CultureInfo.InvariantCulture)))
+            // see: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
+            if (OtherFiler.Of(before.RootElement, reader.IsDBNull(1) ? null : reader.GetString(1)) is null
+                && (filedOn is null || !OldFilings.GuidanceTooOld(before.RootElement, DateOnly.ParseExact(filedOn, "yyyy-MM-dd", CultureInfo.InvariantCulture))))
             {
                 facts.AddRange(Guided(before.RootElement, FactOwners.GuidanceBefore));
             }

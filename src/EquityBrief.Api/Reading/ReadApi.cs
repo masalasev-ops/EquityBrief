@@ -108,7 +108,12 @@ public sealed record NoYearRow(string Ticker, int Nights, DateOnly? Last, DateOn
 // over as written rather than unpacked here, because the read surface hands back
 // stored values unchanged and a reader that picked figures out of the JSON would
 // be deciding which of them the page may have.
-public sealed record FilingRow(string Ticker, DateOnly FilingDate, string Payload, string Source);
+public sealed record FilingRow(string Ticker, DateOnly FilingDate, string Payload, string Source)
+{
+    // Why the row's archive parts are not on file, where they were read under a filer other than the company's own.
+    // see: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
+    public string? OtherFiler { get; init; }
+}
 
 // The newest version of one of a name's sections, and where the checker left it.
 //
@@ -5957,6 +5962,19 @@ public sealed partial class ReadApi : IComponent
         if (rows.Count == 0)
         {
             return rows;
+        }
+
+        // The newest row's archive parts stand only where they were read under the company's own filer.
+        // see: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = FilerOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+
+            if (await command.ExecuteScalarAsync() is string own && EquityBrief.Core.Report.OtherFiler.Of(rows[0].Payload, own) is { } stored)
+            {
+                rows[0] = rows[0] with { OtherFiler = EquityBrief.Core.Report.OtherFiler.Why(stored, own) };
+            }
         }
 
         string? snapshot = null;

@@ -89,6 +89,7 @@ public sealed class ResearchRunner(
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.ResearchSection, Touch.Read | Touch.Insert),
             new StoreTouch(Store.ThemeSection, Touch.Read),
@@ -169,6 +170,9 @@ public sealed class ResearchRunner(
         ORDER BY filing_date DESC
         LIMIT 1;
     ";
+
+    // The company's own filer, as its newest quarters fetch names it from the SEC's ticker file.
+    const string CompanyFilerOf = "SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1;";
 
     const string NewestVersions = @"
         SELECT r.section, r.version, r.as_of, r.status, r.reject_reason, r.prose, r.source_ids, r.parts
@@ -451,7 +455,9 @@ public sealed class ResearchRunner(
         string? previousFiling = null;
         (FetchedDocument Document, int Symbols)? previous = null;
 
-        if (await CikAsync(connection, ticker, cancellation) is { } cik)
+        var filer = await CikAsync(connection, ticker, cancellation);
+
+        if (filer.Cik is { } cik)
         {
             try
             {
@@ -494,7 +500,7 @@ public sealed class ResearchRunner(
         }
         else
         {
-            unread.Add("filings archive: no CIK is stored for the name, which the fundamentals fetch writes");
+            unread.Add("filings archive: " + (filer.OtherFiler ?? "no CIK is stored for the name, which the fundamentals fetch writes"));
         }
 
         // The news inside each stored move and since the filing, overlapping spans once, and
@@ -1299,24 +1305,43 @@ public sealed class ResearchRunner(
         return await command.ExecuteScalarAsync(cancellation) is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
     }
 
-    // The company's identifier at the archive, off the newest filing the store holds.
-    static async Task<string?> CikAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
+    // The company's identifier at the archive, off the newest filing the store holds; none, with why, where that filing was
+    // read under a filer other than the company's own.
+    // see: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
+    static async Task<(string? Cik, string? OtherFiler)> CikAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
     {
-        await using var command = connection.CreateCommand();
+        string? payload;
+        string? own;
 
-        command.CommandText = NewestFiling;
-        command.Parameters.AddWithValue("$ticker", ticker);
-
-        if (await command.ExecuteScalarAsync(cancellation) is not string payload)
+        await using (var command = connection.CreateCommand())
         {
-            return null;
+            command.CommandText = NewestFiling;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            payload = await command.ExecuteScalarAsync(cancellation) as string;
+        }
+
+        if (payload is null)
+        {
+            return (null, null);
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = CompanyFilerOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            own = await command.ExecuteScalarAsync(cancellation) as string;
         }
 
         using var parsed = JsonDocument.Parse(payload);
 
+        if (EquityBrief.Core.Report.OtherFiler.Of(parsed.RootElement, own) is { } stored)
+        {
+            return (null, EquityBrief.Core.Report.OtherFiler.Why(stored, own!));
+        }
+
         return parsed.RootElement.TryGetProperty("cik", out var cik) && cik.ValueKind == JsonValueKind.String && cik.GetString() is { Length: > 0 } value
-            ? value
-            : null;
+            ? (value, null)
+            : (null, null);
     }
 
     // The name's sections every profile of the paid lane has written, which the pass counts before and after.

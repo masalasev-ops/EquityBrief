@@ -16058,3 +16058,117 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
             none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 56 checks on the
             roster run and passed.
+
+### 22.54 ruling - the operator's answers to the fix pass report of 2026-11-06, each fix its own checkpoint in phase 22, the restart's correction in a pull request after it
+
+Not a checkpoint entry: it records the operator's answers and lands nothing.
+Ruled:      word for word in `prompts/2026-11-06-22.54-answers-to-the-fix-pass-report.md`, committed with this entry: the command
+            that printed the secrets file found and named, nothing reading that file into a shell or a log, an error from a script
+            touching it printing none of it, and a check failing any tool or script that echoes or reads its content; the keys are
+            the operator's to rotate and are neither opened, printed nor tried. A guard refusing a stored fundamentals row read
+            under a filer other than the company's own, IR's fundamentals fetched once after it and its page read back, and DOW's
+            and XOM's listed; a segment table whose total misses the company's quarter revenue by more than 5% drawn as filed;
+            Home naming the monthly books' buys on a reshuffle's night; the pick's card reading its quarters as the pages do where
+            no rule pins it; the combined account capping a position at a tenth and filling a session's picks in Tonight's order,
+            each rule's own account as it stands; a test per fix failing the page as it read on 2026-11-06. EW's line stands.
+Labelled:   in the order built, phase 22's next numbers, 22.54 used now as the 22.53 record left it unused: item 1 22.54; item 2's
+            four parts 22.55 the filer, 22.56 the segment total, 22.57 the reshuffle on Home and 22.58 the card's quarters; item 3
+            22.59. Item 4 is a 23.0 correction to the plan, documents alone, in its own pull request after this one.
+Queue:      done, the fix pass of 2026-11-06; in progress, this pass; next, the 23.0 correction, then the sign-offs of phases 20,
+            21 and 22, each by a fresh session, phase 20's checking its five fixes alone, then 23.1.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.54 - nothing prints the secrets file   2026-11-06
+
+Built:      `KeysFile.Unreadable` stops the worker's configuration, the file named by path or beside the build, and the
+            read-only copy's check with the file's name, line and byte where it will not parse, and no error beneath;
+            `secrets-unread` holds every file under `tools/` and the workflow to the three forms naming the file, eighteen
+            lines in six scripts, and no wildcard reaching the settings files. The operator's local harness settings refuse a
+            session's shell command naming the file, a wildcard over the settings files or a recursive search reading files git
+            ignores, and a read of the file; they are per machine and no corpus file.
+Measured:   the command was a session's own, at 05:47 UTC on 2026-11-06: the file read with `Get-Content` and piped to
+            `ConvertFrom-Json` to list its sections, where Windows PowerShell's parser refuses the file's comment and its error
+            quoted the whole file. No script under `tools/` read it, and the worker already redacts each key from a provider's
+            error.
+Tests:      4 new in `KeysUnread`, and its roster row, the reader and the check named without the word the tracked-files
+            check refuses in a path.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to the check by name, 5 in all,
+            all red: the configuration's refusal unset, the copy's check's catch skipped, the three forms widened to any line,
+            the wildcard reader dropped, and a read planted in `tools/nightly`.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.55 - a fundamentals row read under another filer is not on file   2026-11-06
+
+Built:      `OtherFiler` reads a newest fundamentals row's stored filer against the company's own, the filer its newest
+            quarters fetch names; where they differ the name page draws its segment table and what management said not on
+            file, naming both filers, the facts writer hands no archive part of it nor the guidance of a row before the newest
+            read so, and a research pass reads no release by it and names the archive unread, the research runner reading the
+            companies for it.
+Measured:   14 of the 559 newest rows on 2026-11-06 were read under another filer: APA, APO, BG, BLK, COHR, DOC, DOW, FERG, IR,
+            MRVL, OZK, TPL, TT and XOM. DOW drew The Dow Chemical Company's segment table of 2026-06-30 and handed a writer 4
+            rows of table growth, its guidance of 2017 held back by the 200-day limit; XOM drew its former filer's table of
+            2026-06-30 and what management said on 2026-05-01, and handed a writer 2 revenue tables and 165 rows of table
+            growth. IR's fundamentals were fetched once on the operator's word at 13:30 UTC, the fetch first skipping itself on
+            the stored 2026-07-31 and then asked with `--filed 2026-10-30`: 10 weighted calls and 8 archive documents, one
+            filing stored under 0001699150, its own, with its table of 2026-09-30, Industrial Technologies and Services and
+            Precision and Science Technologies, and its release of 2026-10-29; its page on 5152 drew both and Trane nowhere.
+Tests:      2 new in `ReadSurface.OtherFiler` and 2 in `FixtureExpectations.OtherFiler`.
+Mutated:    the rule, stated before the run, filtered to the four by name, 4 in all, all red: the page's mark never set, the
+            writer handed the row whole, the pass reading the row's own filer, and the filers compared with their zeros.
+Carried:    the other 13 rows' parts come back on a fetch each, one provider call each, on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.56 - a segment table missing the company's revenue is drawn as filed   2026-11-06
+
+Built:      `SegmentTable.Read` draws a quarter's table, and a company's one segment, whose total misses the company's quarter
+            revenue by more than 5% as filed, its segments' sum against that revenue and no share; a longer table reads against
+            its own total.
+Tests:      1 new, WELL's, HOG's and NTRS's figures worked by hand.
+Mutated:    the rule, stated before the run, filtered to the test by name, 4 in all, all red: the limit unapplied, the edge at
+            5% read as a miss, the quarter's condition dropped, and the one segment left out.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.57 - Home names the reshuffle's buys   2026-11-06
+
+Built:      `SinglePageApp.ReshuffleLine` names the monthly books' buys at the night's reshuffle beneath Home's ideas with their
+            books' tags in Tonight's order, saying they come from the reshuffle, Home reading the books' cards again for it.
+Tests:      1 new.
+Mutated:    the rule, stated before the run, filtered to the test by name, 2 in all, all red: the line never drawn and the
+            singular dropped. Home's hand-off of the books' cards is not mutated: it is read back on a reshuffle's night.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.58 - a pick's card reads its quarters as the pages do   2026-11-06
+
+Built:      `CardQuarters` gives the card's quarters, the provider's labels filed before the night, each quarter's net and
+            operating income from its filing by the night, then its release, then not on file, through `QuarterSources`, and
+            its interest from the filing alone; the business line says a quarter not on file and a cover not read for want of
+            the filing's interest; the cards read the release documents for it.
+Measured:   no rule version, evaluator or hook pins `DecisionCards`, `CardLines`, `CardQuarters`, `QuarterSources` or
+            `ReleaseFigures`, asserted; it joins no restart. A card stored before keeps its line.
+Tests:      2 new; the S&P 400's card test given its filings.
+Mutated:    the rule, stated before the run, filtered to the tests by name, 4 in all, all red: the provider's net income read
+            back, the not-on-file mark never set, a release's quarter read as filing no interest, and the night's step reading
+            no filed fact.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 22.59 - the combined account caps a position at a tenth and fills in Tonight's order   2026-11-06
+
+Built:      `PaperAccount.Combined` sizes each position to at most `CombinedCap`, a tenth of the account's value, whatever the
+            settings state; paper trading hands it each family's place from `BuyOrder`, the order Tonight's buys are drawn in;
+            its card draws each session's trades in the order filled beneath a line saying so. Each rule's own account sizes as
+            before. The guide reads 22.56 to 22.59.
+Tests:      2 new; the hand-worked account and the card's test worked again at a tenth.
+Mutated:    the rule, stated before the run, filtered to the four by name, 5 in all, all red: the settings' cap read again, the
+            page order handed to the account, the card's rows sorted as before, the one order with the dip before the
+            Fundamentals family, and the line not drawn.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3488 of 3488 tests ran with none failed, migrations 0 to 128 with none
+            pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
+            none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

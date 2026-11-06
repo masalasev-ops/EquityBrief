@@ -516,14 +516,17 @@ public static partial class NameScreen
         // the box management speaks in opens on the newest quarter's words.
         // see: A quarter reported before its filing is stored is labelled as the release's, its reported day and next report read from its stored row and then the calendar and its release quoted where it says what it reported
         if (newestRelease is { } release
-            && (!newest.RootElement.TryGetProperty("guidance", out var guided) || guided.ValueKind != JsonValueKind.Object
+            && (filings[0].OtherFiler is not null || !newest.RootElement.TryGetProperty("guidance", out var guided) || guided.ValueKind != JsonValueKind.Object
                 || !DateOnly.TryParseExact(Text(guided, "filedOn"), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var guidedOn)
                 || release.AcceptedOn > guidedOn))
         {
             html.Append(Invariant($"<blockquote class=\"guidance release-opening\" data-exhibit=\"{Escaped(release.Exhibit)}\" data-accepted=\"{release.AcceptedOn:yyyy-MM-dd}\"><p class=\"guidance-heading\">The newest results release, accepted {release.AcceptedOn:yyyy-MM-dd}, opens</p><p>{Escaped(release.Line)}</p><p class=\"guidance-source\">From {Escaped(release.Exhibit)}, the exhibit to that day's results announcement. Management's own words, not a figure this report computed.</p></blockquote>"));
         }
 
-        html.Append(EquityBrief.Core.Report.OldFilings.GuidanceFiled(newest.RootElement) is { } guidanceOn && EquityBrief.Core.Report.OldFilings.TooOld(guidanceOn, filings[0].FilingDate)
+        // see: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
+        html.Append(filings[0].OtherFiler is { } otherFiler
+            ? Invariant($"<p class=\"degraded\" data-absent=\"guidance\" data-other-filer=\"true\">What management said is left out: {Escaped(otherFiler)}.</p>")
+            : EquityBrief.Core.Report.OldFilings.GuidanceFiled(newest.RootElement) is { } guidanceOn && EquityBrief.Core.Report.OldFilings.TooOld(guidanceOn, filings[0].FilingDate)
             ? Invariant($"<p class=\"degraded\" data-absent=\"guidance\" data-old-filed=\"{guidanceOn:yyyy-MM-dd}\">What management said is left out: {EquityBrief.Core.Report.OldFilings.Why("the release stored with this filing was filed on", guidanceOn, FiledShown(filings, secFiled))}.</p>")
             : Guidance(newest.RootElement, Attribution(filings[0].Source)));
 
@@ -583,7 +586,7 @@ public static partial class NameScreen
 
         using var newest = JsonDocument.Parse(filings[0].Payload);
 
-        return newest.RootElement.TryGetProperty("segments", out var table) && EquityBrief.Core.Report.OldFilings.TableTooOld(table, filings[0].FilingDate)
+        return filings[0].OtherFiler is not null || newest.RootElement.TryGetProperty("segments", out var table) && EquityBrief.Core.Report.OldFilings.TableTooOld(table, filings[0].FilingDate)
             ? null
             : Segments(newest.RootElement, Attribution(filings[0].Source), Text(newest.RootElement, "currency") ?? string.Empty);
     }
@@ -614,7 +617,12 @@ public static partial class NameScreen
 
             currency = Text(newest.RootElement, "currency") is { Length: > 0 } itsCurrency ? itsCurrency : currency;
 
-            if (newest.RootElement.TryGetProperty("segments", out var old) && EquityBrief.Core.Report.OldFilings.TableEnded(old) is { } oldEnded && EquityBrief.Core.Report.OldFilings.TooOld(oldEnded, filings[0].FilingDate))
+            // see: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
+            if (filings[0].OtherFiler is { } otherFiler)
+            {
+                segments = new EquityBrief.Core.Report.SegmentReading(newest.RootElement.TryGetProperty("segments", out var others) && others.ValueKind == JsonValueKind.Object ? Text(others, "report") ?? string.Empty : string.Empty, null, 0, null, null, [], otherFiler) { LeftOut = true };
+            }
+            else if (newest.RootElement.TryGetProperty("segments", out var old) && EquityBrief.Core.Report.OldFilings.TableEnded(old) is { } oldEnded && EquityBrief.Core.Report.OldFilings.TooOld(oldEnded, filings[0].FilingDate))
             {
                 segments = new EquityBrief.Core.Report.SegmentReading(Text(old, "report") ?? string.Empty, oldEnded, 0, null, null, [], EquityBrief.Core.Report.OldFilings.Why("the table stored with this filing ends on", oldEnded, FiledShown(filings, secFiled))) { LeftOut = true };
             }

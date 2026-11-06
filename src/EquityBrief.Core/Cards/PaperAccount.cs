@@ -234,17 +234,20 @@ public static partial class PaperAccount
             [.. values.Select(one => (one.Item1, Statistic.FromRatio((one.Item2 / account.Size) - 1m)))]);
     }
 
-    // From 21.11 the combined account: every live rule's trades on an index in one pot at the account's size, each family's
-    // buys of a session in the families' page order and each its own list's places, sized by its own rule's sizing off the
+    // From 21.11 the combined account: every live rule's trades on an index in one pot at the account's size, from 22.59 each
+    // session's buys in Tonight's order, each family's in its own list's places, sized by its own rule's sizing off the
     // account's value, a swing trade by the risk setting and a book's holding at an equal share of a fifth of the account
-    // across the most holdings its book can hold, under the account's one most-in-one-stock limit. One position a stock: a
-    // second family's pick of a stock held is skipped and counted as already held; at most three open positions in one GICS
-    // sector, a fourth skipped and counted; and a buy the free cash cannot cover skipped and counted, as every account's is.
-    // Walked by the one function every account is walked by, when the page is read.
+    // across the most holdings its book can hold, from 22.59 a position at most a tenth of the account's value whatever the
+    // settings state for each rule's own account. One position a stock: a second family's pick of a stock held is skipped and
+    // counted as already held; at most three open positions in one GICS sector, a fourth skipped and counted; and a buy the
+    // free cash cannot cover skipped and counted, as every account's is, a later pick of the session still taken where the
+    // cash covers it. Walked by the one function every account is walked by, when the page is read.
     // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
     public const int SectorCap = 3;
 
     public const decimal BookShare = 0.2m;
+
+    public const decimal CombinedCap = 0.1m;
 
     public const string AlreadyHeld = "another setup already owned the stock";
 
@@ -272,10 +275,12 @@ public static partial class PaperAccount
             : of[trade].Sector is { } sector && open.Count(held => of[held].Sector == sector) >= SectorCap ? SectorFull
             : null;
 
-        AccountSettings Sizing(PaperTrade trade, decimal worth) =>
-            of[trade].Book ? account with { Size = worth * BookShare, PositionCap = account.PositionCap / BookShare } : account with { Size = worth };
+        var capped = account with { PositionCap = CombinedCap };
 
-        var walk = Walk(account, [.. ordered.Select(one => one.Placed)], sessions, close, fund, Refuse, Sizing);
+        AccountSettings Sizing(PaperTrade trade, decimal worth) =>
+            of[trade].Book ? capped with { Size = worth * BookShare, PositionCap = CombinedCap / BookShare } : capped with { Size = worth };
+
+        var walk = Walk(capped, [.. ordered.Select(one => one.Placed)], sessions, close, fund, Refuse, Sizing);
 
         return new CombinedWalk(
             walk,

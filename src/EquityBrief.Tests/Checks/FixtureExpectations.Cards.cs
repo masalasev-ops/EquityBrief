@@ -37,6 +37,17 @@ public partial class FixtureExpectations
 
     static readonly DateOnly CardNight = new(2026, 10, 6);
 
+    // A quarter's net income, operating income and interest expense as its filing states them, filed on the day given.
+    static void FiledQuarter(Action<string> run, string cik, string end, string filed, decimal net, decimal operating, decimal interest)
+    {
+        var start = DateOnly.ParseExact(end, "yyyy-MM-dd", CultureInfo.InvariantCulture).AddDays(1).AddMonths(-3).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        foreach (var (concept, value) in new[] { ("NetIncomeLoss", net), ("OperatingIncomeLoss", operating), ("InterestExpense", interest) })
+        {
+            run($"INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('{cik}', '{concept}', '{start}', '{end}', '{value.ToString(CultureInfo.InvariantCulture)}', '{filed}', '10-Q', '{cik}-{end}', 'constructed');");
+        }
+    }
+
     // Four quarters filed before the night, each with the net income, operating income and interest expense given.
     static IReadOnlyList<FiledIncome> CardQuarters(decimal net, decimal operating, decimal? interest, int count = 4) =>
     [
@@ -302,9 +313,13 @@ public partial class FixtureExpectations
             Run($"INSERT INTO member_reading (index_code, session_date, ticker, close, dollar_volume, company_value, state) VALUES ('MID', '{after}', 'PICK', '50', '1000000', '800000000', 'deteriorating');");
             Run($"INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced) VALUES ('SML', '2026-10-06', 11, 0.3, 0, '{IndexFamilies.Settings("SML")}', 0);");
 
+            // From 22.58 the card reads each quarter's lines from its filing, which states the provider's figures here.
+            Run("INSERT INTO company (ticker, fetched_at, cik) VALUES ('PICK', '2026-01-05T23:00:00Z', '0000000042');");
+
             foreach (var (end, filed) in new[] { ("2025-12-31", "2026-02-10"), ("2026-03-31", "2026-05-08"), ("2026-06-30", "2026-08-07"), ("2026-09-30", "2026-10-02") })
             {
                 Run($"INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, net_income, operating_income, interest_expense) VALUES ('PICK', '2026-10-05T23:00:00Z', '2026-10-05', '{end}', '{filed}', '10', '30', '10');");
+                FiledQuarter(Run, "0000000042", end, filed, 10m, 30m, 10m);
             }
 
             var reports = SessionsAfter(CardNight, 5).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);

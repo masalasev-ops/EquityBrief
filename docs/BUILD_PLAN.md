@@ -2501,6 +2501,36 @@ Their order's ninth item. A Paper trading tile whose account counts from before 
 
 **Done when** an account counting from 2 Oct under a version from 3 Nov says so beneath its date, one counting from its version's start says nothing more, and the copy says neither; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.54 On the operator's answers of 2026-11-06: nothing prints the secrets file
+Their answers' first item, word for word in `prompts/2026-11-06-22.54-answers-to-the-fix-pass-report.md`. No script reads the secrets file, each naming it only to hand its path to the worker, and a file that will not parse stops the worker's configuration and the read-only copy's check with its name, line and byte and none of it, held by `secrets-unread` (see: The secrets file is read by the worker alone, and no script or command or error prints any of it).
+
+**Done when** every file under `tools/` and the workflow names the secrets file only in the three forms, eighteen lines, and the reader finds a constructed script reading it in either shell; a malformed secrets file named by path or beside the build, and one handed to the read-only copy's check, stops with its name, line and byte and no part of it; and one mutation of each property is shown red, the rule stated before the run.
+
+### 22.55 On the operator's answers of 2026-11-06: a fundamentals row read under another filer is not on file
+Their answers' second item, its first part. A newest fundamentals row whose stored filer is not the company's own draws its segment table and what management said not on file, hands no writer the archive's parts, and lets a research pass read no release by that filer (see: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again). IR's fundamentals are then fetched once, on the operator's word, and its page read back.
+
+**Done when** a row read under Trane's filer for Ingersoll Rand draws both parts not on file naming the two filers and no figure of the table, and draws them once the filers agree; a facts file holds no segment figure of such a row; a research pass over it names the archive unread and stores no release; the filers compare by their digits; and one mutation of each property is shown red, the rule stated before the run.
+
+### 22.56 On the operator's answers of 2026-11-06: a segment table missing the company's revenue is drawn as filed
+Their answers' second item, its second part. A quarter's table whose total misses the company's quarter revenue by more than 5% is drawn as filed with its segments' sum against that revenue and no share (see: A quarter's segment table whose total misses the company's quarter revenue by more than 5% is drawn as filed with what its rows sum to).
+
+**Done when** WELL's table worked by hand from its stored figures draws as filed with $2,984.9M against $3,544.6M and no share where it drew Seniors Housing Operating as 100.0%, HOG's and NTRS's and a one-segment company's likewise; a miss of 5% stands and one past it does not, a year's table reading against its own total; and one mutation of each property is shown red, the rule stated before the run.
+
+### 22.57 On the operator's answers of 2026-11-06: Home names the reshuffle's buys
+Their answers' second item, its third part. On a night the monthly books reshuffle, Home names their buys beneath its ideas and says they come from the reshuffle, the ideas' count standing as the new picks (see: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle).
+
+**Done when** Home on a night the books buy XOM, CVX and AAPL names the three in Tonight's order with their tags and says they come from the reshuffle, one buy reading in the singular, while its ideas' count stands; a night no book buys draws no line; and one mutation of each property is shown red, the rule stated before the run.
+
+### 22.58 On the operator's answers of 2026-11-06: a pick's card reads its quarters as the pages do
+Their answers' second item, its fourth part. No rule pins the source a pick's card is drawn by, so the card's business line reads each quarter from its filing, then its results release, and otherwise not on file, the interest its cover reads from the filing alone (see: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file).
+
+**Done when** quarters the provider files as a profit and the filings as a loss read the loss and warn where the provider's ticked; a newest quarter with no filing and no release reads not on file; one drawn from its release reads no cover and says why; the S&P 400's card reads the filings its store holds; and one mutation of each property is shown red, the rule stated before the run.
+
+### 22.59 On the operator's answers of 2026-11-06: the combined account caps a position at a tenth and fills in Tonight's order
+Their answers' third item. The combined account sizes each position to at most a tenth of its value whatever the settings state, fills each session's picks in Tonight's order, the order Tonight's buys are drawn in held by one statement, and its card draws each session's trades in the order it filled them under a line saying so; each rule's own account stands as it was (see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it).
+
+**Done when** the account worked by hand over constructed trades sizes each swing position at a tenth, skips the sixth $1,000 buy over the free $620 where it stands and still buys the $200 holding after it, and fills the Fundamentals family's buy before the dip's; Tonight's buys and the account read one order; the card draws a session's rows in the order filled; section 17's figure is pinned; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

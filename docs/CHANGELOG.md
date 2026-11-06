@@ -7,6 +7,72 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - the combined account's parts of 22.59 joined as three
+Decision: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+Was:
+> ... from 22.59 each position at most a tenth of the account's value whatever the settings state, each session's picks filled in Tonight's order, a line saying so beneath the sentence and each session's trades drawn in the order it filled them, a pick the free cash cannot cover standing skipped where it was reached
+Now:
+> ... from 22.59 each position at most a tenth of the account's value whatever the settings state; each session's picks filled in Tonight's order and its trades drawn in the order filled beneath a line saying so; a pick the free cash cannot cover standing skipped where it was reached
+Why: written as a list, each part read as a claim of its own with no verdict; the row's one verdict holds the three.
+
+### 2026-11-06 - docs/BUILD_PLAN.md - 22.58 names the card's source without the component's name
+Decision: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file
+Was:
+> Their answers' second item, its fourth part. No rule pins the decision cards' source, so the card's business line reads ...
+Now:
+> Their answers' second item, its fourth part. No rule pins the source a pick's card is drawn by, so the card's business line reads ...
+Why: the plan naming the component moved its due point to 22.58 over the 16.1 the claims harness states, which the due-point check refuses.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - the combined account caps a position at a tenth and fills in Tonight's order
+Decision: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+Was:
+> The combined paper account (section 17): ... one position a stock and the account's own most-in-one-stock limit for every trade (see: ...)
+> The combined paper account (paper trading): ... from 21.13 its card opening on one sentence of its return since its first day with the positions it holds open and the picks it skipped
+Now:
+> ... one position a stock, and at most 0.1 of the account's value in one stock for every trade whatever the settings state for each rule's own account, each session's picks filled in Tonight's order (see: ...)
+> ... the same, then: from 22.59 each position at most a tenth of the account's value whatever the settings state, each session's picks filled in Tonight's order, a line saying so beneath the sentence and each session's trades drawn in the order it filled them, a pick the free cash cannot cover standing skipped where it was reached
+Why: the operator's answers of 2026-11-06, their third item.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - a pick's card reads its quarters as the pages do
+Decision: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file
+Was:
+> Decision cards ... reads: ... filed facts, setups, ...; writes one card ... the business from the four newest quarters filed before the night and the night's state, ...; its matrix row's Sources blank
+Now:
+> reads: ... filed facts, release documents, setups, ...; ... the business from the four newest quarters filed before the night, from 22.58 each quarter's lines from its filing, then its results release and otherwise not on file as the pages draw them (see: ...), and the night's state, ...; its matrix row reading Sources
+Why: the operator's answers of 2026-11-06, their second item; no rule pins the cards' source.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - Home names the reshuffle's buys
+Decision: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle
+Was:
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in; the buys left out named beneath the cards with their families' tags (see: ...); ...
+Now:
+> the same, then: from 22.57 on a night the monthly books reshuffle, a line apart naming the books' buys with their tags and saying they come from the reshuffle and not from the new picks (see: ...); ...
+Why: the operator's answers of 2026-11-06, their second item.
+
+### 2026-11-06 - docs/ARCHITECTURE.html - the research runner reads the companies
+Decision: A stored fundamentals row read under a filer other than the company's own is not on file until its figures are fetched again
+Was:
+> Research runner ... reads: membership, facts, fundamentals, ladders, filings archive, ...
+Now:
+> Research runner ... reads: membership, facts, fundamentals, companies, ladders, filings archive, ...
+Why: a research pass reads the company's own filer to read no release by a row read under another.
+
+### 2026-11-06 - CLAUDE.md - the secrets paragraph says only the worker reads the file and nothing prints it
+Decision: The secrets file is read by the worker alone, and no script or command or error prints any of it
+Was:
+> **Secrets.** `appsettings.Secrets.json` sits beside `appsettings.json` in each project that needs one. Gitignored, plaintext, never committed, and registered before environment variables so an environment variable still wins.
+Now:
+> the same, then: Only the worker reads it: no script, command or log reads or prints it, and a file that will not parse stops the worker with its line and none of its text (see: ...).
+Why: the operator's answers of 2026-11-06, their first item, after a session's own command printed the file.
+
+### 2026-11-06 - .claude/rules/checks.md - the roster carries secrets-unread
+Decision: The secrets file is read by the worker alone, and no script or command or error prints any of it
+Was:
+> no row for the secrets file
+Now:
+> `secrets-unread`, every CI run: no file under `tools/` and not the workflow reads the secrets file, eighteen lines handing its path on, and a malformed file stops the worker's configuration and the copy's check with its name, line and byte alone.
+Why: the operator's answers of 2026-11-06, their first item.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - an account counting from before its version says so
 Decision: A paper account counting from before its version's start says beside the date that its earlier trades replay the same
 Was:

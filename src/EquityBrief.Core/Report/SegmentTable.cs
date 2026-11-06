@@ -50,7 +50,8 @@ public sealed record SegmentReading(
 // filed for it. The company's total is the table's own consolidated revenue for the quarter, or the quarter's reported
 // revenue where the table states none. The segments stand as a table only where their revenue sums to that total within
 // what rounding each figure to the table's unit can move it, half a unit a figure; otherwise the raw table is drawn and
-// says by how much the rows missed.
+// says by how much the rows missed. A quarter's table whose total misses the company's quarter revenue by more than 5% is
+// drawn as filed in the same way, against the company's revenue.
 // see: The segment table is the segments whose revenue sums to the company's total within rounding, and the raw table where none do
 public static class SegmentTable
 {
@@ -86,11 +87,27 @@ public static class SegmentTable
 
         if (read.Raw is NoSegmentRevenue or NoSum && ReadAs(table, reportedRevenue, ConsolidationLabels(table), linesLeftOut: true) is { Clean: true } again)
         {
-            return again;
+            return Against(again, reportedRevenue);
         }
 
-        return read;
+        return Against(read, reportedRevenue);
     }
+
+    // How far a quarter's table's total may miss the company's quarter revenue, as a share of that revenue, and the segments
+    // stand as shares of the company.
+    public const decimal CompanyMiss = 0.05m;
+
+    public const string MissesTheCompany = "the table's total misses the company's quarter revenue by more than 5%";
+
+    // A quarter's table summing to its own total where that total misses the company's quarter revenue by more than the
+    // limit states a part of the company, one revenue line or the business with a segment left off: it is drawn as filed
+    // with its segments' sum against the company's revenue, and no share.
+    // see: A quarter's segment table whose total misses the company's quarter revenue by more than 5% is drawn as filed with what its rows sum to
+    static SegmentReading Against(SegmentReading read, decimal? reportedRevenue) =>
+        read is { Months: 3, Total: { } total, Sum: { } sum } && (read.Clean || read.Raw == OneSegmentReads)
+        && reportedRevenue is { } revenue && revenue > 0m && Math.Abs(total - revenue) > revenue * CompanyMiss
+            ? read with { Total = revenue, Sum = sum, Rows = [], Raw = MissesTheCompany, OneSegment = null }
+            : read;
 
     // The dimension of the group whose label is the filer's own name for the consolidation's operating segments, and the
     // axis a subsegment's line is filed on.
