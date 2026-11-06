@@ -146,7 +146,7 @@ public sealed partial class SinglePageApp
             holding.Ticker,
             holding.Company,
             Invariant($"Chosen at the reshuffle as one of the largest companies leading {holding.Sector}."),
-            "not read for this book",
+            "not read",
             holding.Close,
             MarkRenderer.SellsAtAReshuffle,
             TonightHref(universe, EquityBrief.Core.Families.HeavyweightRule.Name, holding.Ticker))),
