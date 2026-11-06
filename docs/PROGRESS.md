@@ -16232,7 +16232,7 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Mutation:   the rule, stated before the run: N4 again, the smallest edit undoing the fix, `card.Passes` in the picks against picks
             branch of `RuleScreen.ShareOf`, filtered to the two card tests by their names, made in this checkout and reverted:
             red at `AChosenVariantDrawsNoneOfTheNotesTonightsListHoldsWhichTheLiveRuleDraws`, the other passing.
-Read:       live on 5152 over the night of 2026-11-05, Tonight's S&P 500 page with each of its 34 versions chosen in turn: the
+Read:       live on 5152 over the night of 2026-11-05, Tonight's S&P 500 page with each of its 31 versions chosen in turn: the
             pullback's, breakout's and drift's 24 lines against the live rule's qualifying stocks, the dip's 4 against its picks
             and the heavyweights' 3 against its holdings, each naming the stocks it shares, adds and drops.
 Table:      the operator's rule of 2026-11-01, extended from the last review's over 586e22ec to 0a701a31. Merged since, 5:
