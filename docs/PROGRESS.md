@@ -16244,3 +16244,18 @@ Table:      the operator's rule of 2026-11-01, extended from the last review's o
             operator's fix pass of 2026-11-06, a phase 18 cell, undoing no correction. Their 99 test methods: 97 the same on
             0a701a31 as on 586e22ec, none changed, and the 2 gone as the last review traced them.
 Carried:    none of phase 20's own.
+
+### 23.1 ruling - phase 23 built before the sign-offs of phases 21 and 22, which stay owed, the ruling landing with 23.1
+
+Not a checkpoint entry: it records the operator's answers and lands nothing.
+Ruled:      word for word in `prompts/2026-11-06-23.1-ruling-phase-23-before-the-21-and-22-signoffs.md`, committed with this
+            entry: "Phase 20 has been signed. Proceed. We will do phase 21 and 22 later." And: "Do not create a PR just for
+            recording the decision. I need you to proceed with the code as well as written in 23.1". Phase 20's sign-off merged as
+            pull request 655; the work queued before the sign-offs merged as 651 to 654. The sign-offs of phases 21 and 22 stay
+            owed to fresh sessions, outstanding, discharged by no checkpoint of phase 23 and run between its pull requests. One
+            decision, superseding the one that held 23.1 until all three were signed; the prior text in the changelog (see: Phase
+            23 is built before the sign-offs of phases 21 and 22, which stay owed and run between its pull requests).
+Queue:      done, phase 20's sign-off; in progress, 23.1 with this ruling in its one pull request; next, 23.2, the sign-offs of
+            phases 21 and 22 between phase 23's pull requests when the operator calls them.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.

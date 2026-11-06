@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/BUILD_PLAN.md - phase 23 built before the sign-offs of phases 21 and 22
+Decision: Phase 23 is built before the sign-offs of phases 21 and 22, which stay owed and run between its pull requests
+Was:
+> Tabled for phase 23, its last paragraph: ... so none stays tabled (see: Phase 23's plan stands before the three sign-offs still owed and none of it is built until they are signed).
+> **What this phase is for.** The operator's brief of 2026-11-04, word for word in `prompts/2026-11-04-23.0-phase-23-brief.md` (see: Phase 23's plan stands before the three sign-offs still owed and none of it is built until they are signed). It lays ...
+Now:
+> Tabled for phase 23, its last paragraph: the same, citing the decision that supersedes it.
+> **What this phase is for.** The same, then after the brief's file: built from 23.1 before the sign-offs of phases 21 and 22 on the operator's answers of 2026-11-06, citing the decision that supersedes the old one.
+Why: the operator's answers of 2026-11-06: "Phase 20 has been signed. Proceed. We will do phase 21 and 22 later."
+
 ### 2026-11-06 - docs/BUILD_PLAN.md - 23.10 holds the provider's quarters read as the pages read them and the tight stop's skip
 Decision: At phase 23's restart the rules reading the provider's quarters read each quarter from its filing then its release and otherwise nothing; At phase 23's restart a pick whose give-up price sits within one typical daily move of its buy is skipped as a variant on the three families it helped
 Was:
