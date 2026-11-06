@@ -26,7 +26,7 @@ public partial class ReadSurface
         Assert.Equal(SegmentTable.MissesTheCompany, read.Raw);
         Assert.Empty(read.Rows);
         Assert.Equal(
-            "<p class=\"degraded\" data-segments=\"raw\" data-report=\"R9.htm\" data-total=\"3544600000\" data-sum=\"2984900000\">The filing's segment table is drawn as filed beneath, because the table's total misses the company's quarter revenue by more than 5%: its segments' revenue sums to $2,984.9M against the company's $3,544.6M.</p>",
+            "<p class=\"degraded\" data-segments=\"raw\" data-report=\"R9.htm\" data-total=\"3544600000\" data-sum=\"2984900000\">The filing's segment table is drawn as filed beneath, because the table's total misses the company's quarter revenue by more than 5%: its segments' revenue sums to $3.0B against the company's $3.5B.</p>",
             marks.SegmentsTable(read, "USD"));
         Assert.Equal(
             "<p class=\"mark-short\" data-mark=\"share-bars\">No segment's share is drawn, because the table's total misses the company's quarter revenue by more than 5%.</p>",
