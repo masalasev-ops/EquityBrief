@@ -16213,3 +16213,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
             none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### Phase 20 sign-off                                                        2026-11-06
+Signed by a session that has committed no code to this repository. Its only commit is this entry, which is a document,
+            so the fresh session rule permits it. On the operator's order of 2026-11-02 it read only what the last review left
+            open and the correction table: the review of the fifth issue's fixes, over 586e22ec in
+            `prompts/2026-11-06-20.10-phase-20-signoff-fixes-review.md`, signed nothing on one test gap alone, N4, the picks
+            against picks line put back on the live rule's qualifying stocks, surviving 502 tests; d82bbe16, the 19.3 correction
+            of PR 651, extended the card test to hold it. It signs over 0a701a31, the main its gates ran on with this entry.
+Ruled:      "Can you do the phase 20 sign off".
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3493 of 3493 tests ran with none failed, migrations 0 to 128 with none
+            pending, schema version 128, against `data-ci` and never `data`; the phase report 65 tables, 1534 claims, 1534 passing,
+            none out of scope and none unexamined, 1549 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed. Hosted CI: PRs 649, 651, 652 and 654 green under both events; PR 650 red on both jobs, answered
+            by the 23.0 correction d2c048f5 in PR 651; PR 653's macOS job red under one event and green under the other; main's
+            push of 0a701a31 green.
+Mutation:   the rule, stated before the run: N4 again, the smallest edit undoing the fix, `card.Passes` in the picks against picks
+            branch of `RuleScreen.ShareOf`, filtered to the two card tests by their names, made in this checkout and reverted:
+            red at `AChosenVariantDrawsNoneOfTheNotesTonightsListHoldsWhichTheLiveRuleDraws`, the other passing.
+Read:       live on 5152 over the night of 2026-11-05, Tonight's S&P 500 page with each of its 34 versions chosen in turn: the
+            pullback's, breakout's and drift's 24 lines against the live rule's qualifying stocks, the dip's 4 against its picks
+            and the heavyweights' 3 against its holdings, each naming the stocks it shares, adds and drops.
+Table:      the operator's rule of 2026-11-01, extended from the last review's over 586e22ec to 0a701a31. Merged since, 5:
+            changing a file phase 20 built, 651 (12), 652 (9) and 653 (3); neither, 650 and 654. Over the whole span since phase
+            20's first build, 162 merged, 487 to 654: 132 changing a file the phase built, 4 changing only a file a correction
+            touched, 554 602 607 611, and 26 neither. The corrections the phase carries, 51, the four new being 2f65a672,
+            8e5b8bdf, 1fa81c29 and d82bbe16: 3,663 source lines added, 3,588 standing on 0a701a31, 75 absent, 74 as the last
+            review traced them and one new, 6680e80c's calendar cell "the fetch's", made "the filing's" by 22.46's cae78a0d on the
+            operator's fix pass of 2026-11-06, a phase 18 cell, undoing no correction. Their 99 test methods: 97 the same on
+            0a701a31 as on 586e22ec, none changed, and the 2 gone as the last review traced them.
+Carried:    none of phase 20's own.
