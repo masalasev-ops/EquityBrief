@@ -1951,7 +1951,7 @@ async Task<IResult> TonightScreenAsync(
 
             var high = indexSettings.Breakout.GetValueOrDefault("high") is { } sessions && int.TryParse(sessions, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) ? parsed : (int?)null;
 
-            return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, indexLine, indexCards, await ImprovingCardAsync(read, reading.Code, dated, indexCells), indexCells, (family, ticker) => indexGates.GetValueOrDefault((family, ticker)), indexNight.Breadth, high, heavyweightCard, await QualityCardAsync(read, reading.Code, dated, indexCells));
+            return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, indexLine, indexCards, await ImprovingCardAsync(read, reading.Code, dated, indexCells), indexCells, (family, ticker) => indexGates.GetValueOrDefault((family, ticker)), indexNight.Breadth, high);
         }
 
         return Results.Content(
@@ -2347,7 +2347,7 @@ async Task<IResult> TonightScreenAsync(
             homeGates.TryAdd((result.Family, result.Ticker), result.Gates);
         }
 
-        return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, line, cards ?? [], cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells), cells, (family, ticker) => homeGates.GetValueOrDefault((family, ticker)), heavyweights: heavyweights, quality: cards is null ? null : await QualityCardAsync(read, reading.Code, dated, cells));
+        return await HomeAsync(read, page, marks, store, reading, dated, aboutNight, line, cards ?? [], cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells), cells, (family, ticker) => homeGates.GetValueOrDefault((family, ticker)));
     }
 
     return Results.Content(
@@ -2773,9 +2773,7 @@ async Task<IResult> HomeAsync(
     IReadOnlyDictionary<string, UniverseCell> cells,
     Func<string, string, string?> gatesOf,
     double? ownShare = null,
-    int? highSessions = null,
-    HeavyweightCardView? heavyweights = null,
-    QualityCardView? quality = null)
+    int? highSessions = null)
 {
     var running = aboutNight.Session > dated && aboutNight.State is NightStates.Running or NightStates.Waiting or NightStates.Unfinished;
     var stored = await read.StripAsync(dated, MarketStripScreen.Series, MarketStripScreen.VixSessions);
@@ -2852,7 +2850,7 @@ async Task<IResult> HomeAsync(
     // see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
     HomeIdea[] ideas =
     [
-        .. MarkRenderer.BuysInOrder(points, SinglePageApp.PlanlessBuys(reading.Word, improving, heavyweights, quality))
+        .. MarkRenderer.BuysInOrder(points, SinglePageApp.PlanlessBuys(reading.Word, improving, null, null))
             .Select(buy => buy.Point is { } point ? IdeaOf(point) : PlanlessIdeaOf(buy.Planless!)),
     ];
     var opens = MarkRenderer.OpenDay(dated);

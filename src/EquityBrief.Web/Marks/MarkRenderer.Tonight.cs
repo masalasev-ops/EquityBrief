@@ -355,11 +355,14 @@ public sealed partial class MarkRenderer
         var opens = OpenDay(night);
         var rows = BuysInOrder(points, planless ?? []);
 
-        // One count across the pages, every buy a row of the table.
+        // One count across the pages, the new picks, every buy a row of the table and the monthly books' reshuffle said apart.
         // see: Every count of trades names its group and one function works the three groups
-        var summary = rows.Count == 0
-            ? "No stock to buy at " + opens + " open: no setup picked one tonight."
-            : Counted(rows.Count, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close.";
+        var reshuffled = rows.Count(row => row.Planless is { } buy && buy.Family != EquityBrief.Core.Families.ImprovingRule.Name);
+        var picked = rows.Count - reshuffled;
+        var summary = (picked == 0
+                ? "No stock to buy at " + opens + " open: no setup picked one tonight."
+                : Counted(picked, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close.")
+            + (reshuffled == 0 ? string.Empty : Formatted($" The monthly books' reshuffle adds {reshuffled} more, each a row below."));
 
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary data-buy-points=\"{rows.Count}\">{Escaped(summary)}</p>");
 

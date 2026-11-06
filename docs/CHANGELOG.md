@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - Tonight counts its new picks and Home draws no reshuffle
+Corrects: 22.47's and 22.48's rows said Tonight's sentence counts every buy and Home draws a monthly book's holdings to buy; `CountsProof` holds both counts to the night's new picks, the reshuffle a group of its own.
+Was:
+> Tonight's buy points: ... From 22.47 it names every buy on the index and counts them all. ...
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in with a monthly book's holdings to buy after the dip's; the buys left out ...
+Now:
+> Tonight's buy points: ... From 22.47 it names every buy on the index and counts the night's new picks, the monthly books' reshuffle said apart. ...
+> Tonight's ideas: ... from 22.48 that order read by the one function Tonight's buys are drawn in; the buys left out ...
+Why: every count of trades names its group, and the proof of the counts reads both pages.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - the entry check's line on every Fundamentals buy
 Decision: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does
 Was:
