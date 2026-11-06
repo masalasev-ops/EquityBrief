@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/BUILD_PLAN.md - 22.58 names the card's source without the component's name
+Decision: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file
+Was:
+> Their answers' second item, its fourth part. No rule pins the decision cards' source, so the card's business line reads ...
+Now:
+> Their answers' second item, its fourth part. No rule pins the source a pick's card is drawn by, so the card's business line reads ...
+Why: the plan naming the component moved its due point to 22.58 over the 16.1 the claims harness states, which the due-point check refuses.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - the combined account caps a position at a tenth and fills in Tonight's order
 Decision: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
 Was:

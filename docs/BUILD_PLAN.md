@@ -2522,7 +2522,7 @@ Their answers' second item, its third part. On a night the monthly books reshuff
 **Done when** Home on a night the books buy XOM, CVX and AAPL names the three in Tonight's order with their tags and says they come from the reshuffle, one buy reading in the singular, while its ideas' count stands; a night no book buys draws no line; and one mutation of each property is shown red, the rule stated before the run.
 
 ### 22.58 On the operator's answers of 2026-11-06: a pick's card reads its quarters as the pages do
-Their answers' second item, its fourth part. No rule pins the decision cards' source, so the card's business line reads each quarter from its filing, then its results release, and otherwise not on file, the interest its cover reads from the filing alone (see: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file).
+Their answers' second item, its fourth part. No rule pins the source a pick's card is drawn by, so the card's business line reads each quarter from its filing, then its results release, and otherwise not on file, the interest its cover reads from the filing alone (see: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file).
 
 **Done when** quarters the provider files as a profit and the filings as a loss read the loss and warn where the provider's ticked; a newest quarter with no filing and no release reads not on file; one drawn from its release reads no cover and says why; the S&P 400's card reads the filings its store holds; and one mutation of each property is shown red, the rule stated before the run.
 
