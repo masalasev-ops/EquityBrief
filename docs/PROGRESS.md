@@ -15918,3 +15918,17 @@ Tests:      none new: the check is the test.
 Mutated:    the rule, stated before the run: the name back in 23.1's text, filtered to the check by its name: red, as it stood.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
             the figures it states.
+
+### 19.3 - correction: a test holds a version's picks against the live rule's picks where the live rule qualified a stock it did not pick   2026-11-06
+
+Found:      the review of the fifth issue's fixes, in `prompts/2026-11-06-20.10-phase-20-signoff-fixes-review.md`, and the
+            operator's order of 2026-11-06, its twelfth item: N4, the picks against picks line put back on the live rule's
+            qualifying stocks, survived 502 tests, the one test's live picks equal to its qualifiers.
+Corrected:  no shipped source moves. The test whose live breakout qualifies K9 and holds it back for its open trade, its
+            version picking K9 with the night keeping no answer of the version's, holds the line: shares none, adds K9, drops K1
+            and K2, under "Beside the live setup's picks tonight".
+Tests:      none new, one extended.
+Mutated:    the rule, stated before the run: N4, `card.Passes` in the picks against picks branch of `RuleScreen.ShareOf`,
+            filtered to the two card tests by their names: red at the extended test, the other passing.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
