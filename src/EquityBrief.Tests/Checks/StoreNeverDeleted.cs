@@ -90,6 +90,8 @@ public class StoreNeverDeleted
         // its handle closes. The read-only copy's own rewrite: SitePublisher removes the data root's
         // folder for the copy whole and SiteCopyCommand writes each of its files into it again, and SitePublisher writes the
         // copy's report beside that folder; none of them is the store or under it.
+        // From 23.1 HistoryEndFilings writes a filer's filing index, its older pages and its documents as the archive sent
+        // them into a folder the operator names, none of them the store.
         // SweepPointInTime removes the scratch stores it built under the machine's temporary folder, which
         // hold nothing of the operator's. SweepRunner writes and replaces its own run folder's files, and
         // removes its own saved candidates where the history moved under them. StoreBackup, in the copies'
@@ -117,6 +119,9 @@ public class StoreNeverDeleted
                 "HeavyweightSweepRunner.cs: File.WriteAllText(Path.Combine(folder, Core.Sweep.SweepAnswer.File))",
                 "HeavyweightSweepRunner.cs: File.WriteAllText(figures)",
                 "HeavyweightSweepRunner.cs: File.WriteAllText(report)",
+                "HistoryEndFilings.cs: File.WriteAllTextAsync(Path.Combine(documents, FilerFilings.DocumentFile(filing)))",
+                "HistoryEndFilings.cs: File.WriteAllTextAsync(Path.Combine(folder, IndexFile))",
+                "HistoryEndFilings.cs: File.WriteAllTextAsync(Path.Combine(folder, page))",
                 "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, FiguresFile))",
                 "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, SweepAnswer.File))",
                 "IndexSweepRunner.cs: File.WriteAllText(report)",
@@ -264,12 +269,12 @@ public class StoreNeverDeleted
         var migrations = File.ReadAllText(shipped.Single(file => Path.GetFileName(file) == "SchemaMigrations.cs"));
         var dropped = Regex.Matches(migrations, @"DROP TABLE\s+(?:IF EXISTS\s+)?(\w+)").Select(match => match.Groups[1].Value).ToArray();
 
-        // Nine, each a rebuild SQLite forces where a constraint a table was created with has to change, the loop's models
+        // Ten, each a rebuild SQLite forces where a constraint a table was created with has to change, the loop's models
         // from 17.15 gaining their kind in their primary key, from the 20.3 correction of 2026-10-22 the results releases
         // and their readings gaining the exhibit in theirs, from the 22.11 ruling the pulled bars and prints gaining the
-        // pull in theirs, and from 21.16 the two books' holdings gaining the sale under the 200-day average among their
-        // end reasons.
-        Assert.Equal(["quality_holding", "improving_trade", "pulled_bar", "pulled_earnings", "release_document", "release_reading", "loop_model", "research_request", "membership"], dropped);
+        // pull in theirs, from 21.16 the two books' holdings gaining the sale under the 200-day average among their
+        // end reasons, and from 23.1 the session marks gaining the session a history ends on among their kinds.
+        Assert.Equal(["session_mark", "quality_holding", "improving_trade", "pulled_bar", "pulled_earnings", "release_document", "release_reading", "loop_model", "research_request", "membership"], dropped);
 
         foreach (var table in dropped)
         {

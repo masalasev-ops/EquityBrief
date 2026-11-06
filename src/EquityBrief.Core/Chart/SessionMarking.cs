@@ -14,7 +14,12 @@ public static class SessionMarking
     public const string BadPrint = "bad print";
     public const string CheckedAndKept = "checked and kept";
 
-    public static IReadOnlyList<string> Kinds { get; } = [StartsHere, BadPrint, CheckedAndKept];
+    // From 23.1 the session a company's history ends on, set by rule from its filings, and on the operator's word only where no
+    // such filing is found.
+    // see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger
+    public const string HistoryEnds = "history ends";
+
+    public static IReadOnlyList<string> Kinds { get; } = [StartsHere, BadPrint, CheckedAndKept, HistoryEnds];
 
     // A read of a stock's pulled rows from the session its history starts on, $ticker bound.
     public const string FromItsStart = "session_date >= COALESCE((SELECT MAX(mark.session_date) FROM session_mark AS mark WHERE mark.ticker = $ticker AND mark.kind = 'starts here'), '')";

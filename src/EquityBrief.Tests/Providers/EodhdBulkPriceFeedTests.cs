@@ -346,8 +346,10 @@ public class EodhdBulkPriceFeedTests
         // provider's trends, which the night asks a page of symbols a request, and FINRA's short interest, which the
         // off-peak run's step asks and no night does, and twenty-nine until 21.13 added Yahoo's chart of WTI crude, one
         // request a night, and Yahoo's spark of the market strip, which Tonight opened in the session asks, and thirty-one
-        // until 21.19 added DeepSeek's search tool, which the measurement asks by hand and no night does.
-        Assert.Equal(32, Checks.NightlyCost.MayHoldAClient.Length);
+        // until 21.19 added DeepSeek's search tool, which the measurement asks by hand and no night does, and thirty-two until
+        // 23.1 added a filer's filing index and documents at the archive, which the data check's read of a history's end asks
+        // by hand and no night does.
+        Assert.Equal(33, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));

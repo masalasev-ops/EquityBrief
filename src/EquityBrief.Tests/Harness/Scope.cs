@@ -4617,6 +4617,55 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        // 23.1's data check, its filings read, its store, section 17's four rows, section 18's row and the History page's two.
+        [CheckReach.Key(CatalogueTable, "Data checker")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the pulled history, the joins, the splits, the dividends and the marks it reads and the data checks and run log it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Data checker")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "History end filings")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the filings archive and no store, and writes no run log",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "History end filings")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, every one blank",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Data checks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The data check's volume")] = new Scoped(
+            Verdict.Pass,
+            "each kind of a missing session and a candle with no volume worked on both sides of the median, the empty share and the multiple over constructed sessions; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The data check's jumps")] = new Scoped(
+            Verdict.Pass,
+            "the limit, the count of stocks, the spike's reach and its sessions each worked on both sides, each kind reached in its order and a spike's move back no jump of its own; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The data check's starts to read")] = new Scoped(
+            Verdict.Pass,
+            "a when-issued start's share and an emergence's gap each worked on both sides over constructed sessions; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "A history's end")] = new Scoped(
+            Verdict.Pass,
+            "Merrill Lynch's and PepsiCo's filings as captured read against the ends a person derived from them, and constructed removals and reports on both sides of the 30 days and of the earlier of the two; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A pulled series the data check cannot read")] = new Scoped(
+            Verdict.Pass,
+            "a stock holding a price the check cannot read left out and named on the run's row with its session, the other stock read and written",
+            ByExpectations),
+        [CheckReach.Key("15.25 History", "Counts by class and era")] = new Scoped(
+            Verdict.Pass,
+            "the counts of a store the check wrote read back off the page by class, kind and era, the run's line above them, and a store it has not run over saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.25 History", "To read against the filings")] = new Scoped(
+            Verdict.Pass,
+            "an unexplained jump listed with its words and its chart's link, and a fold counting none",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "Entry check")] = new Scoped(
             Verdict.Pass,
             "each reading worked by hand over a constructed series and read back on the region, and the copy leaving out the outline",
@@ -6279,6 +6328,9 @@ internal static class Scope
         ["Session marks"] = "22.38",
         // 22.37's one, which the plan describes as the chart audit run as a nightly check.
         ["Chart checker"] = "22.37",
+        // 23.1's two, which the plan describes as a worker verb of its own and as a history's end read from the SEC's filings.
+        ["Data checker"] = "23.1",
+        ["History end filings"] = "23.1",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -6406,6 +6458,7 @@ internal static class Scope
         ["Split name reader"] = "22.42",
         ["Split names"] = "22.42",
         ["Entry readings"] = "22.41",
+        ["Data checks"] = "23.1",
         ["Late bar asker"] = "22.40",
         ["Late bar readings"] = "22.40",
         ["Late bar asks"] = "22.40",
@@ -7282,6 +7335,8 @@ internal static class Scope
         [CheckReach.Key("15.24 Home", "Tonight's ideas")] = "22.16",
         [CheckReach.Key("15.24 Home", "How past ideas have done")] = "22.16",
         [CheckReach.Key("15.24 Home", "How it works")] = "22.16",
+        [CheckReach.Key("15.25 History", "Counts by class and era")] = "23.1",
+        [CheckReach.Key("15.25 History", "To read against the filings")] = "23.1",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
@@ -7932,6 +7987,7 @@ internal static class Scope
         "15.21 Paper trading",
         "15.22 Chart",
         "15.24 Home",
+        "15.25 History",
         "15.11 How a reason's record is displayed",
     ];
 
@@ -8079,6 +8135,7 @@ internal static class Scope
         ["An index's setups the ledger could not compute"] = "17.3",
         // 21.4's one, a history build asked for a span reaching the night's own rows.
         ["A history build asked for a session the night wrote"] = "21.4",
+        ["A pulled series the data check cannot read"] = "23.1",
         // 21.6's two, which the plan names as section 18's rows for a source refusing and a member unanswered.
         ["A new reading's source refuses"] = "21.6",
         ["A member a new reading's source answers nothing for"] = "21.6",
@@ -8395,6 +8452,9 @@ internal static class Scope
         ["Queue window"] = "19.6",
         // The 18.4 correction of 2026-11-02's limits, which the plan does not name.
         ["Report page's day limits"] = "18.4",
+        ["The data check's volume"] = "23.1",
+        ["The data check's jumps"] = "23.1",
+        ["The data check's starts to read"] = "23.1",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

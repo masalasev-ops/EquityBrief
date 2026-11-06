@@ -37,6 +37,7 @@ public enum Store
     PulledSplit,
     TickerJoin,
     SessionMark,
+    DataCheck,
     DividendWait,
     LateBarAsk,
     EntryReading,

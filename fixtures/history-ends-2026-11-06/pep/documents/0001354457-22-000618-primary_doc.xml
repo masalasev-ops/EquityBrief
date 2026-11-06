@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<notificationOfRemoval>
+
+    <schemaVersion>X0203</schemaVersion>
+
+    <exchange>
+        <cik>0001354457</cik>
+        <entityName>Nasdaq Stock Market LLC</entityName>
+    </exchange>
+
+    <issuer>
+        <cik>0000077476</cik>
+        <entityName>PEPSICO INC</entityName>
+        <fileNumber>001-01183</fileNumber>
+        <address>
+            <street1>700 Anderson Hill Road</street1>
+            <street2></street2>
+            <city>Purchase</city>
+            <stateOrCountryCode>NY</stateOrCountryCode>
+            <stateOrCountry>NEW YORK</stateOrCountry>
+            <zipCode>10577-1444</zipCode>
+        </address>
+        <telephoneNumber>(914) 253-2000</telephoneNumber>
+    </issuer>
+
+    <descriptionClassSecurity>Senior Notes Due 2022</descriptionClassSecurity>
+
+    <ruleProvision>17 CFR 240.12d2-2(a)(2)</ruleProvision>
+
+    <signatureData>
+        <signatureName>Tara Petta</signatureName>
+        <signatureTitle>AVP</signatureTitle>
+        <signatureDate>2022-10-31</signatureDate>
+    </signatureData>
+</notificationOfRemoval>

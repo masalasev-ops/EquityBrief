@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<notificationOfRemoval>
+
+    <schemaVersion>X0203</schemaVersion>
+
+    <exchange>
+        <cik>0001143313</cik>
+        <entityName>AMERICAN STOCK EXCHANGE LLC</entityName>
+    </exchange>
+
+    <issuer>
+        <cik>0000065100</cik>
+        <entityName>MERRILL LYNCH &amp; CO INC</entityName>
+        <fileNumber>001-7182</fileNumber>
+        <address>
+            <street1>4 World Financial Center</street1>
+            <street2></street2>
+            <city>New York</city>
+            <stateOrCountryCode>NY</stateOrCountryCode>
+            <stateOrCountry>NEW YORK</stateOrCountry>
+            <zipCode>10080</zipCode>
+        </address>
+        <telephoneNumber>(212) 449-1000</telephoneNumber>
+    </issuer>
+
+    <descriptionClassSecurity>Convertible Securities exchangeable into The Coca-Cola Company common stock, maturing September 30, 2008</descriptionClassSecurity>
+
+    <ruleProvision>17 CFR 240.12d2-2(a)(2)</ruleProvision>
+
+    <signatureData>
+        <signatureName>Kerri L. Ramirez</signatureName>
+        <signatureTitle>Manager, Corporate Actions and Proxy Rulings</signatureTitle>
+        <signatureDate>2008-09-30</signatureDate>
+    </signatureData>
+</notificationOfRemoval>

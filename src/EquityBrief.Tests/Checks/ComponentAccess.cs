@@ -68,6 +68,15 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Late bar readings"),
     ];
 
+    // 23.1's two: the data checker and the history end filings.
+    internal static string[] DataCheckerRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Data checker"),
+        CheckReach.Key(Scope.MatrixTable, "Data checker"),
+        CheckReach.Key(Scope.CatalogueTable, "History end filings"),
+        CheckReach.Key(Scope.MatrixTable, "History end filings"),
+    ];
+
     // 22.38's one: the session marks.
     internal static string[] SessionMarkRows =>
     [
@@ -238,6 +247,9 @@ public partial class ComponentAccess
 
             // 22.38, the session marks.
             .. SessionMarkRows,
+
+            // 23.1, the data checker and the history end filings.
+            .. DataCheckerRows,
             .. LateBarRows,
             .. EntryReaderRows,
             .. SplitNameRows,
@@ -888,8 +900,9 @@ public partial class ComponentAccess
         // from 20.3 the release accuracy report, which prints its figures and writes nothing, from 20.5 the local
         // comparison, which opens the store read-only and writes its figures to a file under the data root, and from
         // 21.3 the score audit, which reads the setups and the stored models and writes its page under the data root, and
-        // from 21.14 the drift surprises check, which prints what it reads and writes nothing.
-        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "LocalComparison", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // from 21.14 the drift surprises check, which prints what it reads and writes nothing, and from 23.1 the history end
+        // filings, which keep the archive's answers in a folder the command names.
+        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

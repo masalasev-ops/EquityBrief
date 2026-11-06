@@ -196,6 +196,8 @@ public partial class FixtureExpectations
             .. ImprovingClaims,
             // 22.14, its history test: section 17's grid.
             .. ImprovingHistoryClaims,
+            // 23.1, the data check: section 17's four rows and section 18's row.
+            .. DataCheckClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

@@ -3521,6 +3521,12 @@ IResult SweepReportPage(StoreLocation store, string? run)
 // The names holding research among the members of the index chosen under Universe: an S&P 400's or 600's current
 // members where the link names one, and every other name where it names none, the S&P 500's former members among them.
 // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+// The History page under Records: the data check's counts over the years the pull holds by class and era, and the findings a
+// person reads against the filings.
+// see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row
+app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
+    Results.Content(page.HistoryRegion(await read.DataCheckAsync()), "text/html; charset=utf-8"));
+
 // The setup ledger's page under Universe: the summary the ledger's writers refresh for the index chosen, one family's
 // newest settled setups, its first family's where the link names none, and a chosen setup's path, named in the link as
 // its stock and its session.
