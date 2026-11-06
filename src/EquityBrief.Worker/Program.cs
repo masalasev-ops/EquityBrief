@@ -98,6 +98,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ticker-join" => await TickerJoinRun(args),
     "session-mark" => await SessionMarkRun(args),
     "data-check" => await DataCheckRun(args),
+    "long-members" => await LongMembersRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -237,6 +238,35 @@ static async Task<int> SessionMarkRun(string[] args)
     Console.WriteLine(written == 1 ? FormattableString.Invariant($"session-mark: {ticker} {session:yyyy-MM-dd} {kind}") : FormattableString.Invariant($"session-mark: {ticker} {session:yyyy-MM-dd} was marked already, nothing changed"));
 
     return 0;
+}
+
+// The long history's membership from the trust's older schedules. With '--capture --into <folder>' the trust's filings of the
+// three funds' schedules are kept whole in the folder, their documents too with '--documents'.
+// see: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30
+static async Task<int> LongMembersRun(string[] args)
+{
+    var configuration = Configuration();
+
+    if (args.Contains("--capture", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--capture --into <folder>', with '--documents' to keep the schedules' documents too.");
+
+            return 2;
+        }
+
+        var filings = new EquityBrief.Worker.History.LongScheduleFilings(SecEdgarTrustScheduleFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty)));
+        var read = await filings.CaptureAsync(folder, args.Contains("--documents", StringComparer.Ordinal), line => Console.WriteLine("long-members: " + line));
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {filings.Requests} request(s) to the SEC; {read.Count} filing(s) in the long history's periods"));
+
+        return 0;
+    }
+
+    Console.Error.WriteLine("long-members: give '--capture --into <folder>'.");
+
+    return 2;
 }
 
 // The data check over every stock's pulled sessions, written whole for the run or, with '--print', printed and written nowhere;
