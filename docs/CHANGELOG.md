@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/ARCHITECTURE.html - a pick's card reads its quarters as the pages do
+Decision: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file
+Was:
+> Decision cards ... reads: ... filed facts, setups, ...; writes one card ... the business from the four newest quarters filed before the night and the night's state, ...; its matrix row's Sources blank
+Now:
+> reads: ... filed facts, release documents, setups, ...; ... the business from the four newest quarters filed before the night, from 22.58 each quarter's lines from its filing, then its results release and otherwise not on file as the pages draw them (see: ...), and the night's state, ...; its matrix row reading Sources
+Why: the operator's answers of 2026-11-06, their second item; no rule pins the cards' source.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - Home names the reshuffle's buys
 Decision: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle
 Was:

@@ -27,7 +27,14 @@ public sealed record CardLine(int Number, string Name, CardVerdict Verdict, stri
 // their operating income over their interest expense, each none where fewer than four were filed or one states none, the
 // cover none as well where they file no interest expense, and whether the company is a financial one, whose cover is not
 // read.
-public sealed record BusinessReading(decimal? NetIncome, decimal? Cover, bool NoInterest, bool Financial, int Quarters);
+public sealed record BusinessReading(decimal? NetIncome, decimal? Cover, bool NoInterest, bool Financial, int Quarters)
+{
+    // From 22.58 whether one of the four quarters is not on file until its filing, and whether one is drawn from no filing,
+    // so its interest is not on file and the cover is not read.
+    public bool NotOnFile { get; init; }
+
+    public bool InterestNotOnFile { get; init; }
+}
 
 // A sector's place among its index's sectors on a night: its name, its members' mean return over the window, its place
 // from the top and how many sectors were ranked.
@@ -107,6 +114,38 @@ public static class CardLines
             : new BusinessReading(net, read.Sum(quarter => quarter.OperatingIncome!.Value) / interest, false, financial, read.Count);
     }
 
+    // From 22.58 the same over the quarters as the pages draw them: each quarter's lines from its filing, then its results
+    // release, and otherwise not on file, a quarter not drawn from its filing holding no interest the cover can read.
+    // see: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file
+    public static BusinessReading Business(IReadOnlyList<CardQuarter> quarters, DateOnly night, string? sector)
+    {
+        CardQuarter[] read =
+        [
+            .. MemberReadings.FiledBefore(quarters.Select(quarter => new FiledIncome(quarter.PeriodEnd, quarter.FilingDate, quarter.NetIncome, quarter.OperatingIncome, quarter.InterestExpense)), night)
+                .Select(chosen => quarters.First(quarter => quarter.PeriodEnd == chosen.PeriodEnd && quarter.FilingDate == chosen.FilingDate)),
+        ];
+        var financial = string.Equals(sector, MemberReadings.Financials, StringComparison.Ordinal);
+        var full = read.Length >= MemberReadings.Quarters;
+        var notOnFile = read.Any(quarter => quarter.Source == EquityBrief.Core.Report.QuarterSource.NotOnFile);
+        decimal? net = full && read.All(quarter => quarter.NetIncome is not null) ? read.Sum(quarter => quarter.NetIncome!.Value) : null;
+
+        if (!full || read.Any(quarter => quarter.OperatingIncome is null))
+        {
+            return new BusinessReading(net, null, false, financial, read.Length) { NotOnFile = notOnFile };
+        }
+
+        if (read.Any(quarter => quarter.Source != EquityBrief.Core.Report.QuarterSource.Filing))
+        {
+            return new BusinessReading(net, null, false, financial, read.Length) { InterestNotOnFile = true };
+        }
+
+        var interest = read.Sum(quarter => Math.Abs(quarter.InterestExpense ?? 0m));
+
+        return interest == 0m
+            ? new BusinessReading(net, null, true, financial, read.Length)
+            : new BusinessReading(net, read.Sum(quarter => quarter.OperatingIncome!.Value) / interest, false, financial, read.Length);
+    }
+
     // The business line: a warning where the four quarters sum their net income to nothing or less, cover their interest
     // under the card's floor, or read deteriorating, and where any of the three is not held, saying which.
     public static CardLine Business(BusinessReading reading, string? state, CardSettings settings)
@@ -119,6 +158,7 @@ public static class CardLines
         {
             missing.Add(reading.Quarters < MemberReadings.Quarters
                 ? FormattableString.Invariant($"{reading.Quarters} of the four quarters the profit reading needs are filed")
+                : reading.NotOnFile ? "a quarter's net income is not on file until its filing"
                 : "a quarter's net income is not filed");
         }
         else if (net <= 0m)
@@ -138,9 +178,15 @@ public static class CardLines
         {
             said.Add("it files no interest expense on them");
         }
+        else if (reading.InterestNotOnFile)
+        {
+            missing.Add("its cover is not read, a quarter's interest being on file only once its filing is");
+        }
         else if (reading.Cover is not { } cover)
         {
-            missing.Add("its cover cannot be read from fewer than four quarters' operating income");
+            missing.Add(reading.NotOnFile
+                ? "its cover cannot be read, a quarter's operating income being not on file until its filing"
+                : "its cover cannot be read from fewer than four quarters' operating income");
         }
         else if (cover < settings.CoverFloor)
         {

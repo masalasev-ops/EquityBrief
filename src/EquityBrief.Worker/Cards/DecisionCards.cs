@@ -77,6 +77,7 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
             new StoreTouch(Store.SetupNight, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Read),
@@ -185,6 +186,22 @@ public sealed class DecisionCards : IComponent
         SELECT period_end, filing_date, net_income, operating_income, interest_expense FROM reported_quarter r
         WHERE ticker = $ticker AND fetched_at = (
             SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = $ticker AND session_date < $night);
+    ";
+
+    // The facts the member's own filer filed by the night, which its quarters are read from as the pages read them.
+    const string FiledFactsBefore = @"
+        SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact
+        WHERE cik = (SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1)
+          AND period_end >= $from AND filed <= $night;
+    ";
+
+    // The member's newest results release the SEC accepted by the night, by its own filer, and the day it was accepted.
+    const string NewestReleaseBefore = @"
+        SELECT d.text_gzip, substr(d.accepted_at, 1, 10) FROM release_document d
+        WHERE d.cik = (SELECT c.cik FROM company c WHERE c.ticker = $ticker AND c.cik IS NOT NULL ORDER BY c.fetched_at DESC LIMIT 1)
+          AND d.release = 1 AND substr(d.accepted_at, 1, 10) <= $night
+        ORDER BY d.accepted_at DESC
+        LIMIT 1;
     ";
 
     const string SectorsBefore = @"
@@ -1249,24 +1266,61 @@ public sealed class DecisionCards : IComponent
             : (null, null, null);
     }
 
-    static async Task<IReadOnlyList<FiledIncome>> QuartersAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, DateOnly night, CancellationToken cancellation)
+    // The quarters the provider's newest fetch before the night labels, each read from its filing, then its results release,
+    // and otherwise not on file, the filings and the release being those stored by the night.
+    // see: A pick's card reads its quarters as the pages draw them, from the filing and then the release and otherwise not on file
+    static async Task<IReadOnlyList<CardQuarter>> QuartersAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, DateOnly night, CancellationToken cancellation)
     {
         var quarters = new List<FiledIncome>();
 
-        await using var command = Command(connection, transaction, QuartersBefore, [("$ticker", ticker), ("$night", Stamp(night))]);
-        await using var reader = await command.ExecuteReaderAsync(cancellation);
-
-        while (await reader.ReadAsync(cancellation))
+        await using (var command = Command(connection, transaction, QuartersBefore, [("$ticker", ticker), ("$night", Stamp(night))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
         {
-            if (reader.IsDBNull(1))
+            while (await reader.ReadAsync(cancellation))
             {
-                continue;
-            }
+                if (reader.IsDBNull(1))
+                {
+                    continue;
+                }
 
-            quarters.Add(new FiledIncome(Date(reader.GetString(0)), Date(reader.GetString(1)), MoneyOrNone(reader, 2), MoneyOrNone(reader, 3), MoneyOrNone(reader, 4)));
+                quarters.Add(new FiledIncome(Date(reader.GetString(0)), Date(reader.GetString(1)), MoneyOrNone(reader, 2), MoneyOrNone(reader, 3), MoneyOrNone(reader, 4)));
+            }
         }
 
-        return quarters;
+        if (quarters.Count == 0)
+        {
+            return [];
+        }
+
+        var filed = new List<FiledFactRow>();
+
+        await using (var command = Command(connection, transaction, FiledFactsBefore, [("$ticker", ticker), ("$from", Stamp(quarters.Min(quarter => quarter.PeriodEnd).AddDays(-EquityBrief.Core.Report.FiguresChecked.DaysRead))), ("$night", Stamp(night))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                filed.Add(new FiledFactRow(reader.GetString(0), Date(reader.GetString(1)), Date(reader.GetString(2)), Money(reader.GetString(3)), Date(reader.GetString(4)), reader.GetString(5), reader.GetString(6)));
+            }
+        }
+
+        string? release = null;
+        DateOnly? releasedOn = null;
+
+        await using (var command = Command(connection, transaction, NewestReleaseBefore, [("$ticker", ticker), ("$night", Stamp(night))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            if (await reader.ReadAsync(cancellation) && !reader.IsDBNull(0))
+            {
+                using var compressed = new MemoryStream((byte[])reader.GetValue(0));
+                using var unzipped = new System.IO.Compression.GZipStream(compressed, System.IO.Compression.CompressionMode.Decompress);
+                using var text = new StreamReader(unzipped, System.Text.Encoding.UTF8);
+
+                release = await text.ReadToEndAsync(cancellation);
+                releasedOn = Date(reader.GetString(1));
+            }
+        }
+
+        return CardQuarters.Of(quarters, filed, release, releasedOn);
     }
 
     static async Task<IReadOnlyDictionary<string, string>> SectorsAsync(SqliteConnection connection, SqliteTransaction transaction, CancellationToken cancellation)
