@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-06 - docs/BUILD_PLAN.md - 23.1's verb named when it is dispatched
+Corrects: phase 23's plan named its data check's worker verb before any worker dispatches it, and `component-access` refuses a verb the documents name that the worker does not dispatch, so `tools/ci.ps1` failed over main at e47e2b79.
+Was:
+> 23.1: A worker verb `data-check`, writing `data_check` rows and moving no price row, classifies each stock's sessions ...
+Now:
+> 23.1: A worker verb of its own, named when 23.1 dispatches it, writing `data_check` rows and moving no price row, classifies each stock's sessions ...
+Why: the check holds every verb the documents name to the worker's own dispatch, and 23.1 builds the verb.
+
 ### 2026-11-06 - docs/ARCHITECTURE.html - See the plan opens Tonight at the stock's row
 Decision: See the plan opens Tonight at the stock's row with its plan in view, and a buy no plan sells opens its row on its own card
 Was:

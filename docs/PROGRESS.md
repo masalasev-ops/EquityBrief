@@ -15907,3 +15907,14 @@ Labelled:   in the order built, phase 22's next numbers: item 1 22.46, item 3 22
 Queue:      done, phase 23's plan; in progress, this pass; next, the sign-offs of phases 20, 21 and 22, then 23.1.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
             the figures it states.
+
+### 23.0 - correction: the plan names 23.1's verb by what it does, a verb no worker dispatches failing component-access   2026-11-06
+
+Found:      building this pass, `ComponentAccess.EveryWorkerVerbTheDocumentsNameIsDispatchedAndShownAndEveryDispatchedVerbIsInTheHelp`
+            failed over main at e47e2b79 on `data-check`, which 23.1's text named before any worker dispatches it.
+Corrected:  23.1 names the verb as one of its own, named when 23.1 dispatches it; the prior text in the changelog. Labelled under
+            23.0, the pass that wrote it.
+Tests:      none new: the check is the test.
+Mutated:    the rule, stated before the run: the name back in 23.1's text, filtered to the check by its name: red, as it stood.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
