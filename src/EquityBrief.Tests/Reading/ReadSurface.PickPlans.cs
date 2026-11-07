@@ -1,4 +1,5 @@
 using EquityBrief.Api.Reading;
+using EquityBrief.Core.EntryCheck;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Tests.Reading;
@@ -39,7 +40,7 @@ public partial class ReadSurface
         var reading = EntryWorked() with { WaitLow = 57.91m, WaitHigh = 58.04m, WaitStop = 54.70m, WaitExit = 67.72m, WaitReward = 3.0, ZoneDays = 2.4 };
 
         Assert.Contains(
-            "<details class=\"another-way\" data-way=\"wait\" data-traded=\"false\"><summary>Not traded: another way in, for comparison</summary><p class=\"entry-line\" data-entry=\"wait\">Provisional, and it sets nothing. Wait to buy between $57.91 and $58.04, 2.4 typical days below tonight's close. Stop $54.70. First exit $67.72, about 3.0 to 1.</p><p class=\"another-stops\">Its stop, 54.70, is its own: the pullback's trade is sold on a close below 61.55.</p></details>",
+            "<details class=\"another-way\" data-way=\"wait\" data-traded=\"false\"><summary>Not traded: another way in, for comparison</summary><p class=\"entry-line\" data-entry=\"wait\">Provisional, and it sets nothing. Wait to buy between $57.91 and $58.04, 2.4 typical days below tonight's close. Stop $54.70. First exit $67.72, about 3.0 to 1. It is worth taking if it reaches its first exit before its stop more than 25.0% of the time.</p><p class=\"another-stops\">Its stop, 54.70, is its own: the pullback's trade is sold on a close below 61.55.</p></details>",
             new MarkRenderer().EntryCheck(reading, 64.72m, 61.55m, "pullback"),
             StringComparison.Ordinal);
         Assert.Equal(
@@ -50,5 +51,28 @@ public partial class ReadSurface
         Assert.DoesNotContain("another-way", NameScreen.EntryAndExitPlan(new MarkRenderer(), "CTSH", CtshLadder(), 64.72m), StringComparison.Ordinal);
         Assert.DoesNotContain("another-way", new MarkRenderer().EntryCheck(reading, 64.72m, 61.55m, null), StringComparison.Ordinal);
         Assert.Equal("It places no stop of its own: the dip's trade is sold by its own exits.", EquityBrief.Core.Cards.PlanWords.OwnStops([], null, "dip"));
+    }
+
+    // On 2026-11-06 CTSH's card said "You risk $1 to make $2.06." and sized 309 shares on the example account, stating no
+    // share of the time the plan must be right to break even and not whether the 309 were the whole position; the wait plan
+    // gave "about 3.0 to 1" alone. Each plan states its break-even, worked by hand: 3.17 at risk against 6.54 to the target,
+    // 3.17 over 9.71, 32.6%; a wait plan at 3 to 1, one in four.
+    // see: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
+    [Fact]
+    public void EachPlanStatesItsBreakEvenAndWhetherItsSharesAreTheWholePosition()
+    {
+        var card = new DecisionCardView("GSPC", new DateOnly(2026, 11, 6), "pullback", "CTSH", "the pullback", 64.72m, 61.55m, 71.26m, [], null,
+            Money: new CardMoneyView(309, 981.08m, 19_998.48m, 0.2m, 14.40m, true, false, 1m, 2_019.62m, Example: true), Cap: 63);
+        var reward = (71.26m - 64.72m) / (64.72m - 61.55m);
+        var pick = new FamilyPickCell(new ListingCell("CTSH", new DateOnly(2026, 11, 6), 2, 0, 64.72m, []), 2, 64.72m, 61.55m, 71.26m, false, reward, "why", []);
+        var drawn = new MarkRenderer().DecisionCard(card, pick);
+
+        Assert.Equal(0.3265m, Math.Round(EquityBrief.Core.Cards.PlanWords.BreakEven(reward), 4));
+        Assert.Contains("<p class=\"card-break-even\" data-break-even=\"0.326\">It is worth taking if it reaches its target before its stop more than 32.6% of the time.</p>", drawn, StringComparison.Ordinal);
+        Assert.Contains("Fewer shares than the risk allows: the position cap limits it. Buying and selling costs about $14.40 at the published rates. The 309 shares are the whole position, bought at once.</p>", drawn, StringComparison.Ordinal);
+
+        var reading = EntryWorked() with { WaitLow = 57.91m, WaitHigh = 58.04m, WaitStop = 54.70m, WaitExit = 67.72m, WaitReward = 3.0, ZoneDays = 2.4 };
+
+        Assert.EndsWith("First exit $67.72, about 3.0 to 1. It is worth taking if it reaches its first exit before its stop more than 25.0% of the time.", EntryWords.Wait(reading), StringComparison.Ordinal);
     }
 }

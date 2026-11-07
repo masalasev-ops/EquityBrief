@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - each plan's break-even and its shares named as the whole position
+Decision: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
+Was:
+> (the pick's card) ... the plan in the operator's money or on the example account, with the line saying so and linking the account page; the management in the rule's own terms; ...
+> (the entry check) ... (see: A pick's page draws ...); and the state a dashed outline ...
+Now:
+> ... linking the account page; from the 4.8 correction of 2026-11-07 the share of the time the plan must reach its target before its stop to break even beneath its reward to risk and the example's shares named as the whole position bought at once (see: Each plan states ...); the management ...
+> ... (see: A pick's page draws ...); and from the 4.8 correction of that day the share of the time it must reach its first exit before its stop to break even (see: Each plan states ...); and the state ...
+Why: the operator's addendum of 2026-11-07, its third item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - the paper chart legible at a phone's width
 Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
 Was:

@@ -16888,3 +16888,20 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             the narrow rule removed: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 4.8 - correction: each plan states its break-even and whether its shares are the whole position   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its third item. 4.8's arithmetic states the staged plan's break-even and
+            that its shares are the first tranche's; on 2026-11-06 CTSH's card gave "You risk $1 to make $2.06." and 309
+            shares on the example account with neither, and its wait plan "about 3.0 to 1" alone.
+Corrected:  `PlanWords.BreakEven`, one over one plus the reward to risk, stated in 4.8's words beneath the card's reward to risk
+            and after the wait plan's first exit; the card's example names its shares as the whole position, bought at once.
+            The decision, two rows of section 15, the changelog and the guide.
+Tests:      1 new: CTSH's card at 3.17 at risk against 6.54, 32.6%, and its 309 shares named the whole position; its wait plan
+            at 3 to 1, 25.0%. The wait plan's sentence test and the first item's read the new sentence.
+Claims:     none new.
+Pins:       none move: the card's words and the entry check's sentences are read by no rule.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the reward's share in place of the risk's: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

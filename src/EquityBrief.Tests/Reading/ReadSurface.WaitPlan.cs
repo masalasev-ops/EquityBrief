@@ -130,7 +130,7 @@ public sealed partial class ReadSurface
     {
         var reading = EntryWorked() with { WaitLow = 104m, WaitHigh = 110m, WaitStop = 96m, WaitExit = 140m, WaitReward = 3, ZoneDays = 1 };
 
-        Assert.Equal("Provisional, and it sets nothing. Wait to buy between $104.00 and $110.00, 1.0 typical days below tonight's close. Stop $96.00. First exit $140.00, about 3.0 to 1.", EntryWords.Wait(reading));
+        Assert.Equal("Provisional, and it sets nothing. Wait to buy between $104.00 and $110.00, 1.0 typical days below tonight's close. Stop $96.00. First exit $140.00, about 3.0 to 1. It is worth taking if it reaches its first exit before its stop more than 25.0% of the time.", EntryWords.Wait(reading));
         Assert.Equal("Provisional, and it sets nothing. Wait to buy between $104.00 and $110.00, 1.0 typical days below tonight's close. Stop $96.00. No resistance band in the year stands at twice the risk, so it draws no first exit.", EntryWords.Wait(reading with { WaitExit = null, WaitReward = null }));
         Assert.Equal("Provisional, and it sets nothing. Wait to buy between $104.00 and $110.00. The ladder places no stop under this zone, so it draws no exit.", EntryWords.Wait(reading with { WaitStop = null, WaitExit = null, WaitReward = null, ZoneDays = null }));
         Assert.Equal("Provisional, and it sets nothing. No wait plan: the trend is down, so the ladder places nothing.", EntryWords.Wait(EntryWorked() with { WaitWhy = WaitPlans.TrendDown }));

@@ -596,9 +596,12 @@ public sealed partial class MarkRenderer
 
         body.Append("</div>");
 
+        // The share of the time the plan must reach its target before its stop to break even, beside its reward to risk.
+        // see: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
         if (pick?.RewardToRisk is { } reward && card.Target is not null)
         {
             body.Append(Invariant, $"<p class=\"card-reward\" data-reward=\"{reward.ToString(Invariant)}\">You risk $1 to make ${Figures.Ratio(reward)}.</p>");
+            body.Append(Invariant, $"<p class=\"card-break-even\" data-break-even=\"{EquityBrief.Core.Cards.PlanWords.BreakEven(reward).ToString("0.000", Invariant)}\">{Escaped(EquityBrief.Core.Cards.PlanWords.BreakEvenSaid(reward, "its target"))}</p>");
         }
 
         body.Append(TrailLines(card, pick));
@@ -621,6 +624,7 @@ public sealed partial class MarkRenderer
                 body.Append(Invariant, $" Buying and selling costs about ${trip.ToString("N2", Invariant)} at the published rates.");
             }
 
+            body.Append(' ').Append(Escaped(EquityBrief.Core.Cards.PlanWords.WholePosition(money.Shares)));
             body.Append("</p>");
 
             if (money.Example)

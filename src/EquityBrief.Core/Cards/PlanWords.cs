@@ -26,4 +26,18 @@ public static class PlanWords
 
         return $"{named}: {sold}.";
     }
+
+    // The share of plans like it that must reach their exit before their stop for the whole set to neither make nor lose
+    // money, given how far the two sit from the buy: the risk over the risk and the reward together, one over one plus the
+    // reward to risk.
+    // see: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
+    public static decimal BreakEven(decimal rewardToRisk) => 1m / (1m + rewardToRisk);
+
+    // That share in the words the staged plan's arithmetic has used since 4.8, the exit named as the plan names it.
+    public static string BreakEvenSaid(decimal rewardToRisk, string exit) =>
+        $"It is worth taking if it reaches {exit} before its stop more than {(BreakEven(rewardToRisk) * 100).ToString("0.0", CultureInfo.InvariantCulture)}% of the time.";
+
+    // The example's shares named as the whole position for a plan buying it at once.
+    public static string WholePosition(long shares) =>
+        $"The {shares.ToString("N0", CultureInfo.InvariantCulture)} shares are the whole position, bought at once.";
 }
