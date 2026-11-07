@@ -152,12 +152,15 @@ public static class VersionReach
         var exit = false;
         var order = false;
 
+        // A market check turned on or off moves its floor and which breadth it reads together, the floor carrying the change.
+        var floorMoves = !live.GetValueOrDefault("breadthFloor").Equals(version.GetValueOrDefault("breadthFloor"));
+
         foreach (var setting in live.Keys.Union(version.Keys, StringComparer.Ordinal))
         {
             var was = live.GetValueOrDefault(setting);
             var now = version.GetValueOrDefault(setting);
 
-            if (was.Equals(now))
+            if (was.Equals(now) || (floorMoves && setting == "largeBreadth"))
             {
                 continue;
             }

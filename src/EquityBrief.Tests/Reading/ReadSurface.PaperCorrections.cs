@@ -392,6 +392,11 @@ public partial class ReadSurface
         Assert.Equal(VersionReachKind.Unread, VersionReach.Of("pullback", live, With("somethingNew", 1)));
         Assert.Equal(VersionReachKind.Widens, VersionReach.Of("pullback", live, new Dictionary<string, double>(live) { ["depthHigh"] = 3, ["marketGate"] = 0 }));
 
+        // A market check turned on raises its floor and names the breadth it reads together, and narrows: the breadth it
+        // names moves with the floor and is not read apart from it. The same breadth swapped with the floor standing widens.
+        Assert.Equal(VersionReachKind.Narrows, VersionReach.Of("drift", new Dictionary<string, double> { ["breadthFloor"] = 0, ["largeBreadth"] = 2 }, new Dictionary<string, double> { ["breadthFloor"] = 0.4, ["largeBreadth"] = 0 }));
+        Assert.Equal(VersionReachKind.Widens, VersionReach.Of("drift", new Dictionary<string, double> { ["breadthFloor"] = 0.4, ["largeBreadth"] = 0 }, new Dictionary<string, double> { ["breadthFloor"] = 0.4, ["largeBreadth"] = 1 }));
+
         PaperAccountView Row(string key, string standing, VersionReachKind? reach, int trades) =>
             new(key, "pullback", standing, standing == PaperAccountView.Live ? "Live" : key, "words", "within luck", null, "risks", [], null, trades, 0, null, new DateOnly(2026, 11, 3), Short: key, Overlap: new PaperOverlap(trades, 0, trades)) { Reach = reach };
 

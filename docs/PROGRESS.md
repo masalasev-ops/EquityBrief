@@ -16793,3 +16793,28 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             account with no trade drawn again: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: a market check turned on or off reads by its floor, and each family's versions are counted by reach   2026-11-07
+
+Found:      the order's fourteenth item, which asks each family's versions counted as narrowing or widening its live rule on
+            each index and a widening version proposed for each family whose versions all narrow it. Counting them by the 19.4
+            correction above, the S&P 600 drift's version turning the market check on read as widening its rule: it raises
+            the breadth floor from 0 to 0.4 and names the breadth it reads, and the breadth's change alone read as a change of
+            what is read.
+Corrected:  `VersionReach.Of` reads the breadth a market check names with its floor where the floor moves, so turning the check on
+            narrows and turning it off widens. The decision's text. The counts, over the register of 2026-11-07, and the
+            proposals stand in `prompts/2026-11-07-21-22-item-14-widening-proposals.md`: one family's versions all narrow it,
+            the S&P 400 sector heavyweights' one version; the S&P 500 pullback's six narrow it and two widen it. For the
+            pullback, from the swing filter's stored answers under version 5 from 2 Oct, 13,082 member-sessions over 26
+            sessions, the trend and strength step refused 10,919 and the trigger 168; proposed, the uptrend's strength floor at
+            0.40 and the turn up within 5 sessions, with what each admits there and in the setup ledger's 26,702 refused setups.
+            For the S&P 400 heavyweights the ledger holds no book family's setups, so no refusal count is read; proposed, its
+            beta check off. Nothing is registered.
+Tests:      none new: the reach test reads a market check turned on as narrowing, and the breadth's change alone with the floor
+            standing as widening.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the reach test by its name. m1
+            the breadth read apart from a moving floor: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
