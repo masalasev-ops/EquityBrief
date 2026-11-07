@@ -16765,8 +16765,9 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Found:      the order's nineteenth item: on 2026-11-06 the chart drew no hover box, a line's name under the pointer alone.
 Corrected:  each session carries a band over the plot holding its day and every drawn line's return on it, the fund's among
             them; the page's script draws them in a box above the chart while the pointer is over the band, each row in its
-            line's colour, and takes it down when the pointer leaves the chart. The decision's text, 15.21's row, the changelog
-            and the guide.
+            line's colour, and takes it down when the pointer leaves the chart; each row reads its line's return with no cast,
+            which the price-storage check holds to its stated sites. The decision's text, 15.21's row, the changelog and the
+            guide.
 Tests:      1 new: two sessions' bands by hand, the drift and the fund on 2 Nov, the drift, the breakout from its first day and
             the fund on 3 Nov; the empty box; and the shell's script reading the band.
 Claims:     none new.

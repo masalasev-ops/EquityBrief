@@ -364,9 +364,8 @@ public sealed partial class MarkRenderer
         foreach (var session in sessions)
         {
             var rows = drawn
-                .Select(account => (Account: account, Point: returns[account.Key].Where(point => point.Session == session).Select(point => (double?)point.Return).FirstOrDefault()))
-                .Where(one => one.Point is not null)
-                .Select(one => Formatted($"{EndName(one.Account)}|{one.Point!.Value:+0.0;-0.0;0.0}%|{one.Account.Family}|{one.Account.Standing}"))
+                .SelectMany(account => returns[account.Key].Where(point => point.Session == session).Take(1).Select(point => (Account: account, point.Return)))
+                .Select(one => Formatted($"{EndName(one.Account)}|{one.Return:+0.0;-0.0;0.0}%|{one.Account.Family}|{one.Account.Standing}"))
                 .Concat(fundName is { } tipped && fundAt.TryGetValue(session, out var made) ? [Formatted($"{tipped}|{made:+0.0;-0.0;0.0}%|{FundKey}|{FundKey}")] : []);
 
             svg.Append(Invariant, $"<rect class=\"paper-hit\" data-day=\"{session.ToString("ddd d MMM yyyy", Invariant)}\" data-tip=\"{Escaped(string.Join(";", rows))}\" x=\"{Math.Max(left, X(session) - half):0.#}\" y=\"{top}\" width=\"{Math.Min(X(session) + half, width - right) - Math.Max(left, X(session) - half):0.#}\" height=\"{height - top - bottom}\"/>");
