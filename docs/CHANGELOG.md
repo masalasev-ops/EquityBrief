@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - the index's fund as a dashed grey line on the chart
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... the averaged account alone in the text colour at a heavier stroke (see: ...)
+Now:
+> ... the averaged account alone in the text colour at a heavier stroke; the index's fund dashed in grey over the chart's days from its close on the first of them with a key of its own (see: ...)
+Why: the operator's order of 2026-11-07, its seventeenth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - every chart line in its family's colour, the averaged account alone in the text colour
 Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
 Was:

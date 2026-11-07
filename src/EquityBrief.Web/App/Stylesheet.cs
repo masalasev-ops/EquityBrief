@@ -473,6 +473,8 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-line[data-family='fundamentals']{stroke:var(--fam-fundamentals)} .paper-line[data-family='heavyweight']{stroke:var(--fam-heavyweight)} .paper-line[data-family='dip']{stroke:var(--fam-dip)}
 .paper-line[data-family='quality']{stroke:var(--fam-quality)} .paper-line[data-family='improving']{stroke:var(--fam-improving)}
 .paper-line[data-standing='you']{stroke:var(--accent)}
+.paper-line.paper-fund{stroke:var(--muted);stroke-dasharray:6 4;stroke-width:1.6}
+.paper-key-mark[data-standing='fund']{border-top-color:var(--muted);border-top-style:dashed}
 .paper-keys{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .paper-key{display:inline-flex;align-items:center;gap:6px;font:12px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:2px 10px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .paper-key[aria-pressed='false']{opacity:.45;text-decoration:line-through}

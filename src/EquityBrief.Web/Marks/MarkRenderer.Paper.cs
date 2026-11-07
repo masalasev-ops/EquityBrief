@@ -146,6 +146,10 @@ public sealed record PaperPageView(
     // From the 19.4 correction of 2026-11-07 each live account's stocks not bought, named by its family, in the family order,
     // which the lines beneath what the system bought draw in the merged line's place.
     public IReadOnlyList<PaperAccountUnbought> Unbought { get; init; } = [];
+
+    // From the 19.4 correction of 2026-11-07 the index's fund's closes over the sessions the chart can draw, which it draws
+    // as a line of its own.
+    public IReadOnlyList<(DateOnly Session, decimal Close)> FundCloses { get; init; } = [];
 }
 
 // From 21.20 a variant registered after the newest night, which no night has read yet: its family, its number and what it
@@ -240,7 +244,7 @@ public sealed partial class MarkRenderer
     // it, the span from the earliest of those days, and a choice kept in the link between every line since it began and the
     // last 30 days alone.
     // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
-    public string PaperChart(IReadOnlyList<PaperAccountView> accounts, string? chosen, PaperCombinedView? combined = null, PaperLink? link = null)
+    public string PaperChart(IReadOnlyList<PaperAccountView> accounts, string? chosen, PaperCombinedView? combined = null, PaperLink? link = null, IReadOnlyList<(DateOnly Session, decimal Close)>? fund = null, string? fundName = null)
     {
         // From 21.11 the combined account drawn as a line of its own, after every family's, from the 21.11 correction of
         // 2026-11-07 the live setups' accounts averaged.
@@ -260,8 +264,15 @@ public sealed partial class MarkRenderer
         var at = sessions.Select((session, place) => (session, place)).ToDictionary(pair => pair.session, pair => pair.place);
         var returns = drawn.ToDictionary(account => account.Key, account => account.Walk!.Returns.Where(one => at.ContainsKey(one.Session)).Select(one => (one.Session, Return: one.Return * 100)).ToArray(), StringComparer.Ordinal);
         drawn = [.. drawn.Where(account => returns[account.Key].Length > 0)];
-        var low = Math.Min(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Min());
-        var high = Math.Max(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Max());
+
+        // From the 19.4 correction of 2026-11-07 the index's fund over the chart's days, its return from its close on the
+        // span's first day it holds one, a session it holds no close for left out of its line.
+        var held = (fund ?? []).Where(one => one.Session >= every[0] && one.Session <= every[^1]).OrderBy(one => one.Session).ToArray();
+        (DateOnly Session, double Return)[] fundLine = held.Length > 0 && held[0].Close > 0m
+            ? [.. held.Where(one => at.ContainsKey(one.Session)).Select(one => (one.Session, EquityBrief.Core.Prices.Statistic.FromRatio((one.Close / held[0].Close) - 1m) * 100))]
+            : [];
+        var low = Math.Min(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Concat(fundLine.Select(point => point.Return)).Min());
+        var high = Math.Max(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Concat(fundLine.Select(point => point.Return)).Max());
         var span = high - low < 1 ? 1 : high - low;
         const double width = 720, height = 240, left = 44, right = 12, top = 12, bottom = 26;
 
@@ -295,11 +306,23 @@ public sealed partial class MarkRenderer
             svg.Append(Invariant, $"<path class=\"paper-line{(account.Standing == PaperAccountView.Variant ? " dashed" : string.Empty)}\" data-account=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" d=\"{path}\"><title>{Escaped(account.Name)}</title></path>");
         }
 
+        if (fundLine.Length > 0 && fundName is { } named)
+        {
+            var path = string.Join(" ", fundLine.Select((point, place) => Formatted($"{(place == 0 ? "M" : "L")}{X(point.Session):0.#},{Y(point.Return):0.#}")));
+
+            svg.Append(Invariant, $"<path class=\"paper-line paper-fund\" data-account=\"{FundKey}\" data-standing=\"{FundKey}\" d=\"{path}\"><title>{Escaped(named)}, the index's fund</title></path>");
+        }
+
         svg.Append("</svg><figcaption class=\"paper-keys\">");
 
         foreach (var account in drawn)
         {
             svg.Append(Invariant, $"<button type=\"button\" class=\"paper-key\" data-line=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" aria-pressed=\"true\" title=\"{Escaped(Copying ? FamilyName(account.Family) : EquityBrief.Core.Families.RuleWording.ScreenName(account.Words))}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(account.Standing == PaperCombinedView.Key ? account.Name : FamilyName(account.Family) + " · " + account.Name)}</button>");
+        }
+
+        if (fundLine.Length > 0 && fundName is { } keyed)
+        {
+            svg.Append(Invariant, $"<button type=\"button\" class=\"paper-key\" data-line=\"{FundKey}\" data-standing=\"{FundKey}\" aria-pressed=\"true\" title=\"The index's fund held over the chart's days\"><span class=\"paper-key-mark\" data-standing=\"{FundKey}\"></span>{Escaped(keyed)}, the index's fund</button>");
         }
 
         svg.Append("</figcaption></figure>");
@@ -309,6 +332,9 @@ public sealed partial class MarkRenderer
 
     // The calendar days the chart's recent span reaches back from its last session.
     public const int RecentDays = 30;
+
+    // The key the chart's line of the index's fund is drawn and pressed by.
+    public const string FundKey = "fund";
 
     // A fraction drawn as a signed per cent to a tenth, in the class its sign gives.
     static string PaperPercent(double fraction) =>

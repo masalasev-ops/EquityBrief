@@ -16724,3 +16724,20 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             Quality at a fair price's line rule removed: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: the chart draws the index's fund as a dashed grey line over the same days, in its key   2026-11-07
+
+Found:      the order's seventeenth item: on 2026-11-06 the chart drew no line of the index's fund.
+Corrected:  the page hands the chart the fund's closes over its sessions; the chart draws the fund's return from its close on the
+            span's first day it holds one, dashed in the muted grey, with a key of its own its press hides or shows. The
+            decision's text, 15.21's row, the changelog and the guide. With it the averaged account's walk of the 21.11
+            correction above reads each account's values with no cast to decimal, which the price-storage check holds to its
+            stated sites.
+Tests:      1 new: the fund at 490, 500, 495 and 510 beside an account from 2 Nov draws three points from 2 Nov, its last at the
+            account's +2%, and its key.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 the
+            fund's line from the close before the span: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

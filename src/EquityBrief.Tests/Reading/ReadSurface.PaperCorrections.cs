@@ -488,4 +488,23 @@ public partial class ReadSurface
         Assert.Contains("data-account=\"quality\" data-family=\"quality\"", chart, StringComparison.Ordinal);
         Assert.Contains("data-account=\"improving\" data-family=\"improving\"", chart, StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 the chart drew no line of the index's fund. It draws the fund as a dashed grey line over the chart's
+    // days, from its close on the span's first day, with a key of its own.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    [Fact]
+    public void TheChartDrawsTheIndexsFundAsADashedGreyLineOverTheSameDaysWithItsKey()
+    {
+        var from = new DateOnly(2026, 11, 2);
+        var account = ChartAccount("breakout", PaperAccountView.Live, from, 0.0, 0.01, 0.02);
+        (DateOnly, decimal)[] closes = [(from.AddDays(-1), 490m), (from, 500m), (from.AddDays(1), 495m), (from.AddDays(2), 510m)];
+        var chart = WebUtility.HtmlDecode(new MarkRenderer().PaperChart([account], null, null, null, closes, "SPY"));
+        var line = Regex.Match(chart, "<path class=\"paper-line paper-fund\" data-account=\"fund\" data-standing=\"fund\" d=\"([^\"]+)\">").Groups[1].Value;
+
+        // Three points from 2 Nov, the close before the span left out: 0, -1% and +2%, its last level with the account's.
+        Assert.Equal(3, line.Split(' ').Length);
+        Assert.Equal(Regex.Match(chart, "data-account=\"breakout\"[^>]* d=\"[^\"]* L([0-9.]+,[0-9.]+)\"").Groups[1].Value, line.Split(' ')[^1][1..]);
+        Assert.Contains("<span class=\"paper-key-mark\" data-standing=\"fund\"></span>SPY, the index's fund</button>", chart, StringComparison.Ordinal);
+        Assert.Contains(".paper-line.paper-fund{stroke:var(--muted);stroke-dasharray:6 4;stroke-width:1.6}", Stylesheet.Css, StringComparison.Ordinal);
+    }
 }

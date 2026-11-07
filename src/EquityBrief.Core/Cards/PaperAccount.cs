@@ -244,12 +244,12 @@ public static partial class PaperAccount
         if (sessions.Count > 0 && accounts.Count > 0)
         {
             var since = sessions[0];
-            var bases = accounts.Select(account => account.Walk.Values.Where(one => one.Session < since).Select(one => (decimal?)one.Value).LastOrDefault() ?? size).ToArray();
+            var bases = accounts.Select(account => account.Walk.Values.Where(one => one.Session < since).Select(one => one.Value).DefaultIfEmpty(size).Last()).ToArray();
 
             foreach (var session in sessions)
             {
                 var growth = accounts.Select((account, at) =>
-                    (account.Walk.Values.Where(one => one.Session <= session).Select(one => (decimal?)one.Value).LastOrDefault() ?? bases[at]) / (bases[at] > 0m ? bases[at] : size));
+                    account.Walk.Values.Where(one => one.Session <= session).Select(one => one.Value).DefaultIfEmpty(bases[at]).Last() / (bases[at] > 0m ? bases[at] : size));
 
                 values.Add((session, size * growth.Average()));
             }
