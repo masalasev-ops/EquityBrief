@@ -16676,7 +16676,9 @@ Corrected:  `VersionReach.Of` reads a version's registered settings against its 
             rule where every change that moves which trades it takes only removes some, widens it where any can add one, and a
             setting the table does not hold is said to be unread, never guessed. The versions' part and the scorecard mark each
             version; a family whose rule and versions have no trade since its record began draws one line in the table's place.
-            The scorecard's version row carries its full words under the pointer, which the table no longer always draws. Over
+            The scorecard's version row carries its full words under the pointer, which the table no longer always draws.
+            `VersionReach` sits with the paper account's code in the core's cards and not among the loop's engines, whose
+            files the catalogue's test holds to name no reading of their own, two of its settings sharing a reading's name. Over
             the register of 2026-11-07, read off its rows by the same table: the S&P 500's pullback's eight, six narrow it and
             two widen it, the market check off and the plan at the nearest bands. The decision, 15.21's row, the changelog and
             the guide.

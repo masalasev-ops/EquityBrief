@@ -1,4 +1,4 @@
-namespace EquityBrief.Core.Loop;
+namespace EquityBrief.Core.Cards;
 
 // How a version's settings reach against its live rule's, read setting by setting: whether it can only take a subset of the
 // live rule's trades, can take trades the live rule cannot, takes the same picks and sells them another way, takes the same

@@ -48,7 +48,7 @@ public sealed record PaperAccountSource(
     // From the 19.4 correction of 2026-11-07 a version's reach against its live rule, setting by setting; none for a live
     // or provisional rule, the operator's own, or a version whose live rule holds no registered settings to read against.
     // see: A version is marked as narrowing or widening its live rule by the direction of each setting it changes
-    public Core.Loop.VersionReachKind? Reach { get; init; }
+    public Core.Cards.VersionReachKind? Reach { get; init; }
 
     // Whether a stored trade is one of this account's: kept under its name, or under its name and the filter version it
     // was listed from.
@@ -259,7 +259,7 @@ public static class PaperScreen
     // A version's account with its reach against its live rule's registered settings, none where the family stands at no
     // registered rule.
     static PaperAccountSource Reached(PaperAccountSource version, string family, CandidateRow? live, CandidateRow row) =>
-        live is null ? version : version with { Reach = Core.Loop.VersionReach.Of(family, CandidateEvaluator.Read(live.Parameters), CandidateEvaluator.Read(row.Parameters)) };
+        live is null ? version : version with { Reach = Core.Cards.VersionReach.Of(family, CandidateEvaluator.Read(live.Parameters), CandidateEvaluator.Read(row.Parameters)) };
 
     // A variant's tab is its number and the settings it differs by: its short name is the number, and what it changes the
     // rest.

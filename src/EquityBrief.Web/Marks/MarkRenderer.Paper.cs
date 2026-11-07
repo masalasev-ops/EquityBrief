@@ -70,7 +70,7 @@ public sealed record PaperAccountView(
     public DateOnly? VersionFrom { get; init; }
 
     // From the 19.4 correction of 2026-11-07 a version's reach against its live rule, none for any other account.
-    public EquityBrief.Core.Loop.VersionReachKind? Reach { get; init; }
+    public EquityBrief.Core.Cards.VersionReachKind? Reach { get; init; }
 }
 
 // The trades a family's live account leaves out as listed before its version that a replay under its version reproduced,
@@ -881,7 +881,7 @@ public sealed partial class MarkRenderer
         {
             html.Append(Invariant, $"<tr data-account=\"{Escaped(account.Key)}\" data-standing=\"{account.Standing}\" data-trades=\"{account.Overlap?.Trades ?? account.Trades}\" data-shared=\"{account.Overlap?.Shared ?? 0}\" data-only=\"{account.Overlap?.Only ?? 0}\">");
             html.Append(Invariant, $"<td class=\"pv-rule\"><a class=\"paper-log\" href=\"{LogHref(link.Universe, account.Key)}\" title=\"{Escaped(Capitalised(account.Words) + (account.Version is { } version ? "; counts " + version : string.Empty) + (account.Since is { } since ? "; from " + DayOf(since) : string.Empty))}\">{Escaped(account.Short ?? account.Name)}</a><span class=\"pv-verdict\" data-verdict=\"{Escaped(account.Verdict)}\">{Escaped(account.Verdict)}</span>{SinceWords(account)}</td>");
-            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{(account.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Loop.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(account)}</td>");
+            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{(account.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Cards.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(account)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{account.Overlap?.Trades ?? account.Trades}</td><td class=\"r num\">{account.Overlap?.Shared ?? 0}</td><td class=\"r num\">{account.Overlap?.Only ?? 0}</td>");
             html.Append(Invariant, $"<td class=\"r num\" data-return=\"{(account.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\">{(account.Walk?.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">none yet</span>")}{(account.TooFew is { } few ? Formatted($"<span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}</td></tr>");
         }
@@ -978,7 +978,7 @@ public sealed partial class MarkRenderer
             foreach (var variant in variants)
             {
                 html.Append(Invariant, $"<tr data-account=\"{Escaped(variant.Key)}\" data-verdict=\"{Escaped(variant.Verdict)}\" data-better=\"{(variant.Better is { } better ? better.ToString(Invariant) : "none")}\">");
-                html.Append(Invariant, $"<td><b title=\"{Escaped(Capitalised(variant.Words))}\">{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{(variant.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Loop.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(variant)}</td>");
+                html.Append(Invariant, $"<td><b title=\"{Escaped(Capitalised(variant.Words))}\">{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{(variant.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Cards.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(variant)}</td>");
                 html.Append(Invariant, $"<td><span class=\"pill\"{(variant.Adjusted is { } p ? Formatted($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span>{(variant.Tested is { } tested ? PooledChangeNote(tested, page.Pooled) : string.Empty)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{(variant.Better is { } of && variant.Counted is { } counted ? Formatted($"{of} of {counted}") : "<span class=\"degraded\">not read</span>")}{JudgedFromNote(variant)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Progressed(variant.Progress, variant.Standing)}</td></tr>");
@@ -1035,21 +1035,21 @@ public sealed partial class MarkRenderer
 
         var began = head.Since is { } since ? " since its record began on " + since.ToString("d MMM", Invariant) : " since its record began";
 
-        if (versions.All(version => version.Reach == EquityBrief.Core.Loop.VersionReachKind.Narrows))
+        if (versions.All(version => version.Reach == EquityBrief.Core.Cards.VersionReachKind.Narrows))
         {
             return Formatted($"{FamilyName(family)} has made no trade{began}, and each of its versions narrows it, so none could trade either.");
         }
 
-        string Count(EquityBrief.Core.Loop.VersionReachKind? kind, string one, string many) =>
+        string Count(EquityBrief.Core.Cards.VersionReachKind? kind, string one, string many) =>
             versions.Count(version => version.Reach == kind) is var count and > 0 ? Formatted($"{count} {(count == 1 ? one : many)}") : string.Empty;
 
         string[] parts =
         [
-            Count(EquityBrief.Core.Loop.VersionReachKind.Narrows, "narrows it", "narrow it"),
-            Count(EquityBrief.Core.Loop.VersionReachKind.Widens, "widens it", "widen it"),
-            Count(EquityBrief.Core.Loop.VersionReachKind.SoldDifferently, "takes the same picks sold differently", "take the same picks sold differently"),
-            Count(EquityBrief.Core.Loop.VersionReachKind.Reordered, "takes the same picks in another order", "take the same picks in another order"),
-            Count(EquityBrief.Core.Loop.VersionReachKind.Unread, "changes a setting whose reach is not read here", "change a setting whose reach is not read here"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.Narrows, "narrows it", "narrow it"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.Widens, "widens it", "widen it"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.SoldDifferently, "takes the same picks sold differently", "take the same picks sold differently"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.Reordered, "takes the same picks in another order", "take the same picks in another order"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.Unread, "changes a setting whose reach is not read here", "change a setting whose reach is not read here"),
             Count(null, "has no live rule's settings to read against", "have no live rule's settings to read against"),
         ];
         var said = parts.Where(part => part.Length > 0).ToArray();
