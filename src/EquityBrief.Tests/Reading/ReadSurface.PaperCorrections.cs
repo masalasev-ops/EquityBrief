@@ -113,4 +113,41 @@ public partial class ReadSurface
         Assert.Contains("<span>Most in one stock <b>10%</b></span>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("with at most 20% in one stock", page, StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 the S&P 500's combined account's table drew 26 rows reading "skipped: the free cash was under its cost"
+    // among its trades, and an account's trade log on Past picks drew its skipped picks as rows; What the system bought's
+    // line read "Not bought: 29 listed stocks. The free cash was under its cost (16): ...".
+    // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
+    [Fact]
+    public void ASkippedPickNeverSitsInATradeTableAndEachAccountsTradesEndOnOneLineByReason()
+    {
+        var day = new DateOnly(2026, 11, 6);
+        var marks = new MarkRenderer();
+        var walk = new PaperWalk([(day, 100_000m)], [], 1, 2, 0, 0.0, 0.0, null, null, day, [(day, 0.0)]);
+        var averaged = new PaperCombinedView(walk, day, 1, 0, 2,
+        [
+            new("drift", "GWW", day, 1_441.79m, 6, null, null, -0.001, true),
+            new("drift", "EVRG", day, 86.32m, 0, PaperAccount.UnderTheCash, null, null, true),
+            new("improving", "ODFL", day, 167.55m, 0, PaperAccount.NotSized, null, null, true),
+        ]);
+        var card = WebUtility.HtmlDecode(marks.PaperCombined(averaged));
+
+        // The averaged account's table holds GWW alone, and the line beneath names EVRG and ODFL by why.
+        Assert.Equal(["GWW"], Regex.Matches(card, "<tr data-family=\"[a-z]+\" data-ticker=\"([A-Z]+)\"").Select(match => match.Groups[1].Value));
+        Assert.DoesNotContain("skipped:", card, StringComparison.Ordinal);
+        Assert.Matches("<p class=\"paper-unbought\" data-unbought=\"2\">Not bought: <span[^>]*>1 pick, the free cash was under its cost: <a[^>]*>EVRG</a></span>; <span[^>]*>1 pick, the plan sizes no shares: <a[^>]*>ODFL</a></span>\\.</p>", card);
+
+        // An account's trade log the same: its bought trades as rows, its skips on the line beneath.
+        var account = new PaperAccountView("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", "within luck", null, "risks", [], walk, 2, 0, null, day);
+        var log = WebUtility.HtmlDecode(marks.PaperLog(account, [new PaperTradeView("GWW", day, 1_441.79m, 1_400m, null, -0.02, true, null), new PaperTradeView("EVRG", day, 86.32m, 84m, null, null, true, PaperAccount.UnderTheCash)]));
+
+        Assert.Equal(["GWW"], Regex.Matches(log, "<tr data-ticker=\"([A-Z]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains(">1 pick, the free cash was under its cost: <a href=\"#/chart/EVRG\" title=\"listed 2026-11-06\">EVRG</a></span>.</p>", log, StringComparison.Ordinal);
+
+        // What the system bought's line reads each reason as the count of picks and the reason.
+        var page = PaperPageOf(new PaperPageView([], [BlockTrade()], [], [], new PaperNotBought([new PaperUnbought(PaperAccount.UnderTheCash, [("APP", day), ("EVRG", day)])]), [], null));
+
+        Assert.Matches("Not bought: <span class=\"pu-reason\" data-count=\"2\">2 picks, the free cash was under its cost: ", page);
+        Assert.DoesNotContain("listed stocks.", page, StringComparison.Ordinal);
+    }
 }

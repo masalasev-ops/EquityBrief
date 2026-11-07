@@ -562,13 +562,26 @@ public sealed partial class MarkRenderer
         return html.ToString();
     }
 
-    // The listed stocks not bought, in one line: how many, then each reason with its stocks, each linking to its chart.
+    // The listed stocks not bought, in one line beneath an account's trades, a reason at a time: "Not bought: n picks,
+    // <reason>: tickers", each stock linking to its chart, never a row of a trade table.
+    // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
     static string NotBought(PaperNotBought unbought, int reshuffled = 0) =>
         unbought.Count == 0
             ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>"
-            : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\">Not bought: {unbought.Count} listed {(unbought.Count == 1 ? "stock" : "stocks")}. ")
-                + string.Join(" ", unbought.Reasons.Select(reason => Formatted($"<span class=\"pu-reason\" data-count=\"{reason.Stocks.Count}\">{Escaped(Capitalised(reason.Why))} ({reason.Stocks.Count}{(reshuffled > 0 && reason.Why == EquityBrief.Core.Cards.PaperAccount.Waiting ? Formatted($", {reshuffled} of them the monthly books' reshuffle") : string.Empty)}): {string.Join(", ", reason.Stocks.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>")))}.</span>")))
-                + "</p>";
+            : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\">Not bought: ")
+                + string.Join("; ", unbought.Reasons.Select(reason => Formatted($"<span class=\"pu-reason\" data-count=\"{reason.Stocks.Count}\">{reason.Stocks.Count} {(reason.Stocks.Count == 1 ? "pick" : "picks")}, {Escaped(reason.Why)}{(reshuffled > 0 && reason.Why == EquityBrief.Core.Cards.PaperAccount.Waiting ? Formatted($", {reshuffled} of them the monthly books' reshuffle") : string.Empty)}: {string.Join(", ", reason.Stocks.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>")))}</span>")))
+                + ".</p>";
+
+    // The picks an account's walk skipped, in that one line, a reason at a time, the most skipped first.
+    static string Skipped(IEnumerable<(string Ticker, DateOnly Listed, string Why)> skipped) =>
+        NotBought(new PaperNotBought(
+        [
+            .. skipped
+                .GroupBy(one => one.Why, StringComparer.Ordinal)
+                .OrderByDescending(group => group.Count())
+                .ThenBy(group => group.Key, StringComparer.Ordinal)
+                .Select(group => new PaperUnbought(group.Key, [.. group.OrderByDescending(one => one.Listed).ThenBy(one => one.Ticker, StringComparer.Ordinal).Select(one => (one.Ticker, one.Listed))])),
+        ]));
 
     // A family's choice for the variants' part or the scorecard, kept in the link under its key, its first family the key's
     // absence.
@@ -973,18 +986,27 @@ public sealed partial class MarkRenderer
             html.Append(RunningTotal(ended, percent, account.TooFew is not null));
         }
 
-        html.Append("<div class=\"tbl-wrap\"><table class=\"paper-log-table\"><thead><tr><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Stop</th><th>Ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
+        // The trades it bought alone, and beneath them the one line naming what it did not buy by reason.
+        // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
+        var bought = trades.Where(trade => trade.Skipped is null).ToArray();
 
-        foreach (var trade in trades.OrderByDescending(trade => trade.Bought).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
+        html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-log-table\" data-rows=\"{bought.Length}\"><thead><tr><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Stop</th><th>Ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
+
+        foreach (var trade in bought.OrderByDescending(trade => trade.Bought).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
         {
-            html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\"{(trade.Halved ? " data-halved=\"true\"" : string.Empty)}{(trade.Skipped is null ? string.Empty : " data-skipped=\"" + Escaped(trade.Skipped) + "\"")}>");
+            html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\"{(trade.Halved ? " data-halved=\"true\"" : string.Empty)}>");
             html.Append(Invariant, $"<td><a href=\"#/chart/{Uri.EscapeDataString(trade.Ticker)}\">{Escaped(trade.Ticker)}</a>{(trade.Halved ? " <span class=\"pill\" title=\"The market check held one of its two signals that night, so the trade risked half the usual amount\">half size</span>" : string.Empty)}</td><td>{DayOf(trade.Bought)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}</td><td class=\"r num\">{(trade.Stop is { } stop ? Figures.Price(stop) : "<span class=\"degraded\">none</span>")}</td>");
             html.Append(trade.Open ? "<td><span class=\"pill\">open</span></td>" : Formatted($"<td>{(trade.Ended is { } on ? DayOf(on) : "not read")}</td>"));
-            html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Result)}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}{(trade.Skipped is { } why ? Formatted($"<span class=\"degraded\"> skipped: {Escaped(why)}</span>") : string.Empty)}</td></tr>");
+            html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Result)}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}</td></tr>");
         }
 
         html.Append("</tbody></table></div>");
+
+        if (trades.Any(trade => trade.Skipped is not null))
+        {
+            html.Append(Skipped(trades.Where(trade => trade.Skipped is not null).Select(trade => (trade.Ticker, trade.Bought, trade.Skipped!))));
+        }
 
         return html.ToString() + EarlierVersions(earlier ?? [], Result);
     }
@@ -1006,23 +1028,27 @@ public sealed partial class MarkRenderer
 
         var html = new StringBuilder();
 
-        html.Append(Invariant, $"<div class=\"paper-combined\" data-trades=\"{all.Trades.Count}\" data-skipped=\"{all.Skipped}\" data-accounts=\"{all.Accounts}\" data-since=\"{DayOf(all.Since)}\">");
+        var bought = all.Trades.Where(trade => trade.Skipped is null).ToArray();
+
+        html.Append(Invariant, $"<div class=\"paper-combined\" data-trades=\"{bought.Length}\" data-skipped=\"{all.Skipped}\" data-accounts=\"{all.Accounts}\" data-since=\"{DayOf(all.Since)}\">");
         html.Append(Invariant, $"<p class=\"paper-combined-skips\">{Escaped(AveragedLine(all))}</p>");
         html.Append("<div class=\"tbl-wrap\"><table class=\"paper-combined-table\"><thead><tr><th>Setup</th><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Shares</th><th>Ended</th><th class=\"r\">Return</th></tr></thead><tbody>");
 
-        // Each session's trades in Tonight's order of the setups, each setup's in its own account's order.
-        foreach (var trade in all.Trades.Select((trade, at) => (Trade: trade, At: at)).OrderByDescending(one => one.Trade.Bought).ThenBy(one => BuyOrder.Of(one.Trade.Family)).ThenBy(one => one.At).Select(one => one.Trade))
+        // Each session's trades in Tonight's order of the setups, each setup's in its own account's order; a pick an account
+        // skipped is on the line beneath and never a row.
+        // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
+        foreach (var trade in bought.Select((trade, at) => (Trade: trade, At: at)).OrderByDescending(one => one.Trade.Bought).ThenBy(one => BuyOrder.Of(one.Trade.Family)).ThenBy(one => one.At).Select(one => one.Trade))
         {
-            html.Append(Invariant, $"<tr data-family=\"{Escaped(trade.Family)}\" data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\"{(trade.Skipped is null ? string.Empty : " data-skipped=\"" + Escaped(trade.Skipped) + "\"")}>");
+            html.Append(Invariant, $"<tr data-family=\"{Escaped(trade.Family)}\" data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\">");
             html.Append(Invariant, $"<td><span class=\"fam-swatch\" data-family=\"{Escaped(trade.Family)}\"></span>{Escaped(FamilyName(trade.Family))}</td><td><a href=\"#/chart/{Uri.EscapeDataString(trade.Ticker)}\">{Escaped(trade.Ticker)}</a></td><td>{DayOf(trade.Bought)}</td>");
-            html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}</td><td class=\"r num\">{(trade.Skipped is null ? trade.Shares.ToString("#,0", Invariant) : "<span class=\"degraded\">none</span>")}</td>");
-            html.Append(trade.Skipped is not null ? "<td></td>" : trade.Open ? "<td><span class=\"pill\">open</span></td>" : Formatted($"<td>{(trade.Ended is { } on ? DayOf(on) : "not read")}</td>"));
-            html.Append(trade.Skipped is { } why
-                ? Formatted($"<td class=\"r\"><span class=\"degraded\">skipped: {Escaped(why)}</span></td></tr>")
-                : Formatted($"<td class=\"r num\">{(trade.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">not read</span>")}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}</td></tr>"));
+            html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}</td><td class=\"r num\">{trade.Shares.ToString("#,0", Invariant)}</td>");
+            html.Append(trade.Open ? "<td><span class=\"pill\">open</span></td>" : Formatted($"<td>{(trade.Ended is { } on ? DayOf(on) : "not read")}</td>"));
+            html.Append(Invariant, $"<td class=\"r num\">{(trade.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">not read</span>")}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}</td></tr>");
         }
 
-        html.Append("</tbody></table></div></div>");
+        html.Append("</tbody></table></div>");
+        html.Append(all.Skipped == 0 ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every pick its accounts were handed was bought.</p>" : Skipped(all.Trades.Where(trade => trade.Skipped is not null).Select(trade => (trade.Ticker, trade.Bought, trade.Skipped!))));
+        html.Append("</div>");
 
         return html.ToString();
     }

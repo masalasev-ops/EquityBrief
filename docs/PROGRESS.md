@@ -16513,3 +16513,21 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: no skipped pick sits in a trade table, and each account's trades end on one line naming what it did not buy by reason   2026-11-07
+
+Found:      the order's twelfth item: on 2026-11-06 the S&P 500's combined account's table drew 26 rows reading "skipped: the free
+            cash was under its cost" among its trades, an account's trade log on Past picks drew each skip as a row, and What the
+            system bought's line read "Not bought: 29 listed stocks. The free cash was under its cost (16): ...".
+Corrected:  the averaged account's table and the trade log draw the trades their account bought and nothing else; beneath each, and
+            beneath what the system bought, one line reads "Not bought: n picks, <reason>: tickers", a reason at a time, the most
+            skipped first, each stock linking to its chart. Filed under 19.4, whose trade log first drew a skip as a row. The
+            decision, 15.17's and 15.21's rows, the changelog and the guide.
+Tests:      1 new: the averaged account's card over GWW bought and EVRG and ODFL skipped draws GWW alone with the line naming
+            the two by why; a trade log over GWW and EVRG the same; What the system bought's line reads 2 picks and its reason.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 the
+            averaged account's table drawing its skips: red. m2 the trade log drawing its skips: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

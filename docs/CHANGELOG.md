@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - no skipped pick in a trade table, one line beneath by reason
+Decision: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
+Was:
+> (15.17, an account's trade log) ... marked open; a trade the account's walk skipped saying why; the running total ...
+> (15.21, what the system bought) ... beneath the trades one line counting the listed stocks not bought a reason at a time with each stock linking to its chart; the trades their rules' earlier versions listed ...
+> (15.21, the combined paper account) ... so far where it is open (see: The averaged account gives ...)
+Now:
+> each adds that a skipped pick is never a row and stands on one line beneath the trades reading "Not bought: n picks, reason: tickers", a reason at a time, citing the new decision.
+Why: the operator's order of 2026-11-07, its twelfth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - the combined account is the live setups' accounts averaged
 Decision: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
 Was:
