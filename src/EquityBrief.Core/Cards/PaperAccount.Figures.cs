@@ -24,6 +24,10 @@ public sealed record PaperNotBought(IReadOnlyList<PaperUnbought> Reasons)
     public int Count => Reasons.Sum(reason => reason.Stocks.Count);
 }
 
+// From the 19.4 correction of 2026-11-07 one account's listed stocks not bought, named by the family whose account it is,
+// none it holds open on the night.
+public sealed record PaperAccountUnbought(string Family, PaperNotBought NotBought);
+
 // A rule's trades against others': how many it took, those another took in the same stock off the same night, and those
 // it alone took.
 public sealed record PaperOverlap(int Trades, int Shared, int Only);
@@ -286,6 +290,30 @@ public static partial class PaperAccount
                 .ThenBy(group => group.Key, StringComparer.Ordinal)
                 .Select(group => new PaperUnbought(group.Key, [.. group.OrderByDescending(one => one.Listed).ThenBy(one => one.Ticker, StringComparer.Ordinal).Select(one => (one.Ticker, one.Listed))])),
         ]);
+
+    // From the 19.4 correction of 2026-11-07 one account's stocks not bought, named by its family: those its walk skipped
+    // and those no fill bought, as the line reads them, less every stock the account holds open on the night, which it bought
+    // and still holds whatever a later listing of it did.
+    // see: Each table and line of what the system bought names the account it walks, and draws no stock that account holds as not bought
+    public static PaperAccountUnbought UnboughtBy(string family, PaperWalk? walk, IReadOnlyList<(string Ticker, DateOnly Listed, string Why)> unfilled, DateOnly night)
+    {
+        var held = (walk?.Trades ?? [])
+            .Where(one => one.Skipped is null && one.Trade.Bought <= night && (one.Trade.Ended is null || one.Trade.Ended > night))
+            .Select(one => one.Trade.Ticker)
+            .ToHashSet(StringComparer.Ordinal);
+        var listed = NotBought([(walk, unfilled)]);
+
+        return new PaperAccountUnbought(
+            family,
+            new PaperNotBought(
+            [
+                .. listed.Reasons
+                    .Select(reason => reason with { Stocks = [.. reason.Stocks.Where(stock => !held.Contains(stock.Ticker))] })
+                    .Where(reason => reason.Stocks.Count > 0)
+                    .OrderByDescending(reason => reason.Stocks.Count)
+                    .ThenBy(reason => reason.Why, StringComparer.Ordinal),
+            ]));
+    }
 
     // A rule's trades against others': those another took in the same stock off the same night are shared, and the rest
     // are its alone.

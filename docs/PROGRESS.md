@@ -16591,3 +16591,22 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             fund beneath a rule's tile: red. m2 each tile reading the fund over the page's earliest start: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: what the system bought names the account each line walks, and draws no stock that account holds as not bought   2026-11-07
+
+Found:      the order's sixth item: on 2026-11-06 the line beneath what the system bought merged every live account's skips and
+            unfilled listings, "Not bought: 29 listed stocks. The free cash was under its cost (16): APP, EVRG, EW, GWW, ...",
+            naming no account, while the combined account held GWW, DD, IDXX and VLTO open.
+Corrected:  a line above the table says each row is a trade of its setup's own account, which the Setup column names; beneath it,
+            `PaperAccount.UnboughtBy` gives each live account a line of its own opening on its setup's name, its skips and its
+            listings no fill bought less every stock it holds open on the night. GWW is the drift's own account's skip for its
+            cash, and with the 21.11 correction the averaged account holds no stock its accounts do not. The decision, 15.21's
+            row, the changelog and the guide.
+Tests:      1 new: the drift's account holding DD and listing it again, skipping GWW for the cash and waiting on XYZ, draws its own
+            line with GWW and XYZ and not DD. What the system bought's test reads the pullback's account's line.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            held stock kept on the line: red. m2 the line naming no account: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

@@ -852,6 +852,7 @@ public static class PaperScreen
             combined)
         {
             Same = same,
+            Unbought = [.. heads.OrderBy(head => SetupFamilies.OrderOf(head.Family)).Select(head => PaperAccount.UnboughtBy(head.Family, head.Walk, source[head.Key].Unfilled ?? [], night))],
         };
     }
 

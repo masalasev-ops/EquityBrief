@@ -493,6 +493,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-line[data-standing='combined']{stroke:var(--ink);stroke-width:2.8}
 .paper-key-mark[data-standing='combined']{border-top-width:4px}
 .paper-combined-skips{font-size:14px;color:var(--ink-2);margin:0 0 10px;max-width:78ch}
+.paper-walks,.paper-combined-books{font-size:13px;color:var(--soft);margin:0 0 8px;max-width:78ch}
 .paper-combined-table{min-width:640px}
 .strip-line{font-size:12.5px;color:var(--ink-2);margin:0 0 8px}
 .strip-tiles{display:flex;flex-wrap:wrap;gap:8px}

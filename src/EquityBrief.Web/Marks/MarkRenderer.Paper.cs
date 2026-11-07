@@ -134,6 +134,10 @@ public sealed record PaperPageView(
 
     // Each live account's same trades before its version, drawn apart under the account.
     public IReadOnlyList<PaperSameView> Same { get; init; } = [];
+
+    // From the 19.4 correction of 2026-11-07 each live account's stocks not bought, named by its family, in the family order,
+    // which the lines beneath what the system bought draw in the merged line's place.
+    public IReadOnlyList<PaperAccountUnbought> Unbought { get; init; } = [];
 }
 
 // From 21.20 a variant registered after the newest night, which no night has read yet: its family, its number and what it
@@ -376,8 +380,28 @@ public sealed partial class MarkRenderer
         }
 
         html.Append("</div>");
+
+        // The account each row walks, named above the table, and beneath it one line an account naming what that account
+        // did not buy, none it holds.
+        // see: Each table and line of what the system bought names the account it walks, and draws no stock that account holds as not bought
+        html.Append("<p class=\"paper-walks\" data-walks=\"each\">Each row is a trade of its setup's own account, which the Setup column names.</p>");
         html.Append(link.Closed ? ClosedTrades(page.Closed) : OpenTrades(page.Open));
-        html.Append(NotBought(page.NotBought, page.Groups?.ToBuyFromReshuffles ?? 0));
+
+        if (page.Unbought.Count == 0)
+        {
+            html.Append(NotBought(page.NotBought, page.Groups?.ToBuyFromReshuffles ?? 0));
+        }
+        else if (page.Unbought.All(account => account.NotBought.Count == 0))
+        {
+            html.Append("<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>");
+        }
+        else
+        {
+            foreach (var account in page.Unbought.Where(account => account.NotBought.Count > 0))
+            {
+                html.Append(NotBought(account.NotBought, account.Family is HeavyweightRule.Name or QualityRule.Name ? account.NotBought.Reasons.Where(reason => reason.Why == PaperAccount.Waiting).Sum(reason => reason.Stocks.Count) : 0, account.Family));
+            }
+        }
 
         if (page.Groups is { } groups)
         {
@@ -468,7 +492,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-bought\" data-tab=\"open\" data-rows=\"{trades.Count}\"><thead><tr>");
         html.Append(TippedHeading("Stock", "the stock, opening its chart, with its company and the variants of its rule holding it open too"));
-        html.Append(TippedHeading("Setup", "the setup family whose live or provisional rule bought it"));
+        html.Append(TippedHeading("Setup", "the setup family whose live or provisional rule bought it, in that setup's own account"));
         html.Append(TippedHeading("Bought", "its buy at the open of the session after the night that listed it, and that session", "r"));
         html.Append(TippedHeading("Stop", "its stop tonight: the plan's, or a trailing stop raised to the highest close since its listing less the distance it trails", "r"));
         html.Append(TippedHeading("Target", "its plan's target, or that its stop trails and it has none, or none for a holding sold only at a rebalance and a short-term dip sold on its exit", "r"));
@@ -538,7 +562,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-bought\" data-tab=\"closed\" data-rows=\"{trades.Count}\"><thead><tr>");
         html.Append(TippedHeading("Stock", "the stock, opening its chart, with its company"));
-        html.Append(TippedHeading("Setup", "the setup family whose live or provisional rule bought it"));
+        html.Append(TippedHeading("Setup", "the setup family whose live or provisional rule bought it, in that setup's own account"));
         html.Append(TippedHeading("Bought", "its buy at the open of the session after the night that listed it, and that session", "r"));
         html.Append(TippedHeading("Sold", "the price it was sold at, at its target, at a close through its stop, at its cap's close or at its book's sale, and that session", "r"));
         html.Append(TippedHeading("How it ended", "what ended it, in words, and the sessions from its listing night to its end"));
@@ -572,10 +596,10 @@ public sealed partial class MarkRenderer
     // The listed stocks not bought, in one line beneath an account's trades, a reason at a time: "Not bought: n picks,
     // <reason>: tickers", each stock linking to its chart, never a row of a trade table.
     // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
-    static string NotBought(PaperNotBought unbought, int reshuffled = 0) =>
+    static string NotBought(PaperNotBought unbought, int reshuffled = 0, string? family = null) =>
         unbought.Count == 0
             ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>"
-            : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\">Not bought: ")
+            : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\"{(family is null ? string.Empty : Formatted($" data-family=\"{Escaped(family)}\""))}>{(family is null ? string.Empty : Formatted($"<b>{Escaped(FamilyName(family))}'s own account.</b> "))}Not bought: ")
                 + string.Join("; ", unbought.Reasons.Select(reason => Formatted($"<span class=\"pu-reason\" data-count=\"{reason.Stocks.Count}\">{reason.Stocks.Count} {(reason.Stocks.Count == 1 ? "pick" : "picks")}, {Escaped(reason.Why)}{(reshuffled > 0 && reason.Why == EquityBrief.Core.Cards.PaperAccount.Waiting ? Formatted($", {reshuffled} of them the monthly books' reshuffle") : string.Empty)}: {string.Join(", ", reason.Stocks.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>")))}</span>")))
                 + ".</p>";
 

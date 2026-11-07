@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - what the system bought names the account each line walks
+Decision: Each table and line of what the system bought names the account it walks, and draws no stock that account holds as not bought
+Was:
+> (15.21, what the system bought) ... reading "Not bought: n picks, reason: tickers" (see: ...); the trades their rules' earlier versions listed ...
+Now:
+> ... reading "Not bought: n picks, reason: tickers" (see: ...); from that correction a line above the table saying each row is a trade of its setup's own account and beneath it one line an account opening on its setup's name with no stock that account holds open (see: ...); the trades their rules' earlier versions listed ...
+Why: the operator's order of 2026-11-07, its sixth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - each tile draws the index's fund over its own account's days
 Decision: Each tile draws the index's fund over its own account's days, and no tile draws the fund over days its account did not count
 Was:

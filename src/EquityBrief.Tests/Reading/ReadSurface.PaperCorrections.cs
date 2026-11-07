@@ -233,4 +233,32 @@ public partial class ReadSurface
         Assert.DoesNotContain("paper-tile fund", tiles, StringComparison.Ordinal);
         Assert.DoesNotContain("holding it over the same days, since", tiles, StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 the line beneath what the system bought read "Not bought: 29 listed stocks. The free cash was under its
+    // cost (16): APP, EVRG, EW, GWW, ..." with no account named, every account's merged. Each account's line names the
+    // account, and a stock the account holds open is never drawn as not bought, here DD, which the drift's account holds and
+    // listed again.
+    // see: Each table and line of what the system bought names the account it walks, and draws no stock that account holds as not bought
+    [Fact]
+    public void EachLineBeneathWhatTheSystemBoughtNamesItsAccountAndNoneItHolds()
+    {
+        var night = new DateOnly(2026, 11, 6);
+        PaperTrade Trade(string ticker, DateOnly bought) => new(ticker, bought, 100m, 95m, null, null, 0m, 1, Listed: bought.AddDays(-1), Target: 110m, Cap: 60);
+
+        var dd = Trade("DD", new DateOnly(2026, 11, 4));
+        var gww = Trade("GWW", night);
+        var drift = new EquityBrief.Api.Reading.PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, [(dd, null), (gww, null)], new DateOnly(2026, 11, 3), Unfilled: [("DD", night, PaperAccount.Waiting), ("XYZ", night, PaperAccount.Waiting)]);
+        var walk = new PaperWalk([(night, 100_000m)], [new PaperTaken(dd, 10, null), new PaperTaken(gww, 0, PaperAccount.UnderTheCash)], 1, 1, 0, 0.0, 0.0, null, null, night, [(night, 0.0)]);
+        var view = new PaperAccountView("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", "within luck", null, "risks", [], walk, 2, 0, null, new DateOnly(2026, 11, 3));
+        var built = EquityBrief.Api.Reading.PaperScreen.Page([drift], [view], night, [night], (_, _) => 100m, new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal), _ => null, null, "drift", "SPY", _ => null);
+        var page = PaperPageOf(built);
+        var line = Regex.Match(page, "<p class=\"paper-unbought\"[^>]*data-family=\"drift\">.*?</p>").Value;
+
+        Assert.Contains("<p class=\"paper-walks\" data-walks=\"each\">Each row is a trade of its setup's own account, which the Setup column names.</p>", page, StringComparison.Ordinal);
+        Assert.StartsWith("<p class=\"paper-unbought\" data-unbought=\"2\" data-family=\"drift\"><b>Earnings drift's own account.</b> Not bought: ", line, StringComparison.Ordinal);
+        Assert.Contains(">GWW</a>", line, StringComparison.Ordinal);
+        Assert.Contains(">XYZ</a>", line, StringComparison.Ordinal);
+        Assert.DoesNotContain(">DD</a>", line, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"DD\"", page, StringComparison.Ordinal);
+    }
 }
