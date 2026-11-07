@@ -56,7 +56,7 @@ public sealed partial class MarkRenderer
         var html = new StringBuilder();
 
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"loop-summary\" data-families=\"{rows.Count}\"><thead><tr>");
-        html.Append(TippedHeading("Setup", "the setup family, in the one order"));
+        html.Append(TippedHeading("Setup", "the family, in the one order"));
         html.Append(TippedHeading("The rule today", "the rule standing on this index, in short words"));
         html.Append(TippedHeading("Tested", "the proposals this run tested against the rule today", "r"));
         html.Append(TippedHeading("Strongest", "the proposal with the lowest adjusted p, drawn against the bar on a scale from a ten-thousandth to one, with the complete test years it was better in"));

@@ -41,6 +41,25 @@ public partial class ReadSurface
         Assert.Equal("<i data-as-filed/> a run of 63 trading days", ReaderText.Page("<i data-as-filed/> a block"));
     }
 
+    // On 2026-11-06 the Setup column's note on What the system bought, on each index's page, read "the setup setup whose live
+    // or not-yet-tested rule bought it", and the Loop page's "the setup setup, in the one order": the reader's words read a
+    // heading's own "setup family" as two setups. No text the two pages draw doubles a word through the swap.
+    // see: Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases into the reader's words
+    [Fact]
+    public void NoHeadingReadsTheReadersWordsIntoADoubledWord()
+    {
+        var paper = PaperPageOf(new PaperPageView([], [BlockTrade()], [], [], new PaperNotBought([]), [], null));
+        var loop = WebUtility.HtmlDecode(ReaderText.Page(new MarkRenderer().LoopSummary([])));
+
+        static IEnumerable<string> Doubled(string html) =>
+            Regex.Matches(Regex.Replace(html, "<[^>]*>", "|"), @"\b([A-Za-z]{3,}) \1\b", RegexOptions.IgnoreCase).Select(match => match.Value);
+
+        Assert.Empty(Doubled(paper));
+        Assert.Empty(Doubled(loop));
+        Assert.Contains("the setup whose live or not-yet-tested rule bought it, in that setup's own account", paper, StringComparison.Ordinal);
+        Assert.Contains("the setup, in the one order", loop, StringComparison.Ordinal);
+    }
+
     // The breakout's live rule registered on 2026-11-03, its version's first session that day, and a replay under its version
     // reproduced every trade from 2 Oct. On 2026-11-06 its tile read "Down 1.8% since 2 Oct" with "counts from 2 Oct: its
     // earlier trades replay the same under this version", the scorecard counted from 2 Oct and the line beneath what the

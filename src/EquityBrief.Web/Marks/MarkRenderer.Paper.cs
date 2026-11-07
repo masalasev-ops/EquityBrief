@@ -680,7 +680,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-bought\" data-tab=\"open\" data-rows=\"{trades.Count}\"><thead><tr>");
         html.Append(TippedHeading("Stock", "the stock, opening its chart, with its company and the variants of its rule holding it open too"));
-        html.Append(TippedHeading("Setup", "the setup family whose live or provisional rule bought it, in that setup's own account"));
+        html.Append(TippedHeading("Setup", "the family whose live or provisional rule bought it, in that family's own account"));
         html.Append(TippedHeading("Bought", "its buy at the open of the session after the night that listed it, and that session", "r"));
         html.Append(TippedHeading("Stop", "its stop tonight: the plan's, or a trailing stop raised to the highest close since its listing less the distance it trails", "r"));
         html.Append(TippedHeading("Target", "its plan's target, or that its stop trails and it has none, or none for a holding sold only at a rebalance and a short-term dip sold on its exit", "r"));
@@ -754,7 +754,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-bought\" data-tab=\"closed\" data-rows=\"{trades.Count}\"><thead><tr>");
         html.Append(TippedHeading("Stock", "the stock, opening its chart, with its company"));
-        html.Append(TippedHeading("Setup", "the setup family whose live or provisional rule bought it, in that setup's own account"));
+        html.Append(TippedHeading("Setup", "the family whose live or provisional rule bought it, in that family's own account"));
         html.Append(TippedHeading("Bought", "its buy at the open of the session after the night that listed it, and that session", "r"));
         html.Append(TippedHeading("Sold", "the price it was sold at, at its target, at a close through its stop, at its cap's close or at its book's sale, and that session", "r"));
         html.Append(TippedHeading("How it ended", "what ended it, in words, and the sessions from its listing night to its end"));
