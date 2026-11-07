@@ -365,7 +365,7 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
         [.. CikOf.Matches(search).Select(one => one.Groups[1].Value.TrimStart('0')).Distinct(StringComparer.Ordinal)];
 
     // A filer's name and its former names as its filing index states them.
-    static IReadOnlyList<string> NamesOf(string index)
+    public static IReadOnlyList<string> NamesOf(string index)
     {
         using var document = System.Text.Json.JsonDocument.Parse(index);
         var names = new List<string>();
@@ -889,6 +889,113 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
         await transaction.CommitAsync(cancellation);
 
         return writtenRows;
+    }
+
+    const string SelectLongHoldings = "SELECT index_code, period, ticker, name FROM long_holding;";
+
+    const string ClearSpans = "DELETE FROM long_span;";
+
+    // The spans read again from what the store holds: the long history's matched holdings, the members pull's later ones and the
+    // provider's dates of the S&P 500 from the day given, as the run that wrote the holdings read them.
+    // see: The S&P 500 before 2012 is read from IVV's filed holdings and from 2012 from the provider's dates
+    public static async Task<IReadOnlyList<LongSpan>> SpansAsync(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction? transaction, DateOnly providerFrom, CancellationToken cancellation = default)
+    {
+        var snapshots = new Dictionary<string, Dictionary<DateOnly, HashSet<string>>>(StringComparer.Ordinal);
+        var provider = new List<ProviderSpan>();
+        var firstHeldByName = new Dictionary<string, DateOnly>(StringComparer.Ordinal);
+
+        static DateOnly? Day(object value) =>
+            value is string text && DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null;
+
+        void Hold(string index, DateOnly period, string ticker)
+        {
+            if (!snapshots.TryGetValue(index, out var periods))
+            {
+                snapshots[index] = periods = [];
+            }
+
+            if (!periods.TryGetValue(period, out var codes))
+            {
+                periods[period] = codes = new HashSet<string>(StringComparer.Ordinal);
+            }
+
+            codes.Add(ticker);
+        }
+
+        async Task ReadAsync(string sql, Action<Microsoft.Data.Sqlite.SqliteDataReader> row)
+        {
+            await using var read = connection.CreateCommand();
+            read.Transaction = transaction;
+            read.CommandText = sql;
+
+            await using var rows = await read.ExecuteReaderAsync(cancellation);
+
+            while (await rows.ReadAsync(cancellation))
+            {
+                row(rows);
+            }
+        }
+
+        await ReadAsync(SelectPulledHoldings, rows =>
+        {
+            if (Day(rows.GetString(1)) is { } period)
+            {
+                Hold(rows.GetString(0), period, rows.GetString(2));
+            }
+        });
+        await ReadAsync(SelectLongHoldings, rows =>
+        {
+            if (Day(rows.GetString(1)) is not { } period)
+            {
+                return;
+            }
+
+            if (!rows.IsDBNull(2))
+            {
+                Hold(rows.GetString(0), period, rows.GetString(2));
+            }
+
+            var key = HoldingMatcher.NameKey(LongMatching.InOrder(rows.GetString(3)));
+
+            if (rows.GetString(0) == "GSPC" && key.Length > 0 && (!firstHeldByName.TryGetValue(key, out var held) || period < held))
+            {
+                firstHeldByName[key] = period;
+            }
+        });
+        await ReadAsync(SelectProviderSpans, rows => provider.Add(new ProviderSpan(rows.GetString(0), Day(rows.GetValue(1)), Day(rows.GetValue(2)), rows.IsDBNull(3) ? null : rows.GetString(3))));
+
+        return LongSpans.Of(
+            snapshots.ToDictionary(pair => pair.Key, pair => (IReadOnlyDictionary<DateOnly, IReadOnlySet<string>>)pair.Value.ToDictionary(one => one.Key, one => (IReadOnlySet<string>)one.Value), StringComparer.Ordinal),
+            provider,
+            firstHeldByName,
+            providerFrom);
+    }
+
+    // The spans written again whole inside a transaction a later run holds, the rows before removed with them, and the rows written.
+    public static async Task<int> RewriteSpansAsync(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction transaction, IReadOnlyList<LongSpan> spans, string runId, CancellationToken cancellation = default)
+    {
+        await using (var clear = connection.CreateCommand())
+        {
+            clear.Transaction = transaction;
+            clear.CommandText = ClearSpans;
+            await clear.ExecuteNonQueryAsync(cancellation);
+        }
+
+        var written = 0;
+
+        await using var insert = connection.CreateCommand();
+        insert.Transaction = transaction;
+        insert.CommandText = InsertSpan;
+
+        var (index, ticker, joined, left, readFrom, run) = (insert.Parameters.Add("$index_code", Microsoft.Data.Sqlite.SqliteType.Text), insert.Parameters.Add("$ticker", Microsoft.Data.Sqlite.SqliteType.Text), insert.Parameters.Add("$joined", Microsoft.Data.Sqlite.SqliteType.Text), insert.Parameters.Add("$left", Microsoft.Data.Sqlite.SqliteType.Text), insert.Parameters.Add("$read_from", Microsoft.Data.Sqlite.SqliteType.Text), insert.Parameters.Add("$run_id", Microsoft.Data.Sqlite.SqliteType.Text));
+
+        foreach (var span in spans)
+        {
+            (index.Value, ticker.Value, joined.Value, left.Value, readFrom.Value, run.Value) = (span.Index, span.Ticker, span.Joined.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), span.Left?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? (object)DBNull.Value, span.ReadFrom, runId);
+            written += await insert.ExecuteNonQueryAsync(cancellation);
+        }
+
+        return written;
     }
 
     // Each quarter end's figures of each fund's matching.

@@ -15,8 +15,11 @@ public sealed record DataCheckOutcome(string RunId, int Stocks, int Sessions, Da
 // The data check run over every stock's pulled history, asking nothing of anyone: the calendar read from the stocks that traded
 // each day, every stock's jumps counted across the stocks before any is read, then each stock classified by the core's rules and
 // the run's findings written whole in one transaction, the run before's removed in it. No pulled row, bar or mark moves.
+// From 23.4, asked for the long history, it reads every code's long prices from 2004 in place of the pull, with their splits and
+// dividends, and writes the findings from 2005 on, the year before read behind them.
 // see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row
-public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
+// see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+public sealed class DataChecker(IClock clock, string databaseFile, bool longHistory = false) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -25,6 +28,9 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
             new StoreTouch(Store.TickerJoin, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.PulledSplit, Touch.Read),
+            new StoreTouch(Store.LongBar, Touch.Read),
+            new StoreTouch(Store.LongSplit, Touch.Read),
+            new StoreTouch(Store.LongDividend, Touch.Read),
             new StoreTouch(Store.SplitEvent, Touch.Read),
             new StoreTouch(Store.DividendEvent, Touch.Read),
             new StoreTouch(Store.SessionMark, Touch.Read),
@@ -35,8 +41,18 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
 
     public const string Stage = "data-check";
 
+    public const string LongStage = "data-check-long";
+
+    // The first session the long history's findings are written from; the year before is read behind it.
+    public static DateOnly LongFindingsFrom { get; } = new(2005, 1, 1);
+
     const string Holders = "SELECT session_date, COUNT(DISTINCT ticker) FROM pulled_bar GROUP BY session_date;";
     const string Spans = "SELECT ticker, MIN(session_date), MAX(session_date) FROM pulled_bar GROUP BY ticker ORDER BY ticker;";
+    const string LongHolders = "SELECT session_date, COUNT(*) FROM long_bar GROUP BY session_date;";
+    const string LongSpans = "SELECT ticker, MIN(session_date), MAX(session_date) FROM long_bar GROUP BY ticker ORDER BY ticker;";
+    const string LongSplits = "SELECT ticker, ex_date, new_shares, old_shares FROM long_split;";
+    const string LongDividends = "SELECT ticker, ex_date, amount FROM long_dividend;";
+    const string LongSeriesOf = "SELECT session_date, open, high, low, close, raw_close, volume FROM long_bar WHERE ticker = $ticker ORDER BY session_date;";
     const string Members = @"SELECT ticker, name, joined, ""left"" FROM membership;";
     const string Joins = "SELECT ticker, earlier FROM ticker_join;";
     const string PulledSplits = "SELECT ticker, ex_date, new_shares, old_shares FROM pulled_split;";
@@ -95,8 +111,8 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
         var holders = new Dictionary<DateOnly, int>();
         var spans = new List<(string Ticker, DateOnly First, DateOnly Last)>();
 
-        await ReadAsync(connection, Holders, reader => holders[Date(reader.GetString(0))] = reader.GetInt32(1), cancellation);
-        await ReadAsync(connection, Spans, reader => spans.Add((reader.GetString(0), Date(reader.GetString(1)), Date(reader.GetString(2)))), cancellation);
+        await ReadAsync(connection, longHistory ? LongHolders : Holders, reader => holders[Date(reader.GetString(0))] = reader.GetInt32(1), cancellation);
+        await ReadAsync(connection, longHistory ? LongSpans : Spans, reader => spans.Add((reader.GetString(0), Date(reader.GetString(1)), Date(reader.GetString(2)))), cancellation);
 
         var calendar = new PulledCalendar(holders, spans.Select(span => (span.First, span.Last)));
         var splits = new Dictionary<string, List<CheckedSplit>>(StringComparer.Ordinal);
@@ -114,9 +130,23 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
             }
         }, cancellation);
 
-        await Splits(PulledSplits);
+        await Splits(longHistory ? LongSplits : PulledSplits);
         await Splits(NightSplits);
-        await ReadAsync(connection, Dividends, reader => (dividends.TryGetValue(reader.GetString(0), out var list) ? list : dividends[reader.GetString(0)] = []).Add(new(Date(reader.GetString(1)), Price(reader.GetString(2)))), cancellation);
+
+        foreach (var sql in longHistory ? [LongDividends, Dividends] : new[] { Dividends })
+        {
+            await ReadAsync(connection, sql, reader =>
+            {
+                var held = dividends.TryGetValue(reader.GetString(0), out var list) ? list : dividends[reader.GetString(0)] = [];
+                var paid = new CheckedDividend(Date(reader.GetString(1)), Price(reader.GetString(2)));
+
+                if (!held.Any(other => other.ExDate == paid.ExDate))
+                {
+                    held.Add(paid);
+                }
+            }, cancellation);
+        }
+
         await ReadAsync(connection, Marks, reader => (marks.TryGetValue(reader.GetString(0), out var list) ? list : marks[reader.GetString(0)] = []).Add(new(Date(reader.GetString(1)), reader.GetString(2), reader.GetString(3))), cancellation);
 
         var changes = await ChangesAsync(connection, cancellation);
@@ -125,7 +155,7 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
 
         foreach (var (ticker, _, _) in spans)
         {
-            if (await SeriesOrNoneAsync(connection, ticker, unread, cancellation) is not { } series)
+            if (await SeriesOrNoneAsync(connection, longHistory ? LongSeriesOf : SeriesOf, ticker, unread, cancellation) is not { } series)
             {
                 continue;
             }
@@ -142,7 +172,7 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
 
         foreach (var (ticker, _, _) in spans)
         {
-            if (unread.ContainsKey(ticker) || await SeriesOrNoneAsync(connection, ticker, unread, cancellation) is not { } series)
+            if (unread.ContainsKey(ticker) || await SeriesOrNoneAsync(connection, longHistory ? LongSeriesOf : SeriesOf, ticker, unread, cancellation) is not { } series)
             {
                 continue;
             }
@@ -152,7 +182,7 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
                 new HeldStock(ticker, series, splits.GetValueOrDefault(ticker) ?? [], dividends.GetValueOrDefault(ticker) ?? [], changes.TryGetValue(ticker, out var change) ? change : null, marks.GetValueOrDefault(ticker)),
                 calendar,
                 jumpsEachSession,
-                firstRead));
+                firstRead).Where(finding => !longHistory || finding.Session >= LongFindingsFrom));
         }
 
         var outcome = new DataCheckOutcome(runId, spans.Count - unread.Count, sessions, spans.Count == 0 ? null : firstRead, spans.Count == 0 ? null : spans.Max(span => span.Last), findings, write, [.. unread.Select(stock => stock.Key + " " + stock.Value)]);
@@ -196,11 +226,11 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
     }
 
     // A series holding a row the check cannot read is left out whole and named with its session, the other stocks read on.
-    static async Task<IReadOnlyList<HeldSession>?> SeriesOrNoneAsync(SqliteConnection connection, string ticker, IDictionary<string, string> unread, CancellationToken cancellation)
+    static async Task<IReadOnlyList<HeldSession>?> SeriesOrNoneAsync(SqliteConnection connection, string sql, string ticker, IDictionary<string, string> unread, CancellationToken cancellation)
     {
         try
         {
-            return await SeriesAsync(connection, ticker, cancellation);
+            return await SeriesAsync(connection, sql, ticker, cancellation);
         }
         catch (SeriesUnread refused)
         {
@@ -212,12 +242,12 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
 
     sealed class SeriesUnread(string message) : Exception(message);
 
-    static async Task<IReadOnlyList<HeldSession>> SeriesAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
+    static async Task<IReadOnlyList<HeldSession>> SeriesAsync(SqliteConnection connection, string sql, string ticker, CancellationToken cancellation)
     {
         var series = new List<HeldSession>();
 
         await using var command = connection.CreateCommand();
-        command.CommandText = SeriesOf;
+        command.CommandText = sql;
         command.Parameters.AddWithValue("$ticker", ticker);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
@@ -277,7 +307,7 @@ public sealed class DataChecker(IClock clock, string databaseFile) : IComponent
         {
             run.CommandText = AppendRun;
             run.Parameters.AddWithValue("$run_id", outcome.RunId);
-            run.Parameters.AddWithValue("$stage", Stage);
+            run.Parameters.AddWithValue("$stage", longHistory ? LongStage : Stage);
             run.Parameters.AddWithValue("$started_at", started.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
             run.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
             run.Parameters.AddWithValue("$rows", written);
