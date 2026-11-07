@@ -16610,3 +16610,24 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             held stock kept on the line: red. m2 the line naming no account: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.10 - correction: a listing waiting on the next open is drawn as to buy in its own account, never as not bought, nor where that account holds it   2026-11-07
+
+Found:      the order's ninth item: on 2026-11-06 ABNB drew as held and as "Waits on the next trading day's open". Why, read off
+            the store: the sector heavyweights' own account bought ABNB at the open of 3 Nov at 170.94 and holds it; the drift's
+            rule listed it on the night of 6 Nov, so the drift's own account waits on Monday's open to buy it; and the line
+            beneath what the system bought drew 19.10's waiting listings among the stocks not bought, every account's merged and
+            none named.
+Corrected:  `PaperAccount.UnboughtBy` keeps the waiting listings apart from the stocks not bought, none the account holds open,
+            each with the other live accounts holding it; each account's waiting stand on a line of their own, "To buy at the
+            next trading day's open", a monthly setup's said to be its reshuffle's, ABNB drawn there as the drift's with "Sector
+            heavyweights' own account already holds it". The decision, 15.21's row, the changelog and the guide.
+Tests:      1 new: the heavyweights' account holding ABNB and listing it again draws no wait for it; the drift's account draws
+            ABNB and CPAY to buy, ABNB named as held by the heavyweights' account; no line draws a wait. The 19.4 corrections'
+            tests read the wait on the line to buy.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            waiting listing kept among the stocks not bought: red. m2 a waiting stock the account holds kept on its line: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

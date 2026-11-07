@@ -852,7 +852,19 @@ public static class PaperScreen
             combined)
         {
             Same = same,
-            Unbought = [.. heads.OrderBy(head => SetupFamilies.OrderOf(head.Family)).Select(head => PaperAccount.UnboughtBy(head.Family, head.Walk, source[head.Key].Unfilled ?? [], night))],
+            Unbought =
+            [
+                .. heads.OrderBy(head => SetupFamilies.OrderOf(head.Family)).Select(head => PaperAccount.UnboughtBy(
+                    head.Family,
+                    head.Walk,
+                    source[head.Key].Unfilled ?? [],
+                    night,
+                    heads
+                        .Where(other => other.Key != head.Key)
+                        .SelectMany(other => PaperAccount.HeldOpen(other.Walk, night).Select(ticker => (Ticker: ticker, other.Family)))
+                        .GroupBy(one => one.Ticker, StringComparer.Ordinal)
+                        .ToDictionary(group => group.Key, group => (IReadOnlyList<string>)[.. group.Select(one => one.Family).Distinct(StringComparer.Ordinal)], StringComparer.Ordinal))),
+            ],
         };
     }
 

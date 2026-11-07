@@ -25,8 +25,12 @@ public sealed record PaperNotBought(IReadOnlyList<PaperUnbought> Reasons)
 }
 
 // From the 19.4 correction of 2026-11-07 one account's listed stocks not bought, named by the family whose account it is,
-// none it holds open on the night.
-public sealed record PaperAccountUnbought(string Family, PaperNotBought NotBought);
+// none it holds open on the night; and from the 19.10 correction of that day the stocks it buys at the next session's open,
+// apart from those it did not buy, none it holds, each with the other live accounts holding it open.
+public sealed record PaperAccountUnbought(string Family, PaperNotBought NotBought)
+{
+    public IReadOnlyList<(string Ticker, DateOnly Listed, IReadOnlyList<string> HeldBy)> Waiting { get; init; } = [];
+}
 
 // A rule's trades against others': how many it took, those another took in the same stock off the same night, and those
 // it alone took.
@@ -295,13 +299,13 @@ public static partial class PaperAccount
     // and those no fill bought, as the line reads them, less every stock the account holds open on the night, which it bought
     // and still holds whatever a later listing of it did.
     // see: Each table and line of what the system bought names the account it walks, and draws no stock that account holds as not bought
-    public static PaperAccountUnbought UnboughtBy(string family, PaperWalk? walk, IReadOnlyList<(string Ticker, DateOnly Listed, string Why)> unfilled, DateOnly night)
+    // From the 19.10 correction of 2026-11-07 a listing waiting on its next session's open is to buy and not a stock not
+    // bought: it stands apart, none the account holds, each named with the other live accounts holding it open.
+    // see: A listing waiting on its next session's open is drawn as to buy in its own account and never as not bought, nor where that account holds it
+    public static PaperAccountUnbought UnboughtBy(string family, PaperWalk? walk, IReadOnlyList<(string Ticker, DateOnly Listed, string Why)> unfilled, DateOnly night, IReadOnlyDictionary<string, IReadOnlyList<string>>? heldElsewhere = null)
     {
-        var held = (walk?.Trades ?? [])
-            .Where(one => one.Skipped is null && one.Trade.Bought <= night && (one.Trade.Ended is null || one.Trade.Ended > night))
-            .Select(one => one.Trade.Ticker)
-            .ToHashSet(StringComparer.Ordinal);
-        var listed = NotBought([(walk, unfilled)]);
+        var held = HeldOpen(walk, night);
+        var listed = NotBought([(walk, [.. unfilled.Where(one => one.Why != Waiting)])]);
 
         return new PaperAccountUnbought(
             family,
@@ -312,8 +316,25 @@ public static partial class PaperAccount
                     .Where(reason => reason.Stocks.Count > 0)
                     .OrderByDescending(reason => reason.Stocks.Count)
                     .ThenBy(reason => reason.Why, StringComparer.Ordinal),
-            ]));
+            ]))
+        {
+            Waiting =
+            [
+                .. unfilled
+                    .Where(one => one.Why == Waiting && !held.Contains(one.Ticker))
+                    .OrderByDescending(one => one.Listed)
+                    .ThenBy(one => one.Ticker, StringComparer.Ordinal)
+                    .Select(one => (one.Ticker, one.Listed, heldElsewhere?.GetValueOrDefault(one.Ticker) ?? (IReadOnlyList<string>)[])),
+            ],
+        };
     }
+
+    // The stocks an account's walk holds open on the night.
+    public static IReadOnlySet<string> HeldOpen(PaperWalk? walk, DateOnly night) =>
+        (walk?.Trades ?? [])
+            .Where(one => one.Skipped is null && one.Trade.Bought <= night && (one.Trade.Ended is null || one.Trade.Ended > night))
+            .Select(one => one.Trade.Ticker)
+            .ToHashSet(StringComparer.Ordinal);
 
     // A rule's trades against others': those another took in the same stock off the same night are shared, and the rest
     // are its alone.

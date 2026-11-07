@@ -474,12 +474,14 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"r num\">43.00<span class=\"pb-day\">raised from 36.00</span></td><td class=\"r\">its stop rises</td>", third, StringComparison.Ordinal);
         Assert.Contains("<span class=\"gain\">+1.50</span> per $1 risked", third, StringComparison.Ordinal);
 
-        // Beneath them the stocks not bought, from the 19.4 correction of 2026-11-07 a line an account naming it, a reason at a
-        // time, each linking to its chart, and the line about entries.
+        // Beneath them, from the 19.4 and 19.10 corrections of 2026-11-07, a line an account naming it: U1, listed on the night
+        // and waiting on the next open, to buy, and every other listing bought; each stock linking to its chart; and the line
+        // about entries.
         Assert.Contains(
-            "<p class=\"paper-unbought\" data-unbought=\"1\" data-family=\"pullback\"><b>Pullback's own account.</b> Not bought: <span class=\"pu-reason\" data-count=\"1\">1 pick, waits on the next trading day's open: <a href=\"#/chart/U1\" title=\"listed 2026-10-02\">U1</a></span>.</p>",
+            "<p class=\"paper-tobuy\" data-tobuy=\"1\" data-family=\"pullback\"><b>Pullback's own account.</b> To buy at the next trading day's open: <a href=\"#/chart/U1\" title=\"listed 2026-10-02\">U1</a>.</p>",
             page,
             StringComparison.Ordinal);
+        Assert.Contains("<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought or is to buy at the next open.</p>", page, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"paper-entry\">{ReaderText.Words(MarkRenderer.EntryPriceLine)}</p>", page, StringComparison.Ordinal);
 
         // Closed: C1 sold at its target of 24 on Thursday, held three sessions, two risks and twenty per cent, its edge 1.5

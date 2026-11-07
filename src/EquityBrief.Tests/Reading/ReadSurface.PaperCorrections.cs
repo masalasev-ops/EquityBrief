@@ -255,10 +255,50 @@ public partial class ReadSurface
         var line = Regex.Match(page, "<p class=\"paper-unbought\"[^>]*data-family=\"drift\">.*?</p>").Value;
 
         Assert.Contains("<p class=\"paper-walks\" data-walks=\"each\">Each row is a trade of its setup's own account, which the Setup column names.</p>", page, StringComparison.Ordinal);
-        Assert.StartsWith("<p class=\"paper-unbought\" data-unbought=\"2\" data-family=\"drift\"><b>Earnings drift's own account.</b> Not bought: ", line, StringComparison.Ordinal);
+        Assert.StartsWith("<p class=\"paper-unbought\" data-unbought=\"1\" data-family=\"drift\"><b>Earnings drift's own account.</b> Not bought: ", line, StringComparison.Ordinal);
         Assert.Contains(">GWW</a>", line, StringComparison.Ordinal);
-        Assert.Contains(">XYZ</a>", line, StringComparison.Ordinal);
         Assert.DoesNotContain(">DD</a>", line, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"DD\"", page, StringComparison.Ordinal);
+    }
+
+    // On 2026-11-06 ABNB drew as held, by the sector heavyweights' account since 3 Nov, and in the line beneath what the
+    // system bought as "Waits on the next trading day's open", the drift's account having listed it on 6 Nov: a listing
+    // waiting on its next open was drawn among the stocks not bought, every account's merged. It is to buy in the drift's
+    // own account, named so, with the heavyweights' account holding it, and a stock an account holds is never drawn as
+    // waiting in that account.
+    // see: A listing waiting on its next session's open is drawn as to buy in its own account and never as not bought, nor where that account holds it
+    [Fact]
+    public void AListingWaitingOnTheNextOpenIsToBuyInItsOwnAccountAndNeverWaitingWhereItIsHeld()
+    {
+        var night = new DateOnly(2026, 11, 6);
+        var held = new DateOnly(2026, 11, 3);
+        PaperTrade Holding(string ticker) => new(ticker, held, 170.94m, null, null, null, 0m, 1, 22, Listed: new DateOnly(2026, 11, 2));
+        PaperWalk Walked(params PaperTaken[] trades) => new([(night, 100_000m)], trades, trades.Length, 0, 0, 0.0, 0.0, null, null, night, [(night, 0.0)]);
+
+        var heavyweights = new EquityBrief.Api.Reading.PaperAccountSource("list-heavyweight", "heavyweight", PaperAccountView.Live, "Live", "the live heavyweights rule", null, true, [(Holding("ABNB"), null)], new DateOnly(2026, 10, 21), Unfilled: [("ABNB", night, PaperAccount.Waiting)]);
+        var drift = new EquityBrief.Api.Reading.PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, [], new DateOnly(2026, 11, 3), Unfilled: [("ABNB", night, PaperAccount.Waiting), ("CPAY", night, PaperAccount.Waiting)]);
+        PaperAccountView View(EquityBrief.Api.Reading.PaperAccountSource source, PaperWalk walk) =>
+            new(source.Key, source.Family, PaperAccountView.Live, "Live", source.Words, "within luck", null, "risks", [], walk, source.Trades.Count, 0, null, source.Since);
+
+        var built = EquityBrief.Api.Reading.PaperScreen.Page(
+            [drift, heavyweights],
+            [View(drift, Walked()), View(heavyweights, Walked(new PaperTaken(Holding("ABNB"), 26, null)))],
+            night,
+            [night],
+            (_, _) => 190m,
+            new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal),
+            _ => null,
+            null,
+            "drift",
+            "SPY",
+            _ => null);
+        var page = PaperPageOf(built);
+
+        // The drift's account buys ABNB and CPAY at the next open, ABNB named as the heavyweights' account holds it; the
+        // heavyweights' account, which holds ABNB, draws no waiting for it; and no line of stocks not bought draws a wait.
+        Assert.Contains("<p class=\"paper-tobuy\" data-tobuy=\"2\" data-family=\"drift\"><b>Earnings drift's own account.</b> To buy at the next trading day's open: <a href=\"#/chart/ABNB\" title=\"listed 2026-11-06\">ABNB</a> (Sector heavyweights' own account already holds it), <a href=\"#/chart/CPAY\" title=\"listed 2026-11-06\">CPAY</a>.</p>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-tobuy=\"1\" data-family=\"heavyweight\"", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("aits on the next", page, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"ABNB\" data-family=\"heavyweight\"", page, StringComparison.Ordinal);
     }
 }

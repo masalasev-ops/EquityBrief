@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - a listing waiting on the next open is to buy, never not bought
+Decision: A listing waiting on its next session's open is drawn as to buy in its own account and never as not bought, nor where that account holds it
+Was:
+> (15.21, what the system bought) ... with no stock that account holds open (see: Each table and line ...); the trades their rules' earlier versions listed ...
+Now:
+> ... with no stock that account holds open (see: ...); from the 19.10 correction of 2026-11-07 the listings waiting on the next open on a line an account of their own before those lines as to buy and never as not bought, none that account holds open, one another live account holds named with it (see: ...); the trades their rules' earlier versions listed ...
+Why: the operator's order of 2026-11-07, its ninth item: ABNB drew as held and as waiting.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - what the system bought names the account each line walks
 Decision: Each table and line of what the system bought names the account it walks, and draws no stock that account holds as not bought
 Was:

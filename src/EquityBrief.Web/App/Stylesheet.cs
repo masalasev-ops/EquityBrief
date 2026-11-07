@@ -520,7 +520,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .pb-standing.near-target,.pb-standing.leading{color:var(--up)}
 .pb-standing.near-stop,.pb-standing.opened-under,.pb-standing.below-average{color:var(--down)}
 .pb-standing.opened-over,.pb-standing.lost-lead{color:var(--warn)}
-.paper-unbought,.paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+.paper-unbought,.paper-tobuy,.paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
 .paper-unbought .pu-reason{margin-right:6px}
 .paper-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 12px;max-width:min(100%,560px)}
 .paper-pick select{min-height:36px;padding:0 8px;border-radius:6px;font:500 13.5px var(--sans)}

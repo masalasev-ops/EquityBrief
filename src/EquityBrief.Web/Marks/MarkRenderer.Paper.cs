@@ -391,15 +391,26 @@ public sealed partial class MarkRenderer
         {
             html.Append(NotBought(page.NotBought, page.Groups?.ToBuyFromReshuffles ?? 0));
         }
-        else if (page.Unbought.All(account => account.NotBought.Count == 0))
-        {
-            html.Append("<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>");
-        }
         else
         {
+            // From the 19.10 correction of 2026-11-07 each account's listings waiting on the next open first, as to buy and
+            // never as not bought, none it holds, each held elsewhere named so; then what each did not buy.
+            // see: A listing waiting on its next session's open is drawn as to buy in its own account and never as not bought, nor where that account holds it
+            foreach (var account in page.Unbought.Where(account => account.Waiting.Count > 0))
+            {
+                html.Append(ToBuy(account));
+            }
+
+            if (page.Unbought.All(account => account.NotBought.Count == 0))
+            {
+                html.Append(page.Unbought.Any(account => account.Waiting.Count > 0)
+                    ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought or is to buy at the next open.</p>"
+                    : "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>");
+            }
+
             foreach (var account in page.Unbought.Where(account => account.NotBought.Count > 0))
             {
-                html.Append(NotBought(account.NotBought, account.Family is HeavyweightRule.Name or QualityRule.Name ? account.NotBought.Reasons.Where(reason => reason.Why == PaperAccount.Waiting).Sum(reason => reason.Stocks.Count) : 0, account.Family));
+                html.Append(NotBought(account.NotBought, 0, account.Family));
             }
         }
 
@@ -599,9 +610,20 @@ public sealed partial class MarkRenderer
     static string NotBought(PaperNotBought unbought, int reshuffled = 0, string? family = null) =>
         unbought.Count == 0
             ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>"
-            : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\"{(family is null ? string.Empty : Formatted($" data-family=\"{Escaped(family)}\""))}>{(family is null ? string.Empty : Formatted($"<b>{Escaped(FamilyName(family))}'s own account.</b> "))}Not bought: ")
+            : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\"{(family is null ? string.Empty : Formatted($" data-family=\"{Escaped(family)}\""))}>{(family is null ? string.Empty : Formatted($"<b>{Escaped(OwnAccount(family))}.</b> "))}Not bought: ")
                 + string.Join("; ", unbought.Reasons.Select(reason => Formatted($"<span class=\"pu-reason\" data-count=\"{reason.Stocks.Count}\">{reason.Stocks.Count} {(reason.Stocks.Count == 1 ? "pick" : "picks")}, {Escaped(reason.Why)}{(reshuffled > 0 && reason.Why == EquityBrief.Core.Cards.PaperAccount.Waiting ? Formatted($", {reshuffled} of them the monthly books' reshuffle") : string.Empty)}: {string.Join(", ", reason.Stocks.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>")))}</span>")))
                 + ".</p>";
+
+    // One account's listings waiting on the next session's open, as to buy: its setup's name, each stock linking to its chart,
+    // one another live account holds open named with that account, and a monthly setup's said to be its reshuffle's.
+    static string ToBuy(PaperAccountUnbought account) =>
+        Formatted($"<p class=\"paper-tobuy\" data-tobuy=\"{account.Waiting.Count}\" data-family=\"{Escaped(account.Family)}\"><b>{Escaped(OwnAccount(account.Family))}.</b> To buy at the next trading day's open{(account.Family is HeavyweightRule.Name or QualityRule.Name ? ", the monthly reshuffle's" : string.Empty)}: ")
+            + string.Join(", ", account.Waiting.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>{(stock.HeldBy.Count == 0 ? string.Empty : Formatted($" ({Escaped(string.Join(" and ", stock.HeldBy.Select(OwnAccount)))} already holds it)"))}")))
+            + ".</p>";
+
+    // A family's own account in words, its name's possessive as English writes it.
+    static string OwnAccount(string family) =>
+        FamilyName(family) is var name && name.EndsWith('s') ? name + "' own account" : name + "'s own account";
 
     // The picks an account's walk skipped, in that one line, a reason at a time, the most skipped first.
     static string Skipped(IEnumerable<(string Ticker, DateOnly Listed, string Why)> skipped) =>
