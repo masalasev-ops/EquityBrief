@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - a pick's other ways in folded as not traded, each stop named as its own
+Decision: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+Was:
+> (15.7, tomorrow's buys) ... an S&amp;P 500 card draws the stock's entry and exit plan beneath it as the stock's full page draws it, the plan column beside its two tables; and an S&amp;P 400 or 600 card says none is worked ... (see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it)
+> (15.7, the list) ... the card drawing on the S&amp;P 500 from the 22.6 correction of 2026-10-25 the stock's entry and exit plan beneath its setup's own; its ticker ... (see: A buy point's fold draws ...)
+> (the pick's card) From the 22.6 correction of 2026-10-25 a buy point's fold on Tonight draws that entry and exit plan straight beneath the plan, ... or one line saying why none is drawn (see: A buy point's fold draws ...).
+> (the name page) ... the plan region opens on the pick's own exit, and its exits line names them where the levels' plan places none, so it never reads as having none; ...
+> (the entry check) ... a provisional plan for waiting or why the ladder draws none (see: The wait plan is drawn from the ladder's own bands and stop, is provisional and sets nothing); ...
+Now:
+> ... the plan column beside its two tables; from the correction of 2026-11-07 that plan is folded shut as another way in not traded with its stops named as its own; and an S&amp;P 400 or 600 card ... (see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own)
+> ... beneath its setup's own and from the correction of 2026-11-07 folded shut as another way in not traded; its ticker ... (see: A pick's page draws ...)
+> ... a buy point's fold on Tonight draws that entry and exit plan beneath the plan, ... or one line saying why none is drawn. From the correction of 2026-11-07 that plan is folded shut under the words that it is another way in not traded; a line inside names its stops as its own against the stop the pick's trade is sold below (see: A pick's page draws ...).
+> ... the plan region opens on the pick's own exit as the plan, ...; from the correction of 2026-11-07 the levels' plan beneath is folded shut as another way in not traded with its stops named as its own (see: A pick's page draws ...); ...
+> ... (see: The wait plan is drawn ...); from the correction of 2026-11-07 that plan folded shut on a pick's page as another way in not traded with its stop named as its own (see: A pick's page draws ...); ...
+Why: the operator's addendum of 2026-11-07, its first item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - an account with no trade draws no line on the chart
 Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
 Was:

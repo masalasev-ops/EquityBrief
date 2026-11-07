@@ -16,7 +16,7 @@ public sealed record PlanlessBuyView(string Family, string Label, string Ticker,
 
 // The parts tomorrow's buys shares with a setup's card: each row's fold and the control opening it, and the reward
 // against the risk as the plan states it.
-// see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+// see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
 // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the Fundamentals family's among them
 public sealed partial class MarkRenderer
 {

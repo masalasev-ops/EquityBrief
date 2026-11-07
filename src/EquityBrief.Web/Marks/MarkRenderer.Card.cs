@@ -144,7 +144,7 @@ public sealed record HeldTradeView(DecisionCardView Card, PickCell Pick)
 
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
-// see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+// see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 public sealed partial class MarkRenderer
 {
@@ -157,11 +157,16 @@ public sealed partial class MarkRenderer
     // entry and exit plan, worked separately from its support and resistance levels, stands: below it where a buy point's
     // fold draws it, on the stock's full page where the card is drawn without it, and nowhere for a stock of an index the
     // night works no such plan for.
+    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
     public static string OnePlanSays(string setup, bool below = false, string? index = null) =>
         $"This is the {setup}'s own plan, and its trade is sold by these exits alone. " + (
-            below ? "The entry and exit plan below it is worked separately, from the stock's support and resistance levels."
+            below ? "Another way in, worked from the stock's support and resistance levels, is folded below it: not traded, with stops of its own."
             : index is { } other ? $"No entry and exit plan is worked for the {other}'s stocks; it is read for the S&P 500's alone."
-            : "The entry and exit plan on the stock's full page is worked separately, from its support and resistance levels.");
+            : "Another way in, worked from its support and resistance levels, is folded on the stock's full page: not traded, with stops of its own.");
+
+    // A way in the pick does not trade, folded shut beneath its own plan under the words saying so.
+    public static string AnotherWayFold(string way, string markup) =>
+        $"<details class=\"another-way\" data-way=\"{Escaped(way)}\" data-traded=\"false\"><summary>{Escaped(EquityBrief.Core.Cards.PlanWords.AnotherWay)}</summary>{markup}</details>";
 
     // The control on a pick's row that opens its card in place beneath the row.
     public static string CardToggle(DecisionCardView card) =>
@@ -234,7 +239,7 @@ public sealed partial class MarkRenderer
     }
 
     // A setup's name as a sentence carries it: the earnings drift, the sector heavyweights.
-    static string SetupOf(string family) =>
+    public static string SetupOf(string family) =>
         family == EquityBrief.Core.Families.HeavyweightRule.Name
             ? "sector heavyweights"
             : (EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family).ToLowerInvariant();
@@ -363,8 +368,8 @@ public sealed partial class MarkRenderer
         var sold = SoldBy(card);
 
         return held is { } holding
-            ? FormattableString.Invariant($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\" data-held=\"{DayOf(holding.Night)}\">This stock is held on the trade the {Escaped(setup)} picked it for on {holding.Night:d MMM yyyy}, sold {Escaped(sold)}, whichever comes first. The plan beneath is worked from its support and resistance levels for a buyer without that trade.</p>")
-            : Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. The plan beneath is worked from its support and resistance levels for a buyer without the pick.</p>");
+            ? FormattableString.Invariant($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\" data-held=\"{DayOf(holding.Night)}\">This stock is held on the trade the {Escaped(setup)} picked it for on {holding.Night:d MMM yyyy}, sold {Escaped(sold)}, whichever comes first. That is the plan. Another way in, worked from its support and resistance levels, is folded beneath: not traded, with stops of its own.</p>")
+            : Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. That is the plan. Another way in, worked from its support and resistance levels, is folded beneath: not traded, with stops of its own.</p>");
     }
 
     // A trade's own exits in words: from 21.14 at the next open after a close at its target or below its stop, and after

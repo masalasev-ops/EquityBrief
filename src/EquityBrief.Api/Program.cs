@@ -2239,7 +2239,7 @@ async Task<IResult> TonightScreenAsync(
     // entry and exit plan beneath its setup's own, the plan the night shown stored against that night's close. On a night
     // before them, whichever row the reader selected, and the first row where they selected none: section 15.7's region
     // is for whichever row is selected, and a row of either list can be selected.
-    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
     var asked = request.Query["name"].FirstOrDefault();
     var pointed = cards is null ? [] : cards.SelectMany(card => card.Picks).Select(pick => pick.Row.Ticker).Distinct(StringComparer.Ordinal).ToArray();
     var opened = asked is { } named && pointed.Contains(named, StringComparer.Ordinal) ? named : null;
@@ -2249,7 +2249,9 @@ async Task<IResult> TonightScreenAsync(
 
     foreach (var ticker in pointed)
     {
-        plans[ticker] = NameScreen.EntryAndExitPlan(marks, ticker, await read.PlanLadderAsync(ticker, dated), universe.FirstOrDefault(row => row.Ticker == ticker)?.Close);
+        var (family, pick) = cards!.SelectMany(card => card.Picks.Select(one => (card.Family, Pick: one))).First(one => one.Pick.Row.Ticker == ticker);
+
+        plans[ticker] = NameScreen.EntryAndExitPlan(marks, ticker, await read.PlanLadderAsync(ticker, dated), universe.FirstOrDefault(row => row.Ticker == ticker)?.Close, MarkRenderer.SetupOf(family), pick.Stop);
     }
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the

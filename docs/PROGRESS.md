@@ -16846,3 +16846,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 22.6 - correction: a pick's page draws its rule's plan as the plan and folds every other way in as not traded   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its first item, word for word in `prompts/2026-11-07-pick-page-plans-addendum.md`.
+            CTSH, picked by the pullback on 2026-11-06 at a buy of 64.72, a stop of 61.55 and a target of 71.26: beneath its
+            card Tonight drew the stock's entry and exit plan open, its first tranche bought at the price now with a stop of
+            57.91, and its full page drew the same plan open and a wait plan with a stop of 54.70 in its entry check. Two stops
+            for one buy, each told apart from the pick's by a sentence alone.
+Corrected:  each other way in is folded shut beneath the rule's plan under "Not traded: another way in, for comparison", a line
+            inside naming its stops as its own against the stop the pick's trade is sold below: the levels' plan in a buy
+            point's fold on Tonight, built at the 22.6 correction; the levels' plan with its tranche table and sizing arithmetic
+            in the full page's plan region, built at the 18.4 correction; and the entry check's wait plan, built at 22.45. The
+            sentences beneath the card's plan and opening the plan region say so. A stock no family picked or holds draws its
+            plan as before. The decision, superseding the 22.6 correction's, five rows of section 15, the changelog and the
+            guide.
+Tests:      1 new: CTSH's plan of 2026-11-06 folded with "Its stops, 57.91, 54.70 and 52.49, are its own: the pullback's trade
+            is sold on a close below 61.55."; its wait plan folded with its stop of 54.70 named its own; the card's line; and a
+            stock no family picked drawing both open.
+Claims:     none new.
+Pins:       none move: the web and read surface's sources are none a rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the fold beneath a pick drawn open: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

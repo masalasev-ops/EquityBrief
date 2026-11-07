@@ -3112,20 +3112,25 @@ public static partial class NameScreen
     // its two tables as the stock's full page draws them, from the plan the night shown stored and against that night's
     // close, in the reader's words; a stock whose stored plan places nothing says why, and one the night stored no plan
     // for, or no close, says so.
-    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
-    public static string EntryAndExitPlan(MarkRenderer marks, string ticker, LadderRow? ladder, decimal? close)
+    // Beneath a pick's card the plan is folded shut as a way in not traded, its stops named as its own against the pick's.
+    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    public static string EntryAndExitPlan(MarkRenderer marks, string ticker, LadderRow? ladder, decimal? close, string? setup = null, decimal? traded = null)
     {
         var rows = PlanRows(ladder, plain: true);
         var body = Invariant($"<section class=\"card-levels\" data-ticker=\"{Escaped(ticker)}\" data-plan-rows=\"{rows.Count}\"><h5>Entry and exit plan</h5>");
 
         if (rows.Count > 0 && close is { } price)
         {
-            return body
-                + "<div class=\"plan-grid\"><div class=\"fig\">" + marks.PlanColumn(ticker, price, rows, plain: true) + "</div><div>"
+            var drawn = "<div class=\"plan-grid\"><div class=\"fig\">" + marks.PlanColumn(ticker, price, rows, plain: true) + "</div><div>"
                 + marks.PlanTables(ticker, rows, plain: true) + "</div></div>"
                 + (ladder?.ShortNote is { } tooShort ? Invariant($"<p class=\"card-note\" data-short-history=\"true\">{Escaped(tooShort)}</p>") : string.Empty)
-                + "<p class=\"card-note\">Worked from the stock's own support and resistance levels: it buys in the green zones below the price and sells in the orange zones above it, and the heavy line is where the whole idea is wrong.</p>"
-                + "</section>";
+                + "<p class=\"card-note\">Worked from the stock's own support and resistance levels: it buys in the green zones below the price and sells in the orange zones above it, and the heavy line is where the whole idea is wrong.</p>";
+
+            return setup is null
+                ? body + drawn + "</section>"
+                : Invariant($"<section class=\"card-levels\" data-ticker=\"{Escaped(ticker)}\" data-plan-rows=\"{rows.Count}\">")
+                    + MarkRenderer.AnotherWayFold("levels", "<h5>Entry and exit plan</h5>" + drawn + Invariant($"<p class=\"another-stops\">{Escaped(EquityBrief.Core.Cards.PlanWords.OwnStops([.. rows.Where(row => row.Stop is not null).Select(row => row.Stop!.Value)], traded, setup))}</p>"))
+                    + "</section>";
         }
 
         var why = ladder is null ? "no plan is stored for it on the night"

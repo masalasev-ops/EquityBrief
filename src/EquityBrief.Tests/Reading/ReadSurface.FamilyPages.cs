@@ -222,7 +222,7 @@ public partial class ReadSurface
     // drew, and every row folding beneath it its pick's card, from 22.6 with its setup's own plan and from the 22.6
     // correction of 2026-10-25 the stock's entry and exit plan beneath it, each fold closed where the link names no row and
     // the one a link names open, opened and closed by the control in its row's stock cell.
-    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
     // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the Fundamentals family's among them
     [Fact]
     public async Task TonightOpensOnATileASetupAndOneTableOfBuyPointsEachFoldingItsPlanAndCardBeneathIt()
