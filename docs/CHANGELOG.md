@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - the averaged account states how a monthly setup's holding is sized and draws each position's dollars
+Decision: A holding with no stop is sized at an equal share of the account across the most holdings its book can hold
+Was:
+> (15.21, the combined paper account) ... so far where it is open (see: The averaged account gives ...); a pick an account skipped ...
+Now:
+> ... so far where it is open (see: ...); from the 21.11 correction of 2026-11-07 each position's dollars beside its shares and a line stating how a monthly setup's holding is sized in its own account at an equal share of it across the most holdings the setup can hold with that share in dollars on the settings' size (see: ...); a pick an account skipped ...
+Why: the operator's order of 2026-11-07, its seventh item: the words said each set of holdings a fifth of the account while FTNT held $897.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - no skipped pick in a trade table, one line beneath by reason
 Decision: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
 Was:

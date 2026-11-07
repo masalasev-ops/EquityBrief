@@ -150,4 +150,33 @@ public partial class ReadSurface
         Assert.Matches("Not bought: <span class=\"pu-reason\" data-count=\"2\">2 picks, the free cash was under its cost: ", page);
         Assert.DoesNotContain("listed stocks.", page, StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 the combined account's words said "each set of holdings a fifth of the account" while FTNT held $897, LYB
+    // $863 and the heavyweights about $800 each: a fifth of the account shared across the 22 a book can hold, and no dollars
+    // drawn. Each holding is now sized in its own setup's account across the most holdings that setup can hold, the words say
+    // so, and each position's dollars stand beside it.
+    // see: A holding with no stop is sized at an equal share of the account across the most holdings its book can hold
+    [Fact]
+    public void TheMonthlySetupsSizingIsStatedAsTheCodeWorksItAndEachPositionsDollarsAreDrawn()
+    {
+        var day = new DateOnly(2026, 11, 3);
+        var walk = new PaperWalk([(day, 100_000m)], [], 2, 0, 0, 0.0, 0.0, null, null, day, [(day, 0.0)]);
+        var averaged = new PaperCombinedView(walk, day, 2, 0, 2,
+        [
+            new("heavyweight", "ABNB", day, 170.94m, 26, null, null, 0.11, true, 22),
+            new("improving", "FTNT", day, 128.20m, 35, null, null, -0.07, true, 22),
+            new("drift", "IDXX", day, 662.26m, 15, null, null, 0.02, true),
+        ]) { Size = 100_000m };
+        var card = WebUtility.HtmlDecode(new MarkRenderer().PaperCombined(averaged));
+
+        // $100,000 over 22 is $4,545 a holding, under the tenth; ABNB's 26 shares at 170.94 are $4,444 and FTNT's 35 at 128.20
+        // $4,487.
+        Assert.Contains("Each holding of a monthly setup is sized in its own setup's account at an equal share of that account across the most holdings the setup can hold, never more than a tenth of it: Fundamentals across 22, about $4,545 a holding on $100,000; Sector heavyweights across 22, about $4,545 a holding on $100,000.", card, StringComparison.Ordinal);
+        Assert.Contains("<th class=\"r\">Dollars</th>", card, StringComparison.Ordinal);
+        Assert.Contains("data-dollars=\"4444.44\">$4,444</td>", card, StringComparison.Ordinal);
+        Assert.Contains("data-dollars=\"4487.00\">$4,487</td>", card, StringComparison.Ordinal);
+        Assert.Contains("data-dollars=\"9933.90\">$9,934</td>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("a fifth of the account", card, StringComparison.Ordinal);
+        Assert.All(PlainWords.Terms(), term => Assert.DoesNotMatch(PlainWords.Pattern(term), PlainWords.Visible(card)));
+    }
 }

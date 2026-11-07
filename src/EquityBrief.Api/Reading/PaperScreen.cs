@@ -901,8 +901,12 @@ public static class PaperScreen
                     one.Taken.Skipped,
                     one.Taken.Trade.Ended,
                     one.Taken.Skipped is null ? ReturnOf(one.Taken.Trade) : null,
-                    one.Taken.Trade.Ended is null || one.Taken.Trade.Ended > night)),
-            ]);
+                    one.Taken.Trade.Ended is null || one.Taken.Trade.Ended > night,
+                    one.Taken.Trade.Stop is null ? one.Taken.Trade.BookHoldings : null)),
+            ])
+        {
+            Size = held.Size,
+        };
     }
 
     // An account's trade log: each trade with its result in the account's unit, an open one's so far at tonight's close

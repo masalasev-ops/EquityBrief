@@ -152,12 +152,16 @@ public sealed record PaperCombinedView(PaperWalk Walk, DateOnly Since, int Open,
     public const string Name = "The live setups' accounts, averaged";
 
     public int Skipped => Walk.Skipped;
+
+    // The size each account it averages starts at, the settings' size, which a monthly book's holding is a share of.
+    public decimal Size { get; init; }
 }
 
 // One trade of an account the averaged account holds a share of: the family whose account bought it, its stock, its buy
 // session and price, the shares its own account bought, none where that account skipped it and why, the session it ended
-// on, and its return on the position, so far at tonight's close where it is open.
-public sealed record PaperCombinedTradeView(string Family, string Ticker, DateOnly Bought, decimal Buy, long Shares, string? Skipped, DateOnly? Ended, double? Return, bool Open);
+// on, its return on the position, so far at tonight's close where it is open, and for a monthly book's holding the most
+// holdings its book can hold, which its account sizes it across.
+public sealed record PaperCombinedTradeView(string Family, string Ticker, DateOnly Bought, decimal Buy, long Shares, string? Skipped, DateOnly? Ended, double? Return, bool Open, int? BookHoldings = null);
 
 // The choices paper trading keeps in its link, one a part, and the link a choice opens with every other kept: the index,
 // the family whose variants the chart adds, the closed tab of what the system bought, the family its chips show, the
@@ -1019,6 +1023,25 @@ public sealed partial class MarkRenderer
     public static string AveragedLine(PaperCombinedView all) =>
         Formatted($"Each of the {all.Accounts} live setups' own accounts holds an equal share of this one from {DayOf(all.Since)}, the day every one of them counts, so it holds what each holds and skips what each skips, and no pick twice: following every rule reads the same. Each row is a trade as its setup's own account bought it, its shares that account's.");
 
+    // How each monthly book's holdings are sized, as the code sizes them: in its own setup's account, an equal share of that
+    // account across the most holdings its book can hold, at most a tenth of it; none where the account holds no book.
+    // see: A holding with no stop is sized at an equal share of the account across the most holdings its book can hold
+    public static string? BooksLine(PaperCombinedView all)
+    {
+        var books = all.Trades
+            .Where(trade => trade.Skipped is null && trade.BookHoldings is > 0)
+            .GroupBy(trade => trade.Family, StringComparer.Ordinal)
+            .OrderBy(group => BuyOrder.Of(group.Key))
+            .Select(group => (Family: group.Key, Holdings: group.First().BookHoldings!.Value))
+            .ToArray();
+
+        return books.Length == 0 || all.Size <= 0m
+            ? null
+            : "Each holding of a monthly setup is sized in its own setup's account at an equal share of that account across the most holdings the setup can hold, never more than a tenth of it: "
+                + string.Join("; ", books.Select(book => Formatted($"{FamilyName(book.Family)} across {book.Holdings}, about ${Math.Min(all.Size / book.Holdings, all.Size * PaperAccount.AccountCap):#,0} a holding on ${all.Size:#,0}")))
+                + ". An account's value moves with its trades, so each position's dollars stand beside it.";
+    }
+
     public string PaperCombined(PaperCombinedView? combined)
     {
         if (combined is not { } all)
@@ -1032,7 +1055,8 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"paper-combined\" data-trades=\"{bought.Length}\" data-skipped=\"{all.Skipped}\" data-accounts=\"{all.Accounts}\" data-since=\"{DayOf(all.Since)}\">");
         html.Append(Invariant, $"<p class=\"paper-combined-skips\">{Escaped(AveragedLine(all))}</p>");
-        html.Append("<div class=\"tbl-wrap\"><table class=\"paper-combined-table\"><thead><tr><th>Setup</th><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Shares</th><th>Ended</th><th class=\"r\">Return</th></tr></thead><tbody>");
+        html.Append(BooksLine(all) is { } books ? Formatted($"<p class=\"paper-combined-books\" data-books>{Escaped(books)}</p>") : string.Empty);
+        html.Append("<div class=\"tbl-wrap\"><table class=\"paper-combined-table\"><thead><tr><th>Setup</th><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Shares</th><th class=\"r\">Dollars</th><th>Ended</th><th class=\"r\">Return</th></tr></thead><tbody>");
 
         // Each session's trades in Tonight's order of the setups, each setup's in its own account's order; a pick an account
         // skipped is on the line beneath and never a row.
@@ -1041,7 +1065,7 @@ public sealed partial class MarkRenderer
         {
             html.Append(Invariant, $"<tr data-family=\"{Escaped(trade.Family)}\" data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\">");
             html.Append(Invariant, $"<td><span class=\"fam-swatch\" data-family=\"{Escaped(trade.Family)}\"></span>{Escaped(FamilyName(trade.Family))}</td><td><a href=\"#/chart/{Uri.EscapeDataString(trade.Ticker)}\">{Escaped(trade.Ticker)}</a></td><td>{DayOf(trade.Bought)}</td>");
-            html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}</td><td class=\"r num\">{trade.Shares.ToString("#,0", Invariant)}</td>");
+            html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}</td><td class=\"r num\">{trade.Shares.ToString("#,0", Invariant)}</td><td class=\"r num\" data-dollars=\"{(trade.Shares * trade.Buy).ToString("0.00", Invariant)}\">${trade.Shares * trade.Buy:#,0}</td>");
             html.Append(trade.Open ? "<td><span class=\"pill\">open</span></td>" : Formatted($"<td>{(trade.Ended is { } on ? DayOf(on) : "not read")}</td>"));
             html.Append(Invariant, $"<td class=\"r num\">{(trade.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">not read</span>")}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}</td></tr>");
         }

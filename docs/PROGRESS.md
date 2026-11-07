@@ -16531,3 +16531,24 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             averaged account's table drawing its skips: red. m2 the trade log drawing its skips: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 21.11 - correction: the averaged account states how a monthly setup's holding is sized, and draws each position's dollars   2026-11-07
+
+Found:      the order's seventh item: the combined account said "each set of holdings a fifth of the account" while FTNT held $897,
+            LYB $863 and the heavyweights about $800 each, a fifth of the pot shared across the 22 holdings a book can hold, and
+            no dollars were drawn. With the 21.11 correction above the pot is gone and each holding sits in its own setup's
+            account, sized by `PositionSize.Of` at the account's value over the most holdings its book can hold, at most a tenth:
+            22 for the sector heavyweights and, its book stating no size of its own, for the Fundamentals family; Quality at a
+            fair price's the size its book stores.
+Corrected:  the words match the sizing: the averaged account's card states, for each monthly setup it holds, that its holding is
+            an equal share of its own account across the most holdings the setup can hold, with that share in dollars on the
+            settings' size, and its table draws each position's dollars beside its shares. 15.21's row, the changelog and the
+            guide.
+Tests:      1 new, by hand: on $100,000 a holding of 22 is $4,545; ABNB's 26 shares at 170.94 are $4,444, FTNT's 35 at 128.20
+            $4,487 and IDXX's 15 at 662.26 $9,934; the line names the Fundamentals and the sector heavyweights across 22.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 the
+            line never drawn: red. m2 the dollars cell dropped: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
