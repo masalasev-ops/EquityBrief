@@ -16741,3 +16741,21 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             fund's line from the close before the span: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: the chart draws gridlines at round steps, a labelled zero line, a date each week and an end label on each line   2026-11-07
+
+Found:      the order's eighteenth item: on 2026-11-06 the chart drew its zero line unlabelled, its top and bottom figures and its
+            first and last dates alone, and no line said whose it was or where it stood.
+Corrected:  `MarkRenderer.RoundSteps` sets the scale over whole steps of 1, 2, 2.5 or 5 times a power of ten, no more than six,
+            each a gridline with its label and nought's the zero line labelled 0%; the first session of each week is dated, none
+            closer than a label's width; each line ends in a label of its name and latest return in its colour, `Spread`
+            pushing two that fall together a line of text apart. The chart is drawn wider to hold the labels. The decision's
+            text, 15.21's row, the changelog and the guide.
+Tests:      1 new: the steps by hand, -2.2 to 3.1 at 1 from -3 to 4, -0.4 to 0 at 0.1 and a flat span either side of nought;
+            two ends 4 apart moved to 13; over three weeks a date each Monday, nought labelled and two end labels apart.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 the
+            labels left where their lines end: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

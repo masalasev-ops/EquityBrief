@@ -465,8 +465,14 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-families a[aria-current='true']{border-color:var(--ink);font-weight:600}
 .paper-chart{margin:0}
 .paper-chart svg,.paper-running svg{width:100%;height:auto;display:block}
-.paper-zero{stroke:var(--hair-2);stroke-width:1}
+.paper-zero{stroke:var(--soft);stroke-width:1.2}
+.paper-grid{stroke:var(--hair);stroke-width:1}
 .paper-axis{font-size:11px;fill:var(--soft);font-variant-numeric:tabular-nums}
+.paper-axis.paper-zero-label{fill:var(--ink-2);font-weight:600}
+.paper-end{font-size:11px;font-weight:600;fill:var(--soft);font-variant-numeric:tabular-nums}
+.paper-end[data-family='pullback']{fill:var(--fam-pullback)} .paper-end[data-family='breakout']{fill:var(--fam-breakout)} .paper-end[data-family='drift']{fill:var(--fam-drift)} .paper-end[data-family='fundamentals']{fill:var(--fam-fundamentals)}
+.paper-end[data-family='improving']{fill:var(--fam-improving)} .paper-end[data-family='dip']{fill:var(--fam-dip)} .paper-end[data-family='heavyweight']{fill:var(--fam-heavyweight)} .paper-end[data-family='quality']{fill:var(--fam-quality)}
+.paper-end[data-standing='combined']{fill:var(--ink)} .paper-end[data-standing='you']{fill:var(--accent)} .paper-end[data-standing='fund']{fill:var(--muted)}
 .paper-line{fill:none;stroke:var(--soft);stroke-width:1.8;stroke-linejoin:round}
 .paper-line.dashed{stroke-dasharray:5 4;stroke-width:1.4}
 .paper-line[data-family='pullback']{stroke:var(--fam-pullback)} .paper-line[data-family='breakout']{stroke:var(--fam-breakout)} .paper-line[data-family='drift']{stroke:var(--fam-drift)}

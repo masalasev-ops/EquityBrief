@@ -271,10 +271,13 @@ public sealed partial class MarkRenderer
         (DateOnly Session, double Return)[] fundLine = held.Length > 0 && held[0].Close > 0m
             ? [.. held.Where(one => at.ContainsKey(one.Session)).Select(one => (one.Session, EquityBrief.Core.Prices.Statistic.FromRatio((one.Close / held[0].Close) - 1m) * 100))]
             : [];
-        var low = Math.Min(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Concat(fundLine.Select(point => point.Return)).Min());
-        var high = Math.Max(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Concat(fundLine.Select(point => point.Return)).Max());
-        var span = high - low < 1 ? 1 : high - low;
-        const double width = 720, height = 240, left = 44, right = 12, top = 12, bottom = 26;
+        // From the 19.4 correction of 2026-11-07 the scale runs over round steps holding every point and nought, each step a
+        // gridline with its label and nought's labelled as the zero line; the right margin holds each line's end label.
+        var (low, high, step) = RoundSteps(
+            Math.Min(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Concat(fundLine.Select(point => point.Return)).Min()),
+            Math.Max(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Concat(fundLine.Select(point => point.Return)).Max()));
+        var span = high - low;
+        const double width = 860, height = 260, left = 48, right = 150, top = 12, bottom = 28;
 
         double X(DateOnly session) => sessions.Length == 1 ? left + ((width - left - right) / 2) : left + ((width - left - right) * at[session] / (sessions.Length - 1));
 
@@ -292,11 +295,29 @@ public sealed partial class MarkRenderer
 
         svg.Append(Invariant, $"<figure class=\"paper-chart\" data-lines=\"{drawn.Length}\" data-sessions=\"{sessions.Length}\" data-from=\"{DayOf(sessions[0])}\" data-to=\"{DayOf(sessions[^1])}\" data-span=\"{(recent ? PaperLink.RecentValue : "all")}\">");
         svg.Append(Invariant, $"<svg viewBox=\"0 0 {width} {height}\" role=\"img\" aria-label=\"Each drawn account's return in per cent of its size, session by session\">");
-        svg.Append(Invariant, $"<line class=\"paper-zero\" x1=\"{left}\" x2=\"{width - right}\" y1=\"{Y(0):0.#}\" y2=\"{Y(0):0.#}\"/>");
-        svg.Append(Invariant, $"<text class=\"paper-axis\" x=\"{left - 6}\" y=\"{Y(high) + 4:0.#}\" text-anchor=\"end\">{high:+0.#;-0.#;0}%</text>");
-        svg.Append(Invariant, $"<text class=\"paper-axis\" x=\"{left - 6}\" y=\"{Y(low) + 4:0.#}\" text-anchor=\"end\">{low:+0.#;-0.#;0}%</text>");
-        svg.Append(Invariant, $"<text class=\"paper-axis\" x=\"{left}\" y=\"{height - 6}\">{DayOf(sessions[0])}</text>");
-        svg.Append(Invariant, $"<text class=\"paper-axis\" x=\"{width - right}\" y=\"{height - 6}\" text-anchor=\"end\">{DayOf(sessions[^1])}</text>");
+        // A gridline at each round step with its label, nought's the zero line.
+        for (var at2 = 0; low + (at2 * step) <= high + (step / 1000); at2++)
+        {
+            var level = Math.Round(low + (at2 * step), 6);
+            var zero = Math.Abs(level) < step / 1000;
+
+            svg.Append(Invariant, $"<line class=\"{(zero ? "paper-zero" : "paper-grid")}\" data-level=\"{(zero ? "0" : level.ToString("R", Invariant))}\" x1=\"{left}\" x2=\"{width - right}\" y1=\"{Y(level):0.#}\" y2=\"{Y(level):0.#}\"/>");
+            svg.Append(Invariant, $"<text class=\"paper-axis{(zero ? " paper-zero-label" : string.Empty)}\" x=\"{left - 6}\" y=\"{Y(level) + 4:0.#}\" text-anchor=\"end\">{(zero ? "0%" : Formatted($"{level:+0.##;-0.##}%"))}</text>");
+        }
+
+        // A date beneath the first session of each week the span holds, none closer than a label's width to the one before.
+        var labelled = double.NegativeInfinity;
+
+        foreach (var session in sessions.Where((session, place) => place == 0 || WeekOf(session) != WeekOf(sessions[place - 1])))
+        {
+            if (X(session) - labelled < 40)
+            {
+                continue;
+            }
+
+            labelled = X(session);
+            svg.Append(Invariant, $"<text class=\"paper-axis paper-date\" data-date=\"{DayOf(session)}\" x=\"{X(session):0.#}\" y=\"{height - 8}\" text-anchor=\"middle\">{session.ToString("d MMM", Invariant)}</text>");
+        }
 
         foreach (var account in drawn)
         {
@@ -311,6 +332,18 @@ public sealed partial class MarkRenderer
             var path = string.Join(" ", fundLine.Select((point, place) => Formatted($"{(place == 0 ? "M" : "L")}{X(point.Session):0.#},{Y(point.Return):0.#}")));
 
             svg.Append(Invariant, $"<path class=\"paper-line paper-fund\" data-account=\"{FundKey}\" data-standing=\"{FundKey}\" d=\"{path}\"><title>{Escaped(named)}, the index's fund</title></path>");
+        }
+
+        // Each line ends in a label of its name and its latest return, the labels moved apart where two would overlap.
+        (string Key, string Family, string Standing, string Text, double Y)[] ends =
+        [
+            .. drawn.Select(account => (account.Key, account.Family, account.Standing, EndName(account) + " " + Formatted($"{returns[account.Key][^1].Return:+0.0;-0.0;0.0}%"), Y(returns[account.Key][^1].Return))),
+            .. fundLine.Length > 0 && fundName is { } ended ? [(FundKey, FundKey, FundKey, ended + " " + Formatted($"{fundLine[^1].Return:+0.0;-0.0;0.0}%"), Y(fundLine[^1].Return))] : Array.Empty<(string, string, string, string, double)>(),
+        ];
+
+        foreach (var (key, family, standing, text, y) in Spread(ends, top + 4, height - bottom))
+        {
+            svg.Append(Invariant, $"<text class=\"paper-end\" data-end=\"{Escaped(key)}\" data-family=\"{Escaped(family)}\" data-standing=\"{Escaped(standing)}\" x=\"{width - right + 6}\" y=\"{y + 4:0.#}\">{Escaped(text)}</text>");
         }
 
         svg.Append("</svg><figcaption class=\"paper-keys\">");
@@ -332,6 +365,58 @@ public sealed partial class MarkRenderer
 
     // The calendar days the chart's recent span reaches back from its last session.
     public const int RecentDays = 30;
+
+    // The least distance in the chart's units between two end labels, a line of their text.
+    public const double EndGap = 13;
+
+    // The chart's scale in round steps: a step of 1, 2, 2.5 or 5 times a power of ten giving no more than six steps, and the
+    // low and high ends at whole steps holding both ends given; a flat span reads one per cent either side.
+    public static (double Low, double High, double Step) RoundSteps(double low, double high)
+    {
+        if (high - low < 1e-9)
+        {
+            return (Math.Min(low, -1), Math.Max(high, 1), 1);
+        }
+
+        var raw = (high - low) / 6;
+        var power = Math.Pow(10, Math.Floor(Math.Log10(raw)));
+        var step = new[] { 1, 2, 2.5, 5, 10 }.Select(times => times * power).First(candidate => candidate >= raw - 1e-12);
+
+        return (Math.Floor((low / step) + 1e-9) * step, Math.Ceiling((high / step) - 1e-9) * step, step);
+    }
+
+    // End labels at their lines' ends, each pushed down to leave the one above at least a label's height, then those pushed
+    // past the bottom drawn back up, the order of the lines' ends kept.
+    public static IReadOnlyList<(string Key, string Family, string Standing, string Text, double Y)> Spread(IReadOnlyList<(string Key, string Family, string Standing, string Text, double Y)> ends, double top, double bottom)
+    {
+        var placed = ends.OrderBy(end => end.Y).ThenBy(end => end.Key, StringComparer.Ordinal).ToArray();
+
+        for (var at = 0; at < placed.Length; at++)
+        {
+            var least = at == 0 ? top : placed[at - 1].Y + EndGap;
+
+            placed[at] = placed[at] with { Y = Math.Max(placed[at].Y, least) };
+        }
+
+        for (var at = placed.Length - 1; at >= 0; at--)
+        {
+            var most = at == placed.Length - 1 ? bottom : placed[at + 1].Y - EndGap;
+
+            placed[at] = placed[at] with { Y = Math.Min(placed[at].Y, most) };
+        }
+
+        return placed;
+    }
+
+    // A line's name on its end label: its setup's, a variant's with its number, yours, and the averaged account's short.
+    static string EndName(PaperAccountView account) =>
+        account.Standing == PaperCombinedView.Key ? "Averaged"
+            : account.Standing == PaperAccountView.You ? "You"
+            : account.Standing == PaperAccountView.Variant ? FamilyName(account.Family) + " " + (account.Short ?? account.Name)
+            : FamilyName(account.Family);
+
+    // The Monday of a session's week, which the chart's dates are drawn a week at a time by.
+    static DateOnly WeekOf(DateOnly session) => session.AddDays(-(((int)session.DayOfWeek + 6) % 7));
 
     // The key the chart's line of the index's fund is drawn and pressed by.
     public const string FundKey = "fund";

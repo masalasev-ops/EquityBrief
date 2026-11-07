@@ -507,4 +507,41 @@ public partial class ReadSurface
         Assert.Contains("<span class=\"paper-key-mark\" data-standing=\"fund\"></span>SPY, the index's fund</button>", chart, StringComparison.Ordinal);
         Assert.Contains(".paper-line.paper-fund{stroke:var(--muted);stroke-dasharray:6 4;stroke-width:1.6}", Stylesheet.Css, StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 the chart drew its zero line unlabelled, its top and bottom figures and its first and last dates alone,
+    // and no line said whose it was or where it stood. It draws gridlines at round steps with nought labelled, a date each
+    // week, and each line ending in its name and latest return, the labels moved apart where two would overlap.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    [Fact]
+    public void TheChartDrawsRoundGridlinesALabelledZeroWeeklyDatesAndAnEndLabelOnEachLine()
+    {
+        // From -2.2% to +3.1% steps of 1 give six, from -3 to +4; from -0.4% to 0, steps of 0.1; a flat span one either side.
+        Assert.Equal((-3.0, 4.0, 1.0), MarkRenderer.RoundSteps(-2.2, 3.1));
+        Assert.Equal((-0.4, 0.0, 0.1), Rounded(MarkRenderer.RoundSteps(-0.4, 0)));
+        Assert.Equal((-1.0, 1.0, 1.0), MarkRenderer.RoundSteps(0, 0));
+
+        static (double, double, double) Rounded((double Low, double High, double Step) steps) => (Math.Round(steps.Low, 9), Math.Round(steps.High, 9), Math.Round(steps.Step, 9));
+
+        // Two lines ending within a label's height are moved apart by it, and the one above stays above.
+        var spread = MarkRenderer.Spread([("a", "pullback", "live", "A", 100), ("b", "drift", "live", "B", 104)], 16, 232);
+
+        Assert.Equal([("a", 100.0), ("b", 113.0)], spread.Select(end => (end.Key, end.Y)));
+
+        // Over three weeks the chart draws a date each week, gridlines at whole per cents with nought labelled, and the two
+        // lines' end labels with their latest returns, 13 apart where their ends fall together.
+        var from = new DateOnly(2026, 10, 19);
+        var drift = ChartAccount("drift", PaperAccountView.Live, from, [.. Enumerable.Range(0, 15).Select(at => at * 0.001)]);
+        var breakout = ChartAccount("breakout", PaperAccountView.Live, from, [.. Enumerable.Range(0, 15).Select(at => at * 0.00105)]);
+        var chart = WebUtility.HtmlDecode(new MarkRenderer().PaperChart([drift, breakout], null));
+
+        Assert.Contains("<text class=\"paper-axis paper-zero-label\"", chart, StringComparison.Ordinal);
+        Assert.Contains(">0%</text>", chart, StringComparison.Ordinal);
+        Assert.Equal(["2026-10-19", "2026-10-26", "2026-11-02"], Regex.Matches(chart, "data-date=\"([0-9-]+)\"").Select(match => match.Groups[1].Value));
+        Assert.True(Regex.Matches(chart, "<line class=\"paper-grid\"").Count >= 1);
+        Assert.Contains(">Earnings drift +1.4%</text>", chart, StringComparison.Ordinal);
+        Assert.Contains(">Breakout +1.5%</text>", chart, StringComparison.Ordinal);
+        var ends = Regex.Matches(chart, "<text class=\"paper-end\"[^>]* y=\"([0-9.]+)\">").Select(match => double.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture)).Order().ToArray();
+
+        Assert.True(ends[1] - ends[0] >= MarkRenderer.EndGap - 0.1, "two end labels overlap");
+    }
 }
