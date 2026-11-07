@@ -29,6 +29,8 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.FailureTable, "A filer whose names are not the company's"),
     ];
 
+    internal static string[] LongPricesRows => [.. ComponentAccess.LongPricesRows, .. SchemaColumns.LongPriceStoreRows, .. LongPricesClaims, .. Reading.ReadSurface.LongPricesPageRows];
+
     // A provider answering every ask with nothing, counting what it was asked.
     sealed class SilentLongFeed : ILongHistoryFeed
     {
@@ -202,22 +204,22 @@ public partial class FixtureExpectations
     {
         var folder = Path.Combine(root, "capture");
 
-        foreach (var kind in new[] { "prices", "market", "splits", "dividends" })
+        foreach (var kind in new[] { LongPricePull.PricesFolder, LongPricePull.MarketFolder, LongPricePull.SplitsFolder, LongPricePull.DividendsFolder })
         {
             Directory.CreateDirectory(Path.Combine(folder, kind));
         }
 
         var all = LongWeekdays(new DateOnly(2008, 12, 1), new DateOnly(2009, 3, 31));
 
-        File.WriteAllText(Path.Combine(folder, "market", "GSPC.json"), Answer(all, 900m));
-        File.WriteAllText(Path.Combine(folder, "prices", "MER.json"), Answer(all.Where(day => day <= new DateOnly(2009, 2, 27)), 12m));
-        File.WriteAllText(Path.Combine(folder, "prices", "KEPT.json"), keptAnswer);
-        File.WriteAllText(Path.Combine(folder, "prices", "GONE.json"), Answer(all.Where(day => day <= new DateOnly(2009, 1, 15)), 3m, day => day == new DateOnly(2009, 1, 15) ? 0L : 500L));
-        File.WriteAllText(Path.Combine(folder, "prices", "ZZZ.json"), "[]");
-        File.WriteAllText(Path.Combine(folder, "splits", "KEPT.json"), "[{\"date\":\"2009-02-02\",\"split\":\"2.000000/1.000000\"}]");
-        File.WriteAllText(Path.Combine(folder, "dividends", "KEPT.json"), "[{\"date\":\"2009-03-02\",\"value\":0.25,\"unadjustedValue\":0.5}]");
+        File.WriteAllText(Path.Combine(folder, LongPricePull.MarketFolder, "GSPC.json"), Answer(all, 900m));
+        File.WriteAllText(Path.Combine(folder, LongPricePull.PricesFolder,"MER.json"), Answer(all.Where(day => day <= new DateOnly(2009, 2, 27)), 12m));
+        File.WriteAllText(Path.Combine(folder, LongPricePull.PricesFolder,"KEPT.json"), keptAnswer);
+        File.WriteAllText(Path.Combine(folder, LongPricePull.PricesFolder,"GONE.json"), Answer(all.Where(day => day <= new DateOnly(2009, 1, 15)), 3m, day => day == new DateOnly(2009, 1, 15) ? 0L : 500L));
+        File.WriteAllText(Path.Combine(folder, LongPricePull.PricesFolder,"ZZZ.json"), "[]");
+        File.WriteAllText(Path.Combine(folder, LongPricePull.SplitsFolder, "KEPT.json"), "[{\"date\":\"2009-02-02\",\"split\":\"2.000000/1.000000\"}]");
+        File.WriteAllText(Path.Combine(folder, LongPricePull.DividendsFolder, "KEPT.json"), "[{\"date\":\"2009-03-02\",\"value\":0.25,\"unadjustedValue\":0.5}]");
 
-        var merrill = Path.Combine(folder, "filers", "65100");
+        var merrill = Path.Combine(folder, LongPricePull.FilersFolder, "65100");
 
         foreach (var file in Directory.EnumerateFiles(HistoryEndsFixture + "/mer", "*", SearchOption.AllDirectories))
         {
@@ -336,6 +338,68 @@ public partial class FixtureExpectations
         }
 
         Assert.Equal(before, Standing(store));
+    }
+
+    [Fact]
+    public void AnEndAFilingGivesIsMarkedOnlyWhereTheProvidersPricesRunOnPastIt()
+    {
+        using var store = new TemporaryStore();
+        var folder = Capture(store.Root, "[]");
+        var all = LongWeekdays(new DateOnly(2008, 12, 1), new DateOnly(2009, 3, 31));
+        var calendar = new Core.Bars.PulledCalendar(all.ToDictionary(day => day, _ => 1), [(all[0], all[^1])]);
+        var merrill = new LongCode("MER", ["Merrill Lynch & Co., Inc."], "65100");
+        var filer = new LongFiler("MER", "65100", ["MERRILL LYNCH & CO INC"], true, "the pull's filer");
+        ProviderBar[] Series(DateOnly through) => [.. all.Where(day => day <= through).Select(day => new ProviderBar(day, 12m, 12m, 12m, 12m, 12m, 1000))];
+
+        // The answer stopping on 2008-12-15 stops before the filing's end of 2008-12-31: the end stands and no mark is written.
+        var stopped = LongPricePull.EndOf(folder, merrill, filer, Series(new DateOnly(2008, 12, 15)), calendar);
+
+        Assert.Equal((new DateOnly(2008, 12, 31), false), (stopped.Session!.Value, stopped.Marked));
+
+        // Running on to 2009-01-02 it is marked, and with its filer's names another company's no end is read at all.
+        Assert.True(LongPricePull.EndOf(folder, merrill, filer, Series(new DateOnly(2009, 1, 2)), calendar).Marked);
+        Assert.Null(LongPricePull.EndOf(folder, merrill, filer with { IsTheCompany = false }, Series(new DateOnly(2009, 1, 2)), calendar).Session);
+    }
+
+    [Fact]
+    public async Task TheLongDataCheckReadsTheLongPricesAndWritesItsFindingsFrom2005UnderItsOwnStage()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var days = LongWeekdays(new DateOnly(2004, 1, 2), new DateOnly(2006, 12, 29));
+
+        using (var connection = store.Open())
+        {
+            using var transaction = connection.BeginTransaction();
+            using var insert = connection.CreateCommand();
+            insert.Transaction = transaction;
+            insert.CommandText = "INSERT INTO long_bar (ticker, session_date, open, high, low, close, raw_close, volume, run_id) VALUES ('AAA', $day, $close, $close, $close, $close, $close, 1000000, 'long-prices-1');";
+
+            var (day, close) = (insert.Parameters.Add("$day", SqliteType.Text), insert.Parameters.Add("$close", SqliteType.Text));
+
+            // A move of 40 in every 100 on 2004-06-01 and another on 2006-06-01, each standing, on usual volume.
+            foreach (var session in days)
+            {
+                day.Value = session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                close.Value = session < new DateOnly(2004, 6, 1) ? "10" : session < new DateOnly(2006, 6, 1) ? "14" : "19.6";
+                insert.ExecuteNonQuery();
+            }
+
+            transaction.Commit();
+        }
+
+        // A pulled bar the long check does not read.
+        store.Execute("INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES ('BBB', '2016-01-04', '5', '5', '5', '5', '5', 0, 'history-pull-1');");
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 11, 7, 13, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var outcome = await new DataChecker(clock, store.DatabaseFile, longHistory: true).RunAsync("data-check-long-1");
+
+        Assert.Equal(1, outcome.Stocks);
+
+        using var read = store.Open();
+
+        Assert.Equal(1L, LongCount(read, "SELECT COUNT(*) FROM data_check;"));
+        Assert.Equal(1L, LongCount(read, "SELECT COUNT(*) FROM data_check WHERE ticker = 'AAA' AND session_date = '2006-06-01' AND class = 'jump' AND kind = 'unexplained' AND era = '2005 to 2009';"));
+        Assert.Equal(1L, LongCount(read, "SELECT COUNT(*) FROM run_log WHERE run_id = 'data-check-long-1' AND stage = 'data-check-long';"));
     }
 
     [Fact]

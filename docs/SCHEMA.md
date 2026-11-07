@@ -179,6 +179,12 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_snapshot` | LongMembers | none | LongMembers |
 | `long_holding` | LongMembers | none | LongMembers |
 | `long_span` | LongMembers | none | LongMembers |
+| `long_bar` | LongPricePull | none | LongPricePull |
+| `long_market_bar` | LongPricePull | none | LongPricePull |
+| `long_print` | LongPricePull | none | LongPricePull |
+| `long_split` | LongPricePull | none | LongPricePull |
+| `long_dividend` | LongPricePull | none | LongPricePull |
+| `long_filing` | LongPricePull | none | LongPricePull |
 | `dividend_wait` | CorporateActionChecker | CorporateActionChecker | CorporateActionChecker |
 | `chart_check` | ChartChecker | none | ChartChecker |
 | `split_event` | CorporateActionChecker | none | none |
@@ -337,7 +343,7 @@ Grain: one row per stock and session of its pulled history the operator gave the
 
 Primary key: `ticker`, `session_date`.
 
-**Written once by `session-mark` on the operator's word, a second word changing nothing, and no pulled row moves** (see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart). A session a history starts on leaves the sessions before it out of the chart's and the name page's reads of the pull, the chart's averages and the page history reader; a bad print is read past by the chart check's moves and draws a small mark; a move checked and kept is a line and no flag. No rule reads it until phase 23's restart. From migration 129, which builds the table again with its rows copied across since SQLite can add to the kinds a table was created with only that way, a mark may be the session a company's history ends on, set by rule from its filings and on the operator's word only where no such filing is found (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger).
+**Written once by `session-mark` on the operator's word, a second word changing nothing, and no pulled row moves** (see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart). A session a history starts on leaves the sessions before it out of the chart's and the name page's reads of the pull, the chart's averages and the page history reader; a bad print is read past by the chart check's moves and draws a small mark; a move checked and kept is a line and no flag. No rule reads it until phase 23's restart. From migration 129, which builds the table again with its rows copied across since SQLite can add to the kinds a table was created with only that way, a mark may be the session a company's history ends on, set by rule from its filings and on the operator's word only where no such filing is found (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger). From 23.4 `long-prices --write` writes those ends by rule through SessionMarks' own writer inside its run's transaction, a session already marked changing nothing, and only where the provider's answer runs on past the session the filing gives (see: A departed company's end no filing settles reads its last session with volume and goes to the operator on one list).
 
 ### data_check
 Grain: one row per stock, session, class and kind the data check found in the stock's pulled sessions.
@@ -354,7 +360,7 @@ Grain: one row per stock, session, class and kind the data check found in the st
 
 Primary key: `ticker`, `session_date`, `class`, `kind`.
 
-**What the data check found, read by the History page and by no rule** (see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row). From 23.1 `data-check` writes a run's rows whole and removes the run before's in the same transaction, so the table holds one run; `--print` writes nothing. No pulled row, bar or mark moves.
+**What the data check found, read by the History page and by no rule** (see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row). From 23.1 `data-check` writes a run's rows whole and removes the run before's in the same transaction, so the table holds one run; `--print` writes nothing. From 23.4 `data-check --long` writes its run the same way over the long history's prices from 2005, under the stage `data-check-long` on `run_log`, replacing the run over the pull. No pulled row, bar or mark moves.
 
 ### long_snapshot
 Grain: one row per index and quarter end of a fund's complete schedule the trust filed from 2004-12-31 to 2018-09-30.
@@ -407,7 +413,99 @@ Grain: one row per index, code and start of a span of membership in the long his
 
 Primary key: `index_code`, `ticker`, `joined`.
 
-**The long history's membership off the funds' older filings, read by the History page and by no night** (see: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30). From 23.3 `long-members --write` writes a run's snapshots, holdings and spans whole and removes the run before's in the same transaction with its row on `run_log`, and writes nothing where a quarter end falls under the stop or a fall by half is left out by no name (see: Each quarter end of the long history stands at the coverage it reached and stops under 90 in every 100 of its holdings or their value). A member runs from a snapshot holding it to the first later snapshot that does not, one away at a single snapshot read as held there and one away at two or more as two spans, a code two funds hold at one quarter end in the larger index; the S&P 500 reads IVV's snapshots before 2012 and the provider's dates from 2012 (see: The S&P 500 before 2012 is read from IVV's filed holdings and from 2012 from the provider's dates) (see: A provider's span with no start date takes the first of IVV's snapshots holding its company by code or by name). It reads `pulled_holding` and `membership` and moves no row of either.
+**The long history's membership off the funds' older filings, read by the History page and by no night** (see: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30). From 23.3 `long-members --write` writes a run's snapshots, holdings and spans whole and removes the run before's in the same transaction with its row on `run_log`, and writes nothing where a quarter end falls under the stop or a fall by half is left out by no name (see: Each quarter end of the long history stands at the coverage it reached and stops under 90 in every 100 of its holdings or their value). A member runs from a snapshot holding it to the first later snapshot that does not, one away at a single snapshot read as held there and one away at two or more as two spans, a code two funds hold at one quarter end in the larger index; the S&P 500 reads IVV's snapshots before 2012 and the provider's dates from 2012 (see: The S&P 500 before 2012 is read from IVV's filed holdings and from 2012 from the provider's dates) (see: A provider's span with no start date takes the first of IVV's snapshots holding its company by code or by name). It reads `pulled_holding` and `membership` and moves no row of either. From 23.4 the long price pull's write reads the spans again from `long_holding`, `pulled_holding` and `membership` through LongMembers' own reader, and where its count moves the S&P 500's cutover has LongMembers' writer write them whole again inside its own transaction, the run before's removed with them (see: The S&P 500's provider dates from 2012 are held against IVV's holdings and read from IVV's last schedule where they stand more than 5 apart).
+
+### long_bar
+Grain: one row per code and session of the long history's prices.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the provider's code, an older one carrying `_old` |
+| `session_date` | TEXT | the session, from 2004-01-02 |
+| `open` | TEXT | money, at the scale the provider adjusted to on the day it was asked |
+| `high` | TEXT | money, at that scale |
+| `low` | TEXT | money, at that scale |
+| `close` | TEXT | money, the adjusted close |
+| `raw_close` | TEXT | money, the close as traded |
+| `volume` | INTEGER | shares traded |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `ticker`, `session_date`.
+
+### long_market_bar
+Grain: one row per series and session of the long history's market series.
+
+| Column | Type | Notes |
+|---|---|---|
+| `series` | TEXT | the index, the VIX or a fund, as the pull names it |
+| `session_date` | TEXT | the session, from 2004-01-02 |
+| `open` | TEXT | money |
+| `high` | TEXT | money |
+| `low` | TEXT | money |
+| `close` | TEXT | money, the adjusted close |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `series`, `session_date`.
+
+### long_print
+Grain: one row per code, report day and source of the long history's prints.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the provider's code |
+| `event_date` | TEXT | the day the report lands |
+| `timing` | TEXT | before the open, after the close or unstated, as the provider files it |
+| `eps_actual` | TEXT | the figure as filed, null where none |
+| `eps_estimate` | TEXT | the estimate as filed, null where none |
+| `surprise_percent` | REAL | a statistic, the provider's surprise, null where none |
+| `read_from` | TEXT | `provider` for the earnings calendar |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `ticker`, `event_date`, `read_from`.
+
+### long_split
+Grain: one row per code and ex-date of a split the provider records.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the provider's code |
+| `ex_date` | TEXT | the split's day |
+| `new_shares` | TEXT | as sent |
+| `old_shares` | TEXT | as sent |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `ticker`, `ex_date`.
+
+### long_dividend
+Grain: one row per code and ex-date of a dividend the provider records.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the provider's code |
+| `ex_date` | TEXT | the ex-dividend day |
+| `amount` | TEXT | money, as restated for splits on the day it was asked |
+| `raw_amount` | TEXT | money, as paid, null where the provider files none |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `ticker`, `ex_date`.
+
+### long_filing
+Grain: one row per code and filing of its company's filer.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the provider's code |
+| `cik` | TEXT | the filer's number, its leading zeros taken off |
+| `accession` | TEXT | the filing's accession |
+| `form` | TEXT | its form as the filer's list states it |
+| `items` | TEXT | an 8-K's items joined by commas, null where none |
+| `reported` | TEXT | its report date, null where none |
+| `filed` | TEXT | the day it was filed |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `ticker`, `accession`.
+
+**The long history's prices, read by the long data check and by no night, card, hook or standing test** (see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night). From 23.4 `long-prices --write` reads a capture folder the long price pull kept, asking nothing of anyone, and writes the six tables whole, the run before's rows removed in the same transaction, with its row on `run_log`, which the History page reads, and the ends it reads by rule as `session_mark` rows through SessionMarks' own writer where the provider's answer runs on past them (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger); it writes nothing where a quarter end of the long history falls under the floor over its holdings' spans. A filing is kept only where its filer's names are the code's company's, and a code the provider prices by nothing is written nowhere and named on the run's row. It reads `long_snapshot`, `long_holding`, `long_span`, `membership`, `pulled_bar`, `pulled_company` and `bar` and moves no row of them. From 23.4 `data-check --long` reads `long_bar`, `long_split` and `long_dividend` in place of the pull.
 
 ### dividend_wait
 Grain: one row per stock and ex-date whose dividend the provider's answer did not carry.

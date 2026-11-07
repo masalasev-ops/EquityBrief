@@ -4760,6 +4760,55 @@ internal static class Scope
             Verdict.Pass,
             "a constructed quarter end under the stop and a fall named by no one each returned as a stop with what was found, and a named fall stopping nothing",
             ByExpectations),
+        // 23.4's long prices: its component, six stores, section 17's row, section 18's two rows and the History page's.
+        [CheckReach.Key(CatalogueTable, "Long price pull")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the long snapshots, holdings and spans, the membership, the pulled bars and companies, the bars and the run log it reads, the six long tables it writes and removes, the run log it appends to, and the historical price, splits and dividends, earnings calendar, company financials and filings archive feeds it asks",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long price pull")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Long bars")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long market bars")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long prints")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long splits")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long dividends")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long filings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The long history's prices")] = new Scoped(
+            Verdict.Pass,
+            "the statement before the first request and the stop before any request worked over a constructed feed, the span's floor on both sides and a quarter end under it writing nothing, and the S&P 500's count on both sides of its margin with two codes of one series counted once; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A code the provider prices by nothing")] = new Scoped(
+            Verdict.Pass,
+            "a constructed code answered with no session listed with its names and written nowhere, the run going on",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A filer whose names are not the company's")] = new Scoped(
+            Verdict.Pass,
+            "a constructed filer filing under another company's names refused and listed, its filings not kept, and the name key read on both sides",
+            ByExpectations),
+        [CheckReach.Key("15.25 History", "Prices back to 2004")] = new Scoped(
+            Verdict.Pass,
+            "the run's counts, the cutover, the lowest coverage and the folds of the codes priced by nothing and the ends no filing settles read back off the page over a constructed store, and a store not written saying so",
+            ByReadSurface),
         [CheckReach.Key("15.25 History", "Members back to 2005")] = new Scoped(
             Verdict.Pass,
             "each index's years read back off the page over a constructed store, its holdings by how they were matched or why left out, the lower coverage label on an S&P 400 year to 2008 and on no S&P 500 year, the companies left out by name, and a store not written saying so",
@@ -6434,6 +6483,8 @@ internal static class Scope
         ["Long schedule filings"] = "23.3",
         ["Long day files"] = "23.3",
         ["Long members"] = "23.3",
+        // 23.4's one, which the plan describes as a worker verb asking every code from 2004-01-02.
+        ["Long price pull"] = "23.4",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -7448,6 +7499,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "The passes luck alone would bring")] = "23.2",
         [CheckReach.Key("15.21 Paper trading", "An account's verdict across the indexes")] = "23.2",
         [CheckReach.Key("15.25 History", "Members back to 2005")] = "23.3",
+        [CheckReach.Key("15.25 History", "Prices back to 2004")] = "23.4",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
@@ -8249,6 +8301,8 @@ internal static class Scope
         ["A pulled series the data check cannot read"] = "23.1",
         ["The per-rule tests summed across the indices do not line up"] = "23.2",
         ["The long history's matching under its stop"] = "23.3",
+        ["A code the provider prices by nothing"] = "23.4",
+        ["A filer whose names are not the company's"] = "23.4",
         // 21.6's two, which the plan names as section 18's rows for a source refusing and a member unanswered.
         ["A new reading's source refuses"] = "21.6",
         ["A member a new reading's source answers nothing for"] = "21.6",
@@ -8573,6 +8627,7 @@ internal static class Scope
         ["The long history's hand check"] = "23.3",
         ["The long history's keys"] = "23.3",
         ["The long history's left-out kinds"] = "23.3",
+        ["The long history's prices"] = "23.4",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

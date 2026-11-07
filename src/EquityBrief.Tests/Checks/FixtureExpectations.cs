@@ -202,6 +202,9 @@ public partial class FixtureExpectations
             .. PooledClaims,
             // 23.3, the long history's membership: section 17's four rows and section 18's row.
             .. LongMembershipClaims,
+
+            // 23.4, the long history's prices: section 17's row and section 18's two.
+            .. LongPricesClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 
