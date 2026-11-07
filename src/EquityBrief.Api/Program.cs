@@ -2564,7 +2564,10 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
         request.Query[PaperLink.BoughtKey].FirstOrDefault() == PaperLink.ClosedValue,
         Family(PaperLink.ShowKey),
         Family(PaperLink.VariantsKey),
-        Family(PaperLink.RuleKey));
+        Family(PaperLink.RuleKey))
+    {
+        Recent = request.Query[PaperLink.SpanKey].FirstOrDefault() == PaperLink.RecentValue,
+    };
     var variants = link.Variants ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
     var rule = link.Rule ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
     var drawn = paper is { } accounts && night is { } walked
@@ -2580,7 +2583,8 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             variants,
             PaperScreen.Fund(reading.Code),
             accounts.Fund ?? (_ => null),
-            accounts.Combined)
+            accounts.Combined,
+            accounts.Books)
         : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
 
     // From 21.20 the variants registered after the newest night, which no night has read yet.
@@ -2861,9 +2865,10 @@ async Task<IResult> HomeAsync(
     ];
     var opens = MarkRenderer.OpenDay(dated);
 
-    // The system's trades since the rules first went live, and the combined paper account against the index's fund over the
-    // same days.
+    // The system's trades since the rules first went live, and the live setups' accounts averaged since today's rules all
+    // took effect against the index's fund over the same days.
     // see: Every count of trades names its group and one function works the three groups
+    // see: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
     var held = copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
     var paper = await PaperAccountsAsync(read, reading, dated, held ?? EquityBrief.Core.Cards.AccountSettings.Example);
     HomePast? past = null;
@@ -2883,10 +2888,7 @@ async Task<IResult> HomeAsync(
             fund,
             progress.Values.Any(one => one.Progress.Counted < one.Progress.Needed),
             PaperScreen.Fund(reading.Code),
-            combined.Since)
-        {
-            CarriedBack = paper.Sources.Any(source => source.Standing is PaperAccountView.Live or PaperAccountView.Provisional && source.Since == combined.Since && source.Since < source.VersionFrom),
-        };
+            combined.Since);
     }
 
     // On the S&P 400 and 600 each rule checks its own market level, a rule reading none counted open.
@@ -2983,7 +2985,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
 
     // The trades an account leaves out are read for their trade log's result so far, and walked by nothing.
-    (string Ticker, DateOnly Session)[] earlier = [.. sources.SelectMany(account => (account.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
+    (string Ticker, DateOnly Session)[] earlier = [.. sources.SelectMany(account => (account.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Trade.Bought)).Concat(account.Same.Select(one => (one.Trade.Ticker, one.Trade.Bought)))).Distinct()];
     var from = sources.Select(account => account.Since).OfType<DateOnly>().Concat(bought.Select(one => one.Session)).DefaultIfEmpty(night).Min();
     var earliest = earlier.Select(one => one.Session).Append(from).Min();
     var tickers = bought.Concat(earlier).Select(one => one.Ticker).Distinct(StringComparer.Ordinal).ToArray();
@@ -3008,16 +3010,66 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
 
     decimal? Fund(DateOnly session) => fund.TryGetValue(session, out var close) ? close : null;
 
+    var views = PaperScreen.Views(sources, tests, years, settings, sessions, night, Close, Fund);
+    var standings = await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks);
+
     return new PaperAccounts(
         sources,
-        PaperScreen.Views(sources, tests, years, settings, sessions, night, Close, Fund),
+        views,
         Close,
         sessions,
         stocks,
         Fund,
-        await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks),
-        PaperScreen.Combined(sources, settings, sessions, night, Close, Fund, stocks),
-        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions));
+        standings,
+        PaperScreen.Averaged(views, settings, sessions, night, Close, Fund),
+        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions))
+    {
+        Books = await BookLinesAsync(read, reading, night, sources, register, standings),
+    };
+}
+
+// From the 19.4 correction of 2026-11-07 each monthly setup's line on an index as of a night: how its live or provisional
+// rule sells a holding, and each open holding's state tonight by that rule. The sector heavyweights sell at the next
+// rebalance a holding no longer leading, and on a close under its 200-day average where the settings say so, their standing
+// the one worked above; Quality at a fair price sells at its next reshuffle a holding that no longer qualifies, its line
+// tonight its card's; and the Fundamentals family sells when a filing drops a holding below its hold score or after its
+// sessions, its line tonight read off its rule's row of the night.
+// see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+async Task<IReadOnlyDictionary<string, PaperBookLine>> BookLinesAsync(ReadApi read, UniverseChoice reading, DateOnly night, IReadOnlyList<PaperAccountSource> sources, IReadOnlyList<CandidateRow> register, IReadOnlyDictionary<string, string> standings)
+{
+    var large = reading == Universes.Large;
+    var lines = new Dictionary<string, PaperBookLine>(StringComparer.Ordinal);
+    var heads = sources.Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional).ToArray();
+
+    if (heads.FirstOrDefault(account => account.Family == EquityBrief.Core.Families.HeavyweightRule.Name) is { } heavy)
+    {
+        var settings = large ? EquityBrief.Core.Families.HeavyweightRule.Live : RuleScreen.HeavyweightSettingsOf(heavy.Listed, register) ?? EquityBrief.Core.Families.HeavyweightRule.Live;
+        var last = heavy.Trades.Select(one => (DateOnly?)one.Trade.ListedOn).Max();
+        var next = last is null ? null : EquityBrief.Core.Families.HeavyweightRule.NextRebalance(night, last, settings);
+
+        lines[heavy.Family] = new PaperBookLine(PaperScreen.HeavyweightSells(settings.SoldUnderAverage, next), standings);
+    }
+
+    if (heads.Any(account => account.Family == EquityBrief.Core.Families.QualityRule.Name))
+    {
+        var card = await QualityCardAsync(read, reading.Code, night, new Dictionary<string, UniverseCell>(StringComparer.Ordinal));
+
+        lines[EquityBrief.Core.Families.QualityRule.Name] = new PaperBookLine(
+            PaperScreen.QualitySells(card.NextReshuffle),
+            card.Cells.ToDictionary(cell => cell.Ticker, cell => cell.Tonight, StringComparer.Ordinal));
+    }
+
+    if (heads.Any(account => account.Family == EquityBrief.Core.Families.ImprovingRule.Name))
+    {
+        var rule = await read.ImprovingCardRuleAsync(reading.Code, night);
+        var setting = TonightScreen.SettingOf((await read.ImprovingNightAsync(reading.Code, night, rule))?.Settings);
+
+        lines[EquityBrief.Core.Families.ImprovingRule.Name] = new PaperBookLine(
+            PaperScreen.FundamentalsSells(setting.HoldInNine, setting.Sessions),
+            (await read.ImprovingResultsAsync(reading.Code, night, rule)).ToDictionary(row => row.Ticker, row => PaperScreen.FundamentalsTonight(row.PassedChecks, row.Applied, setting.HoldInNine), StringComparer.Ordinal));
+    }
+
+    return lines;
 }
 
 // The standing tonight of each holding the family's live or provisional heavyweights account holds open, worked by the

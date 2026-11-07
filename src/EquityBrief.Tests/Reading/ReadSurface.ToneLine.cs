@@ -32,8 +32,9 @@ public partial class ReadSurface
             new(2, "the drift rule, release better, outlook not cut", "drift", "registered", null, registered, "{\"windowSessions\":3,\"readingVersion\":3}"),
             new(3, "the drift rule, its stop held further", "drift", "registered", null, registered, "{\"windowSessions\":3,\"stopFloorMoves\":1}"),
         ];
+        // Each holds a trade, so the versions' part draws its table rather than the one line of a family with none.
         PaperAccountSource Source(string key, string standing, string words) =>
-            new(key, "drift", standing, key, words, null, false, [], new DateOnly(2026, 10, 20));
+            new(key, "drift", standing, key, words, null, false, [(new PaperTrade("T" + key, new DateOnly(2026, 10, 21), 100m, 95m, null, null, 0m, 1), null)], new DateOnly(2026, 10, 20));
         PaperAccountSource[] sources =
         [
             Source("live", PaperAccountView.Live, "the live drift rule"),

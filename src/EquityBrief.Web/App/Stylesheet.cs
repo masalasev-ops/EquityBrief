@@ -460,23 +460,48 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 
 /* paper trading: each account's line in its family's mark, a variant's dashed and the operator's in ink */
 .paper-families{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px;font-size:13px}
+.paper-span{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
 .paper-families a{padding:3px 10px;border:1px solid var(--hair);border-radius:999px;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
 .paper-families a[aria-current='true']{border-color:var(--ink);font-weight:600}
-.paper-chart{margin:0}
+.paper-chart{margin:0;position:relative}
+.paper-hit{fill:transparent}
+.paper-hit:hover{fill:var(--plot);opacity:.6}
+.paper-tip{position:absolute;top:6px;left:0;z-index:2;min-width:150px;max-width:240px;display:flex;flex-direction:column;gap:2px;padding:6px 9px;background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;box-shadow:var(--shadow);font-size:12px;color:var(--ink-2);pointer-events:none;font-variant-numeric:tabular-nums}
+.paper-tip[hidden]{display:none}
+.paper-tip b{color:var(--ink);font-weight:600}
+.paper-tip-row::before{content:'';display:inline-block;width:12px;height:3px;margin-right:6px;vertical-align:middle;background:var(--soft)}
+.paper-tip-row[data-family='pullback']::before{background:var(--fam-pullback)} .paper-tip-row[data-family='breakout']::before{background:var(--fam-breakout)} .paper-tip-row[data-family='drift']::before{background:var(--fam-drift)} .paper-tip-row[data-family='fundamentals']::before{background:var(--fam-fundamentals)}
+.paper-tip-row[data-family='improving']::before{background:var(--fam-improving)} .paper-tip-row[data-family='dip']::before{background:var(--fam-dip)} .paper-tip-row[data-family='heavyweight']::before{background:var(--fam-heavyweight)} .paper-tip-row[data-family='quality']::before{background:var(--fam-quality)}
+.paper-tip-row[data-standing='combined']::before{background:var(--ink)} .paper-tip-row[data-standing='you']::before{background:var(--accent)} .paper-tip-row[data-standing='fund']::before{background:var(--muted)}
 .paper-chart svg,.paper-running svg{width:100%;height:auto;display:block}
-.paper-zero{stroke:var(--hair-2);stroke-width:1}
+.paper-zero{stroke:var(--soft);stroke-width:1.2}
+.paper-grid{stroke:var(--hair);stroke-width:1}
 .paper-axis{font-size:11px;fill:var(--soft);font-variant-numeric:tabular-nums}
-.paper-line{fill:none;stroke:var(--ink);stroke-width:1.8;stroke-linejoin:round}
+.paper-axis.paper-zero-label{fill:var(--ink-2);font-weight:600}
+.paper-end{font-size:11px;font-weight:600;fill:var(--ink-2);font-variant-numeric:tabular-nums}
+.paper-end[data-standing='combined']{fill:var(--ink)}
+.paper-dot{fill:var(--soft)}
+.paper-dot[data-family='pullback']{fill:var(--fam-pullback)} .paper-dot[data-family='breakout']{fill:var(--fam-breakout)} .paper-dot[data-family='drift']{fill:var(--fam-drift)} .paper-dot[data-family='fundamentals']{fill:var(--fam-fundamentals)}
+.paper-dot[data-family='improving']{fill:var(--fam-improving)} .paper-dot[data-family='dip']{fill:var(--fam-dip)} .paper-dot[data-family='heavyweight']{fill:var(--fam-heavyweight)} .paper-dot[data-family='quality']{fill:var(--fam-quality)}
+.paper-dot[data-standing='combined']{fill:var(--ink)} .paper-dot[data-standing='you']{fill:var(--accent)} .paper-dot[data-standing='fund']{fill:var(--muted)}
+.paper-line{fill:none;stroke:var(--soft);stroke-width:1.8;stroke-linejoin:round}
 .paper-line.dashed{stroke-dasharray:5 4;stroke-width:1.4}
 .paper-line[data-family='pullback']{stroke:var(--fam-pullback)} .paper-line[data-family='breakout']{stroke:var(--fam-breakout)} .paper-line[data-family='drift']{stroke:var(--fam-drift)}
 .paper-line[data-family='fundamentals']{stroke:var(--fam-fundamentals)} .paper-line[data-family='heavyweight']{stroke:var(--fam-heavyweight)} .paper-line[data-family='dip']{stroke:var(--fam-dip)}
+.paper-line[data-family='quality']{stroke:var(--fam-quality)} .paper-line[data-family='improving']{stroke:var(--fam-improving)}
+.paper-line[data-standing='you']{stroke:var(--accent)}
+.paper-line.paper-fund{stroke:var(--muted);stroke-dasharray:6 4;stroke-width:1.6}
+.paper-key-mark[data-standing='fund']{border-top-color:var(--muted);border-top-style:dashed}
 .paper-keys{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .paper-key{display:inline-flex;align-items:center;gap:6px;font:12px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:2px 10px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .paper-key[aria-pressed='false']{opacity:.45;text-decoration:line-through}
-.paper-key-mark{display:inline-block;width:16px;height:0;border-top:2.5px solid var(--ink);flex:none}
+.paper-key.paper-key-none{cursor:default;color:var(--soft);border-style:dashed}
+.paper-key-mark{display:inline-block;width:16px;height:0;border-top:2.5px solid var(--soft);flex:none}
 .paper-key-mark[data-standing='variant']{border-top-style:dashed}
 .paper-key-mark[data-family='pullback']{border-top-color:var(--fam-pullback)} .paper-key-mark[data-family='breakout']{border-top-color:var(--fam-breakout)} .paper-key-mark[data-family='drift']{border-top-color:var(--fam-drift)}
 .paper-key-mark[data-family='fundamentals']{border-top-color:var(--fam-fundamentals)} .paper-key-mark[data-family='heavyweight']{border-top-color:var(--fam-heavyweight)} .paper-key-mark[data-family='dip']{border-top-color:var(--fam-dip)}
+.paper-key-mark[data-family='quality']{border-top-color:var(--fam-quality)} .paper-key-mark[data-family='improving']{border-top-color:var(--fam-improving)}
+.paper-key-mark[data-standing='you']{border-top-color:var(--accent)}
 /* paper trading's parts: what the page is and the account's line with the form behind its press; a tile a family's live
    or provisional account beside the fund's, stacking on a phone; the open and closed tabs and the family chips, wrapping;
    the trades, the variants and the scorecard's variants each in a table its box scrolls; a rule's scorecard in two halves,
@@ -489,11 +514,12 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-change[open]>summary{margin-bottom:8px}
 .paper-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:0 0 14px}
 .paper-tile{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
-.paper-tile.fund{background:var(--plot)}
 .paper-tile.combined{border-color:var(--ink)}
-.paper-line[data-standing='combined']{stroke:var(--ink);stroke-width:2.8}
-.paper-key-mark[data-standing='combined']{border-top-width:4px}
+.paper-line[data-standing='combined']{stroke:var(--ink);stroke-width:3}
+.paper-key-mark[data-standing='combined']{border-top-color:var(--ink);border-top-width:4px}
 .paper-combined-skips{font-size:14px;color:var(--ink-2);margin:0 0 10px;max-width:78ch}
+.paper-walks,.paper-combined-books{font-size:13px;color:var(--soft);margin:0 0 8px;max-width:78ch}
+.paper-bought td.pb-sells{font-size:13px;color:var(--ink-2);max-width:32ch}
 .paper-combined-table{min-width:640px}
 .strip-line{font-size:12.5px;color:var(--ink-2);margin:0 0 8px}
 .strip-tiles{display:flex;flex-wrap:wrap;gap:8px}
@@ -506,7 +532,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-tile .pt-name{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--ink)}
 .paper-tile .pt-figure{font:600 22px var(--sans);font-variant-numeric:tabular-nums}
 .paper-tile .pt-sub{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
-.paper-tile .pt-carried{font-size:12px;color:var(--soft);margin-top:2px}
+.paper-tile .pt-fund{font-size:12px;color:var(--soft);font-variant-numeric:tabular-nums;border-top:1px solid var(--hair);padding-top:4px;margin-top:2px}
 .paper .day,.paper-variants .too-few{white-space:nowrap}
 .paper-tabs,.paper-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px}
 .paper-bought,.paper-variants,.paper-only,.score-table{min-width:720px}
@@ -520,12 +546,14 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .pb-standing.near-target,.pb-standing.leading{color:var(--up)}
 .pb-standing.near-stop,.pb-standing.opened-under,.pb-standing.below-average{color:var(--down)}
 .pb-standing.opened-over,.pb-standing.lost-lead{color:var(--warn)}
-.paper-unbought,.paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+.paper-unbought,.paper-tobuy,.paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
 .paper-unbought .pu-reason{margin-right:6px}
 .paper-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 12px;max-width:min(100%,560px)}
 .paper-pick select{min-height:36px;padding:0 8px;border-radius:6px;font:500 13.5px var(--sans)}
 .pv-rule .paper-log{font-weight:600}
 .pv-verdict{display:block;font-size:12px;color:var(--soft)}
+.pv-since,.pv-reach{display:block;font-size:12px;color:var(--soft);white-space:nowrap}
+.pv-reach[data-reach='widens']{color:var(--warn)}
 .pv-only-h{font-size:15px;margin:16px 0 6px}
 .too-few{display:block;font-size:12px;color:var(--soft)}
 .score{border:1px solid var(--hair-2);border-radius:8px;background:var(--surface)}

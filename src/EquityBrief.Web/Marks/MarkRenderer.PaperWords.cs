@@ -27,12 +27,26 @@ public sealed partial class MarkRenderer
             ? "No trade yet."
             : Formatted($"{Moved(figure)} since {Short(from)}{(size is { } on ? Formatted($" on ${on:#,0}") : string.Empty)}, with {(open == 0 ? "no trades" : Counted(open, "trade", "trades"))} open.");
 
+    // The account card's sentence: the account each setup trades a copy of, and how each of its positions is sized, its risk
+    // the settings' and its cap a tenth of the account whatever a pick's card is capped at.
+    // see: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
     public static string PaperAccountSaid((decimal Size, decimal Risk, decimal Cap)? settings, (decimal Size, decimal Risk, decimal Cap)? example) =>
         settings is { } kept
-            ? Formatted($"Each setup trades its own copy of your account of ${kept.Size:#,0}, risking {kept.Risk:0.##}% a trade with at most {kept.Cap * 100:0.##}% in one stock.")
+            ? Formatted($"Each setup trades its own copy of your account of ${kept.Size:#,0}. {PositionSaid(kept.Risk)}")
             : example is { } shown
-                ? Formatted($"Until you save your own, each setup trades its own copy of an example account of ${shown.Size:#,0}, risking {shown.Risk:0.##}% a trade with at most {shown.Cap * 100:0.##}% in one stock.")
+                ? Formatted($"Until you save your own, each setup trades its own copy of an example account of ${shown.Size:#,0}. {PositionSaid(shown.Risk)}")
                 : "No account is set yet, so no setup's trades are walked in money.";
+
+    // The account card's sentence as the card opens on it, the sentence on a position's size the operator's words drawn as
+    // worded.
+    public static string PaperAccountSummary((decimal Size, decimal Risk, decimal Cap)? settings, (decimal Size, decimal Risk, decimal Cap)? example) =>
+        (settings ?? example) is { } walked
+            ? Formatted($"<p class=\"card-summary\" data-summary>{Escaped(settings is null ? Formatted($"Until you save your own, each setup trades its own copy of an example account of ${walked.Size:#,0}.") : Formatted($"Each setup trades its own copy of your account of ${walked.Size:#,0}."))} <span{ReaderText.AsWordedMark}>{Escaped(PositionSaid(walked.Risk))}</span></p>")
+            : CardSummary(PaperAccountSaid(settings, example));
+
+    // How each position of a rule's account is sized, in the operator's words.
+    public static string PositionSaid(decimal risk) =>
+        Formatted($"Each position risks {risk:0.##}% and is capped at {(EquityBrief.Core.Cards.PaperAccount.AccountCap == 0.1m ? "a tenth" : Formatted($"{EquityBrief.Core.Cards.PaperAccount.AccountCap * 100:0.##}%"))} of the account.");
 
     public static string PaperChartSaid(IReadOnlyList<PaperAccountView> accounts, PaperFundView? fund, bool walked)
     {
@@ -56,10 +70,10 @@ public sealed partial class MarkRenderer
 
     public static string PaperCombinedSaid(PaperCombinedView? combined, bool walked) =>
         !walked
-            ? "Set your account above to walk every setup's trades together."
+            ? "Set your account above to walk the live setups' accounts together."
             : combined is not { } all
-                ? "No live setup has a trade yet, so the account of every setup together holds none."
-                : Formatted($"All setups together, counting the rules as registered now from the day each counts from: {(all.Walk.Return is { } made ? Moved(made).ToLowerInvariant() : "no return yet")} since {Short(all.Since)}, {Counted(all.Open, "position", "positions")} open, {Counted(all.Skipped, "pick", "picks")} skipped.");
+                ? "No live setup's account has a day to count from yet, so the averaged account holds none."
+                : Formatted($"The live setups' accounts, averaged: {(all.Walk.Return is { } made ? Moved(made).ToLowerInvariant() : "no return yet")} since {Short(all.Since)}, the day every one of the {all.Accounts} counts, with {Counted(all.Open, "position", "positions")} open across them.");
 
     public static string PaperBoughtSaid(PaperPageView page)
     {

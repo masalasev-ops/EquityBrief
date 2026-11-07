@@ -7,6 +7,171 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - an account with no trade draws no line on the chart
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... each line ending in a label of its name and latest return in its colour with two that would overlap moved apart; a box above the chart ... on it (see: ...)
+Now:
+> ... each line ending in a dot in its colour and a label of its name and latest return with two that would overlap moved apart; a box above the chart ... on it; an account with no trade drawing no line and its key saying no trades yet (see: ...)
+Why: the operator's order of 2026-11-07, its twentieth item; and a family's hue is a mark and never a text's colour, as the palette checks hold.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - the chart's hover box
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... each line ending in a label of its name and latest return in its colour with two that would overlap moved apart (see: ...)
+Now:
+> ... with two that would overlap moved apart; a box above the chart while the pointer is over a session with its day and each line's return on it (see: ...)
+Why: the operator's order of 2026-11-07, its nineteenth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - the chart's round gridlines, labelled zero, weekly dates and end labels
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... the index's fund dashed in grey ... with a key of its own (see: ...)
+Now:
+> ... with a key of its own; gridlines at round steps each with its label and nought's the labelled zero line; a date beneath the first session of each week; each line ending in a label of its name and latest return in its colour with two that would overlap moved apart (see: ...)
+Why: the operator's order of 2026-11-07, its eighteenth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - the index's fund as a dashed grey line on the chart
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... the averaged account alone in the text colour at a heavier stroke (see: ...)
+Now:
+> ... the averaged account alone in the text colour at a heavier stroke; the index's fund dashed in grey over the chart's days from its close on the first of them with a key of its own (see: ...)
+Why: the operator's order of 2026-11-07, its seventeenth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - every chart line in its family's colour, the averaged account alone in the text colour
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... two chips kept in the hash choosing every line since it began or the last 30 days alone (see: ...)
+Now:
+> ... two chips kept in the hash choosing every line since it began or the last 30 days alone; every family's line and its key in the family's own colour, Quality at a fair price's and the Fundamentals family's among them, the operator's own in the accent colour and the averaged account alone in the text colour at a heavier stroke (see: ...)
+Why: the operator's order of 2026-11-07, its sixteenth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - the paper chart's lines from their own days, and its span chosen
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) beneath the tiles each account's return ... a family chosen in the hash adding its variants' lines dashed; a press marked with a question mark opening how the page is read
+Now:
+> ... a press marked with a question mark opening how the page is read; from the 19.4 correction of 2026-11-07 each line from its own account's first day and never as a flat run before it with the span from the earliest of those days; two chips kept in the hash choosing every line since it began or the last 30 days alone (see: ...)
+Why: the operator's order of 2026-11-07, its fifteenth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - each version marked as narrowing or widening its live rule, and a family with no trade in one line
+Decision: A version is marked as narrowing or widening its live rule by the direction of each setting it changes
+Was:
+> (15.21, what the variants did differently) ... and each version's trading since (see: ...); what it changes in plain words; its trades; ...
+Now:
+> ... what it changes in plain words; from that correction beneath it whether the version narrows the live rule or widens it or takes its picks sold differently or in another order, read setting by setting, the scorecard's versions marked so too; a family whose rule and versions have made no trade since its record began drawing one line saying why in the table's place (see: ...); its trades; ...
+Why: the operator's order of 2026-11-07, its thirteenth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - each row of the versions' part gives its start
+Decision: Each row of what the versions did differently gives its start, the live rule's record since and each version's trading since
+Was:
+> (15.21, what the variants did differently) ... a row its live or provisional rule and a row a variant by its number: what it changes in plain words; its trades; ...
+Now:
+> ... a row a variant by its number: from the 19.4 correction of 2026-11-07 its start beneath its verdict as the live rule's record since and each version's trading since (see: ...); what it changes in plain words; its trades; ...
+Why: the operator's order of 2026-11-07, its fourth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - a holding with no price stop draws how its rule sells it and its state tonight
+Decision: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+Was:
+> (15.21, an open trade) ... opened under its stop or opened over its target from its fill; a holding's still leading or lost its lead or under its average as the heavyweights card reads it
+Now:
+> ... a holding's still leading or lost its lead or under its average as the heavyweights card reads it; from the 19.4 correction of 2026-11-07 a holding with no price stop drawing how its own setup's rule sells it across its stop's and target's cells with its next reshuffle where one falls; and whether it still qualifies tonight by that rule, ... (see: ...)
+Why: the operator's order of 2026-11-07, its eighth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - a listing waiting on the next open is to buy, never not bought
+Decision: A listing waiting on its next session's open is drawn as to buy in its own account and never as not bought, nor where that account holds it
+Was:
+> (15.21, what the system bought) ... with no stock that account holds open (see: Each table and line ...); the trades their rules' earlier versions listed ...
+Now:
+> ... with no stock that account holds open (see: ...); from the 19.10 correction of 2026-11-07 the listings waiting on the next open on a line an account of their own before those lines as to buy and never as not bought, none that account holds open, one another live account holds named with it (see: ...); the trades their rules' earlier versions listed ...
+Why: the operator's order of 2026-11-07, its ninth item: ABNB drew as held and as waiting.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - what the system bought names the account each line walks
+Decision: Each table and line of what the system bought names the account it walks, and draws no stock that account holds as not bought
+Was:
+> (15.21, what the system bought) ... reading "Not bought: n picks, reason: tickers" (see: ...); the trades their rules' earlier versions listed ...
+Now:
+> ... reading "Not bought: n picks, reason: tickers" (see: ...); from that correction a line above the table saying each row is a trade of its setup's own account and beneath it one line an account opening on its setup's name with no stock that account holds open (see: ...); the trades their rules' earlier versions listed ...
+Why: the operator's order of 2026-11-07, its sixth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - each tile draws the index's fund over its own account's days
+Decision: Each tile draws the index's fund over its own account's days, and no tile draws the fund over days its account did not count
+Was:
+> (15.21, the tiles) ... its rule's words and the version it counts under the pointer; and beside them a tile of the index's fund over the same days from the earliest day a tile counts from or from the session its series starts where that is later; the tiles one beneath another on a phone; ...
+Now:
+> ... its rule's words and the version it counts under the pointer; and until the 19.4 correction of 2026-11-07 beside them a tile of the index's fund ...; from that correction no tile of the fund of its own but beneath each tile the index's fund over that account's own days or the day its closes start where they start after the account's first day (see: ...); the tiles one beneath another on a phone; ...
+Why: the operator's order of 2026-11-07, its third item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - Home's account counts since today's rules all took effect
+Decision: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
+Was:
+> (15, Home, how past ideas have done) ... from 22.52 the account named as counting the rules as they stand now from the day their first trade counts with the replay's words beside it where that day comes before the version's start; the system's every version ... (see: Home's paper account counts from the day the current rules' first trade counts, and the system's every version stands apart and labelled)
+> (build plan, 22.52) ... and the system's every version stands on a line of its own (see: Home's paper account counts from the day the current rules' first trade counts, ...).
+Now:
+> each states the account the live setups' accounts averaged from the day every live rule on the index had its current version, its line opening "Since today's rules all took effect on" that day, and cites the new decision.
+Why: the operator's order of 2026-11-07, its second item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - the averaged account states how a monthly setup's holding is sized and draws each position's dollars
+Decision: A holding with no stop is sized at an equal share of the account across the most holdings its book can hold
+Was:
+> (15.21, the combined paper account) ... so far where it is open (see: The averaged account gives ...); a pick an account skipped ...
+Now:
+> ... so far where it is open (see: ...); from the 21.11 correction of 2026-11-07 each position's dollars beside its shares and a line stating how a monthly setup's holding is sized in its own account at an equal share of it across the most holdings the setup can hold with that share in dollars on the settings' size (see: ...); a pick an account skipped ...
+Why: the operator's order of 2026-11-07, its seventh item: the words said each set of holdings a fifth of the account while FTNT held $897.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - no skipped pick in a trade table, one line beneath by reason
+Decision: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
+Was:
+> (15.17, an account's trade log) ... marked open; a trade the account's walk skipped saying why; the running total ...
+> (15.21, what the system bought) ... beneath the trades one line counting the listed stocks not bought a reason at a time with each stock linking to its chart; the trades their rules' earlier versions listed ...
+> (15.21, the combined paper account) ... so far where it is open (see: The averaged account gives ...)
+Now:
+> each adds that a skipped pick is never a row and stands on one line beneath the trades reading "Not bought: n picks, reason: tickers", a reason at a time, citing the new decision.
+Why: the operator's order of 2026-11-07, its twelfth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - the combined account is the live setups' accounts averaged
+Decision: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
+Was:
+> (15.21, the combined paper account) from 21.11 every live or provisional rule's trades on the index in one account of the settings' size; walked by the core's one function ...; its tile first among the tiles with its return since the earliest day those accounts count from and what it holds and what it skipped; ... a card beneath the chart opening on one sentence that counts what it skipped and why; then every trade it was handed newest first with the setup it came from and the shares it bought; ... (see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it); from 21.13 ...; from 22.59 each position at most a tenth of the account's value whatever the settings state; each session's picks filled in Tonight's order ...; a pick the free cash cannot cover standing skipped where it was reached
+> (section 17, the combined paper account) at most 3 open positions in one GICS sector, a fourth skipped; each book family's holding an equal share of a fifth of the account across the most holdings its book can hold; one position a stock, and at most 0.1 of the account's value in one stock for every trade ... (see: The combined account holds ...) | ruled by the operator on their answers to the phase's plan: one account holding every setup must not lean on one sector or let a slow book crowd out the swing families' cash | read-surface, the account walked by hand over constructed trades with a fourth position in a sector skipped and a book's holding sized at a tenth of a fifth of the account; ...
+> (section 18, two families pick one stock) from 21.11 the second family's pick is skipped and counted as already held, the first family's position standing, ... | the combined account's card draws the trade with the setup it came from, marked skipped because another setup already held the stock, and its sentence counts it | one position a stock keeps the combined account from doubling what it holds in a stock two setups liked; ...
+> (build plan, 22.59) ... each rule's own account stands as it was (see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it).
+Now:
+> each states the live setups' accounts averaged: each live or provisional account as walked given an equal share of one account of the settings' size from the latest of their starts, each one's growth from its close before that day, holding what each holds and skipping no pick twice, a stock two families pick held in both; section 17's row the tenth alone and its two reasons; and each cites the new decision. 15.21's rows the tiles, your account and an account's start reworded without new runs of parts.
+Why: the operator's order of 2026-11-07, its tenth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - each rule's account caps a position at a tenth, and its card says so in the operator's words
+Decision: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
+Was:
+> (15.21, your account) one sentence on what the page is; the account's line of its size and the risk a trade in per cent and the most in one stock, saying each rule trades its own copy of the account; a press reading ...
+> (section 17, the combined paper account) ... and at most 0.1 of the account's value in one stock for every trade whatever the settings state for each rule's own account, each session's picks ...
+Now:
+> (15.21, your account) ... saying each rule trades its own copy of the account; from the 19.4 correction of 2026-11-07 the card opening on the account each setup trades a copy of and the operator's sentence "Each position risks 1% and is capped at a tenth of the account." ... (see: ...); a press reading ...
+> (section 17, the combined paper account) ... and at most 0.1 of the account's value in one stock for every trade whatever the settings state, from the 19.4 correction of 2026-11-07 in each rule's own account as in the combined (see: ...), each session's picks ...
+Why: the operator's order of 2026-11-07, its eleventh item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - every account counts from its version's first session, and the same trades before it stand apart
+Decision: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+Was:
+> (15.17, an account's trade log) ... beneath its trades the trades of earlier versions it leaves out folded under one press; each of those with the version that listed it and an open one's result so far (see: ...) (see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts)
+> (15.21, the tiles) ... from 22.53 a tile whose account counts from before its version's start saying beneath its date that its earlier trades replay the same under this version, which the read-only copy leaves off (see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same)
+> (15.21, an account's start) ... a registered rule's start the session the Run page's record of the rule counts from; ... words saying so where a replay that reproduced every trade carried its start back before that registration; ... from 22.25 the line above the fold counting them among the system's trades (see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts)
+> (15.21, the paragraph) ... counts only the trades of the version it stands at, from the session the Run page's record of the rule counts from, and starts again the same way ...
+> (build plan, the entry check at the next open) ... (see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts)
+> (build plan, 22.53) ... says beside its date that its earlier trades replay the same under this version (see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same).
+Now:
+> each states that a registered rule's account counts from its version's first session and never earlier, one day on its tile, its line and its scorecard, the trades a replay under its version reproduced before that day folded apart under the account's own press headed "The same trades before this version (since dd mmm), kept in the rule's record and not in this account", the line beneath naming no start, and cites the new decision.
+Why: the operator's order of 2026-11-07, its first item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - 15.23 draws a company's name and a filer's words as filed
+Decision: A company's name and a filer's words are drawn as filed, and never in the reader's words
+Was:
+> No attribute, stored row or rule's source is changed by it (see: ...). The check holds every term of the first table to a phrase that puts it into the reader's words.
+Now:
+> No attribute, stored row or rule's source is changed by it (see: ...). From the 21.13 correction of 2026-11-07 a company's name and anything else a filer or a provider wrote is drawn inside an element marked as filed, whose text the table leaves as it was written, so Block, Inc. never reads as a run of 63 trading days (see: ...). The check holds every term ...
+Why: the operator's order of 2026-11-07, its fifth item: Paper trading drew XYZ's company as "Run of 63 trading days, Inc".
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - the long history's three components, their stores, section 17's four rows, section 18's row and the History page's members back to 2005
 Decision: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30
 Was:

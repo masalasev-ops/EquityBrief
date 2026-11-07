@@ -159,39 +159,6 @@ public partial class ReadSurface
         Assert.Contains("<p class=\"entry-card-line\"", new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [idea], IdeasCount = 1 }, string.Empty), StringComparison.Ordinal);
     }
 
-    // The S&P 500's Home read "Since the rules went live on 25 Sep, 48 ideas have been bought and sold on paper; 21 made
-    // money." beside "Our paper account, as the rules stand now, since 2 Oct". The account says the day the current rules'
-    // first trade counts, with the replay beside it, and the system's every version stands apart and labelled.
-    // see: Home's paper account counts from the day the current rules' first trade counts, and the system's every version stands apart and labelled
-    [Fact]
-    public void HomesAccountCountsFromTheCurrentRulesFirstTradeAndTheSystemStandsApart()
-    {
-        var past = new HomePast(new DateOnly(2025, 9, 25), 48, 21, -0.010, -0.048, true, "SPY", new DateOnly(2026, 10, 2)) { CarriedBack = true };
-        var home = WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Past = past }, string.Empty));
-
-        Assert.Contains("Our paper account counts the rules as they stand now from 2 Oct, the day their first trade counts: its earlier trades replay the same under this version.", home, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"home-system\" data-system-closed=\"48\" data-made-money=\"21\">All versions since 25 Sep: 48 ideas bought and sold on paper, 21 made money.</p>", home, StringComparison.Ordinal);
-        Assert.DoesNotContain("Since the rules went live", home, StringComparison.Ordinal);
-        Assert.EndsWith("the day their first trade counts.", SinglePageApp.AccountLine(past with { CarriedBack = false }, copying: false), StringComparison.Ordinal);
-        Assert.EndsWith("the day their first trade counts.", SinglePageApp.AccountLine(past, copying: true), StringComparison.Ordinal);
-    }
-
-    // The breakout's account on Paper trading read "Down 0.7% since 2 Oct" while its version counts from 3 Nov, carried back
-    // by a replay; beside the date it says so.
-    // see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same
-    [Fact]
-    public void AnAccountCountingFromBeforeItsVersionSaysSoBesideTheDate()
-    {
-        PaperAccountView Account(string family, DateOnly since, DateOnly? version) =>
-            new(family, family, PaperAccountView.Live, "Live", "words", "verdict", null, "risks", [], null, 1, 0, null, since) { VersionFrom = version };
-
-        var tiles = new MarkRenderer().PaperTiles([Account("breakout", new DateOnly(2026, 10, 2), new DateOnly(2026, 11, 3)), Account("drift", new DateOnly(2026, 10, 30), new DateOnly(2026, 10, 30))], null);
-
-        Assert.Contains("<div class=\"pt-carried\" data-carried=\"2026-10-02\">counts from 2 Oct: its earlier trades replay the same under this version</div>", tiles, StringComparison.Ordinal);
-        Assert.Single(Regex.Matches(tiles, "class=\"pt-carried\""));
-        Assert.DoesNotContain("pt-carried", new MarkRenderer { Copying = true }.PaperTiles([Account("breakout", new DateOnly(2026, 10, 2), new DateOnly(2026, 11, 3))], null), StringComparison.Ordinal);
-    }
-
     // The card opens with its buys named, marks each on its table and never folds one behind the first ten rows.
     [Fact]
     public void TheFundamentalsCardOpensWithItsBuysAndNeverFoldsOneBehindItsShownRows()

@@ -110,16 +110,12 @@ public static partial class PaperAccount
         : barHeld ? EquityBrief.Core.Readings.TradeCost.RoundTrip(value, buy, buy)
         : null;
 
-    // From 21.11 a walk may refuse a trade for a reason of its own, read off the trade and the positions open as it is
-    // reached, and may size a trade off settings of its own at the account's value; the combined account does both.
     public static PaperWalk Walk(
         AccountSettings account,
         IReadOnlyList<PaperTrade> trades,
         IReadOnlyList<DateOnly> sessions,
         Func<string, DateOnly, decimal?> close,
-        Func<DateOnly, decimal?>? fund = null,
-        Func<PaperTrade, IReadOnlyList<PaperTrade>, string?>? refuse = null,
-        Func<PaperTrade, decimal, AccountSettings>? sizing = null)
+        Func<DateOnly, decimal?>? fund = null)
     {
         var cash = account.Size;
         var open = new List<(PaperTrade Trade, long Shares)>();
@@ -140,15 +136,8 @@ public static partial class PaperAccount
 
             foreach (var trade in trades.Where(trade => trade.Bought == session).OrderBy(trade => trade.Place).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
             {
-                if (refuse?.Invoke(trade, [.. open.Select(position => position.Trade)]) is { } refused)
-                {
-                    taken.Add(new PaperTaken(trade, 0, refused));
-
-                    continue;
-                }
-
                 var worth = cash + open.Sum(position => position.Shares * position.Trade.Buy);
-                var sized = sizing?.Invoke(trade, worth) ?? account with { Size = worth };
+                var sized = account with { Size = worth };
                 var plan = PositionSize.Of(sized with { RiskPercent = sized.RiskPercent * trade.RiskShare }, trade.SizedAt, trade.Stop, trade.BookHoldings, null);
 
                 if (plan is not { Shares: > 0 })
@@ -234,60 +223,69 @@ public static partial class PaperAccount
             [.. values.Select(one => (one.Item1, Statistic.FromRatio((one.Item2 / account.Size) - 1m)))]);
     }
 
-    // From 21.11 the combined account: every live rule's trades on an index in one pot at the account's size, from 22.59 each
-    // session's buys in Tonight's order, each family's in its own list's places, sized by its own rule's sizing off the
-    // account's value, a swing trade by the risk setting and a book's holding at an equal share of a fifth of the account
-    // across the most holdings its book can hold, from 22.59 a position at most a tenth of the account's value whatever the
-    // settings state for each rule's own account. One position a stock: a second family's pick of a stock held is skipped and
-    // counted as already held; at most three open positions in one GICS sector, a fourth skipped and counted; and a buy the
-    // free cash cannot cover skipped and counted, as every account's is, a later pick of the session still taken where the
-    // cash covers it. Walked by the one function every account is walked by, when the page is read.
-    // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
-    public const int SectorCap = 3;
+    // The most of an account's value a position holds in a rule's paper account, from the 19.4 correction of 2026-11-07 each
+    // rule's own, whatever a pick's card is capped at: a position risks the risk setting and holds at most a tenth, so an
+    // account holds ten before the free cash runs out.
+    // see: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
+    public const decimal AccountCap = 0.1m;
 
-    public const decimal BookShare = 0.2m;
-
-    public const decimal CombinedCap = 0.1m;
-
-    public const string AlreadyHeld = "another setup already owned the stock";
-
-    public const string SectorFull = "three positions in its sector were open";
-
-    public static CombinedWalk Combined(
-        AccountSettings account,
-        IReadOnlyList<CombinedTrade> trades,
-        IReadOnlyList<DateOnly> sessions,
-        Func<string, DateOnly, decimal?> close,
-        Func<DateOnly, decimal?>? fund = null)
+    // From the 21.11 correction of 2026-11-07 the live setups' accounts, averaged: each live rule's own account given an equal
+    // share of one account of the settings' size from the day every one of them counts, so it holds what each holds and
+    // skips what each skips, and no pick twice. Each account's growth is read from its value at the close of the session
+    // before that day, or the account's size where it starts on it; the averaged account's value on each session is its size
+    // times the mean of those growths. Its trades are each account's bought on or after that day or still open on it, its
+    // skips each account's from that day. Nothing is walked again and nothing is stored.
+    // see: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
+    public static AveragedWalk Averaged(decimal size, IReadOnlyList<(string Family, PaperWalk Walk)> accounts, IReadOnlyList<DateOnly> sessions, Func<DateOnly, decimal?>? fund = null)
     {
-        // Each trade placed among its session's buys by its family's place in the page order and then its own.
-        var ordered = trades
-            .OrderBy(one => one.Trade.Bought)
-            .ThenBy(one => one.FamilyPlace)
-            .ThenBy(one => one.Trade.Place)
-            .ThenBy(one => one.Trade.Ticker, StringComparer.Ordinal)
-            .Select((one, at) => (Combined: one, Placed: one.Trade with { Place = at }))
-            .ToArray();
-        var of = ordered.ToDictionary(one => one.Placed, one => one.Combined);
+        var values = new List<(DateOnly Session, decimal Value)>();
+        var trades = new List<(string Family, PaperTaken Taken)>();
 
-        string? Refuse(PaperTrade trade, IReadOnlyList<PaperTrade> open) =>
-            open.Any(held => held.Ticker == trade.Ticker) ? AlreadyHeld
-            : of[trade].Sector is { } sector && open.Count(held => of[held].Sector == sector) >= SectorCap ? SectorFull
-            : null;
+        if (sessions.Count > 0 && accounts.Count > 0)
+        {
+            var since = sessions[0];
+            var bases = accounts.Select(account => account.Walk.Values.Where(one => one.Session < since).Select(one => one.Value).DefaultIfEmpty(size).Last()).ToArray();
 
-        var capped = account with { PositionCap = CombinedCap };
+            foreach (var session in sessions)
+            {
+                var growth = accounts.Select((account, at) =>
+                    account.Walk.Values.Where(one => one.Session <= session).Select(one => one.Value).DefaultIfEmpty(bases[at]).Last() / (bases[at] > 0m ? bases[at] : size));
 
-        AccountSettings Sizing(PaperTrade trade, decimal worth) =>
-            of[trade].Book ? capped with { Size = worth * BookShare, PositionCap = CombinedCap / BookShare } : capped with { Size = worth };
+                values.Add((session, size * growth.Average()));
+            }
 
-        var walk = Walk(capped, [.. ordered.Select(one => one.Placed)], sessions, close, fund, Refuse, Sizing);
+            trades.AddRange(accounts.SelectMany(account => account.Walk.Trades
+                .Where(one => one.Skipped is null ? one.Trade.Bought >= since || one.Trade.Ended is null || one.Trade.Ended >= since : one.Trade.Bought >= since)
+                .Select(one => (account.Family, one))));
+        }
 
-        return new CombinedWalk(
-            walk,
-            [.. walk.Trades.Select(one => (one, of[one.Trade]))],
-            walk.Trades.Count(one => one.Skipped == AlreadyHeld),
-            walk.Trades.Count(one => one.Skipped == SectorFull),
-            walk.Trades.Count(one => one.Skipped == UnderTheCash));
+        var peak = size;
+        var worst = 0m;
+
+        foreach (var (_, value) in values)
+        {
+            peak = Math.Max(peak, value);
+            worst = Math.Max(worst, peak > 0m ? (peak - value) / peak : 0m);
+        }
+
+        var held = fund is null ? new PaperFund(null, null) : FundOver(sessions, fund);
+        var marked = accounts.Select(account => account.Walk.MarkedFrom).ToArray();
+
+        return new AveragedWalk(
+            new PaperWalk(
+                values,
+                [.. trades.Select(one => one.Taken)],
+                trades.Count(one => one.Taken.Skipped is null),
+                trades.Count(one => one.Taken.Skipped is not null),
+                trades.Count(one => one.Taken.Skipped is null && one.Taken.Trade.RoundTrip is null),
+                values.Count > 0 && size > 0m ? Statistic.FromRatio((values[^1].Value / size) - 1m) : null,
+                values.Count > 0 ? Statistic.FromRatio(worst) : null,
+                held.Return,
+                held.From,
+                marked.Length > 0 && marked.All(one => one is not null) ? marked.Max() : null,
+                [.. values.Select(one => (one.Session, size > 0m ? Statistic.FromRatio((one.Value / size) - 1m) : 0.0))]),
+            trades,
+            accounts.Count);
     }
 
     // A fund's return over sessions, its close on the last over its close on the first; where its series holds no close on
@@ -311,10 +309,6 @@ public static partial class PaperAccount
 // A fund's return over an account's sessions, or where its series starts later the first session it holds a close.
 public sealed record PaperFund(double? Return, DateOnly? From);
 
-// From 21.11 one trade the combined account may take: the trade, the family whose live rule's list kept it and that
-// family's place in the page order, its stock's GICS sector, none where none is read, and whether it is a book's holding.
-public sealed record CombinedTrade(PaperTrade Trade, string Family, int FamilyPlace, string? Sector, bool Book);
-
-// The combined account's walk: the walk itself, each trade as it took or skipped it with the trade it came from, and how
-// many it skipped as already held, for a sector at its cap and for the free cash.
-public sealed record CombinedWalk(PaperWalk Walk, IReadOnlyList<(PaperTaken Taken, CombinedTrade From)> Trades, int AlreadyHeld, int SectorFull, int UnderCash);
+// From the 21.11 correction of 2026-11-07 the live setups' accounts, averaged: its walk, each trade and each skip of the
+// accounts it averages over its days with the family whose account took it, and how many accounts it averages.
+public sealed record AveragedWalk(PaperWalk Walk, IReadOnlyList<(string Family, PaperTaken Taken)> Trades, int Accounts);

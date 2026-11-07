@@ -4276,15 +4276,15 @@ internal static class Scope
         [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = new Scoped(
             Verdict.Pass, "a trade the walk sized at half drawn in its account's log with its mark and its row's flag, and a trade sized whole with neither, read back off the rendered log", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", PaperCombined)] = new Scoped(
-            Verdict.Pass, "the combined account worked by hand over constructed trades, a stock two families picked, a sector at its cap, a buy the cash cannot cover, two books and a sale before a buy, each position at a tenth of the account and a session's picks filled in Tonight's order, and its tile, its line and its card with the sentence counting what it skipped and the line on the order filled read back off the rendered page", ByReadSurface),
+            Verdict.Pass, "the live setups' accounts averaged worked by hand over two accounts starting on different days, each one's growth from its close before the later start, a trade bought and sold before it and a skip before it left out, and its tile, its line and its card with the line on what it is read back off the rendered page from the views the rules' own accounts are walked into", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", PaperToneLine)] = new Scoped(
             Verdict.Pass, "the operator's sentence read back beneath the tone variant's words in the variants' table and the scorecard's variants over a constructed register, and no other rule's row carrying it", ByReadSurface),
         [CheckReach.Key(LimitsTable, PaperCombined)] = new Scoped(
-            Verdict.Pass, "the sector's cap and a book family's share of the account read by the walk worked by hand, a fourth open position in a sector skipped and a book's holding sized at a tenth of a fifth of the account; the figures read off the document against the constants", ByReadSurface),
+            Verdict.Pass, "the averaged account worked by hand over two accounts, and a rule's own account over eleven picks of one session holding ten at a tenth of its value each; the figure read off the document against the constant", ByReadSurface),
         [CheckReach.Key(FailureTable, PaperTwoFamilies)] = new Scoped(
-            Verdict.Pass, "a second family's pick of a stock the combined account holds skipped as already held and counted, worked by hand and read back off the rendered card", ByReadSurface),
+            Verdict.Pass, "a stock two families picked held in each family's own account and in the averaged account once for each, skipped by neither, worked by hand", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The tiles")] = new Scoped(
-            Verdict.Pass, "each live or provisional account's tile read back off the rendered page over a constructed store, its return worked by hand from the walk with a skip under the cash, its trades open and closed and its day, and the fund's tile over the same days worked by hand from its closes", ByReadSurface),
+            Verdict.Pass, "each live or provisional account's tile read back off the rendered page over a constructed store, its return worked by hand from the walk at a tenth of the account, its trades open and closed and its day, and the fund beneath each tile over that account's own days worked by hand from its closes, or the day they start", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The chart")] = new Scoped(
             Verdict.Pass, "the lines read off the rendered chart over a constructed store: each family's head and yours by default, a chosen family's variants added dashed, and each line's points worked by hand from the walk", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The chart's key")] = new Scoped(

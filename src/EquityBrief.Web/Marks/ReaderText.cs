@@ -9,11 +9,26 @@ namespace EquityBrief.Web.Marks;
 // the pages' own templates all reach the reader through these phrases, in this order, the longer and the more particular
 // first, so a term of the word list keeps its meaning where it has two: an upper edge of a tenth is its top and a rule's
 // edge is its gain over the easy alternative. Only the text between tags is read, never an attribute, a script or a
-// style, and a word written all in capitals is a ticker and stands as it is. The stored rows and the rules' sources are
-// not touched, so no rule's version moves.
+// style, and a word written all in capitals is a ticker and stands as it is. A company's name and anything else a filer
+// or a provider wrote is drawn inside an element marked as filed, and the text inside it stands as it was written, so
+// Block, Inc. is never "Run of 63 trading days, Inc". The stored rows and the rules' sources are not touched, so no rule's
+// version moves.
 // see: Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases into the reader's words
 public static class ReaderText
 {
+    // The attribute an element carries where its text is a company's name or other words a filer or a provider wrote.
+    public const string AsFiled = "data-as-filed";
+
+    // The attribute as an element's opening tag writes it.
+    public const string AsFiledMark = " " + AsFiled;
+
+    // The attribute an element carries where its text is a sentence the operator worded, which the page draws as worded:
+    // "Each position risks 1%" uses risks as a verb, never the tester's unit.
+    // see: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
+    public const string AsWorded = "data-as-worded";
+
+    public const string AsWordedMark = " " + AsWorded;
+
     // Each phrase and what the reader reads in its place. A replacement keeps a capital the phrase opened on.
     public static IReadOnlyList<(string Phrase, string Words)> Phrases { get; } =
     [
@@ -147,29 +162,51 @@ public static class ReaderText
 
     static readonly Regex Closing = new(@"^</(script|style)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
+    static readonly Regex Filed = new(@"^<([a-z][a-z0-9]*)\b[^>]*\s(?:" + AsFiled + "|" + AsWorded + @")(?:[\s=/>])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    static readonly Regex Named = new(@"^<(/?)([a-z][a-z0-9]*)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
     static readonly (Regex Pattern, string Words)[] Rules =
         [.. Phrases.Select(phrase => (new Regex(@"(?<![\w'’-])" + phrase.Phrase + @"(?![\w'’-])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant), phrase.Words))];
 
-    // The markup with every text between its tags in the reader's words, the tags as they were.
+    // The markup with every text between its tags in the reader's words, the tags as they were, and the text inside an
+    // element marked as filed as it was written, however deep its own elements nest.
     public static string Page(string markup)
     {
         var drawn = new StringBuilder(markup.Length);
         var from = 0;
         var inside = false;
+        string? kept = null;
+        var depth = 0;
 
         foreach (Match tag in Tag.Matches(markup))
         {
             var text = markup[from..tag.Index];
 
-            drawn.Append(inside ? text : Text(text));
+            drawn.Append(inside || kept is not null ? text : Text(text));
             drawn.Append(tag.Value);
             inside = Opening.IsMatch(tag.Value) || (inside && !Closing.IsMatch(tag.Value));
+
+            if (kept is null)
+            {
+                if (Filed.Match(tag.Value) is { Success: true } filed && !tag.Value.EndsWith("/>", StringComparison.Ordinal))
+                {
+                    kept = filed.Groups[1].Value;
+                    depth = 1;
+                }
+            }
+            else if (Named.Match(tag.Value) is { Success: true } named && string.Equals(named.Groups[2].Value, kept, StringComparison.OrdinalIgnoreCase))
+            {
+                depth += named.Groups[1].Value.Length == 0 ? 1 : -1;
+                kept = depth == 0 ? null : kept;
+            }
+
             from = tag.Index + tag.Length;
         }
 
         var rest = markup[from..];
 
-        return drawn.Append(inside ? rest : Text(rest)).ToString();
+        return drawn.Append(inside || kept is not null ? rest : Text(rest)).ToString();
     }
 
     // One text between tags, read as the reader sees it and written back escaped where it changed.

@@ -16423,3 +16423,426 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 21.13 - correction: a company's name and a filer's words are drawn as filed, never in the reader's words   2026-11-07
+
+Found:      the operator's order of 2026-11-07, its fifth item, word for word in `prompts/2026-11-07-21-22-paper-and-home-account-order.md`:
+            What the system bought drew XYZ's company as "Run of 63 trading days, Inc", 21.13's table of phrases reading the
+            filer's "Block" as the tester's word. Swept over the 1,920 names the membership table holds, through the table as it
+            stood: three changed, Block, Inc, H&R Block Inc and Family Dollar Stores Inc ("Setup Dollar Stores Inc"); the Loop page
+            and the Ledger draw no company's name and no filer's words.
+Corrected:  `ReaderText.Page` leaves the text inside an element marked as filed as it was written, however deep its own elements
+            nest; paper trading's stock cell marks the company's name so. The decision, 15.23's sentence and the changelog.
+Tests:      1 new: the page over XYZ's open trade draws "Block, Inc."; a block outside a filed element still reads as a run, and
+            the words after one closes are read again.
+Claims:     none new.
+Pins:       none move: the web project's sources are none a rule pins.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 the
+            company's cell unmarked: red. m2 the table reading a filed element's text: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: every account counts from its version's first session, and the same trades before it stand apart under the account   2026-11-07
+
+Found:      the order's first item: on 2026-11-06 the S&P 500's breakout's tile read "Down 1.8% since 2 Oct" with "counts from 2 Oct:
+            its earlier trades replay the same under this version" and the drift's from 30 Oct, both under versions of 3 Nov, the
+            scorecard counting from those days, and the line beneath what the system bought said "The accounts above count only
+            the rules as registered now, since 3 Nov".
+Corrected:  `PaperScreen.StartOf` is the registration's first session and nothing else; `RecordFrom` keeps where the Run page's
+            record counts from. A registered account's trades listed between the two stand apart as `Same`, folded beneath what
+            the system bought under the account's own press, "The same trades before this version (since 2 Oct), kept in the rule's
+            record and not in this account", and in the trade log, counted among the system's trades and in none of the
+            account's figures; a variant's overlap reads them as its rule's. 22.53's line beside the tile and the system line's
+            closing sentence are gone. The decision superseding two, 15.17's and 15.21's rows, the build plan's two citations, the
+            changelog and the guide.
+Tests:      1 new, the breakout's dates by hand: registered 2026-11-03, a replay from 2 Oct, trades listed on 30 Sep, 29 Oct and
+            4 Nov: it counts from 3 Nov with the 4 Nov trade, 29 Oct's stands apart since 2 Oct, 30 Sep's is an earlier version's,
+            and the page draws the fold, the tile since 3 Nov and no earlier day. 22.53's test is retired with its decision; the
+            start's and the system line's tests read the new start and line.
+Claims:     none new: the rows are reworded in place.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 the
+            account starting where the replay counted from: red. m2 the fold drawn for no account: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: each rule's account caps a position at a tenth, and its card says so in the operator's words   2026-11-07
+
+Found:      the order's eleventh item: on 2026-11-06 each rule's own account walked the settings' cap, the example's a fifth, so
+            $100,000 risking 1% on a stop half a dollar under 100 held $20,000 a position and skipped a session's sixth pick for
+            the cash; the card said "risking 1% a trade with at most 20% in one stock".
+Corrected:  `PaperScreen.Views` walks each rule's account, live, provisional and version, with `PaperAccount.AccountCap`, a tenth,
+            whatever the settings state; the combined account's tenth is the same constant; the operator's own account walks the
+            settings. The account's card opens on "Each position risks 1% and is capped at a tenth of the account." with the
+            risk setting's figure, drawn as worded: its risks is a verb, so neither the reader's words nor the plain-words check,
+            which also leaves a company's name drawn as filed alone, reads the marked element. The line draws the tenth beside the
+            cap a pick's card reads, and the example's notice names the risk alone. The decision, 15.21's row, section 17's
+            clause, the changelog and the guide.
+Tests:      1 new, by hand: eleven picks of one session at 100 over 99.5 on $100,000 at 1% buy 100 shares each, ten of them, the
+            eleventh skipped under the cash; the card's sentence and the line read off the page and the check finding no term in
+            it. The variant account's walk worked again at a tenth, 0.003 where it was 0.015, and the two pages' lines.
+Claims:     none new.
+Pins:       section 17's 0.1 now held by `PaperAccount.AccountCap`, the constant renamed from the combined account's.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            rule's account walked on the settings' cap: red. m2 the sentence's element unmarked: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 21.11 - correction: the combined account is the live setups' accounts averaged, from the day every one of them counts   2026-11-07
+
+Found:      the order's tenth item: "All setups together" walked every live rule's trades again in one pot with one position a
+            stock, three a sector and each book family a fifth, so a pick its own rule's account bought could be skipped a second
+            time: on the S&P 500 on 2026-11-06 it skipped 26, 24 for cash the rules' own accounts still held, from 2 Oct, the
+            earliest day any of them counted.
+Corrected:  `PaperAccount.Averaged` gives each live or provisional account, as `PaperScreen.Views` walked it, an equal share of one
+            account of the settings' size from the latest of their starts, each one's growth read from its close before that day
+            or its size where it starts on it; its trades are each account's open on or bought from that day and its skips each
+            account's from that day. `PaperScreen.Averaged` reads the views; the tile, the chart's line and the card draw it as
+            "The live setups' accounts, averaged", the card's line saying what it is. The pot, its sector cap, its book share,
+            its already-held skip and the walk's refusal and sizing hooks are gone. The decision superseding the combined
+            account's, 15.21's, section 17's and section 18's rows, the build plan's citation, the changelog and the guide.
+Tests:      3 new, by hand: two accounts starting on 2 Nov and 3 Nov, the first at $10,200 on its close before, averaged from 3 Nov
+            to $10,100 and $10,150, a trade sold before the start and a skip before it left out; a stock two families pick held
+            in both and skipped by neither; and the page from the views, counting from the later start, up 0.2%. The pooled
+            account's three tests retired with it; Tonight's order's test kept.
+Claims:     none new: the three rows keep their keys, their verdicts' notes rewritten for the new tests.
+Pins:       section 17's sector cap of 3 is gone with its row's clause; its 0.1 stands, held by `PaperAccount.AccountCap`.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new tests by their names.
+            m1 each account's growth read from its size: survived at first, the pullback standing at its size on its close
+            before, an unreachable boundary; the test worked again at $10,200 there, red. m2 the start the earliest account's:
+            red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: no skipped pick sits in a trade table, and each account's trades end on one line naming what it did not buy by reason   2026-11-07
+
+Found:      the order's twelfth item: on 2026-11-06 the S&P 500's combined account's table drew 26 rows reading "skipped: the free
+            cash was under its cost" among its trades, an account's trade log on Past picks drew each skip as a row, and What the
+            system bought's line read "Not bought: 29 listed stocks. The free cash was under its cost (16): ...".
+Corrected:  the averaged account's table and the trade log draw the trades their account bought and nothing else; beneath each, and
+            beneath what the system bought, one line reads "Not bought: n picks, <reason>: tickers", a reason at a time, the most
+            skipped first, each stock linking to its chart. Filed under 19.4, whose trade log first drew a skip as a row. The
+            decision, 15.17's and 15.21's rows, the changelog and the guide.
+Tests:      1 new: the averaged account's card over GWW bought and EVRG and ODFL skipped draws GWW alone with the line naming
+            the two by why; a trade log over GWW and EVRG the same; What the system bought's line reads 2 picks and its reason.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 the
+            averaged account's table drawing its skips: red. m2 the trade log drawing its skips: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 21.11 - correction: the averaged account states how a monthly setup's holding is sized, and draws each position's dollars   2026-11-07
+
+Found:      the order's seventh item: the combined account said "each set of holdings a fifth of the account" while FTNT held $897,
+            LYB $863 and the heavyweights about $800 each, a fifth of the pot shared across the 22 holdings a book can hold, and
+            no dollars were drawn. With the 21.11 correction above the pot is gone and each holding sits in its own setup's
+            account, sized by `PositionSize.Of` at the account's value over the most holdings its book can hold, at most a tenth:
+            22 for the sector heavyweights and, its book stating no size of its own, for the Fundamentals family; Quality at a
+            fair price's the size its book stores.
+Corrected:  the words match the sizing: the averaged account's card states, for each monthly setup it holds, that its holding is
+            an equal share of its own account across the most holdings the setup can hold, with that share in dollars on the
+            settings' size, and its table draws each position's dollars beside its shares. 15.21's row, the changelog and the
+            guide.
+Tests:      1 new, by hand: on $100,000 a holding of 22 is $4,545; ABNB's 26 shares at 170.94 are $4,444, FTNT's 35 at 128.20
+            $4,487 and IDXX's 15 at 662.26 $9,934; the line names the Fundamentals and the sector heavyweights across 22.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 the
+            line never drawn: red. m2 the dollars cell dropped: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 22.16 - correction: Home's account counts since today's rules all took effect   2026-11-07
+
+Found:      the order's second item: on 2026-11-06 the S&P 500's Home read "Our paper account counts the rules as they stand now
+            from 2 Oct, the day their first trade counts: its earlier trades replay the same under this version." with the bar
+            "Our paper account, as the rules stand now, since 2 Oct"; the S&P 400's and 600's from 2 Nov.
+Corrected:  Home reads the live setups' accounts averaged of the 21.11 correction above, whose day is the latest of the live
+            accounts' starts, 3 Nov on each index on 2026-11-06; its line opens "Since today's rules all took effect on 3 Nov",
+            its bar is "Our paper account since 3 Nov" beside the index's fund over the same days, and the system's every
+            version stands on its own line as before. The replay's words and their flag are gone. The decision superseding
+            22.52's, the Home row, the build plan's citation, the changelog and the guide.
+Tests:      1 new: Home over an account since 3 Nov draws the line, the bars and the system's line and no 2 Oct; paper trading's
+            averaged account over accounts from 21 Oct, 2 Nov and 3 Nov counts from 3 Nov. 22.52's test retired with its
+            decision.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 the
+            line back to 2026-11-06's words: red. The latest start is the 21.11 correction's m2, red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: each tile draws the index's fund over its own account's days   2026-11-07
+
+Found:      the order's third item: on 2026-11-06 the S&P 500's tiles carried one tile, "The index's fund, SPY -4.5% holding it over
+            the same days, since 2026-10-02", beside accounts counting from 2 Nov and 3 Nov.
+Corrected:  beneath each tile's figures, the averaged account's among them, the index's fund over that account's own days as its
+            walk reads it, or the day its closes start where they start after the account's first; the fund's tile of its own is
+            gone. The decision, 15.21's row, its claim's note, the changelog and the guide.
+Tests:      1 new, by hand: the fund at 500, 490 and 480.20 over 2, 3 and 6 Nov reads down 2.0% beneath the breakout from 3 Nov and
+            down 4.0% beneath Quality at a fair price from 2 Nov, and no fund tile. The tiles' test reads the fund beneath each
+            tile, and with what the system bought's test it is worked again at the tenth of the 19.4 correction above, whose
+            filtered runs did not reach either: S1 is bought at 10 shares and O2 capped at 19, the pullback at 0.01904; and the
+            company's cell read with the 21.13 correction's mark.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 no
+            fund beneath a rule's tile: red. m2 each tile reading the fund over the page's earliest start: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: what the system bought names the account each line walks, and draws no stock that account holds as not bought   2026-11-07
+
+Found:      the order's sixth item: on 2026-11-06 the line beneath what the system bought merged every live account's skips and
+            unfilled listings, "Not bought: 29 listed stocks. The free cash was under its cost (16): APP, EVRG, EW, GWW, ...",
+            naming no account, while the combined account held GWW, DD, IDXX and VLTO open.
+Corrected:  a line above the table says each row is a trade of its setup's own account, which the Setup column names; beneath it,
+            `PaperAccount.UnboughtBy` gives each live account a line of its own opening on its setup's name, its skips and its
+            listings no fill bought less every stock it holds open on the night. GWW is the drift's own account's skip for its
+            cash, and with the 21.11 correction the averaged account holds no stock its accounts do not. The decision, 15.21's
+            row, the changelog and the guide.
+Tests:      1 new: the drift's account holding DD and listing it again, skipping GWW for the cash and waiting on XYZ, draws its own
+            line with GWW and XYZ and not DD. What the system bought's test reads the pullback's account's line.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            held stock kept on the line: red. m2 the line naming no account: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.10 - correction: a listing waiting on the next open is drawn as to buy in its own account, never as not bought, nor where that account holds it   2026-11-07
+
+Found:      the order's ninth item: on 2026-11-06 ABNB drew as held and as "Waits on the next trading day's open". Why, read off
+            the store: the sector heavyweights' own account bought ABNB at the open of 3 Nov at 170.94 and holds it; the drift's
+            rule listed it on the night of 6 Nov, so the drift's own account waits on Monday's open to buy it; and the line
+            beneath what the system bought drew 19.10's waiting listings among the stocks not bought, every account's merged and
+            none named.
+Corrected:  `PaperAccount.UnboughtBy` keeps the waiting listings apart from the stocks not bought, none the account holds open,
+            each with the other live accounts holding it; each account's waiting stand on a line of their own, "To buy at the
+            next trading day's open", a monthly setup's said to be its reshuffle's, ABNB drawn there as the drift's with "Sector
+            heavyweights' own account already holds it". The decision, 15.21's row, the changelog and the guide.
+Tests:      1 new: the heavyweights' account holding ABNB and listing it again draws no wait for it; the drift's account draws
+            ABNB and CPAY to buy, ABNB named as held by the heavyweights' account; no line draws a wait. The 19.4 corrections'
+            tests read the wait on the line to buy.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            waiting listing kept among the stocks not bought: red. m2 a waiting stock the account holds kept on its line: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: a holding with no price stop draws how its rule sells it and whether it still qualifies tonight   2026-11-07
+
+Found:      the order's eighth item: on 2026-11-06 the Fundamentals family's and Quality at a fair price's holdings drew "none"
+            under Stop and Target and "Not read tonight" under Where it stands, the standing worked for the sector heavyweights
+            alone; on the S&P 500 FTNT, LYB, AIG, CVS, ODFL, AES, DOC, IT, MPC and MGM.
+Corrected:  each holding draws across its stop's and target's cells how its own setup's rule sells it, and where it stands its
+            state tonight by that rule: the Fundamentals family's from its rule's night row, "Sells when a filing drops it below
+            7 in every 9 of the checks that apply, or after 126 trading days" on the S&P 500's live rule and its score tonight
+            against the hold; Quality at a fair price's "Sold at the reshuffle if it no longer qualifies, next on" its card's
+            next reshuffle and its card's line; the sector heavyweights' at the reshuffle if it no longer leads its sector, with
+            its next rebalance, and its standing as before. The decision, 15.21's row, the changelog and the guide.
+Tests:      1 new, by hand: the words at 7 in 9 and 126 sessions; 8 of 9 qualifies, 6 of 9 and 5 of 7 do not; the next
+            reshuffle on 1 Dec; and the page drawing both holdings' sale across the two cells and each one's state, no "Not read
+            tonight".
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            holding's cells back to none: red. m2 the hold score read as 9 in every 9: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: each row of what the versions did differently gives its start   2026-11-07
+
+Found:      the order's fourth item: on 2026-11-06 the versions' rows drew no start, the day under the pointer alone.
+Corrected:  each row draws beneath its verdict its account's day, the live or provisional rule's "record since 3 Nov" and each
+            version's "trading since" its own, the day the 19.4 correction above fixes. The decision, 15.21's row, the
+            changelog and the guide. The commit carries the setting-by-setting reach the next correction draws.
+Tests:      1 new: the live rule's row from 3 Nov and a version's from 2 Nov read off the rendered part.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            every row read as a version's: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: each version is marked as narrowing or widening its live rule, and a family with no trade says why in one line   2026-11-07
+
+Found:      the order's thirteenth item: on 2026-11-06 the S&P 500's pullback drew a table of nine rows of zeros, its rule and
+            eight versions, none saying how it reaches against the rule.
+Corrected:  `VersionReach.Of` reads a version's registered settings against its live rule's from one table in the core of what
+            each setting is, a floor, a ceiling, a count, an exit, an order or a change of what is read; a version narrows the
+            rule where every change that moves which trades it takes only removes some, widens it where any can add one, and a
+            setting the table does not hold is said to be unread, never guessed. The versions' part and the scorecard mark each
+            version; a family whose rule and versions have no trade since its record began draws one line in the table's place.
+            The scorecard's version row carries its full words under the pointer, which the table no longer always draws.
+            `VersionReach` sits with the paper account's code in the core's cards and not among the loop's engines, whose
+            files the catalogue's test holds to name no reading of their own, two of its settings sharing a reading's name. Over
+            the register of 2026-11-07, read off its rows by the same table: the S&P 500's pullback's eight, six narrow it and
+            two widen it, the market check off and the plan at the nearest bands. The decision, 15.21's row, the changelog and
+            the guide.
+Tests:      1 new, by hand: the S&P 500 swing filter's eight settings each read to its kind, a target, an order, the dip's trend,
+            a larger book, an unknown setting and a mixed change; the line with every version narrowing and with one widening;
+            and a family with a trade drawing its table marked. Four tests read the line or the scorecard's rows where their
+            families hold no trade, and the tone test gives its accounts a trade so its table draws.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            floor raised read as widening: red. m2 the line never drawn: red, at the second spelling, the first not compiling
+            and its run reading the build before it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: each chart line starts on its own account's day, and the span is chosen since each began or the last 30 days   2026-11-07
+
+Found:      the order's fifteenth item: on 2026-11-06 the S&P 500's chart drew its lines over one span from 2 Oct, the breakout's
+            from its carried start, with no choice of span.
+Corrected:  each line is its account's walk from its own first day, the 19.4 correction above fixing that day, the span from the
+            earliest; two chips kept in the link, "Since each began" and "Last 30 days", the second drawing the 30 calendar days
+            to the newest session alone and no line holding none of them; the read-only copy draws no chip. The decision,
+            15.21's row, the changelog and the guide.
+Tests:      1 new: a line from 1 Oct and one from 2 Nov, the second opening right of the first; the chips' links; the last 30
+            days from 2 Nov.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 the
+            recent span never taken: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: every chart line draws its family's colour, and the averaged account alone the text colour   2026-11-07
+
+Found:      the order's sixteenth item: on 2026-11-06 Quality at a fair price's and the Fundamentals family's lines drew the text
+            colour, white in the dark palette, the stylesheet holding no colour for either, as did the operator's own.
+Corrected:  each family's line and its key its own colour, the two among them; the operator's own the accent colour; a line of no
+            family's the soft one; the live setups' accounts averaged alone the text colour, at a stroke of 3. The decision's
+            text, 15.21's row, the changelog and the guide.
+Tests:      1 new: every family Tonight orders holds a line rule and a key rule in its colour, and of the rules colouring a line
+            the averaged account's alone is the text colour; a quality and a Fundamentals line drawn with their families.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            Quality at a fair price's line rule removed: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: the chart draws the index's fund as a dashed grey line over the same days, in its key   2026-11-07
+
+Found:      the order's seventeenth item: on 2026-11-06 the chart drew no line of the index's fund.
+Corrected:  the page hands the chart the fund's closes over its sessions; the chart draws the fund's return from its close on the
+            span's first day it holds one, dashed in the muted grey, with a key of its own its press hides or shows. The
+            decision's text, 15.21's row, the changelog and the guide. With it the averaged account's walk of the 21.11
+            correction above reads each account's values with no cast to decimal, which the price-storage check holds to its
+            stated sites.
+Tests:      1 new: the fund at 490, 500, 495 and 510 beside an account from 2 Nov draws three points from 2 Nov, its last at the
+            account's +2%, and its key.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 the
+            fund's line from the close before the span: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: the chart draws gridlines at round steps, a labelled zero line, a date each week and an end label on each line   2026-11-07
+
+Found:      the order's eighteenth item: on 2026-11-06 the chart drew its zero line unlabelled, its top and bottom figures and its
+            first and last dates alone, and no line said whose it was or where it stood.
+Corrected:  `MarkRenderer.RoundSteps` sets the scale over whole steps of 1, 2, 2.5 or 5 times a power of ten, no more than six,
+            each a gridline with its label and nought's the zero line labelled 0%; the first session of each week is dated, none
+            closer than a label's width; each line ends in a label of its name and latest return in its colour, `Spread`
+            pushing two that fall together a line of text apart. The chart is drawn wider to hold the labels. The decision's
+            text, 15.21's row, the changelog and the guide.
+Tests:      1 new: the steps by hand, -2.2 to 3.1 at 1 from -3 to 4, -0.4 to 0 at 0.1 and a flat span either side of nought;
+            two ends 4 apart moved to 13; over three weeks a date each Monday, nought labelled and two end labels apart.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 the
+            labels left where their lines end: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: the chart's hover box gives the day and each line's return on it   2026-11-07
+
+Found:      the order's nineteenth item: on 2026-11-06 the chart drew no hover box, a line's name under the pointer alone.
+Corrected:  each session carries a band over the plot holding its day and every drawn line's return on it, the fund's among
+            them; the page's script draws them in a box above the chart while the pointer is over the band, each row in its
+            line's colour, and takes it down when the pointer leaves the chart; each row reads its line's return with no cast,
+            which the price-storage check holds to its stated sites. The decision's text, 15.21's row, the changelog and the
+            guide.
+Tests:      1 new: two sessions' bands by hand, the drift and the fund on 2 Nov, the drift, the breakout from its first day and
+            the fund on 3 Nov; the empty box; and the shell's script reading the band.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 the
+            script reading no band: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: an account with no trade draws no line on the chart, its key saying no trades yet   2026-11-07
+
+Found:      the order's twentieth item: on 2026-11-06 the S&P 500's pullback, with no trade since 3 Nov, drew a flat line at 0%.
+Corrected:  an account whose walk bought no trade draws no line, end label or point in the hover box, and its key, which hides
+            nothing, names it with "no trades yet"; where no account holds a trade the chart says so above the keys. With it the
+            end labels and the hover box's rows draw in the ink beside a mark in their line's colour, a dot at each line's end
+            and a swatch before each row, a family's hue being a mark and never a text's colour as the palette checks hold, which
+            the 19.4 corrections above for the end labels and the box had drawn as the text's colour. The decision's text,
+            15.21's row, the changelog and the guide.
+Tests:      1 new: a pullback account with no trade beside a drift with one draws the drift's line alone and the pullback's key
+            saying no trades yet; with the pullback alone, no chart and the key. The fixture's paper accounts test reads the
+            chart's line where no account holds a trade in its new words.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 an
+            account with no trade drawn again: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: a market check turned on or off reads by its floor, and each family's versions are counted by reach   2026-11-07
+
+Found:      the order's fourteenth item, which asks each family's versions counted as narrowing or widening its live rule on
+            each index and a widening version proposed for each family whose versions all narrow it. Counting them by the 19.4
+            correction above, the S&P 600 drift's version turning the market check on read as widening its rule: it raises
+            the breadth floor from 0 to 0.4 and names the breadth it reads, and the breadth's change alone read as a change of
+            what is read.
+Corrected:  `VersionReach.Of` reads the breadth a market check names with its floor where the floor moves, so turning the check on
+            narrows and turning it off widens. The decision's text. The counts, over the register of 2026-11-07, and the
+            proposals stand in `prompts/2026-11-07-21-22-item-14-widening-proposals.md`: one family's versions all narrow it,
+            the S&P 400 sector heavyweights' one version; the S&P 500 pullback's six narrow it and two widen it. For the
+            pullback, from the swing filter's stored answers under version 5 from 2 Oct, 13,082 member-sessions over 26
+            sessions, the trend and strength step refused 10,919 and the trigger 168; proposed, the uptrend's strength floor at
+            0.40 and the turn up within 5 sessions, with what each admits there and in the setup ledger's 26,702 refused setups.
+            For the S&P 400 heavyweights the ledger holds no book family's setups, so no refusal count is read; proposed, its
+            beta check off. Nothing is registered.
+Tests:      none new: the reach test reads a market check turned on as narrowing, and the breadth's change alone with the floor
+            standing as widening.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the reach test by its name. m1
+            the breadth read apart from a moving floor: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 21.13 - correction: no heading reads the reader's words into a doubled word   2026-11-07
+
+Found:      the order's twenty-first item, which asks the S&P 400's and 600's pages and Home read for the same faults. Read at
+            each index from the branch's build over the store of 2026-11-06, with the corrections above: every fault the
+            twenty items name had stood on the S&P 400's and 600's pages and Home as on the S&P 500's, among them the S&P 400's
+            merged waiting list drawing AFG twice and BC and COLM while the drift's account held both, its Fundamentals
+            holdings reading "Not read tonight", and its tiles and Home counting from 2 Nov; the corrections above, on code
+            every index reads, correct each. One more of the fifth item's kind stood on every index's page and on the Loop
+            page: the Setup column's note on What the system bought read "the setup setup whose live or not-yet-tested rule
+            bought it", and the Loop page's "the setup setup, in the one order", 21.13's table of phrases reading a heading's
+            own "setup family" as two setups. Every screen at each index read for a doubled word: those two alone.
+Corrected:  both notes name the family alone, which the table reads as the setup.
+Tests:      1 new: the paper page over an open trade and the Loop page's summary, each through the table of phrases, draw no
+            doubled word.
+Claims:     none new.
+Pins:       none move: the web project's sources are none a rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the paper note's "setup family" restored: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3549 of 3549 tests ran with none failed, migrations 0 to 131 with none
+            pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
+            none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

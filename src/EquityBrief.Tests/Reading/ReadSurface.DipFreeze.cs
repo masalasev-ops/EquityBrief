@@ -171,13 +171,11 @@ public partial class ReadSurface
             Assert.Contains("<option value=\"dip\" selected>", Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
             Assert.Contains("<option value=\"dip\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
 
-            // An account for the live rule and one for each of its three versions, the version stopped at 4 typical moves
-            // carrying its trade.
-            var stopped = AccountRowOf(page, RunScreen.Slug(rules[2]));
-
-            Assert.Contains("data-standing=\"live\"", AccountRowOf(page, ReadApi.PageList + "-" + DipRule.Name), StringComparison.Ordinal);
-            Assert.Contains("data-standing=\"variant\"", stopped, StringComparison.Ordinal);
-            Assert.Equal(3, Regex.Matches(page, "<tr data-account=\"[^\"]*s-p-400-dip-rule-at[^\"]*\"[^>]*data-standing=\"variant\"").Count);
+            // An account for the live rule and one for each of its three versions; from the 19.4 correction of 2026-11-07, none
+            // holding a filled trade, the versions' part says so in one line and the scorecard lists the three.
+            Assert.Contains("<p class=\"paper-no-trade\" data-no-trade=\"3\">", page, StringComparison.Ordinal);
+            Assert.Contains($"<tr data-account=\"{RunScreen.Slug(rules[2])}\" data-verdict=", page, StringComparison.Ordinal);
+            Assert.Equal(3, Regex.Matches(page, "<tr data-account=\"[^\"]*s-p-400-dip-rule-at[^\"]*\" data-verdict=").Count);
 
             // From the 22.3 correction of 2026-10-25 an open dip trade's target reads none, since its plan holds no target
             // and its stop never trails, as Past picks reads it, where a trade whose stop trails reads that it trails.

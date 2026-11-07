@@ -14,15 +14,10 @@ namespace EquityBrief.Web.App;
 public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null);
 
 // How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
-// many made money; the combined paper account's return, the day it counts from and the index's fund over the same days; and
-// whether a live rule still holds fewer finished trades than a verdict needs.
+// many made money; the live setups' accounts averaged, their return, the day every live rule took effect and the index's
+// fund over the same days; and whether a live rule still holds fewer finished trades than a verdict needs.
 // see: Every count of trades names its group and one function works the three groups
-public sealed record HomePast(DateOnly Since, int Closed, int Won, double? Ours, double? Index, bool Early, string Fund = "", DateOnly? AccountSince = null)
-{
-    // Whether the account counts from before the version of the rule its first day is that rule's own start, carried
-    // back by a replay that reproduced every trade.
-    public bool CarriedBack { get; init; }
-}
+public sealed record HomePast(DateOnly Since, int Closed, int Won, double? Ours, double? Index, bool Early, string Fund = "", DateOnly? AccountSince = null);
 
 // Home as code draws it from the newest night: the index, the night drawn and whether a later night is still running; the
 // share of the index's stocks above their 200-day average with the floor the rules buy at and whether the market check
@@ -370,17 +365,17 @@ public sealed partial class SinglePageApp
 
         if (view.Past is { } past)
         {
-            // The account as the rules stand now from the day their first trade counts, with the index's fund over the same
-            // days; the system's every version apart from it and labelled.
-            // see: Home's paper account counts from the day the current rules' first trade counts, and the system's every version stands apart and labelled
-            region.Append(Invariant($"<div><p class=\"card-summary\" data-account-since=\"{(past.AccountSince is { } from ? Cards.Day(from) : "none")}\">{Escaped(AccountLine(past, marks.Copying))}</p>"));
+            // The live setups' accounts averaged since today's rules all took effect, with the index's fund over the same days;
+            // the system's every version apart from it and labelled.
+            // see: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
+            region.Append(Invariant($"<div><p class=\"card-summary\" data-account-since=\"{(past.AccountSince is { } from ? Cards.Day(from) : "none")}\">{Escaped(AccountLine(past))}</p>"));
             region.Append(past.Early ? Invariant($"<p style=\"margin:0;color:var(--soft);font-size:14px\">Still early: each rule needs about {FairVerdictTrades} finished trades for a fair verdict.</p>") : string.Empty);
             region.Append(Invariant($"<p style=\"margin:10px 0 0\"><a href=\"{PicksRoute}{(view.Reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + view.Reading.Word)}\">See every past idea</a>, or the rules as they stand now on <a href=\"{PaperRoute}{(view.Reading == Universes.Large ? string.Empty : "?" + Universes.Query + "=" + view.Reading.Word)}\">Paper trading</a></p></div>"));
 
             var widest = Math.Max(Math.Abs(past.Ours ?? 0), Math.Abs(past.Index ?? 0));
 
             region.Append("<div>");
-            region.Append(Bar("ours", past.AccountSince is { } counted ? Invariant($"Our paper account, as the rules stand now, since {counted.ToString("d MMM", CultureInfo.InvariantCulture)}") : "Our paper account", past.Ours, widest));
+            region.Append(Bar("ours", past.AccountSince is { } counted ? Invariant($"Our paper account since {counted.ToString("d MMM", CultureInfo.InvariantCulture)}") : "Our paper account", past.Ours, widest));
             region.Append(Bar("index", Invariant($"The index's fund, {past.Fund}, over the same days"), past.Index, widest));
             region.Append("</div>");
             region.Append(Invariant($"<p class=\"home-system\" data-system-closed=\"{past.Closed}\" data-made-money=\"{past.Won}\">{Escaped(SystemLine(past))}</p>"));
@@ -459,14 +454,13 @@ public sealed partial class SinglePageApp
         return card.ToString();
     }
 
-    // What the paper account counts, as Home says it: the rules as they stand now from the day their first trade counts,
-    // and where that day comes before the version's start that its earlier trades replay the same; the read-only copy
-    // names no version.
-    public static string AccountLine(HomePast past, bool copying) =>
+    // What the paper account counts, as Home says it: the live setups' accounts averaged from the day every live rule on the
+    // index had its current version, the latest of their starts, in the operator's words.
+    // see: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
+    public static string AccountLine(HomePast past) =>
         past.AccountSince is not { } from
             ? "Our paper account holds no trade of the rules as they stand now yet."
-            : Invariant($"Our paper account counts the rules as they stand now from {from.ToString("d MMM", CultureInfo.InvariantCulture)}, the day their first trade counts")
-                + (past.CarriedBack && !copying ? ": its earlier trades replay the same under this version." : ".");
+            : Invariant($"Since today's rules all took effect on {from.ToString("d MMM", CultureInfo.InvariantCulture)}, our paper account has followed every one of them with an equal share.");
 
     // The system's every trade, apart from the account and labelled.
     public static string SystemLine(HomePast past) =>

@@ -25,6 +25,7 @@ public static class TradeGroups
         // A night's page counts what stood on that night: a trade bought at a later session's open was still to buy.
         (PaperTrade Trade, double? Result)[] version = [.. heads.SelectMany(head => head.Trades).Where(one => one.Trade.Bought <= night)];
         (PaperTrade Trade, double? Result)[] earlier = [.. heads.SelectMany(head => (head.Earlier ?? []).Select(one => (one.Trade, one.Result))).Where(one => one.Trade.Bought <= night)];
+        (PaperTrade Trade, double? Result)[] same = [.. heads.SelectMany(head => head.Same).Where(one => one.Trade.Bought <= night)];
 
         int ToBuy(IEnumerable<PaperAccountSource> accounts) =>
             accounts.Sum(head => (head.Unfilled ?? []).Count(one => one.Why == PaperAccount.Waiting)
@@ -36,7 +37,7 @@ public static class TradeGroups
         return new TradeGroupsView(
             FirstLive(register, indexCode, family),
             since.Length == 0 ? null : since.Max(),
-            Count([.. version, .. earlier], night, close, sessions),
+            Count([.. version, .. earlier, .. same], night, close, sessions),
             Count(version, night, close, sessions),
             Count(earlier, night, close, sessions),
             ToBuy(heads),

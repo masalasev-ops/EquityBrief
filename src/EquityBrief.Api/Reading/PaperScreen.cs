@@ -34,15 +34,32 @@ public sealed record PaperAccountSource(
     bool ReadsReleases = false,
     int? JudgedFrom = null)
 {
-    // The first session its version's registration counts from, none for an account no registration starts; an account
-    // starting before it was carried back by a replay that reproduced every trade.
+    // The first session its version's registration counts from, the day the account starts, none for an account no
+    // registration starts.
     public DateOnly? VersionFrom { get; init; }
+
+    // The trades listed before its version's first session that a replay under its version reproduced, kept in its rule's
+    // record and not in the account, and the session that replay counted from; none where no replay carried the record back.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    public IReadOnlyList<(PaperTrade Trade, double? Result)> Same { get; init; } = [];
+
+    public DateOnly? SameSince { get; init; }
+
+    // From the 19.4 correction of 2026-11-07 a version's reach against its live rule, setting by setting; none for a live
+    // or provisional rule, the operator's own, or a version whose live rule holds no registered settings to read against.
+    // see: A version is marked as narrowing or widening its live rule by the direction of each setting it changes
+    public Core.Cards.VersionReachKind? Reach { get; init; }
 
     // Whether a stored trade is one of this account's: kept under its name, or under its name and the filter version it
     // was listed from.
     public bool Keeps(PaperRow row) =>
         Listed is { } name && (row.Account == name || row.Account.StartsWith(name + ", from version ", StringComparison.Ordinal));
 }
+
+// From the 19.4 correction of 2026-11-07 a monthly setup's holdings as what the system bought draws them: how its rule sells
+// a holding, in words with its next reshuffle where one falls, and each open holding's state tonight by its own rule.
+// see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+public sealed record PaperBookLine(string Sells, IReadOnlyDictionary<string, string> Tonight);
 
 // An index's paper accounts as a page reads them: each before its walk, each drawn, the closes they were marked by, the
 // sessions they were walked over, each stock's company and readings on the night, the index's fund's closes, and each
@@ -56,7 +73,11 @@ public sealed record PaperAccounts(
     Func<DateOnly, decimal?>? Fund = null,
     IReadOnlyDictionary<string, string>? Standings = null,
     PaperCombinedView? Combined = null,
-    TradeGroupsView? Groups = null);
+    TradeGroupsView? Groups = null)
+{
+    // From the 19.4 correction of 2026-11-07 each monthly setup's line by its family.
+    public IReadOnlyDictionary<string, PaperBookLine> Books { get; init; } = new Dictionary<string, PaperBookLine>(StringComparer.Ordinal);
+}
 
 // The projection from stored trades and test rows to paper trading's accounts and their trade logs. The accounts are an
 // index's: each family's live or provisional rule's list, the page's own, each registered variant's own list or book,
@@ -91,6 +112,25 @@ public static class PaperScreen
 
     static string ListKey(string family) => ReadApi.PageList + "-" + family;
 
+    // From the 19.4 correction of 2026-11-07 how each monthly setup sells a holding with no price stop, in the operator's
+    // words, and a Fundamentals holding's state tonight by its rule's hold score.
+    // see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+    public static string HeavyweightSells(bool underAverage, DateOnly? next) =>
+        "Sold at the reshuffle if it no longer leads its sector" + (underAverage ? " or on a close under its 200-day average" : string.Empty) + NextOn(next);
+
+    public static string QualitySells(DateOnly? next) => "Sold at the reshuffle if it no longer qualifies" + NextOn(next);
+
+    public static string FundamentalsSells(int holdInNine, int sessions) =>
+        string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Sells when a filing drops it below {holdInNine} in every 9 of the checks that apply, or after {sessions} trading days");
+
+    public static string FundamentalsTonight(int passed, int applied, int holdInNine) =>
+        Core.Ledger.FundamentalScorecard.Clears(passed, applied, holdInNine)
+            ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Still qualifies: {passed} of {applied} apply, at least {holdInNine} in every 9")
+            : string.Create(System.Globalization.CultureInfo.InvariantCulture, $"No longer qualifies: {passed} of {applied} apply, under {holdInNine} in every 9");
+
+    static string NextOn(DateOnly? next) =>
+        next is { } on ? ", next on " + on.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
+
     // The words a provisional account and the operator's own name what they count, having no registered version.
     public const string ProvisionalVersion = "provisional settings, no registered version: every trade since its first";
 
@@ -105,16 +145,15 @@ public static class PaperScreen
 
     static string Stamp(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
-    // The words an account names the version it counts by, saying where its start was carried back before the registration
-    // by a replay that reproduced every trade.
-    public static string CountedWords(CandidateRow standing, DateOnly start) =>
-        VersionWords(standing) + (start < FamilyRecords.FirstSession(standing.RegisteredAt) ? ", carried back by a replay that reproduced every trade" : string.Empty);
+    // Where a registered rule's account starts: its standing registration's first session, never earlier, whatever a replay
+    // carried its record back to.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    public static DateOnly StartOf(CandidateRow standing) => FamilyRecords.FirstSession(standing.RegisteredAt);
 
-    // Where a registered rule's account starts: where the Run page's record of the rule counts from, its standing
-    // registration's first session, or the session a replay under its version found it counting from where that replay
-    // reproduced every trade. The S&P 400's and 600's records read no replay.
-    // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
-    public static DateOnly StartOf(CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays) =>
+    // Where the Run page's record of a registered rule counts from: its standing registration's first session, or the
+    // session a replay under its version found it counting from where that replay reproduced every trade. The S&P 400's and
+    // 600's records read no replay.
+    public static DateOnly RecordFrom(CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays) =>
         FamilyRecords.StartOf(
             new RegisterRow(standing.Id, standing.Candidate, string.Empty, string.Empty, standing.Evaluator, standing.Parameters, standing.EvaluatorVersion, standing.Event, standing.Retires, standing.RegisteredAt, standing.Evidence),
             replays).First;
@@ -190,11 +229,21 @@ public static class PaperScreen
             .Distinct(),
     ];
 
+    // A registered rule's account from its version's first session: the trades listed from then its own, those listed
+    // before it from where a replay under its version found the record counting apart as the same trades, and the rest
+    // earlier versions'.
     public static PaperAccountSource Started(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays, IReadOnlyList<CandidateRow> lineage)
     {
-        var start = StartOf(standing, replays);
+        var start = StartOf(standing);
+        var record = RecordFrom(standing, replays);
+        bool IsSame((PaperTrade Trade, double? Result) one) => one.Trade.ListedOn >= record && one.Trade.ListedOn < start;
 
-        return Split(account, trades, start, CountedWords(standing, start), lineage) with { VersionFrom = FamilyRecords.FirstSession(standing.RegisteredAt) };
+        return Split(account, [.. trades.Where(one => !IsSame(one))], start, VersionWords(standing), lineage) with
+        {
+            VersionFrom = start,
+            Same = [.. trades.Where(IsSame)],
+            SameSince = record < start ? record : null,
+        };
     }
 
     static PaperAccountSource Split(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly start, string version, IReadOnlyList<CandidateRow> lineage) =>
@@ -207,6 +256,11 @@ public static class PaperScreen
             Unfilled = [.. (account.Unfilled ?? []).Where(one => one.Listed >= start)],
         };
 
+    // A version's account with its reach against its live rule's registered settings, none where the family stands at no
+    // registered rule.
+    static PaperAccountSource Reached(PaperAccountSource version, string family, CandidateRow? live, CandidateRow row) =>
+        live is null ? version : version with { Reach = Core.Cards.VersionReach.Of(family, CandidateEvaluator.Read(live.Parameters), CandidateEvaluator.Read(row.Parameters)) };
+
     // A variant's tab is its number and the settings it differs by: its short name is the number, and what it changes the
     // rest.
     const string TabJoint = " · ";
@@ -217,10 +271,10 @@ public static class PaperScreen
 
     // Every account on an index in the one family order, each family's live or provisional rule first and its variants
     // after it as its card numbers them, then the operator's own. A registered rule's account counts the trades of its
-    // current version alone, from where the Run page's record of the rule starts; a provisional account and the
-    // operator's own count every trade from their first. The register is read as the night's page reads it, as of the
-    // instant given where a night run again read it later, and the rule a freeze keeps in the background has no account.
-    // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
+    // current version alone, from its version's first session; a provisional account and the operator's own count every
+    // trade from their first. The register is read as the night's page reads it, as of the instant given where a night run
+    // again read it later, and the rule a freeze keeps in the background has no account.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
     public static IReadOnlyList<PaperAccountSource> Accounts(
         bool large,
         string indexName,
@@ -274,7 +328,7 @@ public static class PaperScreen
                 {
                     var version = new PaperAccountSource(RunScreen.Slug(row.Candidate), family, PaperAccountView.Variant, tab, row.Candidate, row.Candidate, false, [], null, row.Candidate, Short: TabShort(tab), Changes: TabChanges(tab));
 
-                    accounts.Add(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. dipRegistrations.Where(one => one.Candidate == row.Candidate)]));
+                    accounts.Add(Reached(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. dipRegistrations.Where(one => one.Candidate == row.Candidate)]), family, liveDip, row));
                 }
 
                 continue;
@@ -335,7 +389,7 @@ public static class PaperScreen
                     Short: TabShort(tab),
                     Changes: TabChanges(tab));
 
-                accounts.Add(Started(variant with { Unfilled = Unfilled(rows.Where(variant.Keeps)) }, Of(rows.Where(variant.Keeps)), row, replayed, [.. registrations.Where(one => one.Candidate == row.Candidate)]));
+                accounts.Add(Reached(Started(variant with { Unfilled = Unfilled(rows.Where(variant.Keeps)) }, Of(rows.Where(variant.Keeps)), row, replayed, [.. registrations.Where(one => one.Candidate == row.Candidate)]), family, live, row));
             }
         }
 
@@ -372,7 +426,7 @@ public static class PaperScreen
             {
                 var version = new PaperAccountSource(RunScreen.Slug(row.Candidate), family, PaperAccountView.Variant, tab, row.Candidate, row.Candidate, true, [], null, row.Candidate, Short: TabShort(tab), Changes: TabChanges(tab));
 
-                accounts.Add(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. registrations.Where(one => one.Candidate == row.Candidate)]));
+                accounts.Add(Reached(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. registrations.Where(one => one.Candidate == row.Candidate)]), family, live, row));
             }
         }
 
@@ -409,7 +463,7 @@ public static class PaperScreen
             {
                 var version = new PaperAccountSource(RunScreen.Slug(row.Candidate), family, PaperAccountView.Variant, tab, row.Candidate, row.Candidate, true, [], null, row.Candidate, Short: TabShort(tab), Changes: TabChanges(tab));
 
-                accounts.Add(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. registrations.Where(one => one.Candidate == row.Candidate)]));
+                accounts.Add(Reached(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. registrations.Where(one => one.Candidate == row.Candidate)]), family, live, row));
             }
         }
 
@@ -655,8 +709,11 @@ public static class PaperScreen
             var verdict = account.Standing == PaperAccountView.You
                 ? RuleVerdict.Yours
                 : test is null ? RuleVerdict.NotTested : RuleVerdict.Of(test.Passed, test.Why, test.Adjusted, test.Gate, test.Stable, test.Trimmed, test.Counts);
+            // A rule's account caps each position at a tenth of its value whatever the settings state; the operator's own walks
+            // the settings their cards size by.
+            // see: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
             var walked = settings is { } held && account.Since is { } from
-                ? PaperAccount.Walk(held, [.. account.Trades.Select(one => one.Trade)], [.. sessions.Where(session => session >= from && session <= night)], close, fund)
+                ? PaperAccount.Walk(account.Standing == PaperAccountView.You ? held : held with { PositionCap = PaperAccount.AccountCap }, [.. account.Trades.Select(one => one.Trade)], [.. sessions.Where(session => session >= from && session <= night)], close, fund)
                 : null;
             var ended = account.Trades.Count(one => one.Trade.Ended is not null);
             var months = account.Since is { } first ? RuleVerdict.MonthsBetween(first, night) : 0;
@@ -667,9 +724,10 @@ public static class PaperScreen
             var family = accounts.Where(other => other.Family == account.Family && other.Standing != PaperAccountView.You && other.Key != account.Key);
 
             // A variant's trades are read against every trade its live or provisional rule's list took, its earlier
-            // versions' among them, and the rule's own against its variants' counted trades.
+            // versions' and the same trades before its version among them, and the rule's own against its variants' counted
+            // trades.
             IEnumerable<PaperTrade> Taken(PaperAccountSource other) =>
-                other.Trades.Select(one => one.Trade).Concat(account.Standing == PaperAccountView.Variant ? (other.Earlier ?? []).Select(one => one.Trade) : []);
+                other.Trades.Select(one => one.Trade).Concat(account.Standing == PaperAccountView.Variant ? (other.Earlier ?? []).Select(one => one.Trade).Concat(other.Same.Select(one => one.Trade)) : []);
             var (open, closed) = walked is { } walk ? PaperAccount.Held(walk, night) : (0, 0);
 
             return new PaperAccountView(
@@ -708,6 +766,7 @@ public static class PaperScreen
                 JudgedFrom = account.JudgedFrom,
                 VersionFrom = account.VersionFrom,
                 Tested = test?.Rule,
+                Reach = account.Reach,
             };
         });
 
@@ -737,7 +796,8 @@ public static class PaperScreen
         string variants,
         string fundName,
         Func<DateOnly, decimal?> fund,
-        PaperCombinedView? combined = null)
+        PaperCombinedView? combined = null,
+        IReadOnlyDictionary<string, PaperBookLine>? books = null)
     {
         var heads = views.Where(view => view.Head && (show is null || view.Family == show)).ToArray();
         var source = sources.ToDictionary(account => account.Key, StringComparer.Ordinal);
@@ -746,8 +806,14 @@ public static class PaperScreen
 
         string? Company(string ticker) => stocks.TryGetValue(ticker, out var held) ? held.Company : null;
 
-        PaperPosition? Opened(PaperTrade trade) =>
-            trade.Ended is null || trade.Ended > night ? PaperAccount.Position(trade, night, sessions, close, Move(trade.Ticker), trade.Stop is null ? standing(trade.Ticker) : null) : null;
+        // A holding's state tonight by its own setup's rule: the heavyweights' standing handed in, and from the 19.4
+        // correction of 2026-11-07 Quality at a fair price's and the Fundamentals family's off their book's line.
+        // see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+        string? Tonight(string family, string ticker) =>
+            books?.GetValueOrDefault(family)?.Tonight.GetValueOrDefault(ticker) ?? (family == HeavyweightRule.Name ? standing(ticker) : null);
+
+        PaperPosition? Opened(PaperTrade trade, string family = HeavyweightRule.Name) =>
+            trade.Ended is null || trade.Ended > night ? PaperAccount.Position(trade, night, sessions, close, Move(trade.Ticker), trade.Stop is null ? Tonight(family, trade.Ticker) : null) : null;
 
         PaperEnded? Shut(PaperTrade trade, double? result) =>
             trade.Ended is { } end && end <= night ? PaperAccount.Ended(trade, result, sessions, close) : null;
@@ -773,12 +839,15 @@ public static class PaperScreen
                 trade.Trail is not null,
                 trade.Cap,
                 trade.Ended,
-                Opened(trade),
+                Opened(trade, head.Family),
                 Shut(trade, result),
                 version is null && (trade.Ended is null || trade.Ended > night) ? PaperAccount.HeldBy(trade.Ticker, night, VariantsOf(head.Family)) : [],
                 trade.Past,
                 version,
-                PaperAccount.Selling(trade, night, close));
+                PaperAccount.Selling(trade, night, close))
+            {
+                Sells = trade.Stop is null ? books?.GetValueOrDefault(head.Family)?.Sells : null,
+            };
 
         var bought = heads
             .SelectMany(head => (head.Walk?.Trades ?? [])
@@ -795,8 +864,19 @@ public static class PaperScreen
                 .OrderByDescending(trade => trade.Bought)
                 .ThenBy(trade => trade.Ticker, StringComparer.Ordinal),
         ];
+        // Each account's same trades before its version, drawn apart under the account and in none of its figures.
+        // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+        PaperSameView[] same =
+        [
+            .. heads
+                .Where(head => source[head.Key] is { SameSince: not null, Same.Count: > 0 })
+                .Select(head => new PaperSameView(
+                    head.Family,
+                    source[head.Key].SameSince!.Value,
+                    [.. source[head.Key].Same.Select(one => Drawn(head, one.Trade, one.Result, null)).OrderByDescending(trade => trade.Bought).ThenBy(trade => trade.Ticker, StringComparer.Ordinal)])),
+        ];
         var chosen = views.FirstOrDefault(view => view.Head && view.Family == variants);
-        var headTrades = chosen is null ? [] : source[chosen.Key].Trades.Select(one => one.Trade).Concat((source[chosen.Key].Earlier ?? []).Select(one => one.Trade)).ToArray();
+        var headTrades = chosen is null ? [] : source[chosen.Key].Trades.Select(one => one.Trade).Concat((source[chosen.Key].Earlier ?? []).Select(one => one.Trade)).Concat(source[chosen.Key].Same.Select(one => one.Trade)).ToArray();
         PaperOnlyView[] only =
         [
             .. views
@@ -818,42 +898,49 @@ public static class PaperScreen
             PaperAccount.NotBought([.. heads.Select(head => (head.Walk, source[head.Key].Unfilled ?? []))]),
             only,
             new PaperFundView(fundName, counted?.Return, from, counted?.From),
-            combined);
+            combined)
+        {
+            Same = same,
+            FundCloses = [.. sessions.Where(session => session <= night).Select(session => (Session: session, Close: fund(session))).Where(one => one.Close is not null).Select(one => (one.Session, one.Close!.Value))],
+            Unbought =
+            [
+                .. heads.OrderBy(head => SetupFamilies.OrderOf(head.Family)).Select(head => PaperAccount.UnboughtBy(
+                    head.Family,
+                    head.Walk,
+                    source[head.Key].Unfilled ?? [],
+                    night,
+                    heads
+                        .Where(other => other.Key != head.Key)
+                        .SelectMany(other => PaperAccount.HeldOpen(other.Walk, night).Select(ticker => (Ticker: ticker, other.Family)))
+                        .GroupBy(one => one.Ticker, StringComparer.Ordinal)
+                        .ToDictionary(group => group.Key, group => (IReadOnlyList<string>)[.. group.Select(one => one.Family).Distinct(StringComparer.Ordinal)], StringComparer.Ordinal))),
+            ],
+        };
     }
 
-    // From 21.11 the combined account on an index: every trade each family's live or provisional account counts, in one
-    // pot walked by the core from the account settings over the sessions from the earliest day those accounts count from,
-    // each with the family it came from and its stock's GICS sector on the night; none before the settings are set or
-    // where no such account counts a trade. Each trade's return is on its position, its sale over its buy, or tonight's
-    // close over its buy session's while it is open.
-    // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
-    public static PaperCombinedView? Combined(
-        IReadOnlyList<PaperAccountSource> accounts,
+    // From the 21.11 correction of 2026-11-07 the live setups' accounts, averaged, on an index: each family's live or
+    // provisional account walked, given an equal share of one account of the settings' size, over the sessions from the day
+    // every one of them counts, the latest of their starts; none before the settings are set or where no such account is
+    // walked. Each trade as its own setup's account bought it, with its return on its position, its sale over its buy, or
+    // tonight's close over its buy session's while it is open.
+    // see: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
+    public static PaperCombinedView? Averaged(
+        IReadOnlyList<PaperAccountView> views,
         AccountSettings? settings,
         IReadOnlyList<DateOnly> sessions,
         DateOnly night,
         Func<string, DateOnly, decimal?> close,
-        Func<DateOnly, decimal?> fund,
-        IReadOnlyDictionary<string, PaperStockRow> stocks)
+        Func<DateOnly, decimal?> fund)
     {
-        var heads = accounts.Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional && account.Since is not null).ToArray();
+        var heads = views.Where(view => view.Head && view.Since is not null && view.Walk is not null).OrderBy(view => SetupFamilies.OrderOf(view.Family)).ToArray();
 
         if (settings is not { } held || heads.Length == 0)
         {
             return null;
         }
 
-        var since = heads.Min(account => account.Since!.Value);
-        CombinedTrade[] trades =
-        [
-            .. heads.SelectMany(account => account.Trades.Select(one => new CombinedTrade(
-                one.Trade,
-                account.Family,
-                EquityBrief.Core.Cards.BuyOrder.Of(account.Family),
-                stocks.TryGetValue(one.Trade.Ticker, out var stock) ? stock.Sector : null,
-                account.Book))),
-        ];
-        var walked = PaperAccount.Combined(held, trades, [.. sessions.Where(session => session >= since && session <= night)], close, fund);
+        var since = heads.Max(view => view.Since!.Value);
+        var walked = PaperAccount.Averaged(held.Size, [.. heads.Select(view => (view.Family, view.Walk!))], [.. sessions.Where(session => session >= since && session <= night)], fund);
         var (open, closed) = PaperAccount.Held(walked.Walk, night);
 
         double? ReturnOf(PaperTrade trade) =>
@@ -866,12 +953,10 @@ public static class PaperScreen
             since,
             open,
             closed,
-            walked.AlreadyHeld,
-            walked.SectorFull,
-            walked.UnderCash,
+            walked.Accounts,
             [
                 .. walked.Trades.Select(one => new PaperCombinedTradeView(
-                    one.From.Family,
+                    one.Family,
                     one.Taken.Trade.Ticker,
                     one.Taken.Trade.Bought,
                     one.Taken.Trade.Buy,
@@ -879,8 +964,12 @@ public static class PaperScreen
                     one.Taken.Skipped,
                     one.Taken.Trade.Ended,
                     one.Taken.Skipped is null ? ReturnOf(one.Taken.Trade) : null,
-                    one.Taken.Trade.Ended is null || one.Taken.Trade.Ended > night)),
-            ]);
+                    one.Taken.Trade.Ended is null || one.Taken.Trade.Ended > night,
+                    one.Taken.Trade.Stop is null ? one.Taken.Trade.BookHoldings : null)),
+            ])
+        {
+            Size = held.Size,
+        };
     }
 
     // An account's trade log: each trade with its result in the account's unit, an open one's so far at tonight's close
@@ -895,7 +984,10 @@ public static class PaperScreen
     // The trades an account leaves out as listed before the version it counts, each with the version that listed it and an
     // open one's result so far as the log reads it; walked by nothing.
     public static IReadOnlyList<PaperTradeView> EarlierLog(PaperAccountSource account, DateOnly night, Func<string, DateOnly, decimal?> close) =>
-        [.. (account.Earlier ?? []).Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, one.Version))];
+    [
+        .. (account.Earlier ?? []).Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, one.Version)),
+        .. account.SameSince is { } since ? account.Same.Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, MarkRenderer.SameWords(since))) : [],
+    ];
 
     static PaperTradeView Logged(bool book, PaperTrade trade, double? stored, DateOnly night, Func<string, DateOnly, decimal?> close, string? skipped, string? version)
     {

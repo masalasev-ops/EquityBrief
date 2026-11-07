@@ -65,12 +65,18 @@ public sealed record PaperAccountView(
     // no test read it.
     public string? Tested { get; init; }
 
-    // The first session its version's registration counts from, none where no registration starts the account.
+    // The first session its version's registration counts from, the day it starts, none where no registration starts the
+    // account.
     public DateOnly? VersionFrom { get; init; }
 
-    // Whether the account counts from before its version's own start, carried back by a replay that reproduced every trade.
-    public bool CarriedBack => Since is { } from && VersionFrom is { } registered && from < registered;
+    // From the 19.4 correction of 2026-11-07 a version's reach against its live rule, none for any other account.
+    public EquityBrief.Core.Cards.VersionReachKind? Reach { get; init; }
 }
+
+// The trades a family's live account leaves out as listed before its version that a replay under its version reproduced,
+// drawn apart under the account: its family, the session the replay counted from, and each trade.
+// see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+public sealed record PaperSameView(string Family, DateOnly Since, IReadOnlyList<PaperBoughtView> Trades);
 
 // One trade of an account's trade log: its stock, its buy session and price, its stop where it holds one, the session it
 // ended on, its result in the account's unit, so far at tonight's close where it is open, why the account skipped it, and
@@ -100,7 +106,12 @@ public sealed record PaperBoughtView(
     IReadOnlyList<string> AlsoHeld,
     string? Past,
     string? Version = null,
-    string? Selling = null);
+    string? Selling = null)
+{
+    // From the 19.4 correction of 2026-11-07 how a holding with no price stop sells, by its own setup's rule, which its row
+    // draws in its stop's and target's place; none for a trade with a stop.
+    public string? Sells { get; init; }
+}
 
 // A trade a family's variants took that its live or provisional rule did not take off the same night: its stock and
 // company, the variants that took it by their short names, the night that listed it, the session it was bought on and its
@@ -128,6 +139,17 @@ public sealed record PaperPageView(
 {
     // From 23.2 the newest pooled run's verdicts across the three indices, which the scorecard draws beside the index's own.
     public IReadOnlyList<LoopPooledRow> Pooled { get; init; } = [];
+
+    // Each live account's same trades before its version, drawn apart under the account.
+    public IReadOnlyList<PaperSameView> Same { get; init; } = [];
+
+    // From the 19.4 correction of 2026-11-07 each live account's stocks not bought, named by its family, in the family order,
+    // which the lines beneath what the system bought draw in the merged line's place.
+    public IReadOnlyList<PaperAccountUnbought> Unbought { get; init; } = [];
+
+    // From the 19.4 correction of 2026-11-07 the index's fund's closes over the sessions the chart can draw, which it draws
+    // as a line of its own.
+    public IReadOnlyList<(DateOnly Session, decimal Close)> FundCloses { get; init; } = [];
 }
 
 // From 21.20 a variant registered after the newest night, which no night has read yet: its family, its number and what it
@@ -135,28 +157,40 @@ public sealed record PaperPageView(
 // table cannot place one.
 public sealed record PaperComingView(string Family, string Short, string? Changes, string Words, DateOnly Registered, DateOnly? FirstNight);
 
-// From 21.11 the combined account as its page draws it: its walk, the day it counts from, the trades it holds open and
-// has closed, how many it skipped as already held, for a sector at its cap and for the free cash, and each trade it was
-// handed with the family it came from.
-public sealed record PaperCombinedView(PaperWalk Walk, DateOnly Since, int Open, int Closed, int AlreadyHeld, int SectorFull, int UnderCash, IReadOnlyList<PaperCombinedTradeView> Trades)
+// From the 21.11 correction of 2026-11-07 the live setups' accounts, averaged, as its page draws it: its walk, the day it
+// counts from, the day every live account counts, the trades it holds open and has closed, how many accounts it averages,
+// and each trade and each skip of those accounts over its days with the family whose account it is.
+// see: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
+public sealed record PaperCombinedView(PaperWalk Walk, DateOnly Since, int Open, int Closed, int Accounts, IReadOnlyList<PaperCombinedTradeView> Trades)
 {
     public const string Key = "combined";
 
-    public const string Name = "All setups together";
+    public const string Name = "The live setups' accounts, averaged";
 
     public int Skipped => Walk.Skipped;
+
+    // The size each account it averages starts at, the settings' size, which a monthly book's holding is a share of.
+    public decimal Size { get; init; }
 }
 
-// One trade the combined account was handed: the family whose live rule bought it, its stock, its buy session and price,
-// the shares it bought, none where it was skipped and why, the session it ended on, and its return on the position, so far
-// at tonight's close where it is open.
-public sealed record PaperCombinedTradeView(string Family, string Ticker, DateOnly Bought, decimal Buy, long Shares, string? Skipped, DateOnly? Ended, double? Return, bool Open);
+// One trade of an account the averaged account holds a share of: the family whose account bought it, its stock, its buy
+// session and price, the shares its own account bought, none where that account skipped it and why, the session it ended
+// on, its return on the position, so far at tonight's close where it is open, and for a monthly book's holding the most
+// holdings its book can hold, which its account sizes it across.
+public sealed record PaperCombinedTradeView(string Family, string Ticker, DateOnly Bought, decimal Buy, long Shares, string? Skipped, DateOnly? Ended, double? Return, bool Open, int? BookHoldings = null);
 
 // The choices paper trading keeps in its link, one a part, and the link a choice opens with every other kept: the index,
 // the family whose variants the chart adds, the closed tab of what the system bought, the family its chips show, the
 // family the variants' part reads and the rule the scorecard reads, each first choice the key's absence.
 public sealed record PaperLink(string Universe, string? Family = null, bool Closed = false, string? Show = null, string? Variants = null, string? Rule = null)
 {
+    // From the 19.4 correction of 2026-11-07 the chart's span, every line since it began or the last 30 days alone.
+    public bool Recent { get; init; }
+
+    public const string SpanKey = "span";
+
+    public const string RecentValue = "30";
+
     public const string Route = EquityBrief.Web.App.SinglePageApp.PaperRoute;
 
     public const string FamilyKey = "family";
@@ -177,7 +211,8 @@ public sealed record PaperLink(string Universe, string? Family = null, bool Clos
         + (Closed ? "&" + BoughtKey + "=" + ClosedValue : string.Empty)
         + (Show is { } show ? "&" + ShowKey + "=" + Uri.EscapeDataString(show) : string.Empty)
         + (Variants is { } variants ? "&" + VariantsKey + "=" + Uri.EscapeDataString(variants) : string.Empty)
-        + (Rule is { } rule ? "&" + RuleKey + "=" + Uri.EscapeDataString(rule) : string.Empty);
+        + (Rule is { } rule ? "&" + RuleKey + "=" + Uri.EscapeDataString(rule) : string.Empty)
+        + (Recent ? "&" + SpanKey + "=" + RecentValue : string.Empty);
 }
 
 // Paper trading's marks: a tile a family's live or provisional account with the fund beside them, the chart of each
@@ -205,26 +240,47 @@ public sealed partial class MarkRenderer
     // The chart of each drawn account's return over the sessions its walk read, in per cent of the account's size: the
     // live or provisional accounts always, a chosen family's variants dashed, each line a family's mark with its key
     // beneath it, a key's press hiding or showing its line in the browser alone.
-    public string PaperChart(IReadOnlyList<PaperAccountView> accounts, string? chosen, PaperCombinedView? combined = null)
+    // From the 19.4 correction of 2026-11-07 each line starts on its own account's first day and never as a flat run before
+    // it, the span from the earliest of those days, and a choice kept in the link between every line since it began and the
+    // last 30 days alone.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    public string PaperChart(IReadOnlyList<PaperAccountView> accounts, string? chosen, PaperCombinedView? combined = null, PaperLink? link = null, IReadOnlyList<(DateOnly Session, decimal Close)>? fund = null, string? fundName = null)
     {
-        // From 21.11 the combined account drawn as a line of its own, after every family's.
+        // From 21.11 the combined account drawn as a line of its own, after every family's, from the 21.11 correction of
+        // 2026-11-07 the live setups' accounts averaged.
         PaperAccountView[] together = combined is { Walk.Values.Count: > 0 } all
-            ? [new PaperAccountView(PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Name, "every live rule's trades in one account", string.Empty, null, "per cent", [], all.Walk, all.Walk.Trades.Count, all.Closed, null, all.Since)]
+            ? [new PaperAccountView(PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Name, "each live setup's own account given an equal share of one account", string.Empty, null, "per cent", [], all.Walk, all.Walk.Trades.Count, all.Closed, null, all.Since)]
             : [];
-        var drawn = accounts.Where(account => account.Walk is { Values.Count: > 0 } && (account.Head || account.Standing == PaperAccountView.You || (account.Standing == PaperAccountView.Variant && account.Family == chosen))).Concat(together).ToArray();
+        // From the 19.4 correction of 2026-11-07 an account holding no trade draws no line, its key saying so.
+        var shown = accounts.Where(account => account.Walk is { Values.Count: > 0 } && (account.Head || account.Standing == PaperAccountView.You || (account.Standing == PaperAccountView.Variant && account.Family == chosen))).Concat(together).ToArray();
+        var drawn = shown.Where(account => account.Walk!.Taken > 0).ToArray();
+        var idle = shown.Where(account => account.Walk!.Taken == 0).ToArray();
 
         if (drawn.Length == 0)
         {
-            return "<p class=\"degraded\" data-paper-chart=\"none\">No account has a session to draw yet.</p>";
+            return "<p class=\"degraded\" data-paper-chart=\"none\">No account has a trade to draw yet.</p>" + (idle.Length > 0 ? "<p class=\"paper-keys\">" + string.Concat(idle.Select(NoTradeKey)) + "</p>" : string.Empty);
         }
 
-        var sessions = drawn.SelectMany(account => account.Walk!.Values.Select(value => value.Session)).Distinct().Order().ToArray();
+        var every = drawn.SelectMany(account => account.Walk!.Values.Select(value => value.Session)).Distinct().Order().ToArray();
+        var recent = link?.Recent == true;
+        var sessions = recent ? [.. every.Where(session => session > every[^1].AddDays(-RecentDays))] : every;
         var at = sessions.Select((session, place) => (session, place)).ToDictionary(pair => pair.session, pair => pair.place);
-        var returns = drawn.ToDictionary(account => account.Key, account => account.Walk!.Returns.Select(one => (one.Session, Return: one.Return * 100)).ToArray(), StringComparer.Ordinal);
-        var low = Math.Min(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Min());
-        var high = Math.Max(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Max());
-        var span = high - low < 1 ? 1 : high - low;
-        const double width = 720, height = 240, left = 44, right = 12, top = 12, bottom = 26;
+        var returns = drawn.ToDictionary(account => account.Key, account => account.Walk!.Returns.Where(one => at.ContainsKey(one.Session)).Select(one => (one.Session, Return: one.Return * 100)).ToArray(), StringComparer.Ordinal);
+        drawn = [.. drawn.Where(account => returns[account.Key].Length > 0)];
+
+        // From the 19.4 correction of 2026-11-07 the index's fund over the chart's days, its return from its close on the
+        // span's first day it holds one, a session it holds no close for left out of its line.
+        var held = (fund ?? []).Where(one => one.Session >= every[0] && one.Session <= every[^1]).OrderBy(one => one.Session).ToArray();
+        (DateOnly Session, double Return)[] fundLine = held.Length > 0 && held[0].Close > 0m
+            ? [.. held.Where(one => at.ContainsKey(one.Session)).Select(one => (one.Session, EquityBrief.Core.Prices.Statistic.FromRatio((one.Close / held[0].Close) - 1m) * 100))]
+            : [];
+        // From the 19.4 correction of 2026-11-07 the scale runs over round steps holding every point and nought, each step a
+        // gridline with its label and nought's labelled as the zero line; the right margin holds each line's end label.
+        var (low, high, step) = RoundSteps(
+            Math.Min(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Concat(fundLine.Select(point => point.Return)).Min()),
+            Math.Max(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Concat(fundLine.Select(point => point.Return)).Max()));
+        var span = high - low;
+        const double width = 860, height = 260, left = 48, right = 150, top = 12, bottom = 28;
 
         double X(DateOnly session) => sessions.Length == 1 ? left + ((width - left - right) / 2) : left + ((width - left - right) * at[session] / (sessions.Length - 1));
 
@@ -232,13 +288,39 @@ public sealed partial class MarkRenderer
 
         var svg = new StringBuilder();
 
-        svg.Append(Invariant, $"<figure class=\"paper-chart\" data-lines=\"{drawn.Length}\" data-sessions=\"{sessions.Length}\" data-from=\"{DayOf(sessions[0])}\" data-to=\"{DayOf(sessions[^1])}\">");
+        if (link is { } kept)
+        {
+            svg.Append("<nav class=\"paper-span\" aria-label=\"The chart's span\">");
+            svg.Append(Invariant, $"<a class=\"chip\" data-filter=\"{PaperLink.SpanKey}\" href=\"{Escaped((kept with { Recent = false }).Href)}\" aria-pressed=\"{Flag(!recent)}\">Since each began</a>");
+            svg.Append(Invariant, $"<a class=\"chip\" data-filter=\"{PaperLink.SpanKey}\" href=\"{Escaped((kept with { Recent = true }).Href)}\" aria-pressed=\"{Flag(recent)}\">Last {RecentDays} days</a>");
+            svg.Append("</nav>");
+        }
+
+        svg.Append(Invariant, $"<figure class=\"paper-chart\" data-lines=\"{drawn.Length}\" data-sessions=\"{sessions.Length}\" data-from=\"{DayOf(sessions[0])}\" data-to=\"{DayOf(sessions[^1])}\" data-span=\"{(recent ? PaperLink.RecentValue : "all")}\">");
         svg.Append(Invariant, $"<svg viewBox=\"0 0 {width} {height}\" role=\"img\" aria-label=\"Each drawn account's return in per cent of its size, session by session\">");
-        svg.Append(Invariant, $"<line class=\"paper-zero\" x1=\"{left}\" x2=\"{width - right}\" y1=\"{Y(0):0.#}\" y2=\"{Y(0):0.#}\"/>");
-        svg.Append(Invariant, $"<text class=\"paper-axis\" x=\"{left - 6}\" y=\"{Y(high) + 4:0.#}\" text-anchor=\"end\">{high:+0.#;-0.#;0}%</text>");
-        svg.Append(Invariant, $"<text class=\"paper-axis\" x=\"{left - 6}\" y=\"{Y(low) + 4:0.#}\" text-anchor=\"end\">{low:+0.#;-0.#;0}%</text>");
-        svg.Append(Invariant, $"<text class=\"paper-axis\" x=\"{left}\" y=\"{height - 6}\">{DayOf(sessions[0])}</text>");
-        svg.Append(Invariant, $"<text class=\"paper-axis\" x=\"{width - right}\" y=\"{height - 6}\" text-anchor=\"end\">{DayOf(sessions[^1])}</text>");
+        // A gridline at each round step with its label, nought's the zero line.
+        for (var at2 = 0; low + (at2 * step) <= high + (step / 1000); at2++)
+        {
+            var level = Math.Round(low + (at2 * step), 6);
+            var zero = Math.Abs(level) < step / 1000;
+
+            svg.Append(Invariant, $"<line class=\"{(zero ? "paper-zero" : "paper-grid")}\" data-level=\"{(zero ? "0" : level.ToString("R", Invariant))}\" x1=\"{left}\" x2=\"{width - right}\" y1=\"{Y(level):0.#}\" y2=\"{Y(level):0.#}\"/>");
+            svg.Append(Invariant, $"<text class=\"paper-axis{(zero ? " paper-zero-label" : string.Empty)}\" x=\"{left - 6}\" y=\"{Y(level) + 4:0.#}\" text-anchor=\"end\">{(zero ? "0%" : Formatted($"{level:+0.##;-0.##}%"))}</text>");
+        }
+
+        // A date beneath the first session of each week the span holds, none closer than a label's width to the one before.
+        var labelled = double.NegativeInfinity;
+
+        foreach (var session in sessions.Where((session, place) => place == 0 || WeekOf(session) != WeekOf(sessions[place - 1])))
+        {
+            if (X(session) - labelled < 40)
+            {
+                continue;
+            }
+
+            labelled = X(session);
+            svg.Append(Invariant, $"<text class=\"paper-axis paper-date\" data-date=\"{DayOf(session)}\" x=\"{X(session):0.#}\" y=\"{height - 8}\" text-anchor=\"middle\">{session.ToString("d MMM", Invariant)}</text>");
+        }
 
         foreach (var account in drawn)
         {
@@ -248,46 +330,173 @@ public sealed partial class MarkRenderer
             svg.Append(Invariant, $"<path class=\"paper-line{(account.Standing == PaperAccountView.Variant ? " dashed" : string.Empty)}\" data-account=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" d=\"{path}\"><title>{Escaped(account.Name)}</title></path>");
         }
 
-        svg.Append("</svg><figcaption class=\"paper-keys\">");
+        if (fundLine.Length > 0 && fundName is { } named)
+        {
+            var path = string.Join(" ", fundLine.Select((point, place) => Formatted($"{(place == 0 ? "M" : "L")}{X(point.Session):0.#},{Y(point.Return):0.#}")));
+
+            svg.Append(Invariant, $"<path class=\"paper-line paper-fund\" data-account=\"{FundKey}\" data-standing=\"{FundKey}\" d=\"{path}\"><title>{Escaped(named)}, the index's fund</title></path>");
+        }
+
+        // Each line ends in a label of its name and its latest return, the labels moved apart where two would overlap.
+        (string Key, string Family, string Standing, string Text, double Y)[] ends =
+        [
+            .. drawn.Select(account => (account.Key, account.Family, account.Standing, EndName(account) + " " + Formatted($"{returns[account.Key][^1].Return:+0.0;-0.0;0.0}%"), Y(returns[account.Key][^1].Return))),
+            .. fundLine.Length > 0 && fundName is { } ended ? [(FundKey, FundKey, FundKey, ended + " " + Formatted($"{fundLine[^1].Return:+0.0;-0.0;0.0}%"), Y(fundLine[^1].Return))] : Array.Empty<(string, string, string, string, double)>(),
+        ];
+
+        // A dot in the line's own colour at its end marks it, its label in the ink beside, as a family's hue is a mark and never
+        // a text's colour.
+        foreach (var (key, family, standing, _, y) in ends)
+        {
+            svg.Append(Invariant, $"<circle class=\"paper-dot\" data-family=\"{Escaped(family)}\" data-standing=\"{Escaped(standing)}\" cx=\"{width - right:0.#}\" cy=\"{y:0.#}\" r=\"3\"/>");
+        }
+
+        foreach (var (key, family, standing, text, y) in Spread(ends, top + 4, height - bottom))
+        {
+            svg.Append(Invariant, $"<text class=\"paper-end\" data-end=\"{Escaped(key)}\" data-family=\"{Escaped(family)}\" data-standing=\"{Escaped(standing)}\" x=\"{width - right + 6}\" y=\"{y + 4:0.#}\">{Escaped(text)}</text>");
+        }
+
+        // From the 19.4 correction of 2026-11-07 a band over each session the pointer reads, carrying its day and each line's
+        // return on it, which the page's script draws in the box above the chart.
+        var half = sessions.Length > 1 ? (width - left - right) / (sessions.Length - 1) / 2 : (width - left - right) / 2;
+        var fundAt = fundLine.ToDictionary(point => point.Session, point => point.Return);
+
+        foreach (var session in sessions)
+        {
+            var rows = drawn
+                .SelectMany(account => returns[account.Key].Where(point => point.Session == session).Take(1).Select(point => (Account: account, point.Return)))
+                .Select(one => Formatted($"{EndName(one.Account)}|{one.Return:+0.0;-0.0;0.0}%|{one.Account.Family}|{one.Account.Standing}"))
+                .Concat(fundName is { } tipped && fundAt.TryGetValue(session, out var made) ? [Formatted($"{tipped}|{made:+0.0;-0.0;0.0}%|{FundKey}|{FundKey}")] : []);
+
+            svg.Append(Invariant, $"<rect class=\"paper-hit\" data-day=\"{session.ToString("ddd d MMM yyyy", Invariant)}\" data-tip=\"{Escaped(string.Join(";", rows))}\" x=\"{Math.Max(left, X(session) - half):0.#}\" y=\"{top}\" width=\"{Math.Min(X(session) + half, width - right) - Math.Max(left, X(session) - half):0.#}\" height=\"{height - top - bottom}\"/>");
+        }
+
+        svg.Append("</svg><div class=\"paper-tip\" role=\"status\" hidden></div><figcaption class=\"paper-keys\">");
 
         foreach (var account in drawn)
         {
             svg.Append(Invariant, $"<button type=\"button\" class=\"paper-key\" data-line=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" aria-pressed=\"true\" title=\"{Escaped(Copying ? FamilyName(account.Family) : EquityBrief.Core.Families.RuleWording.ScreenName(account.Words))}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(account.Standing == PaperCombinedView.Key ? account.Name : FamilyName(account.Family) + " · " + account.Name)}</button>");
         }
 
+        if (fundLine.Length > 0 && fundName is { } keyed)
+        {
+            svg.Append(Invariant, $"<button type=\"button\" class=\"paper-key\" data-line=\"{FundKey}\" data-standing=\"{FundKey}\" aria-pressed=\"true\" title=\"The index's fund held over the chart's days\"><span class=\"paper-key-mark\" data-standing=\"{FundKey}\"></span>{Escaped(keyed)}, the index's fund</button>");
+        }
+
+        svg.Append(string.Concat(idle.Select(NoTradeKey)));
         svg.Append("</figcaption></figure>");
 
         return svg.ToString();
     }
 
+    // The calendar days the chart's recent span reaches back from its last session.
+    public const int RecentDays = 30;
+
+    // The least distance in the chart's units between two end labels, a line of their text.
+    public const double EndGap = 13;
+
+    // The chart's scale in round steps: a step of 1, 2, 2.5 or 5 times a power of ten giving no more than six steps, and the
+    // low and high ends at whole steps holding both ends given; a flat span reads one per cent either side.
+    public static (double Low, double High, double Step) RoundSteps(double low, double high)
+    {
+        if (high - low < 1e-9)
+        {
+            return (Math.Min(low, -1), Math.Max(high, 1), 1);
+        }
+
+        var raw = (high - low) / 6;
+        var power = Math.Pow(10, Math.Floor(Math.Log10(raw)));
+        var step = new[] { 1, 2, 2.5, 5, 10 }.Select(times => times * power).First(candidate => candidate >= raw - 1e-12);
+
+        return (Math.Floor((low / step) + 1e-9) * step, Math.Ceiling((high / step) - 1e-9) * step, step);
+    }
+
+    // End labels at their lines' ends, each pushed down to leave the one above at least a label's height, then those pushed
+    // past the bottom drawn back up, the order of the lines' ends kept.
+    public static IReadOnlyList<(string Key, string Family, string Standing, string Text, double Y)> Spread(IReadOnlyList<(string Key, string Family, string Standing, string Text, double Y)> ends, double top, double bottom)
+    {
+        var placed = ends.OrderBy(end => end.Y).ThenBy(end => end.Key, StringComparer.Ordinal).ToArray();
+
+        for (var at = 0; at < placed.Length; at++)
+        {
+            var least = at == 0 ? top : placed[at - 1].Y + EndGap;
+
+            placed[at] = placed[at] with { Y = Math.Max(placed[at].Y, least) };
+        }
+
+        for (var at = placed.Length - 1; at >= 0; at--)
+        {
+            var most = at == placed.Length - 1 ? bottom : placed[at + 1].Y - EndGap;
+
+            placed[at] = placed[at] with { Y = Math.Min(placed[at].Y, most) };
+        }
+
+        return placed;
+    }
+
+    // A line's name on its end label: its setup's, a variant's with its number, yours, and the averaged account's short.
+    static string EndName(PaperAccountView account) =>
+        account.Standing == PaperCombinedView.Key ? "Averaged"
+            : account.Standing == PaperAccountView.You ? "You"
+            : account.Standing == PaperAccountView.Variant ? FamilyName(account.Family) + " " + (account.Short ?? account.Name)
+            : FamilyName(account.Family);
+
+    // The Monday of a session's week, which the chart's dates are drawn a week at a time by.
+    static DateOnly WeekOf(DateOnly session) => session.AddDays(-(((int)session.DayOfWeek + 6) % 7));
+
+    // The key the chart's line of the index's fund is drawn and pressed by.
+    public const string FundKey = "fund";
+
+    // The key of an account with no trade, which draws no line: its name and that it has no trades yet, nothing to press.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    static string NoTradeKey(PaperAccountView account) =>
+        Formatted($"<span class=\"paper-key paper-key-none\" data-none=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(account.Standing == PaperCombinedView.Key ? account.Name : FamilyName(account.Family) + " · " + account.Name)} · no trades yet</span>");
+
     // A fraction drawn as a signed per cent to a tenth, in the class its sign gives.
     static string PaperPercent(double fraction) =>
         SignedFigure(fraction * 100, 1, Formatted($"{Unsigned(fraction * 100, 1):+0.0;-0.0;0.0}%"));
 
-    // What an account counting from before its version's start says beside its date.
-    public static string CarriedWords(DateOnly from) =>
-        FormattableString.Invariant($"counts from {from:d MMM}: its earlier trades replay the same under this version");
+    // The words heading an account's trades listed before its version that replay the same under it, from the session the
+    // replay counted from.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    public static string SameWords(DateOnly since) =>
+        FormattableString.Invariant($"The same trades before this version (since {since:d MMM}), kept in the rule's record and not in this account");
+
+    // The index's fund on a tile, over that tile's own account's days: its return over them, or where its closes start later
+    // the day they start; none where the account holds no walk.
+    // see: Each tile draws the index's fund over its own account's days, and no tile draws the fund over days its account did not count
+    static string TileFund(PaperWalk? walk, string? fund) =>
+        walk is null || fund is null
+            ? string.Empty
+            : walk.FundReturn is { } held
+                ? Formatted($"<div class=\"pt-fund\" data-fund=\"{Escaped(fund)}\" data-fund-return=\"{held.ToString("R", Invariant)}\">{Escaped(fund)} over the same days {PaperPercent(held)}</div>")
+                : walk.FundFrom is { } starts
+                    ? Formatted($"<div class=\"pt-fund\" data-fund=\"{Escaped(fund)}\" data-fund-return=\"none\">{Escaped(fund)}'s closes start on <span class=\"day\">{DayOf(starts)}</span>, after this account's first day</div>")
+                    : Formatted($"<div class=\"pt-fund\" data-fund=\"{Escaped(fund)}\" data-fund-return=\"none\">{Escaped(fund)} over the same days not read</div>");
 
     // A tile a family's live or provisional account in the one family order: its return since its record began, the trades
-    // its walk holds open and has closed and the day it counts from, the version it counts under the pointer; and the
-    // index's fund over the same days.
+    // its walk holds open and has closed and the day it counts from, the version it counts under the pointer, and from the
+    // 19.4 correction of 2026-11-07 the index's fund over its own days beneath it, so no tile reads the fund over days its
+    // account did not count.
     public string PaperTiles(IReadOnlyList<PaperAccountView> accounts, PaperFundView? fund, PaperCombinedView? combined = null, decimal? size = null)
     {
         var heads = accounts.Where(account => account.Head).OrderBy(account => SetupFamilies.OrderOf(account.Family)).ToArray();
         var html = new StringBuilder();
 
-        html.Append(Invariant, $"<div class=\"paper-tiles\" data-tiles=\"{heads.Length + (fund is null ? 0 : 1) + (combined is null ? 0 : 1)}\">");
+        html.Append(Invariant, $"<div class=\"paper-tiles\" data-tiles=\"{heads.Length + (combined is null ? 0 : 1)}\">");
 
-        // From 21.11 the combined account's tile first: its return since its first trade's day, what it holds and what it
-        // skipped.
+        // From 21.11 the combined account's tile first, from the 21.11 correction of 2026-11-07 the live setups' accounts
+        // averaged: its return since the day every live account counts, what its accounts hold and what they skipped.
         if (combined is { } all)
         {
             var together = all.Walk.Return;
 
-            html.Append(Invariant, $"<div class=\"paper-tile combined\" data-standing=\"{PaperCombinedView.Key}\" data-return=\"{(together is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{all.Open}\" data-closed=\"{all.Closed}\" data-skipped=\"{all.Skipped}\" data-since=\"{DayOf(all.Since)}\" title=\"Every live rule's trades in one account of your size\">");
+            html.Append(Invariant, $"<div class=\"paper-tile combined\" data-standing=\"{PaperCombinedView.Key}\" data-return=\"{(together is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{all.Open}\" data-closed=\"{all.Closed}\" data-skipped=\"{all.Skipped}\" data-since=\"{DayOf(all.Since)}\" data-accounts=\"{all.Accounts}\" title=\"Each live setup's own account given an equal share of one account of your size\">");
             html.Append(Invariant, $"<div class=\"pt-name\">{Escaped(PaperCombinedView.Name)}</div>");
             html.Append(together is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
-            html.Append(Formatted($"<div class=\"pt-sub\">{Escaped(TileSaid(together, all.Since, size, all.Open))} {all.Closed} closed, {all.Skipped} skipped.</div></div>"));
+            html.Append(Formatted($"<div class=\"pt-sub\">{Escaped(TileSaid(together, all.Since, size, all.Open))} {all.Closed} closed, {all.Skipped} skipped.</div>"));
+            html.Append(TileFund(all.Walk, fund?.Fund));
+            html.Append("</div>");
         }
 
         foreach (var head in heads)
@@ -298,23 +507,7 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<div class=\"pt-name\"><span class=\"fam-swatch\" data-family=\"{Escaped(head.Family)}\"></span>{Escaped(FamilyName(head.Family))} <span class=\"status-pill {head.Standing}\">{Escaped(head.Name)}</span></div>");
             html.Append(made is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
             html.Append(Invariant, $"<div class=\"pt-sub\">{Escaped(TileSaid(made, head.Since, size, head.Open))}{(head.Since is null || made is null ? string.Empty : Formatted($" {head.Closed} closed."))}</div>");
-
-            // An account counting from before its version's start says so beside the date; the read-only copy names no version.
-            // see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same
-            html.Append(!Copying && head is { CarriedBack: true, Since: { } carried } ? Formatted($"<div class=\"pt-carried\" data-carried=\"{DayOf(carried)}\">{Escaped(CarriedWords(carried))}</div>") : string.Empty);
-            html.Append("</div>");
-        }
-
-        if (fund is { } index)
-        {
-            html.Append(Invariant, $"<div class=\"paper-tile fund\" data-fund=\"{Escaped(index.Fund)}\" data-return=\"{(index.Return is { } held ? held.ToString("R", Invariant) : "none")}\" data-from=\"{(index.From is { } from ? DayOf(from) : "none")}\">");
-            html.Append(Invariant, $"<div class=\"pt-name\">The index's fund, {Escaped(index.Fund)}</div>");
-            html.Append(index.Return is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">not read</div>");
-            html.Append(index.From is not { } start
-                ? "<div class=\"pt-sub\">no account has a day to count from yet</div>"
-                : index.Return is null && index.Starts is { } starts
-                    ? Formatted($"<div class=\"pt-sub\">its closes start on <span class=\"day\">{DayOf(starts)}</span>, after the days the tiles count</div>")
-                    : Formatted($"<div class=\"pt-sub\">holding it over the same days, since <span class=\"day\">{DayOf(start)}</span></div>"));
+            html.Append(head.Since is null ? string.Empty : TileFund(head.Walk, fund?.Fund));
             html.Append("</div>");
         }
 
@@ -363,12 +556,64 @@ public sealed partial class MarkRenderer
         }
 
         html.Append("</div>");
+
+        // The account each row walks, named above the table, and beneath it one line an account naming what that account
+        // did not buy, none it holds.
+        // see: Each table and line of what the system bought names the account it walks, and draws no stock that account holds as not bought
+        html.Append("<p class=\"paper-walks\" data-walks=\"each\">Each row is a trade of its setup's own account, which the Setup column names.</p>");
         html.Append(link.Closed ? ClosedTrades(page.Closed) : OpenTrades(page.Open));
-        html.Append(NotBought(page.NotBought, page.Groups?.ToBuyFromReshuffles ?? 0));
+
+        if (page.Unbought.Count == 0)
+        {
+            html.Append(NotBought(page.NotBought, page.Groups?.ToBuyFromReshuffles ?? 0));
+        }
+        else
+        {
+            // From the 19.10 correction of 2026-11-07 each account's listings waiting on the next open first, as to buy and
+            // never as not bought, none it holds, each held elsewhere named so; then what each did not buy.
+            // see: A listing waiting on its next session's open is drawn as to buy in its own account and never as not bought, nor where that account holds it
+            foreach (var account in page.Unbought.Where(account => account.Waiting.Count > 0))
+            {
+                html.Append(ToBuy(account));
+            }
+
+            if (page.Unbought.All(account => account.NotBought.Count == 0))
+            {
+                html.Append(page.Unbought.Any(account => account.Waiting.Count > 0)
+                    ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought or is to buy at the next open.</p>"
+                    : "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>");
+            }
+
+            foreach (var account in page.Unbought.Where(account => account.NotBought.Count > 0))
+            {
+                html.Append(NotBought(account.NotBought, 0, account.Family));
+            }
+        }
 
         if (page.Groups is { } groups)
         {
             html.Append(Invariant, $"<p class=\"card-note paper-system\" data-system=\"{groups.System.Bought}\" data-system-open=\"{groups.System.Open}\" data-version=\"{groups.ThisVersion.Bought}\" data-earlier-trades=\"{groups.EarlierVersions.Bought}\">{Escaped(groups.SystemLine)} <a href=\"{App.SinglePageApp.PicksRoute}\">See every trade on Past picks</a></p>");
+        }
+
+        // Each live account's same trades before its version under one press of its own, named by its setup and the day the
+        // replay counted from, in none of the account's figures.
+        // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+        foreach (var same in page.Same)
+        {
+            html.Append(Invariant, $"<details class=\"paper-earlier paper-same\" data-family=\"{Escaped(same.Family)}\" data-same=\"{same.Trades.Count}\" data-since=\"{DayOf(same.Since)}\"><summary>{Escaped(FamilyName(same.Family))}: {Escaped(SameWords(same.Since))}, {same.Trades.Count} {(same.Trades.Count == 1 ? "trade" : "trades")}</summary>");
+            html.Append("<div class=\"tbl-wrap\"><table class=\"paper-bought\"><thead><tr><th>Stock</th><th>Setup</th><th class=\"r\">Bought</th><th>Open or how it ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
+
+            foreach (var trade in same.Trades)
+            {
+                html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\">");
+                html.Append(StockCell(trade.Ticker, trade.Company, null));
+                html.Append(FamilyCell(trade.Family));
+                html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
+                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
+                html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Stop is null, trade.Closed is { } shut ? (shut.Risks, shut.Fraction) : (trade.Open?.Risks, trade.Open?.Fraction))}</td></tr>");
+            }
+
+            html.Append("</tbody></table></div></details>");
         }
 
         // On the read-only copy too, each row its stock, family, the words "an earlier version", the day bought and how it ended or
@@ -407,8 +652,10 @@ public sealed partial class MarkRenderer
                 ? SignedTwo(risks) + " risks" + (result.Fraction is { } share ? Formatted($"<span class=\"pb-day\">{PaperPercent(share)}</span>") : string.Empty)
                 : result.Fraction is { } only ? PaperPercent(only) : "<span class=\"degraded\">not read</span>";
 
+    // A company's name is the filer's own words, drawn as filed and never in the reader's words.
+    // see: A company's name and a filer's words are drawn as filed, and never in the reader's words
     static string StockCell(string ticker, string? company, string? also) =>
-        Formatted($"<td class=\"pb-stock\"><a href=\"#/chart/{Uri.EscapeDataString(ticker)}\">{Escaped(ticker)}</a>{(company is { } name ? Formatted($"<span class=\"pb-co\">{Escaped(name)}</span>") : string.Empty)}{(also is { } said ? Formatted($"<span class=\"pb-also\">{Escaped(said)}</span>") : string.Empty)}</td>");
+        Formatted($"<td class=\"pb-stock\"><a href=\"#/chart/{Uri.EscapeDataString(ticker)}\">{Escaped(ticker)}</a>{(company is { } name ? Formatted($"<span class=\"pb-co\"{ReaderText.AsFiledMark}>{Escaped(name)}</span>") : string.Empty)}{(also is { } said ? Formatted($"<span class=\"pb-also\">{Escaped(said)}</span>") : string.Empty)}</td>");
 
     static string FamilyCell(string family) =>
         Formatted($"<td><span class=\"fam-tag\" data-family=\"{Escaped(family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(family)}\"></span>{Escaped(FamilyName(family))}</span></td>");
@@ -432,7 +679,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-bought\" data-tab=\"open\" data-rows=\"{trades.Count}\"><thead><tr>");
         html.Append(TippedHeading("Stock", "the stock, opening its chart, with its company and the variants of its rule holding it open too"));
-        html.Append(TippedHeading("Setup", "the setup family whose live or provisional rule bought it"));
+        html.Append(TippedHeading("Setup", "the family whose live or provisional rule bought it, in that family's own account"));
         html.Append(TippedHeading("Bought", "its buy at the open of the session after the night that listed it, and that session", "r"));
         html.Append(TippedHeading("Stop", "its stop tonight: the plan's, or a trailing stop raised to the highest close since its listing less the distance it trails", "r"));
         html.Append(TippedHeading("Target", "its plan's target, or that its stop trails and it has none, or none for a holding sold only at a rebalance and a short-term dip sold on its exit", "r"));
@@ -450,11 +697,13 @@ public sealed partial class MarkRenderer
             html.Append(StockCell(trade.Ticker, trade.Company, Copying ? null : AlsoHeld(trade.AlsoHeld)));
             html.Append(FamilyCell(trade.Family));
             html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
+            // A holding with no price stop draws how its rule sells it across its stop's and target's cells.
+            // see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
             html.Append(book
-                ? "<td class=\"r\"><span class=\"degraded\">none</span></td>"
+                ? Formatted($"<td class=\"pb-sells\" colspan=\"2\" data-sells>{(trade.Sells is { } sells ? Escaped(sells) : "<span class=\"degraded\">sold by its rule, which this page did not read</span>")}</td>")
                 : Formatted($"<td class=\"r num\">{(open?.Stop is { } stop ? Figures.Price(stop) : "<span class=\"degraded\">none</span>")}{(trade.Trails && open?.Stop is { } raised && trade.Stop is { } first && raised > first ? Formatted($"<span class=\"pb-day\">raised from {Figures.Price(first)}</span>") : string.Empty)}</td>"));
             html.Append(book
-                ? "<td class=\"r\"><span class=\"degraded\">none</span></td>"
+                ? string.Empty
                 : trade.Target is { } target ? Formatted($"<td class=\"r num\">{Figures.Price(target)}</td>")
                 : trade.Trails ? "<td class=\"r\">it trails</td>"
                 : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
@@ -480,6 +729,8 @@ public sealed partial class MarkRenderer
         HeavyweightStandings.StillLeading => "leading",
         HeavyweightStandings.LostItsLead => "lost-lead",
         HeavyweightStandings.BelowItsAverage => "below-average",
+        { } still when still.StartsWith("Still qualifies", StringComparison.Ordinal) => "leading",
+        { } fell when fell.StartsWith("No longer qualifies", StringComparison.Ordinal) || fell.StartsWith("Score ", StringComparison.Ordinal) || fell.StartsWith("Now dearer", StringComparison.Ordinal) => "lost-lead",
         _ => "steady",
     };
 
@@ -502,7 +753,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-bought\" data-tab=\"closed\" data-rows=\"{trades.Count}\"><thead><tr>");
         html.Append(TippedHeading("Stock", "the stock, opening its chart, with its company"));
-        html.Append(TippedHeading("Setup", "the setup family whose live or provisional rule bought it"));
+        html.Append(TippedHeading("Setup", "the family whose live or provisional rule bought it, in that family's own account"));
         html.Append(TippedHeading("Bought", "its buy at the open of the session after the night that listed it, and that session", "r"));
         html.Append(TippedHeading("Sold", "the price it was sold at, at its target, at a close through its stop, at its cap's close or at its book's sale, and that session", "r"));
         html.Append(TippedHeading("How it ended", "what ended it, in words, and the sessions from its listing night to its end"));
@@ -533,13 +784,37 @@ public sealed partial class MarkRenderer
         return html.ToString();
     }
 
-    // The listed stocks not bought, in one line: how many, then each reason with its stocks, each linking to its chart.
-    static string NotBought(PaperNotBought unbought, int reshuffled = 0) =>
+    // The listed stocks not bought, in one line beneath an account's trades, a reason at a time: "Not bought: n picks,
+    // <reason>: tickers", each stock linking to its chart, never a row of a trade table.
+    // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
+    static string NotBought(PaperNotBought unbought, int reshuffled = 0, string? family = null) =>
         unbought.Count == 0
             ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>"
-            : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\">Not bought: {unbought.Count} listed {(unbought.Count == 1 ? "stock" : "stocks")}. ")
-                + string.Join(" ", unbought.Reasons.Select(reason => Formatted($"<span class=\"pu-reason\" data-count=\"{reason.Stocks.Count}\">{Escaped(Capitalised(reason.Why))} ({reason.Stocks.Count}{(reshuffled > 0 && reason.Why == EquityBrief.Core.Cards.PaperAccount.Waiting ? Formatted($", {reshuffled} of them the monthly books' reshuffle") : string.Empty)}): {string.Join(", ", reason.Stocks.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>")))}.</span>")))
-                + "</p>";
+            : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\"{(family is null ? string.Empty : Formatted($" data-family=\"{Escaped(family)}\""))}>{(family is null ? string.Empty : Formatted($"<b>{Escaped(OwnAccount(family))}.</b> "))}Not bought: ")
+                + string.Join("; ", unbought.Reasons.Select(reason => Formatted($"<span class=\"pu-reason\" data-count=\"{reason.Stocks.Count}\">{reason.Stocks.Count} {(reason.Stocks.Count == 1 ? "pick" : "picks")}, {Escaped(reason.Why)}{(reshuffled > 0 && reason.Why == EquityBrief.Core.Cards.PaperAccount.Waiting ? Formatted($", {reshuffled} of them the monthly books' reshuffle") : string.Empty)}: {string.Join(", ", reason.Stocks.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>")))}</span>")))
+                + ".</p>";
+
+    // One account's listings waiting on the next session's open, as to buy: its setup's name, each stock linking to its chart,
+    // one another live account holds open named with that account, and a monthly setup's said to be its reshuffle's.
+    static string ToBuy(PaperAccountUnbought account) =>
+        Formatted($"<p class=\"paper-tobuy\" data-tobuy=\"{account.Waiting.Count}\" data-family=\"{Escaped(account.Family)}\"><b>{Escaped(OwnAccount(account.Family))}.</b> To buy at the next trading day's open{(account.Family is HeavyweightRule.Name or QualityRule.Name ? ", the monthly reshuffle's" : string.Empty)}: ")
+            + string.Join(", ", account.Waiting.Select(stock => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(stock.Ticker)}\" title=\"listed {DayOf(stock.Listed)}\">{Escaped(stock.Ticker)}</a>{(stock.HeldBy.Count == 0 ? string.Empty : Formatted($" ({Escaped(string.Join(" and ", stock.HeldBy.Select(OwnAccount)))} already holds it)"))}")))
+            + ".</p>";
+
+    // A family's own account in words, its name's possessive as English writes it.
+    static string OwnAccount(string family) =>
+        FamilyName(family) is var name && name.EndsWith('s') ? name + "' own account" : name + "'s own account";
+
+    // The picks an account's walk skipped, in that one line, a reason at a time, the most skipped first.
+    static string Skipped(IEnumerable<(string Ticker, DateOnly Listed, string Why)> skipped) =>
+        NotBought(new PaperNotBought(
+        [
+            .. skipped
+                .GroupBy(one => one.Why, StringComparer.Ordinal)
+                .OrderByDescending(group => group.Count())
+                .ThenBy(group => group.Key, StringComparer.Ordinal)
+                .Select(group => new PaperUnbought(group.Key, [.. group.OrderByDescending(one => one.Listed).ThenBy(one => one.Ticker, StringComparer.Ordinal).Select(one => (one.Ticker, one.Listed))])),
+        ]));
 
     // A family's choice for the variants' part or the scorecard, kept in the link under its key, its first family the key's
     // absence.
@@ -582,6 +857,17 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<p class=\"degraded\" data-variants=\"none\">No variant is registered for {Escaped(FamilyName(family))} on this index, so its rule alone trades.</p>");
         }
 
+        // From the 19.4 correction of 2026-11-07 a family whose rule and every version have made no trade since its record
+        // began says why in one line in place of a table of zeros.
+        // see: A version is marked as narrowing or widening its live rule by the direction of each setting it changes
+        if (NoTradeLine(rows, coming.Length, family) is { } none)
+        {
+            html.Append(Invariant, $"<p class=\"paper-no-trade\" data-no-trade=\"{rows.Length - 1}\">{Escaped(none)}</p>");
+            html.Append(Invariant, $"<p class=\"paper-adopted\">{Escaped(AdoptedLine)}</p>");
+
+            return html.ToString();
+        }
+
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-variants\" data-family=\"{Escaped(family)}\" data-rows=\"{rows.Length + coming.Length}\"><thead><tr>");
         html.Append(TippedHeading("Rule", "the live or provisional rule first and each variant by its number, its verdict in the newest monthly test beside it and its full words under the pointer"));
         html.Append(TippedHeading("What it changes", "the live rule's settings in short words, and each variant's settings that differ from them"));
@@ -594,8 +880,8 @@ public sealed partial class MarkRenderer
         foreach (var account in rows)
         {
             html.Append(Invariant, $"<tr data-account=\"{Escaped(account.Key)}\" data-standing=\"{account.Standing}\" data-trades=\"{account.Overlap?.Trades ?? account.Trades}\" data-shared=\"{account.Overlap?.Shared ?? 0}\" data-only=\"{account.Overlap?.Only ?? 0}\">");
-            html.Append(Invariant, $"<td class=\"pv-rule\"><a class=\"paper-log\" href=\"{LogHref(link.Universe, account.Key)}\" title=\"{Escaped(Capitalised(account.Words) + (account.Version is { } version ? "; counts " + version : string.Empty) + (account.Since is { } since ? "; from " + DayOf(since) : string.Empty))}\">{Escaped(account.Short ?? account.Name)}</a><span class=\"pv-verdict\" data-verdict=\"{Escaped(account.Verdict)}\">{Escaped(account.Verdict)}</span></td>");
-            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{AccountNote(account)}</td>");
+            html.Append(Invariant, $"<td class=\"pv-rule\"><a class=\"paper-log\" href=\"{LogHref(link.Universe, account.Key)}\" title=\"{Escaped(Capitalised(account.Words) + (account.Version is { } version ? "; counts " + version : string.Empty) + (account.Since is { } since ? "; from " + DayOf(since) : string.Empty))}\">{Escaped(account.Short ?? account.Name)}</a><span class=\"pv-verdict\" data-verdict=\"{Escaped(account.Verdict)}\">{Escaped(account.Verdict)}</span>{SinceWords(account)}</td>");
+            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{(account.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Cards.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(account)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{account.Overlap?.Trades ?? account.Trades}</td><td class=\"r num\">{account.Overlap?.Shared ?? 0}</td><td class=\"r num\">{account.Overlap?.Only ?? 0}</td>");
             html.Append(Invariant, $"<td class=\"r num\" data-return=\"{(account.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\">{(account.Walk?.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">none yet</span>")}{(account.TooFew is { } few ? Formatted($"<span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}</td></tr>");
         }
@@ -692,7 +978,7 @@ public sealed partial class MarkRenderer
             foreach (var variant in variants)
             {
                 html.Append(Invariant, $"<tr data-account=\"{Escaped(variant.Key)}\" data-verdict=\"{Escaped(variant.Verdict)}\" data-better=\"{(variant.Better is { } better ? better.ToString(Invariant) : "none")}\">");
-                html.Append(Invariant, $"<td><b>{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{AccountNote(variant)}</td>");
+                html.Append(Invariant, $"<td><b title=\"{Escaped(Capitalised(variant.Words))}\">{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{(variant.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Cards.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(variant)}</td>");
                 html.Append(Invariant, $"<td><span class=\"pill\"{(variant.Adjusted is { } p ? Formatted($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span>{(variant.Tested is { } tested ? PooledChangeNote(tested, page.Pooled) : string.Empty)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{(variant.Better is { } of && variant.Counted is { } counted ? Formatted($"{of} of {counted}") : "<span class=\"degraded\">not read</span>")}{JudgedFromNote(variant)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Progressed(variant.Progress, variant.Standing)}</td></tr>");
@@ -733,6 +1019,52 @@ public sealed partial class MarkRenderer
 
     // From 21.14 the line an account's rule carries beneath its words, the tone variant's that its history before the local
     // model's cutoff does not count; none for any other.
+    // The one line a family draws where its live or provisional rule and every version standing beside it have made no trade
+    // since the rule's record began: why none could trade where each version narrows the rule, and otherwise how many of
+    // them narrow it, widen it or take its picks another way; none where any has traded, a version waits on its first night
+    // or the family has no version.
+    public static string? NoTradeLine(IReadOnlyList<PaperAccountView> rows, int coming, string family)
+    {
+        var head = rows.FirstOrDefault(row => row.Head);
+        var versions = rows.Where(row => !row.Head).ToArray();
+
+        if (head is null || versions.Length == 0 || coming > 0 || rows.Any(row => (row.Overlap?.Trades ?? row.Trades) > 0))
+        {
+            return null;
+        }
+
+        var began = head.Since is { } since ? " since its record began on " + since.ToString("d MMM", Invariant) : " since its record began";
+
+        if (versions.All(version => version.Reach == EquityBrief.Core.Cards.VersionReachKind.Narrows))
+        {
+            return Formatted($"{FamilyName(family)} has made no trade{began}, and each of its versions narrows it, so none could trade either.");
+        }
+
+        string Count(EquityBrief.Core.Cards.VersionReachKind? kind, string one, string many) =>
+            versions.Count(version => version.Reach == kind) is var count and > 0 ? Formatted($"{count} {(count == 1 ? one : many)}") : string.Empty;
+
+        string[] parts =
+        [
+            Count(EquityBrief.Core.Cards.VersionReachKind.Narrows, "narrows it", "narrow it"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.Widens, "widens it", "widen it"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.SoldDifferently, "takes the same picks sold differently", "take the same picks sold differently"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.Reordered, "takes the same picks in another order", "take the same picks in another order"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.Unread, "changes a setting whose reach is not read here", "change a setting whose reach is not read here"),
+            Count(null, "has no live rule's settings to read against", "have no live rule's settings to read against"),
+        ];
+        var said = parts.Where(part => part.Length > 0).ToArray();
+
+        return Formatted($"{FamilyName(family)} has made no trade{began}, and none of its {versions.Length} versions has traded either: {(said.Length == 1 ? said[0] : string.Join(", ", said[..^1]) + " and " + said[^1])}.");
+    }
+
+    // From the 19.4 correction of 2026-11-07 a row's start in the versions' part: the live or provisional rule's record since
+    // its account's day, each version's trading since its own, none where an account has no day yet.
+    // see: Each row of what the versions did differently gives its start, the live rule's record since and each version's trading since
+    static string SinceWords(PaperAccountView account) =>
+        account.Since is not { } since
+            ? string.Empty
+            : Formatted($"<span class=\"pv-since\" data-since=\"{DayOf(since)}\">{(account.Head ? "record since" : "trading since")} {since.ToString("d MMM", Invariant)}</span>");
+
     // A variant no night has read yet: the day it was registered and the night that first reads it, by its weekday and day.
     public static string ComingLine(PaperComingView one) =>
         Formatted($"Registered {DayOf(one.Registered)}. Its first night is {(one.FirstNight is { } first ? first.DayOfWeek + " " + DayOf(first) : "the next night the exchange trades")}.");
@@ -913,8 +1245,8 @@ public sealed partial class MarkRenderer
     // An account's trade log: its verdict and its record's label beside each other and apart, each trade a row newest
     // first, an open one's result so far at tonight's close marked open, and the running total of its ended trades as a
     // line, labelled not evidence yet under the minimums; beneath it, folded, the trades of earlier versions the account
-    // leaves out, each naming the version that listed it.
-    // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
+    // leaves out, each naming the version that listed it, and the same trades before its version among them.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
     public string PaperLog(PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null)
     {
         var html = new StringBuilder();
@@ -944,57 +1276,89 @@ public sealed partial class MarkRenderer
             html.Append(RunningTotal(ended, percent, account.TooFew is not null));
         }
 
-        html.Append("<div class=\"tbl-wrap\"><table class=\"paper-log-table\"><thead><tr><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Stop</th><th>Ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
+        // The trades it bought alone, and beneath them the one line naming what it did not buy by reason.
+        // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
+        var bought = trades.Where(trade => trade.Skipped is null).ToArray();
 
-        foreach (var trade in trades.OrderByDescending(trade => trade.Bought).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
+        html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-log-table\" data-rows=\"{bought.Length}\"><thead><tr><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Stop</th><th>Ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
+
+        foreach (var trade in bought.OrderByDescending(trade => trade.Bought).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
         {
-            html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\"{(trade.Halved ? " data-halved=\"true\"" : string.Empty)}{(trade.Skipped is null ? string.Empty : " data-skipped=\"" + Escaped(trade.Skipped) + "\"")}>");
+            html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\"{(trade.Halved ? " data-halved=\"true\"" : string.Empty)}>");
             html.Append(Invariant, $"<td><a href=\"#/chart/{Uri.EscapeDataString(trade.Ticker)}\">{Escaped(trade.Ticker)}</a>{(trade.Halved ? " <span class=\"pill\" title=\"The market check held one of its two signals that night, so the trade risked half the usual amount\">half size</span>" : string.Empty)}</td><td>{DayOf(trade.Bought)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}</td><td class=\"r num\">{(trade.Stop is { } stop ? Figures.Price(stop) : "<span class=\"degraded\">none</span>")}</td>");
             html.Append(trade.Open ? "<td><span class=\"pill\">open</span></td>" : Formatted($"<td>{(trade.Ended is { } on ? DayOf(on) : "not read")}</td>"));
-            html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Result)}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}{(trade.Skipped is { } why ? Formatted($"<span class=\"degraded\"> skipped: {Escaped(why)}</span>") : string.Empty)}</td></tr>");
+            html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Result)}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}</td></tr>");
         }
 
         html.Append("</tbody></table></div>");
 
+        if (trades.Any(trade => trade.Skipped is not null))
+        {
+            html.Append(Skipped(trades.Where(trade => trade.Skipped is not null).Select(trade => (trade.Ticker, trade.Bought, trade.Skipped!))));
+        }
+
         return html.ToString() + EarlierVersions(earlier ?? [], Result);
     }
 
-    // From 21.11 the combined account's card: one sentence counting what it skipped and why, then every trade it was handed,
-    // newest first, with the setup each came from, the shares it bought, and its return on the position, so far where it
-    // is open, or why it was skipped.
-    // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
-    public const string CombinedFillLine = "<p class=\"paper-combined-fill\">Each session's picks are bought in Tonight's order, each position at most a tenth of the account, so a pick the free cash cannot cover is skipped where it stands in that order and a later one the cash covers is still bought.</p>";
+    // From 21.11 the combined account's card, from the 21.11 correction of 2026-11-07 the live setups' accounts averaged: one
+    // line saying what it is, then each trade its accounts hold over its days, newest first and each session's in Tonight's
+    // order, with the setup whose own account bought it, the shares that account bought, and its return on the position, so
+    // far where it is open, or why that account skipped it.
+    // see: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
+    public static string AveragedLine(PaperCombinedView all) =>
+        Formatted($"Each of the {all.Accounts} live setups' own accounts holds an equal share of this one from {DayOf(all.Since)}, the day every one of them counts, so it holds what each holds and skips what each skips, and no pick twice: following every rule reads the same. Each row is a trade as its setup's own account bought it, its shares that account's.");
+
+    // How each monthly book's holdings are sized, as the code sizes them: in its own setup's account, an equal share of that
+    // account across the most holdings its book can hold, at most a tenth of it; none where the account holds no book.
+    // see: A holding with no stop is sized at an equal share of the account across the most holdings its book can hold
+    public static string? BooksLine(PaperCombinedView all)
+    {
+        var books = all.Trades
+            .Where(trade => trade.Skipped is null && trade.BookHoldings is > 0)
+            .GroupBy(trade => trade.Family, StringComparer.Ordinal)
+            .OrderBy(group => BuyOrder.Of(group.Key))
+            .Select(group => (Family: group.Key, Holdings: group.First().BookHoldings!.Value))
+            .ToArray();
+
+        return books.Length == 0 || all.Size <= 0m
+            ? null
+            : "Each holding of a monthly setup is sized in its own setup's account at an equal share of that account across the most holdings the setup can hold, never more than a tenth of it: "
+                + string.Join("; ", books.Select(book => Formatted($"{FamilyName(book.Family)} across {book.Holdings}, about ${Math.Min(all.Size / book.Holdings, all.Size * PaperAccount.AccountCap):#,0} a holding on ${all.Size:#,0}")))
+                + ". An account's value moves with its trades, so each position's dollars stand beside it.";
+    }
 
     public string PaperCombined(PaperCombinedView? combined)
     {
         if (combined is not { } all)
         {
-            return "<p class=\"degraded\" data-combined=\"none\">No live rule has a trade yet, so the combined account holds none.</p>";
+            return "<p class=\"degraded\" data-combined=\"none\">No live setup's account has a day to count from yet, so the averaged account holds none.</p>";
         }
 
         var html = new StringBuilder();
 
-        html.Append(Invariant, $"<div class=\"paper-combined\" data-trades=\"{all.Trades.Count}\" data-skipped=\"{all.Skipped}\" data-held=\"{all.AlreadyHeld}\" data-sector=\"{all.SectorFull}\" data-cash=\"{all.UnderCash}\">");
-        html.Append(all.Skipped == 0
-            ? "<p class=\"paper-combined-skips\">It has taken every pick it was handed.</p>"
-            : Formatted($"<p class=\"paper-combined-skips\">It skipped {all.Skipped} pick(s): {all.AlreadyHeld} because another setup already owned the stock, {all.SectorFull} because three positions in the stock's sector were already open, and {all.UnderCash} because the free cash could not cover the buy.</p>"));
-        html.Append(CombinedFillLine);
-        html.Append("<div class=\"tbl-wrap\"><table class=\"paper-combined-table\"><thead><tr><th>Setup</th><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Shares</th><th>Ended</th><th class=\"r\">Return</th></tr></thead><tbody>");
+        var bought = all.Trades.Where(trade => trade.Skipped is null).ToArray();
 
-        // Each session's trades in the order the account filled them, Tonight's, so a skipped pick stands where it was reached.
-        foreach (var trade in all.Trades.Select((trade, at) => (Trade: trade, At: at)).OrderByDescending(one => one.Trade.Bought).ThenBy(one => one.At).Select(one => one.Trade))
+        html.Append(Invariant, $"<div class=\"paper-combined\" data-trades=\"{bought.Length}\" data-skipped=\"{all.Skipped}\" data-accounts=\"{all.Accounts}\" data-since=\"{DayOf(all.Since)}\">");
+        html.Append(Invariant, $"<p class=\"paper-combined-skips\">{Escaped(AveragedLine(all))}</p>");
+        html.Append(BooksLine(all) is { } books ? Formatted($"<p class=\"paper-combined-books\" data-books>{Escaped(books)}</p>") : string.Empty);
+        html.Append("<div class=\"tbl-wrap\"><table class=\"paper-combined-table\"><thead><tr><th>Setup</th><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Shares</th><th class=\"r\">Dollars</th><th>Ended</th><th class=\"r\">Return</th></tr></thead><tbody>");
+
+        // Each session's trades in Tonight's order of the setups, each setup's in its own account's order; a pick an account
+        // skipped is on the line beneath and never a row.
+        // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
+        foreach (var trade in bought.Select((trade, at) => (Trade: trade, At: at)).OrderByDescending(one => one.Trade.Bought).ThenBy(one => BuyOrder.Of(one.Trade.Family)).ThenBy(one => one.At).Select(one => one.Trade))
         {
-            html.Append(Invariant, $"<tr data-family=\"{Escaped(trade.Family)}\" data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\"{(trade.Skipped is null ? string.Empty : " data-skipped=\"" + Escaped(trade.Skipped) + "\"")}>");
+            html.Append(Invariant, $"<tr data-family=\"{Escaped(trade.Family)}\" data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\">");
             html.Append(Invariant, $"<td><span class=\"fam-swatch\" data-family=\"{Escaped(trade.Family)}\"></span>{Escaped(FamilyName(trade.Family))}</td><td><a href=\"#/chart/{Uri.EscapeDataString(trade.Ticker)}\">{Escaped(trade.Ticker)}</a></td><td>{DayOf(trade.Bought)}</td>");
-            html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}</td><td class=\"r num\">{(trade.Skipped is null ? trade.Shares.ToString("#,0", Invariant) : "<span class=\"degraded\">none</span>")}</td>");
-            html.Append(trade.Skipped is not null ? "<td></td>" : trade.Open ? "<td><span class=\"pill\">open</span></td>" : Formatted($"<td>{(trade.Ended is { } on ? DayOf(on) : "not read")}</td>"));
-            html.Append(trade.Skipped is { } why
-                ? Formatted($"<td class=\"r\"><span class=\"degraded\">skipped: {Escaped(why)}</span></td></tr>")
-                : Formatted($"<td class=\"r num\">{(trade.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">not read</span>")}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}</td></tr>"));
+            html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}</td><td class=\"r num\">{trade.Shares.ToString("#,0", Invariant)}</td><td class=\"r num\" data-dollars=\"{(trade.Shares * trade.Buy).ToString("0.00", Invariant)}\">${trade.Shares * trade.Buy:#,0}</td>");
+            html.Append(trade.Open ? "<td><span class=\"pill\">open</span></td>" : Formatted($"<td>{(trade.Ended is { } on ? DayOf(on) : "not read")}</td>"));
+            html.Append(Invariant, $"<td class=\"r num\">{(trade.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">not read</span>")}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}</td></tr>");
         }
 
-        html.Append("</tbody></table></div></div>");
+        html.Append("</tbody></table></div>");
+        html.Append(all.Skipped == 0 ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every pick its accounts were handed was bought.</p>" : Skipped(all.Trades.Where(trade => trade.Skipped is not null).Select(trade => (trade.Ticker, trade.Bought, trade.Skipped!))));
+        html.Append("</div>");
 
         return html.ToString();
     }

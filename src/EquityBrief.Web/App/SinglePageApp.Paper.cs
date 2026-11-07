@@ -14,7 +14,7 @@ public sealed partial class SinglePageApp
 {
     // How paper trading is read, opened from its fold.
     public const string PaperGuide =
-        "Each account takes one rule's trades: a family's live or provisional rule takes the page's own list, each registered variant its own list or book, and You the trades you took from the cards. Each trade is bought at the open of the session after the night that listed it and sized off the account's value at its buy by the card's own sizing, the trades ending on a session sold before any is bought, and one the free cash cannot buy is skipped and counted; each pays its round trip, half at its buy and half at its sale. The tiles draw each family's live or provisional account's return since its record began beside the index's fund over the same days, and the chart draws each account's return session by session, a chosen family's variants dashed; a key's press hides or shows its line. An account is evidence about one unchanged rule, so a registered rule's account counts only the trades of its current version, from where the Run page's record of the rule starts, and starts again when the rule is registered again; the trades of earlier versions stay folded and left out of every figure. A provisional account and yours count every trade from the first. A rule's scorecard puts two things beside each other and never adds them together: how the rule did on the test years in the newest monthly test, and its own record since it went live, which is not evidence until it holds the test's count of trades or months.";
+        "Each account takes one rule's trades: a family's live or provisional rule takes the page's own list, each registered variant its own list or book, and You the trades you took from the cards. Each trade is bought at the open of the session after the night that listed it and sized off the account's value at its buy by the card's own sizing, risking the risk setting and holding at most a tenth of the account, the trades ending on a session sold before any is bought, and one the free cash cannot buy is skipped and counted; each pays its round trip, half at its buy and half at its sale. The tiles draw each family's live or provisional account's return since its record began beside the index's fund over the same days, and the chart draws each account's return session by session, a chosen family's variants dashed; a key's press hides or shows its line. An account is evidence about one unchanged rule, so a registered rule's account counts only the trades of its current version, from where the Run page's record of the rule starts, and starts again when the rule is registered again; the trades of earlier versions stay folded and left out of every figure. A provisional account and yours count every trade from the first. A rule's scorecard puts two things beside each other and never adds them together: how the rule did on the test years in the newest monthly test, and its own record since it went live, which is not evidence until it holds the test's count of trades or months.";
 
     // From 22.17 how the read-only copy's paper trading is read, and what it is, which name no variant and no version.
     public const string PlainPaperGuide =
@@ -54,12 +54,14 @@ public sealed partial class SinglePageApp
         // Until the operator saves an account, every account is walked on the example and the page says so at its top.
         if (settings is null && example is { } shown)
         {
-            region.Append(Invariant($"<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: {shown.Size:#,0} dollars, {shown.Risk:0.##} per cent of it a trade and at most {shown.Cap * 100:0.##} per cent of it in one position. Change the account to save your own, and every account is walked on yours.</p>"));
+            region.Append(Invariant($"<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: {shown.Size:#,0} dollars, {shown.Risk:0.##} per cent of it risked a trade. Change the account to save your own, and every account is walked on yours.</p>"));
         }
 
-        // The account's line, the settings each rule's copy is walked on, the form behind its press.
+        // The account's line, the settings each rule's copy is walked on, a position at most a tenth of it whatever a pick's
+        // card is capped at, the form behind its press.
+        // see: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
         var line = walked is { } used
-            ? Invariant($"<p class=\"paper-line\" data-size=\"{(settings is null ? "example" : "kept")}\"><span>Account <b>${used.Size:#,0}</b></span><span>Risk a trade <b>{used.Risk:0.##}%</b></span><span>Most in one stock <b>{used.Cap * 100:0.##}%</b></span><span>Each rule trades its own copy of this account.</span></p>")
+            ? Invariant($"<p class=\"paper-line\" data-size=\"{(settings is null ? "example" : "kept")}\" data-cap=\"{EquityBrief.Core.Cards.PaperAccount.AccountCap.ToString(CultureInfo.InvariantCulture)}\"><span>Account <b>${used.Size:#,0}</b></span><span>Risk a trade <b>{used.Risk:0.##}%</b></span><span>Most in one stock <b>{EquityBrief.Core.Cards.PaperAccount.AccountCap * 100:0.##}%</b></span><span>Each rule trades its own copy of this account; a pick's card is capped at {used.Cap * 100:0.##}%.</span></p>")
             : "<p class=\"paper-line degraded\">No account is kept: set the three to walk the accounts.</p>";
 
         // The read-only copy draws each family's live or provisional account alone, with its earlier trades in their fold: no
@@ -69,7 +71,7 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            MarkRenderer.CardSummary(MarkRenderer.PaperAccountSaid(settings, example)) + Invariant($"<p class=\"paper-what\">{Escaped(plain ? PlainPaperWhat : PaperWhat)}</p>") + line
+            MarkRenderer.PaperAccountSummary(settings, example) + Invariant($"<p class=\"paper-what\">{Escaped(plain ? PlainPaperWhat : PaperWhat)}</p>") + line
                 + Invariant($"<details class=\"paper-change\"{(walked is null ? " open" : string.Empty)}><summary>Change the account</summary>{AccountForm(settings?.Size, settings?.Risk, settings?.Cap, proposedCap)}</details>"),
             title: "Each rule's trades, in your money",
             region: "account"));
@@ -77,19 +79,20 @@ public sealed partial class SinglePageApp
         region.Append(Cards.Computed(
             "Paper trading",
             MarkRenderer.CardSummary(MarkRenderer.PaperChartSaid(accounts, page.Fund, walked is not null)) + Guide(plain ? PlainPaperGuide : PaperGuide) + marks.PaperTiles(accounts, page.Fund, page.Combined, walked?.Size) + (plain ? string.Empty : MarkRenderer.PaperFamilies(accounts, link))
-                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, plain ? null : link.Family, page.Combined)),
+                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, plain ? null : link.Family, page.Combined, plain ? null : link, page.FundCloses, page.Fund?.Fund)),
             title: "Each rule since its record began",
             lede: "Each family's live or provisional rule, its return on your size beside the index's fund over the same days, and beneath, each account's return in per cent of its size, session by session.",
             stamp: Cards.Night(night),
             region: "paper-chart"));
 
-        // From 21.11 every live rule's trades in one account of your size.
-        // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+        // From 21.11 every live rule's trades in one account of your size, from the 21.11 correction of 2026-11-07 each live
+        // rule's own account given an equal share of it.
+        // see: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
         region.Append(Cards.Computed(
             "Paper trading",
-            MarkRenderer.CardSummary(MarkRenderer.PaperCombinedSaid(page.Combined, walked is not null)) + (walked is null ? "<p class=\"degraded\" data-combined=\"unset\">Set your account above to walk the combined account.</p>" : marks.PaperCombined(page.Combined)),
-            title: "All setups together",
-            lede: "Every live rule's trades in one account of your size: one position a stock, at most three open in one sector, each book a fifth of the account, and a buy the free cash cannot cover skipped.",
+            MarkRenderer.CardSummary(MarkRenderer.PaperCombinedSaid(page.Combined, walked is not null)) + (walked is null ? "<p class=\"degraded\" data-combined=\"unset\">Set your account above to walk the averaged account.</p>" : marks.PaperCombined(page.Combined)),
+            title: EquityBrief.Web.Marks.PaperCombinedView.Name,
+            lede: "Each live setup's own account given an equal share of one account of your size, from the day every one of them counts: what following every rule at once would have done.",
             stamp: Cards.Night(night),
             region: "paper-combined"));
 
