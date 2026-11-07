@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - 15.23 draws a company's name and a filer's words as filed
+Decision: A company's name and a filer's words are drawn as filed, and never in the reader's words
+Was:
+> No attribute, stored row or rule's source is changed by it (see: ...). The check holds every term of the first table to a phrase that puts it into the reader's words.
+Now:
+> No attribute, stored row or rule's source is changed by it (see: ...). From the 21.13 correction of 2026-11-07 a company's name and anything else a filer or a provider wrote is drawn inside an element marked as filed, whose text the table leaves as it was written, so Block, Inc. never reads as a run of 63 trading days (see: ...). The check holds every term ...
+Why: the operator's order of 2026-11-07, its fifth item: Paper trading drew XYZ's company as "Run of 63 trading days, Inc".
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - the long history's three components, their stores, section 17's four rows, section 18's row and the History page's members back to 2005
 Decision: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30
 Was:

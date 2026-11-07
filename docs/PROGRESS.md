@@ -16423,3 +16423,21 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 21.13 - correction: a company's name and a filer's words are drawn as filed, never in the reader's words   2026-11-07
+
+Found:      the operator's order of 2026-11-07, its fifth item, word for word in `prompts/2026-11-07-21-22-paper-and-home-account-order.md`:
+            What the system bought drew XYZ's company as "Run of 63 trading days, Inc", 21.13's table of phrases reading the
+            filer's "Block" as the tester's word. Swept over the 1,920 names the membership table holds, through the table as it
+            stood: three changed, Block, Inc, H&R Block Inc and Family Dollar Stores Inc ("Setup Dollar Stores Inc"); the Loop page
+            and the Ledger draw no company's name and no filer's words.
+Corrected:  `ReaderText.Page` leaves the text inside an element marked as filed as it was written, however deep its own elements
+            nest; paper trading's stock cell marks the company's name so. The decision, 15.23's sentence and the changelog.
+Tests:      1 new: the page over XYZ's open trade draws "Block, Inc."; a block outside a filed element still reads as a run, and
+            the words after one closes are read again.
+Claims:     none new.
+Pins:       none move: the web project's sources are none a rule pins.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 the
+            company's cell unmarked: red. m2 the table reading a filed element's text: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

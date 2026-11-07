@@ -407,8 +407,10 @@ public sealed partial class MarkRenderer
                 ? SignedTwo(risks) + " risks" + (result.Fraction is { } share ? Formatted($"<span class=\"pb-day\">{PaperPercent(share)}</span>") : string.Empty)
                 : result.Fraction is { } only ? PaperPercent(only) : "<span class=\"degraded\">not read</span>";
 
+    // A company's name is the filer's own words, drawn as filed and never in the reader's words.
+    // see: A company's name and a filer's words are drawn as filed, and never in the reader's words
     static string StockCell(string ticker, string? company, string? also) =>
-        Formatted($"<td class=\"pb-stock\"><a href=\"#/chart/{Uri.EscapeDataString(ticker)}\">{Escaped(ticker)}</a>{(company is { } name ? Formatted($"<span class=\"pb-co\">{Escaped(name)}</span>") : string.Empty)}{(also is { } said ? Formatted($"<span class=\"pb-also\">{Escaped(said)}</span>") : string.Empty)}</td>");
+        Formatted($"<td class=\"pb-stock\"><a href=\"#/chart/{Uri.EscapeDataString(ticker)}\">{Escaped(ticker)}</a>{(company is { } name ? Formatted($"<span class=\"pb-co\"{ReaderText.AsFiledMark}>{Escaped(name)}</span>") : string.Empty)}{(also is { } said ? Formatted($"<span class=\"pb-also\">{Escaped(said)}</span>") : string.Empty)}</td>");
 
     static string FamilyCell(string family) =>
         Formatted($"<td><span class=\"fam-tag\" data-family=\"{Escaped(family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(family)}\"></span>{Escaped(FamilyName(family))}</span></td>");
