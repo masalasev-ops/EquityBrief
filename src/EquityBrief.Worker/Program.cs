@@ -264,6 +264,83 @@ static async Task<int> LongMembersRun(string[] args)
         return 0;
     }
 
+    if (args.Contains("--days", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--days --into <folder>'.");
+
+            return 2;
+        }
+
+        var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+        var days = new EquityBrief.Worker.History.LongDayFiles(EodhdLongHistoryFeed.Live(
+            string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+            new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)));
+        var found = await days.CaptureAsync(folder, line => Console.WriteLine("long-members: " + line));
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {days.Requests} request(s) to the provider; {found.Count} quarter end(s) hold a day file"));
+
+        return 0;
+    }
+
+    if (args.Contains("--ask", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--ask --into <folder>'.");
+
+            return 2;
+        }
+
+        var matched = EquityBrief.Worker.History.LongMembers.Match(folder);
+        var codes = EquityBrief.Worker.History.LongMembers.ToAsk(folder, matched);
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {codes.Count} code(s) to ask at 1 weighted call each, {codes.Count} in all, before the first request"));
+
+        if (args.Contains("--print", StringComparer.Ordinal))
+        {
+            return 0;
+        }
+
+        var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+        var feed = EodhdLongHistoryFeed.Live(string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address, new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty));
+        var answered = await EquityBrief.Worker.History.LongMembers.AskAsync(folder, feed, codes, line => Console.WriteLine("long-members: " + line));
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {feed.Requests} request(s) to the provider; {answered} answer(s) kept"));
+
+        return 0;
+    }
+
+    if (VerbArguments.Value(args, "--match") is { } captured)
+    {
+        var matched = EquityBrief.Worker.History.LongMembers.Match(captured);
+
+        foreach (var quarter in EquityBrief.Worker.History.LongMembers.Quarters(matched))
+        {
+            Console.WriteLine(FormattableString.Invariant(
+                $"long-members: {quarter.Index} {quarter.Period:yyyy-MM-dd} {quarter.Matched} of {quarter.Holdings} matched, {(quarter.Value == 0m ? 0m : quarter.MatchedValue / quarter.Value):P2} of the value; {string.Join(", ", quarter.ByKey.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => $"{pair.Key} {pair.Value.Count}"))}"));
+        }
+
+        if (args.Contains("--each", StringComparer.Ordinal))
+        {
+            foreach (var schedule in matched.Schedules.OrderBy(one => one.Index, StringComparer.Ordinal).ThenBy(one => one.Period))
+            {
+                for (var place = 0; place < schedule.Holdings.Count; place++)
+                {
+                    if (!matched.Matches[schedule.Index].ContainsKey((schedule.Period, place)))
+                    {
+                        var holding = schedule.Holdings[place];
+
+                        Console.WriteLine(FormattableString.Invariant($"long-members: none {schedule.Index} {schedule.Period:yyyy-MM-dd} {holding.Name} | {holding.ValuePerShare:0.0000} a share, {holding.Value:N0}"));
+                    }
+                }
+            }
+        }
+
+        return 0;
+    }
+
     if (VerbArguments.Value(args, "--read") is { } kept)
     {
         var (schedules, unread) = EquityBrief.Worker.History.LongScheduleFilings.Read(kept);
