@@ -47,7 +47,9 @@ public static class LongSchedules
     static readonly Regex Tag = new(@"<[^>]+>", RegexOptions.Compiled);
     static readonly Regex Space = new(@"\s+", RegexOptions.Compiled);
     static readonly Regex Count = new(@"^\$?\s*\(?[\d,]+\)?$", RegexOptions.Compiled);
-    static readonly Regex Notes = new(@"(\s*\(\d{1,2}\)|\s*\([a-z]{1,2}\))+[\s.]*$", RegexOptions.Compiled);
+    // A name's footnote marks: a number or a letter in brackets, or a bare number or small letter, one or several, set after the
+    // name's last word.
+    static readonly Regex Notes = new(@"((?<=[A-Za-z.)])\s+(?:\d{1,2}|[a-z])(?:\s*,\s*(?:\d{1,2}|[a-z]))*|\s*\(\d{1,2}\)|\s*\([a-z]{1,2}\))+[\s.]*$", RegexOptions.Compiled);
     static readonly Regex Industry = new(@"^(.*?[A-Za-z)])[\W_]*[\d.]+\s*%$", RegexOptions.Compiled);
 
     // The fund's complete schedule at the quarter end the filing reports.

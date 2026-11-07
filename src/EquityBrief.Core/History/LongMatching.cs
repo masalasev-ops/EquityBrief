@@ -43,10 +43,19 @@ public sealed class LongNames
 
     readonly Dictionary<string, List<string>> byWord = new(StringComparer.Ordinal);
     readonly Dictionary<string, HashSet<string>> wordsOf = new(StringComparer.Ordinal);
+    readonly HashSet<string> codes = new(StringComparer.Ordinal);
+
+    // The forms the provider files a code's earlier holder under once the code passed to another: the code with _old, then
+    // _old1 and on.
+    public const int OlderForms = 4;
 
     public LongNames(IEnumerable<ListedSymbol> symbols)
     {
-        foreach (var symbol in symbols.Where(symbol => symbol.Type == ProviderSymbols.CommonStock))
+        ListedSymbol[] all = [.. symbols];
+
+        codes.UnionWith(all.Select(symbol => symbol.Code));
+
+        foreach (var symbol in all.Where(symbol => symbol.Type == ProviderSymbols.CommonStock))
         {
             var words = Words(symbol.Name);
 
@@ -65,6 +74,14 @@ public sealed class LongNames
                 codes.Add(symbol.Code);
             }
         }
+    }
+
+    // A code's older forms the symbol lists carry, whatever name they file each under.
+    public IReadOnlyList<string> Older(string code)
+    {
+        var plain = code.Contains("_old", StringComparison.Ordinal) ? code[..code.IndexOf("_old", StringComparison.Ordinal)] : code;
+
+        return [.. new[] { plain + "_old" }.Concat(Enumerable.Range(1, OlderForms - 1).Select(form => FormattableString.Invariant($"{plain}_old{form}"))).Where(codes.Contains)];
     }
 
     static HashSet<string> Words(string name) =>
@@ -114,8 +131,12 @@ public static class LongMatching
 
     public const string ByHand = "hand";
 
-    // How many adjacent quarter ends the price key reads a value a share at.
+    // How many adjacent quarter ends the price key reads a value a share at, and the fewest quarter ends in a row a run at one
+    // ratio holds.
     public const int PriceQuarters = 2;
+
+    // How many times longer than any other code's the run settling a quarter end held by several must be.
+    public const int LongestRun = 2;
 
     // Every holding of one fund's schedules matched, keyed by its quarter end and its place in the schedule; a holding no key
     // matched stands in none.
@@ -157,6 +178,19 @@ public static class LongMatching
 
                 if (match.Ticker is { } code)
                 {
+                    // Where several codes stand on the name, the one whose close sits nearest the value a share: a company's own
+                    // code before another's that took its name since.
+                    if (match.Between.Count > 1 && filed.ValuePerShare is { } price)
+                    {
+                        code = match.Between
+                            .Select(one => (Code: one, Close: CloseOn(schedule.Period, one)))
+                            .Where(one => one.Close is not null)
+                            .OrderBy(one => Math.Abs(one.Close!.AsSent - price))
+                            .ThenBy(one => one.Code == code ? 0 : 1)
+                            .Select(one => one.Code)
+                            .FirstOrDefault() ?? code;
+                    }
+
                     matches[(schedule.Period, place)] = new LongMatch(code, ByName, match.Between);
                 }
             }
@@ -181,7 +215,14 @@ public static class LongMatching
                         continue;
                     }
 
-                    string[] both = [.. here.AtTheCent(price).Intersect(there.AtTheCent(price2), StringComparer.Ordinal)];
+                    // Codes carrying one close at both quarter ends are one series under two codes, a company's old code and its
+                    // new kept side by side, read as the first of them.
+                    string[] both =
+                    [
+                        .. here.AtTheCent(price).Intersect(there.AtTheCent(price2), StringComparer.Ordinal)
+                            .GroupBy(code => (here.CloseOf(code), there.CloseOf(code)))
+                            .Select(series => series.Order(StringComparer.Ordinal).First()),
+                    ];
 
                     if (both.Length == 1)
                     {
@@ -210,9 +251,14 @@ public static class LongMatching
                 continue;
             }
 
-            var runs = new Dictionary<(DateOnly Period, int Place), List<string>>();
+            var runs = new Dictionary<(DateOnly Period, int Place), List<(string Code, int Length)>>();
 
-            foreach (var code in Candidates(matcher, names, held[0].Holding))
+            // Codes carrying one close at every one of the name's quarter ends are one series, read as the first of them.
+            var series = Candidates(matcher, names, held[0].Holding)
+                .GroupBy(code => string.Join('|', held.Select(one => CloseOn(one.Period, code)?.AsSent.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "-")), StringComparer.Ordinal)
+                .Select(group => group.Order(StringComparer.Ordinal).First());
+
+            foreach (var code in series)
             {
                 foreach (var run in Runs(code, held, CloseOn))
                 {
@@ -223,16 +269,21 @@ public static class LongMatching
                             runs[key] = codes = [];
                         }
 
-                        codes.Add(code);
+                        codes.Add((code, run.Count));
                     }
                 }
             }
 
+            // Where several codes hold a run at a quarter end, the code whose run there is the longest, at least twice as long
+            // as any other's: another company's price moving with the holding's for a quarter or two against the holding's own
+            // code divided by its splits over years.
             foreach (var (key, codes) in runs)
             {
-                if (codes.Count == 1 && !matches.ContainsKey(key))
+                var longest = codes.OrderByDescending(one => one.Length).ThenBy(one => one.Code, StringComparer.Ordinal).ToArray();
+
+                if (!matches.ContainsKey(key) && (longest.Length == 1 || longest[0].Length >= LongestRun * longest[1].Length))
                 {
-                    matches[key] = new LongMatch(codes[0], ByName, codes);
+                    matches[key] = new LongMatch(longest[0].Code, ByName, [.. codes.Select(one => one.Code).Distinct(StringComparer.Ordinal)]);
                 }
             }
         }
@@ -308,15 +359,15 @@ public static class LongMatching
     public static IReadOnlyList<string> Candidates(HoldingMatcher matcher, LongNames? names, LongHolding holding)
     {
         var filed = Filed(holding);
-
-        return
+        string[] read =
         [
             .. matcher.NameCandidates(filed, wider: true)
                 .Concat(matcher.NameCandidates(filed with { Name = InOrder(filed.Name) }, wider: true))
-                .Concat(names?.Related(holding.Name) ?? [])
-                .Distinct(StringComparer.Ordinal)
-                .Order(StringComparer.Ordinal),
+                .Concat(names?.Related(holding.Name) ?? []),
         ];
+
+        // And each code the name reads in its older forms, the earlier holder of a code passed on.
+        return [.. read.Concat(read.SelectMany(code => names?.Older(code) ?? [])).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
     }
 
     // A holding's place in a schedule by its name as filed, none where the schedule holds no holding of that name.
