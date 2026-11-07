@@ -23,6 +23,9 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
         [
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongSnapshot, EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongHolding, EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
+            new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongSpan, EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
+            new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.PulledHolding, EquityBrief.Core.Components.Touch.Read),
+            new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.Membership, EquityBrief.Core.Components.Touch.Read),
         ],
         Feeds: []);
 
@@ -107,7 +110,7 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
         var matcher = new HoldingMatcher(symbols);
         var names = new LongNames(symbols);
         var asked = Asked(folder);
-        var filed = FiledCodes(folder);
+        var fromFilings = FromFilings(folder, symbols);
         var matches = new Dictionary<string, IReadOnlyDictionary<(DateOnly, int), LongMatch>>(StringComparer.Ordinal);
 
         // The codes the symbol lists file as something other than a company's common stock, a fund, a note or a preferred
@@ -116,10 +119,38 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
         foreach (var index in LongScheduleFilings.Funds.Keys)
         {
-            matches[index] = LongMatching.Match([.. schedules.Where(schedule => schedule.Index == index)], closes, matcher, asked, names, name => Reported(filed, name), code => typed.TryGetValue(code, out var stock) && !stock);
+            matches[index] = LongMatching.Match([.. schedules.Where(schedule => schedule.Index == index)], closes, matcher, asked, names, fromFilings, code => typed.TryGetValue(code, out var stock) && !stock, LongHandMatches.Of(index), (name, code) => LongHandMatches.IsRefused(index, name, code));
         }
 
         return new Matched(schedules, matches, unread);
+    }
+
+    // The codes a name's company's own SEC filings point to: the code its annual report names with its older forms, and every
+    // common stock the symbol lists file under exactly a name its filer took, its current name or a former one, which reads a
+    // company renamed after it left the fund.
+    public static Func<string, IReadOnlyList<string>> FromFilings(string folder, IReadOnlyList<ListedSymbol> symbols)
+    {
+        var filed = FiledCodes(folder);
+        var chosen = ChosenFilers(folder);
+        var read = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+        var byName = symbols
+            .Where(symbol => symbol.Type == ProviderSymbols.CommonStock)
+            .Select(symbol => (Key: HoldingMatcher.NameKey(symbol.Name), symbol.Code))
+            .Where(pair => pair.Key.Length > 0)
+            .ToLookup(pair => pair.Key, pair => pair.Code, StringComparer.Ordinal);
+
+        return name =>
+        {
+            if (!read.TryGetValue(name, out var codes))
+            {
+                var index = chosen.GetValueOrDefault(name)?.Cik is { } cik ? Path.Combine(folder, FilersFolder, "submissions-" + cik + ".json") : null;
+                var filerNames = index is not null && File.Exists(index) ? NamesOf(File.ReadAllText(index)) : [];
+
+                read[name] = codes = [.. Reported(filed, name).Concat(filerNames.SelectMany(filer => byName[HoldingMatcher.NameKey(filer)])).Distinct(StringComparer.Ordinal)];
+            }
+
+            return codes;
+        };
     }
 
     // The code a name's company's own annual report names, and its older forms, which the provider files the company under
@@ -142,7 +173,7 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
             ? Directory.GetFiles(Path.Combine(folder, AskedFolder), "*.json").Select(Path.GetFileNameWithoutExtension).ToHashSet(StringComparer.Ordinal)
             : [];
         var spans = new Dictionary<string, (DateOnly From, DateOnly Through)>(StringComparer.Ordinal);
-        var filed = FiledCodes(folder);
+        var fromFilings = FromFilings(folder, symbols);
 
         foreach (var group in matched.Schedules
             .SelectMany(schedule => schedule.Holdings.Select((holding, place) => (schedule.Index, schedule.Period, Place: place, Holding: holding)))
@@ -155,7 +186,7 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
             var (first, last) = (group.Min(one => one.Period), group.Max(one => one.Period));
 
-            foreach (var code in LongMatching.Candidates(matcher, names, group.First().Holding).Concat(Reported(filed, group.Key.Name)).Distinct(StringComparer.Ordinal))
+            foreach (var code in LongMatching.Candidates(matcher, names, group.First().Holding).Concat(fromFilings(group.Key.Name)).Distinct(StringComparer.Ordinal))
             {
                 if (answered.Contains(code) || group.Any(one => closes.TryGetValue(one.Period, out var day) && day.CloseOf(code) is not null))
                 {
@@ -208,6 +239,80 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
     public const string FilersFolder = "filers";
 
+    public const string NamedFolder = "named";
+
+    // The companies the plan names in 2008 and 2009, by the words a fund's holding of each carries.
+    public static IReadOnlyList<(string Named, string Words)> Named { get; } =
+    [
+        ("Bear Stearns", "Bear Stearns"),
+        ("Lehman", "Lehman Brothers"),
+        ("Merrill", "Merrill Lynch"),
+        ("Wachovia", "Wachovia"),
+        ("Washington Mutual", "Washington Mutual"),
+        ("Countrywide", "Countrywide"),
+        ("National City", "National City"),
+        ("Fannie Mae", "Fannie Mae|Federal National Mortgage"),
+        ("Freddie Mac", "Freddie Mac|Federal Home Loan Mortgage"),
+        ("CIT", "CIT Group"),
+        ("General Motors", "General Motors Corp"),
+    ];
+
+    // How long after its last quarter end held a named company's prices are asked for.
+    public const int NamedYears = 3;
+
+    // One named company as the long history holds it: the fund, the name as filed, its last quarter end held, the code and key
+    // it was matched by there or none, and its last session with a volume and that session's close as the provider answers.
+    public sealed record NamedCompany(string Named, string Index, string Name, DateOnly Last, string? Code, string? By, DateOnly? LastSession, decimal? LastClose);
+
+    // Each named company's last holding in each fund, its code asked of the provider from that quarter end for three years, the
+    // answer kept as sent.
+    public static async Task<IReadOnlyList<NamedCompany>> NamedAsync(string folder, ILongHistoryFeed feed, Matched matched, CancellationToken cancellation = default)
+    {
+        var kept = Path.Combine(folder, NamedFolder);
+        var named = new List<NamedCompany>();
+
+        Directory.CreateDirectory(kept);
+
+        foreach (var (title, words) in Named)
+        {
+            var pattern = new System.Text.RegularExpressions.Regex(words, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            foreach (var last in matched.Schedules
+                .SelectMany(schedule => schedule.Holdings.Select((holding, place) => (schedule.Index, schedule.Period, Place: place, holding.Name)))
+                .Where(one => pattern.IsMatch(one.Name))
+                .GroupBy(one => one.Index, StringComparer.Ordinal)
+                .Select(group => group.MaxBy(one => one.Period))
+                .OrderBy(one => one.Index, StringComparer.Ordinal))
+            {
+                var match = matched.Matches[last.Index].GetValueOrDefault((last.Period, last.Place));
+                var (session, close) = ((DateOnly?)null, (decimal?)null);
+
+                if (match is not null)
+                {
+                    var file = Path.Combine(kept, match.Ticker + ".json");
+                    var answer = File.Exists(file) ? await File.ReadAllTextAsync(file, cancellation) : await feed.PricesAsync(match.Ticker + "." + LongDayFiles.Exchange, last.Period, last.Period.AddYears(NamedYears), cancellation);
+
+                    await File.WriteAllTextAsync(file, answer, cancellation);
+
+                    using var document = System.Text.Json.JsonDocument.Parse(answer);
+
+                    foreach (var row in document.RootElement.EnumerateArray())
+                    {
+                        if (row.TryGetProperty("volume", out var volume) && volume.ValueKind == System.Text.Json.JsonValueKind.Number && volume.GetDecimal() > 0m
+                            && DateOnly.TryParseExact(row.GetProperty("date").GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day))
+                        {
+                            (session, close) = (day, row.GetProperty("close").GetDecimal());
+                        }
+                    }
+                }
+
+                named.Add(new NamedCompany(title, last.Index, last.Name, last.Period, match?.Ticker, match?.By, session, close));
+            }
+        }
+
+        return named;
+    }
+
     // Each name a fund's schedules hold that some quarter end still matches to none, with the quarter ends and the value left
     // out, the largest first.
     public static IReadOnlyList<(string Name, IReadOnlyList<(string Index, DateOnly Period)> Quarters, decimal Value)> Unmatched(Matched matched) =>
@@ -237,7 +342,9 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
     // How many of the filers a company search names are read for their names.
     public const int FilersRead = 6;
-    static readonly System.Text.RegularExpressions.Regex Symbol = new(@"(?:under|by)\s+the\s+(?:ticker\s+|trading\s+)?symbols?\s*[""“'‘]?\s*([A-Z]{1,5}(?:\.[A-Z])?)\b[^.]{0,80}", System.Text.RegularExpressions.RegexOptions.Compiled);
+    // A report's sentence naming its code: under or by the symbol, or a ticker or trading symbol and a colon, the mark around
+    // the code any one sign, since a page filed in an older encoding comes back with its quotes unread.
+    static readonly System.Text.RegularExpressions.Regex Symbol = new(@"(?:(?:under|by)\s+the\s+(?:ticker\s+|trading\s+)?symbols?|(?:ticker|trading)\s+symbol\s*:)\s*[^\w\s]?\s*([A-Z]{1,5}(?:\.[A-Z])?)\b[^.]{0,80}", System.Text.RegularExpressions.RegexOptions.Compiled);
 
     // The filers a company search names, by CIK.
     static IReadOnlyList<string> FilersOf(string search) =>
@@ -272,95 +379,165 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
         Directory.CreateDirectory(filers);
 
-        foreach (var (name, quarters, _) in Unmatched(Match(folder)).Take(top))
+        var chosen = new List<ChosenFiler>();
+        var unmatched = Unmatched(Match(folder)).Take(top).ToArray();
+
+        foreach (var (name, quarters, _) in unmatched)
         {
-            if (await ReadCodeAsync(filers, feed, name, quarters.Min(one => one.Period), quarters.Max(one => one.Period), cancellation) is { } read)
+            var filer = await FilerAsync(filers, feed, name, cancellation);
+
+            chosen.Add(new ChosenFiler(name, filer?.Cik, filer?.Name));
+
+            if (filer is not null && await ReadCodeAsync(filers, feed, name, quarters.Min(quarter => quarter.Period), quarters.Max(quarter => quarter.Period), cancellation) is { } read)
             {
                 found.Add(read);
             }
+
+            if (chosen.Count % 50 == 0)
+            {
+                progress(FormattableString.Invariant($"{chosen.Count} of {unmatched.Length} name(s) looked for, {found.Count} code(s) read"));
+            }
         }
 
-        await File.WriteAllTextAsync(Path.Combine(folder, FiledFile), System.Text.Json.JsonSerializer.Serialize(found, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), cancellation);
-        progress(FormattableString.Invariant($"{found.Count} name(s) read a code off their company's own annual report"));
+        // A name looked for before and matched since keeps what was found for it, which its match may rest on.
+        var looked = chosen.Select(one => one.Name).ToHashSet(StringComparer.Ordinal);
+        FiledCode[] allFound = [.. FiledCodes(folder).Values.Where(one => !looked.Contains(one.Name)), .. found];
+        ChosenFiler[] allChosen = [.. ChosenFilers(folder).Values.Where(one => !looked.Contains(one.Name)), .. chosen];
+
+        await File.WriteAllTextAsync(Path.Combine(folder, FiledFile), System.Text.Json.JsonSerializer.Serialize(allFound.OrderBy(one => one.Name, StringComparer.Ordinal), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), cancellation);
+        await File.WriteAllTextAsync(Path.Combine(folder, ChosenFile), System.Text.Json.JsonSerializer.Serialize(allChosen.OrderBy(one => one.Name, StringComparer.Ordinal), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), cancellation);
+        progress(FormattableString.Invariant($"{chosen.Count(one => one.Cik is not null)} of {chosen.Count} name(s) found a filer, {found.Count} read a code off their company's own annual report"));
 
         return found;
+    }
+
+    // The filer a name was looked for under, none where no filer's name held enough of its words.
+    public sealed record ChosenFiler(string Name, string? Cik, string? Filer);
+
+    public const string ChosenFile = "chosen-filers.json";
+
+    // The filers each name was looked for under, as the lookup kept them.
+    public static IReadOnlyDictionary<string, ChosenFiler> ChosenFilers(string folder)
+    {
+        var file = Path.Combine(folder, ChosenFile);
+
+        return File.Exists(file)
+            ? (System.Text.Json.JsonSerializer.Deserialize<List<ChosenFiler>>(File.ReadAllText(file)) ?? []).GroupBy(one => one.Name, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal)
+            : new Dictionary<string, ChosenFiler>(StringComparer.Ordinal);
+    }
+
+    // A filer's filings off its index and every older page it names, as the lookup kept them; none where a page was not kept.
+    public static IReadOnlyList<FilerFiling>? KeptFilings(string filers, string cik)
+    {
+        var indexFile = Path.Combine(filers, "submissions-" + cik + ".json");
+
+        if (!File.Exists(indexFile))
+        {
+            return null;
+        }
+
+        var index = File.ReadAllText(indexFile);
+        var pages = FilerFilings.Pages(index).Select(page => Path.Combine(filers, page)).ToArray();
+
+        return pages.All(File.Exists) ? FilerFilings.Read([index, .. pages.Select(File.ReadAllText)]) : null;
+    }
+
+    // The filer whose name or former name holds most of a name's words, searched by its words and then by fewer of them, and
+    // where none is found by its words with a part set in brackets left out, a place the trust names a company by; with its
+    // index and every older page it names, each kept as sent; none where no filer's name holds half its words.
+    public static async Task<(string Cik, string Name, IReadOnlyList<string> Pages)?> FilerAsync(string filers, ITrustScheduleFeed feed, string name, CancellationToken cancellation = default)
+    {
+        var unbracketed = System.Text.RegularExpressions.Regex.Replace(name, @"\s*\([^)]*\)", string.Empty).Trim();
+
+        return await FilerByAsync(filers, feed, SearchedAs(name), cancellation)
+            ?? (unbracketed != name && unbracketed.Length > 0 ? await FilerByAsync(filers, feed, SearchedAs(unbracketed), cancellation) : null);
+    }
+
+    static async Task<(string Cik, string Name, IReadOnlyList<string> Pages)?> FilerByAsync(string filers, ITrustScheduleFeed feed, string searched, CancellationToken cancellation)
+    {
+        var words = searched.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        (string Cik, string Name, string Index)? filer = null;
+
+        async Task<string> KeptAsync(string file, Func<Task<string>> ask)
+        {
+            var answer = File.Exists(file) ? await File.ReadAllTextAsync(file, cancellation) : await ask();
+
+            await File.WriteAllTextAsync(file, answer, cancellation);
+
+            return answer;
+        }
+
+        for (var kept = words.Length; kept >= 1 && filer is null; kept--)
+        {
+            var query = string.Join(' ', words[..kept]);
+            var answer = await KeptAsync(Path.Combine(filers, "search-" + string.Concat(query.Select(character => char.IsLetterOrDigit(character) ? character : '-')) + ".xml"), () => feed.CompaniesAsync(query, cancellation));
+            var best = (Shared: 0.0, Filer: ((string, string, string)?)null);
+
+            foreach (var cik in FilersOf(answer).Take(FilersRead))
+            {
+                var filings = await KeptAsync(Path.Combine(filers, "submissions-" + cik + ".json"), () => feed.IndexAsync(cik, cancellation));
+
+                foreach (var filed in NamesOf(filings))
+                {
+                    var shared = Shared(words, HoldingMatcher.NameKey(filed).ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+                    if (shared > best.Shared)
+                    {
+                        best = (shared, (cik, filed, filings));
+                    }
+                }
+            }
+
+            if (best.Shared >= LongNames.SharedAtLeast)
+            {
+                filer = best.Filer;
+            }
+        }
+
+        if (filer is not { } chosen)
+        {
+            return null;
+        }
+
+        var pages = new List<string> { chosen.Index };
+
+        foreach (var page in FilerFilings.Pages(chosen.Index))
+        {
+            pages.Add(await KeptAsync(Path.Combine(filers, page), () => feed.PageAsync(page, cancellation)));
+        }
+
+        return (chosen.Cik, chosen.Name, pages);
     }
 
     // A name's code as its company's own annual report from the years it was held names it, none where no filer of the name, no
     // such report or no sentence naming a code is found; every answer kept as sent, one already kept asked nothing again.
     public static async Task<FiledCode?> ReadCodeAsync(string filers, ITrustScheduleFeed feed, string name, DateOnly first, DateOnly last, CancellationToken cancellation = default)
     {
+        if (await FilerAsync(filers, feed, name, cancellation) is not { } chosen)
         {
-            var words = SearchedAs(name).Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            (string Cik, string Name, string Index)? filer = null;
-
-            async Task<string> IndexOfAsync(string cik)
-            {
-                var indexFile = Path.Combine(filers, "submissions-" + cik + ".json");
-                var index = File.Exists(indexFile) ? await File.ReadAllTextAsync(indexFile, cancellation) : await feed.IndexAsync(cik, cancellation);
-
-                await File.WriteAllTextAsync(indexFile, index, cancellation);
-
-                return index;
-            }
-
-            for (var kept = words.Length; kept >= 1 && filer is null; kept--)
-            {
-                var query = string.Join(' ', words[..kept]);
-                var file = Path.Combine(filers, "search-" + string.Concat(query.Select(character => char.IsLetterOrDigit(character) ? character : '-')) + ".xml");
-                var answer = File.Exists(file) ? await File.ReadAllTextAsync(file, cancellation) : await feed.CompaniesAsync(query, cancellation);
-
-                await File.WriteAllTextAsync(file, answer, cancellation);
-
-                var best = (Shared: 0.0, Filer: ((string, string, string)?)null);
-
-                foreach (var cik in FilersOf(answer).Take(FilersRead))
-                {
-                    var filings = await IndexOfAsync(cik);
-
-                    foreach (var filed in NamesOf(filings))
-                    {
-                        var shared = Shared(words, HoldingMatcher.NameKey(filed).ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries));
-
-                        if (shared > best.Shared)
-                        {
-                            best = (shared, (cik, filed, filings));
-                        }
-                    }
-                }
-
-                if (best.Shared >= LongNames.SharedAtLeast)
-                {
-                    filer = best.Filer;
-                }
-            }
-
-            if (filer is not { } chosen)
-            {
-                return null;
-            }
-
-            var report = FilerFilings.Read([chosen.Index])
-                .Where(filing => filing.Form is "10-K" or "10-K405" && filing.Filed >= first.AddYears(-1) && filing.Filed <= last.AddYears(1))
-                .OrderBy(filing => Math.Abs(filing.Filed.DayNumber - first.AddDays((last.DayNumber - first.DayNumber) / 2).DayNumber))
-                .FirstOrDefault();
-
-            if (report is null)
-            {
-                return null;
-            }
-
-            var documentFile = Path.Combine(filers, report.Accession + "-" + report.PrimaryDocument);
-            var document = File.Exists(documentFile) ? await File.ReadAllTextAsync(documentFile, cancellation) : await feed.DocumentAsync(chosen.Cik, report.Accession, report.PrimaryDocument, cancellation);
-
-            await File.WriteAllTextAsync(documentFile, document, cancellation);
-
-            var text = System.Text.RegularExpressions.Regex.Replace(System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(document, "<[^>]+>", " ")), @"\s+", " ");
-
-            return Symbol.Match(text) is { Success: true } named
-                ? new FiledCode(name, chosen.Cik, chosen.Name, report.Accession, named.Groups[1].Value.Replace('.', '-'), named.Value.Trim())
-                : null;
+            return null;
         }
+
+        var report = FilerFilings.Read(chosen.Pages)
+            .Where(filing => filing.Form is "10-K" or "10-K405" && filing.Filed >= first.AddYears(-1) && filing.Filed <= last.AddYears(1))
+            .OrderBy(filing => Math.Abs(filing.Filed.DayNumber - first.AddDays((last.DayNumber - first.DayNumber) / 2).DayNumber))
+            .FirstOrDefault();
+
+        if (report is null)
+        {
+            return null;
+        }
+
+        var documentFile = Path.Combine(filers, report.Accession + "-" + report.PrimaryDocument);
+        var document = File.Exists(documentFile) ? await File.ReadAllTextAsync(documentFile, cancellation) : await feed.DocumentAsync(chosen.Cik, report.Accession, report.PrimaryDocument, cancellation);
+
+        await File.WriteAllTextAsync(documentFile, document, cancellation);
+
+        var text = System.Text.RegularExpressions.Regex.Replace(System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(document, "<[^>]+>", " ")), @"\s+", " ");
+
+        return Symbol.Match(text) is { Success: true } named
+            ? new FiledCode(name, chosen.Cik, chosen.Name, report.Accession, named.Groups[1].Value.Replace('.', '-'), named.Value.Trim())
+            : null;
     }
 
     // One match checked against its company's own annual report: the fund, the name and the code it was matched to with its
@@ -459,33 +636,141 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
             : new Dictionary<string, FiledCode>(StringComparer.Ordinal);
     }
 
+    // What each checked match was checked against, by fund and name: a hand match's reading, else the sampled check's verdict
+    // and the report it read.
+    public static IReadOnlyDictionary<(string Index, string Name), string> CheckedAs(string folder)
+    {
+        var file = Path.Combine(folder, ChecksFile);
+        var checkedAs = new Dictionary<(string Index, string Name), string>();
+
+        foreach (var check in File.Exists(file) ? System.Text.Json.JsonSerializer.Deserialize<List<HandCheck>>(File.ReadAllText(file)) ?? [] : [])
+        {
+            checkedAs[(check.Index, check.Name)] = check.Filed is null
+                ? check.Verdict
+                : FormattableString.Invariant($"{check.Verdict}: the annual report, accession {check.Accession}, names {check.Filed}, \"{check.Sentence}\"");
+        }
+
+        foreach (var hand in LongHandMatches.All)
+        {
+            checkedAs[(hand.Index, hand.Name)] = "matched by hand: " + hand.Read;
+        }
+
+        return checkedAs;
+    }
+
+    // Why each name a fund left out at some quarter end left, read off its filer's kept filings around its last quarter end in
+    // that fund, by fund and name.
+    public static IReadOnlyDictionary<(string Index, string Name), LongLeft> LeftAs(string folder, Matched matched)
+    {
+        var chosen = ChosenFilers(folder);
+        var filers = Path.Combine(folder, FilersFolder);
+        var filings = new Dictionary<string, IReadOnlyList<FilerFiling>?>(StringComparer.Ordinal);
+        var left = new Dictionary<(string Index, string Name), LongLeft>();
+
+        foreach (var group in matched.Schedules
+            .SelectMany(schedule => schedule.Holdings.Select((holding, place) => (schedule.Index, schedule.Period, Place: place, holding.Name)))
+            .GroupBy(one => (one.Index, one.Name)))
+        {
+            if (group.All(one => matched.Matches[one.Index].ContainsKey((one.Period, one.Place))))
+            {
+                continue;
+            }
+
+            var cik = chosen.GetValueOrDefault(group.Key.Name)?.Cik;
+            var kept = cik is null ? null : filings.TryGetValue(cik, out var read) ? read : filings[cik] = KeptFilings(filers, cik);
+
+            left[group.Key] = LongLeaving.Of(group.Key.Name, kept, group.Max(one => one.Period));
+        }
+
+        return left;
+    }
+
     // Whether a schedule's holding is matched and priced.
     public static Func<LongSchedule, int, bool> IsMatched(Matched matched) =>
         (schedule, place) => matched.Matches[schedule.Index].ContainsKey((schedule.Period, place));
 
-    // Why the run stops over a capture, none where nothing does: each quarter end under a floor and each fall by half left out
-    // that no check by hand has settled.
-    public static IReadOnlyList<string> Stops(Matched matched, Func<LongFall, bool> checkedByHand) =>
-        LongFloors.Stops(LongFloors.Coverage(matched.Schedules, IsMatched(matched)), LongFloors.Falls(matched.Schedules, IsMatched(matched)), checkedByHand);
+    // Why the run stops over a capture, none where nothing does: each quarter end under the stop and each fall by half the
+    // operator has not left out by name.
+    public static IReadOnlyList<string> Stops(Matched matched) =>
+        LongFloors.Stops(LongFloors.Coverage(matched.Schedules, IsMatched(matched)), LongFloors.Falls(matched.Schedules, IsMatched(matched)));
 
     const string InsertSnapshot = @"
         INSERT INTO long_snapshot (index_code, period, accession, form, holdings, value_usd, run_id)
         VALUES ($index_code, $period, $accession, $form, $holdings, $value_usd, $run_id);";
 
     const string InsertHolding = @"
-        INSERT INTO long_holding (index_code, period, holding, name, industry, shares, value_usd, ticker, matched_by, between, checked, run_id)
-        VALUES ($index_code, $period, $holding, $name, $industry, $shares, $value_usd, $ticker, $matched_by, $between, $checked, $run_id);";
+        INSERT INTO long_holding (index_code, period, holding, name, industry, shares, value_usd, ticker, matched_by, stood_between, checked, left_as, left_read, run_id)
+        VALUES ($index_code, $period, $holding, $name, $industry, $shares, $value_usd, $ticker, $matched_by, $stood_between, $checked, $left_as, $left_read, $run_id);";
 
-    const string ClearRun = "DELETE FROM long_holding; DELETE FROM long_snapshot;";
+    const string InsertSpan = @"
+        INSERT INTO long_span (index_code, ticker, joined, left, read_from, run_id)
+        VALUES ($index_code, $ticker, $joined, $left, $read_from, $run_id);";
+
+    const string ClearRun = "DELETE FROM long_span; DELETE FROM long_holding; DELETE FROM long_snapshot;";
+
+    const string SelectPulledHoldings = "SELECT index_code, period, ticker FROM pulled_holding WHERE ticker IS NOT NULL;";
+
+    const string SelectProviderSpans = "SELECT ticker, joined, left, name FROM membership WHERE index_code = 'GSPC';";
 
     // The run's schedules and their holdings written whole in one transaction, each holding with the code and the key it was
-    // matched by or none, the run before's rows removed with them; nothing written where a stop stands.
-    public static async Task<int> WriteAsync(string databaseFile, string runId, Matched matched, IReadOnlyDictionary<string, string> forms, IReadOnlyDictionary<(string Index, string Name), string> checks, CancellationToken cancellation = default)
+    // matched by or why it was left out, and every code's spans of membership read over these schedules, the members pull's
+    // later ones and the provider's dates of the S&P 500, the run before's rows removed with them; nothing written where a stop
+    // stands.
+    public static async Task<int> WriteAsync(string databaseFile, string runId, Matched matched, IReadOnlyDictionary<string, string> forms, IReadOnlyDictionary<(string Index, string Name), string> checks, IReadOnlyDictionary<(string Index, string Name), LongLeft> left, CancellationToken cancellation = default)
     {
         await using var connection = new Microsoft.Data.Sqlite.SqliteConnection(EquityBrief.Data.StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
         await using var transaction = connection.BeginTransaction();
         var written = 0;
+        var snapshots = new Dictionary<string, Dictionary<DateOnly, HashSet<string>>>(StringComparer.Ordinal);
+        var provider = new List<ProviderSpan>();
+
+        void Hold(string index, DateOnly period, string ticker)
+        {
+            if (!snapshots.TryGetValue(index, out var periods))
+            {
+                snapshots[index] = periods = [];
+            }
+
+            if (!periods.TryGetValue(period, out var codes))
+            {
+                periods[period] = codes = new HashSet<string>(StringComparer.Ordinal);
+            }
+
+            codes.Add(ticker);
+        }
+
+        static DateOnly? Day(object value) =>
+            value is string text && DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null;
+
+        await using (var read = connection.CreateCommand())
+        {
+            read.Transaction = transaction;
+            read.CommandText = SelectPulledHoldings;
+
+            await using var rows = await read.ExecuteReaderAsync(cancellation);
+
+            while (await rows.ReadAsync(cancellation))
+            {
+                if (Day(rows.GetString(1)) is { } period)
+                {
+                    Hold(rows.GetString(0), period, rows.GetString(2));
+                }
+            }
+        }
+
+        await using (var read = connection.CreateCommand())
+        {
+            read.Transaction = transaction;
+            read.CommandText = SelectProviderSpans;
+
+            await using var rows = await read.ExecuteReaderAsync(cancellation);
+
+            while (await rows.ReadAsync(cancellation))
+            {
+                provider.Add(new ProviderSpan(rows.GetString(0), Day(rows.GetValue(1)), Day(rows.GetValue(2)), rows.IsDBNull(3) ? null : rows.GetString(3)));
+            }
+        }
 
         async Task ExecuteAsync(string sql, params (string Name, object? Value)[] parameters)
         {
@@ -522,6 +807,12 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
             {
                 var holding = schedule.Holdings[place];
                 var match = matched.Matches[schedule.Index].GetValueOrDefault((schedule.Period, place));
+                var why = match is null ? left.GetValueOrDefault((schedule.Index, holding.Name)) : null;
+
+                if (match is not null)
+                {
+                    Hold(schedule.Index, schedule.Period, match.Ticker);
+                }
 
                 await ExecuteAsync(InsertHolding,
                     ("$index_code", schedule.Index),
@@ -533,10 +824,34 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
                     ("$value_usd", holding.Value?.ToString(CultureInfo.InvariantCulture)),
                     ("$ticker", match?.Ticker),
                     ("$matched_by", match?.By),
-                    ("$between", match is null ? null : System.Text.Json.JsonSerializer.Serialize(match.Between)),
-                    ("$checked", checks.GetValueOrDefault((schedule.Index, holding.Name))),
+                    ("$stood_between", match is null ? null : System.Text.Json.JsonSerializer.Serialize(match.Between)),
+                    ("$checked", match is null ? null : checks.GetValueOrDefault((schedule.Index, holding.Name))),
+                    ("$left_as", why?.As),
+                    ("$left_read", why is null ? null : why.Accession is null ? why.Read : FormattableString.Invariant($"{why.Read}, accession {why.Accession} of {why.Filed:yyyy-MM-dd}")),
                     ("$run_id", runId));
             }
+        }
+
+        var firstHeldByName = matched.Schedules
+            .Where(schedule => schedule.Index == "GSPC")
+            .SelectMany(schedule => schedule.Holdings.Select(holding => (Key: HoldingMatcher.NameKey(LongMatching.InOrder(holding.Name)), schedule.Period)))
+            .Where(one => one.Key.Length > 0)
+            .GroupBy(one => one.Key, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Min(one => one.Period), StringComparer.Ordinal);
+        var spans = LongSpans.Of(
+            snapshots.ToDictionary(pair => pair.Key, pair => (IReadOnlyDictionary<DateOnly, IReadOnlySet<string>>)pair.Value.ToDictionary(one => one.Key, one => (IReadOnlySet<string>)one.Value), StringComparer.Ordinal),
+            provider,
+            firstHeldByName);
+
+        foreach (var span in spans)
+        {
+            await ExecuteAsync(InsertSpan,
+                ("$index_code", span.Index),
+                ("$ticker", span.Ticker),
+                ("$joined", span.Joined.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                ("$left", span.Left?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                ("$read_from", span.ReadFrom),
+                ("$run_id", runId));
         }
 
         await transaction.CommitAsync(cancellation);

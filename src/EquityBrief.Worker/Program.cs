@@ -330,6 +330,54 @@ static async Task<int> LongMembersRun(string[] args)
         return 0;
     }
 
+    // The companies the plan names, each with its code, its last session with a volume and that session's close.
+    if (args.Contains("--named", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--named --into <folder>'.");
+
+            return 2;
+        }
+
+        var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+        var feed = EodhdLongHistoryFeed.Live(string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address, new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty));
+
+        foreach (var named in await EquityBrief.Worker.History.LongMembers.NamedAsync(folder, feed, EquityBrief.Worker.History.LongMembers.Match(folder)))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: {named.Named}: {named.Index} {named.Name}, last held {named.Last:yyyy-MM-dd}, {(named.Code is null ? "matched to none" : named.LastSession >= named.Last.AddYears(EquityBrief.Worker.History.LongMembers.NamedYears).AddDays(-7) ? $"{named.Code} by {named.By}, still trading at the end of the {EquityBrief.Worker.History.LongMembers.NamedYears} years asked, {named.LastSession:yyyy-MM-dd} at {named.LastClose}" : $"{named.Code} by {named.By}, last session {named.LastSession:yyyy-MM-dd} at {named.LastClose}")}"));
+        }
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {feed.Requests} request(s) to the provider"));
+
+        return 0;
+    }
+
+    // A match by hand's reading: the company's own annual report from the years given, looked for under the words given.
+    if (VerbArguments.Value(args, "--check-name") is { } words)
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder
+            || !DateOnly.TryParseExact(VerbArguments.Value(args, "--held"), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var held))
+        {
+            Console.Error.WriteLine("long-members: give '--check-name <words> --held <yyyy-MM-dd> --into <folder>'.");
+
+            return 2;
+        }
+
+        var feed = SecEdgarTrustScheduleFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty));
+        var filers = Path.Combine(folder, EquityBrief.Worker.History.LongMembers.FilersFolder);
+
+        Directory.CreateDirectory(filers);
+
+        var found = await EquityBrief.Worker.History.LongMembers.ReadCodeAsync(filers, feed, words, held, held);
+
+        Console.WriteLine(found is null
+            ? $"long-members: no annual report named a code for '{words}'"
+            : $"long-members: {found.Filer} (CIK {found.Cik}), {found.Accession}: {found.Code}, read as \"{found.Sentence}\"");
+
+        return 0;
+    }
+
     if (args.Contains("--checks", StringComparer.Ordinal))
     {
         if (VerbArguments.Value(args, "--into") is not { } folder)
@@ -355,7 +403,7 @@ static async Task<int> LongMembersRun(string[] args)
     if (VerbArguments.Value(args, "--write") is { } writing)
     {
         var matched = EquityBrief.Worker.History.LongMembers.Match(writing);
-        var stops = EquityBrief.Worker.History.LongMembers.Stops(matched, _ => false);
+        var stops = EquityBrief.Worker.History.LongMembers.Stops(matched);
 
         foreach (var coverage in EquityBrief.Core.History.LongFloors.Coverage(matched.Schedules, EquityBrief.Worker.History.LongMembers.IsMatched(matched)))
         {
@@ -364,7 +412,14 @@ static async Task<int> LongMembersRun(string[] args)
 
         foreach (var fall in EquityBrief.Core.History.LongFloors.Falls(matched.Schedules, EquityBrief.Worker.History.LongMembers.IsMatched(matched)))
         {
-            Console.WriteLine(FormattableString.Invariant($"long-members: fell by half and priced under no code: {fall.Index} {fall.Name}, {fall.BeforePrice:0.00} at {fall.Before:yyyy-MM-dd} and {fall.LastPrice:0.00} at {fall.Last:yyyy-MM-dd}"));
+            Console.WriteLine(FormattableString.Invariant($"long-members: fell by half and priced under no code: {fall.Index} {fall.Name}, {fall.BeforePrice:0.00} at {fall.Before:yyyy-MM-dd} and {fall.LastPrice:0.00} at {fall.Last:yyyy-MM-dd}, {(EquityBrief.Core.History.LongFloors.LeftOutAs(fall.Name) is { } named ? "left out by name, " + named.NamedAs : "not left out by name")}"));
+        }
+
+        var left = EquityBrief.Worker.History.LongMembers.LeftAs(writing, matched);
+
+        foreach (var year in EquityBrief.Core.History.LongLeaving.ByYear(matched.Schedules, EquityBrief.Worker.History.LongMembers.IsMatched(matched), (index, name) => left[(index, name)]))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: left out {year.Index} {year.Year}: {string.Join(", ", EquityBrief.Core.History.LongLeaving.Kinds.Select(kind => $"{kind} {year.Share(kind):P2}"))} of the value held at its quarter ends"));
         }
 
         if (stops.Count > 0)
@@ -378,7 +433,7 @@ static async Task<int> LongMembersRun(string[] args)
         var forms = Directory.GetFiles(Path.Combine(writing, EquityBrief.Worker.History.LongScheduleFilings.HeadersFolder))
             .Select(file => EquityBrief.Worker.History.LongScheduleFilings.HeaderOf(Path.GetFileNameWithoutExtension(file), File.ReadAllText(file)))
             .ToDictionary(filing => filing.Accession, filing => filing.Form, StringComparer.Ordinal);
-        var written = await EquityBrief.Worker.History.LongMembers.WriteAsync(store.DatabaseFile, FormattableString.Invariant($"long-members-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}"), matched, forms, new Dictionary<(string, string), string>());
+        var written = await EquityBrief.Worker.History.LongMembers.WriteAsync(store.DatabaseFile, FormattableString.Invariant($"long-members-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}"), matched, forms, EquityBrief.Worker.History.LongMembers.CheckedAs(writing), left);
 
         Console.WriteLine(FormattableString.Invariant($"long-members: {written} row(s) written"));
 

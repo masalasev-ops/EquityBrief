@@ -40,6 +40,7 @@ public enum Store
     DataCheck,
     LongSnapshot,
     LongHolding,
+    LongSpan,
     DividendWait,
     LateBarAsk,
     EntryReading,

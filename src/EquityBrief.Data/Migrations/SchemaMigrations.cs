@@ -751,11 +751,12 @@ public static class SchemaMigrations
         new Migration(128, "add entry_reading's wait plan", AddEntryWaitPlan),
         new Migration(129, "create data_check, and rebuild session_mark with the session a history ends on", CreateDataCheck),
         new Migration(130, "add loop_rule's cap, span, newest session and judged year, and create loop_rule_unit and loop_pooled", CreatePooledVerdict),
-        new Migration(131, "create long_snapshot and long_holding", CreateLongMembership),
+        new Migration(131, "create long_snapshot, long_holding and long_span", CreateLongMembership),
     ];
 
     // From 23.3 the three funds' complete schedules from 2004-12-31 to 2018-09-30 off the trust's older filings, each holding
-    // with the code it was matched to and the key it was matched by, apart from the members pull's own tables.
+    // with the code it was matched to and the key it was matched by or why it was left out, and each code's spans of
+    // membership, apart from the members pull's own tables.
     const string CreateLongMembership = @"
         CREATE TABLE long_snapshot (
             index_code  TEXT NOT NULL,
@@ -778,10 +779,22 @@ public static class SchemaMigrations
             value_usd   TEXT,
             ticker      TEXT,
             matched_by  TEXT,
-            between     TEXT,
+            stood_between TEXT,
             checked     TEXT,
+            left_as     TEXT,
+            left_read   TEXT,
             run_id      TEXT NOT NULL,
             PRIMARY KEY (index_code, period, holding)
+        ) STRICT;
+
+        CREATE TABLE long_span (
+            index_code  TEXT NOT NULL,
+            ticker      TEXT NOT NULL,
+            joined      TEXT NOT NULL,
+            left        TEXT,
+            read_from   TEXT NOT NULL,
+            run_id      TEXT NOT NULL,
+            PRIMARY KEY (index_code, ticker, joined)
         ) STRICT;
     ";
 

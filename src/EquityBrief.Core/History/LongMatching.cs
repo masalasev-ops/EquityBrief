@@ -151,7 +151,9 @@ public static class LongMatching
         Func<DateOnly, string, decimal?>? asked = null,
         LongNames? names = null,
         Func<string, IReadOnlyList<string>>? annualReport = null,
-        Func<string, bool>? notStock = null)
+        Func<string, bool>? notStock = null,
+        IReadOnlyDictionary<(DateOnly Period, string Name), LongHandMatch>? byHand = null,
+        Func<string, string, bool>? refused = null)
     {
         LongSchedule[] ordered = [.. schedules.OrderBy(schedule => schedule.Period)];
         var matches = new Dictionary<(DateOnly Period, int Place), LongMatch>();
@@ -231,7 +233,9 @@ public static class LongMatching
                             .Select(series => series.Order(StringComparer.Ordinal).First()),
                     ];
 
-                    if (both.Length == 1)
+                    // A code at the cent at both quarter ends stands only where the other is matched to it or to none: two
+                    // closes falling at the cent by chance are found among the day files' thirty thousand codes.
+                    if (both.Length == 1 && (!matches.TryGetValue((ordered[near].Period, beside), out var nearMatch) || nearMatch.Ticker == both[0]))
                     {
                         matches[(ordered[at].Period, place)] = new LongMatch(both[0], ByPrice, both);
                         matches.TryAdd((ordered[near].Period, beside), new LongMatch(both[0], ByPrice, both));
@@ -322,6 +326,22 @@ public static class LongMatching
             }
         }
 
+        // A person's match from the SEC's filings, where no key matched the holding and the code's close equals the value a share
+        // within half a cent.
+        foreach (var schedule in ordered)
+        {
+            for (var place = 0; place < schedule.Holdings.Count; place++)
+            {
+                if (!matches.ContainsKey((schedule.Period, place))
+                    && byHand?.GetValueOrDefault((schedule.Period, schedule.Holdings[place].Name)) is { } hand
+                    && schedule.Holdings[place].ValuePerShare is { } price
+                    && closes.TryGetValue(schedule.Period, out var day) && day.AtTheCent(price).Contains(hand.Code, StringComparer.Ordinal))
+                {
+                    matches[(schedule.Period, place)] = new LongMatch(hand.Code, ByHand, [hand.Code]);
+                }
+            }
+        }
+
         // Every code held to the fund's values a share over the quarters a holding of its name matched it.
         foreach (var name in ordered.SelectMany(schedule => schedule.Holdings.Select(holding => holding.Name)).Distinct(StringComparer.Ordinal))
         {
@@ -335,7 +355,7 @@ public static class LongMatching
             {
                 var under = held.Where(one => matches.TryGetValue(one.Key, out var match) && match.Ticker == code).ToArray();
 
-                if (InStep(code, [.. under.Select(one => (one.Key.Period, one.Holding))], CloseOn) == false)
+                if (InStep(code, [.. under.Select(one => (one.Key.Period, one.Holding))], CloseOn) == false || refused?.Invoke(name, code) == true)
                 {
                     foreach (var one in under)
                     {
