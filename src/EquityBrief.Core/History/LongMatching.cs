@@ -119,6 +119,9 @@ public sealed class LongNames
 // see: A renamed company is matched to a code its fund held by ISIN within a year where its close equals the value a share to the cent at two quarter ends
 // see: A holding matched by name is kept only where its code traded at the quarter's end
 // see: A holding's code is kept only where its closes move in step with the fund's values a share, and a match by name is held to the level at each quarter end as well
+// see: The price key stands at two quarter ends only where neither is matched to another code
+// see: A holding's code may be read off its company's own SEC filings and held to the fund's values a share as any code is
+// see: A holding is matched or refused by hand from the SEC's filings and names what was read
 public static class LongMatching
 {
     public const string ByName = HoldingMatcher.ByName;

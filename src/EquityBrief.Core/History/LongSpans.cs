@@ -17,6 +17,7 @@ public sealed record ProviderSpan(string Ticker, DateOnly? Joined, DateOnly? Lef
 // the first snapshot holding its company, read by its code and where no snapshot holds the code by its name; two spans the
 // provider files under two codes with one name and the same dates are one company's and read as the first code.
 // see: The S&P 500 before 2012 is read from IVV's filed holdings and from 2012 from the provider's dates
+// see: A provider's span with no start date takes the first of IVV's snapshots holding its company by code or by name
 public static class LongSpans
 {
     public const string FromFund = "fund";

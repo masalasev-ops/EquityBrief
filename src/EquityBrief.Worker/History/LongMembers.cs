@@ -16,6 +16,8 @@ public sealed record LongQuarter(string Index, DateOnly Period, int Holdings, de
 // The long history's membership read off a capture's folder: each fund's complete schedules, the provider's day files at each
 // quarter end and its symbol lists, each holding matched by the keys the matching reads.
 // see: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30
+// see: A holding's code may be read off its company's own SEC filings and held to the fund's values a share as any code is
+// see: The holdings the long history leaves out are split by why they left with their share of value each year
 public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 {
     public static EquityBrief.Core.Components.ComponentAccess Access => new(

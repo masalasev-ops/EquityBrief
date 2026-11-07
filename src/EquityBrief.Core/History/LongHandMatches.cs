@@ -7,7 +7,7 @@ public sealed record LongHandMatch(string Index, DateOnly Period, string Name, s
 
 // The holdings matched by hand, each naming what was read. A hand match stands only where no key matched the holding and its
 // code's close at the quarter end equals the fund's value a share to the cent.
-// see: A holding left unmatched at a quarter end under the floor is matched by hand from the SEC's filings and names what was read
+// see: A holding is matched or refused by hand from the SEC's filings and names what was read
 public static class LongHandMatches
 {
     public static IReadOnlyList<LongHandMatch> All { get; } =
