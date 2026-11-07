@@ -282,15 +282,28 @@ public sealed partial class MarkRenderer
     public static string SameWords(DateOnly since) =>
         FormattableString.Invariant($"The same trades before this version (since {since:d MMM}), kept in the rule's record and not in this account");
 
+    // The index's fund on a tile, over that tile's own account's days: its return over them, or where its closes start later
+    // the day they start; none where the account holds no walk.
+    // see: Each tile draws the index's fund over its own account's days, and no tile draws the fund over days its account did not count
+    static string TileFund(PaperWalk? walk, string? fund) =>
+        walk is null || fund is null
+            ? string.Empty
+            : walk.FundReturn is { } held
+                ? Formatted($"<div class=\"pt-fund\" data-fund=\"{Escaped(fund)}\" data-fund-return=\"{held.ToString("R", Invariant)}\">{Escaped(fund)} over the same days {PaperPercent(held)}</div>")
+                : walk.FundFrom is { } starts
+                    ? Formatted($"<div class=\"pt-fund\" data-fund=\"{Escaped(fund)}\" data-fund-return=\"none\">{Escaped(fund)}'s closes start on <span class=\"day\">{DayOf(starts)}</span>, after this account's first day</div>")
+                    : Formatted($"<div class=\"pt-fund\" data-fund=\"{Escaped(fund)}\" data-fund-return=\"none\">{Escaped(fund)} over the same days not read</div>");
+
     // A tile a family's live or provisional account in the one family order: its return since its record began, the trades
-    // its walk holds open and has closed and the day it counts from, the version it counts under the pointer; and the
-    // index's fund over the same days.
+    // its walk holds open and has closed and the day it counts from, the version it counts under the pointer, and from the
+    // 19.4 correction of 2026-11-07 the index's fund over its own days beneath it, so no tile reads the fund over days its
+    // account did not count.
     public string PaperTiles(IReadOnlyList<PaperAccountView> accounts, PaperFundView? fund, PaperCombinedView? combined = null, decimal? size = null)
     {
         var heads = accounts.Where(account => account.Head).OrderBy(account => SetupFamilies.OrderOf(account.Family)).ToArray();
         var html = new StringBuilder();
 
-        html.Append(Invariant, $"<div class=\"paper-tiles\" data-tiles=\"{heads.Length + (fund is null ? 0 : 1) + (combined is null ? 0 : 1)}\">");
+        html.Append(Invariant, $"<div class=\"paper-tiles\" data-tiles=\"{heads.Length + (combined is null ? 0 : 1)}\">");
 
         // From 21.11 the combined account's tile first, from the 21.11 correction of 2026-11-07 the live setups' accounts
         // averaged: its return since the day every live account counts, what its accounts hold and what they skipped.
@@ -301,7 +314,9 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<div class=\"paper-tile combined\" data-standing=\"{PaperCombinedView.Key}\" data-return=\"{(together is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{all.Open}\" data-closed=\"{all.Closed}\" data-skipped=\"{all.Skipped}\" data-since=\"{DayOf(all.Since)}\" data-accounts=\"{all.Accounts}\" title=\"Each live setup's own account given an equal share of one account of your size\">");
             html.Append(Invariant, $"<div class=\"pt-name\">{Escaped(PaperCombinedView.Name)}</div>");
             html.Append(together is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
-            html.Append(Formatted($"<div class=\"pt-sub\">{Escaped(TileSaid(together, all.Since, size, all.Open))} {all.Closed} closed, {all.Skipped} skipped.</div></div>"));
+            html.Append(Formatted($"<div class=\"pt-sub\">{Escaped(TileSaid(together, all.Since, size, all.Open))} {all.Closed} closed, {all.Skipped} skipped.</div>"));
+            html.Append(TileFund(all.Walk, fund?.Fund));
+            html.Append("</div>");
         }
 
         foreach (var head in heads)
@@ -312,19 +327,7 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<div class=\"pt-name\"><span class=\"fam-swatch\" data-family=\"{Escaped(head.Family)}\"></span>{Escaped(FamilyName(head.Family))} <span class=\"status-pill {head.Standing}\">{Escaped(head.Name)}</span></div>");
             html.Append(made is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
             html.Append(Invariant, $"<div class=\"pt-sub\">{Escaped(TileSaid(made, head.Since, size, head.Open))}{(head.Since is null || made is null ? string.Empty : Formatted($" {head.Closed} closed."))}</div>");
-            html.Append("</div>");
-        }
-
-        if (fund is { } index)
-        {
-            html.Append(Invariant, $"<div class=\"paper-tile fund\" data-fund=\"{Escaped(index.Fund)}\" data-return=\"{(index.Return is { } held ? held.ToString("R", Invariant) : "none")}\" data-from=\"{(index.From is { } from ? DayOf(from) : "none")}\">");
-            html.Append(Invariant, $"<div class=\"pt-name\">The index's fund, {Escaped(index.Fund)}</div>");
-            html.Append(index.Return is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">not read</div>");
-            html.Append(index.From is not { } start
-                ? "<div class=\"pt-sub\">no account has a day to count from yet</div>"
-                : index.Return is null && index.Starts is { } starts
-                    ? Formatted($"<div class=\"pt-sub\">its closes start on <span class=\"day\">{DayOf(starts)}</span>, after the days the tiles count</div>")
-                    : Formatted($"<div class=\"pt-sub\">holding it over the same days, since <span class=\"day\">{DayOf(start)}</span></div>"));
+            html.Append(head.Since is null ? string.Empty : TileFund(head.Walk, fund?.Fund));
             html.Append("</div>");
         }
 

@@ -16572,3 +16572,22 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             line back to 2026-11-06's words: red. The latest start is the 21.11 correction's m2, red there.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: each tile draws the index's fund over its own account's days   2026-11-07
+
+Found:      the order's third item: on 2026-11-06 the S&P 500's tiles carried one tile, "The index's fund, SPY -4.5% holding it over
+            the same days, since 2026-10-02", beside accounts counting from 2 Nov and 3 Nov.
+Corrected:  beneath each tile's figures, the averaged account's among them, the index's fund over that account's own days as its
+            walk reads it, or the day its closes start where they start after the account's first; the fund's tile of its own is
+            gone. The decision, 15.21's row, its claim's note, the changelog and the guide.
+Tests:      1 new, by hand: the fund at 500, 490 and 480.20 over 2, 3 and 6 Nov reads down 2.0% beneath the breakout from 3 Nov and
+            down 4.0% beneath Quality at a fair price from 2 Nov, and no fund tile. The tiles' test reads the fund beneath each
+            tile, and with what the system bought's test it is worked again at the tenth of the 19.4 correction above, whose
+            filtered runs did not reach either: S1 is bought at 10 shares and O2 capped at 19, the pullback at 0.01904; and the
+            company's cell read with the 21.13 correction's mark.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 no
+            fund beneath a rule's tile: red. m2 each tile reading the fund over the page's earliest start: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

@@ -489,7 +489,6 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-change[open]>summary{margin-bottom:8px}
 .paper-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:0 0 14px}
 .paper-tile{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
-.paper-tile.fund{background:var(--plot)}
 .paper-tile.combined{border-color:var(--ink)}
 .paper-line[data-standing='combined']{stroke:var(--ink);stroke-width:2.8}
 .paper-key-mark[data-standing='combined']{border-top-width:4px}
@@ -506,6 +505,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-tile .pt-name{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--ink)}
 .paper-tile .pt-figure{font:600 22px var(--sans);font-variant-numeric:tabular-nums}
 .paper-tile .pt-sub{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.paper-tile .pt-fund{font-size:12px;color:var(--soft);font-variant-numeric:tabular-nums;border-top:1px solid var(--hair);padding-top:4px;margin-top:2px}
 .paper .day,.paper-variants .too-few{white-space:nowrap}
 .paper-tabs,.paper-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px}
 .paper-bought,.paper-variants,.paper-only,.score-table{min-width:720px}

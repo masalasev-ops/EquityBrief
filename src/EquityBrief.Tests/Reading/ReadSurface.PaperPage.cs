@@ -401,12 +401,13 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400"));
 
-        // The pullback's account of 10,000 at one per cent: Monday C1 50 shares at 20 and C2 33 at 30, 8,010 left; Tuesday O1
-        // 10 at 100, 7,010 left, and S1, its stop a dime under 100, sized at the cap's 100 shares for 10,000, over the free
-        // cash and skipped; Wednesday C2 sold at 26.40 first, 7,881.2, then O2 24 at 50 off a worth of 9,881.2, 6,681.2 left;
-        // Thursday C1 sold at 24, 7,881.2; Friday O1 at 117 and O2 at 46.8: 7,881.2 and 1,170 and 1,123.2, 10,174.4, a return
-        // of 0.01744.
-        Assert.Contains("<div class=\"paper-tile\" data-family=\"pullback\" data-standing=\"provisional\" data-return=\"0.01744\" data-open=\"2\" data-closed=\"2\" data-since=\"2026-09-28\"", page, StringComparison.Ordinal);
+        // The pullback's account of 10,000 at one per cent, from the 19.4 correction of 2026-11-07 a position at most a tenth of
+        // its value whatever the settings state: Monday C1 50 shares at 20 and C2 33 at 30, 8,010 left; Tuesday O1 10 at 100,
+        // 7,010 left, and S1, its stop a dime under 100, at the tenth's 10 shares for 1,000, 6,010 left; Wednesday C2 sold at
+        // 26.40 first, 6,881.2, then O2 off a worth of 9,881.2, its risk buying 24 and the tenth 19, at 50 for 950, 5,931.2
+        // left; Thursday C1 sold at 24, 7,131.2; Friday O1 at 117, S1 at its cost with no close stored and O2 at 46.8: 7,131.2
+        // and 1,170 and 1,000 and 889.2, 10,190.4, a return of 0.01904.
+        Assert.Contains("<div class=\"paper-tile\" data-family=\"pullback\" data-standing=\"provisional\" data-return=\"0.01904\" data-open=\"3\" data-closed=\"2\" data-since=\"2026-09-28\"", page, StringComparison.Ordinal);
 
         // The breakout's: O3 25 shares at 40 over its risk of 4, at 46 on Friday, 10,150, a return of 0.015.
         Assert.Contains("<div class=\"paper-tile\" data-family=\"breakout\" data-standing=\"provisional\" data-return=\"0.015\" data-open=\"1\" data-closed=\"0\" data-since=\"2026-09-29\"", page, StringComparison.Ordinal);
@@ -419,9 +420,12 @@ public partial class ReadSurface
             Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("data-family=\"drift\" data-standing=\"provisional\" data-return=\"none\" data-open=\"0\" data-closed=\"0\" data-since=\"none\"", page, StringComparison.Ordinal);
 
-        // The S&P 400's fund, IJH, over the same days from the earliest a tile counts from: 50 to 51, two per cent.
-        Assert.Contains("<div class=\"paper-tile fund\" data-fund=\"IJH\" data-return=\"0.02\" data-from=\"2026-09-28\">", page, StringComparison.Ordinal);
-        Assert.Contains("holding it over the same days, since <span class=\"day\">2026-09-28</span>", page, StringComparison.Ordinal);
+        // From the 19.4 correction of 2026-11-07 the S&P 400's fund, IJH, on each tile over that account's own days: the
+        // pullback's from 2026-09-28, 50 to 51, two per cent; the breakout's from 2026-09-29, a session IJH holds no close
+        // for, so the day its closes start.
+        Assert.Contains("<div class=\"pt-fund\" data-fund=\"IJH\" data-fund-return=\"0.02\">IJH over the same days <span class=\"gain\">+2.0%</span></div>", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"pt-fund\" data-fund=\"IJH\" data-fund-return=\"none\">IJH's closes start on <span class=\"day\">2026-10-02</span>, after this account's first day</div>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("paper-tile fund", page, StringComparison.Ordinal);
 
         // The tiles stand one beneath another on a phone, and the chart stands beneath the tiles; every date the page draws
         // stands whole, and a record's too-few words stay on one line beside its return.
@@ -439,9 +443,10 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400"));
 
-        // Open by default, newest first: O2 bought Wednesday, then Tuesday's O1 and O3 in the family order.
-        Assert.Equal(["O2", "O1", "O3"], Regex.Matches(page, "<tr data-ticker=\"([A-Z0-9]+)\" data-family=\"[a-z]+\" data-account=\"[^\"]+\" data-bought=\"[^\"]+\" data-standing=").Select(match => match.Groups[1].Value));
-        Assert.Contains("<a class=\"chip\" data-filter=\"bought\" href=\"#/paper?universe=400\" aria-pressed=\"true\">Open · 3</a>", page, StringComparison.Ordinal);
+        // Open by default, newest first: O2 bought Wednesday, then Tuesday's O1 and S1, bought at a tenth of the account from
+        // the 19.4 correction of 2026-11-07, and O3, in the family order.
+        Assert.Equal(["O2", "O1", "S1", "O3"], Regex.Matches(page, "<tr data-ticker=\"([A-Z0-9]+)\" data-family=\"[a-z]+\" data-account=\"[^\"]+\" data-bought=\"[^\"]+\" data-standing=").Select(match => match.Groups[1].Value));
+        Assert.Contains("<a class=\"chip\" data-filter=\"bought\" href=\"#/paper?universe=400\" aria-pressed=\"true\">Open · 4</a>", page, StringComparison.Ordinal);
         Assert.Contains("<a class=\"chip\" data-filter=\"bought\" href=\"#/paper?universe=400&bought=closed\" aria-pressed=\"false\">Closed · 2</a>", page, StringComparison.Ordinal);
 
         // O1 at 117, three under its target on a move of 4: near its target; 1.70 risks and 17 per cent, three sessions of
@@ -449,7 +454,7 @@ public partial class ReadSurface
         var first = PaperRowOf(page, "<tr data-ticker=\"O1\"");
 
         Assert.Contains("data-standing=\"near its target\"", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"pb-stock\"><a href=\"#/chart/O1\">O1</a><span class=\"pb-co\">Oak One Inc</span></td>", first, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"pb-stock\"><a href=\"#/chart/O1\">O1</a><span class=\"pb-co\" data-as-filed>Oak One Inc</span></td>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\">100.00<span class=\"pb-day\">2026-09-29</span></td><td class=\"r num\">90.00</td><td class=\"r num\">120.00</td><td class=\"r num\">117.00<span class=\"pb-day\">3 of 20 trading days</span></td>", first, StringComparison.Ordinal);
         Assert.Contains("<span class=\"gain\">+1.70</span> per $1 risked<span class=\"pb-day\"><span class=\"gain\">+17.0%</span></span>", first, StringComparison.Ordinal);
         Assert.Contains("<span class=\"pb-standing near-target\" data-standing=\"near its target\">Near its target</span>", first, StringComparison.Ordinal);
@@ -471,7 +476,7 @@ public partial class ReadSurface
 
         // Beneath them the stocks not bought, a reason at a time, each linking to its chart, and the line about entries.
         Assert.Contains(
-            "<p class=\"paper-unbought\" data-unbought=\"2\">Not bought: 2 listed stocks. <span class=\"pu-reason\" data-count=\"1\">The free cash was under its cost (1): <a href=\"#/chart/S1\" title=\"listed 2026-09-29\">S1</a>.</span> <span class=\"pu-reason\" data-count=\"1\">Waits on the next trading day's open (1): <a href=\"#/chart/U1\" title=\"listed 2026-10-02\">U1</a>.</span></p>",
+            "<p class=\"paper-unbought\" data-unbought=\"1\">Not bought: <span class=\"pu-reason\" data-count=\"1\">1 pick, waits on the next trading day's open: <a href=\"#/chart/U1\" title=\"listed 2026-10-02\">U1</a></span>.</p>",
             page,
             StringComparison.Ordinal);
         Assert.Contains($"<p class=\"paper-entry\">{ReaderText.Words(MarkRenderer.EntryPriceLine)}</p>", page, StringComparison.Ordinal);

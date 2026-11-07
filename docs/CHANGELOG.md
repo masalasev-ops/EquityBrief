@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - each tile draws the index's fund over its own account's days
+Decision: Each tile draws the index's fund over its own account's days, and no tile draws the fund over days its account did not count
+Was:
+> (15.21, the tiles) ... its rule's words and the version it counts under the pointer; and beside them a tile of the index's fund over the same days from the earliest day a tile counts from or from the session its series starts where that is later; the tiles one beneath another on a phone; ...
+Now:
+> ... its rule's words and the version it counts under the pointer; and until the 19.4 correction of 2026-11-07 beside them a tile of the index's fund ...; from that correction no tile of the fund of its own but beneath each tile the index's fund over that account's own days or the day its closes start where they start after the account's first day (see: ...); the tiles one beneath another on a phone; ...
+Why: the operator's order of 2026-11-07, its third item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - Home's account counts since today's rules all took effect
 Decision: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
 Was:

@@ -207,4 +207,30 @@ public partial class ReadSurface
 
         Assert.Equal(new DateOnly(2026, 11, 3), averaged!.Since);
     }
+
+    // On 2026-11-06 the S&P 500's tiles drew one fund tile, "The index's fund, SPY -4.5% holding it over the same days, since
+    // 2026-10-02", beside the breakout from 3 Nov and Quality at a fair price from 2 Nov. Each tile draws the fund over its own
+    // account's days, worked by the walk over those days, and no tile of the fund since the earliest start stands beside them.
+    // see: Each tile draws the index's fund over its own account's days, and no tile draws the fund over days its account did not count
+    [Fact]
+    public void EachTileDrawsTheIndexsFundOverItsOwnAccountsDays()
+    {
+        var settings = new AccountSettings(100_000m, 1m, 0.2m);
+        var closes = new Dictionary<DateOnly, decimal> { [new DateOnly(2026, 11, 2)] = 500m, [new DateOnly(2026, 11, 3)] = 490m, [new DateOnly(2026, 11, 6)] = 480.2m };
+        decimal? Fund(DateOnly session) => closes.TryGetValue(session, out var close) ? close : null;
+
+        PaperAccountView View(string family, DateOnly[] sessions) =>
+            new(family, family, PaperAccountView.Live, "Live", family, "within luck", null, "risks", [], PaperAccount.Walk(settings, [], sessions, (_, _) => null, Fund), 0, 0, null, sessions[0]);
+
+        // The breakout from 3 Nov: the fund from 490 to 480.20, down 2.0%; Quality from 2 Nov: from 500, down 3.96%, 4.0%.
+        var breakout = View("breakout", [new DateOnly(2026, 11, 3), new DateOnly(2026, 11, 6)]);
+        var quality = View("quality", [new DateOnly(2026, 11, 2), new DateOnly(2026, 11, 3), new DateOnly(2026, 11, 6)]);
+        var tiles = WebUtility.HtmlDecode(new MarkRenderer().PaperTiles([breakout, quality], new PaperFundView("SPY", -0.0396, new DateOnly(2026, 11, 2), null)));
+
+        Assert.Equal(-0.02, breakout.Walk!.FundReturn!.Value, 12);
+        Assert.Matches("<div class=\"paper-tile\" data-family=\"breakout\"[^>]*>.*?<div class=\"pt-fund\" data-fund=\"SPY\" data-fund-return=\"-0.02\">SPY over the same days <span[^>]*>-2.0%</span></div></div>", tiles);
+        Assert.Matches("<div class=\"paper-tile\" data-family=\"quality\"[^>]*>.*?<div class=\"pt-fund\" data-fund=\"SPY\" data-fund-return=\"-0.0396\">SPY over the same days <span[^>]*>-4.0%</span></div></div>", tiles);
+        Assert.DoesNotContain("paper-tile fund", tiles, StringComparison.Ordinal);
+        Assert.DoesNotContain("holding it over the same days, since", tiles, StringComparison.Ordinal);
+    }
 }

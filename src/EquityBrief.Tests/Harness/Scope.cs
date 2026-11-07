@@ -4284,7 +4284,7 @@ internal static class Scope
         [CheckReach.Key(FailureTable, PaperTwoFamilies)] = new Scoped(
             Verdict.Pass, "a stock two families picked held in each family's own account and in the averaged account once for each, skipped by neither, worked by hand", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The tiles")] = new Scoped(
-            Verdict.Pass, "each live or provisional account's tile read back off the rendered page over a constructed store, its return worked by hand from the walk with a skip under the cash, its trades open and closed and its day, and the fund's tile over the same days worked by hand from its closes", ByReadSurface),
+            Verdict.Pass, "each live or provisional account's tile read back off the rendered page over a constructed store, its return worked by hand from the walk at a tenth of the account, its trades open and closed and its day, and the fund beneath each tile over that account's own days worked by hand from its closes, or the day they start", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The chart")] = new Scoped(
             Verdict.Pass, "the lines read off the rendered chart over a constructed store: each family's head and yours by default, a chosen family's variants added dashed, and each line's points worked by hand from the walk", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The chart's key")] = new Scoped(
