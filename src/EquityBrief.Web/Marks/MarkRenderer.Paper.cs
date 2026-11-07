@@ -346,7 +346,23 @@ public sealed partial class MarkRenderer
             svg.Append(Invariant, $"<text class=\"paper-end\" data-end=\"{Escaped(key)}\" data-family=\"{Escaped(family)}\" data-standing=\"{Escaped(standing)}\" x=\"{width - right + 6}\" y=\"{y + 4:0.#}\">{Escaped(text)}</text>");
         }
 
-        svg.Append("</svg><figcaption class=\"paper-keys\">");
+        // From the 19.4 correction of 2026-11-07 a band over each session the pointer reads, carrying its day and each line's
+        // return on it, which the page's script draws in the box above the chart.
+        var half = sessions.Length > 1 ? (width - left - right) / (sessions.Length - 1) / 2 : (width - left - right) / 2;
+        var fundAt = fundLine.ToDictionary(point => point.Session, point => point.Return);
+
+        foreach (var session in sessions)
+        {
+            var rows = drawn
+                .Select(account => (Account: account, Point: returns[account.Key].Where(point => point.Session == session).Select(point => (double?)point.Return).FirstOrDefault()))
+                .Where(one => one.Point is not null)
+                .Select(one => Formatted($"{EndName(one.Account)}|{one.Point!.Value:+0.0;-0.0;0.0}%|{one.Account.Family}|{one.Account.Standing}"))
+                .Concat(fundName is { } tipped && fundAt.TryGetValue(session, out var made) ? [Formatted($"{tipped}|{made:+0.0;-0.0;0.0}%|{FundKey}|{FundKey}")] : []);
+
+            svg.Append(Invariant, $"<rect class=\"paper-hit\" data-day=\"{session.ToString("ddd d MMM yyyy", Invariant)}\" data-tip=\"{Escaped(string.Join(";", rows))}\" x=\"{Math.Max(left, X(session) - half):0.#}\" y=\"{top}\" width=\"{Math.Min(X(session) + half, width - right) - Math.Max(left, X(session) - half):0.#}\" height=\"{height - top - bottom}\"/>");
+        }
+
+        svg.Append("</svg><div class=\"paper-tip\" role=\"status\" hidden></div><figcaption class=\"paper-keys\">");
 
         foreach (var account in drawn)
         {

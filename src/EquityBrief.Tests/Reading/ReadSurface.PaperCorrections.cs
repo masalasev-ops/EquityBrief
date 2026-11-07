@@ -544,4 +544,36 @@ public partial class ReadSurface
 
         Assert.True(ends[1] - ends[0] >= MarkRenderer.EndGap - 0.1, "two end labels overlap");
     }
+
+    // On 2026-11-06 the chart drew no hover box, each line's name under the pointer alone. Each session carries a band
+    // whose day and lines' returns the page's script draws in a box above the chart.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    [Fact]
+    public void TheChartsHoverBoxGivesTheDayAndEachLinesReturnOnIt()
+    {
+        var from = new DateOnly(2026, 11, 2);
+        var chart = WebUtility.HtmlDecode(new MarkRenderer().PaperChart(
+            [ChartAccount("drift", PaperAccountView.Live, from, 0.0, 0.012), ChartAccount("breakout", PaperAccountView.Live, from.AddDays(1), -0.005)],
+            null,
+            null,
+            null,
+            [(from, 500m), (from.AddDays(1), 490m)],
+            "SPY"));
+        var bands = Regex.Matches(chart, "<rect class=\"paper-hit\" data-day=\"([^\"]+)\" data-tip=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).ToArray();
+
+        // A band a session: on 2 Nov the drift and the fund, on 3 Nov the drift, the breakout from its first day and the fund.
+        Assert.Equal(
+            [
+                ("Mon 2 Nov 2026", "Earnings drift|0.0%|drift|live;SPY|0.0%|fund|fund"),
+                ("Tue 3 Nov 2026", "Earnings drift|+1.2%|drift|live;Breakout|-0.5%|breakout|live;SPY|-2.0%|fund|fund"),
+            ],
+            bands);
+        Assert.Contains("<div class=\"paper-tip\" role=\"status\" hidden></div>", chart, StringComparison.Ordinal);
+
+        // The page's script draws the box off the band the pointer is over.
+        var shell = new SinglePageApp().Shell("EquityBrief");
+
+        Assert.Contains("event.target.closest('.paper-chart .paper-hit')", shell, StringComparison.Ordinal);
+        Assert.Contains("band.getAttribute('data-tip')", shell, StringComparison.Ordinal);
+    }
 }

@@ -1104,6 +1104,38 @@ public sealed partial class SinglePageApp : IComponent
           const candle = event.target.closest && event.target.closest('.candle-chart .candle');
           if (candle) { pointAt(candle); }
         });
+        // A paper chart's hover box: the day under the pointer and each line's return on it, read off its session's band.
+        document.addEventListener('pointerover', (event) => {
+          const band = event.target.closest && event.target.closest('.paper-chart .paper-hit');
+          if (!band) { return; }
+          const figure = band.closest('.paper-chart');
+          const tip = figure.querySelector('.paper-tip');
+          if (!tip) { return; }
+          tip.replaceChildren();
+          const day = document.createElement('b');
+          day.textContent = band.getAttribute('data-day');
+          tip.appendChild(day);
+          for (const row of (band.getAttribute('data-tip') || '').split(';')) {
+            if (!row) { continue; }
+            const parts = row.split('|');
+            const line = document.createElement('span');
+            line.className = 'paper-tip-row';
+            line.setAttribute('data-family', parts[2] || '');
+            line.setAttribute('data-standing', parts[3] || '');
+            line.textContent = parts[0] + ' ' + parts[1];
+            tip.appendChild(line);
+          }
+          const box = figure.getBoundingClientRect();
+          const at = band.getBoundingClientRect();
+          tip.hidden = false;
+          tip.style.left = Math.max(0, Math.min(at.left - box.left + at.width / 2 - tip.offsetWidth / 2, box.width - tip.offsetWidth)) + 'px';
+        });
+        document.addEventListener('pointerout', (event) => {
+          const figure = event.target.closest && event.target.closest('.paper-chart');
+          if (!figure || (event.relatedTarget && figure.contains(event.relatedTarget))) { return; }
+          const tip = figure.querySelector('.paper-tip');
+          if (tip) { tip.hidden = true; }
+        });
         // A finger lifting leaves the box up until a tap lands off the chart; a mouse leaving the chart takes it down.
         document.addEventListener('pointerout', (event) => {
           if (event.pointerType === 'touch') { return; }
