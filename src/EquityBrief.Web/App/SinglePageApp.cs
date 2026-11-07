@@ -2348,7 +2348,7 @@ public sealed partial class SinglePageApp : IComponent
         {
             var analystBody = new StringBuilder();
 
-            analystBody.Append(analysts.Consensus.Count > 0 ? marks.ConsensusTable(analysts, report.Currency) : "<p class=\"degraded\" data-absent=\"consensus\">The newest fetch kept no estimate trend for it, so no consensus is drawn.</p>");
+            analystBody.Append(analysts.Consensus.Count > 0 ? marks.ConsensusTable(analysts, report.Currency, report.NewestReport) : "<p class=\"degraded\" data-absent=\"consensus\">The newest fetch kept no estimate trend for it, so no consensus is drawn.</p>");
             analystBody.Append(analysts.Target is { } target
                 ? Invariant($"<p class=\"analyst-target\" data-target=\"{target}\">The analysts' mean target is {Figures.Price(target)}{(analysts.TargetAgainstPrice is { } against ? ", " + MarkRenderer.SignedFigure(against, 1, Invariant($"{(Math.Round(against, 1) == 0 ? 0 : against):+0.0;-0.0;0.0}%")) + " on the price drawn" : string.Empty)}{(analysts.MeanRating is { } mean ? Invariant($", and their mean rating {mean:0.00} on the provider's scale from one, a strong sell, to five, a strong buy") : string.Empty)}, as fetched on {Cards.Day(analysts.FetchedOn)}.</p>")
                 : "<p class=\"degraded\" data-absent=\"target\">No fetch kept the analysts' mean target.</p>");

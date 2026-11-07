@@ -107,4 +107,37 @@ public partial class ReadSurface
             "Reported on 2026-10-29. The next date isn't announced yet; it's usually about three months after the last one, about 2027-01-28, inside this trade's hold.",
             EquityBrief.Core.Cards.CardLines.ReportedRecently(new DateOnly(2026, 10, 29), night, 63)!.Words);
     }
+
+    // On 2026-11-06 CTSH's analysts were dated by the UTC day each fetch was stored on: its fetch of 01:23 UTC on 2026-10-10
+    // was asked on 9 Oct in New York, and Yahoo's targets were stamped the same way. Its revisions stood undated beneath the
+    // consensus, from the quarters fetch of 2026-10-30, though the night asks the year's revisions every night. Each analyst
+    // figure is dated by its New York day; the revisions say their fetch day against the newest report, and the year's row
+    // reads the night's own newer ask, dated.
+    // see: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
+    [Fact]
+    public void AnAnalystFigureIsDatedByItsNewYorkDayAndTheRevisionsAgainstTheNewestReport()
+    {
+        Assert.Equal(new DateOnly(2026, 10, 9), EquityBrief.Core.Time.SessionZones.NewYorkDay(new DateTimeOffset(2026, 10, 10, 1, 23, 16, TimeSpan.Zero)));
+        Assert.Equal(new DateOnly(2026, 10, 30), EquityBrief.Core.Time.SessionZones.NewYorkDay(new DateTimeOffset(2026, 10, 30, 23, 48, 6, TimeSpan.Zero)));
+
+        var yahoo = new EquityBrief.Core.Analysts.YahooAnalystView(new DateTimeOffset(2026, 11, 7, 3, 0, 0, TimeSpan.Zero), new EquityBrief.Core.Providers.YahooAnalystAnswer("USD", 60m, 68.86m, 69m, 80m, 28, "buy", [], []));
+
+        Assert.Contains("Yahoo's targets as asked on 2026-11-06", new MarkRenderer().TargetRange("CTSH", yahoo, 64.72m), StringComparison.Ordinal);
+
+        var night = new DateOnly(2026, 11, 6);
+        var year = new EquityBrief.Core.Quarters.EstimatePeriod("0y", new DateOnly(2026, 12, 31), 5.76m, 5.68m, 5.82m, 5.28m, 28, 22.2e9m, 22.1e9m, 22.3e9m, null, 30, 5.76m, 5.76m, 5.75m, 5.74m, 5.71m, 1, 2, null, 1);
+        var reading = EquityBrief.Core.Report.AnalystView.WithNightRevision(
+            EquityBrief.Core.Report.AnalystView.Of(new DateOnly(2026, 10, 30), [year], [], night, 64.72m),
+            new EquityBrief.Core.Report.NightRevision(night, 0, 3, 1, 4, 5.70m, 5.76m))!;
+        var drawn = new MarkRenderer().ConsensusTable(reading, "USD", new DateOnly(2026, 10, 29));
+
+        Assert.Contains("<p class=\"revisions-fetched\" data-fetched=\"2026-10-30\" data-year-asked=\"2026-11-06\">Revisions as fetched on 2026-10-30, after the 2026-10-29 report; this fiscal year's as the night asked them on 2026-11-06.</p>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<tr data-period=\"0y\"><td>This fiscal year</td><td class=\"num\" data-up-7=\"0\">0</td><td class=\"num\" data-down-7=\"3\">3</td><td class=\"num\" data-up-30=\"1\">1</td><td class=\"num\" data-down-30=\"4\">4</td>", drawn, StringComparison.Ordinal);
+
+        // A night's ask no newer than the fetch leaves the fetch's row, and a fetch before the newest report says so.
+        var older = EquityBrief.Core.Report.AnalystView.WithNightRevision(EquityBrief.Core.Report.AnalystView.Of(new DateOnly(2026, 10, 30), [year], [], night, 64.72m), new EquityBrief.Core.Report.NightRevision(new DateOnly(2026, 10, 29), 0, 3, 1, 4, 5.70m, 5.76m))!;
+
+        Assert.Null(older.YearAskedOn);
+        Assert.Contains("Revisions as fetched on 2026-10-30, before the 2026-11-05 report.</p>", new MarkRenderer().ConsensusTable(older, "USD", new DateOnly(2026, 11, 5)), StringComparison.Ordinal);
+    }
 }

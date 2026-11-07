@@ -16924,3 +16924,24 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             Tonight's card reading no estimate: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 18.2 - correction: an analyst figure is dated by its New York day, and its revisions against the newest report   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its fifth item. Each analyst fetch was dated by the UTC day its instant was
+            stored on: CTSH's fetch at 01:23 UTC on 2026-10-10 read 10 Oct, asked on 9 Oct in New York, and Yahoo's targets
+            were stamped the same way. Its revisions stood undated beneath the consensus. For CTSH they were already the
+            fetch of 2026-10-30, the night after its report of 2026-10-29, which the quarters fetch makes once the quarter
+            posts; the night's own ask of every member's year, made each night, was read by the setup ledger alone.
+Corrected:  `SessionZones.NewYorkDay` dates the consensus's fetch, each ratings fetch and Yahoo's answers; a line above the
+            revisions gives their fetch day against the newest report, and this fiscal year's row reads the night's own ask
+            where it is newer, through `AnalystView.WithNightRevision`, the line naming its night. The decision, 15.9's
+            Analysts row, the night trends' table in SCHEMA, the changelog and the guide.
+Tests:      1 new: CTSH's fetch of 01:23 UTC on 2026-10-10 is 9 Oct, of 23:48 UTC on 2026-10-30 is 30 Oct; Yahoo's answer of
+            03:00 UTC on 2026-11-07 is stamped 6 Nov; the revisions line after the 29 Oct report with the year's row from the
+            night of 6 Nov; an ask no newer leaving the fetch's row and a fetch before the newest report saying so.
+Claims:     none new.
+Pins:       none move: no rule reads the analysts' figures.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            Yahoo's stamp read as the UTC day: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

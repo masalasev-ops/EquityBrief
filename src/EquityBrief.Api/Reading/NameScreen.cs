@@ -668,7 +668,7 @@ public static partial class NameScreen
             currency,
             [.. EquityBrief.Core.Report.QuarterLines.Margins(inputs.Quarters).Select(quarter => quarter with { Quarter = stated.Of(quarter.Quarter) })],
             segments,
-            AnalystsAsFiled(EquityBrief.Core.Report.AnalystView.Of(inputs.TrendFetchedOn, inputs.Trend, inputs.Ratings, night, price), stated),
+            AnalystsAsFiled(EquityBrief.Core.Report.AnalystView.WithNightRevision(EquityBrief.Core.Report.AnalystView.Of(inputs.TrendFetchedOn, inputs.Trend, inputs.Ratings, night, price), inputs.YearRevision), stated),
             EquityBrief.Core.Report.DividendSafety.Of(
                 forwardRate,
                 price,

@@ -14,6 +14,12 @@ public static class SessionZones
 {
     public const string UnitedStates = "America/New_York";
 
+    // The day an instant falls on in New York, the day a page dates a fetch by: an answer stored at 01:23 UTC on the
+    // tenth was asked on the ninth there.
+    // see: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
+    public static DateOnly NewYorkDay(DateTimeOffset instant) =>
+        DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(instant, ResolveSessionZone(UnitedStates)).DateTime);
+
     public static TimeZoneInfo ResolveSessionZone(string identifier)
     {
         // An exchange session zone is area over location. A Windows identifier,

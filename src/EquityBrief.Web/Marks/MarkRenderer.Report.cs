@@ -397,7 +397,7 @@ public sealed partial class MarkRenderer
 
     // The analysts' consensus for each period the newest fetch filed, with its range, how many estimate it and its growth
     // on the year before, for earnings a share and revenue, every figure labelled as theirs.
-    public string ConsensusTable(AnalystReading analysts, string currency)
+    public string ConsensusTable(AnalystReading analysts, string currency, DateOnly? report = null)
     {
         var table = new StringBuilder();
 
@@ -423,7 +423,14 @@ public sealed partial class MarkRenderer
 
         table.Append("</table></div>");
 
-        // The revisions beneath: who raised and who cut over 7 and 30 days, and the consensus against 30 days before.
+        // The revisions beneath: who raised and who cut over 7 and 30 days, and the consensus against 30 days before, dated by
+        // the New York day of their fetch against the newest report, this fiscal year's by the night that asked them where a
+        // night's ask is newer.
+        // see: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
+        var against = report is { } newest ? (analysts.FetchedOn < newest ? Formatted($", before the {DayOf(newest)} report") : Formatted($", after the {DayOf(newest)} report")) : string.Empty;
+        var asked = analysts.YearAskedOn is { } night ? Formatted($"; this fiscal year's as the night asked them on {DayOf(night)}") : string.Empty;
+
+        table.Append(Formatted($"<p class=\"revisions-fetched\" data-fetched=\"{DayOf(analysts.FetchedOn)}\"{(analysts.YearAskedOn is { } on ? Formatted($" data-year-asked=\"{DayOf(on)}\"") : string.Empty)}>Revisions as fetched on {DayOf(analysts.FetchedOn)}{against}{asked}.</p>"));
         table.Append("<div class=\"tbl-wrap\"><table class=\"revisions-table\"><tr><th>Revisions to the estimate for</th><th class=\"num\">Raised, 7 days</th><th class=\"num\">Cut, 7 days</th><th class=\"num\">Raised, 30 days</th><th class=\"num\">Cut, 30 days</th><th class=\"num\">On 30 days before</th></tr>");
 
         foreach (var row in analysts.Revisions)

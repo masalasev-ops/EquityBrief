@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html, docs/SCHEMA.md - analyst figures dated by the New York day, revisions against the newest report
+Decision: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
+Was:
+> (ARCHITECTURE, the name page's Analysts) ... a fetch keeping no trend saying so (see: The name page draws the analysts' figures ...)
+> (SCHEMA, estimate_trend_night) ... and no rule, list or gate reads the table (see: A new reading joins the ledger ...).
+Now:
+> ... (see: The name page draws the analysts' figures ...); from the 18.2 correction of 2026-11-07 each fetch dated by the New York day it fell on and Yahoo's targets the same; the revisions under a line giving their fetch day against the newest report and this fiscal year's row read from the night's own newer ask with its night (see: An analyst figure is dated ...)
+> ... (see: A new reading joins the ledger ...). From the 18.2 correction of 2026-11-07 the name page reads the newest row on or before its night for this fiscal year's revisions where it is newer than the quarters fetch, dated by its session (see: An analyst figure is dated ...).
+Why: the operator's addendum of 2026-11-07, its fifth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - one next report date on a page
 Decision: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
 Was:
