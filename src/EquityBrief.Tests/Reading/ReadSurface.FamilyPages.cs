@@ -326,7 +326,8 @@ public partial class ReadSurface
         Assert.Single(Regex.Matches(planned, "<div class=\"plan-tile\" data-tile=\"stop\"><span class=\"tile-label\">Sell if it closes below</span><b class=\"loss\">96.00</b>"));
         Assert.Single(Regex.Matches(planned, "<div class=\"plan-tile\" data-tile=\"target\"><span class=\"tile-label\">Sell if it reaches</span><b class=\"gain\">110.00</b>"));
         Assert.Contains($"<p class=\"card-note\">{EquityBrief.Web.Marks.MarkRenderer.OnePlanSays("pullback", below: true)}</p>", planned, StringComparison.Ordinal);
-        Assert.StartsWith("<section class=\"card-levels\" data-ticker=\"F3\" data-plan-rows=\"3\"><h5>Entry and exit plan</h5><div class=\"plan-grid\"><div class=\"fig\"><svg class=\"plan-column\"", levels, StringComparison.Ordinal);
+        Assert.StartsWith("<section class=\"card-levels\" data-ticker=\"F3\" data-plan-rows=\"3\"><details class=\"another-way\" data-way=\"levels\" data-traded=\"false\"><summary>Not traded: another way in, for comparison</summary><h5>Entry and exit plan</h5><div class=\"plan-grid\"><div class=\"fig\"><svg class=\"plan-column\"", levels, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"another-stops\">Its stop, 94.00, is its own: the pullback's trade is sold on a close below 96.00.</p></details>", levels, StringComparison.Ordinal);
         Assert.Contains($"data-ticker=\"F3\" data-rows=\"3\" data-close=\"{close}\"", levels, StringComparison.Ordinal);
         Assert.Equal(
             ["tranche|95.5|97.25", "invalidation|94|94", "exit|110|112"],

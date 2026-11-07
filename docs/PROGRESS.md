@@ -16863,7 +16863,8 @@ Corrected:  each other way in is folded shut beneath the rule's plan under "Not 
             guide.
 Tests:      1 new: CTSH's plan of 2026-11-06 folded with "Its stops, 57.91, 54.70 and 52.49, are its own: the pullback's trade
             is sold on a close below 61.55."; its wait plan folded with its stop of 54.70 named its own; the card's line; and a
-            stock no family picked drawing both open.
+            stock no family picked drawing both open. Tonight's family page test reads F3's plan folded beneath its card, its
+            stop of 94.00 named its own against the pullback's 96.00.
 Claims:     none new.
 Pins:       none move: the web and read surface's sources are none a rule pins.
 Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
