@@ -205,8 +205,9 @@ public partial class FixtureExpectations
         [
             // Nine of ten matched at 100 each: 0.90 on both, standing.
             Floored("GSPC", period, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100),
-            // Eight of ten: 0.80 of the holdings.
-            Floored("MID", period, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100),
+            // Eight of ten, the two left out worth 1 each: 0.80 of the holdings and 800 of 802 of the value, under the stop on
+            // the holdings alone.
+            Floored("MID", period, 100, 100, 100, 100, 100, 100, 100, 100, 1, 1),
             // Nine of ten, the one left out worth 200: 900 of 1,100, 0.818 of the value.
             Floored("SML", period, 100, 100, 100, 100, 100, 100, 100, 100, 100, 200),
         ];
@@ -219,6 +220,8 @@ public partial class FixtureExpectations
         Assert.False(coverage.Single(one => one.Index == "SML").Stands);
         Assert.Equal(0.90, coverage.Single(one => one.Index == "GSPC").HoldingsShare, 6);
         Assert.Equal(900m / 1100m, coverage.Single(one => one.Index == "SML").ValueShare);
+        Assert.True(coverage.Single(one => one.Index == "MID").ValueShare >= LongFloors.ValueStop);
+        Assert.Equal(0.80, coverage.Single(one => one.Index == "MID").HoldingsShare, 6);
         Assert.Equal(2, LongFloors.Stops(coverage, []).Count);
 
         Assert.True(coverage.Single(one => one.Index == "MID").Lower);
