@@ -101,6 +101,9 @@ public sealed record DecisionCardView(
     // The entry check's reading of the stock on the night, which the card's line of flags reads and nothing the card decides.
     public EquityBrief.Core.EntryCheck.EntryReading? EntryCheck { get; init; }
 
+    // The arithmetic the plan's own numbers raise, as information beside it.
+    public IReadOnlyList<string>? PlanFlags { get; init; }
+
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
 }
 
@@ -163,6 +166,34 @@ public sealed partial class MarkRenderer
             below ? "Another way in, worked from the stock's support and resistance levels, is folded below it: not traded, with stops of its own."
             : index is { } other ? $"No entry and exit plan is worked for the {other}'s stocks; it is read for the S&P 500's alone."
             : "Another way in, worked from its support and resistance levels, is folded on the stock's full page: not traded, with stops of its own.");
+
+    // A plan's arithmetic flags as a list beneath it, said to change nothing; none drawn where none applies.
+    // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+    public const string FlagsLead = "Worth knowing from the plan's own numbers, which changes nothing it does:";
+
+    public static string FlagsOf(IReadOnlyList<string>? flags) =>
+        flags is { Count: > 0 } said
+            ? $"<div class=\"plan-flags\" data-flags=\"{said.Count.ToString(Invariant)}\"><p>{Escaped(FlagsLead)}</p><ul>{string.Concat(said.Select(flag => $"<li>{Escaped(flag)}</li>"))}</ul></div>"
+            : string.Empty;
+
+    // The staged plan's flags, read for its first tranche: carried at the middle of its zone, its stop and the lowest exit
+    // it trades at.
+    public static IReadOnlyList<string> StagedFlags(IReadOnlyList<PlanRow> rows, IReadOnlyList<EquityBrief.Core.Cards.FlagBand> bands)
+    {
+        if (rows.Where(row => row.Kind == PlanKind.Tranche && row.Stop is not null).OrderByDescending(row => row.LowEdge).FirstOrDefault() is not { Stop: { } stop } first)
+        {
+            return [];
+        }
+
+        var exits = rows.Where(row => row.Kind == PlanKind.Exit && row.Traded).Select(row => row.LowEdge).ToArray();
+        decimal? exit = exits.Length == 0 ? null : exits.Min();
+
+        return EquityBrief.Core.Cards.PlanFlags.Of((first.LowEdge + first.HighEdge) / 2, stop, exit, bands, "the first exit");
+    }
+
+    // The bands a level summary draws, as the plan flags read them.
+    public static IReadOnlyList<EquityBrief.Core.Cards.FlagBand> FlagBandsOf(IEnumerable<SummaryBand> bands) =>
+        [.. bands.Select(band => EquityBrief.Core.Cards.FlagBand.Of(band.LowEdge, band.HighEdge, [.. band.Members.Select(member => (member.Kind, member.Date))]))];
 
     // A way in the pick does not trade, folded shut beneath its own plan under the words saying so.
     public static string AnotherWayFold(string way, string markup) =>
@@ -603,6 +634,8 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<p class=\"card-reward\" data-reward=\"{reward.ToString(Invariant)}\">You risk $1 to make ${Figures.Ratio(reward)}.</p>");
             body.Append(Invariant, $"<p class=\"card-break-even\" data-break-even=\"{EquityBrief.Core.Cards.PlanWords.BreakEven(reward).ToString("0.000", Invariant)}\">{Escaped(EquityBrief.Core.Cards.PlanWords.BreakEvenSaid(reward, "its target"))}</p>");
         }
+
+        body.Append(FlagsOf(card.PlanFlags));
 
         body.Append(TrailLines(card, pick));
 

@@ -16964,3 +16964,22 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             the region reading every stored copy: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 4.8 - correction: a plan's arithmetic is flagged beside it as information   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its second item. CTSH's plans of 2026-11-06 raised what no part of the page
+            said: its first tranche's 0.64 to 1 to its first exit; that exit, 67.72, and the pullback's target, 71.26, were
+            retracements the price had never turned at below the swing high of 73.90; its 2 to 1 gate passed at 2.06.
+Corrected:  `PlanFlags.Of` works the four flags from a plan's buy, stop and first exit, the night's bands with their turns, and
+            for a pick's plan its gate, its stop in typical days, whether its next report falls inside the hold and its median
+            report-day move; drawn beneath the card's plan, the staged plan on Tonight and on the full page, and the wait plan,
+            each under the line saying it changes nothing. The decision, the card's row, the changelog and the guide.
+Tests:      1 new: CTSH's target flagged a retracement with 2.90 to 1 to 73.90 and its gate passed by 0.06; its staged plan
+            0.64 to 1 and its first exit with 1.67 to 1 to 73.90; the report flag silent at a 1.14 stop against a 1.02 median
+            and raised at 0.90 against 1.30.
+Claims:     none new.
+Pins:       none move: no rule reads a flag.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the retracement flag never raised: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

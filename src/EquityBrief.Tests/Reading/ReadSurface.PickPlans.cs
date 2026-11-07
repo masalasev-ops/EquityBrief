@@ -53,6 +53,54 @@ public partial class ReadSurface
         Assert.Equal("It places no stop of its own: the dip's trade is sold by its own exits.", EquityBrief.Core.Cards.PlanWords.OwnStops([], null, "dip"));
     }
 
+    // CTSH's bands above its close on 2026-11-06: the swing high of 2026-10-22 at 73.90, turned once, and the 78.6, 61.8 and
+    // 50 per cent retracements of the move that ended on 2026-10-29 at 71.26, 69.18 and 67.72, none of which turned the price.
+    static IReadOnlyList<EquityBrief.Core.Cards.FlagBand> CtshBands() =>
+    [
+        EquityBrief.Core.Cards.FlagBand.Of(73.90m, 73.90m, [("swing high", new DateOnly(2026, 10, 22))]),
+        EquityBrief.Core.Cards.FlagBand.Of(71.26m, 71.26m, [("retracement 78.6", new DateOnly(2026, 10, 29))]),
+        EquityBrief.Core.Cards.FlagBand.Of(69.18m, 69.18m, [("retracement 61.8", new DateOnly(2026, 10, 29))]),
+        EquityBrief.Core.Cards.FlagBand.Of(67.72m, 67.72m, [("retracement 50", new DateOnly(2026, 10, 29))]),
+    ];
+
+    // On 2026-11-06 CTSH's plans raised four things no part of the page said: its first tranche made 0.64 to 1 to its first
+    // exit; that exit, 67.72, and the pullback's own target, 71.26, were retracements the price had never turned at, the
+    // first band above that had being 73.90; and the pullback's 2 to 1 gate was passed at 2.06. Each plan says so beside it as
+    // information, worked by hand: 9.18 over 3.17 to 73.90, 2.90; 3.815 over 5.995 to 67.72, 0.64, and 9.995 over it to
+    // 73.90, 1.67. The fourth flag does not fire on CTSH, its 1.14 typical days' stop wider than its median report-day move
+    // of 1.02, and fires on a stop of 0.90 against a median of 1.30.
+    // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+    [Fact]
+    public void APlansArithmeticIsFlaggedBesideItAsInformation()
+    {
+        var steps = "Passed every gate of the pullback on the S&P 500: trade, reward to risk 2.0586 at or above 2; the stop 1.14 typical moves below the entry, inside 0.5 to 4.";
+        var hits = new CardHitsView(new DateOnly(2027, 2, 9), 4, 1.02, 0.89, 2, null, false, null, null, null, [], []);
+        var card = new DecisionCardView("GSPC", new DateOnly(2026, 11, 6), "pullback", "CTSH", "the pullback", 64.72m, 61.55m, 71.26m,
+            [new CardLineView(1, EquityBrief.Core.Cards.CardLines.TrendName, "tick", steps), new CardLineView(4, EquityBrief.Core.Cards.CardLines.EarningsName, "note", "Reported on 2026-10-29. The next date isn't announced yet; it is estimated about 2027-02-03, from its report of 2026-02-04 a year on, inside this trade's hold.")],
+            null, Hits: hits, Cap: 63);
+        var flagged = NameScreen.WithPlanFlags(card, CtshBands())!;
+
+        Assert.Equal(
+            [
+                "Its target, 71.26, is a retracement the price has never turned at; to the first band above it that has, 73.90, its reward to risk is 2.90 to 1.",
+                "It passed its 2 to 1 gate by 0.06, under a tenth.",
+            ],
+            flagged.PlanFlags);
+        Assert.Contains("<div class=\"plan-flags\" data-flags=\"2\"><p>Worth knowing from the plan's own numbers, which changes nothing it does:</p><ul><li>Its target, 71.26,", new MarkRenderer().DecisionCard(flagged), StringComparison.Ordinal);
+
+        Assert.Equal(
+            [
+                "Its reward to risk to the first exit is 0.64 to 1, under one to one: it risks more than it makes there.",
+                "The first exit, 67.72, is a retracement the price has never turned at; to the first band above it that has, 73.90, its reward to risk is 1.67 to 1.",
+            ],
+            MarkRenderer.StagedFlags(NameScreen.PlanRows(CtshLadder(), plain: true), CtshBands()));
+
+        Assert.Equal(
+            ["Its stop is 0.90 typical days below the buy while a report falls inside the hold, and its median report-day move of 1.30 typical days is wider than that."],
+            EquityBrief.Core.Cards.PlanFlags.Of(100m, 99m, 103m, [], "its target", stopTypical: 0.9, reportInside: true, reportMedianTypical: 1.3));
+        Assert.Empty(EquityBrief.Core.Cards.PlanFlags.Of(100m, 99m, 103m, [], "its target", gate: 2m, stopTypical: 1.14, reportInside: true, reportMedianTypical: 1.02));
+    }
+
     // On 2026-11-06 CTSH's card said "You risk $1 to make $2.06." and sized 309 shares on the example account, stating no
     // share of the time the plan must be right to break even and not whether the 309 were the whole position; the wait plan
     // gave "about 3.0 to 1" alone. Each plan states its break-even, worked by hand: 3.17 at risk against 6.54 to the target,

@@ -2064,6 +2064,9 @@ public sealed partial class SinglePageApp : IComponent
             }
 
             way.Append("<div class=\"sub\">Sizing arithmetic</div>").Append(arithmetic);
+
+            // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+            way.Append(MarkRenderer.FlagsOf(MarkRenderer.StagedFlags(plan, MarkRenderer.FlagBandsOf(summary))));
             way.Append(Cards.Key(
                 "How to read the plan.",
                 "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop. Each tranche buys an equal share of a full position, carried at the middle of its zone: its risk is that price less the stop that sells it, and its reward to risk to an exit is the exit's low edge less that price, over the risk. A tranche with no band beneath it has no stop of its own, so it states no risk and no reward to risk. The top traded exit is where the trail begins: what is left is held on a stop raised under the price rather than sold there, so a reward to it measures the move to where the trail begins and not a price the plan sells at.",
@@ -2466,7 +2469,7 @@ public sealed partial class SinglePageApp : IComponent
         // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
         if (decision is not null)
         {
-            region.Append(marks.EntryCheck(entryCheck, decision.Entry, decision.Stop, decision.Family));
+            region.Append(marks.EntryCheck(entryCheck, decision.Entry, decision.Stop, decision.Family, MarkRenderer.FlagBandsOf(summary)));
             Card("card", "card", "The decision card", Invariant($"<section class=\"card name-card\" id=\"card\" data-role=\"{Cards.Buy}\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
         }
         else if (held is not null)

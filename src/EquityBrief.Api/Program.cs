@@ -2246,13 +2246,19 @@ async Task<IResult> TonightScreenAsync(
     var selection = cards is null ? TonightScreen.Selected(rows, asked, nearRows) : null;
     var selected = selection is { } chosen ? await PlanOf(chosen.Ticker) : string.Empty;
     var plans = new Dictionary<string, string>(StringComparer.Ordinal);
+    var bandsOf = new Dictionary<string, IReadOnlyList<EquityBrief.Core.Cards.FlagBand>>(StringComparer.Ordinal);
 
     foreach (var ticker in pointed)
     {
         var (family, pick) = cards!.SelectMany(card => card.Picks.Select(one => (card.Family, Pick: one))).First(one => one.Pick.Row.Ticker == ticker);
 
-        plans[ticker] = NameScreen.EntryAndExitPlan(marks, ticker, await read.PlanLadderAsync(ticker, dated), universe.FirstOrDefault(row => row.Ticker == ticker)?.Close, MarkRenderer.SetupOf(family), pick.Stop);
+        bandsOf[ticker] = NameScreen.FlagBands(await read.LevelsAsync(ticker, dated));
+        plans[ticker] = NameScreen.EntryAndExitPlan(marks, ticker, await read.PlanLadderAsync(ticker, dated), universe.FirstOrDefault(row => row.Ticker == ticker)?.Close, MarkRenderer.SetupOf(family), pick.Stop, bandsOf[ticker]);
     }
+
+    // Each pick's card with its plan's flags, read off the night's bands of its stock.
+    // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+    cards = cards is null ? null : [.. cards.Select(card => card with { Picks = [.. card.Picks.Select(pick => pick with { Card = NameScreen.WithPlanFlags(pick.Card, bandsOf.GetValueOrDefault(pick.Row.Ticker) ?? []) })] })];
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
     // market check read.

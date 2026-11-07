@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - a plan's arithmetic flagged beside it
+Decision: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+Was:
+> (the pick's card) ... and the example's shares named as the whole position bought at once (see: Each plan states ...); the management in the rule's own terms; ...
+Now:
+> ... and the example's shares named as the whole position bought at once (see: Each plan states ...); and beneath them the plan's arithmetic flags as information, the staged plan's and the wait plan's beneath each (see: A plan's arithmetic is flagged ...); the management ...
+Why: the operator's addendum of 2026-11-07, its second item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - a story the feed carried more than once drawn and counted once
 Decision: A story the feed carried more than once is drawn and counted once, and the page says how many copies it merged
 Was:
