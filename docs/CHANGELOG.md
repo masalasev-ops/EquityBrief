@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - every chart line in its family's colour, the averaged account alone in the text colour
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... two chips kept in the hash choosing every line since it began or the last 30 days alone (see: ...)
+Now:
+> ... two chips kept in the hash choosing every line since it began or the last 30 days alone; every family's line and its key in the family's own colour, Quality at a fair price's and the Fundamentals family's among them, the operator's own in the accent colour and the averaged account alone in the text colour at a heavier stroke (see: ...)
+Why: the operator's order of 2026-11-07, its sixteenth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - the paper chart's lines from their own days, and its span chosen
 Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
 Was:

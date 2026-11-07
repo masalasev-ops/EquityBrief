@@ -16708,3 +16708,19 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             recent span never taken: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: every chart line draws its family's colour, and the averaged account alone the text colour   2026-11-07
+
+Found:      the order's sixteenth item: on 2026-11-06 Quality at a fair price's and the Fundamentals family's lines drew the text
+            colour, white in the dark palette, the stylesheet holding no colour for either, as did the operator's own.
+Corrected:  each family's line and its key its own colour, the two among them; the operator's own the accent colour; a line of no
+            family's the soft one; the live setups' accounts averaged alone the text colour, at a stroke of 3. The decision's
+            text, 15.21's row, the changelog and the guide.
+Tests:      1 new: every family Tonight orders holds a line rule and a key rule in its colour, and of the rules colouring a line
+            the averaged account's alone is the text colour; a quality and a Fundamentals line drawn with their families.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            Quality at a fair price's line rule removed: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

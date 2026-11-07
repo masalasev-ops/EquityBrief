@@ -460,4 +460,32 @@ public partial class ReadSurface
 
         Assert.Contains("data-from=\"2026-11-02\" data-to=\"2026-11-03\" data-span=\"30\"", recent, StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 Quality at a fair price's and the Fundamentals family's lines drew in the text colour, white in the dark
+    // palette, the stylesheet holding no colour for either, beside the averaged account and the operator's own in it too.
+    // Every family's line and its key draw its own colour, and the averaged account alone draws the text colour, thicker.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    [Fact]
+    public void EveryChartLineDrawsItsFamilysColourAndTheAveragedAccountAloneTheTextColour()
+    {
+        var css = Stylesheet.Css;
+
+        foreach (var family in BuyOrder.Families)
+        {
+            Assert.Contains($".paper-line[data-family='{family}']{{stroke:var(--fam-{family})}}", css, StringComparison.Ordinal);
+            Assert.Contains($".paper-key-mark[data-family='{family}']{{border-top-color:var(--fam-{family})}}", css, StringComparison.Ordinal);
+        }
+
+        // Of the rules that colour a line, the averaged account's alone is the text colour, and thicker than a family's.
+        Assert.Equal(
+            [".paper-line[data-standing='combined']{stroke:var(--ink);stroke-width:3}"],
+            Regex.Matches(css, @"\.paper-line[^{]*\{[^}]*stroke:var\(--ink\)[^}]*\}").Select(match => match.Value));
+        Assert.Contains(".paper-line[data-standing='you']{stroke:var(--accent)}", css, StringComparison.Ordinal);
+
+        // Drawn, each line carries its family, the quality and Fundamentals lines among them.
+        var chart = new MarkRenderer().PaperChart([ChartAccount("quality", PaperAccountView.Live, new DateOnly(2026, 11, 2), 0.0, 0.01), ChartAccount("improving", PaperAccountView.Live, new DateOnly(2026, 11, 2), 0.0, -0.01)], null);
+
+        Assert.Contains("data-account=\"quality\" data-family=\"quality\"", chart, StringComparison.Ordinal);
+        Assert.Contains("data-account=\"improving\" data-family=\"improving\"", chart, StringComparison.Ordinal);
+    }
 }
