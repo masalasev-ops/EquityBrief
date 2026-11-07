@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - each row of the versions' part gives its start
+Decision: Each row of what the versions did differently gives its start, the live rule's record since and each version's trading since
+Was:
+> (15.21, what the variants did differently) ... a row its live or provisional rule and a row a variant by its number: what it changes in plain words; its trades; ...
+Now:
+> ... a row a variant by its number: from the 19.4 correction of 2026-11-07 its start beneath its verdict as the live rule's record since and each version's trading since (see: ...); what it changes in plain words; its trades; ...
+Why: the operator's order of 2026-11-07, its fourth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - a holding with no price stop draws how its rule sells it and its state tonight
 Decision: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
 Was:

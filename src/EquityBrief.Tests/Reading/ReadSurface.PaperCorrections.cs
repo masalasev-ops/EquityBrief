@@ -343,4 +343,20 @@ public partial class ReadSurface
         Assert.Contains(">Still qualifies.</span>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("Not read tonight", page, StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 What the versions did differently drew each row with no start, the live rule's day only under the
+    // pointer. The live rule's row says its record since its account's day, and each version's that it trades since its own.
+    // see: Each row of what the versions did differently gives its start, the live rule's record since and each version's trading since
+    [Fact]
+    public void EachRowOfWhatTheVersionsDidDifferentlyGivesItsStart()
+    {
+        PaperAccountView Row(string key, string standing, DateOnly since) =>
+            new(key, "pullback", standing, standing == PaperAccountView.Live ? "Live" : "V1", "words", "within luck", null, "risks", [], null, 2, 0, null, since, Short: standing == PaperAccountView.Live ? "Live rule" : "V1", Overlap: new PaperOverlap(2, 1, 1));
+
+        var page = new PaperPageView([Row("list-pullback", PaperAccountView.Live, new DateOnly(2026, 11, 3)), Row("v1", PaperAccountView.Variant, new DateOnly(2026, 11, 2))], [], [], [], new PaperNotBought([]), [], null);
+        var drawn = WebUtility.HtmlDecode(new MarkRenderer().PaperVariants(page, new PaperLink("500"), "pullback"));
+
+        Assert.Contains("<span class=\"pv-since\" data-since=\"2026-11-03\">record since 3 Nov</span>", AccountRowOf(drawn, "list-pullback"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pv-since\" data-since=\"2026-11-02\">trading since 2 Nov</span>", AccountRowOf(drawn, "v1"), StringComparison.Ordinal);
+    }
 }

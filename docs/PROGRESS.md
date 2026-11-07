@@ -16652,3 +16652,17 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             holding's cells back to none: red. m2 the hold score read as 9 in every 9: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: each row of what the versions did differently gives its start   2026-11-07
+
+Found:      the order's fourth item: on 2026-11-06 the versions' rows drew no start, the day under the pointer alone.
+Corrected:  each row draws beneath its verdict its account's day, the live or provisional rule's "record since 3 Nov" and each
+            version's "trading since" its own, the day the 19.4 correction above fixes. The decision, 15.21's row, the
+            changelog and the guide. The commit carries the setting-by-setting reach the next correction draws.
+Tests:      1 new: the live rule's row from 3 Nov and a version's from 2 Nov read off the rendered part.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            every row read as a version's: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

@@ -68,6 +68,9 @@ public sealed record PaperAccountView(
     // The first session its version's registration counts from, the day it starts, none where no registration starts the
     // account.
     public DateOnly? VersionFrom { get; init; }
+
+    // From the 19.4 correction of 2026-11-07 a version's reach against its live rule, none for any other account.
+    public EquityBrief.Core.Loop.VersionReachKind? Reach { get; init; }
 }
 
 // The trades a family's live account leaves out as listed before its version that a replay under its version reproduced,
@@ -698,7 +701,7 @@ public sealed partial class MarkRenderer
         foreach (var account in rows)
         {
             html.Append(Invariant, $"<tr data-account=\"{Escaped(account.Key)}\" data-standing=\"{account.Standing}\" data-trades=\"{account.Overlap?.Trades ?? account.Trades}\" data-shared=\"{account.Overlap?.Shared ?? 0}\" data-only=\"{account.Overlap?.Only ?? 0}\">");
-            html.Append(Invariant, $"<td class=\"pv-rule\"><a class=\"paper-log\" href=\"{LogHref(link.Universe, account.Key)}\" title=\"{Escaped(Capitalised(account.Words) + (account.Version is { } version ? "; counts " + version : string.Empty) + (account.Since is { } since ? "; from " + DayOf(since) : string.Empty))}\">{Escaped(account.Short ?? account.Name)}</a><span class=\"pv-verdict\" data-verdict=\"{Escaped(account.Verdict)}\">{Escaped(account.Verdict)}</span></td>");
+            html.Append(Invariant, $"<td class=\"pv-rule\"><a class=\"paper-log\" href=\"{LogHref(link.Universe, account.Key)}\" title=\"{Escaped(Capitalised(account.Words) + (account.Version is { } version ? "; counts " + version : string.Empty) + (account.Since is { } since ? "; from " + DayOf(since) : string.Empty))}\">{Escaped(account.Short ?? account.Name)}</a><span class=\"pv-verdict\" data-verdict=\"{Escaped(account.Verdict)}\">{Escaped(account.Verdict)}</span>{SinceWords(account)}</td>");
             html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{AccountNote(account)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{account.Overlap?.Trades ?? account.Trades}</td><td class=\"r num\">{account.Overlap?.Shared ?? 0}</td><td class=\"r num\">{account.Overlap?.Only ?? 0}</td>");
             html.Append(Invariant, $"<td class=\"r num\" data-return=\"{(account.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\">{(account.Walk?.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">none yet</span>")}{(account.TooFew is { } few ? Formatted($"<span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}</td></tr>");
@@ -837,6 +840,14 @@ public sealed partial class MarkRenderer
 
     // From 21.14 the line an account's rule carries beneath its words, the tone variant's that its history before the local
     // model's cutoff does not count; none for any other.
+    // From the 19.4 correction of 2026-11-07 a row's start in the versions' part: the live or provisional rule's record since
+    // its account's day, each version's trading since its own, none where an account has no day yet.
+    // see: Each row of what the versions did differently gives its start, the live rule's record since and each version's trading since
+    static string SinceWords(PaperAccountView account) =>
+        account.Since is not { } since
+            ? string.Empty
+            : Formatted($"<span class=\"pv-since\" data-since=\"{DayOf(since)}\">{(account.Head ? "record since" : "trading since")} {since.ToString("d MMM", Invariant)}</span>");
+
     // A variant no night has read yet: the day it was registered and the night that first reads it, by its weekday and day.
     public static string ComingLine(PaperComingView one) =>
         Formatted($"Registered {DayOf(one.Registered)}. Its first night is {(one.FirstNight is { } first ? first.DayOfWeek + " " + DayOf(first) : "the next night the exchange trades")}.");

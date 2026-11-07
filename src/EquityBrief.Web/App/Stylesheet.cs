@@ -527,6 +527,8 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-pick select{min-height:36px;padding:0 8px;border-radius:6px;font:500 13.5px var(--sans)}
 .pv-rule .paper-log{font-weight:600}
 .pv-verdict{display:block;font-size:12px;color:var(--soft)}
+.pv-since,.pv-reach{display:block;font-size:12px;color:var(--soft);white-space:nowrap}
+.pv-reach[data-reach='widens']{color:var(--warn)}
 .pv-only-h{font-size:15px;margin:16px 0 6px}
 .too-few{display:block;font-size:12px;color:var(--soft)}
 .score{border:1px solid var(--hair-2);border-radius:8px;background:var(--surface)}
