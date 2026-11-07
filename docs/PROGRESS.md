@@ -16896,6 +16896,8 @@ Found:      the operator's addendum of 2026-11-07, its third item. 4.8's arithme
             shares on the example account with neither, and its wait plan "about 3.0 to 1" alone.
 Corrected:  `PlanWords.BreakEven`, one over one plus the reward to risk, stated in 4.8's words beneath the card's reward to risk
             and after the wait plan's first exit; the card's example names its shares as the whole position, bought at once.
+            The stock's full page draws its card with no pick beside it, so the card works the ratio from its own buy, stop
+            and target there.
             The decision, two rows of section 15, the changelog and the guide.
 Tests:      1 new: CTSH's card at 3.17 at risk against 6.54, 32.6%, and its 309 shares named the whole position; its wait plan
             at 3 to 1, 25.0%. The wait plan's sentence test and the first item's read the new sentence.

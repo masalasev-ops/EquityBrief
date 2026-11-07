@@ -632,7 +632,12 @@ public sealed partial class MarkRenderer
         if (pick?.RewardToRisk is { } reward && card.Target is not null)
         {
             body.Append(Invariant, $"<p class=\"card-reward\" data-reward=\"{reward.ToString(Invariant)}\">You risk $1 to make ${Figures.Ratio(reward)}.</p>");
-            body.Append(Invariant, $"<p class=\"card-break-even\" data-break-even=\"{EquityBrief.Core.Cards.PlanWords.BreakEven(reward).ToString("0.000", Invariant)}\">{Escaped(EquityBrief.Core.Cards.PlanWords.BreakEvenSaid(reward, "its target"))}</p>");
+        }
+
+        // A card drawn with no pick beside it, the stock's full page's, works the ratio from its own buy, stop and target.
+        if ((pick?.RewardToRisk ?? (card is { Entry: { } buy, Stop: { } floor, Target: { } aim } && buy > floor && aim > buy ? (aim - buy) / (buy - floor) : null)) is { } ratio && card.Target is not null)
+        {
+            body.Append(Invariant, $"<p class=\"card-break-even\" data-break-even=\"{EquityBrief.Core.Cards.PlanWords.BreakEven(ratio).ToString("0.000", Invariant)}\">{Escaped(EquityBrief.Core.Cards.PlanWords.BreakEvenSaid(ratio, "its target"))}</p>");
         }
 
         body.Append(FlagsOf(card.PlanFlags));

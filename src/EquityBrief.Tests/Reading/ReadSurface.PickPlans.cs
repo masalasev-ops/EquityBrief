@@ -117,6 +117,9 @@ public partial class ReadSurface
 
         Assert.Equal(0.3265m, Math.Round(EquityBrief.Core.Cards.PlanWords.BreakEven(reward), 4));
         Assert.Contains("<p class=\"card-break-even\" data-break-even=\"0.326\">It is worth taking if it reaches its target before its stop more than 32.6% of the time.</p>", drawn, StringComparison.Ordinal);
+
+        // The stock's full page draws the card with no pick beside it, and works the same share from the card's own prices.
+        Assert.Contains("<p class=\"card-break-even\" data-break-even=\"0.326\">", new MarkRenderer().DecisionCard(card), StringComparison.Ordinal);
         Assert.Contains("Fewer shares than the risk allows: the position cap limits it. Buying and selling costs about $14.40 at the published rates. The 309 shares are the whole position, bought at once.</p>", drawn, StringComparison.Ordinal);
 
         var reading = EntryWorked() with { WaitLow = 57.91m, WaitHigh = 58.04m, WaitStop = 54.70m, WaitExit = 67.72m, WaitReward = 3.0, ZoneDays = 2.4 };
