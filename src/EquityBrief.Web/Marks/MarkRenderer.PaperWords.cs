@@ -70,10 +70,10 @@ public sealed partial class MarkRenderer
 
     public static string PaperCombinedSaid(PaperCombinedView? combined, bool walked) =>
         !walked
-            ? "Set your account above to walk every setup's trades together."
+            ? "Set your account above to walk the live setups' accounts together."
             : combined is not { } all
-                ? "No live setup has a trade yet, so the account of every setup together holds none."
-                : Formatted($"All setups together, counting the rules as registered now from the day each counts from: {(all.Walk.Return is { } made ? Moved(made).ToLowerInvariant() : "no return yet")} since {Short(all.Since)}, {Counted(all.Open, "position", "positions")} open, {Counted(all.Skipped, "pick", "picks")} skipped.");
+                ? "No live setup's account has a day to count from yet, so the averaged account holds none."
+                : Formatted($"The live setups' accounts, averaged: {(all.Walk.Return is { } made ? Moved(made).ToLowerInvariant() : "no return yet")} since {Short(all.Since)}, the day every one of the {all.Accounts} counts, with {Counted(all.Open, "position", "positions")} open across them.");
 
     public static string PaperBoughtSaid(PaperPageView page)
     {

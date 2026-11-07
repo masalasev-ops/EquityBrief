@@ -16487,3 +16487,29 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             rule's account walked on the settings' cap: red. m2 the sentence's element unmarked: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 21.11 - correction: the combined account is the live setups' accounts averaged, from the day every one of them counts   2026-11-07
+
+Found:      the order's tenth item: "All setups together" walked every live rule's trades again in one pot with one position a
+            stock, three a sector and each book family a fifth, so a pick its own rule's account bought could be skipped a second
+            time: on the S&P 500 on 2026-11-06 it skipped 26, 24 for cash the rules' own accounts still held, from 2 Oct, the
+            earliest day any of them counted.
+Corrected:  `PaperAccount.Averaged` gives each live or provisional account, as `PaperScreen.Views` walked it, an equal share of one
+            account of the settings' size from the latest of their starts, each one's growth read from its close before that day
+            or its size where it starts on it; its trades are each account's open on or bought from that day and its skips each
+            account's from that day. `PaperScreen.Averaged` reads the views; the tile, the chart's line and the card draw it as
+            "The live setups' accounts, averaged", the card's line saying what it is. The pot, its sector cap, its book share,
+            its already-held skip and the walk's refusal and sizing hooks are gone. The decision superseding the combined
+            account's, 15.21's, section 17's and section 18's rows, the build plan's citation, the changelog and the guide.
+Tests:      3 new, by hand: two accounts starting on 2 Nov and 3 Nov, the first at $10,200 on its close before, averaged from 3 Nov
+            to $10,100 and $10,150, a trade sold before the start and a skip before it left out; a stock two families pick held
+            in both and skipped by neither; and the page from the views, counting from the later start, up 0.2%. The pooled
+            account's three tests retired with it; Tonight's order's test kept.
+Claims:     none new: the three rows keep their keys, their verdicts' notes rewritten for the new tests.
+Pins:       section 17's sector cap of 3 is gone with its row's clause; its 0.1 stands, held by `PaperAccount.AccountCap`.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new tests by their names.
+            m1 each account's growth read from its size: survived at first, the pullback standing at its size on its close
+            before, an unreachable boundary; the test worked again at $10,200 there, red. m2 the start the earliest account's:
+            red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

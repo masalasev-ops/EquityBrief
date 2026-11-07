@@ -855,39 +855,29 @@ public static class PaperScreen
         };
     }
 
-    // From 21.11 the combined account on an index: every trade each family's live or provisional account counts, in one
-    // pot walked by the core from the account settings over the sessions from the earliest day those accounts count from,
-    // each with the family it came from and its stock's GICS sector on the night; none before the settings are set or
-    // where no such account counts a trade. Each trade's return is on its position, its sale over its buy, or tonight's
-    // close over its buy session's while it is open.
-    // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
-    public static PaperCombinedView? Combined(
-        IReadOnlyList<PaperAccountSource> accounts,
+    // From the 21.11 correction of 2026-11-07 the live setups' accounts, averaged, on an index: each family's live or
+    // provisional account walked, given an equal share of one account of the settings' size, over the sessions from the day
+    // every one of them counts, the latest of their starts; none before the settings are set or where no such account is
+    // walked. Each trade as its own setup's account bought it, with its return on its position, its sale over its buy, or
+    // tonight's close over its buy session's while it is open.
+    // see: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
+    public static PaperCombinedView? Averaged(
+        IReadOnlyList<PaperAccountView> views,
         AccountSettings? settings,
         IReadOnlyList<DateOnly> sessions,
         DateOnly night,
         Func<string, DateOnly, decimal?> close,
-        Func<DateOnly, decimal?> fund,
-        IReadOnlyDictionary<string, PaperStockRow> stocks)
+        Func<DateOnly, decimal?> fund)
     {
-        var heads = accounts.Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional && account.Since is not null).ToArray();
+        var heads = views.Where(view => view.Head && view.Since is not null && view.Walk is not null).OrderBy(view => SetupFamilies.OrderOf(view.Family)).ToArray();
 
         if (settings is not { } held || heads.Length == 0)
         {
             return null;
         }
 
-        var since = heads.Min(account => account.Since!.Value);
-        CombinedTrade[] trades =
-        [
-            .. heads.SelectMany(account => account.Trades.Select(one => new CombinedTrade(
-                one.Trade,
-                account.Family,
-                EquityBrief.Core.Cards.BuyOrder.Of(account.Family),
-                stocks.TryGetValue(one.Trade.Ticker, out var stock) ? stock.Sector : null,
-                account.Book))),
-        ];
-        var walked = PaperAccount.Combined(held, trades, [.. sessions.Where(session => session >= since && session <= night)], close, fund);
+        var since = heads.Max(view => view.Since!.Value);
+        var walked = PaperAccount.Averaged(held.Size, [.. heads.Select(view => (view.Family, view.Walk!))], [.. sessions.Where(session => session >= since && session <= night)], fund);
         var (open, closed) = PaperAccount.Held(walked.Walk, night);
 
         double? ReturnOf(PaperTrade trade) =>
@@ -900,12 +890,10 @@ public static class PaperScreen
             since,
             open,
             closed,
-            walked.AlreadyHeld,
-            walked.SectorFull,
-            walked.UnderCash,
+            walked.Accounts,
             [
                 .. walked.Trades.Select(one => new PaperCombinedTradeView(
-                    one.From.Family,
+                    one.Family,
                     one.Taken.Trade.Ticker,
                     one.Taken.Trade.Bought,
                     one.Taken.Trade.Buy,

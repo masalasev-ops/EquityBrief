@@ -141,21 +141,22 @@ public sealed record PaperPageView(
 // table cannot place one.
 public sealed record PaperComingView(string Family, string Short, string? Changes, string Words, DateOnly Registered, DateOnly? FirstNight);
 
-// From 21.11 the combined account as its page draws it: its walk, the day it counts from, the trades it holds open and
-// has closed, how many it skipped as already held, for a sector at its cap and for the free cash, and each trade it was
-// handed with the family it came from.
-public sealed record PaperCombinedView(PaperWalk Walk, DateOnly Since, int Open, int Closed, int AlreadyHeld, int SectorFull, int UnderCash, IReadOnlyList<PaperCombinedTradeView> Trades)
+// From the 21.11 correction of 2026-11-07 the live setups' accounts, averaged, as its page draws it: its walk, the day it
+// counts from, the day every live account counts, the trades it holds open and has closed, how many accounts it averages,
+// and each trade and each skip of those accounts over its days with the family whose account it is.
+// see: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
+public sealed record PaperCombinedView(PaperWalk Walk, DateOnly Since, int Open, int Closed, int Accounts, IReadOnlyList<PaperCombinedTradeView> Trades)
 {
     public const string Key = "combined";
 
-    public const string Name = "All setups together";
+    public const string Name = "The live setups' accounts, averaged";
 
     public int Skipped => Walk.Skipped;
 }
 
-// One trade the combined account was handed: the family whose live rule bought it, its stock, its buy session and price,
-// the shares it bought, none where it was skipped and why, the session it ended on, and its return on the position, so far
-// at tonight's close where it is open.
+// One trade of an account the averaged account holds a share of: the family whose account bought it, its stock, its buy
+// session and price, the shares its own account bought, none where that account skipped it and why, the session it ended
+// on, and its return on the position, so far at tonight's close where it is open.
 public sealed record PaperCombinedTradeView(string Family, string Ticker, DateOnly Bought, decimal Buy, long Shares, string? Skipped, DateOnly? Ended, double? Return, bool Open);
 
 // The choices paper trading keeps in its link, one a part, and the link a choice opens with every other kept: the index,
@@ -213,9 +214,10 @@ public sealed partial class MarkRenderer
     // beneath it, a key's press hiding or showing its line in the browser alone.
     public string PaperChart(IReadOnlyList<PaperAccountView> accounts, string? chosen, PaperCombinedView? combined = null)
     {
-        // From 21.11 the combined account drawn as a line of its own, after every family's.
+        // From 21.11 the combined account drawn as a line of its own, after every family's, from the 21.11 correction of
+        // 2026-11-07 the live setups' accounts averaged.
         PaperAccountView[] together = combined is { Walk.Values.Count: > 0 } all
-            ? [new PaperAccountView(PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Name, "every live rule's trades in one account", string.Empty, null, "per cent", [], all.Walk, all.Walk.Trades.Count, all.Closed, null, all.Since)]
+            ? [new PaperAccountView(PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Name, "each live setup's own account given an equal share of one account", string.Empty, null, "per cent", [], all.Walk, all.Walk.Trades.Count, all.Closed, null, all.Since)]
             : [];
         var drawn = accounts.Where(account => account.Walk is { Values.Count: > 0 } && (account.Head || account.Standing == PaperAccountView.You || (account.Standing == PaperAccountView.Variant && account.Family == chosen))).Concat(together).ToArray();
 
@@ -286,13 +288,13 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"paper-tiles\" data-tiles=\"{heads.Length + (fund is null ? 0 : 1) + (combined is null ? 0 : 1)}\">");
 
-        // From 21.11 the combined account's tile first: its return since its first trade's day, what it holds and what it
-        // skipped.
+        // From 21.11 the combined account's tile first, from the 21.11 correction of 2026-11-07 the live setups' accounts
+        // averaged: its return since the day every live account counts, what its accounts hold and what they skipped.
         if (combined is { } all)
         {
             var together = all.Walk.Return;
 
-            html.Append(Invariant, $"<div class=\"paper-tile combined\" data-standing=\"{PaperCombinedView.Key}\" data-return=\"{(together is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{all.Open}\" data-closed=\"{all.Closed}\" data-skipped=\"{all.Skipped}\" data-since=\"{DayOf(all.Since)}\" title=\"Every live rule's trades in one account of your size\">");
+            html.Append(Invariant, $"<div class=\"paper-tile combined\" data-standing=\"{PaperCombinedView.Key}\" data-return=\"{(together is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{all.Open}\" data-closed=\"{all.Closed}\" data-skipped=\"{all.Skipped}\" data-since=\"{DayOf(all.Since)}\" data-accounts=\"{all.Accounts}\" title=\"Each live setup's own account given an equal share of one account of your size\">");
             html.Append(Invariant, $"<div class=\"pt-name\">{Escaped(PaperCombinedView.Name)}</div>");
             html.Append(together is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
             html.Append(Formatted($"<div class=\"pt-sub\">{Escaped(TileSaid(together, all.Since, size, all.Open))} {all.Closed} closed, {all.Skipped} skipped.</div></div>"));
@@ -987,30 +989,29 @@ public sealed partial class MarkRenderer
         return html.ToString() + EarlierVersions(earlier ?? [], Result);
     }
 
-    // From 21.11 the combined account's card: one sentence counting what it skipped and why, then every trade it was handed,
-    // newest first, with the setup each came from, the shares it bought, and its return on the position, so far where it
-    // is open, or why it was skipped.
-    // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
-    public const string CombinedFillLine = "<p class=\"paper-combined-fill\">Each session's picks are bought in Tonight's order, each position at most a tenth of the account, so a pick the free cash cannot cover is skipped where it stands in that order and a later one the cash covers is still bought.</p>";
+    // From 21.11 the combined account's card, from the 21.11 correction of 2026-11-07 the live setups' accounts averaged: one
+    // line saying what it is, then each trade its accounts hold over its days, newest first and each session's in Tonight's
+    // order, with the setup whose own account bought it, the shares that account bought, and its return on the position, so
+    // far where it is open, or why that account skipped it.
+    // see: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
+    public static string AveragedLine(PaperCombinedView all) =>
+        Formatted($"Each of the {all.Accounts} live setups' own accounts holds an equal share of this one from {DayOf(all.Since)}, the day every one of them counts, so it holds what each holds and skips what each skips, and no pick twice: following every rule reads the same. Each row is a trade as its setup's own account bought it, its shares that account's.");
 
     public string PaperCombined(PaperCombinedView? combined)
     {
         if (combined is not { } all)
         {
-            return "<p class=\"degraded\" data-combined=\"none\">No live rule has a trade yet, so the combined account holds none.</p>";
+            return "<p class=\"degraded\" data-combined=\"none\">No live setup's account has a day to count from yet, so the averaged account holds none.</p>";
         }
 
         var html = new StringBuilder();
 
-        html.Append(Invariant, $"<div class=\"paper-combined\" data-trades=\"{all.Trades.Count}\" data-skipped=\"{all.Skipped}\" data-held=\"{all.AlreadyHeld}\" data-sector=\"{all.SectorFull}\" data-cash=\"{all.UnderCash}\">");
-        html.Append(all.Skipped == 0
-            ? "<p class=\"paper-combined-skips\">It has taken every pick it was handed.</p>"
-            : Formatted($"<p class=\"paper-combined-skips\">It skipped {all.Skipped} pick(s): {all.AlreadyHeld} because another setup already owned the stock, {all.SectorFull} because three positions in the stock's sector were already open, and {all.UnderCash} because the free cash could not cover the buy.</p>"));
-        html.Append(CombinedFillLine);
+        html.Append(Invariant, $"<div class=\"paper-combined\" data-trades=\"{all.Trades.Count}\" data-skipped=\"{all.Skipped}\" data-accounts=\"{all.Accounts}\" data-since=\"{DayOf(all.Since)}\">");
+        html.Append(Invariant, $"<p class=\"paper-combined-skips\">{Escaped(AveragedLine(all))}</p>");
         html.Append("<div class=\"tbl-wrap\"><table class=\"paper-combined-table\"><thead><tr><th>Setup</th><th>Stock</th><th>Bought</th><th class=\"r\">Buy</th><th class=\"r\">Shares</th><th>Ended</th><th class=\"r\">Return</th></tr></thead><tbody>");
 
-        // Each session's trades in the order the account filled them, Tonight's, so a skipped pick stands where it was reached.
-        foreach (var trade in all.Trades.Select((trade, at) => (Trade: trade, At: at)).OrderByDescending(one => one.Trade.Bought).ThenBy(one => one.At).Select(one => one.Trade))
+        // Each session's trades in Tonight's order of the setups, each setup's in its own account's order.
+        foreach (var trade in all.Trades.Select((trade, at) => (Trade: trade, At: at)).OrderByDescending(one => one.Trade.Bought).ThenBy(one => BuyOrder.Of(one.Trade.Family)).ThenBy(one => one.At).Select(one => one.Trade))
         {
             html.Append(Invariant, $"<tr data-family=\"{Escaped(trade.Family)}\" data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\"{(trade.Skipped is null ? string.Empty : " data-skipped=\"" + Escaped(trade.Skipped) + "\"")}>");
             html.Append(Invariant, $"<td><span class=\"fam-swatch\" data-family=\"{Escaped(trade.Family)}\"></span>{Escaped(FamilyName(trade.Family))}</td><td><a href=\"#/chart/{Uri.EscapeDataString(trade.Ticker)}\">{Escaped(trade.Ticker)}</a></td><td>{DayOf(trade.Bought)}</td>");

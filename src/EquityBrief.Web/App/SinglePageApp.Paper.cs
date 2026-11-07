@@ -85,13 +85,14 @@ public sealed partial class SinglePageApp
             stamp: Cards.Night(night),
             region: "paper-chart"));
 
-        // From 21.11 every live rule's trades in one account of your size.
-        // see: The combined account holds every live rule's trades in one pot with one position a stock and three a sector, each book family a fifth of it
+        // From 21.11 every live rule's trades in one account of your size, from the 21.11 correction of 2026-11-07 each live
+        // rule's own account given an equal share of it.
+        // see: The averaged account gives each live rule's own account an equal share, from the day every one of them counts
         region.Append(Cards.Computed(
             "Paper trading",
-            MarkRenderer.CardSummary(MarkRenderer.PaperCombinedSaid(page.Combined, walked is not null)) + (walked is null ? "<p class=\"degraded\" data-combined=\"unset\">Set your account above to walk the combined account.</p>" : marks.PaperCombined(page.Combined)),
-            title: "All setups together",
-            lede: "Every live rule's trades in one account of your size: one position a stock, at most three open in one sector, each book a fifth of the account, and a buy the free cash cannot cover skipped.",
+            MarkRenderer.CardSummary(MarkRenderer.PaperCombinedSaid(page.Combined, walked is not null)) + (walked is null ? "<p class=\"degraded\" data-combined=\"unset\">Set your account above to walk the averaged account.</p>" : marks.PaperCombined(page.Combined)),
+            title: EquityBrief.Web.Marks.PaperCombinedView.Name,
+            lede: "Each live setup's own account given an equal share of one account of your size, from the day every one of them counts: what following every rule at once would have done.",
             stamp: Cards.Night(night),
             region: "paper-combined"));
 

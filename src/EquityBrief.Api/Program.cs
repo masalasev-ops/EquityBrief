@@ -3008,15 +3008,17 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
 
     decimal? Fund(DateOnly session) => fund.TryGetValue(session, out var close) ? close : null;
 
+    var views = PaperScreen.Views(sources, tests, years, settings, sessions, night, Close, Fund);
+
     return new PaperAccounts(
         sources,
-        PaperScreen.Views(sources, tests, years, settings, sessions, night, Close, Fund),
+        views,
         Close,
         sessions,
         stocks,
         Fund,
         await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks),
-        PaperScreen.Combined(sources, settings, sessions, night, Close, Fund, stocks),
+        PaperScreen.Averaged(views, settings, sessions, night, Close, Fund),
         TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions));
 }
 
