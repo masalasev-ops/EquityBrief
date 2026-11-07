@@ -460,6 +460,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 
 /* paper trading: each account's line in its family's mark, a variant's dashed and the operator's in ink */
 .paper-families{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px;font-size:13px}
+.paper-span{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
 .paper-families a{padding:3px 10px;border:1px solid var(--hair);border-radius:999px;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
 .paper-families a[aria-current='true']{border-color:var(--ink);font-weight:600}
 .paper-chart{margin:0}

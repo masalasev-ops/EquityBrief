@@ -2564,7 +2564,10 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
         request.Query[PaperLink.BoughtKey].FirstOrDefault() == PaperLink.ClosedValue,
         Family(PaperLink.ShowKey),
         Family(PaperLink.VariantsKey),
-        Family(PaperLink.RuleKey));
+        Family(PaperLink.RuleKey))
+    {
+        Recent = request.Query[PaperLink.SpanKey].FirstOrDefault() == PaperLink.RecentValue,
+    };
     var variants = link.Variants ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
     var rule = link.Rule ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
     var drawn = paper is { } accounts && night is { } walked

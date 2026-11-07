@@ -79,7 +79,7 @@ public sealed partial class SinglePageApp
         region.Append(Cards.Computed(
             "Paper trading",
             MarkRenderer.CardSummary(MarkRenderer.PaperChartSaid(accounts, page.Fund, walked is not null)) + Guide(plain ? PlainPaperGuide : PaperGuide) + marks.PaperTiles(accounts, page.Fund, page.Combined, walked?.Size) + (plain ? string.Empty : MarkRenderer.PaperFamilies(accounts, link))
-                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, plain ? null : link.Family, page.Combined)),
+                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, plain ? null : link.Family, page.Combined, plain ? null : link)),
             title: "Each rule since its record began",
             lede: "Each family's live or provisional rule, its return on your size beside the index's fund over the same days, and beneath, each account's return in per cent of its size, session by session.",
             stamp: Cards.Night(night),

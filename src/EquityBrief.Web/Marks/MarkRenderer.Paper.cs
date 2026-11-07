@@ -180,6 +180,13 @@ public sealed record PaperCombinedTradeView(string Family, string Ticker, DateOn
 // family the variants' part reads and the rule the scorecard reads, each first choice the key's absence.
 public sealed record PaperLink(string Universe, string? Family = null, bool Closed = false, string? Show = null, string? Variants = null, string? Rule = null)
 {
+    // From the 19.4 correction of 2026-11-07 the chart's span, every line since it began or the last 30 days alone.
+    public bool Recent { get; init; }
+
+    public const string SpanKey = "span";
+
+    public const string RecentValue = "30";
+
     public const string Route = EquityBrief.Web.App.SinglePageApp.PaperRoute;
 
     public const string FamilyKey = "family";
@@ -200,7 +207,8 @@ public sealed record PaperLink(string Universe, string? Family = null, bool Clos
         + (Closed ? "&" + BoughtKey + "=" + ClosedValue : string.Empty)
         + (Show is { } show ? "&" + ShowKey + "=" + Uri.EscapeDataString(show) : string.Empty)
         + (Variants is { } variants ? "&" + VariantsKey + "=" + Uri.EscapeDataString(variants) : string.Empty)
-        + (Rule is { } rule ? "&" + RuleKey + "=" + Uri.EscapeDataString(rule) : string.Empty);
+        + (Rule is { } rule ? "&" + RuleKey + "=" + Uri.EscapeDataString(rule) : string.Empty)
+        + (Recent ? "&" + SpanKey + "=" + RecentValue : string.Empty);
 }
 
 // Paper trading's marks: a tile a family's live or provisional account with the fund beside them, the chart of each
@@ -228,7 +236,11 @@ public sealed partial class MarkRenderer
     // The chart of each drawn account's return over the sessions its walk read, in per cent of the account's size: the
     // live or provisional accounts always, a chosen family's variants dashed, each line a family's mark with its key
     // beneath it, a key's press hiding or showing its line in the browser alone.
-    public string PaperChart(IReadOnlyList<PaperAccountView> accounts, string? chosen, PaperCombinedView? combined = null)
+    // From the 19.4 correction of 2026-11-07 each line starts on its own account's first day and never as a flat run before
+    // it, the span from the earliest of those days, and a choice kept in the link between every line since it began and the
+    // last 30 days alone.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    public string PaperChart(IReadOnlyList<PaperAccountView> accounts, string? chosen, PaperCombinedView? combined = null, PaperLink? link = null)
     {
         // From 21.11 the combined account drawn as a line of its own, after every family's, from the 21.11 correction of
         // 2026-11-07 the live setups' accounts averaged.
@@ -242,9 +254,12 @@ public sealed partial class MarkRenderer
             return "<p class=\"degraded\" data-paper-chart=\"none\">No account has a session to draw yet.</p>";
         }
 
-        var sessions = drawn.SelectMany(account => account.Walk!.Values.Select(value => value.Session)).Distinct().Order().ToArray();
+        var every = drawn.SelectMany(account => account.Walk!.Values.Select(value => value.Session)).Distinct().Order().ToArray();
+        var recent = link?.Recent == true;
+        var sessions = recent ? [.. every.Where(session => session > every[^1].AddDays(-RecentDays))] : every;
         var at = sessions.Select((session, place) => (session, place)).ToDictionary(pair => pair.session, pair => pair.place);
-        var returns = drawn.ToDictionary(account => account.Key, account => account.Walk!.Returns.Select(one => (one.Session, Return: one.Return * 100)).ToArray(), StringComparer.Ordinal);
+        var returns = drawn.ToDictionary(account => account.Key, account => account.Walk!.Returns.Where(one => at.ContainsKey(one.Session)).Select(one => (one.Session, Return: one.Return * 100)).ToArray(), StringComparer.Ordinal);
+        drawn = [.. drawn.Where(account => returns[account.Key].Length > 0)];
         var low = Math.Min(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Min());
         var high = Math.Max(0, returns.Values.SelectMany(line => line.Select(point => point.Return)).Max());
         var span = high - low < 1 ? 1 : high - low;
@@ -256,7 +271,15 @@ public sealed partial class MarkRenderer
 
         var svg = new StringBuilder();
 
-        svg.Append(Invariant, $"<figure class=\"paper-chart\" data-lines=\"{drawn.Length}\" data-sessions=\"{sessions.Length}\" data-from=\"{DayOf(sessions[0])}\" data-to=\"{DayOf(sessions[^1])}\">");
+        if (link is { } kept)
+        {
+            svg.Append("<nav class=\"paper-span\" aria-label=\"The chart's span\">");
+            svg.Append(Invariant, $"<a class=\"chip\" data-filter=\"{PaperLink.SpanKey}\" href=\"{Escaped((kept with { Recent = false }).Href)}\" aria-pressed=\"{Flag(!recent)}\">Since each began</a>");
+            svg.Append(Invariant, $"<a class=\"chip\" data-filter=\"{PaperLink.SpanKey}\" href=\"{Escaped((kept with { Recent = true }).Href)}\" aria-pressed=\"{Flag(recent)}\">Last {RecentDays} days</a>");
+            svg.Append("</nav>");
+        }
+
+        svg.Append(Invariant, $"<figure class=\"paper-chart\" data-lines=\"{drawn.Length}\" data-sessions=\"{sessions.Length}\" data-from=\"{DayOf(sessions[0])}\" data-to=\"{DayOf(sessions[^1])}\" data-span=\"{(recent ? PaperLink.RecentValue : "all")}\">");
         svg.Append(Invariant, $"<svg viewBox=\"0 0 {width} {height}\" role=\"img\" aria-label=\"Each drawn account's return in per cent of its size, session by session\">");
         svg.Append(Invariant, $"<line class=\"paper-zero\" x1=\"{left}\" x2=\"{width - right}\" y1=\"{Y(0):0.#}\" y2=\"{Y(0):0.#}\"/>");
         svg.Append(Invariant, $"<text class=\"paper-axis\" x=\"{left - 6}\" y=\"{Y(high) + 4:0.#}\" text-anchor=\"end\">{high:+0.#;-0.#;0}%</text>");
@@ -283,6 +306,9 @@ public sealed partial class MarkRenderer
 
         return svg.ToString();
     }
+
+    // The calendar days the chart's recent span reaches back from its last session.
+    public const int RecentDays = 30;
 
     // A fraction drawn as a signed per cent to a tenth, in the class its sign gives.
     static string PaperPercent(double fraction) =>

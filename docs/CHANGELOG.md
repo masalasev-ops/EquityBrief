@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - the paper chart's lines from their own days, and its span chosen
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) beneath the tiles each account's return ... a family chosen in the hash adding its variants' lines dashed; a press marked with a question mark opening how the page is read
+Now:
+> ... a press marked with a question mark opening how the page is read; from the 19.4 correction of 2026-11-07 each line from its own account's first day and never as a flat run before it with the span from the earliest of those days; two chips kept in the hash choosing every line since it began or the last 30 days alone (see: ...)
+Why: the operator's order of 2026-11-07, its fifteenth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - each version marked as narrowing or widening its live rule, and a family with no trade in one line
 Decision: A version is marked as narrowing or widening its live rule by the direction of each setting it changes
 Was:

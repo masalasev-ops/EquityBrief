@@ -16691,3 +16691,20 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             and its run reading the build before it.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: each chart line starts on its own account's day, and the span is chosen since each began or the last 30 days   2026-11-07
+
+Found:      the order's fifteenth item: on 2026-11-06 the S&P 500's chart drew its lines over one span from 2 Oct, the breakout's
+            from its carried start, with no choice of span.
+Corrected:  each line is its account's walk from its own first day, the 19.4 correction above fixing that day, the span from the
+            earliest; two chips kept in the link, "Since each began" and "Last 30 days", the second drawing the 30 calendar days
+            to the newest session alone and no line holding none of them; the read-only copy draws no chip. The decision,
+            15.21's row, the changelog and the guide.
+Tests:      1 new: a line from 1 Oct and one from 2 Nov, the second opening right of the first; the chips' links; the last 30
+            days from 2 Nov.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 the
+            recent span never taken: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

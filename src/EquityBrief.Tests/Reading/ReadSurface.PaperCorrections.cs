@@ -414,4 +414,50 @@ public partial class ReadSurface
         Assert.Contains("<span class=\"pv-reach\" data-reach=\"widens\">widens it</span>", AccountRowOf(traded, "V8"), StringComparison.Ordinal);
         Assert.DoesNotContain("paper-no-trade", traded, StringComparison.Ordinal);
     }
+
+    // A walk of an account from its first day, at the given returns a session, and one trade so it is drawn.
+    static PaperWalk ChartWalk(DateOnly from, params double[] returns) =>
+        new(
+            [.. returns.Select((made, at) => (from.AddDays(at), 100_000m * (1m + (decimal)made)))],
+            [new PaperTaken(new PaperTrade("T", from, 100m, 95m, null, null, 0m, 1), 10, null)],
+            1,
+            0,
+            0,
+            returns[^1],
+            0.0,
+            null,
+            null,
+            from,
+            [.. returns.Select((made, at) => (from.AddDays(at), made))]);
+
+    static PaperAccountView ChartAccount(string family, string standing, DateOnly from, params double[] returns) =>
+        new(family, family, standing, standing == PaperAccountView.Live ? "Live" : "V1", family, "within luck", null, "risks", [], ChartWalk(from, returns), 1, 0, null, from);
+
+    // On 2026-11-06 the S&P 500's chart drew every line over one span from 2 Oct, the breakout's from its carried start and
+    // no choice of span. Each line starts on its own account's first day, the span from the earliest, and the chart offers
+    // every line since it began or the last 30 days.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    [Fact]
+    public void EachChartLineStartsOnItsOwnDayAndTheSpanIsChosenSinceEachBeganOrTheLast30Days()
+    {
+        var early = ChartAccount("heavyweight", PaperAccountView.Live, new DateOnly(2026, 10, 1), 0.0, 0.01, 0.02, 0.01);
+        var late = ChartAccount("breakout", PaperAccountView.Live, new DateOnly(2026, 11, 2), 0.0, -0.01);
+        var link = new PaperLink("500");
+        var chart = WebUtility.HtmlDecode(new MarkRenderer().PaperChart([early, late], null, null, link));
+
+        // The span opens on 1 Oct; the breakout's line opens at its own first session, the chart's fifth, and not at the left.
+        Assert.Contains("data-from=\"2026-10-01\"", chart, StringComparison.Ordinal);
+        var breakout = Regex.Match(chart, "<path class=\"paper-line[^\"]*\" data-account=\"breakout\"[^>]* d=\"M([0-9.]+),").Groups[1].Value;
+        var heavy = Regex.Match(chart, "<path class=\"paper-line[^\"]*\" data-account=\"heavyweight\"[^>]* d=\"M([0-9.]+),").Groups[1].Value;
+
+        Assert.True(double.Parse(breakout, System.Globalization.CultureInfo.InvariantCulture) > double.Parse(heavy, System.Globalization.CultureInfo.InvariantCulture), "the breakout's line opens where the heavyweights' does");
+
+        // The two spans, kept in the link; the last 30 days leave the heavyweights' October sessions out.
+        Assert.Contains("<a class=\"chip\" data-filter=\"span\" href=\"#/paper?universe=500\" aria-pressed=\"true\">Since each began</a>", chart, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"chip\" data-filter=\"span\" href=\"#/paper?universe=500&span=30\" aria-pressed=\"false\">Last 30 days</a>", chart, StringComparison.Ordinal);
+
+        var recent = WebUtility.HtmlDecode(new MarkRenderer().PaperChart([early, late], null, null, link with { Recent = true }));
+
+        Assert.Contains("data-from=\"2026-11-02\" data-to=\"2026-11-03\" data-span=\"30\"", recent, StringComparison.Ordinal);
+    }
 }
