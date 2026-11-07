@@ -99,6 +99,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "session-mark" => await SessionMarkRun(args),
     "data-check" => await DataCheckRun(args),
     "long-members" => await LongMembersRun(args),
+    "long-prices" => await LongPricesRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -238,6 +239,82 @@ static async Task<int> SessionMarkRun(string[] args)
     Console.WriteLine(written == 1 ? FormattableString.Invariant($"session-mark: {ticker} {session:yyyy-MM-dd} {kind}") : FormattableString.Invariant($"session-mark: {ticker} {session:yyyy-MM-dd} was marked already, nothing changed"));
 
     return 0;
+}
+
+// The long history's prices. With '--capture --into <folder>' every code is asked of the provider and each filer's filings of the
+// SEC, each answer kept in the folder, after the statement of what is asked; '--write <folder>' writes the folder's answers whole,
+// or nothing where a stop stands, '--print <folder>' reads them and writes nothing, and '--counts-read' records the operator's word
+// that the data check's counts over the long history have been read.
+// see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+static async Task<int> LongPricesRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+
+    static void Say(string line) => Console.WriteLine("long-prices: " + line);
+
+    if (args.Contains("--counts-read", StringComparer.Ordinal))
+    {
+        await EquityBrief.Worker.History.LongPricePull.CountsReadAsync(store.DatabaseFile, FormattableString.Invariant($"long-counts-read-{clock.UtcNow:yyyyMMddTHHmmssZ}"), clock);
+        Say("the operator's word that the long history's counts are read is on the run log");
+
+        return 0;
+    }
+
+    if (args.Contains("--capture", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-prices: give '--capture --into <folder>'.");
+
+            return 2;
+        }
+
+        Directory.CreateDirectory(folder);
+
+        var codes = await EquityBrief.Worker.History.LongPricePull.CodesAsync(store.DatabaseFile);
+        var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+        var feed = EodhdLongHistoryFeed.Live(string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address, new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty));
+
+        try
+        {
+            var asked = await EquityBrief.Worker.History.LongPricePull.CaptureAsync(folder, codes, feed, clock.SessionDateAt(clock.UtcNow), args.Contains(ProviderStop.PastTheStop, StringComparer.Ordinal), Say);
+
+            Say(FormattableString.Invariant($"{asked:N0} request(s) to the provider"));
+        }
+        catch (ArgumentException refusal)
+        {
+            Console.Error.WriteLine("long-prices: " + refusal.Message);
+
+            return 1;
+        }
+
+        var agent = new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty);
+        var filers = await EquityBrief.Worker.History.LongPricePull.FilersAsync(folder, codes, SecEdgarFilerFilingsFeed.Live(agent), SecEdgarTrustScheduleFeed.Live(agent), Say);
+
+        Say(FormattableString.Invariant($"{filers.Count(filer => filer.IsTheCompany):N0} of {filers.Count:N0} code(s) read to their company's filer"));
+
+        return 0;
+    }
+
+    var write = VerbArguments.Value(args, "--write");
+
+    if ((write ?? VerbArguments.Value(args, "--print")) is not { } kept)
+    {
+        Console.Error.WriteLine("long-prices: give '--capture --into <folder>', '--write <folder>', '--print <folder>' or '--counts-read'.");
+
+        return 2;
+    }
+
+    var outcome = await EquityBrief.Worker.History.LongPricePull.WriteAsync(store.DatabaseFile, kept, FormattableString.Invariant($"long-prices-{clock.UtcNow:yyyyMMddTHHmmssZ}"), clock, write is not null, Say);
+
+    foreach (var line in EquityBrief.Worker.History.LongPricePull.Lines(outcome, args.Contains("--each", StringComparer.Ordinal)))
+    {
+        Say(line);
+    }
+
+    return outcome.Stops.Count > 0 ? 2 : 0;
 }
 
 // The long history's membership from the trust's older schedules. With '--capture --into <folder>' the trust's filings of the
@@ -530,8 +607,9 @@ static async Task<int> DataCheckRun(string[] args)
     }
 
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
-    var checker = new EquityBrief.Worker.History.DataChecker(clock, store.DatabaseFile);
-    var outcome = await checker.RunAsync(FormattableString.Invariant($"data-check-{clock.UtcNow:yyyyMMddTHHmmssZ}"), write: !args.Contains("--print"));
+    var longHistory = args.Contains("--long", StringComparer.Ordinal);
+    var checker = new EquityBrief.Worker.History.DataChecker(clock, store.DatabaseFile, longHistory);
+    var outcome = await checker.RunAsync(FormattableString.Invariant($"{(longHistory ? "data-check-long" : "data-check")}-{clock.UtcNow:yyyyMMddTHHmmssZ}"), write: !args.Contains("--print"));
 
     foreach (var line in EquityBrief.Worker.History.DataChecker.Lines(outcome).Concat(args.Contains("--each") ? EquityBrief.Worker.History.DataChecker.Each(outcome) : []))
     {
@@ -568,7 +646,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 71 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 72 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -795,11 +873,15 @@ static int NoVerb()
         "'ticker-join --ticker <code> --earlier <code>' records that a stock's earlier sessions sit under another ticker at the " +
         "provider, 'session-mark --ticker <code> --session <yyyy-MM-dd> --kind <kind> --says <words>' records the operator's word on a " +
         "session of its pulled history, 'data-check' classifies every stock's pulled sessions into the data check's rows, with " +
-        "'--print' writing nothing and printing the counts, '--each' printing every finding a line besides, and '--end <cik> --into <folder>' reading a filer's filings from the SEC " +
-        "into the folder and printing where its history ends, " +
+        "'--print' writing nothing and printing the counts, '--each' printing every finding a line besides, '--long' reading the long history's prices from 2005 in place of the pull, " +
+        "and '--end <cik> --into <folder>' reading a filer's filings from the SEC into the folder and printing where its history ends, " +
         "'long-members' builds the long history's folder from the trust's older filings and the provider's day files with " +
         "'--capture', '--days', '--ask', '--filers', '--checks' and '--named', each '--into <folder>', and with '--write <folder>' " +
         "matches the funds' schedules and writes the membership back to 2005 where no stop stands, " +
+        "'long-prices' asks every code of the long history for its prices from 2004, its splits and dividends and each filer's filings with " +
+        "'--capture --into <folder>', after stating what it asks, '--past-the-stop' asking past the day's stop on the operator's word, and with " +
+        "'--write <folder>' writes them whole where no stop stands, '--print <folder>' writing nothing, '--each' naming every end and difference, " +
+        "and '--counts-read' recording the operator's word that the long data check's counts have been read, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

@@ -33,6 +33,28 @@ public sealed class SessionMarks(IClock clock, string databaseFile) : IComponent
         VALUES ($run_id, $stage, $started_at, $started_at, 'ok', $rows, 0, 0, '0', $detail);
     ";
 
+    // The sessions histories end on that a run read by rule from their filers' filings, written inside the run's own transaction,
+    // a session already marked changing nothing; the rows written.
+    // see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger
+    public static async Task<int> MarkEndsAsync(SqliteConnection connection, SqliteTransaction transaction, IReadOnlyList<(string Ticker, DateOnly Session, string Says)> ends, string ruled, string runId, CancellationToken cancellation = default)
+    {
+        var written = 0;
+
+        await using var insert = connection.CreateCommand();
+        insert.Transaction = transaction;
+        insert.CommandText = Insert;
+
+        var (ticker, session, kind, says, at, run) = (insert.Parameters.Add("$ticker", SqliteType.Text), insert.Parameters.Add("$session", SqliteType.Text), insert.Parameters.Add("$kind", SqliteType.Text), insert.Parameters.Add("$says", SqliteType.Text), insert.Parameters.Add("$ruled", SqliteType.Text), insert.Parameters.Add("$run_id", SqliteType.Text));
+
+        foreach (var end in ends)
+        {
+            (ticker.Value, session.Value, kind.Value, says.Value, at.Value, run.Value) = (end.Ticker, end.Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), SessionMarking.HistoryEnds, end.Says, ruled, runId);
+            written += await insert.ExecuteNonQueryAsync(cancellation);
+        }
+
+        return written;
+    }
+
     // Writes the mark, a second word on the same session changing nothing, and states what it did.
     public async Task<int> MarkAsync(string ticker, DateOnly session, string kind, string says, string runId)
     {

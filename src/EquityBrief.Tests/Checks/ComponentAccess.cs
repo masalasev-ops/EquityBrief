@@ -95,6 +95,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Long members"),
     ];
 
+    // 23.4's one: the long price pull.
+    internal static string[] LongPricesRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Long price pull"),
+        CheckReach.Key(Scope.MatrixTable, "Long price pull"),
+    ];
+
     // 22.38's one: the session marks.
     internal static string[] SessionMarkRows =>
     [
@@ -274,6 +281,9 @@ public partial class ComponentAccess
 
             // 23.3, the long history's schedule filings, day files and members.
             .. LongMembershipRows,
+
+            // 23.4, the long price pull.
+            .. LongPricesRows,
             .. LateBarRows,
             .. EntryReaderRows,
             .. SplitNameRows,

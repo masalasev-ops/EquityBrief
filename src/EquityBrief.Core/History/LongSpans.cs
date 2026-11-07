@@ -13,11 +13,13 @@ public sealed record ProviderSpan(string Ticker, DateOnly? Joined, DateOnly? Lef
 // The long history's spans of membership. A member runs from a snapshot holding it to the first later snapshot that does not,
 // so a stock falling within a quarter stays a member until its prices stop; a code away at one snapshot alone is read as held
 // there, one away at two snapshots or more reads as two spans; a code two funds hold at one quarter end reads in the larger
-// index. Before 2012 the S&P 500 reads IVV's snapshots, and from 2012 the provider's dates, a span with no start date taking
+// index. Before 2012 the S&P 500 reads IVV's snapshots, and from 2012 the provider's dates, or from the day after IVV's last
+// schedule where the prices' count of the two sets them more than its margin apart, a span with no start date taking
 // the first snapshot holding its company, read by its code and where no snapshot holds the code by its name; two spans the
 // provider files under two codes with one name and the same dates are one company's and read as the first code.
 // see: The S&P 500 before 2012 is read from IVV's filed holdings and from 2012 from the provider's dates
 // see: A provider's span with no start date takes the first of IVV's snapshots holding its company by code or by name
+// see: The S&P 500's provider dates from 2012 are held against IVV's holdings and read from IVV's last schedule where they stand more than 5 apart
 public static class LongSpans
 {
     public const string FromFund = "fund";
@@ -34,13 +36,15 @@ public static class LongSpans
     public static IReadOnlyList<LongSpan> Of(
         IReadOnlyDictionary<string, IReadOnlyDictionary<DateOnly, IReadOnlySet<string>>> snapshots,
         IReadOnlyList<ProviderSpan> provider,
-        IReadOnlyDictionary<string, DateOnly>? firstHeldByName = null)
+        IReadOnlyDictionary<string, DateOnly>? firstHeldByName = null,
+        DateOnly? providerFrom = null)
     {
         var spans = new List<LongSpan>();
+        var cutover = providerFrom ?? ProviderFrom;
 
         foreach (var index in Larger.Where(snapshots.ContainsKey))
         {
-            DateOnly[] periods = [.. snapshots[index].Keys.Where(period => index != "GSPC" || period < ProviderFrom).Order()];
+            DateOnly[] periods = [.. snapshots[index].Keys.Where(period => index != "GSPC" || period < cutover).Order()];
 
             // The codes this index's fund holds at each quarter end, less those a larger index's fund holds there too.
             HashSet<string> Held(DateOnly period) =>
@@ -73,7 +77,7 @@ public static class LongSpans
 
                 if (start is { } open)
                 {
-                    spans.Add(new LongSpan(index, code, periods[open], index == "GSPC" ? ProviderFrom : null, FromFund));
+                    spans.Add(new LongSpan(index, code, periods[open], index == "GSPC" ? cutover : null, FromFund));
                 }
             }
         }
@@ -83,7 +87,7 @@ public static class LongSpans
             DateOnly[] periods = [.. ivv.Keys.Order()];
 
             var once = provider
-                .Where(span => !(span.Left <= ProviderFrom))
+                .Where(span => !(span.Left <= cutover))
                 .GroupBy(span => (Name: span.Name is { } name ? HoldingMatcher.NameKey(name) : span.Ticker, span.Joined, span.Left))
                 .Select(group => group.OrderBy(span => span.Ticker, StringComparer.Ordinal).First());
 
@@ -95,7 +99,7 @@ public static class LongSpans
 
                 if (first is { } joined)
                 {
-                    spans.Add(new LongSpan("GSPC", span.Ticker, joined < ProviderFrom ? ProviderFrom : joined, span.Left, FromProvider));
+                    spans.Add(new LongSpan("GSPC", span.Ticker, joined < cutover ? cutover : joined, span.Left, FromProvider));
                 }
             }
         }

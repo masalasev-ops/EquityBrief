@@ -14,6 +14,14 @@ public interface ILongHistoryFeed
     Task<string> SymbolsAsync(string exchange, bool delisted, CancellationToken cancellation = default);
 
     Task<string> PricesAsync(string code, DateOnly from, DateOnly through, CancellationToken cancellation = default);
+
+    Task<string> SplitsAsync(string code, DateOnly from, CancellationToken cancellation = default);
+
+    Task<string> DividendsAsync(string code, DateOnly from, CancellationToken cancellation = default);
+
+    Task<string> CalendarAsync(DateOnly from, DateOnly through, CancellationToken cancellation = default);
+
+    Task<string> CompanyAsync(string code, CancellationToken cancellation = default);
 }
 
 // The provider's answers for the long history, asked once by hand and never on a night. Its key travels in the query
@@ -47,6 +55,19 @@ public sealed class EodhdLongHistoryFeed(HttpClient client, ProviderCredentials 
 
     public Task<string> PricesAsync(string code, DateOnly from, DateOnly through, CancellationToken cancellation = default) =>
         SendAsync($"eod/{Uri.EscapeDataString(code)}", FormattableString.Invariant($"&from={from:yyyy-MM-dd}&to={through:yyyy-MM-dd}"), cancellation);
+
+    public Task<string> SplitsAsync(string code, DateOnly from, CancellationToken cancellation = default) =>
+        SendAsync($"splits/{Uri.EscapeDataString(code)}", FormattableString.Invariant($"&from={from:yyyy-MM-dd}"), cancellation);
+
+    public Task<string> DividendsAsync(string code, DateOnly from, CancellationToken cancellation = default) =>
+        SendAsync($"div/{Uri.EscapeDataString(code)}", FormattableString.Invariant($"&from={from:yyyy-MM-dd}"), cancellation);
+
+    public Task<string> CalendarAsync(DateOnly from, DateOnly through, CancellationToken cancellation = default) =>
+        SendAsync("calendar/earnings", FormattableString.Invariant($"&from={from:yyyy-MM-dd}&to={through:yyyy-MM-dd}"), cancellation);
+
+    // The company's general record alone, which carries the filer's number the provider files it under.
+    public Task<string> CompanyAsync(string code, CancellationToken cancellation = default) =>
+        SendAsync($"fundamentals/{Uri.EscapeDataString(code)}", "&filter=General", cancellation);
 
     async Task<string> SendAsync(string path, string query, CancellationToken cancellation)
     {
