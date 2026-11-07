@@ -1,0 +1,14 @@
+# The remedy of 23.4, the long history's prices from 2004. Migration 132 creates long_bar, long_market_bar, long_print,
+# long_split, long_dividend and long_filing. The write reads the long prices' folder under the data root, data/long-prices,
+# which the capture the runbook shows built from the provider's answers for every code the long history's membership matched
+# and every code the pull holds, their splits, dividends and company records, the earnings calendar's months before the pull's
+# first and the market series, and each code's filer's filings at the SEC; it asks nothing of any provider or the SEC, makes no
+# model call, prints the S&P 500's count against IVV's holdings from 2012, the coverage over the spans, the codes priced by
+# nothing, the filers refused and the departed codes' ends, and writes the six tables whole with the ends' marks and its row on
+# the run log, or writes nothing and exits 2 where a quarter end falls under the floor. The data check then runs over the long
+# prices from 2005, replacing its run over the pull. No bar, pulled row or night moves, and no source a rule's version or the
+# readings' version pins moves. Run from main after the merge, when no night, off-peak run, local run, ledger build or monthly
+# run is writing, and restart the read surface after it.
+migrate
+long-prices --write data/long-prices
+data-check --long
