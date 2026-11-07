@@ -474,7 +474,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-tip-row[data-family='improving']::before{background:var(--fam-improving)} .paper-tip-row[data-family='dip']::before{background:var(--fam-dip)} .paper-tip-row[data-family='heavyweight']::before{background:var(--fam-heavyweight)} .paper-tip-row[data-family='quality']::before{background:var(--fam-quality)}
 .paper-tip-row[data-standing='combined']::before{background:var(--ink)} .paper-tip-row[data-standing='you']::before{background:var(--accent)} .paper-tip-row[data-standing='fund']::before{background:var(--muted)}
 .paper-chart svg,.paper-running svg{width:100%;height:auto;display:block}
-.paper-zero{stroke:var(--soft);stroke-width:1.2}
+@media (max-width:760px){.paper-chart{overflow-x:auto}.paper-chart svg{width:720px;max-width:none}}.paper-zero{stroke:var(--soft);stroke-width:1.2}
 .paper-grid{stroke:var(--hair);stroke-width:1}
 .paper-axis{font-size:11px;fill:var(--soft);font-variant-numeric:tabular-nums}
 .paper-axis.paper-zero-label{fill:var(--ink-2);font-weight:600}

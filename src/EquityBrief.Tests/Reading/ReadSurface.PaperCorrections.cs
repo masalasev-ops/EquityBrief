@@ -622,4 +622,30 @@ public partial class ReadSurface
         Assert.Contains("data-paper-chart=\"none\">No account has a trade to draw yet.", none, StringComparison.Ordinal);
         Assert.Contains("Pullback · Live · no trades yet", none, StringComparison.Ordinal);
     }
+
+    // Read back on 5152 at a true 390 on 2026-11-07, the chart drew its whole width into the phone's, its axis, dates and end
+    // labels about four pixels high. At a width under the chart's own it keeps a width its labels read at nine pixels or more,
+    // and scrolls inside its own frame as a table does, the page never wider than the phone.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    [Fact]
+    public void ThePaperChartKeepsItsLabelsLegibleAtAPhonesWidth()
+    {
+        var from = new DateOnly(2026, 11, 3);
+        var chart = new MarkRenderer().PaperChart([ChartAccount("drift", PaperAccountView.Live, from, 0.0, 0.01)], null);
+        var drawn = double.Parse(Regex.Match(chart, "<svg viewBox=\"0 0 ([0-9.]+) ").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        var narrow = Regex.Match(Stylesheet.Css, @"@media \(max-width:(\d+)px\)\{\.paper-chart\{overflow-x:auto\}\.paper-chart svg\{width:(\d+)px;max-width:none\}\}");
+
+        Assert.True(narrow.Success);
+
+        var kept = double.Parse(narrow.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
+
+        foreach (var label in new[] { "paper-axis", "paper-end" })
+        {
+            var size = double.Parse(Regex.Match(Stylesheet.Css, $@"\.{label}\{{font-size:(\d+)px").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+
+            Assert.True(size * kept / drawn >= 9, $"{label} reads at {size * kept / drawn:0.0}px");
+        }
+
+        Assert.True(kept < drawn && int.Parse(narrow.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) >= kept);
+    }
 }

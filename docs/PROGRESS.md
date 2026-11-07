@@ -16870,3 +16870,20 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             the fold beneath a pick drawn open: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: the paper chart keeps its labels legible at a phone's width   2026-11-07
+
+Found:      the read-back on 5152 of the operator's order of 2026-11-07, at a true 390 in both palettes after its pull request
+            merged: the chart drew its whole width into the phone's, its axis, dates and end labels about four pixels high.
+            Every other region read back at 1440 and 390 in both palettes, 36 shots over the three indexes' paper pages and
+            Home, none wider than its screen.
+Corrected:  at a width under 760 the chart keeps a width of 720, its 11-pixel labels reading at 9.2, and scrolls inside its own
+            frame as a table does. The decision's text, 15.21's row and the changelog.
+Tests:      1 new: the rule read from the stylesheet against the chart's own drawn width, each label's size scaled to it at nine
+            pixels or more.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the narrow rule removed: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

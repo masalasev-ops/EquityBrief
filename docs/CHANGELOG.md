@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - the paper chart legible at a phone's width
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... an account with no trade drawing no line and its key saying no trades yet (see: ...)
+Now:
+> ... an account with no trade drawing no line and its key saying no trades yet; at a width under the chart's own a width its labels read at, the chart scrolling inside its own frame (see: ...)
+Why: the read-back at a true 390 of the operator's order of 2026-11-07, which found the chart's labels about four pixels high.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - a pick's other ways in folded as not traded, each stop named as its own
 Decision: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
 Was:
