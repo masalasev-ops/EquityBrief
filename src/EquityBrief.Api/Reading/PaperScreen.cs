@@ -671,8 +671,11 @@ public static class PaperScreen
             var verdict = account.Standing == PaperAccountView.You
                 ? RuleVerdict.Yours
                 : test is null ? RuleVerdict.NotTested : RuleVerdict.Of(test.Passed, test.Why, test.Adjusted, test.Gate, test.Stable, test.Trimmed, test.Counts);
+            // A rule's account caps each position at a tenth of its value whatever the settings state; the operator's own walks
+            // the settings their cards size by.
+            // see: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
             var walked = settings is { } held && account.Since is { } from
-                ? PaperAccount.Walk(held, [.. account.Trades.Select(one => one.Trade)], [.. sessions.Where(session => session >= from && session <= night)], close, fund)
+                ? PaperAccount.Walk(account.Standing == PaperAccountView.You ? held : held with { PositionCap = PaperAccount.AccountCap }, [.. account.Trades.Select(one => one.Trade)], [.. sessions.Where(session => session >= from && session <= night)], close, fund)
                 : null;
             var ended = account.Trades.Count(one => one.Trade.Ended is not null);
             var months = account.Since is { } first ? RuleVerdict.MonthsBetween(first, night) : 0;

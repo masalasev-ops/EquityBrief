@@ -16465,3 +16465,25 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             account starting where the replay counted from: red. m2 the fold drawn for no account: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: each rule's account caps a position at a tenth, and its card says so in the operator's words   2026-11-07
+
+Found:      the order's eleventh item: on 2026-11-06 each rule's own account walked the settings' cap, the example's a fifth, so
+            $100,000 risking 1% on a stop half a dollar under 100 held $20,000 a position and skipped a session's sixth pick for
+            the cash; the card said "risking 1% a trade with at most 20% in one stock".
+Corrected:  `PaperScreen.Views` walks each rule's account, live, provisional and version, with `PaperAccount.AccountCap`, a tenth,
+            whatever the settings state; the combined account's tenth is the same constant; the operator's own account walks the
+            settings. The account's card opens on "Each position risks 1% and is capped at a tenth of the account." with the
+            risk setting's figure, drawn as worded: its risks is a verb, so neither the reader's words nor the plain-words check,
+            which also leaves a company's name drawn as filed alone, reads the marked element. The line draws the tenth beside the
+            cap a pick's card reads, and the example's notice names the risk alone. The decision, 15.21's row, section 17's
+            clause, the changelog and the guide.
+Tests:      1 new, by hand: eleven picks of one session at 100 over 99.5 on $100,000 at 1% buy 100 shares each, ten of them, the
+            eleventh skipped under the cash; the card's sentence and the line read off the page and the check finding no term in
+            it. The variant account's walk worked again at a tenth, 0.003 where it was 0.015, and the two pages' lines.
+Claims:     none new.
+Pins:       section 17's 0.1 now held by `PaperAccount.AccountCap`, the constant renamed from the combined account's.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            rule's account walked on the settings' cap: red. m2 the sentence's element unmarked: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

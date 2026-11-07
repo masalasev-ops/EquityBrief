@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Cards;
+using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
@@ -82,5 +83,34 @@ public partial class ReadSurface
         Assert.DoesNotContain("counts from 2 Oct", page, StringComparison.Ordinal);
         Assert.DoesNotContain("The accounts above count only the rules as registered now", page, StringComparison.Ordinal);
         Assert.DoesNotContain("The accounts above", groups.SystemLine, StringComparison.Ordinal);
+    }
+
+    // On 2026-11-06 each rule's own account walked the settings' fifth: $100,000 risking 1% a trade on stops half a dollar
+    // under a buy of 100 held 200 shares, $20,000, a position, so a sixth pick of a session was skipped for the cash. The page
+    // said "risking 1% a trade with at most 20% in one stock".
+    // see: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
+    [Fact]
+    public void EachRulesAccountCapsAPositionAtATenthAndHoldsTenBeforeItSkips()
+    {
+        var day = new DateOnly(2026, 11, 3);
+        (PaperTrade, double?)[] picks = [.. Enumerable.Range(1, 11).Select(at => ((PaperTrade, double?))(new PaperTrade("P" + at.ToString("00", System.Globalization.CultureInfo.InvariantCulture), day, 100m, 99.5m, null, null, 0m, at, Listed: day.AddDays(-1)), null))];
+        var head = new EquityBrief.Api.Reading.PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, picks, day);
+        var settings = new AccountSettings(100_000m, 1m, 0.2m);
+
+        // The risk would buy 2,000 shares; a tenth of $100,000 at 100 is 100. Ten positions spend the account and the
+        // eleventh is skipped under the cash.
+        var view = Assert.Single(EquityBrief.Api.Reading.PaperScreen.Views([head], [], [], settings, [day], day, (_, _) => 100m, _ => null));
+
+        Assert.Equal((10, 1), (view.Walk!.Taken, view.Walk.Skipped));
+        Assert.All(view.Walk.Trades.Where(one => one.Skipped is null), one => Assert.Equal(100, one.Shares));
+        Assert.Equal(PaperAccount.UnderTheCash, view.Walk.Trades[^1].Skipped);
+
+        // The account's card says so, and its line draws a tenth beside the cap a pick's card reads.
+        var page = PaperPageOf(new PaperPageView([view], [], [], [], new PaperNotBought([]), [], null));
+
+        Assert.Contains("<p class=\"card-summary\" data-summary>Each setup trades its own copy of your account of $100,000. <span data-as-worded>Each position risks 1% and is capped at a tenth of the account.</span></p>", page, StringComparison.Ordinal);
+        Assert.Empty(PlainWords.Faults(page, "account", ["risks"]));
+        Assert.Contains("<span>Most in one stock <b>10%</b></span>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("with at most 20% in one stock", page, StringComparison.Ordinal);
     }
 }

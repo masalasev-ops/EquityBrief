@@ -61,7 +61,7 @@ public partial class ReadSurface
         var buys = trades.GroupBy(one => one.Trade.Ticker, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First().Trade.Buy, StringComparer.Ordinal);
         var walked = PaperAccount.Combined(account, trades, [CombinedDay1, CombinedDay2, CombinedDay3], (ticker, _) => buys[ticker]);
 
-        Assert.Equal(0.1m, PaperAccount.CombinedCap);
+        Assert.Equal(0.1m, PaperAccount.AccountCap);
         Assert.Equal(
             [
                 "pullback|A|10|", $"breakout|A|0|{PaperAccount.AlreadyHeld}", "breakout|B|20|", "drift|C|50|", $"drift|D|0|{PaperAccount.SectorFull}", "improving|G|6|", "dip|E|40|", "quality|F|5|",

@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - each rule's account caps a position at a tenth, and its card says so in the operator's words
+Decision: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
+Was:
+> (15.21, your account) one sentence on what the page is; the account's line of its size and the risk a trade in per cent and the most in one stock, saying each rule trades its own copy of the account; a press reading ...
+> (section 17, the combined paper account) ... and at most 0.1 of the account's value in one stock for every trade whatever the settings state for each rule's own account, each session's picks ...
+Now:
+> (15.21, your account) ... saying each rule trades its own copy of the account; from the 19.4 correction of 2026-11-07 the card opening on the account each setup trades a copy of and the operator's sentence "Each position risks 1% and is capped at a tenth of the account." ... (see: ...); a press reading ...
+> (section 17, the combined paper account) ... and at most 0.1 of the account's value in one stock for every trade whatever the settings state, from the 19.4 correction of 2026-11-07 in each rule's own account as in the combined (see: ...), each session's picks ...
+Why: the operator's order of 2026-11-07, its eleventh item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - every account counts from its version's first session, and the same trades before it stand apart
 Decision: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
 Was:

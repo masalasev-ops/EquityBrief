@@ -148,9 +148,12 @@ public partial class PlainWords
         return found;
     }
 
-    // A glossary or a tooltip, which a reader opens to read a term beside its meaning.
+    // A glossary or a tooltip, which a reader opens to read a term beside its meaning; and from the 21.13 correction of
+    // 2026-11-07 a company's name or a filer's words drawn as filed, and a sentence the operator worded drawn as worded,
+    // whose words are not the build's terms.
+    // see: A company's name and a filer's words are drawn as filed, and never in the reader's words
     static bool Aside(Match tag) =>
-        Regex.IsMatch(tag.Groups["attributes"].Value, @"\brole=""tooltip""|\bdata-glossary\b|\bclass=""(?:[^""]*\s)?gloss(?:\s[^""]*)?""", RegexOptions.CultureInvariant);
+        Regex.IsMatch(tag.Groups["attributes"].Value, @"\brole=""tooltip""|\bdata-glossary\b|\bclass=""(?:[^""]*\s)?gloss(?:\s[^""]*)?""|(?<![\w-])data-as-(?:filed|worded)(?![\w-])", RegexOptions.CultureInvariant);
 
     // The markup less every glossary and tooltip, each removed whole with what it holds.
     internal static string WithoutAsides(string markup)

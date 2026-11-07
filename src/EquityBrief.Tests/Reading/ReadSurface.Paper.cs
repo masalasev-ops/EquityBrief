@@ -157,7 +157,7 @@ public partial class ReadSurface
         // from them.
         Assert.Contains($"<section class=\"paper\" data-universe=\"500\" data-night=\"{TheSwitch}\"", page, StringComparison.Ordinal);
         Assert.Contains("data-walked=\"true\"", page, StringComparison.Ordinal);
-        Assert.Contains("<span>Account <b>$98,765</b></span><span>Risk a trade <b>1.37%</b></span><span>Most in one stock <b>23%</b></span><span>Each rule trades its own copy of this account.</span>", page, StringComparison.Ordinal);
+        Assert.Contains("<span>Account <b>$98,765</b></span><span>Risk a trade <b>1.37%</b></span><span>Most in one stock <b>10%</b></span><span>Each rule trades its own copy of this account; a pick's card is capped at 23%.</span>", page, StringComparison.Ordinal);
         Assert.Contains("<summary>Change the account</summary>", page, StringComparison.Ordinal);
         Assert.Contains("value=\"98765.43\"", page, StringComparison.Ordinal);
 
@@ -322,12 +322,14 @@ public partial class ReadSurface
         var key = RunScreen.Slug(ProvisionalBreakout);
         var row = AccountRowOf(page, key);
 
-        // A risk of 150, one and a half per cent of 10,000, over 3 a share buys 50 shares. 09-29: N1 for 5,000, valued at
-        // 10,000. 09-30: N2 for 5,000 off a worth of 10,000, the cash at nothing, N1 at 102 over 100, 10,100. 10-01: N1
-        // sold at 106, 5,300 in cash, N2 at 98 over 100, 4,900: 10,200. The night: N2 sold at 97, 4,850: 10,150. Its
-        // return 0.015, over its two trades, both decided, the live rule's list taking neither. E1 and E2 are in none of it.
+        // A risk of 150, one and a half per cent of 10,000, over 3 a share would buy 50 shares; from the 19.4 correction of
+        // 2026-11-07 a rule's account holds at most a tenth of its value in one stock, 1,000 at 100, 10 shares, whatever the
+        // settings state. 09-29: N1 for 1,000, valued at 10,000. 09-30: N2 for 1,000 off a worth of 10,000, 8,000 in cash,
+        // N1 at 102 over 100, 10,020. 10-01: N1 sold at 106, 9,060 in cash, N2 at 98 over 100, 980: 10,040. The night: N2
+        // sold at 97, 970: 10,030. Its return 0.003, over its two trades, both decided, the live rule's list taking neither.
+        // E1 and E2 are in none of it.
         Assert.StartsWith($"<tr data-account=\"{key}\" data-standing=\"variant\" data-trades=\"2\" data-shared=\"0\" data-only=\"2\">", row, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-return=\"0.015\">", row, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-return=\"0.003\">", row, StringComparison.Ordinal);
         Assert.Contains($"<tr data-account=\"{key}\" data-verdict=\"{RuleVerdict.NotTested}\" data-better=\"none\">", page, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\">2 of 300 decided</td>", page, StringComparison.Ordinal);
 

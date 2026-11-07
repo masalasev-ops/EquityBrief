@@ -247,7 +247,11 @@ public static partial class PaperAccount
 
     public const decimal BookShare = 0.2m;
 
-    public const decimal CombinedCap = 0.1m;
+    // The most of an account's value a position holds in a rule's paper account, from the 19.4 correction of 2026-11-07 each
+    // rule's own as well as the combined, whatever a pick's card is capped at: a position risks the risk setting and holds at
+    // most a tenth, so an account holds ten before the free cash runs out.
+    // see: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
+    public const decimal AccountCap = 0.1m;
 
     public const string AlreadyHeld = "another setup already owned the stock";
 
@@ -275,10 +279,10 @@ public static partial class PaperAccount
             : of[trade].Sector is { } sector && open.Count(held => of[held].Sector == sector) >= SectorCap ? SectorFull
             : null;
 
-        var capped = account with { PositionCap = CombinedCap };
+        var capped = account with { PositionCap = AccountCap };
 
         AccountSettings Sizing(PaperTrade trade, decimal worth) =>
-            of[trade].Book ? capped with { Size = worth * BookShare, PositionCap = CombinedCap / BookShare } : capped with { Size = worth };
+            of[trade].Book ? capped with { Size = worth * BookShare, PositionCap = AccountCap / BookShare } : capped with { Size = worth };
 
         var walk = Walk(capped, [.. ordered.Select(one => one.Placed)], sessions, close, fund, Refuse, Sizing);
 

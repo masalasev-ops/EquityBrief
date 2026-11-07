@@ -21,6 +21,14 @@ public static class ReaderText
 
     // The attribute as an element's opening tag writes it.
     public const string AsFiledMark = " " + AsFiled;
+
+    // The attribute an element carries where its text is a sentence the operator worded, which the page draws as worded:
+    // "Each position risks 1%" uses risks as a verb, never the tester's unit.
+    // see: Each rule's paper account sizes a position by its risk and caps it at a tenth of the account, whatever a pick's card is capped at
+    public const string AsWorded = "data-as-worded";
+
+    public const string AsWordedMark = " " + AsWorded;
+
     // Each phrase and what the reader reads in its place. A replacement keeps a capital the phrase opened on.
     public static IReadOnlyList<(string Phrase, string Words)> Phrases { get; } =
     [
@@ -154,7 +162,7 @@ public static class ReaderText
 
     static readonly Regex Closing = new(@"^</(script|style)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
-    static readonly Regex Filed = new(@"^<([a-z][a-z0-9]*)\b[^>]*\s" + AsFiled + @"(?:[\s=/>])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    static readonly Regex Filed = new(@"^<([a-z][a-z0-9]*)\b[^>]*\s(?:" + AsFiled + "|" + AsWorded + @")(?:[\s=/>])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     static readonly Regex Named = new(@"^<(/?)([a-z][a-z0-9]*)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 

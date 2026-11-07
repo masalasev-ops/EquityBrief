@@ -261,7 +261,7 @@ public class PinnedConstants
             new("Choosing a version by its record", "50", Core.Loop.VersionChoices.TradeFloor, "VersionChoices.TradeFloor"),
             new("Choosing a version by its record", "12", Core.Loop.VersionChoices.MonthFloor, "VersionChoices.MonthFloor"),
             new("The combined paper account", "3", Core.Cards.PaperAccount.SectorCap, "PaperAccount.SectorCap"),
-            new("The combined paper account", "0.1", Core.Cards.PaperAccount.CombinedCap, "PaperAccount.CombinedCap"),
+            new("The combined paper account", "0.1", Core.Cards.PaperAccount.AccountCap, "PaperAccount.AccountCap"),
             new("The readings the operator chose", "252", Core.Ledger.LedgerReadings.RelativeStrengthSessions, "LedgerReadings.RelativeStrengthSessions"),
             new("The readings the operator chose", "21", Core.Ledger.LedgerReadings.ClusterSessions, "LedgerReadings.ClusterSessions"),
             new("The readings the operator chose", "21", Core.Ledger.LedgerReadings.RatingActionSessions, "LedgerReadings.RatingActionSessions"),
