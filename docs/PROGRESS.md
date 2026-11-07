@@ -16441,3 +16441,27 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             company's cell unmarked: red. m2 the table reading a filed element's text: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: every account counts from its version's first session, and the same trades before it stand apart under the account   2026-11-07
+
+Found:      the order's first item: on 2026-11-06 the S&P 500's breakout's tile read "Down 1.8% since 2 Oct" with "counts from 2 Oct:
+            its earlier trades replay the same under this version" and the drift's from 30 Oct, both under versions of 3 Nov, the
+            scorecard counting from those days, and the line beneath what the system bought said "The accounts above count only
+            the rules as registered now, since 3 Nov".
+Corrected:  `PaperScreen.StartOf` is the registration's first session and nothing else; `RecordFrom` keeps where the Run page's
+            record counts from. A registered account's trades listed between the two stand apart as `Same`, folded beneath what
+            the system bought under the account's own press, "The same trades before this version (since 2 Oct), kept in the rule's
+            record and not in this account", and in the trade log, counted among the system's trades and in none of the
+            account's figures; a variant's overlap reads them as its rule's. 22.53's line beside the tile and the system line's
+            closing sentence are gone. The decision superseding two, 15.17's and 15.21's rows, the build plan's two citations, the
+            changelog and the guide.
+Tests:      1 new, the breakout's dates by hand: registered 2026-11-03, a replay from 2 Oct, trades listed on 30 Sep, 29 Oct and
+            4 Nov: it counts from 3 Nov with the 4 Nov trade, 29 Oct's stands apart since 2 Oct, 30 Sep's is an earlier version's,
+            and the page draws the fold, the tile since 3 Nov and no earlier day. 22.53's test is retired with its decision; the
+            start's and the system line's tests read the new start and line.
+Claims:     none new: the rows are reworded in place.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 the
+            account starting where the replay counted from: red. m2 the fold drawn for no account: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

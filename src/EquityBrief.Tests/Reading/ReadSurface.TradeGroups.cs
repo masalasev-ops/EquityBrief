@@ -109,11 +109,12 @@ public partial class ReadSurface
         Assert.Equal(4, groups.ToBuy);
     }
 
+    // From the 19.4 correction of 2026-11-07 the line names no start of the accounts', each account's day standing on its tile.
     [Fact]
     public void PaperTradingsLineSaysWhatTheSystemBoughtAndWhatTheAccountsCount()
     {
         Assert.Equal(
-            "The system has bought 4 trades since 2 Oct: 2 open, 1 reached their target, 1 hit their stop, +8.8% overall. The accounts above count only the rules as registered now, since 4 Nov.",
+            "The system has bought 4 trades since 2 Oct: 2 open, 1 reached their target, 1 hit their stop, +8.8% overall.",
             RestartGroups().SystemLine);
     }
 

@@ -359,17 +359,14 @@ public partial class ReadSurface
         Assert.Equal(register, Strings(store, "SELECT id || event FROM candidate_register ORDER BY id;"));
         Assert.Equal(4, trades.Count);
 
-        // Where a replay under the version a rule stands at reproduced every trade, its account starts where the Run
-        // page's record does, at the session the replay counted from.
+        // Where a replay under the version a rule stands at reproduced every trade, the Run page's record counts from the
+        // session the replay counted from, and from the 19.4 correction of 2026-11-07 the account from its registration's
+        // first session whatever the replay found.
         var standing = new CandidateRow(204, ProvisionalBreakout, TheSetupFamilies.Breakouts[^2].Evaluator, "registered", null, new DateTimeOffset(2026, 9, 29, 12, 0, 0, TimeSpan.Zero), EvaluatorVersion: "v");
 
-        Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.StartOf(standing, []));
-        Assert.Equal(new DateOnly(2026, 9, 21), PaperScreen.StartOf(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), true, "reproduced", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
-        Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.StartOf(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), false, "differs", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
-
-        // An account whose start a replay carried back names the registration it counts and says the replay carried it.
-        Assert.Equal("the version registered 2026-09-29, code v, carried back by a replay that reproduced every trade", PaperScreen.CountedWords(standing, new DateOnly(2026, 9, 21)));
-        Assert.Equal("the version registered 2026-09-29, code v", PaperScreen.CountedWords(standing, new DateOnly(2026, 9, 29)));
+        Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.StartOf(standing));
+        Assert.Equal(new DateOnly(2026, 9, 21), PaperScreen.RecordFrom(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), true, "reproduced", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
+        Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.RecordFrom(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), false, "differs", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
     }
 
     [Fact]

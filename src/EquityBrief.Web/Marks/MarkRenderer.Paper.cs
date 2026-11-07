@@ -65,12 +65,15 @@ public sealed record PaperAccountView(
     // no test read it.
     public string? Tested { get; init; }
 
-    // The first session its version's registration counts from, none where no registration starts the account.
+    // The first session its version's registration counts from, the day it starts, none where no registration starts the
+    // account.
     public DateOnly? VersionFrom { get; init; }
-
-    // Whether the account counts from before its version's own start, carried back by a replay that reproduced every trade.
-    public bool CarriedBack => Since is { } from && VersionFrom is { } registered && from < registered;
 }
+
+// The trades a family's live account leaves out as listed before its version that a replay under its version reproduced,
+// drawn apart under the account: its family, the session the replay counted from, and each trade.
+// see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+public sealed record PaperSameView(string Family, DateOnly Since, IReadOnlyList<PaperBoughtView> Trades);
 
 // One trade of an account's trade log: its stock, its buy session and price, its stop where it holds one, the session it
 // ended on, its result in the account's unit, so far at tonight's close where it is open, why the account skipped it, and
@@ -128,6 +131,9 @@ public sealed record PaperPageView(
 {
     // From 23.2 the newest pooled run's verdicts across the three indices, which the scorecard draws beside the index's own.
     public IReadOnlyList<LoopPooledRow> Pooled { get; init; } = [];
+
+    // Each live account's same trades before its version, drawn apart under the account.
+    public IReadOnlyList<PaperSameView> Same { get; init; } = [];
 }
 
 // From 21.20 a variant registered after the newest night, which no night has read yet: its family, its number and what it
@@ -264,9 +270,11 @@ public sealed partial class MarkRenderer
     static string PaperPercent(double fraction) =>
         SignedFigure(fraction * 100, 1, Formatted($"{Unsigned(fraction * 100, 1):+0.0;-0.0;0.0}%"));
 
-    // What an account counting from before its version's start says beside its date.
-    public static string CarriedWords(DateOnly from) =>
-        FormattableString.Invariant($"counts from {from:d MMM}: its earlier trades replay the same under this version");
+    // The words heading an account's trades listed before its version that replay the same under it, from the session the
+    // replay counted from.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    public static string SameWords(DateOnly since) =>
+        FormattableString.Invariant($"The same trades before this version (since {since:d MMM}), kept in the rule's record and not in this account");
 
     // A tile a family's live or provisional account in the one family order: its return since its record began, the trades
     // its walk holds open and has closed and the day it counts from, the version it counts under the pointer; and the
@@ -298,10 +306,6 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<div class=\"pt-name\"><span class=\"fam-swatch\" data-family=\"{Escaped(head.Family)}\"></span>{Escaped(FamilyName(head.Family))} <span class=\"status-pill {head.Standing}\">{Escaped(head.Name)}</span></div>");
             html.Append(made is { } figure ? Formatted($"<div class=\"pt-figure\">{PaperPercent(figure)}</div>") : "<div class=\"pt-figure degraded\">none yet</div>");
             html.Append(Invariant, $"<div class=\"pt-sub\">{Escaped(TileSaid(made, head.Since, size, head.Open))}{(head.Since is null || made is null ? string.Empty : Formatted($" {head.Closed} closed."))}</div>");
-
-            // An account counting from before its version's start says so beside the date; the read-only copy names no version.
-            // see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same
-            html.Append(!Copying && head is { CarriedBack: true, Since: { } carried } ? Formatted($"<div class=\"pt-carried\" data-carried=\"{DayOf(carried)}\">{Escaped(CarriedWords(carried))}</div>") : string.Empty);
             html.Append("</div>");
         }
 
@@ -369,6 +373,27 @@ public sealed partial class MarkRenderer
         if (page.Groups is { } groups)
         {
             html.Append(Invariant, $"<p class=\"card-note paper-system\" data-system=\"{groups.System.Bought}\" data-system-open=\"{groups.System.Open}\" data-version=\"{groups.ThisVersion.Bought}\" data-earlier-trades=\"{groups.EarlierVersions.Bought}\">{Escaped(groups.SystemLine)} <a href=\"{App.SinglePageApp.PicksRoute}\">See every trade on Past picks</a></p>");
+        }
+
+        // Each live account's same trades before its version under one press of its own, named by its setup and the day the
+        // replay counted from, in none of the account's figures.
+        // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+        foreach (var same in page.Same)
+        {
+            html.Append(Invariant, $"<details class=\"paper-earlier paper-same\" data-family=\"{Escaped(same.Family)}\" data-same=\"{same.Trades.Count}\" data-since=\"{DayOf(same.Since)}\"><summary>{Escaped(FamilyName(same.Family))}: {Escaped(SameWords(same.Since))}, {same.Trades.Count} {(same.Trades.Count == 1 ? "trade" : "trades")}</summary>");
+            html.Append("<div class=\"tbl-wrap\"><table class=\"paper-bought\"><thead><tr><th>Stock</th><th>Setup</th><th class=\"r\">Bought</th><th>Open or how it ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
+
+            foreach (var trade in same.Trades)
+            {
+                html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\">");
+                html.Append(StockCell(trade.Ticker, trade.Company, null));
+                html.Append(FamilyCell(trade.Family));
+                html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
+                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
+                html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Stop is null, trade.Closed is { } shut ? (shut.Risks, shut.Fraction) : (trade.Open?.Risks, trade.Open?.Fraction))}</td></tr>");
+            }
+
+            html.Append("</tbody></table></div></details>");
         }
 
         // On the read-only copy too, each row its stock, family, the words "an earlier version", the day bought and how it ended or
@@ -915,8 +940,8 @@ public sealed partial class MarkRenderer
     // An account's trade log: its verdict and its record's label beside each other and apart, each trade a row newest
     // first, an open one's result so far at tonight's close marked open, and the running total of its ended trades as a
     // line, labelled not evidence yet under the minimums; beneath it, folded, the trades of earlier versions the account
-    // leaves out, each naming the version that listed it.
-    // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
+    // leaves out, each naming the version that listed it, and the same trades before its version among them.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
     public string PaperLog(PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null)
     {
         var html = new StringBuilder();

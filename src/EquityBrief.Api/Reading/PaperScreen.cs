@@ -34,9 +34,16 @@ public sealed record PaperAccountSource(
     bool ReadsReleases = false,
     int? JudgedFrom = null)
 {
-    // The first session its version's registration counts from, none for an account no registration starts; an account
-    // starting before it was carried back by a replay that reproduced every trade.
+    // The first session its version's registration counts from, the day the account starts, none for an account no
+    // registration starts.
     public DateOnly? VersionFrom { get; init; }
+
+    // The trades listed before its version's first session that a replay under its version reproduced, kept in its rule's
+    // record and not in the account, and the session that replay counted from; none where no replay carried the record back.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    public IReadOnlyList<(PaperTrade Trade, double? Result)> Same { get; init; } = [];
+
+    public DateOnly? SameSince { get; init; }
 
     // Whether a stored trade is one of this account's: kept under its name, or under its name and the filter version it
     // was listed from.
@@ -105,16 +112,15 @@ public static class PaperScreen
 
     static string Stamp(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
-    // The words an account names the version it counts by, saying where its start was carried back before the registration
-    // by a replay that reproduced every trade.
-    public static string CountedWords(CandidateRow standing, DateOnly start) =>
-        VersionWords(standing) + (start < FamilyRecords.FirstSession(standing.RegisteredAt) ? ", carried back by a replay that reproduced every trade" : string.Empty);
+    // Where a registered rule's account starts: its standing registration's first session, never earlier, whatever a replay
+    // carried its record back to.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    public static DateOnly StartOf(CandidateRow standing) => FamilyRecords.FirstSession(standing.RegisteredAt);
 
-    // Where a registered rule's account starts: where the Run page's record of the rule counts from, its standing
-    // registration's first session, or the session a replay under its version found it counting from where that replay
-    // reproduced every trade. The S&P 400's and 600's records read no replay.
-    // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
-    public static DateOnly StartOf(CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays) =>
+    // Where the Run page's record of a registered rule counts from: its standing registration's first session, or the
+    // session a replay under its version found it counting from where that replay reproduced every trade. The S&P 400's and
+    // 600's records read no replay.
+    public static DateOnly RecordFrom(CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays) =>
         FamilyRecords.StartOf(
             new RegisterRow(standing.Id, standing.Candidate, string.Empty, string.Empty, standing.Evaluator, standing.Parameters, standing.EvaluatorVersion, standing.Event, standing.Retires, standing.RegisteredAt, standing.Evidence),
             replays).First;
@@ -190,11 +196,21 @@ public static class PaperScreen
             .Distinct(),
     ];
 
+    // A registered rule's account from its version's first session: the trades listed from then its own, those listed
+    // before it from where a replay under its version found the record counting apart as the same trades, and the rest
+    // earlier versions'.
     public static PaperAccountSource Started(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays, IReadOnlyList<CandidateRow> lineage)
     {
-        var start = StartOf(standing, replays);
+        var start = StartOf(standing);
+        var record = RecordFrom(standing, replays);
+        bool IsSame((PaperTrade Trade, double? Result) one) => one.Trade.ListedOn >= record && one.Trade.ListedOn < start;
 
-        return Split(account, trades, start, CountedWords(standing, start), lineage) with { VersionFrom = FamilyRecords.FirstSession(standing.RegisteredAt) };
+        return Split(account, [.. trades.Where(one => !IsSame(one))], start, VersionWords(standing), lineage) with
+        {
+            VersionFrom = start,
+            Same = [.. trades.Where(IsSame)],
+            SameSince = record < start ? record : null,
+        };
     }
 
     static PaperAccountSource Split(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly start, string version, IReadOnlyList<CandidateRow> lineage) =>
@@ -217,10 +233,10 @@ public static class PaperScreen
 
     // Every account on an index in the one family order, each family's live or provisional rule first and its variants
     // after it as its card numbers them, then the operator's own. A registered rule's account counts the trades of its
-    // current version alone, from where the Run page's record of the rule starts; a provisional account and the
-    // operator's own count every trade from their first. The register is read as the night's page reads it, as of the
-    // instant given where a night run again read it later, and the rule a freeze keeps in the background has no account.
-    // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
+    // current version alone, from its version's first session; a provisional account and the operator's own count every
+    // trade from their first. The register is read as the night's page reads it, as of the instant given where a night run
+    // again read it later, and the rule a freeze keeps in the background has no account.
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
     public static IReadOnlyList<PaperAccountSource> Accounts(
         bool large,
         string indexName,
@@ -667,9 +683,10 @@ public static class PaperScreen
             var family = accounts.Where(other => other.Family == account.Family && other.Standing != PaperAccountView.You && other.Key != account.Key);
 
             // A variant's trades are read against every trade its live or provisional rule's list took, its earlier
-            // versions' among them, and the rule's own against its variants' counted trades.
+            // versions' and the same trades before its version among them, and the rule's own against its variants' counted
+            // trades.
             IEnumerable<PaperTrade> Taken(PaperAccountSource other) =>
-                other.Trades.Select(one => one.Trade).Concat(account.Standing == PaperAccountView.Variant ? (other.Earlier ?? []).Select(one => one.Trade) : []);
+                other.Trades.Select(one => one.Trade).Concat(account.Standing == PaperAccountView.Variant ? (other.Earlier ?? []).Select(one => one.Trade).Concat(other.Same.Select(one => one.Trade)) : []);
             var (open, closed) = walked is { } walk ? PaperAccount.Held(walk, night) : (0, 0);
 
             return new PaperAccountView(
@@ -795,8 +812,19 @@ public static class PaperScreen
                 .OrderByDescending(trade => trade.Bought)
                 .ThenBy(trade => trade.Ticker, StringComparer.Ordinal),
         ];
+        // Each account's same trades before its version, drawn apart under the account and in none of its figures.
+        // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+        PaperSameView[] same =
+        [
+            .. heads
+                .Where(head => source[head.Key] is { SameSince: not null, Same.Count: > 0 })
+                .Select(head => new PaperSameView(
+                    head.Family,
+                    source[head.Key].SameSince!.Value,
+                    [.. source[head.Key].Same.Select(one => Drawn(head, one.Trade, one.Result, null)).OrderByDescending(trade => trade.Bought).ThenBy(trade => trade.Ticker, StringComparer.Ordinal)])),
+        ];
         var chosen = views.FirstOrDefault(view => view.Head && view.Family == variants);
-        var headTrades = chosen is null ? [] : source[chosen.Key].Trades.Select(one => one.Trade).Concat((source[chosen.Key].Earlier ?? []).Select(one => one.Trade)).ToArray();
+        var headTrades = chosen is null ? [] : source[chosen.Key].Trades.Select(one => one.Trade).Concat((source[chosen.Key].Earlier ?? []).Select(one => one.Trade)).Concat(source[chosen.Key].Same.Select(one => one.Trade)).ToArray();
         PaperOnlyView[] only =
         [
             .. views
@@ -818,7 +846,10 @@ public static class PaperScreen
             PaperAccount.NotBought([.. heads.Select(head => (head.Walk, source[head.Key].Unfilled ?? []))]),
             only,
             new PaperFundView(fundName, counted?.Return, from, counted?.From),
-            combined);
+            combined)
+        {
+            Same = same,
+        };
     }
 
     // From 21.11 the combined account on an index: every trade each family's live or provisional account counts, in one
@@ -895,7 +926,10 @@ public static class PaperScreen
     // The trades an account leaves out as listed before the version it counts, each with the version that listed it and an
     // open one's result so far as the log reads it; walked by nothing.
     public static IReadOnlyList<PaperTradeView> EarlierLog(PaperAccountSource account, DateOnly night, Func<string, DateOnly, decimal?> close) =>
-        [.. (account.Earlier ?? []).Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, one.Version))];
+    [
+        .. (account.Earlier ?? []).Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, one.Version)),
+        .. account.SameSince is { } since ? account.Same.Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, MarkRenderer.SameWords(since))) : [],
+    ];
 
     static PaperTradeView Logged(bool book, PaperTrade trade, double? stored, DateOnly night, Func<string, DateOnly, decimal?> close, string? skipped, string? version)
     {

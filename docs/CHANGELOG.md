@@ -7,6 +7,19 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - every account counts from its version's first session, and the same trades before it stand apart
+Decision: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+Was:
+> (15.17, an account's trade log) ... beneath its trades the trades of earlier versions it leaves out folded under one press; each of those with the version that listed it and an open one's result so far (see: ...) (see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts)
+> (15.21, the tiles) ... from 22.53 a tile whose account counts from before its version's start saying beneath its date that its earlier trades replay the same under this version, which the read-only copy leaves off (see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same)
+> (15.21, an account's start) ... a registered rule's start the session the Run page's record of the rule counts from; ... words saying so where a replay that reproduced every trade carried its start back before that registration; ... from 22.25 the line above the fold counting them among the system's trades (see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts)
+> (15.21, the paragraph) ... counts only the trades of the version it stands at, from the session the Run page's record of the rule counts from, and starts again the same way ...
+> (build plan, the entry check at the next open) ... (see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts)
+> (build plan, 22.53) ... says beside its date that its earlier trades replay the same under this version (see: A paper account counting from before its version's start says beside the date that its earlier trades replay the same).
+Now:
+> each states that a registered rule's account counts from its version's first session and never earlier, one day on its tile, its line and its scorecard, the trades a replay under its version reproduced before that day folded apart under the account's own press headed "The same trades before this version (since dd mmm), kept in the rule's record and not in this account", the line beneath naming no start, and cites the new decision.
+Why: the operator's order of 2026-11-07, its first item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - 15.23 draws a company's name and a filer's words as filed
 Decision: A company's name and a filer's words are drawn as filed, and never in the reader's words
 Was:

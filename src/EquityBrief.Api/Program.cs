@@ -2983,7 +2983,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
 
     // The trades an account leaves out are read for their trade log's result so far, and walked by nothing.
-    (string Ticker, DateOnly Session)[] earlier = [.. sources.SelectMany(account => (account.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
+    (string Ticker, DateOnly Session)[] earlier = [.. sources.SelectMany(account => (account.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Trade.Bought)).Concat(account.Same.Select(one => (one.Trade.Ticker, one.Trade.Bought)))).Distinct()];
     var from = sources.Select(account => account.Since).OfType<DateOnly>().Concat(bought.Select(one => one.Session)).DefaultIfEmpty(night).Min();
     var earliest = earlier.Select(one => one.Session).Append(from).Min();
     var tickers = bought.Concat(earlier).Select(one => one.Ticker).Distinct(StringComparer.Ordinal).ToArray();
