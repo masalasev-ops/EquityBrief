@@ -2121,7 +2121,7 @@ public static partial class NameScreen
     // whether it falls inside the hold, in place of the line saying none is on file; one that reported lately reads a note
     // saying when, before any estimate.
     // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
-    // see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning
+    // see: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
     public static DecisionCardView? WithEstimatedReport(DecisionCardView? card, IReadOnlyList<DateOnly> reported, Func<DateOnly, DateOnly?>? reportedOn = null)
     {
         if (card is not { } drawn
@@ -2132,8 +2132,9 @@ public static partial class NameScreen
 
         var stated = reportedOn?.Invoke(drawn.Night);
         var newest = reported.Where(day => day <= drawn.Night).Select(day => (DateOnly?)day).Append(stated <= drawn.Night ? stated : null).Max();
-        var replacing = EquityBrief.Core.Cards.CardLines.ReportedRecently(newest, drawn.Night, drawn.Cap)
-            ?? (EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, drawn.Night, stated) is { } estimate
+        var estimated = EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, drawn.Night, stated);
+        var replacing = EquityBrief.Core.Cards.CardLines.ReportedRecently(newest, drawn.Night, drawn.Cap, estimated)
+            ?? (estimated is { } estimate
                 ? EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate, drawn.Night, drawn.Cap)
                 : null);
 

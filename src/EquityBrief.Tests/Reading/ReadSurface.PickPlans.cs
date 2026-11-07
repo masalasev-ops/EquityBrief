@@ -75,4 +75,36 @@ public partial class ReadSurface
 
         Assert.EndsWith("First exit $67.72, about 3.0 to 1. It is worth taking if it reaches its first exit before its stop more than 25.0% of the time.", EntryWords.Wait(reading), StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 CTSH's card said its next report was "about 2027-01-28", three months after its report of 2026-10-29,
+    // while the same page's numbers, calendar and plan said "about 2027-02-03", from its report of 2026-02-04 a year on: two
+    // dates from two rules. The card reads the page's estimate, named with its source, wherever its reports a year back give
+    // one, on the stock's page and on Tonight; about three months on, so said, only where they give none.
+    // see: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
+    [Fact]
+    public void APageDrawsOneNextReportDateAndItsCardReadsTheSame()
+    {
+        var night = new DateOnly(2026, 11, 6);
+        DateOnly[] reported = [new(2025, 10, 29), new(2026, 2, 4), new(2026, 4, 29), new(2026, 7, 29), new(2026, 10, 29)];
+        var estimate = EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, night, new DateOnly(2026, 10, 29));
+
+        Assert.Equal((new DateOnly(2026, 2, 4), new DateOnly(2027, 2, 3)), estimate);
+
+        var card = new DecisionCardView("GSPC", night, "pullback", "CTSH", "the pullback", 64.72m, 61.55m, 71.26m,
+            [new CardLineView(4, EquityBrief.Core.Cards.CardLines.EarningsName, "warn", "No report date is on file for it, so it cannot be placed in the hold.")], null, Cap: 63);
+        var line = NameScreen.WithEstimatedReport(card, reported)!.Lines.Single(one => one.Name == EquityBrief.Core.Cards.CardLines.EarningsName);
+
+        Assert.Equal("Reported on 2026-10-29. The next date isn't announced yet; it is estimated about 2027-02-03, from its report of 2026-02-04 a year on, inside this trade's hold.", line.Words);
+
+        // Tonight's card reads the same from the night's report days.
+        var row = new DecisionCardRow("GSPC", night, "pullback", "CTSH", 2, 64.72m, 61.55m, 71.26m, "the pullback", "{}", """[{"line":4,"name":"Earnings in the hold","verdict":"warn","words":"No report date is on file for it, so it cannot be placed in the hold."}]""", null, Cap: 63);
+        var tonight = CardScreen.View(row, CardContext.None with { NewestReports = new Dictionary<string, DateOnly> { ["CTSH"] = new(2026, 10, 29) }, ReportDays = new Dictionary<string, IReadOnlyList<DateOnly>> { ["CTSH"] = reported } });
+
+        Assert.Equal(line.Words, tonight.Lines.Single(one => one.Name == EquityBrief.Core.Cards.CardLines.EarningsName).Words);
+
+        // A stock holding no report a year back reads about three months on.
+        Assert.Equal(
+            "Reported on 2026-10-29. The next date isn't announced yet; it's usually about three months after the last one, about 2027-01-28, inside this trade's hold.",
+            EquityBrief.Core.Cards.CardLines.ReportedRecently(new DateOnly(2026, 10, 29), night, 63)!.Words);
+    }
 }

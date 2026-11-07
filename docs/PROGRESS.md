@@ -16905,3 +16905,22 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             the reward's share in place of the risk's: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 22.21 - correction: a page draws one next report date, and its card reads the page's estimate   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its fourth item. CTSH's card on 2026-11-06, on Tonight and on its page, said
+            its next report was about 2027-01-28, three months after its report of 2026-10-29; the same page's numbers,
+            calendar and plan said about 2027-02-03, from its report of 2026-02-04 a year on.
+Corrected:  `CardLines.ReportedRecently` takes the page's estimate and names it with its source, placed against the hold as the
+            page's block places it; the name page hands it the estimate it reads, and Tonight reads it from the night's report
+            days, the quarters' and the calendar's, through `ReadApi.ReportDaysToAsync`. Three months on stands only where no
+            report a year back gives one. The decision, superseding 22.21's, 15.9's row, 22.21's text, the changelog and the
+            guide.
+Tests:      1 new: CTSH's reports estimate 2027-02-03 from 2026-02-04; its card on its page and on Tonight read the same sentence,
+            inside the hold; a stock with no report a year back reads three months on.
+Claims:     none new.
+Pins:       none move: the card's lines are read by no rule.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            Tonight's card reading no estimate: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

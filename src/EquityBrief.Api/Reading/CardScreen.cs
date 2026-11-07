@@ -7,7 +7,7 @@ namespace EquityBrief.Api.Reading;
 // What a page hands its cards beyond what the night stored: the operator's account where it is set, their open taken
 // trades, the trades taken from the cards drawn, whether the page draws the card's presses, and the setting the
 // short-term dip's night ran on, the provisional setting where the page hands none. An export hands none.
-public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable, IReadOnlyList<TakenRecordRow>? Records = null, EquityBrief.Core.Families.DipSetting? Dip = null, CardOpenFloorView? OpenFloor = null, IReadOnlyDictionary<string, DateOnly>? NewestReports = null)
+public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable, IReadOnlyList<TakenRecordRow>? Records = null, EquityBrief.Core.Families.DipSetting? Dip = null, CardOpenFloorView? OpenFloor = null, IReadOnlyDictionary<string, DateOnly>? NewestReports = null, IReadOnlyDictionary<string, IReadOnlyList<DateOnly>>? ReportDays = null)
 {
     public static CardContext None { get; } = new(null, [], [], false);
 }
@@ -35,15 +35,18 @@ public static class CardScreen
                 line.GetProperty("words").GetString() ?? string.Empty)),
         ];
 
-        // A page reading the night's newest reports draws the line saying none is on file as a note where the stock reported lately.
-        // see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning
+        // A page reading the night's newest reports draws the line saying none is on file as a note where the stock reported lately,
+        // its next report the estimate the stock's page states where its reports a year back give one.
+        // see: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
         if (given.NewestReports?.GetValueOrDefault(row.Ticker) is { } reported && reported != default)
         {
+            var estimated = given.ReportDays?.GetValueOrDefault(row.Ticker) is { } days ? EquityBrief.Core.Cards.CardLines.EstimatedReport(days, row.Night, reported) : null;
+
             for (var at = 0; at < drawn.Count; at++)
             {
                 if (drawn[at].Name == EquityBrief.Core.Cards.CardLines.EarningsName
                     && drawn[at].Words.StartsWith("No report date is on file for it, ", StringComparison.Ordinal)
-                    && EquityBrief.Core.Cards.CardLines.ReportedRecently(reported, row.Night, row.Cap) is { } said)
+                    && EquityBrief.Core.Cards.CardLines.ReportedRecently(reported, row.Night, row.Cap, estimated) is { } said)
                 {
                     drawn[at] = new CardLineView(drawn[at].Number, drawn[at].Name, said.Mark, said.Words);
                 }

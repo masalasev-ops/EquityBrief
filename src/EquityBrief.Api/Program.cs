@@ -1766,7 +1766,7 @@ async Task<IResult> TonightScreenAsync(
         var indexAsOf = TonightScreen.ReadAsOf(indexNight, dated);
         var indexAnswers = await read.SweepAnswersAsync(reading.Code, indexAsOf);
         var indexRegister = await read.RegisteredCandidatesAsync();
-        var indexCardContext = await CardContextAsync(read, store, copying) with { NewestReports = await read.NewestReportsAsync(dated) };
+        var indexCardContext = await CardContextAsync(read, store, copying) with { NewestReports = await read.NewestReportsAsync(dated), ReportDays = await read.ReportDaysToAsync(dated) };
         // The short-term dip's own rows, its card drawn after every swing family's with its pick cards, funnel and numbers as
         // every family's, and its label on an earlier family's row where it gave way to that family.
         // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
@@ -2142,7 +2142,7 @@ async Task<IResult> TonightScreenAsync(
     var answers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
     // Each pick with the card the night stored for it, opened in place beneath its row.
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
-    var cardContext = await CardContextAsync(read, store, copying) with { NewestReports = await read.NewestReportsAsync(dated) };
+    var cardContext = await CardContextAsync(read, store, copying) with { NewestReports = await read.NewestReportsAsync(dated), ReportDays = await read.ReportDaysToAsync(dated) };
     // Each card drawn by the rule the link chooses for it, the live rule where it names none, with its funnel, its
     // stretch line and, under a breakout card, the breakouts forming.
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight

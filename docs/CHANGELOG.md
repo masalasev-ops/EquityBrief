@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - one next report date on a page
+Decision: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
+Was:
+> (ARCHITECTURE, the name page) ... and the card states the next report, estimated from the company's own report of the year before, ...
+> (BUILD_PLAN, 22.21) ... the warning stays only where a stock has neither (see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning).
+Now:
+> ... and the card states the next report as the page does, from the correction of 2026-11-07 a card on a stock that reported lately reading the page's estimate with its source (see: A page draws one next report date ...), estimated from the company's own report of the year before, ...
+> ... the warning stays only where a stock has neither. From its correction of 2026-11-07 the note reads the page's own estimate where one stands (see: A page draws one next report date ...).
+Why: the operator's addendum of 2026-11-07, its fourth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - each plan's break-even and its shares named as the whole position
 Decision: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
 Was:

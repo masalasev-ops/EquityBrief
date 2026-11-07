@@ -337,34 +337,43 @@ public static class CardLines
     public const int ReportQuarter = 91;
     public const int QuarterGraceSessions = 5;
 
-    // The earnings line where no next report is on file and the stock reported lately: a note saying when, and whether the
-    // next, about three months on, falls after the hold, where the rule states a hold to place it against; none where its
-    // newest report is older than that.
-    // see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning
-    public static CardLine? ReportedRecently(DateOnly? reported, DateOnly night, int? cap)
+    // The earnings line where no next report is on file and the stock reported lately: a note saying when, and the next as
+    // the page states it, the estimate from its report a year before with that report named where one is read, and about
+    // three months on, so said, where none is; then whether it falls inside the hold, where the rule states a hold to place
+    // it against; none where its newest report is older than that.
+    // see: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
+    public static CardLine? ReportedRecently(DateOnly? reported, DateOnly night, int? cap, (DateOnly From, DateOnly Estimated)? estimate = null)
     {
         if (reported is not { } last || last > night || last.AddDays(ReportedLately) < night)
         {
             return null;
         }
 
-        var said = FormattableString.Invariant($"Reported on {last:yyyy-MM-dd}. The next date isn't announced yet; it's usually about three months after the last one");
+        var said = FormattableString.Invariant($"Reported on {last:yyyy-MM-dd}. The next date isn't announced yet; ") + (estimate is { } read
+            ? FormattableString.Invariant($"it is estimated about {read.Estimated:yyyy-MM-dd}, from its report of {read.From:yyyy-MM-dd} a year on")
+            : "it's usually about three months after the last one");
 
         if (cap is not { } hold)
         {
             return new CardLine(4, EarningsName, CardVerdict.Note, said + ".");
         }
 
-        var next = last.AddDays(ReportQuarter);
+        var next = estimate?.Estimated ?? last.AddDays(ReportQuarter);
 
         if (next <= night)
         {
             return new CardLine(4, EarningsName, CardVerdict.Note, said + ", so one is due, inside this trade's hold.");
         }
 
-        return SessionsTo(night, next, EventTiming.Unstated) is { } sessions && sessions + QuarterGraceSessions < hold
-            ? new CardLine(4, EarningsName, CardVerdict.Note, FormattableString.Invariant($"{said}, about {next:yyyy-MM-dd}, inside this trade's hold."))
-            : new CardLine(4, EarningsName, CardVerdict.Note, said + ", after this trade's hold ends.");
+        // An estimate from the report a year before is placed against the hold as the page's block places it; about three
+        // months on is read with a week's grace.
+        var inside = SessionsTo(night, next, EventTiming.Unstated) is { } sessions && (estimate is null ? sessions + QuarterGraceSessions < hold : sessions <= hold);
+
+        return estimate is not null
+            ? new CardLine(4, EarningsName, CardVerdict.Note, said + (inside ? ", inside this trade's hold." : ", after this trade's hold ends."))
+            : inside
+                ? new CardLine(4, EarningsName, CardVerdict.Note, FormattableString.Invariant($"{said}, about {next:yyyy-MM-dd}, inside this trade's hold."))
+                : new CardLine(4, EarningsName, CardVerdict.Note, said + ", after this trade's hold ends.");
     }
 
     // The earnings line where no report is on file and one is estimated: the estimate and the report it was taken from,
