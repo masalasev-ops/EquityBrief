@@ -616,7 +616,8 @@ public sealed record NewsView(
     string? WhyCode,
     int OtherCompanies = 0,
     bool Local = false,
-    int LabelledTonight = 0);
+    int LabelledTonight = 0,
+    int Merged = 0);
 
 // How one section of one report came out, as the Run page draws it: passed first time or on retry, left out
 // with why, or not warranted where it stood from an earlier day; what its own calls cost, a trial's left out;
@@ -1473,7 +1474,7 @@ public sealed partial class MarkRenderer : IComponent
     // see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
     // Drawn plain, as a buy point's fold on Tonight draws it, the top exit's stop that follows the price up is named in the
     // reader's words.
-    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
     public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows, string? reason = null, string? forms = null, bool plain = false)
     {
         if (rows.Count == 0)
@@ -3481,7 +3482,7 @@ public sealed partial class MarkRenderer : IComponent
             // region is for whichever row is selected, and a row a reader cannot select is a row the
             // region can never be about. The address it selects carries the night as well as the name,
             // so a selected view of an earlier night is a link like every other view.
-            // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+            // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
             list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" ");
             list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\" ");
             list.Append(Invariant, $"data-selects=\"{Escaped(row.Ticker)}\" data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\"{(row.RepeatOf is { } again ? Formatted($" data-repeat-of=\"{DayOf(again)}\"") : string.Empty)}>");
@@ -7639,6 +7640,13 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Invariant, $"<rect class=\"nb-positive\" x=\"0\" y=\"1\" width=\"{Number(positiveWidth)}\" height=\"12\" rx=\"6\"></rect>");
         region.Append(Invariant, $"<rect class=\"nb-negative\" x=\"{Number(positiveWidth)}\" y=\"1\" width=\"{Number(total == 0 ? 0 : Wide - positiveWidth)}\" height=\"12\" rx=\"6\"></rect></svg>");
         region.Append(Invariant, $"<p class=\"news-counts-line\"><b>{view.Positive}</b> positive, <b>{view.Negative}</b> negative and <b>{view.Neutral}</b> neutral over the thirty days before, opinion pieces counted in none.</p>");
+
+        // see: A story the feed carried more than once is drawn and counted once, and the page says how many copies it merged
+        if (view.Merged > 0)
+        {
+            region.Append(Invariant, $"<p class=\"news-merged\" data-merged=\"{view.Merged}\">{view.Merged} {(view.Merged == 1 ? "copy" : "copies")} of a story the feed carried more than once {(view.Merged == 1 ? "was" : "were")} merged, so each story is drawn and counted once.</p>");
+        }
+
         region.Append(OtherCompanies(view));
 
         if (view.Why is { } why)

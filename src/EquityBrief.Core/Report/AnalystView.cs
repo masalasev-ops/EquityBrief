@@ -53,7 +53,15 @@ public sealed record AnalystReading(
     IReadOnlyList<RatingMonth> Months,
     double? MeanRating,
     decimal? Target,
-    double? TargetAgainstPrice);
+    double? TargetAgainstPrice)
+{
+    // The session the night's own ask stated this fiscal year's revisions on, where it is newer than the fetch.
+    public DateOnly? YearAskedOn { get; init; }
+}
+
+// The current fiscal year's revisions as a night's own ask stated them: its session, how many raised and cut over 7 and 30
+// days, and the consensus now and 30 days before.
+public sealed record NightRevision(DateOnly Session, int? Up7, int? Down7, int? Up30, int? Down30, decimal? EpsNow, decimal? Eps30DaysAgo);
 
 // The analysts' figures, each labelled as theirs and dated by the fetch that kept it, worked by one function so the page
 // and its file draw the same; none of it reaches written prose.
@@ -114,6 +122,19 @@ public static class AnalystView
             newest?.Target,
             newest?.Target is { } target && price is { } shown && shown > 0m ? Percents.FromFraction(QuarterFetch.Grown(target, shown)) : null);
     }
+
+    // This fiscal year's revisions read from the night's own ask where its session is newer than the fetch, which the
+    // quarters fetch refreshes only once a report's quarter is posted and the night asks every member each night; the
+    // session kept beside them so the page dates the row apart.
+    // see: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
+    public static AnalystReading? WithNightRevision(AnalystReading? reading, NightRevision? asked) =>
+        reading is { } read && asked is { } night && night.Session > read.FetchedOn && read.Revisions.Any(row => row.Period == EstimatePeriod.CurrentYear)
+            ? read with
+            {
+                Revisions = [.. read.Revisions.Select(row => row.Period == EstimatePeriod.CurrentYear ? new RevisionRow(row.Period, night.Up7, night.Down7, night.Up30, night.Down30, Percents.FromFraction(QuarterFetch.Grown(night.EpsNow, night.Eps30DaysAgo))) : row)],
+                YearAskedOn = night.Session,
+            }
+            : reading;
 
     // The consensus as it stood 90, 60, 30 and 7 days before the fetch and at it, each where the provider filed it.
     static IReadOnlyList<TrendPoint> Points(EstimatePeriod period) =>

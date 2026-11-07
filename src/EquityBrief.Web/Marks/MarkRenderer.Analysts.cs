@@ -26,7 +26,7 @@ public sealed partial class MarkRenderer
 
         if (answer.TargetLow is not { } low || answer.TargetHigh is not { } high || answer.TargetMean is not { } mean || price is not { } drawn || drawn <= 0)
         {
-            return Formatted($"<p class=\"mark-short\" data-mark=\"target-range\">{(price is not { } shown || shown <= 0 ? Formatted($"No price is stored for {Escaped(ticker)} to set the analysts' targets against.") : Formatted($"Yahoo's answer of {DayOf(Day(yahoo.AskedAt))} holds no low, mean and high target for {Escaped(ticker)}, so no range is drawn."))}</p>");
+            return Formatted($"<p class=\"mark-short\" data-mark=\"target-range\">{(price is not { } shown || shown <= 0 ? Formatted($"No price is stored for {Escaped(ticker)} to set the analysts' targets against.") : Formatted($"Yahoo's answer of {DayOf(AskedDay(yahoo.AskedAt))} holds no low, mean and high target for {Escaped(ticker)}, so no range is drawn."))}</p>");
         }
 
         const double High = 96;
@@ -39,7 +39,7 @@ public sealed partial class MarkRenderer
         var priceX = X(Statistic.FromPrice(drawn));
         var against = Percents.FromFraction(QuarterFetch.Grown(mean, drawn));
         var side = against is { } percent ? percent > 0 ? "gain" : percent < 0 ? "loss" : "flat" : "flat";
-        var asked = DayOf(Day(yahoo.AskedAt));
+        var asked = DayOf(AskedDay(yahoo.AskedAt));
         var svg = new StringBuilder();
 
         svg.Append(Formatted($"<svg class=\"target-range\" viewBox=\"0 0 {Number(ChartWide)} {Number(High)}\" role=\"img\" data-mark=\"target-range\" data-low=\"{low.ToString(Invariant)}\" data-mean=\"{mean.ToString(Invariant)}\" data-high=\"{high.ToString(Invariant)}\"{(answer.TargetMedian is { } median ? Formatted($" data-median=\"{median.ToString(Invariant)}\"") : string.Empty)} data-price=\"{drawn.ToString(Invariant)}\" aria-label=\"The analysts' targets from low to high against the price drawn\">"));
@@ -77,7 +77,7 @@ public sealed partial class MarkRenderer
     // day it was asked and "-1m" the one before, oldest first, each as fetched on that day.
     public static AnalystReading YahooMonths(YahooAnalystView yahoo)
     {
-        var asked = Day(yahoo.AskedAt);
+        var asked = AskedDay(yahoo.AskedAt);
         var months = new List<RatingMonth>();
 
         foreach (var month in yahoo.Answer.Months)
@@ -109,7 +109,7 @@ public sealed partial class MarkRenderer
     public string FirmActions(string ticker, YahooAnalystView yahoo)
     {
         var actions = yahoo.Answer.Actions;
-        var asked = DayOf(Day(yahoo.AskedAt));
+        var asked = DayOf(AskedDay(yahoo.AskedAt));
 
         if (actions.Count == 0)
         {
@@ -180,7 +180,7 @@ public sealed partial class MarkRenderer
         }
 
         var answer = tipranks.Answer;
-        var asked = DayOf(Day(tipranks.AskedAt));
+        var asked = DayOf(AskedDay(tipranks.AskedAt));
         var html = new StringBuilder();
 
         html.Append(Formatted($"<div class=\"tipranks-ratings\" data-mark=\"tipranks-ratings\" data-asked=\"{asked}\" data-ratings=\"{answer.Ratings.Count}\">"));
@@ -231,6 +231,10 @@ public sealed partial class MarkRenderer
             _ => Escaped(span),
         };
 
-    // The day an instant falls on in UTC, as the store writes its instants.
+    // The day an instant falls on in UTC, as the store writes its instants and TipRanks states its month's reset.
     static DateOnly Day(DateTimeOffset instant) => DateOnly.FromDateTime(instant.UtcDateTime);
+
+    // The day an answer was asked on, in New York, where the page dates every fetch.
+    // see: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
+    static DateOnly AskedDay(DateTimeOffset instant) => EquityBrief.Core.Time.SessionZones.NewYorkDay(instant);
 }

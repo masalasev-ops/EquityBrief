@@ -101,6 +101,9 @@ public sealed record DecisionCardView(
     // The entry check's reading of the stock on the night, which the card's line of flags reads and nothing the card decides.
     public EquityBrief.Core.EntryCheck.EntryReading? EntryCheck { get; init; }
 
+    // The arithmetic the plan's own numbers raise, as information beside it.
+    public IReadOnlyList<string>? PlanFlags { get; init; }
+
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
 }
 
@@ -144,7 +147,7 @@ public sealed record HeldTradeView(DecisionCardView Card, PickCell Pick)
 
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
-// see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+// see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 public sealed partial class MarkRenderer
 {
@@ -157,11 +160,44 @@ public sealed partial class MarkRenderer
     // entry and exit plan, worked separately from its support and resistance levels, stands: below it where a buy point's
     // fold draws it, on the stock's full page where the card is drawn without it, and nowhere for a stock of an index the
     // night works no such plan for.
+    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
     public static string OnePlanSays(string setup, bool below = false, string? index = null) =>
         $"This is the {setup}'s own plan, and its trade is sold by these exits alone. " + (
-            below ? "The entry and exit plan below it is worked separately, from the stock's support and resistance levels."
+            below ? "Another way in, worked from the stock's support and resistance levels, is folded below it: not traded, with stops of its own."
             : index is { } other ? $"No entry and exit plan is worked for the {other}'s stocks; it is read for the S&P 500's alone."
-            : "The entry and exit plan on the stock's full page is worked separately, from its support and resistance levels.");
+            : "Another way in, worked from its support and resistance levels, is folded on the stock's full page: not traded, with stops of its own.");
+
+    // A plan's arithmetic flags as a list beneath it, said to change nothing; none drawn where none applies.
+    // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+    public const string FlagsLead = "Worth knowing from the plan's own numbers, which changes nothing it does:";
+
+    public static string FlagsOf(IReadOnlyList<string>? flags) =>
+        flags is { Count: > 0 } said
+            ? $"<div class=\"plan-flags\" data-flags=\"{said.Count.ToString(Invariant)}\"><p>{Escaped(FlagsLead)}</p><ul>{string.Concat(said.Select(flag => $"<li>{Escaped(flag)}</li>"))}</ul></div>"
+            : string.Empty;
+
+    // The staged plan's flags, read for its first tranche: carried at the middle of its zone, its stop and the lowest exit
+    // it trades at.
+    public static IReadOnlyList<string> StagedFlags(IReadOnlyList<PlanRow> rows, IReadOnlyList<EquityBrief.Core.Cards.FlagBand> bands)
+    {
+        if (rows.Where(row => row.Kind == PlanKind.Tranche && row.Stop is not null).OrderByDescending(row => row.LowEdge).FirstOrDefault() is not { Stop: { } stop } first)
+        {
+            return [];
+        }
+
+        var exits = rows.Where(row => row.Kind == PlanKind.Exit && row.Traded).Select(row => row.LowEdge).ToArray();
+        decimal? exit = exits.Length == 0 ? null : exits.Min();
+
+        return EquityBrief.Core.Cards.PlanFlags.Of((first.LowEdge + first.HighEdge) / 2, stop, exit, bands, "the first exit");
+    }
+
+    // The bands a level summary draws, as the plan flags read them.
+    public static IReadOnlyList<EquityBrief.Core.Cards.FlagBand> FlagBandsOf(IEnumerable<SummaryBand> bands) =>
+        [.. bands.Select(band => EquityBrief.Core.Cards.FlagBand.Of(band.LowEdge, band.HighEdge, [.. band.Members.Select(member => (member.Kind, member.Date))]))];
+
+    // A way in the pick does not trade, folded shut beneath its own plan under the words saying so.
+    public static string AnotherWayFold(string way, string markup) =>
+        $"<details class=\"another-way\" data-way=\"{Escaped(way)}\" data-traded=\"false\"><summary>{Escaped(EquityBrief.Core.Cards.PlanWords.AnotherWay)}</summary>{markup}</details>";
 
     // The control on a pick's row that opens its card in place beneath the row.
     public static string CardToggle(DecisionCardView card) =>
@@ -234,7 +270,7 @@ public sealed partial class MarkRenderer
     }
 
     // A setup's name as a sentence carries it: the earnings drift, the sector heavyweights.
-    static string SetupOf(string family) =>
+    public static string SetupOf(string family) =>
         family == EquityBrief.Core.Families.HeavyweightRule.Name
             ? "sector heavyweights"
             : (EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family).ToLowerInvariant();
@@ -363,8 +399,8 @@ public sealed partial class MarkRenderer
         var sold = SoldBy(card);
 
         return held is { } holding
-            ? FormattableString.Invariant($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\" data-held=\"{DayOf(holding.Night)}\">This stock is held on the trade the {Escaped(setup)} picked it for on {holding.Night:d MMM yyyy}, sold {Escaped(sold)}, whichever comes first. The plan beneath is worked from its support and resistance levels for a buyer without that trade.</p>")
-            : Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. The plan beneath is worked from its support and resistance levels for a buyer without the pick.</p>");
+            ? FormattableString.Invariant($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\" data-held=\"{DayOf(holding.Night)}\">This stock is held on the trade the {Escaped(setup)} picked it for on {holding.Night:d MMM yyyy}, sold {Escaped(sold)}, whichever comes first. That is the plan. Another way in, worked from its support and resistance levels, is folded beneath: not traded, with stops of its own.</p>")
+            : Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. That is the plan. Another way in, worked from its support and resistance levels, is folded beneath: not traded, with stops of its own.</p>");
     }
 
     // A trade's own exits in words: from 21.14 at the next open after a close at its target or below its stop, and after
@@ -591,10 +627,20 @@ public sealed partial class MarkRenderer
 
         body.Append("</div>");
 
+        // The share of the time the plan must reach its target before its stop to break even, beside its reward to risk.
+        // see: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
         if (pick?.RewardToRisk is { } reward && card.Target is not null)
         {
             body.Append(Invariant, $"<p class=\"card-reward\" data-reward=\"{reward.ToString(Invariant)}\">You risk $1 to make ${Figures.Ratio(reward)}.</p>");
         }
+
+        // A card drawn with no pick beside it, the stock's full page's, works the ratio from its own buy, stop and target.
+        if ((pick?.RewardToRisk ?? (card is { Entry: { } buy, Stop: { } floor, Target: { } aim } && buy > floor && aim > buy ? (aim - buy) / (buy - floor) : null)) is { } ratio && card.Target is not null)
+        {
+            body.Append(Invariant, $"<p class=\"card-break-even\" data-break-even=\"{EquityBrief.Core.Cards.PlanWords.BreakEven(ratio).ToString("0.000", Invariant)}\">{Escaped(EquityBrief.Core.Cards.PlanWords.BreakEvenSaid(ratio, "its target"))}</p>");
+        }
+
+        body.Append(FlagsOf(card.PlanFlags));
 
         body.Append(TrailLines(card, pick));
 
@@ -616,6 +662,7 @@ public sealed partial class MarkRenderer
                 body.Append(Invariant, $" Buying and selling costs about ${trip.ToString("N2", Invariant)} at the published rates.");
             }
 
+            body.Append(' ').Append(Escaped(EquityBrief.Core.Cards.PlanWords.WholePosition(money.Shares)));
             body.Append("</p>");
 
             if (money.Example)

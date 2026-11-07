@@ -7,6 +7,76 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - a plan's arithmetic flagged beside it
+Decision: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+Was:
+> (the pick's card) ... and the example's shares named as the whole position bought at once (see: Each plan states ...); the management in the rule's own terms; ...
+Now:
+> ... and the example's shares named as the whole position bought at once (see: Each plan states ...); and beneath them the plan's arithmetic flags as information, the staged plan's and the wait plan's beneath each (see: A plan's arithmetic is flagged ...); the management ...
+Why: the operator's addendum of 2026-11-07, its second item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - a story the feed carried more than once drawn and counted once
+Decision: A story the feed carried more than once is drawn and counted once, and the page says how many copies it merged
+Was:
+> (the name page's News) present for every member: what was written about the company in the thirty days before the page's night; each article newest first ...
+Now:
+> ... in the thirty days before the page's night; from the 12.6 correction of 2026-11-07 a story the feed carried more than once drawn and counted once with a line saying how many copies were merged (see: A story the feed carried more than once ...); each article newest first ...
+Why: the operator's addendum of 2026-11-07, its sixth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html, docs/SCHEMA.md - analyst figures dated by the New York day, revisions against the newest report
+Decision: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
+Was:
+> (ARCHITECTURE, the name page's Analysts) ... a fetch keeping no trend saying so (see: The name page draws the analysts' figures ...)
+> (SCHEMA, estimate_trend_night) ... and no rule, list or gate reads the table (see: A new reading joins the ledger ...).
+Now:
+> ... (see: The name page draws the analysts' figures ...); from the 18.2 correction of 2026-11-07 each fetch dated by the New York day it fell on and Yahoo's targets the same; the revisions under a line giving their fetch day against the newest report and this fiscal year's row read from the night's own newer ask with its night (see: An analyst figure is dated ...)
+> ... (see: A new reading joins the ledger ...). From the 18.2 correction of 2026-11-07 the name page reads the newest row on or before its night for this fiscal year's revisions where it is newer than the quarters fetch, dated by its session (see: An analyst figure is dated ...).
+Why: the operator's addendum of 2026-11-07, its fifth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - one next report date on a page
+Decision: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
+Was:
+> (ARCHITECTURE, the name page) ... and the card states the next report, estimated from the company's own report of the year before, ...
+> (BUILD_PLAN, 22.21) ... the warning stays only where a stock has neither (see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning).
+Now:
+> ... and the card states the next report as the page does, from the correction of 2026-11-07 a card on a stock that reported lately reading the page's estimate with its source (see: A page draws one next report date ...), estimated from the company's own report of the year before, ...
+> ... the warning stays only where a stock has neither. From its correction of 2026-11-07 the note reads the page's own estimate where one stands (see: A page draws one next report date ...).
+Why: the operator's addendum of 2026-11-07, its fourth item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - each plan's break-even and its shares named as the whole position
+Decision: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
+Was:
+> (the pick's card) ... the plan in the operator's money or on the example account, with the line saying so and linking the account page; the management in the rule's own terms; ...
+> (the entry check) ... (see: A pick's page draws ...); and the state a dashed outline ...
+Now:
+> ... linking the account page; from the 4.8 correction of 2026-11-07 the share of the time the plan must reach its target before its stop to break even beneath its reward to risk and the example's shares named as the whole position bought at once (see: Each plan states ...); the management ...
+> ... (see: A pick's page draws ...); and from the 4.8 correction of that day the share of the time it must reach its first exit before its stop to break even (see: Each plan states ...); and the state ...
+Why: the operator's addendum of 2026-11-07, its third item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - the paper chart legible at a phone's width
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... an account with no trade drawing no line and its key saying no trades yet (see: ...)
+Now:
+> ... an account with no trade drawing no line and its key saying no trades yet; at a width under the chart's own a width its labels read at, the chart scrolling inside its own frame (see: ...)
+Why: the read-back at a true 390 of the operator's order of 2026-11-07, which found the chart's labels about four pixels high.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - a pick's other ways in folded as not traded, each stop named as its own
+Decision: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+Was:
+> (15.7, tomorrow's buys) ... an S&amp;P 500 card draws the stock's entry and exit plan beneath it as the stock's full page draws it, the plan column beside its two tables; and an S&amp;P 400 or 600 card says none is worked ... (see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it)
+> (15.7, the list) ... the card drawing on the S&amp;P 500 from the 22.6 correction of 2026-10-25 the stock's entry and exit plan beneath its setup's own; its ticker ... (see: A buy point's fold draws ...)
+> (the pick's card) From the 22.6 correction of 2026-10-25 a buy point's fold on Tonight draws that entry and exit plan straight beneath the plan, ... or one line saying why none is drawn (see: A buy point's fold draws ...).
+> (the name page) ... the plan region opens on the pick's own exit, and its exits line names them where the levels' plan places none, so it never reads as having none; ...
+> (the entry check) ... a provisional plan for waiting or why the ladder draws none (see: The wait plan is drawn from the ladder's own bands and stop, is provisional and sets nothing); ...
+Now:
+> ... the plan column beside its two tables; from the correction of 2026-11-07 that plan is folded shut as another way in not traded with its stops named as its own; and an S&amp;P 400 or 600 card ... (see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own)
+> ... beneath its setup's own and from the correction of 2026-11-07 folded shut as another way in not traded; its ticker ... (see: A pick's page draws ...)
+> ... a buy point's fold on Tonight draws that entry and exit plan beneath the plan, ... or one line saying why none is drawn. From the correction of 2026-11-07 that plan is folded shut under the words that it is another way in not traded; a line inside names its stops as its own against the stop the pick's trade is sold below (see: A pick's page draws ...).
+> ... the plan region opens on the pick's own exit as the plan, ...; from the correction of 2026-11-07 the levels' plan beneath is folded shut as another way in not traded with its stops named as its own (see: A pick's page draws ...); ...
+> ... (see: The wait plan is drawn ...); from the correction of 2026-11-07 that plan folded shut on a pick's page as another way in not traded with its stop named as its own (see: A pick's page draws ...); ...
+Why: the operator's addendum of 2026-11-07, its first item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - an account with no trade draws no line on the chart
 Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
 Was:

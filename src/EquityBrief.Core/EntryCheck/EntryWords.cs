@@ -62,8 +62,9 @@ public static class EntryWords
             return said + " The ladder places no stop under this zone, so it draws no exit.";
         }
 
+        // see: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
         return said + I($" Stop {Dollars(stop)}.") + (reading is { WaitExit: { } exit, WaitReward: { } reward }
-            ? I($" First exit {Dollars(exit)}, about {Tenth(reward)} to 1.")
+            ? I($" First exit {Dollars(exit)}, about {Tenth(reward)} to 1. ") + Cards.PlanWords.BreakEvenSaid(Prices.Statistic.ToPrice(reward), "its first exit")
             : " No resistance band in the year stands at twice the risk, so it draws no first exit.");
     }
 

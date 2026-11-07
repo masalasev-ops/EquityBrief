@@ -16846,3 +16846,145 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 22.6 - correction: a pick's page draws its rule's plan as the plan and folds every other way in as not traded   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its first item, word for word in `prompts/2026-11-07-pick-page-plans-addendum.md`.
+            CTSH, picked by the pullback on 2026-11-06 at a buy of 64.72, a stop of 61.55 and a target of 71.26: beneath its
+            card Tonight drew the stock's entry and exit plan open, its first tranche bought at the price now with a stop of
+            57.91, and its full page drew the same plan open and a wait plan with a stop of 54.70 in its entry check. Two stops
+            for one buy, each told apart from the pick's by a sentence alone.
+Corrected:  each other way in is folded shut beneath the rule's plan under "Not traded: another way in, for comparison", a line
+            inside naming its stops as its own against the stop the pick's trade is sold below: the levels' plan in a buy
+            point's fold on Tonight, built at the 22.6 correction; the levels' plan with its tranche table and sizing arithmetic
+            in the full page's plan region, built at the 18.4 correction; and the entry check's wait plan, built at 22.45. The
+            sentences beneath the card's plan and opening the plan region say so. A stock no family picked or holds draws its
+            plan as before. The decision, superseding the 22.6 correction's, five rows of section 15, the changelog and the
+            guide.
+Tests:      1 new: CTSH's plan of 2026-11-06 folded with "Its stops, 57.91, 54.70 and 52.49, are its own: the pullback's trade
+            is sold on a close below 61.55."; its wait plan folded with its stop of 54.70 named its own; the card's line; and a
+            stock no family picked drawing both open. Tonight's family page test reads F3's plan folded beneath its card, its
+            stop of 94.00 named its own against the pullback's 96.00.
+Claims:     none new.
+Pins:       none move: the web and read surface's sources are none a rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the fold beneath a pick drawn open: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: the paper chart keeps its labels legible at a phone's width   2026-11-07
+
+Found:      the read-back on 5152 of the operator's order of 2026-11-07, at a true 390 in both palettes after its pull request
+            merged: the chart drew its whole width into the phone's, its axis, dates and end labels about four pixels high.
+            Every other region read back at 1440 and 390 in both palettes, 36 shots over the three indexes' paper pages and
+            Home, none wider than its screen.
+Corrected:  at a width under 760 the chart keeps a width of 720, its 11-pixel labels reading at 9.2, and scrolls inside its own
+            frame as a table does. The decision's text, 15.21's row and the changelog.
+Tests:      1 new: the rule read from the stylesheet against the chart's own drawn width, each label's size scaled to it at nine
+            pixels or more.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the narrow rule removed: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 4.8 - correction: each plan states its break-even and whether its shares are the whole position   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its third item. 4.8's arithmetic states the staged plan's break-even and
+            that its shares are the first tranche's; on 2026-11-06 CTSH's card gave "You risk $1 to make $2.06." and 309
+            shares on the example account with neither, and its wait plan "about 3.0 to 1" alone.
+Corrected:  `PlanWords.BreakEven`, one over one plus the reward to risk, stated in 4.8's words beneath the card's reward to risk
+            and after the wait plan's first exit; the card's example names its shares as the whole position, bought at once.
+            The stock's full page draws its card with no pick beside it, so the card works the ratio from its own buy, stop
+            and target there.
+            The decision, two rows of section 15, the changelog and the guide.
+Tests:      1 new: CTSH's card at 3.17 at risk against 6.54, 32.6%, and its 309 shares named the whole position; its wait plan
+            at 3 to 1, 25.0%. The wait plan's sentence test and the first item's read the new sentence.
+Claims:     none new.
+Pins:       none move: the card's words and the entry check's sentences are read by no rule.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the reward's share in place of the risk's: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 22.21 - correction: a page draws one next report date, and its card reads the page's estimate   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its fourth item. CTSH's card on 2026-11-06, on Tonight and on its page, said
+            its next report was about 2027-01-28, three months after its report of 2026-10-29; the same page's numbers,
+            calendar and plan said about 2027-02-03, from its report of 2026-02-04 a year on.
+Corrected:  `CardLines.ReportedRecently` takes the page's estimate and names it with its source, placed against the hold as the
+            page's block places it; the name page hands it the estimate it reads, and Tonight reads it from the night's report
+            days, the quarters' and the calendar's, through `ReadApi.ReportDaysToAsync`. Three months on stands only where no
+            report a year back gives one. The decision, superseding 22.21's, 15.9's row, 22.21's text, the changelog and the
+            guide.
+Tests:      1 new: CTSH's reports estimate 2027-02-03 from 2026-02-04; its card on its page and on Tonight read the same sentence,
+            inside the hold; a stock with no report a year back reads three months on.
+Claims:     none new.
+Pins:       none move: the card's lines are read by no rule.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            Tonight's card reading no estimate: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 18.2 - correction: an analyst figure is dated by its New York day, and its revisions against the newest report   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its fifth item. Each analyst fetch was dated by the UTC day its instant was
+            stored on: CTSH's fetch at 01:23 UTC on 2026-10-10 read 10 Oct, asked on 9 Oct in New York, and Yahoo's targets
+            were stamped the same way. Its revisions stood undated beneath the consensus. For CTSH they were already the
+            fetch of 2026-10-30, the night after its report of 2026-10-29, which the quarters fetch makes once the quarter
+            posts; the night's own ask of every member's year, made each night, was read by the setup ledger alone.
+Corrected:  `SessionZones.NewYorkDay` dates the consensus's fetch, each ratings fetch and Yahoo's answers; a line above the
+            revisions gives their fetch day against the newest report, and this fiscal year's row reads the night's own ask
+            where it is newer, through `AnalystView.WithNightRevision`, the line naming its night. The decision, 15.9's
+            Analysts row, the night trends' table in SCHEMA, the changelog and the guide.
+Tests:      1 new: CTSH's fetch of 01:23 UTC on 2026-10-10 is 9 Oct, of 23:48 UTC on 2026-10-30 is 30 Oct; Yahoo's answer of
+            03:00 UTC on 2026-11-07 is stamped 6 Nov; the revisions line after the 29 Oct report with the year's row from the
+            night of 6 Nov; an ask no newer leaving the fetch's row and a fetch before the newest report saying so.
+Claims:     none new.
+Pins:       none move: no rule reads the analysts' figures.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            Yahoo's stamp read as the UTC day: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 12.6 - correction: a story the feed carried more than once is drawn and counted once   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its sixth item. CTSH's news on 2026-11-06 drew one story, "Cognizant and
+            Google Cloud Expand Alliance to Accelerate Agentic Enterprise Transformation", three times, each from
+            finance.yahoo.com on 2026-10-19 under its own link, each labelled positive and counted: one source, not several
+            feeds as the item supposes, and three counts for one announcement.
+Corrected:  `NewsDuplicates.Key`, a title read without case, punctuation or spacing with its day; the news region draws each
+            story once, its labelled copy kept, counts over the stories, and says how many copies it merged; Tonight's count
+            of good and bad stories reads each once. The labeller still reads each stored copy. The decision, 15.9's News
+            row, the changelog and the guide.
+Tests:      1 new: CTSH's three copies, one unlabelled and one upper-cased with a full stop, drawn as one labelled story beside
+            another, two positive, two merged and the line saying so; the same title on another day another story.
+Claims:     none new.
+Pins:       none move: the labeller's pin and its reading are untouched.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the region reading every stored copy: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 4.8 - correction: a plan's arithmetic is flagged beside it as information   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its second item. CTSH's plans of 2026-11-06 raised what no part of the page
+            said: its first tranche's 0.64 to 1 to its first exit; that exit, 67.72, and the pullback's target, 71.26, were
+            retracements the price had never turned at below the swing high of 73.90; its 2 to 1 gate passed at 2.06.
+Corrected:  `PlanFlags.Of` works the four flags from a plan's buy, stop and first exit, the night's bands with their turns, and
+            for a pick's plan its gate, its stop in typical days, whether its next report falls inside the hold and its median
+            report-day move; drawn beneath the card's plan, the staged plan on Tonight and on the full page, and the wait plan,
+            each under the line saying it changes nothing. The decision, the card's row, the changelog and the guide.
+Tests:      1 new: CTSH's target flagged a retracement with 2.90 to 1 to 73.90 and its gate passed by 0.06; its staged plan
+            0.64 to 1 and its first exit with 1.67 to 1 to 73.90; the report flag silent at a 1.14 stop against a 1.02 median
+            and raised at 0.90 against 1.30.
+Claims:     none new.
+Pins:       none move: no rule reads a flag.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the retracement flag never raised: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3556 of 3556 tests ran with none failed, migrations 0 to 131 with none
+            pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
+            none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

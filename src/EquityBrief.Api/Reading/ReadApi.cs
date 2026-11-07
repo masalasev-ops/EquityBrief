@@ -2800,7 +2800,7 @@ public sealed partial class ReadApi : IComponent
     // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
     const string NewsCountsOn = @"
         SELECT a.ticker, l.direction, a.title, a.text,
-               (SELECT MAX(m.name) FROM membership m WHERE m.ticker = a.ticker)
+               (SELECT MAX(m.name) FROM membership m WHERE m.ticker = a.ticker), a.published_at
         FROM news_article a
         JOIN news_label l ON l.rowid = (
             SELECT n.rowid FROM news_label n
@@ -2888,6 +2888,10 @@ public sealed partial class ReadApi : IComponent
 
         var counts = new Dictionary<string, (int, int)>(StringComparer.Ordinal);
 
+        // A story the feed carried more than once counts once.
+        // see: A story the feed carried more than once is drawn and counted once, and the page says how many copies it merged
+        var counted = new HashSet<string>(StringComparer.Ordinal);
+
         await using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
@@ -2896,6 +2900,11 @@ public sealed partial class ReadApi : IComponent
             var company = reader.IsDBNull(4) ? null : reader.GetString(4);
 
             if (company is not null && !EquityBrief.Core.News.StoryMatch.IsAbout(reader.GetString(2), reader.IsDBNull(3) ? string.Empty : reader.GetString(3), ticker, company))
+            {
+                continue;
+            }
+
+            if (!counted.Add(ticker + "|" + EquityBrief.Core.News.NewsDuplicates.Key(reader.GetString(2), reader.GetString(5))))
             {
                 continue;
             }

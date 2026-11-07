@@ -2039,37 +2039,56 @@ public sealed partial class SinglePageApp : IComponent
         }
         else
         {
-            planned.Append("<div class=\"plan-grid\"><div class=\"fig\">").Append(marks.PlanColumn(ticker, close, plan)).Append("</div><div>");
-            planned.Append(marks.PlanTables(ticker, plan, trade: decision ?? held?.Card, held: decision is null && held is not null)).Append("</div></div>");
+            var way = new StringBuilder();
+
+            way.Append("<div class=\"plan-grid\"><div class=\"fig\">").Append(marks.PlanColumn(ticker, close, plan)).Append("</div><div>");
+            way.Append(marks.PlanTables(ticker, plan, trade: decision ?? held?.Card, held: decision is null && held is not null)).Append("</div></div>");
 
             // Each tranche as an equal share of a full position, its risk to the stop that sells it and its reward to risk to
             // each traded exit, a bar each, and the trail in the words of its rule.
             // see: Each tranche buys an equal share of a full position as the exits divide it, and its reward to risk is read to every traded exit
             if (history is { } shared)
             {
-                planned.Append("<div class=\"sub\">Each tranche's share, risk and reward to risk</div>");
-                planned.Append(marks.SharesTable(ticker, shared.Shares, shared.NoPlan));
+                way.Append("<div class=\"sub\">Each tranche's share, risk and reward to risk</div>");
+                way.Append(marks.SharesTable(ticker, shared.Shares, shared.NoPlan));
 
                 if (shared.Shares.Count > 0)
                 {
-                    planned.Append("<div class=\"fig\">").Append(marks.RewardToRiskBars(ticker, shared.Shares)).Append("</div>");
+                    way.Append("<div class=\"fig\">").Append(marks.RewardToRiskBars(ticker, shared.Shares)).Append("</div>");
                 }
 
                 if (shared.Trail is { } trail)
                 {
-                    planned.Append("<p class=\"plan-trail\">").Append(Escaped(trail)).Append("</p>");
+                    way.Append("<p class=\"plan-trail\">").Append(Escaped(trail)).Append("</p>");
                 }
+            }
+
+            way.Append("<div class=\"sub\">Sizing arithmetic</div>").Append(arithmetic);
+
+            // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+            way.Append(MarkRenderer.FlagsOf(MarkRenderer.StagedFlags(plan, MarkRenderer.FlagBandsOf(summary))));
+            way.Append(Cards.Key(
+                "How to read the plan.",
+                "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop. Each tranche buys an equal share of a full position, carried at the middle of its zone: its risk is that price less the stop that sells it, and its reward to risk to an exit is the exit's low edge less that price, over the risk. A tranche with no band beneath it has no stop of its own, so it states no risk and no reward to risk. The top traded exit is where the trail begins: what is left is held on a stop raised under the price rather than sold there, so a reward to it measures the move to where the trail begins and not a price the plan sells at.",
+                "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
+
+            // A stock a family picked or holds draws its trade's own exits as the plan, and this one folded beneath them as a
+            // way in not traded, its stops named as its own; any other stock draws it as its plan.
+            // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+            if ((decision ?? held?.Card) is { } traded)
+            {
+                way.Append(Invariant($"<p class=\"another-stops\">{Escaped(EquityBrief.Core.Cards.PlanWords.OwnStops([.. plan.Where(row => row.Stop is not null).Select(row => row.Stop!.Value)], traded.Stop, MarkRenderer.SetupOf(traded.Family)))}</p>"));
+                planned.Append(MarkRenderer.AnotherWayFold("levels", way.ToString()));
+            }
+            else
+            {
+                planned.Append(way);
             }
 
             // The block opens on the next report, declared or estimated, placed against the hold of a trade a family picked or
             // holds the stock on.
             // see: The calendar and the plan's block around the next report list it declared or estimated and place it against the hold
             planned.Append("<div class=\"sub\">Around the next report</div>").Append(MarkRenderer.NextReportAroundThePlan(calendar)).Append(eventBook);
-            planned.Append("<div class=\"sub\">Sizing arithmetic</div>").Append(arithmetic);
-            planned.Append(Cards.Key(
-                "How to read the plan.",
-                "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop. Each tranche buys an equal share of a full position, carried at the middle of its zone: its risk is that price less the stop that sells it, and its reward to risk to an exit is the exit's low edge less that price, over the risk. A tranche with no band beneath it has no stop of its own, so it states no risk and no reward to risk. The top traded exit is where the trail begins: what is left is held on a stop raised under the price rather than sold there, so a reward to it measures the move to where the trail begins and not a price the plan sells at.",
-                "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
         }
 
         // Every earlier night the live list picked the name, folded beneath the plan: how many times and how each group
@@ -2332,7 +2351,7 @@ public sealed partial class SinglePageApp : IComponent
         {
             var analystBody = new StringBuilder();
 
-            analystBody.Append(analysts.Consensus.Count > 0 ? marks.ConsensusTable(analysts, report.Currency) : "<p class=\"degraded\" data-absent=\"consensus\">The newest fetch kept no estimate trend for it, so no consensus is drawn.</p>");
+            analystBody.Append(analysts.Consensus.Count > 0 ? marks.ConsensusTable(analysts, report.Currency, report.NewestReport) : "<p class=\"degraded\" data-absent=\"consensus\">The newest fetch kept no estimate trend for it, so no consensus is drawn.</p>");
             analystBody.Append(analysts.Target is { } target
                 ? Invariant($"<p class=\"analyst-target\" data-target=\"{target}\">The analysts' mean target is {Figures.Price(target)}{(analysts.TargetAgainstPrice is { } against ? ", " + MarkRenderer.SignedFigure(against, 1, Invariant($"{(Math.Round(against, 1) == 0 ? 0 : against):+0.0;-0.0;0.0}%")) + " on the price drawn" : string.Empty)}{(analysts.MeanRating is { } mean ? Invariant($", and their mean rating {mean:0.00} on the provider's scale from one, a strong sell, to five, a strong buy") : string.Empty)}, as fetched on {Cards.Day(analysts.FetchedOn)}.</p>")
                 : "<p class=\"degraded\" data-absent=\"target\">No fetch kept the analysts' mean target.</p>");
@@ -2450,7 +2469,7 @@ public sealed partial class SinglePageApp : IComponent
         // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
         if (decision is not null)
         {
-            region.Append(marks.EntryCheck(entryCheck, decision.Entry, decision.Stop, decision.Family));
+            region.Append(marks.EntryCheck(entryCheck, decision.Entry, decision.Stop, decision.Family, MarkRenderer.FlagBandsOf(summary)));
             Card("card", "card", "The decision card", Invariant($"<section class=\"card name-card\" id=\"card\" data-role=\"{Cards.Buy}\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
         }
         else if (held is not null)
@@ -3172,7 +3191,7 @@ public sealed partial class SinglePageApp : IComponent
         // plan beneath the list, on the same page, and brings it into view. On a night the families drew the list, from
         // 22.6 no plan is drawn here: a pick's card beneath its row holds its setup's own plan, and from the 22.6
         // correction of 2026-10-25 the stock's entry and exit plan beneath it.
-        // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+        // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
         var byFamilies = families is not null;
 
         if (!byFamilies && selectedName.Length > 0 && selectedTicker is { } chosen)

@@ -17,13 +17,52 @@ public sealed partial class ReadApi
         GROUP BY ticker;
     ";
 
+    // Every stock's reports over the reach a next report is estimated from, to a night, from the same two sources as its
+    // newest: the quarters' report dates and the calendar's earnings.
+    // see: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
+    const string ReportDaysTo = @"
+        SELECT DISTINCT ticker, day FROM (
+            SELECT ticker, report_date AS day FROM reported_quarter WHERE report_date IS NOT NULL AND report_date <= $night AND report_date >= $from
+            UNION ALL
+            SELECT ticker, event_date AS day FROM calendar WHERE kind = 'earnings' AND event_date <= $night AND event_date >= $from)
+        ORDER BY ticker, day;
+    ";
+
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<DateOnly>>> ReportDaysToAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReportDaysTo;
+        command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$from", night.AddDays(-EquityBrief.Core.Cards.CardLines.EstimateReach).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var days = new Dictionary<string, List<DateOnly>>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var ticker = reader.GetString(0);
+
+            if (!days.TryGetValue(ticker, out var held))
+            {
+                days[ticker] = held = [];
+            }
+
+            held.Add(DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        return days.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<DateOnly>)pair.Value, StringComparer.Ordinal);
+    }
+
     // One stock's newest report on or before a night, as the cards read it, its quarter filed or not.
     // see: A figure fetched before the newest report says so with its fetch date, and a company's value names the day its shares were filed
     public async Task<DateOnly?> NewestReportAsync(string ticker, DateOnly night) =>
         (await NewestReportsAsync(night)).TryGetValue(ticker, out var newest) ? newest : null;
 
     // The newest report of every stock on or before a night, which a page's cards say a stock reported on.
-    // see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning
+    // see: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
     public async Task<IReadOnlyDictionary<string, DateOnly>> NewestReportsAsync(DateOnly night)
     {
         await using var connection = Open();

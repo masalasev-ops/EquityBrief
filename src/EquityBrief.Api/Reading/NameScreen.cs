@@ -668,7 +668,7 @@ public static partial class NameScreen
             currency,
             [.. EquityBrief.Core.Report.QuarterLines.Margins(inputs.Quarters).Select(quarter => quarter with { Quarter = stated.Of(quarter.Quarter) })],
             segments,
-            AnalystsAsFiled(EquityBrief.Core.Report.AnalystView.Of(inputs.TrendFetchedOn, inputs.Trend, inputs.Ratings, night, price), stated),
+            AnalystsAsFiled(EquityBrief.Core.Report.AnalystView.WithNightRevision(EquityBrief.Core.Report.AnalystView.Of(inputs.TrendFetchedOn, inputs.Trend, inputs.Ratings, night, price), inputs.YearRevision), stated),
             EquityBrief.Core.Report.DividendSafety.Of(
                 forwardRate,
                 price,
@@ -1827,13 +1827,16 @@ public static partial class NameScreen
         DateOnly? ReportedOn(DateOnly at) => ReportedOnOf(filings, at, reportQuarters, calendarReports);
         DateOnly[] reportedDays = [.. (reportQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()];
 
-        var cards = WithEstimatedReport(
-            (decisionCards ?? [])
-                .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family))
-                .Select(card => CardScreen.View(card, cardContext))
-                .FirstOrDefault(),
-            reportedDays,
-            ReportedOn);
+        // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+        var cards = WithPlanFlags(
+            WithEstimatedReport(
+                (decisionCards ?? [])
+                    .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family))
+                    .Select(card => CardScreen.View(card, cardContext))
+                    .FirstOrDefault(),
+                reportedDays,
+                ReportedOn),
+            FlagBands(levels));
 
         // Once the open after the card's night prints, the fill and the reward against the risk at it.
         cards = cards is { } filled
@@ -2121,7 +2124,7 @@ public static partial class NameScreen
     // whether it falls inside the hold, in place of the line saying none is on file; one that reported lately reads a note
     // saying when, before any estimate.
     // see: A next report not on file is estimated from the first report a year back falling clear of the newest report known, and a pick's card restates its fill once the open prints
-    // see: A stock that reported in the last 100 days with no date on file draws a note, and only one with neither draws a warning
+    // see: A page draws one next report date, the calendar's where it stands and otherwise one estimate stated with its source
     public static DecisionCardView? WithEstimatedReport(DecisionCardView? card, IReadOnlyList<DateOnly> reported, Func<DateOnly, DateOnly?>? reportedOn = null)
     {
         if (card is not { } drawn
@@ -2132,8 +2135,9 @@ public static partial class NameScreen
 
         var stated = reportedOn?.Invoke(drawn.Night);
         var newest = reported.Where(day => day <= drawn.Night).Select(day => (DateOnly?)day).Append(stated <= drawn.Night ? stated : null).Max();
-        var replacing = EquityBrief.Core.Cards.CardLines.ReportedRecently(newest, drawn.Night, drawn.Cap)
-            ?? (EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, drawn.Night, stated) is { } estimate
+        var estimated = EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, drawn.Night, stated);
+        var replacing = EquityBrief.Core.Cards.CardLines.ReportedRecently(newest, drawn.Night, drawn.Cap, estimated)
+            ?? (estimated is { } estimate
                 ? EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate, drawn.Night, drawn.Cap)
                 : null);
 
@@ -3112,20 +3116,26 @@ public static partial class NameScreen
     // its two tables as the stock's full page draws them, from the plan the night shown stored and against that night's
     // close, in the reader's words; a stock whose stored plan places nothing says why, and one the night stored no plan
     // for, or no close, says so.
-    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
-    public static string EntryAndExitPlan(MarkRenderer marks, string ticker, LadderRow? ladder, decimal? close)
+    // Beneath a pick's card the plan is folded shut as a way in not traded, its stops named as its own against the pick's.
+    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    public static string EntryAndExitPlan(MarkRenderer marks, string ticker, LadderRow? ladder, decimal? close, string? setup = null, decimal? traded = null, IReadOnlyList<EquityBrief.Core.Cards.FlagBand>? bands = null)
     {
         var rows = PlanRows(ladder, plain: true);
         var body = Invariant($"<section class=\"card-levels\" data-ticker=\"{Escaped(ticker)}\" data-plan-rows=\"{rows.Count}\"><h5>Entry and exit plan</h5>");
 
         if (rows.Count > 0 && close is { } price)
         {
-            return body
-                + "<div class=\"plan-grid\"><div class=\"fig\">" + marks.PlanColumn(ticker, price, rows, plain: true) + "</div><div>"
+            var drawn = "<div class=\"plan-grid\"><div class=\"fig\">" + marks.PlanColumn(ticker, price, rows, plain: true) + "</div><div>"
                 + marks.PlanTables(ticker, rows, plain: true) + "</div></div>"
                 + (ladder?.ShortNote is { } tooShort ? Invariant($"<p class=\"card-note\" data-short-history=\"true\">{Escaped(tooShort)}</p>") : string.Empty)
                 + "<p class=\"card-note\">Worked from the stock's own support and resistance levels: it buys in the green zones below the price and sells in the orange zones above it, and the heavy line is where the whole idea is wrong.</p>"
-                + "</section>";
+                + MarkRenderer.FlagsOf(MarkRenderer.StagedFlags(rows, bands ?? []));
+
+            return setup is null
+                ? body + drawn + "</section>"
+                : Invariant($"<section class=\"card-levels\" data-ticker=\"{Escaped(ticker)}\" data-plan-rows=\"{rows.Count}\">")
+                    + MarkRenderer.AnotherWayFold("levels", "<h5>Entry and exit plan</h5>" + drawn + Invariant($"<p class=\"another-stops\">{Escaped(EquityBrief.Core.Cards.PlanWords.OwnStops([.. rows.Where(row => row.Stop is not null).Select(row => row.Stop!.Value)], traded, setup))}</p>"))
+                    + "</section>";
         }
 
         var why = ladder is null ? "no plan is stored for it on the night"
@@ -3167,6 +3177,33 @@ public static partial class NameScreen
                     reason.GetProperty("values").EnumerateObject()
                         .ToDictionary(value => value.Name, value => value.Value.GetString()!, StringComparer.Ordinal))),
         ];
+    }
+
+    // The night's bands as the plan flags read them, each with its members' kinds and its turns.
+    // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+    public static IReadOnlyList<EquityBrief.Core.Cards.FlagBand> FlagBands(IReadOnlyList<LevelRow> levels) =>
+        [.. levels.Select(level => EquityBrief.Core.Cards.FlagBand.Of(level.LowEdge, level.HighEdge, [.. Members(level.Members).Select(member => (member.Kind, member.Date))]))];
+
+    // A pick's card with its plan's flags: its target as the first exit, the gate's floor and the stop's distance read off
+    // its trade step's stored words, whether its next report falls inside the hold off its earnings line, and the stock's
+    // median report-day move off its hits.
+    public static DecisionCardView? WithPlanFlags(DecisionCardView? card, IReadOnlyList<EquityBrief.Core.Cards.FlagBand> bands)
+    {
+        if (card is not { Entry: { } entry, Stop: { } stop } drawn)
+        {
+            return card;
+        }
+
+        var steps = string.Join(" ", drawn.Lines.Where(line => line.Name == EquityBrief.Core.Cards.CardLines.TrendName).Select(line => line.Words));
+        decimal? gate = Regex.Match(steps, @"reward (?:to|against the) risk [0-9.]+ at or above ([0-9.]+)") is { Success: true } passed
+            ? decimal.Parse(passed.Groups[1].Value, CultureInfo.InvariantCulture)
+            : null;
+        double? near = Regex.Match(steps, @"the stop ([0-9.]+) typical (?:moves|days' moves) below the entry") is { Success: true } placed
+            ? double.Parse(placed.Groups[1].Value, CultureInfo.InvariantCulture)
+            : null;
+        var inside = drawn.Lines.Any(line => line.Name == EquityBrief.Core.Cards.CardLines.EarningsName && line.Words.Contains("inside", StringComparison.Ordinal) && !line.Words.Contains("after this trade's hold", StringComparison.Ordinal));
+
+        return drawn with { PlanFlags = EquityBrief.Core.Cards.PlanFlags.Of(entry, stop, drawn.Target, bands, "its target", gate, near, inside, drawn.Hits?.MedianTypical) };
     }
 
     // The members column, as the mark needs it. SCHEMA stores each member's

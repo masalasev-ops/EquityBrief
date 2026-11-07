@@ -318,14 +318,15 @@ public partial class ReadSurface
         Assert.Equal("No report date is on file for it, so a report inside the hold cannot be ruled out.", NameScreen.WithEstimatedReport(card, [new(2026, 7, 1)])!.Lines.Single().Words);
 
         // DASH's card, a pick the drift rule took on 2026-10-30 with a hold's cap of 60 sessions: read without the day the
-        // calendar holds it, its report of 2026-08-05 has the next 91 days on, 2026-11-04, inside the hold, and with it the
-        // report of 2026-10-29 has the next after the hold; each a note, since it reported inside 100 days.
+        // calendar holds it, its report of 2026-08-05 has the next a year on from its report of 2025-11-05, 2026-11-04, inside
+        // the hold, named with that report as the page names it, and with it the report of 2026-10-29 has the next after the
+        // hold; each a note, since it reported inside 100 days.
         var dashCard = card with { Night = dashNight, Cap = 60 };
         var early = NameScreen.WithEstimatedReport(dashCard, dash)!.Lines.Single();
         var noted = NameScreen.WithEstimatedReport(dashCard, dash, _ => new DateOnly(2026, 10, 29))!.Lines.Single();
 
         Assert.Equal("note", early.Verdict);
-        Assert.Contains("about 2026-11-04, inside this trade's hold", early.Words, StringComparison.Ordinal);
+        Assert.Contains("it is estimated about 2026-11-04, from its report of 2025-11-05 a year on, inside this trade's hold", early.Words, StringComparison.Ordinal);
         Assert.Equal("note", noted.Verdict);
         Assert.StartsWith("Reported on 2026-10-29.", noted.Words, StringComparison.Ordinal);
         Assert.EndsWith("after this trade's hold ends.", noted.Words, StringComparison.Ordinal);

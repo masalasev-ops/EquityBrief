@@ -1766,7 +1766,7 @@ async Task<IResult> TonightScreenAsync(
         var indexAsOf = TonightScreen.ReadAsOf(indexNight, dated);
         var indexAnswers = await read.SweepAnswersAsync(reading.Code, indexAsOf);
         var indexRegister = await read.RegisteredCandidatesAsync();
-        var indexCardContext = await CardContextAsync(read, store, copying) with { NewestReports = await read.NewestReportsAsync(dated) };
+        var indexCardContext = await CardContextAsync(read, store, copying) with { NewestReports = await read.NewestReportsAsync(dated), ReportDays = await read.ReportDaysToAsync(dated) };
         // The short-term dip's own rows, its card drawn after every swing family's with its pick cards, funnel and numbers as
         // every family's, and its label on an earlier family's row where it gave way to that family.
         // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
@@ -2142,7 +2142,7 @@ async Task<IResult> TonightScreenAsync(
     var answers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
     // Each pick with the card the night stored for it, opened in place beneath its row.
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
-    var cardContext = await CardContextAsync(read, store, copying) with { NewestReports = await read.NewestReportsAsync(dated) };
+    var cardContext = await CardContextAsync(read, store, copying) with { NewestReports = await read.NewestReportsAsync(dated), ReportDays = await read.ReportDaysToAsync(dated) };
     // Each card drawn by the rule the link chooses for it, the live rule where it names none, with its funnel, its
     // stretch line and, under a breakout card, the breakouts forming.
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
@@ -2239,18 +2239,26 @@ async Task<IResult> TonightScreenAsync(
     // entry and exit plan beneath its setup's own, the plan the night shown stored against that night's close. On a night
     // before them, whichever row the reader selected, and the first row where they selected none: section 15.7's region
     // is for whichever row is selected, and a row of either list can be selected.
-    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
     var asked = request.Query["name"].FirstOrDefault();
     var pointed = cards is null ? [] : cards.SelectMany(card => card.Picks).Select(pick => pick.Row.Ticker).Distinct(StringComparer.Ordinal).ToArray();
     var opened = asked is { } named && pointed.Contains(named, StringComparer.Ordinal) ? named : null;
     var selection = cards is null ? TonightScreen.Selected(rows, asked, nearRows) : null;
     var selected = selection is { } chosen ? await PlanOf(chosen.Ticker) : string.Empty;
     var plans = new Dictionary<string, string>(StringComparer.Ordinal);
+    var bandsOf = new Dictionary<string, IReadOnlyList<EquityBrief.Core.Cards.FlagBand>>(StringComparer.Ordinal);
 
     foreach (var ticker in pointed)
     {
-        plans[ticker] = NameScreen.EntryAndExitPlan(marks, ticker, await read.PlanLadderAsync(ticker, dated), universe.FirstOrDefault(row => row.Ticker == ticker)?.Close);
+        var (family, pick) = cards!.SelectMany(card => card.Picks.Select(one => (card.Family, Pick: one))).First(one => one.Pick.Row.Ticker == ticker);
+
+        bandsOf[ticker] = NameScreen.FlagBands(await read.LevelsAsync(ticker, dated));
+        plans[ticker] = NameScreen.EntryAndExitPlan(marks, ticker, await read.PlanLadderAsync(ticker, dated), universe.FirstOrDefault(row => row.Ticker == ticker)?.Close, MarkRenderer.SetupOf(family), pick.Stop, bandsOf[ticker]);
     }
+
+    // Each pick's card with its plan's flags, read off the night's bands of its stock.
+    // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
+    cards = cards is null ? null : [.. cards.Select(card => card with { Picks = [.. card.Picks.Select(pick => pick with { Card = NameScreen.WithPlanFlags(pick.Card, bandsOf.GetValueOrDefault(pick.Row.Ticker) ?? []) })] })];
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
     // market check read.

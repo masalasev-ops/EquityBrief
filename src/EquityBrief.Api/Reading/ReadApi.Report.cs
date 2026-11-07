@@ -31,7 +31,8 @@ public sealed record ReportInputs(
     NewestReading? Release = null,
     string? ReleaseModel = null,
     string? Sector = null,
-    SourcedQuarters? Sourced = null)
+    SourcedQuarters? Sourced = null,
+    NightRevision? YearRevision = null)
 {
     // The quarters as the provider's fetch stored them, which the figures checked and the dividend's safety read.
     public IReadOnlyList<QuarterRow> Fetched => Sourced?.Fetched ?? Quarters;
@@ -78,6 +79,14 @@ public sealed partial class ReadApi
         WHERE ticker = $ticker
           AND fetched_at = (SELECT MAX(fetched_at) FROM estimate_trend WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on)
         ORDER BY CASE period WHEN '0q' THEN 0 WHEN '+1q' THEN 1 WHEN '0y' THEN 2 ELSE 3 END;
+    ";
+
+    // The night's own ask of this fiscal year's revisions, the newest on or before the page's night.
+    // see: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
+    const string YearRevisionOf = @"
+        SELECT session_date, up_last_seven_days, down_last_seven_days, up_last_thirty_days, down_last_thirty_days, eps_now, eps_thirty_days_ago
+        FROM estimate_trend_night WHERE ticker = $ticker AND session_date <= $on
+        ORDER BY session_date DESC LIMIT 1;
     ";
 
     const string RatingFetchesOf = @"
@@ -260,7 +269,7 @@ public sealed partial class ReadApi
                     Count(18),
                     Count(19),
                     Count(20)));
-                trendOn = Parse(reader.GetString(21)[..10]);
+                trendOn = FetchDay(reader.GetString(21));
             }
         }
 
@@ -279,7 +288,7 @@ public sealed partial class ReadApi
                 int? Count(int column) => reader.IsDBNull(column) ? null : reader.GetInt32(column);
 
                 ratings.Add(new RatingFetch(
-                    Parse(reader.GetString(0)[..10]),
+                    FetchDay(reader.GetString(0)),
                     Count(1),
                     Count(2),
                     Count(3),
@@ -392,7 +401,25 @@ public sealed partial class ReadApi
             newestRelease?.Text,
             newestRelease?.AcceptedOn);
 
-        return new ReportInputs(sourced.Quarters, fetchedOn, estimates, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans, release, model, sector, sourced);
+        NightRevision? yearRevision = null;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = YearRevisionOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$on", day);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                int? Count(int column) => reader.IsDBNull(column) ? null : reader.GetInt32(column);
+
+                yearRevision = new NightRevision(Parse(reader.GetString(0)), Count(1), Count(2), Count(3), Count(4), MoneyAt(reader, 5), MoneyAt(reader, 6));
+            }
+        }
+
+        return new ReportInputs(sourced.Quarters, fetchedOn, estimates, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans, release, model, sector, sourced, yearRevision);
     }
 
     // From 20.3 the newest results release of the stock's filer the night may read, as the local model read it under the
@@ -520,4 +547,9 @@ public sealed partial class ReadApi
     static string Day(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     static DateOnly Parse(string stored) => DateOnly.ParseExact(stored, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    // A stored fetch instant as the New York day it fell on, which a page dates the fetch by.
+    // see: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
+    static DateOnly FetchDay(string stored) =>
+        EquityBrief.Core.Time.SessionZones.NewYorkDay(DateTimeOffset.Parse(stored, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal));
 }
