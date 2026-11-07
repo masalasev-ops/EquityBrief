@@ -150,7 +150,8 @@ public static class LongMatching
         HoldingMatcher matcher,
         Func<DateOnly, string, decimal?>? asked = null,
         LongNames? names = null,
-        Func<string, IReadOnlyList<string>>? annualReport = null)
+        Func<string, IReadOnlyList<string>>? annualReport = null,
+        Func<string, bool>? notStock = null)
     {
         LongSchedule[] ordered = [.. schedules.OrderBy(schedule => schedule.Period)];
         var matches = new Dictionary<(DateOnly Period, int Place), LongMatch>();
@@ -225,6 +226,7 @@ public static class LongMatching
                     string[] both =
                     [
                         .. here.AtTheCent(price).Intersect(there.AtTheCent(price2), StringComparer.Ordinal)
+                            .Where(code => notStock?.Invoke(code) != true)
                             .GroupBy(code => (here.CloseOf(code), there.CloseOf(code)))
                             .Select(series => series.Order(StringComparer.Ordinal).First()),
                     ];

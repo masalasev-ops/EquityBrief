@@ -330,6 +330,28 @@ static async Task<int> LongMembersRun(string[] args)
         return 0;
     }
 
+    if (args.Contains("--checks", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--checks --into <folder>'.");
+
+            return 2;
+        }
+
+        var feed = SecEdgarTrustScheduleFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty));
+        var checks = await EquityBrief.Worker.History.LongMembers.CheckAsync(folder, feed, EquityBrief.Worker.History.LongMembers.Match(folder));
+
+        foreach (var group in checks.GroupBy(check => (check.Index, check.Single ? "single" : check.By)).OrderBy(group => group.Key.Index, StringComparer.Ordinal).ThenBy(group => group.Key.Item2, StringComparer.Ordinal))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: {group.Key.Index} {group.Key.Item2}: {group.Count()} checked, {group.Count(check => check.Verdict == EquityBrief.Worker.History.LongMembers.Agrees)} agree, {group.Count(check => check.Verdict == EquityBrief.Worker.History.LongMembers.Differs)} differ, {group.Count(check => check.Verdict == EquityBrief.Worker.History.LongMembers.NotRead)} with no report read"));
+        }
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {feed.Requests} request(s) to the SEC"));
+
+        return 0;
+    }
+
     if (VerbArguments.Value(args, "--write") is { } writing)
     {
         var matched = EquityBrief.Worker.History.LongMembers.Match(writing);

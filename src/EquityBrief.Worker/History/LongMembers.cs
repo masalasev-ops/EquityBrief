@@ -110,9 +110,13 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
         var filed = FiledCodes(folder);
         var matches = new Dictionary<string, IReadOnlyDictionary<(DateOnly, int), LongMatch>>(StringComparer.Ordinal);
 
+        // The codes the symbol lists file as something other than a company's common stock, a fund, a note or a preferred
+        // line, which the price key leaves out however their closes fall; a code the lists do not carry is read.
+        var typed = symbols.GroupBy(symbol => symbol.Code, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.Any(symbol => symbol.Type == ProviderSymbols.CommonStock), StringComparer.Ordinal);
+
         foreach (var index in LongScheduleFilings.Funds.Keys)
         {
-            matches[index] = LongMatching.Match([.. schedules.Where(schedule => schedule.Index == index)], closes, matcher, asked, names, name => Reported(filed, name));
+            matches[index] = LongMatching.Match([.. schedules.Where(schedule => schedule.Index == index)], closes, matcher, asked, names, name => Reported(filed, name), code => typed.TryGetValue(code, out var stock) && !stock);
         }
 
         return new Matched(schedules, matches, unread);
@@ -270,6 +274,23 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
         foreach (var (name, quarters, _) in Unmatched(Match(folder)).Take(top))
         {
+            if (await ReadCodeAsync(filers, feed, name, quarters.Min(one => one.Period), quarters.Max(one => one.Period), cancellation) is { } read)
+            {
+                found.Add(read);
+            }
+        }
+
+        await File.WriteAllTextAsync(Path.Combine(folder, FiledFile), System.Text.Json.JsonSerializer.Serialize(found, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), cancellation);
+        progress(FormattableString.Invariant($"{found.Count} name(s) read a code off their company's own annual report"));
+
+        return found;
+    }
+
+    // A name's code as its company's own annual report from the years it was held names it, none where no filer of the name, no
+    // such report or no sentence naming a code is found; every answer kept as sent, one already kept asked nothing again.
+    public static async Task<FiledCode?> ReadCodeAsync(string filers, ITrustScheduleFeed feed, string name, DateOnly first, DateOnly last, CancellationToken cancellation = default)
+    {
+        {
             var words = SearchedAs(name).Split(' ', StringSplitOptions.RemoveEmptyEntries);
             (string Cik, string Name, string Index)? filer = null;
 
@@ -316,20 +337,17 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
             if (filer is not { } chosen)
             {
-                continue;
+                return null;
             }
 
-            var index = chosen.Index;
-
-            var (first, last) = (quarters.Min(one => one.Period), quarters.Max(one => one.Period));
-            var report = FilerFilings.Read([index])
+            var report = FilerFilings.Read([chosen.Index])
                 .Where(filing => filing.Form is "10-K" or "10-K405" && filing.Filed >= first.AddYears(-1) && filing.Filed <= last.AddYears(1))
                 .OrderBy(filing => Math.Abs(filing.Filed.DayNumber - first.AddDays((last.DayNumber - first.DayNumber) / 2).DayNumber))
                 .FirstOrDefault();
 
             if (report is null)
             {
-                continue;
+                return null;
             }
 
             var documentFile = Path.Combine(filers, report.Accession + "-" + report.PrimaryDocument);
@@ -339,16 +357,88 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
             var text = System.Text.RegularExpressions.Regex.Replace(System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(document, "<[^>]+>", " ")), @"\s+", " ");
 
-            if (Symbol.Match(text) is { Success: true } named)
+            return Symbol.Match(text) is { Success: true } named
+                ? new FiledCode(name, chosen.Cik, chosen.Name, report.Accession, named.Groups[1].Value.Replace('.', '-'), named.Value.Trim())
+                : null;
+        }
+    }
+
+    // One match checked against its company's own annual report: the fund, the name and the code it was matched to with its
+    // key, the quarter ends matched, whether it was matched at one alone, and the code the report names with its sentence.
+    public sealed record HandCheck(string Index, string Name, string Code, string By, int Quarters, bool Single, string? Filed, string? Sentence, string? Accession)
+    {
+        public string Verdict => Filed is null ? NotRead : Plain(Code) == Plain(Filed) ? Agrees : Differs;
+    }
+
+    public const string Agrees = "agrees";
+
+    public const string Differs = "differs";
+
+    public const string NotRead = "no report read";
+
+    // How many matches a key a fund are sampled for the check, at what seed, and how many of them may differ before the key
+    // stops the run.
+    public const int SampleOf = 30;
+
+    public const int SampleSeed = 20261107;
+
+    public const int WrongAtMost = 2;
+
+    public const string ChecksFile = "checks.json";
+
+    // A code as its company files it: its older forms' mark and a class's separator set aside.
+    static string Plain(string code) =>
+        System.Text.RegularExpressions.Regex.Replace(code, "_old\\d*$", string.Empty).Replace(".", string.Empty, StringComparison.Ordinal).Replace("-", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
+
+    // The matches checked against the SEC's filings: every one matched at a single quarter end, and 30 a key a fund drawn at a
+    // fixed seed from the rest.
+    public static IReadOnlyList<(string Index, string Name, string Code, string By, IReadOnlyList<DateOnly> Quarters, bool Single)> ToCheck(Matched matched)
+    {
+        var listed = new List<(string, string, string, string, IReadOnlyList<DateOnly>, bool)>();
+
+        foreach (var index in LongScheduleFilings.Funds.Keys)
+        {
+            var groups = matched.Schedules
+                .Where(schedule => schedule.Index == index)
+                .SelectMany(schedule => schedule.Holdings.Select((holding, place) => (schedule.Period, holding.Name, Match: matched.Matches[index].GetValueOrDefault((schedule.Period, place)))))
+                .Where(one => one.Match is not null)
+                .GroupBy(one => (one.Name, one.Match!.Ticker, one.Match.By))
+                .Select(group => (Index: index, group.Key.Name, Code: group.Key.Ticker, group.Key.By, Quarters: (IReadOnlyList<DateOnly>)[.. group.Select(one => one.Period).Order()]))
+                .OrderBy(group => group.Name, StringComparer.Ordinal)
+                .ThenBy(group => group.Code, StringComparer.Ordinal)
+                .ToArray();
+
+            listed.AddRange(groups.Where(group => group.Quarters.Count == 1).Select(group => (group.Index, group.Name, group.Code, group.By, group.Quarters, true)));
+
+            foreach (var key in groups.Where(group => group.Quarters.Count > 1).GroupBy(group => group.By, StringComparer.Ordinal).OrderBy(key => key.Key, StringComparer.Ordinal))
             {
-                found.Add(new FiledCode(name, chosen.Cik, chosen.Name, report.Accession, named.Groups[1].Value.Replace('.', '-'), named.Value.Trim()));
+                var random = new Random(SampleSeed);
+
+                listed.AddRange(key.OrderBy(_ => random.Next()).Take(SampleOf).Select(group => (group.Index, group.Name, group.Code, group.By, group.Quarters, false)));
             }
         }
 
-        await File.WriteAllTextAsync(Path.Combine(folder, FiledFile), System.Text.Json.JsonSerializer.Serialize(found, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), cancellation);
-        progress(FormattableString.Invariant($"{found.Count} name(s) read a code off their company's own annual report"));
+        return listed;
+    }
 
-        return found;
+    // Each match the check lists read against its company's own annual report, written to the capture's folder.
+    public static async Task<IReadOnlyList<HandCheck>> CheckAsync(string folder, ITrustScheduleFeed feed, Matched matched, CancellationToken cancellation = default)
+    {
+        var filers = Path.Combine(folder, FilersFolder);
+        var checks = new List<HandCheck>();
+
+        Directory.CreateDirectory(filers);
+
+        foreach (var (index, name, code, by, quarters, single) in ToCheck(matched))
+        {
+            var read = await ReadCodeAsync(filers, feed, name, quarters[0], quarters[^1], cancellation);
+
+            checks.Add(new HandCheck(index, name, code, by, quarters.Count, single, read?.Code, read?.Sentence, read?.Accession));
+        }
+
+        await File.WriteAllTextAsync(Path.Combine(folder, ChecksFile), System.Text.Json.JsonSerializer.Serialize(checks, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), cancellation);
+
+        return checks;
     }
 
     static double Shared(string[] one, string[] other)
