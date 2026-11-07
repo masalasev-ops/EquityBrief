@@ -16789,7 +16789,8 @@ Corrected:  an account whose walk bought no trade draws no line, end label or po
             the 19.4 corrections above for the end labels and the box had drawn as the text's colour. The decision's text,
             15.21's row, the changelog and the guide.
 Tests:      1 new: a pullback account with no trade beside a drift with one draws the drift's line alone and the pullback's key
-            saying no trades yet; with the pullback alone, no chart and the key.
+            saying no trades yet; with the pullback alone, no chart and the key. The fixture's paper accounts test reads the
+            chart's line where no account holds a trade in its new words.
 Claims:     none new.
 Pins:       none move.
 Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 an

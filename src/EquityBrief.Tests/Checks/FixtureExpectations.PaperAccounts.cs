@@ -63,7 +63,7 @@ public partial class FixtureExpectations
         Assert.Contains($"<section class=\"paper\" data-universe=\"500\" data-night=\"{night}\"", page, StringComparison.Ordinal);
         Assert.Equal(accounts.Select(account => (account.Family, account.Standing)), tiles.Select(tile => (tile.Family, tile.Standing)));
         Assert.All(tiles, tile => Assert.Equal("none|0|0|none", tile.Figures));
-        Assert.Contains("<p class=\"degraded\" data-paper-chart=\"none\">No account has a trading day to draw yet.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-paper-chart=\"none\">No account has a trade to draw yet.</p>", page, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"degraded\" data-yours=\"{expected.GetProperty("yours").GetString()}\">", page, StringComparison.Ordinal);
 
         // Each family chosen for its variants and its scorecard: its one account with no trade, the verdict the derivation
