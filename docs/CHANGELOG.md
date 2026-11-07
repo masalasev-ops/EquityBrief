@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - a story the feed carried more than once drawn and counted once
+Decision: A story the feed carried more than once is drawn and counted once, and the page says how many copies it merged
+Was:
+> (the name page's News) present for every member: what was written about the company in the thirty days before the page's night; each article newest first ...
+Now:
+> ... in the thirty days before the page's night; from the 12.6 correction of 2026-11-07 a story the feed carried more than once drawn and counted once with a line saying how many copies were merged (see: A story the feed carried more than once ...); each article newest first ...
+Why: the operator's addendum of 2026-11-07, its sixth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html, docs/SCHEMA.md - analyst figures dated by the New York day, revisions against the newest report
 Decision: An analyst figure is dated by the New York day it was fetched on, and its revisions by that day against the newest report
 Was:

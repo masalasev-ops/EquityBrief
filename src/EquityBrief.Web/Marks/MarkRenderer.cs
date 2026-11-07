@@ -616,7 +616,8 @@ public sealed record NewsView(
     string? WhyCode,
     int OtherCompanies = 0,
     bool Local = false,
-    int LabelledTonight = 0);
+    int LabelledTonight = 0,
+    int Merged = 0);
 
 // How one section of one report came out, as the Run page draws it: passed first time or on retry, left out
 // with why, or not warranted where it stood from an earlier day; what its own calls cost, a trial's left out;
@@ -7639,6 +7640,13 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Invariant, $"<rect class=\"nb-positive\" x=\"0\" y=\"1\" width=\"{Number(positiveWidth)}\" height=\"12\" rx=\"6\"></rect>");
         region.Append(Invariant, $"<rect class=\"nb-negative\" x=\"{Number(positiveWidth)}\" y=\"1\" width=\"{Number(total == 0 ? 0 : Wide - positiveWidth)}\" height=\"12\" rx=\"6\"></rect></svg>");
         region.Append(Invariant, $"<p class=\"news-counts-line\"><b>{view.Positive}</b> positive, <b>{view.Negative}</b> negative and <b>{view.Neutral}</b> neutral over the thirty days before, opinion pieces counted in none.</p>");
+
+        // see: A story the feed carried more than once is drawn and counted once, and the page says how many copies it merged
+        if (view.Merged > 0)
+        {
+            region.Append(Invariant, $"<p class=\"news-merged\" data-merged=\"{view.Merged}\">{view.Merged} {(view.Merged == 1 ? "copy" : "copies")} of a story the feed carried more than once {(view.Merged == 1 ? "was" : "were")} merged, so each story is drawn and counted once.</p>");
+        }
+
         region.Append(OtherCompanies(view));
 
         if (view.Why is { } why)

@@ -16945,3 +16945,22 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             Yahoo's stamp read as the UTC day: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 12.6 - correction: a story the feed carried more than once is drawn and counted once   2026-11-07
+
+Found:      the operator's addendum of 2026-11-07, its sixth item. CTSH's news on 2026-11-06 drew one story, "Cognizant and
+            Google Cloud Expand Alliance to Accelerate Agentic Enterprise Transformation", three times, each from
+            finance.yahoo.com on 2026-10-19 under its own link, each labelled positive and counted: one source, not several
+            feeds as the item supposes, and three counts for one announcement.
+Corrected:  `NewsDuplicates.Key`, a title read without case, punctuation or spacing with its day; the news region draws each
+            story once, its labelled copy kept, counts over the stories, and says how many copies it merged; Tonight's count
+            of good and bad stories reads each once. The labeller still reads each stored copy. The decision, 15.9's News
+            row, the changelog and the guide.
+Tests:      1 new: CTSH's three copies, one unlabelled and one upper-cased with a full stop, drawn as one labelled story beside
+            another, two positive, two merged and the line saying so; the same title on another day another story.
+Claims:     none new.
+Pins:       none move: the labeller's pin and its reading are untouched.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
+            the region reading every stored copy: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

@@ -103,8 +103,12 @@ public static class NewsScreen
     // holds no label the one line saying why, read off the labeller's run for the night and the night's list.
     // The articles are the company's own, those the feed tagged it with that name another company counted apart.
     // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
-    public static NewsView Build(string ticker, DateOnly night, IReadOnlyList<NewsArticleRow> articles, bool listed, LabellerRunRow? run, int otherCompanies = 0)
+    // A story the feed carried more than once is drawn and counted once, its labelled copy kept where the labeller read one,
+    // and the copies merged are counted for the page to say.
+    // see: A story the feed carried more than once is drawn and counted once, and the page says how many copies it merged
+    public static NewsView Build(string ticker, DateOnly night, IReadOnlyList<NewsArticleRow> stored, bool listed, LabellerRunRow? run, int otherCompanies = 0)
     {
+        var articles = EquityBrief.Core.News.NewsDuplicates.Once(stored, article => article.Title, article => article.PublishedAt, article => article.Outcome == NewsLabelling.Labelled);
         var rows = new List<NewsRow>(articles.Count);
 
         foreach (var article in articles)
@@ -158,7 +162,8 @@ public static class NewsScreen
             code,
             otherCompanies,
             newest?.LabelVersion is { } version && version >= NewsInstruction.Version,
-            run is null ? 0 : articles.Count(article => article.Outcome == NewsLabelling.Labelled && string.Equals(article.LabelRun, run.RunId, StringComparison.Ordinal)));
+            run is null ? 0 : articles.Count(article => article.Outcome == NewsLabelling.Labelled && string.Equals(article.LabelRun, run.RunId, StringComparison.Ordinal)),
+            stored.Count - articles.Count);
     }
 
     // Why a name holding articles holds no label for the night, in one line: the labeller has not run for

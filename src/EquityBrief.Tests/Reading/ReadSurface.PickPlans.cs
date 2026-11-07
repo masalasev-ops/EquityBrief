@@ -140,4 +140,33 @@ public partial class ReadSurface
         Assert.Null(older.YearAskedOn);
         Assert.Contains("Revisions as fetched on 2026-10-30, before the 2026-11-05 report.</p>", new MarkRenderer().ConsensusTable(older, "USD", new DateOnly(2026, 11, 5)), StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 CTSH's news drew "Cognizant and Google Cloud Expand Alliance to Accelerate Agentic Enterprise
+    // Transformation" three times, each from finance.yahoo.com on 2026-10-19, each labelled positive and each counted. A
+    // story the feed carried more than once is drawn and counted once, its labelled copy kept, and the region says how many
+    // copies it merged; Tonight's counts read it once too.
+    // see: A story the feed carried more than once is drawn and counted once, and the page says how many copies it merged
+    [Fact]
+    public void AStoryTheFeedCarriedMoreThanOnceIsDrawnAndCountedOnce()
+    {
+        const string Title = "Cognizant and Google Cloud Expand Alliance to Accelerate Agentic Enterprise Transformation";
+
+        NewsArticleRow Story(string id, string title, string published, string? outcome) =>
+            new(id, title, "finance.yahoo.com", published, "https://finance.yahoo.com/" + id, EquityBrief.Core.Research.Admissibility.Accepted, outcome, null, outcome is null ? null : "product", outcome is null ? null : "positive", outcome is null ? null : "why", "model", "profile");
+
+        var view = NewsScreen.Build("CTSH", new DateOnly(2026, 11, 6),
+        [
+            Story("a1", "Cognizant Completes Acquisition of Wizeline", "2026-11-06T13:00:00Z", EquityBrief.Core.News.NewsLabelling.Labelled),
+            Story("a2", Title, "2026-10-19T12:00:00Z", null),
+            Story("a3", Title, "2026-10-19T12:05:00Z", EquityBrief.Core.News.NewsLabelling.Labelled),
+            Story("a4", Title.ToUpperInvariant() + ".", "2026-10-19T14:00:00Z", EquityBrief.Core.News.NewsLabelling.Labelled),
+        ], listed: true, run: null);
+
+        Assert.Equal((2, 2, 0, 2), (view.Rows.Count, view.Positive, view.Unlabelled, view.Merged));
+        Assert.Equal(["a1", "a3"], view.Rows.Select(row => row.ArticleId));
+        Assert.Contains("<p class=\"news-merged\" data-merged=\"2\">2 copies of a story the feed carried more than once were merged, so each story is drawn and counted once.</p>", new MarkRenderer().NewsRegion(view), StringComparison.Ordinal);
+
+        // The same title on another day is another story.
+        Assert.NotEqual(EquityBrief.Core.News.NewsDuplicates.Key(Title, "2026-10-19"), EquityBrief.Core.News.NewsDuplicates.Key(Title, "2026-10-20"));
+    }
 }
