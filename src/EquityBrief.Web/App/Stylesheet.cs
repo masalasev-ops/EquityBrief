@@ -469,18 +469,21 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-tip{position:absolute;top:6px;left:0;z-index:2;min-width:150px;max-width:240px;display:flex;flex-direction:column;gap:2px;padding:6px 9px;background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;box-shadow:var(--shadow);font-size:12px;color:var(--ink-2);pointer-events:none;font-variant-numeric:tabular-nums}
 .paper-tip[hidden]{display:none}
 .paper-tip b{color:var(--ink);font-weight:600}
-.paper-tip-row[data-family='pullback']{color:var(--fam-pullback)} .paper-tip-row[data-family='breakout']{color:var(--fam-breakout)} .paper-tip-row[data-family='drift']{color:var(--fam-drift)} .paper-tip-row[data-family='fundamentals']{color:var(--fam-fundamentals)}
-.paper-tip-row[data-family='improving']{color:var(--fam-improving)} .paper-tip-row[data-family='dip']{color:var(--fam-dip)} .paper-tip-row[data-family='heavyweight']{color:var(--fam-heavyweight)} .paper-tip-row[data-family='quality']{color:var(--fam-quality)}
-.paper-tip-row[data-standing='combined']{color:var(--ink)} .paper-tip-row[data-standing='you']{color:var(--accent)} .paper-tip-row[data-standing='fund']{color:var(--muted)}
+.paper-tip-row::before{content:'';display:inline-block;width:12px;height:3px;margin-right:6px;vertical-align:middle;background:var(--soft)}
+.paper-tip-row[data-family='pullback']::before{background:var(--fam-pullback)} .paper-tip-row[data-family='breakout']::before{background:var(--fam-breakout)} .paper-tip-row[data-family='drift']::before{background:var(--fam-drift)} .paper-tip-row[data-family='fundamentals']::before{background:var(--fam-fundamentals)}
+.paper-tip-row[data-family='improving']::before{background:var(--fam-improving)} .paper-tip-row[data-family='dip']::before{background:var(--fam-dip)} .paper-tip-row[data-family='heavyweight']::before{background:var(--fam-heavyweight)} .paper-tip-row[data-family='quality']::before{background:var(--fam-quality)}
+.paper-tip-row[data-standing='combined']::before{background:var(--ink)} .paper-tip-row[data-standing='you']::before{background:var(--accent)} .paper-tip-row[data-standing='fund']::before{background:var(--muted)}
 .paper-chart svg,.paper-running svg{width:100%;height:auto;display:block}
 .paper-zero{stroke:var(--soft);stroke-width:1.2}
 .paper-grid{stroke:var(--hair);stroke-width:1}
 .paper-axis{font-size:11px;fill:var(--soft);font-variant-numeric:tabular-nums}
 .paper-axis.paper-zero-label{fill:var(--ink-2);font-weight:600}
-.paper-end{font-size:11px;font-weight:600;fill:var(--soft);font-variant-numeric:tabular-nums}
-.paper-end[data-family='pullback']{fill:var(--fam-pullback)} .paper-end[data-family='breakout']{fill:var(--fam-breakout)} .paper-end[data-family='drift']{fill:var(--fam-drift)} .paper-end[data-family='fundamentals']{fill:var(--fam-fundamentals)}
-.paper-end[data-family='improving']{fill:var(--fam-improving)} .paper-end[data-family='dip']{fill:var(--fam-dip)} .paper-end[data-family='heavyweight']{fill:var(--fam-heavyweight)} .paper-end[data-family='quality']{fill:var(--fam-quality)}
-.paper-end[data-standing='combined']{fill:var(--ink)} .paper-end[data-standing='you']{fill:var(--accent)} .paper-end[data-standing='fund']{fill:var(--muted)}
+.paper-end{font-size:11px;font-weight:600;fill:var(--ink-2);font-variant-numeric:tabular-nums}
+.paper-end[data-standing='combined']{fill:var(--ink)}
+.paper-dot{fill:var(--soft)}
+.paper-dot[data-family='pullback']{fill:var(--fam-pullback)} .paper-dot[data-family='breakout']{fill:var(--fam-breakout)} .paper-dot[data-family='drift']{fill:var(--fam-drift)} .paper-dot[data-family='fundamentals']{fill:var(--fam-fundamentals)}
+.paper-dot[data-family='improving']{fill:var(--fam-improving)} .paper-dot[data-family='dip']{fill:var(--fam-dip)} .paper-dot[data-family='heavyweight']{fill:var(--fam-heavyweight)} .paper-dot[data-family='quality']{fill:var(--fam-quality)}
+.paper-dot[data-standing='combined']{fill:var(--ink)} .paper-dot[data-standing='you']{fill:var(--accent)} .paper-dot[data-standing='fund']{fill:var(--muted)}
 .paper-line{fill:none;stroke:var(--soft);stroke-width:1.8;stroke-linejoin:round}
 .paper-line.dashed{stroke-dasharray:5 4;stroke-width:1.4}
 .paper-line[data-family='pullback']{stroke:var(--fam-pullback)} .paper-line[data-family='breakout']{stroke:var(--fam-breakout)} .paper-line[data-family='drift']{stroke:var(--fam-drift)}
@@ -492,6 +495,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-keys{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .paper-key{display:inline-flex;align-items:center;gap:6px;font:12px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:2px 10px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .paper-key[aria-pressed='false']{opacity:.45;text-decoration:line-through}
+.paper-key.paper-key-none{cursor:default;color:var(--soft);border-style:dashed}
 .paper-key-mark{display:inline-block;width:16px;height:0;border-top:2.5px solid var(--soft);flex:none}
 .paper-key-mark[data-standing='variant']{border-top-style:dashed}
 .paper-key-mark[data-family='pullback']{border-top-color:var(--fam-pullback)} .paper-key-mark[data-family='breakout']{border-top-color:var(--fam-breakout)} .paper-key-mark[data-family='drift']{border-top-color:var(--fam-drift)}

@@ -576,4 +576,26 @@ public partial class ReadSurface
         Assert.Contains("event.target.closest('.paper-chart .paper-hit')", shell, StringComparison.Ordinal);
         Assert.Contains("band.getAttribute('data-tip')", shell, StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 the S&P 500's pullback, with no trade since 3 Nov, drew a flat line at 0% across the chart. An account
+    // with no trade draws no line, and its key says it has no trades yet.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    [Fact]
+    public void AnAccountWithNoTradeDrawsNoLineAndItsKeySaysNoTradesYet()
+    {
+        var from = new DateOnly(2026, 11, 3);
+        var idle = new PaperAccountView("pullback", "pullback", PaperAccountView.Live, "Live", "pullback", "within luck", null, "risks", [], new PaperWalk([(from, 100_000m), (from.AddDays(1), 100_000m)], [], 0, 0, 0, 0.0, 0.0, null, null, from, [(from, 0.0), (from.AddDays(1), 0.0)]), 0, 0, null, from);
+        var chart = WebUtility.HtmlDecode(new MarkRenderer().PaperChart([idle, ChartAccount("drift", PaperAccountView.Live, from, 0.0, 0.01)], null));
+
+        Assert.DoesNotContain("data-account=\"pullback\"", chart, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-end=\"pullback\"", chart, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"paper-key paper-key-none\" data-none=\"pullback\" data-family=\"pullback\" data-standing=\"live\"><span class=\"paper-key-mark\" data-family=\"pullback\" data-standing=\"live\"></span>Pullback · Live · no trades yet</span>", chart, StringComparison.Ordinal);
+        Assert.Contains("data-account=\"drift\"", chart, StringComparison.Ordinal);
+
+        // With no account holding a trade, no chart, and each key still saying so.
+        var none = WebUtility.HtmlDecode(new MarkRenderer().PaperChart([idle], null));
+
+        Assert.Contains("data-paper-chart=\"none\">No account has a trade to draw yet.", none, StringComparison.Ordinal);
+        Assert.Contains("Pullback · Live · no trades yet", none, StringComparison.Ordinal);
+    }
 }

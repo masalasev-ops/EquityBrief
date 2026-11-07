@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - an account with no trade draws no line on the chart
+Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+Was:
+> (15.21, the chart) ... each line ending in a label of its name and latest return in its colour with two that would overlap moved apart; a box above the chart ... on it (see: ...)
+Now:
+> ... each line ending in a dot in its colour and a label of its name and latest return with two that would overlap moved apart; a box above the chart ... on it; an account with no trade drawing no line and its key saying no trades yet (see: ...)
+Why: the operator's order of 2026-11-07, its twentieth item; and a family's hue is a mark and never a text's colour, as the palette checks hold.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - the chart's hover box
 Decision: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
 Was:

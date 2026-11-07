@@ -251,11 +251,14 @@ public sealed partial class MarkRenderer
         PaperAccountView[] together = combined is { Walk.Values.Count: > 0 } all
             ? [new PaperAccountView(PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Key, PaperCombinedView.Name, "each live setup's own account given an equal share of one account", string.Empty, null, "per cent", [], all.Walk, all.Walk.Trades.Count, all.Closed, null, all.Since)]
             : [];
-        var drawn = accounts.Where(account => account.Walk is { Values.Count: > 0 } && (account.Head || account.Standing == PaperAccountView.You || (account.Standing == PaperAccountView.Variant && account.Family == chosen))).Concat(together).ToArray();
+        // From the 19.4 correction of 2026-11-07 an account holding no trade draws no line, its key saying so.
+        var shown = accounts.Where(account => account.Walk is { Values.Count: > 0 } && (account.Head || account.Standing == PaperAccountView.You || (account.Standing == PaperAccountView.Variant && account.Family == chosen))).Concat(together).ToArray();
+        var drawn = shown.Where(account => account.Walk!.Taken > 0).ToArray();
+        var idle = shown.Where(account => account.Walk!.Taken == 0).ToArray();
 
         if (drawn.Length == 0)
         {
-            return "<p class=\"degraded\" data-paper-chart=\"none\">No account has a session to draw yet.</p>";
+            return "<p class=\"degraded\" data-paper-chart=\"none\">No account has a trade to draw yet.</p>" + (idle.Length > 0 ? "<p class=\"paper-keys\">" + string.Concat(idle.Select(NoTradeKey)) + "</p>" : string.Empty);
         }
 
         var every = drawn.SelectMany(account => account.Walk!.Values.Select(value => value.Session)).Distinct().Order().ToArray();
@@ -341,6 +344,13 @@ public sealed partial class MarkRenderer
             .. fundLine.Length > 0 && fundName is { } ended ? [(FundKey, FundKey, FundKey, ended + " " + Formatted($"{fundLine[^1].Return:+0.0;-0.0;0.0}%"), Y(fundLine[^1].Return))] : Array.Empty<(string, string, string, string, double)>(),
         ];
 
+        // A dot in the line's own colour at its end marks it, its label in the ink beside, as a family's hue is a mark and never
+        // a text's colour.
+        foreach (var (key, family, standing, _, y) in ends)
+        {
+            svg.Append(Invariant, $"<circle class=\"paper-dot\" data-family=\"{Escaped(family)}\" data-standing=\"{Escaped(standing)}\" cx=\"{width - right:0.#}\" cy=\"{y:0.#}\" r=\"3\"/>");
+        }
+
         foreach (var (key, family, standing, text, y) in Spread(ends, top + 4, height - bottom))
         {
             svg.Append(Invariant, $"<text class=\"paper-end\" data-end=\"{Escaped(key)}\" data-family=\"{Escaped(family)}\" data-standing=\"{Escaped(standing)}\" x=\"{width - right + 6}\" y=\"{y + 4:0.#}\">{Escaped(text)}</text>");
@@ -374,6 +384,7 @@ public sealed partial class MarkRenderer
             svg.Append(Invariant, $"<button type=\"button\" class=\"paper-key\" data-line=\"{FundKey}\" data-standing=\"{FundKey}\" aria-pressed=\"true\" title=\"The index's fund held over the chart's days\"><span class=\"paper-key-mark\" data-standing=\"{FundKey}\"></span>{Escaped(keyed)}, the index's fund</button>");
         }
 
+        svg.Append(string.Concat(idle.Select(NoTradeKey)));
         svg.Append("</figcaption></figure>");
 
         return svg.ToString();
@@ -436,6 +447,11 @@ public sealed partial class MarkRenderer
 
     // The key the chart's line of the index's fund is drawn and pressed by.
     public const string FundKey = "fund";
+
+    // The key of an account with no trade, which draws no line: its name and that it has no trades yet, nothing to press.
+    // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
+    static string NoTradeKey(PaperAccountView account) =>
+        Formatted($"<span class=\"paper-key paper-key-none\" data-none=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(account.Standing == PaperCombinedView.Key ? account.Name : FamilyName(account.Family) + " · " + account.Name)} · no trades yet</span>");
 
     // A fraction drawn as a signed per cent to a tenth, in the class its sign gives.
     static string PaperPercent(double fraction) =>

@@ -16775,3 +16775,21 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             script reading no band: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: an account with no trade draws no line on the chart, its key saying no trades yet   2026-11-07
+
+Found:      the order's twentieth item: on 2026-11-06 the S&P 500's pullback, with no trade since 3 Nov, drew a flat line at 0%.
+Corrected:  an account whose walk bought no trade draws no line, end label or point in the hover box, and its key, which hides
+            nothing, names it with "no trades yet"; where no account holds a trade the chart says so above the keys. With it the
+            end labels and the hover box's rows draw in the ink beside a mark in their line's colour, a dot at each line's end
+            and a swatch before each row, a family's hue being a mark and never a text's colour as the palette checks hold, which
+            the 19.4 corrections above for the end labels and the box had drawn as the text's colour. The decision's text,
+            15.21's row, the changelog and the guide.
+Tests:      1 new: a pullback account with no trade beside a drift with one draws the drift's line alone and the pullback's key
+            saying no trades yet; with the pullback alone, no chart and the key.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 an
+            account with no trade drawn again: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
