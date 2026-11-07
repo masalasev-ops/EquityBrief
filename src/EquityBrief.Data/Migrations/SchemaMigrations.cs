@@ -752,7 +752,79 @@ public static class SchemaMigrations
         new Migration(129, "create data_check, and rebuild session_mark with the session a history ends on", CreateDataCheck),
         new Migration(130, "add loop_rule's cap, span, newest session and judged year, and create loop_rule_unit and loop_pooled", CreatePooledVerdict),
         new Migration(131, "create long_snapshot, long_holding and long_span", CreateLongMembership),
+        new Migration(132, "create long_bar, long_market_bar, long_print, long_split, long_dividend and long_filing", CreateLongPrices),
     ];
+
+    // From 23.4 every code the long history's membership matched and every code the pull holds, their daily prices from
+    // 2004-01-02, their splits and dividends, the earnings calendar's prints before the pull's first month, the market series
+    // and each code's filer's filings, apart from the bars and from the pull's tables.
+    const string CreateLongPrices = @"
+        CREATE TABLE long_bar (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            open          TEXT NOT NULL,
+            high          TEXT NOT NULL,
+            low           TEXT NOT NULL,
+            close         TEXT NOT NULL,
+            raw_close     TEXT,
+            volume        INTEGER NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT, WITHOUT ROWID;
+
+        CREATE TABLE long_market_bar (
+            series        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            open          TEXT NOT NULL,
+            high          TEXT NOT NULL,
+            low           TEXT NOT NULL,
+            close         TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (series, session_date)
+        ) STRICT;
+
+        CREATE TABLE long_print (
+            ticker            TEXT NOT NULL,
+            event_date        TEXT NOT NULL,
+            timing            TEXT NOT NULL,
+            eps_actual        TEXT,
+            eps_estimate      TEXT,
+            surprise_percent  REAL,
+            read_from         TEXT NOT NULL,
+            run_id            TEXT NOT NULL,
+            PRIMARY KEY (ticker, event_date, read_from)
+        ) STRICT;
+
+        CREATE TABLE long_split (
+            ticker      TEXT NOT NULL,
+            ex_date     TEXT NOT NULL,
+            new_shares  TEXT NOT NULL,
+            old_shares  TEXT NOT NULL,
+            run_id      TEXT NOT NULL,
+            PRIMARY KEY (ticker, ex_date)
+        ) STRICT;
+
+        CREATE TABLE long_dividend (
+            ticker      TEXT NOT NULL,
+            ex_date     TEXT NOT NULL,
+            amount      TEXT NOT NULL,
+            raw_amount  TEXT,
+            run_id      TEXT NOT NULL,
+            PRIMARY KEY (ticker, ex_date)
+        ) STRICT;
+
+        CREATE TABLE long_filing (
+            ticker      TEXT NOT NULL,
+            cik         TEXT NOT NULL,
+            accession   TEXT NOT NULL,
+            form        TEXT NOT NULL,
+            items       TEXT,
+            reported    TEXT,
+            filed       TEXT NOT NULL,
+            run_id      TEXT NOT NULL,
+            PRIMARY KEY (ticker, accession)
+        ) STRICT;
+    ";
 
     // From 23.3 the three funds' complete schedules from 2004-12-31 to 2018-09-30 off the trust's older filings, each holding
     // with the code it was matched to and the key it was matched by or why it was left out, and each code's spans of
