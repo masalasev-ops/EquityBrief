@@ -24,7 +24,7 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
         Stores:
         [
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongSnapshot, EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
-            new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongHolding, EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
+            new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongHolding, EquityBrief.Core.Components.Touch.Read | EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongSpan, EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.PulledHolding, EquityBrief.Core.Components.Touch.Read),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.Membership, EquityBrief.Core.Components.Touch.Read),

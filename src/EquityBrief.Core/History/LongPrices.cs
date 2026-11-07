@@ -28,7 +28,9 @@ public sealed record LongSeriesCount(DateOnly Period, int Codes, int Companies, 
 // settles read to their last session with volume and listed for the operator.
 // see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
 // see: The S&P 500 before 2012 is read from IVV's filed holdings and from 2012 from the provider's dates
+// see: The S&P 500's provider dates from 2012 are held against IVV's holdings and read from IVV's last schedule where they stand more than 5 apart
 // see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger
+// see: A departed company's end no filing settles reads its last session with volume and goes to the operator on one list
 public static class LongPrices
 {
     public static DateOnly From { get; } = new(2004, 1, 2);

@@ -119,6 +119,9 @@ public partial class ArchitectureConformance
         // From 23.3: the long history's three components, its three stores, section 17's four rows, section 18's row and the
         // History page's row.
         .. FixtureExpectations.LongMembershipRows,
+
+        // From 23.4: the long price pull, its six stores, section 17's row, section 18's two rows and the History page's row.
+        .. FixtureExpectations.LongPricesRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

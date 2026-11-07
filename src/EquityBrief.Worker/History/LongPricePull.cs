@@ -68,6 +68,7 @@ public sealed class LongPricePull : IComponent
             new StoreTouch(Store.LongFiling, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongSnapshot, Touch.Read),
             new StoreTouch(Store.LongHolding, Touch.Read),
+            new StoreTouch(Store.LongSpan, Touch.Read),
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.PulledCompany, Touch.Read),
@@ -700,6 +701,7 @@ public sealed class LongPricePull : IComponent
 
     // A departed code's end: the filer's filings read by the core's rule where its filer is the code's company, the session before
     // the day the filing names, and a mark where the code's prices run on past it; otherwise its last session with volume, listed.
+    // see: A departed company's end no filing settles reads its last session with volume and goes to the operator on one list
     public static LongEnd EndOf(string folder, LongCode code, LongFiler? filer, IReadOnlyList<ProviderBar> series, PulledCalendar calendar)
     {
         var lastClose = series[^1].SessionDate;
@@ -764,7 +766,7 @@ public sealed class LongPricePull : IComponent
             }
         }
 
-        return [Overlap(ticker, series.ToDictionary(bar => bar.SessionDate, bar => (bar.Close, (decimal?)bar.RawClose)), pulled, stored)];
+        return [Overlap(ticker, series.ToDictionary(bar => bar.SessionDate, bar => (bar.Close, new decimal?(bar.RawClose))), pulled, stored)];
     }
 
     // The comparison itself, over the sessions both sides hold.

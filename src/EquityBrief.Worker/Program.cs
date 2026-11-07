@@ -646,7 +646,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 71 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 72 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -873,11 +873,15 @@ static int NoVerb()
         "'ticker-join --ticker <code> --earlier <code>' records that a stock's earlier sessions sit under another ticker at the " +
         "provider, 'session-mark --ticker <code> --session <yyyy-MM-dd> --kind <kind> --says <words>' records the operator's word on a " +
         "session of its pulled history, 'data-check' classifies every stock's pulled sessions into the data check's rows, with " +
-        "'--print' writing nothing and printing the counts, '--each' printing every finding a line besides, and '--end <cik> --into <folder>' reading a filer's filings from the SEC " +
-        "into the folder and printing where its history ends, " +
+        "'--print' writing nothing and printing the counts, '--each' printing every finding a line besides, '--long' reading the long history's prices from 2005 in place of the pull, " +
+        "and '--end <cik> --into <folder>' reading a filer's filings from the SEC into the folder and printing where its history ends, " +
         "'long-members' builds the long history's folder from the trust's older filings and the provider's day files with " +
         "'--capture', '--days', '--ask', '--filers', '--checks' and '--named', each '--into <folder>', and with '--write <folder>' " +
         "matches the funds' schedules and writes the membership back to 2005 where no stop stands, " +
+        "'long-prices' asks every code of the long history for its prices from 2004, its splits and dividends and each filer's filings with " +
+        "'--capture --into <folder>', after stating what it asks, '--past-the-stop' asking past the day's stop on the operator's word, and with " +
+        "'--write <folder>' writes them whole where no stop stands, '--print <folder>' writing nothing, '--each' naming every end and difference, " +
+        "and '--counts-read' recording the operator's word that the long data check's counts have been read, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
