@@ -38,6 +38,8 @@ public enum Store
     TickerJoin,
     SessionMark,
     DataCheck,
+    LongSnapshot,
+    LongHolding,
     DividendWait,
     LateBarAsk,
     EntryReading,

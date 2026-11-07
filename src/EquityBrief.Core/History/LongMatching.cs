@@ -131,6 +131,10 @@ public static class LongMatching
 
     public const string ByHand = "hand";
 
+    // The key a holding is matched by where its code is the one its company's own annual report names, its closes held to the
+    // fund's values a share as a name's are.
+    public const string ByFiling = "filing";
+
     // How many adjacent quarter ends the price key reads a value a share at, and the fewest quarter ends in a row a run at one
     // ratio holds.
     public const int PriceQuarters = 2;
@@ -145,7 +149,8 @@ public static class LongMatching
         IReadOnlyDictionary<DateOnly, QuarterCloses> closes,
         HoldingMatcher matcher,
         Func<DateOnly, string, decimal?>? asked = null,
-        LongNames? names = null)
+        LongNames? names = null,
+        Func<string, IReadOnlyList<string>>? annualReport = null)
     {
         LongSchedule[] ordered = [.. schedules.OrderBy(schedule => schedule.Period)];
         var matches = new Dictionary<(DateOnly Period, int Place), LongMatch>();
@@ -253,8 +258,11 @@ public static class LongMatching
 
             var runs = new Dictionary<(DateOnly Period, int Place), List<(string Code, int Length)>>();
 
-            // Codes carrying one close at every one of the name's quarter ends are one series, read as the first of them.
-            var series = Candidates(matcher, names, held[0].Holding)
+            // Codes carrying one close at every one of the name's quarter ends are one series, read as the first of them; with the
+            // codes the company's own annual report names for the name.
+            var read = Candidates(matcher, names, held[0].Holding);
+            var reported = annualReport?.Invoke(name) ?? [];
+            var series = read.Concat(reported).Distinct(StringComparer.Ordinal)
                 .GroupBy(code => string.Join('|', held.Select(one => CloseOn(one.Period, code)?.AsSent.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "-")), StringComparer.Ordinal)
                 .Select(group => group.Order(StringComparer.Ordinal).First());
 
@@ -283,7 +291,9 @@ public static class LongMatching
 
                 if (!matches.ContainsKey(key) && (longest.Length == 1 || longest[0].Length >= LongestRun * longest[1].Length))
                 {
-                    matches[key] = new LongMatch(longest[0].Code, ByName, [.. codes.Select(one => one.Code).Distinct(StringComparer.Ordinal)]);
+                    var by = reported.Contains(longest[0].Code, StringComparer.Ordinal) && !read.Contains(longest[0].Code, StringComparer.Ordinal) ? ByFiling : ByName;
+
+                    matches[key] = new LongMatch(longest[0].Code, by, [.. codes.Select(one => one.Code).Distinct(StringComparer.Ordinal)]);
                 }
             }
         }

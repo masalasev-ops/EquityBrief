@@ -312,6 +312,57 @@ static async Task<int> LongMembersRun(string[] args)
         return 0;
     }
 
+    if (args.Contains("--filers", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--filers --into <folder>', with '--top <n>' for the largest names alone.");
+
+            return 2;
+        }
+
+        var top = int.TryParse(VerbArguments.Value(args, "--top"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var largest) ? largest : int.MaxValue;
+        var feed = SecEdgarTrustScheduleFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty));
+
+        await EquityBrief.Worker.History.LongMembers.FindFilersAsync(folder, feed, top, line => Console.WriteLine("long-members: " + line));
+        Console.WriteLine(FormattableString.Invariant($"long-members: {feed.Requests} request(s) to the SEC"));
+
+        return 0;
+    }
+
+    if (VerbArguments.Value(args, "--write") is { } writing)
+    {
+        var matched = EquityBrief.Worker.History.LongMembers.Match(writing);
+        var stops = EquityBrief.Worker.History.LongMembers.Stops(matched, _ => false);
+
+        foreach (var coverage in EquityBrief.Core.History.LongFloors.Coverage(matched.Schedules, EquityBrief.Worker.History.LongMembers.IsMatched(matched)))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: {coverage.Index} {coverage.Period:yyyy-MM-dd} {coverage.Matched} of {coverage.Holdings} holdings, {coverage.HoldingsShare:P1}, {coverage.ValueShare:P1} of the value{(coverage.Stands ? string.Empty : ", under a floor")}"));
+        }
+
+        foreach (var fall in EquityBrief.Core.History.LongFloors.Falls(matched.Schedules, EquityBrief.Worker.History.LongMembers.IsMatched(matched)))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: fell by half and priced under no code: {fall.Index} {fall.Name}, {fall.BeforePrice:0.00} at {fall.Before:yyyy-MM-dd} and {fall.LastPrice:0.00} at {fall.Last:yyyy-MM-dd}"));
+        }
+
+        if (stops.Count > 0)
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: stopped, {stops.Count} stop(s), nothing written; this goes to the operator with what was found"));
+
+            return 2;
+        }
+
+        var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+        var forms = Directory.GetFiles(Path.Combine(writing, EquityBrief.Worker.History.LongScheduleFilings.HeadersFolder))
+            .Select(file => EquityBrief.Worker.History.LongScheduleFilings.HeaderOf(Path.GetFileNameWithoutExtension(file), File.ReadAllText(file)))
+            .ToDictionary(filing => filing.Accession, filing => filing.Form, StringComparer.Ordinal);
+        var written = await EquityBrief.Worker.History.LongMembers.WriteAsync(store.DatabaseFile, FormattableString.Invariant($"long-members-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}"), matched, forms, new Dictionary<(string, string), string>());
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {written} row(s) written"));
+
+        return 0;
+    }
+
     if (VerbArguments.Value(args, "--match") is { } captured)
     {
         var matched = EquityBrief.Worker.History.LongMembers.Match(captured);

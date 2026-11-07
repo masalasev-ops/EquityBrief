@@ -21,6 +21,9 @@ public interface ITrustScheduleFeed
 
     Task<string> FilingIndexAsync(string cik, string accession, CancellationToken cancellation = default);
 
+    // The archive's company browser asked for the filers whose names start with the words given, and their annual reports.
+    Task<string> CompaniesAsync(string name, CancellationToken cancellation = default);
+
     Task<string> DocumentAsync(string cik, string accession, string document, CancellationToken cancellation = default);
 
     // A filing's document as the archive sent its bytes, an older page's own encoding kept.
@@ -84,6 +87,9 @@ public sealed class SecEdgarTrustScheduleFeed(HttpClient client, TimeSpan pause)
 
         return string.Empty;
     }
+
+    public Task<string> CompaniesAsync(string name, CancellationToken cancellation = default) =>
+        GetAsync($"https://{SecEdgarArchive.DocumentHost}/cgi-bin/browse-edgar?action=getcompany&company={Uri.EscapeDataString(name)}&type=10-K&dateb=&owner=include&count=40&output=atom", cancellation);
 
     // A filing's folder listing, each file it holds with its size.
     public Task<string> FilingIndexAsync(string cik, string accession, CancellationToken cancellation = default) =>
