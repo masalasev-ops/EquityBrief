@@ -16552,3 +16552,23 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             line never drawn: red. m2 the dollars cell dropped: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 22.16 - correction: Home's account counts since today's rules all took effect   2026-11-07
+
+Found:      the order's second item: on 2026-11-06 the S&P 500's Home read "Our paper account counts the rules as they stand now
+            from 2 Oct, the day their first trade counts: its earlier trades replay the same under this version." with the bar
+            "Our paper account, as the rules stand now, since 2 Oct"; the S&P 400's and 600's from 2 Nov.
+Corrected:  Home reads the live setups' accounts averaged of the 21.11 correction above, whose day is the latest of the live
+            accounts' starts, 3 Nov on each index on 2026-11-06; its line opens "Since today's rules all took effect on 3 Nov",
+            its bar is "Our paper account since 3 Nov" beside the index's fund over the same days, and the system's every
+            version stands on its own line as before. The replay's words and their flag are gone. The decision superseding
+            22.52's, the Home row, the build plan's citation, the changelog and the guide.
+Tests:      1 new: Home over an account since 3 Nov draws the line, the bars and the system's line and no 2 Oct; paper trading's
+            averaged account over accounts from 21 Oct, 2 Nov and 3 Nov counts from 3 Nov. 22.52's test retired with its
+            decision.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1 the
+            line back to 2026-11-06's words: red. The latest start is the 21.11 correction's m2, red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

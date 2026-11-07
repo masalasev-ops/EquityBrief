@@ -179,4 +179,32 @@ public partial class ReadSurface
         Assert.DoesNotContain("a fifth of the account", card, StringComparison.Ordinal);
         Assert.All(PlainWords.Terms(), term => Assert.DoesNotMatch(PlainWords.Pattern(term), PlainWords.Visible(card)));
     }
+
+    // On 2026-11-06 the S&P 500's Home read "Our paper account counts the rules as they stand now from 2 Oct, the day their
+    // first trade counts: its earlier trades replay the same under this version." with "Our paper account, as the rules stand
+    // now, since 2 Oct". It reads the live setups' accounts averaged since the day every live rule had its current version,
+    // 3 Nov, with the index's fund over the same days, and the system's every version apart.
+    // see: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
+    [Fact]
+    public void HomesAccountCountsSinceTodaysRulesAllTookEffectAndTheSystemStandsApart()
+    {
+        var past = new HomePast(new DateOnly(2025, 9, 25), 51, 21, -0.012, -0.020, true, "SPY", new DateOnly(2026, 11, 3));
+        var home = WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Past = past }, string.Empty));
+
+        Assert.Contains("data-account-since=\"2026-11-03\">Since today's rules all took effect on 3 Nov, our paper account has followed every one of them with an equal share.</p>", home, StringComparison.Ordinal);
+        Assert.Contains("<span>Our paper account since 3 Nov</span><b", home, StringComparison.Ordinal);
+        Assert.Contains("<span>The index's fund, SPY, over the same days</span>", home, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"home-system\" data-system-closed=\"51\" data-made-money=\"21\">All versions since 25 Sep: 51 ideas bought and sold on paper, 21 made money.</p>", home, StringComparison.Ordinal);
+        Assert.DoesNotContain("2 Oct", home, StringComparison.Ordinal);
+        Assert.DoesNotContain("replay the same", home, StringComparison.Ordinal);
+
+        // Paper trading hands Home the averaged account, whose day is the latest of the live accounts' starts.
+        var settings = new AccountSettings(100_000m, 1m, 0.2m);
+        PaperAccountView View(string family, DateOnly since) =>
+            new(family, family, PaperAccountView.Live, "Live", family, "within luck", null, "risks", [], PaperAccount.Walk(settings, [], [since], (_, _) => null), 0, 0, null, since);
+
+        var averaged = EquityBrief.Api.Reading.PaperScreen.Averaged([View("quality", new DateOnly(2026, 11, 2)), View("breakout", new DateOnly(2026, 11, 3)), View("heavyweight", new DateOnly(2026, 10, 21))], settings, [new DateOnly(2026, 10, 21), new DateOnly(2026, 11, 2), new DateOnly(2026, 11, 3)], new DateOnly(2026, 11, 3), (_, _) => null, _ => null);
+
+        Assert.Equal(new DateOnly(2026, 11, 3), averaged!.Since);
+    }
 }

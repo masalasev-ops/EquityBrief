@@ -7,6 +7,15 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md - Home's account counts since today's rules all took effect
+Decision: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
+Was:
+> (15, Home, how past ideas have done) ... from 22.52 the account named as counting the rules as they stand now from the day their first trade counts with the replay's words beside it where that day comes before the version's start; the system's every version ... (see: Home's paper account counts from the day the current rules' first trade counts, and the system's every version stands apart and labelled)
+> (build plan, 22.52) ... and the system's every version stands on a line of its own (see: Home's paper account counts from the day the current rules' first trade counts, ...).
+Now:
+> each states the account the live setups' accounts averaged from the day every live rule on the index had its current version, its line opening "Since today's rules all took effect on" that day, and cites the new decision.
+Why: the operator's order of 2026-11-07, its second item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - the averaged account states how a monthly setup's holding is sized and draws each position's dollars
 Decision: A holding with no stop is sized at an equal share of the account across the most holdings its book can hold
 Was:

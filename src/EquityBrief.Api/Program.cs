@@ -2861,9 +2861,10 @@ async Task<IResult> HomeAsync(
     ];
     var opens = MarkRenderer.OpenDay(dated);
 
-    // The system's trades since the rules first went live, and the combined paper account against the index's fund over the
-    // same days.
+    // The system's trades since the rules first went live, and the live setups' accounts averaged since today's rules all
+    // took effect against the index's fund over the same days.
     // see: Every count of trades names its group and one function works the three groups
+    // see: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
     var held = copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
     var paper = await PaperAccountsAsync(read, reading, dated, held ?? EquityBrief.Core.Cards.AccountSettings.Example);
     HomePast? past = null;
@@ -2883,10 +2884,7 @@ async Task<IResult> HomeAsync(
             fund,
             progress.Values.Any(one => one.Progress.Counted < one.Progress.Needed),
             PaperScreen.Fund(reading.Code),
-            combined.Since)
-        {
-            CarriedBack = paper.Sources.Any(source => source.Standing is PaperAccountView.Live or PaperAccountView.Provisional && source.Since == combined.Since && source.Since < source.VersionFrom),
-        };
+            combined.Since);
     }
 
     // On the S&P 400 and 600 each rule checks its own market level, a rule reading none counted open.
