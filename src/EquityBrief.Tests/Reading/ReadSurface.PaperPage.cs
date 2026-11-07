@@ -593,7 +593,7 @@ public partial class ReadSurface
 
         Assert.StartsWith("V1 · ", tab, StringComparison.Ordinal);
         Assert.Contains($"\">V1</a>", variant, StringComparison.Ordinal);
-        Assert.Contains($"<td>{ReaderText.Words(tab["V1 · ".Length..])}</td>", variant, StringComparison.Ordinal);
+        Assert.Contains($"<td>{ReaderText.Words(tab["V1 · ".Length..])}", variant, StringComparison.Ordinal);
         Assert.Contains($"title=\"{char.ToUpperInvariant(ProvisionalBreakout[0])}{ProvisionalBreakout[1..]}; counts the version registered 2026-01-02, code v; from ", variant, StringComparison.Ordinal);
 
         // Beneath, the trades only V1 took, newest first: T6 open at 103 by its closes' ratio through its split, a risk; T1

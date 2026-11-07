@@ -16666,3 +16666,28 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             every row read as a version's: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: each version is marked as narrowing or widening its live rule, and a family with no trade says why in one line   2026-11-07
+
+Found:      the order's thirteenth item: on 2026-11-06 the S&P 500's pullback drew a table of nine rows of zeros, its rule and
+            eight versions, none saying how it reaches against the rule.
+Corrected:  `VersionReach.Of` reads a version's registered settings against its live rule's from one table in the core of what
+            each setting is, a floor, a ceiling, a count, an exit, an order or a change of what is read; a version narrows the
+            rule where every change that moves which trades it takes only removes some, widens it where any can add one, and a
+            setting the table does not hold is said to be unread, never guessed. The versions' part and the scorecard mark each
+            version; a family whose rule and versions have no trade since its record began draws one line in the table's place.
+            The scorecard's version row carries its full words under the pointer, which the table no longer always draws. Over
+            the register of 2026-11-07, read off its rows by the same table: the S&P 500's pullback's eight, six narrow it and
+            two widen it, the market check off and the plan at the nearest bands. The decision, 15.21's row, the changelog and
+            the guide.
+Tests:      1 new, by hand: the S&P 500 swing filter's eight settings each read to its kind, a target, an order, the dip's trend,
+            a larger book, an unknown setting and a mixed change; the line with every version narrowing and with one widening;
+            and a family with a trade drawing its table marked. Four tests read the line or the scorecard's rows where their
+            families hold no trade, and the tone test gives its accounts a trade so its table draws.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            floor raised read as widening: red. m2 the line never drawn: red, at the second spelling, the first not compiling
+            and its run reading the build before it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

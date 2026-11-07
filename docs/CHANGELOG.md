@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - each version marked as narrowing or widening its live rule, and a family with no trade in one line
+Decision: A version is marked as narrowing or widening its live rule by the direction of each setting it changes
+Was:
+> (15.21, what the variants did differently) ... and each version's trading since (see: ...); what it changes in plain words; its trades; ...
+Now:
+> ... what it changes in plain words; from that correction beneath it whether the version narrows the live rule or widens it or takes its picks sold differently or in another order, read setting by setting, the scorecard's versions marked so too; a family whose rule and versions have made no trade since its record began drawing one line saying why in the table's place (see: ...); its trades; ...
+Why: the operator's order of 2026-11-07, its thirteenth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - each row of the versions' part gives its start
 Decision: Each row of what the versions did differently gives its start, the live rule's record since and each version's trading since
 Was:

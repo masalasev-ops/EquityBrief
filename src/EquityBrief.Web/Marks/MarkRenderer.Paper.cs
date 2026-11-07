@@ -689,6 +689,17 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<p class=\"degraded\" data-variants=\"none\">No variant is registered for {Escaped(FamilyName(family))} on this index, so its rule alone trades.</p>");
         }
 
+        // From the 19.4 correction of 2026-11-07 a family whose rule and every version have made no trade since its record
+        // began says why in one line in place of a table of zeros.
+        // see: A version is marked as narrowing or widening its live rule by the direction of each setting it changes
+        if (NoTradeLine(rows, coming.Length, family) is { } none)
+        {
+            html.Append(Invariant, $"<p class=\"paper-no-trade\" data-no-trade=\"{rows.Length - 1}\">{Escaped(none)}</p>");
+            html.Append(Invariant, $"<p class=\"paper-adopted\">{Escaped(AdoptedLine)}</p>");
+
+            return html.ToString();
+        }
+
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-variants\" data-family=\"{Escaped(family)}\" data-rows=\"{rows.Length + coming.Length}\"><thead><tr>");
         html.Append(TippedHeading("Rule", "the live or provisional rule first and each variant by its number, its verdict in the newest monthly test beside it and its full words under the pointer"));
         html.Append(TippedHeading("What it changes", "the live rule's settings in short words, and each variant's settings that differ from them"));
@@ -702,7 +713,7 @@ public sealed partial class MarkRenderer
         {
             html.Append(Invariant, $"<tr data-account=\"{Escaped(account.Key)}\" data-standing=\"{account.Standing}\" data-trades=\"{account.Overlap?.Trades ?? account.Trades}\" data-shared=\"{account.Overlap?.Shared ?? 0}\" data-only=\"{account.Overlap?.Only ?? 0}\">");
             html.Append(Invariant, $"<td class=\"pv-rule\"><a class=\"paper-log\" href=\"{LogHref(link.Universe, account.Key)}\" title=\"{Escaped(Capitalised(account.Words) + (account.Version is { } version ? "; counts " + version : string.Empty) + (account.Since is { } since ? "; from " + DayOf(since) : string.Empty))}\">{Escaped(account.Short ?? account.Name)}</a><span class=\"pv-verdict\" data-verdict=\"{Escaped(account.Verdict)}\">{Escaped(account.Verdict)}</span>{SinceWords(account)}</td>");
-            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{AccountNote(account)}</td>");
+            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{(account.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Loop.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(account)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{account.Overlap?.Trades ?? account.Trades}</td><td class=\"r num\">{account.Overlap?.Shared ?? 0}</td><td class=\"r num\">{account.Overlap?.Only ?? 0}</td>");
             html.Append(Invariant, $"<td class=\"r num\" data-return=\"{(account.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\">{(account.Walk?.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">none yet</span>")}{(account.TooFew is { } few ? Formatted($"<span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}</td></tr>");
         }
@@ -799,7 +810,7 @@ public sealed partial class MarkRenderer
             foreach (var variant in variants)
             {
                 html.Append(Invariant, $"<tr data-account=\"{Escaped(variant.Key)}\" data-verdict=\"{Escaped(variant.Verdict)}\" data-better=\"{(variant.Better is { } better ? better.ToString(Invariant) : "none")}\">");
-                html.Append(Invariant, $"<td><b>{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{AccountNote(variant)}</td>");
+                html.Append(Invariant, $"<td><b title=\"{Escaped(Capitalised(variant.Words))}\">{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{(variant.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Loop.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(variant)}</td>");
                 html.Append(Invariant, $"<td><span class=\"pill\"{(variant.Adjusted is { } p ? Formatted($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span>{(variant.Tested is { } tested ? PooledChangeNote(tested, page.Pooled) : string.Empty)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{(variant.Better is { } of && variant.Counted is { } counted ? Formatted($"{of} of {counted}") : "<span class=\"degraded\">not read</span>")}{JudgedFromNote(variant)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Progressed(variant.Progress, variant.Standing)}</td></tr>");
@@ -840,6 +851,44 @@ public sealed partial class MarkRenderer
 
     // From 21.14 the line an account's rule carries beneath its words, the tone variant's that its history before the local
     // model's cutoff does not count; none for any other.
+    // The one line a family draws where its live or provisional rule and every version standing beside it have made no trade
+    // since the rule's record began: why none could trade where each version narrows the rule, and otherwise how many of
+    // them narrow it, widen it or take its picks another way; none where any has traded, a version waits on its first night
+    // or the family has no version.
+    public static string? NoTradeLine(IReadOnlyList<PaperAccountView> rows, int coming, string family)
+    {
+        var head = rows.FirstOrDefault(row => row.Head);
+        var versions = rows.Where(row => !row.Head).ToArray();
+
+        if (head is null || versions.Length == 0 || coming > 0 || rows.Any(row => (row.Overlap?.Trades ?? row.Trades) > 0))
+        {
+            return null;
+        }
+
+        var began = head.Since is { } since ? " since its record began on " + since.ToString("d MMM", Invariant) : " since its record began";
+
+        if (versions.All(version => version.Reach == EquityBrief.Core.Loop.VersionReachKind.Narrows))
+        {
+            return Formatted($"{FamilyName(family)} has made no trade{began}, and each of its versions narrows it, so none could trade either.");
+        }
+
+        string Count(EquityBrief.Core.Loop.VersionReachKind? kind, string one, string many) =>
+            versions.Count(version => version.Reach == kind) is var count and > 0 ? Formatted($"{count} {(count == 1 ? one : many)}") : string.Empty;
+
+        string[] parts =
+        [
+            Count(EquityBrief.Core.Loop.VersionReachKind.Narrows, "narrows it", "narrow it"),
+            Count(EquityBrief.Core.Loop.VersionReachKind.Widens, "widens it", "widen it"),
+            Count(EquityBrief.Core.Loop.VersionReachKind.SoldDifferently, "takes the same picks sold differently", "take the same picks sold differently"),
+            Count(EquityBrief.Core.Loop.VersionReachKind.Reordered, "takes the same picks in another order", "take the same picks in another order"),
+            Count(EquityBrief.Core.Loop.VersionReachKind.Unread, "changes a setting whose reach is not read here", "change a setting whose reach is not read here"),
+            Count(null, "has no live rule's settings to read against", "have no live rule's settings to read against"),
+        ];
+        var said = parts.Where(part => part.Length > 0).ToArray();
+
+        return Formatted($"{FamilyName(family)} has made no trade{began}, and none of its {versions.Length} versions has traded either: {(said.Length == 1 ? said[0] : string.Join(", ", said[..^1]) + " and " + said[^1])}.");
+    }
+
     // From the 19.4 correction of 2026-11-07 a row's start in the versions' part: the live or provisional rule's record since
     // its account's day, each version's trading since its own, none where an account has no day yet.
     // see: Each row of what the versions did differently gives its start, the live rule's record since and each version's trading since

@@ -267,10 +267,12 @@ public partial class ReadSurface
 
         // Paper trading: the live rule's account and the variant's among the breakout's, each rule's words under the
         // pointer, none for the rule before the freeze.
-        var paper = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&variants=breakout"));
-        var accounts = Assert.Single(Blocks(paper, "<table class=\"paper-variants\".*?</table>"));
+        // From the 19.4 correction of 2026-11-07 a family whose rule and version hold no trade says so in one line in the
+        // versions' part, and the scorecard lists the version.
+        var paper = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&variants=breakout&rule=breakout"));
 
-        Assert.Equal(["list-breakout", RunScreen.Slug(registrations[1].Candidate)], Regex.Matches(accounts, "<tr data-account=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains("<p class=\"paper-no-trade\" data-no-trade=\"1\">", paper, StringComparison.Ordinal);
+        Assert.Equal([RunScreen.Slug(registrations[1].Candidate)], Regex.Matches(paper, "<tr data-account=\"([^\"]+)\" data-verdict=").Select(match => match.Groups[1].Value));
         Assert.Contains(registrations[0].Candidate, paper, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(registrations[1].Candidate, paper, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(background, paper, StringComparison.OrdinalIgnoreCase);

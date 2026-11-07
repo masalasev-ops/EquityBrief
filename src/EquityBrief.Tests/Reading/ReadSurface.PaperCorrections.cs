@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Cards;
+using EquityBrief.Core.Loop;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -358,5 +359,59 @@ public partial class ReadSurface
 
         Assert.Contains("<span class=\"pv-since\" data-since=\"2026-11-03\">record since 3 Nov</span>", AccountRowOf(drawn, "list-pullback"), StringComparison.Ordinal);
         Assert.Contains("<span class=\"pv-since\" data-since=\"2026-11-02\">trading since 2 Nov</span>", AccountRowOf(drawn, "v1"), StringComparison.Ordinal);
+    }
+
+    // On 2026-11-06 the S&P 500's pullback drew a table of nine rows of zeros, its rule and eight versions, none marked by how
+    // it reaches against the rule. Each version is marked from the direction of each setting it changes, worked here over
+    // the S&P 500 swing filter's eight as the register holds them, and a family with no trade at all says why in one line.
+    // see: A version is marked as narrowing or widening its live rule by the direction of each setting it changes
+    [Fact]
+    public void EachVersionIsMarkedByItsReachAndAFamilyWithNoTradeSaysWhyInOneLine()
+    {
+        IReadOnlyDictionary<string, double> live = new Dictionary<string, double>(StringComparer.Ordinal) { ["bestOf"] = 0, ["depthHigh"] = 5, ["arrivalSessions"] = 3, ["strengthFloor"] = 0.5, ["marketGate"] = 1, ["trade"] = 2 };
+
+        IReadOnlyDictionary<string, double> With(string setting, double value) => new Dictionary<string, double>(live, StringComparer.Ordinal) { [setting] = value };
+
+        // The best 3 a night, 1 to 3 moves down, turning up within 1, stronger than 66.7% and a business not deteriorating each
+        // only remove trades; the market check off and the plan at the nearest bands can take trades the rule cannot.
+        Assert.Equal(VersionReachKind.Narrows, VersionReach.Of("pullback", live, With("bestOf", 3)));
+        Assert.Equal(VersionReachKind.Narrows, VersionReach.Of("pullback", live, With("depthHigh", 3)));
+        Assert.Equal(VersionReachKind.Narrows, VersionReach.Of("pullback", live, With("arrivalSessions", 1)));
+        Assert.Equal(VersionReachKind.Narrows, VersionReach.Of("pullback", live, With("strengthFloor", 2.0 / 3)));
+        Assert.Equal(VersionReachKind.Narrows, VersionReach.Of("pullback", live, With("skipDeteriorating", 1)));
+        Assert.Equal(VersionReachKind.Widens, VersionReach.Of("pullback", live, With("marketGate", 0)));
+        Assert.Equal(VersionReachKind.Widens, VersionReach.Of("pullback", live, With("trade", 1)));
+
+        // A target alone sells the same picks differently, an order alone takes them in another order, the dip's trend between
+        // its two averages widens, a larger book widens, a setting the table does not know is unread, and a change that
+        // narrows one setting and widens another widens.
+        Assert.Equal(VersionReachKind.SoldDifferently, VersionReach.Of("drift", new Dictionary<string, double> { ["targetRiskMultiple"] = 2.5 }, new Dictionary<string, double> { ["targetRiskMultiple"] = 3 }));
+        Assert.Equal(VersionReachKind.Reordered, VersionReach.Of("breakout", new Dictionary<string, double>(), new Dictionary<string, double> { ["order_expected"] = 1 }));
+        Assert.Equal(VersionReachKind.Widens, VersionReach.Of("dip", new Dictionary<string, double> { ["trend"] = 50 }, new Dictionary<string, double> { ["trend"] = 200 }));
+        Assert.Equal(VersionReachKind.Widens, VersionReach.Of("quality", new Dictionary<string, double> { ["book"] = 10 }, new Dictionary<string, double> { ["book"] = 20 }));
+        Assert.Equal(VersionReachKind.Unread, VersionReach.Of("pullback", live, With("somethingNew", 1)));
+        Assert.Equal(VersionReachKind.Widens, VersionReach.Of("pullback", live, new Dictionary<string, double>(live) { ["depthHigh"] = 3, ["marketGate"] = 0 }));
+
+        PaperAccountView Row(string key, string standing, VersionReachKind? reach, int trades) =>
+            new(key, "pullback", standing, standing == PaperAccountView.Live ? "Live" : key, "words", "within luck", null, "risks", [], null, trades, 0, null, new DateOnly(2026, 11, 3), Short: key, Overlap: new PaperOverlap(trades, 0, trades)) { Reach = reach };
+
+        string Part(params PaperAccountView[] rows) =>
+            WebUtility.HtmlDecode(new MarkRenderer().PaperVariants(new PaperPageView(rows, [], [], [], new PaperNotBought([]), [], null), new PaperLink("500"), "pullback"));
+
+        // No trade at all, every version narrowing: one line saying none could trade, and no table.
+        var narrowing = Part(Row("list-pullback", PaperAccountView.Live, null, 0), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 0), Row("V2", PaperAccountView.Variant, VersionReachKind.Narrows, 0));
+
+        Assert.Contains(">Pullback has made no trade since its record began on 3 Nov, and each of its versions narrows it, so none could trade either.</p>", narrowing, StringComparison.Ordinal);
+        Assert.DoesNotContain("<table class=\"paper-variants\"", narrowing, StringComparison.Ordinal);
+
+        // One widening version: the line counts them.
+        Assert.Contains(">Pullback has made no trade since its record began on 3 Nov, and none of its 2 versions has traded either: 1 narrows it and 1 widens it.</p>", Part(Row("list-pullback", PaperAccountView.Live, null, 0), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 0), Row("V8", PaperAccountView.Variant, VersionReachKind.Widens, 0)), StringComparison.Ordinal);
+
+        // A family with a trade draws its table, each version marked.
+        var traded = Part(Row("list-pullback", PaperAccountView.Live, null, 2), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 1), Row("V8", PaperAccountView.Variant, VersionReachKind.Widens, 3));
+
+        Assert.Contains("<span class=\"pv-reach\" data-reach=\"narrows\">narrows the live rule</span>", AccountRowOf(traded, "V1"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pv-reach\" data-reach=\"widens\">widens it</span>", AccountRowOf(traded, "V8"), StringComparison.Ordinal);
+        Assert.DoesNotContain("paper-no-trade", traded, StringComparison.Ordinal);
     }
 }

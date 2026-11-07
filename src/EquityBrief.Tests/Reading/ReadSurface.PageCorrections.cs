@@ -256,7 +256,10 @@ public partial class ReadSurface
             Assert.Contains("<option value=\"quality\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
             Assert.Contains("<div class=\"score\" data-family=\"quality\" data-standing=\"live\"", page, StringComparison.Ordinal);
             Assert.DoesNotContain("No version is registered for this rule.", page, StringComparison.Ordinal);
-            Assert.Equal(7, Regex.Matches(page, $"<tr data-account=\"[^\"]*{slug}-quality-rule-at[^\"]*\"[^>]*data-standing=\"variant\"").Count);
+            // From the 19.4 correction of 2026-11-07 a family whose rule and seven versions hold no trade says so in one line in
+            // the versions' part, its scorecard still listing each version.
+            Assert.Contains("<p class=\"paper-no-trade\" data-no-trade=\"7\">", page, StringComparison.Ordinal);
+            Assert.Equal(7, Regex.Matches(page, $"<tr data-account=\"[^\"]*{slug}-quality-rule-at[^\"]*\" data-verdict=").Count);
         }
     }
 
