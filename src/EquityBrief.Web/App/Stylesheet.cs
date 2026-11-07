@@ -1087,6 +1087,9 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
 .history-table tr.cls td{font-weight:700;border-top:1px solid var(--hair-2)}
 .history-table td.kind{padding-left:18px;color:var(--ink-2)}
 .history-table td.says{font-size:13px;color:var(--ink-2)}
+.history-table .lower{display:block;color:var(--soft);font-size:12px;white-space:normal}
+.history h3.long-index{font-size:15px;margin:14px 0 6px}
+.history p.named{color:var(--ink-2);font-size:13.5px}
 .history details summary,.history p.read{cursor:pointer;color:var(--ink-2);font-size:13.5px}
 
 /* run */

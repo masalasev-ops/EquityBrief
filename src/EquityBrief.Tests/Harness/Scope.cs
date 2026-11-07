@@ -4703,6 +4703,67 @@ internal static class Scope
             Verdict.Pass,
             "the head's verdict across the indexes read back off the rendered scorecard beneath its halves with its years better, its trades, the index that carried it, the line on each index's own verdict and the passes luck alone would bring, a variant's same change beside its verdict, and a family no run summed saying so",
             ByReadSurface),
+        // 23.3's long history: its three components, three stores, section 17's four rows, section 18's row and the History page's.
+        [CheckReach.Key(CatalogueTable, "Long schedule filings")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the filings archive and no store, and writes no run log",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long schedule filings")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, every one blank",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Long day files")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bulk and historical price feeds and no store, and writes no run log",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long day files")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, every one blank",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Long members")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership and the pulled holdings it reads, the long snapshots, holdings and spans it writes and removes, the run log it appends to, and the filings archive and historical price feed it asks",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long members")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Long snapshots")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long holdings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long spans")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The long history's stop")] = new Scoped(
+            Verdict.Pass,
+            "constructed quarter ends on both sides of the stop on the holdings and on the value, the lower coverage label's years, and a fall by half named and one named by no one; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The long history's hand check")] = new Scoped(
+            Verdict.Pass,
+            "a match by hand standing within half a cent and refused a cent away, a refusal removing its code at every quarter end, and every hand match and refusal naming what was read; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The long history's keys")] = new Scoped(
+            Verdict.Pass,
+            "each key worked by hand over constructed schedules and closes, a single quarter end's price match refused, the price key giving way to a match by name beside it and a code failing the fund's values refused; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The long history's left-out kinds")] = new Scoped(
+            Verdict.Pass,
+            "each kind worked by hand from constructed filings on both sides of the window and the fifteen months, and a year's shares by kind worked from constructed schedules; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The long history's matching under its stop")] = new Scoped(
+            Verdict.Pass,
+            "a constructed quarter end under the stop and a fall named by no one each returned as a stop with what was found, and a named fall stopping nothing",
+            ByExpectations),
+        [CheckReach.Key("15.25 History", "Members back to 2005")] = new Scoped(
+            Verdict.Pass,
+            "each index's years read back off the page over a constructed store, its holdings by how they were matched or why left out, the lower coverage label on an S&P 400 year to 2008 and on no S&P 500 year, the companies left out by name, and a store not written saying so",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "Entry check")] = new Scoped(
             Verdict.Pass,
             "each reading worked by hand over a constructed series and read back on the region, and the copy leaving out the outline",
@@ -6369,6 +6430,10 @@ internal static class Scope
         ["Data checker"] = "23.1",
         ["History end filings"] = "23.1",
         ["Pooled test"] = "23.2",
+        // 23.3's three, which the plan describes as a worker verb reading the funds' complete schedules and matching them.
+        ["Long schedule filings"] = "23.3",
+        ["Long day files"] = "23.3",
+        ["Long members"] = "23.3",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -6499,6 +6564,8 @@ internal static class Scope
         ["Data checks"] = "23.1",
         ["Rule test units"] = "23.2",
         ["Pooled verdicts"] = "23.2",
+        ["Long snapshots"] = "23.3",
+        ["Long holdings"] = "23.3",
         ["Late bar asker"] = "22.40",
         ["Late bar readings"] = "22.40",
         ["Late bar asks"] = "22.40",
@@ -7380,6 +7447,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "All three indexes together")] = "23.2",
         [CheckReach.Key(LoopPage, "The passes luck alone would bring")] = "23.2",
         [CheckReach.Key("15.21 Paper trading", "An account's verdict across the indexes")] = "23.2",
+        [CheckReach.Key("15.25 History", "Members back to 2005")] = "23.3",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
@@ -8180,6 +8248,7 @@ internal static class Scope
         ["A history build asked for a session the night wrote"] = "21.4",
         ["A pulled series the data check cannot read"] = "23.1",
         ["The per-rule tests summed across the indices do not line up"] = "23.2",
+        ["The long history's matching under its stop"] = "23.3",
         // 21.6's two, which the plan names as section 18's rows for a source refusing and a member unanswered.
         ["A new reading's source refuses"] = "21.6",
         ["A member a new reading's source answers nothing for"] = "21.6",
@@ -8500,6 +8569,10 @@ internal static class Scope
         ["The data check's jumps"] = "23.1",
         ["The data check's starts to read"] = "23.1",
         ["The verdict across the indices"] = "23.2",
+        ["The long history's stop"] = "23.3",
+        ["The long history's hand check"] = "23.3",
+        ["The long history's keys"] = "23.3",
+        ["The long history's left-out kinds"] = "23.3",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

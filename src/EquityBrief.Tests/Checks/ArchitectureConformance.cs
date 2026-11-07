@@ -1497,7 +1497,8 @@ public partial class ArchitectureConformance
         // 288 at 22.41: the entry check's five rows of the pages.
         // 291 at 23.1: the History page's two regions.
         // 294 at 23.2: the Loop page's verdict across the three indexes and the passes luck would bring, and the scorecard's.
-        Assert.Equal(294, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 295 at 23.3: the History page's members back to 2005.
+        Assert.Equal(295, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1676,7 +1677,8 @@ public partial class ArchitectureConformance
         // 690 at 22.41: the entry check's five rows of the pages.
         // 693 at 23.1: the History page's two regions.
         // 696 at 23.2: the Loop page's verdict across the three indexes and the passes luck would bring, and the scorecard's.
-        Assert.Equal(696, inDocument.Length);
+        // 697 at 23.3: the History page's members back to 2005.
+        Assert.Equal(697, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

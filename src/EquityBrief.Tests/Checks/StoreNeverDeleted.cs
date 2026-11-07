@@ -91,7 +91,10 @@ public class StoreNeverDeleted
         // folder for the copy whole and SiteCopyCommand writes each of its files into it again, and SitePublisher writes the
         // copy's report beside that folder; none of them is the store or under it.
         // From 23.1 HistoryEndFilings writes a filer's filing index, its older pages and its documents as the archive sent
-        // them into a folder the operator names, none of them the store.
+        // them into a folder the operator names, none of them the store. From 23.3 LongScheduleFilings, LongDayFiles and
+        // LongMembers write the trust's filings, the provider's day files, symbol lists and answers, the filers' indexes,
+        // pages and reports and the lookup's own lists into the long history's folder the operator names, none of them the
+        // store, which LongMembers writes through its own connection alone.
         // SweepPointInTime removes the scratch stores it built under the machine's temporary folder, which
         // hold nothing of the operator's. SweepRunner writes and replaces its own run folder's files, and
         // removes its own saved candidates where the history moved under them. StoreBackup, in the copies'
@@ -129,6 +132,23 @@ public class StoreNeverDeleted
                 "LocalComparison.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
                 "LocalRun.Probes.cs: File.WriteAllLinesAsync(Path.Combine(folder, \"sample.txt\"))",
                 "LocalRun.Probes.cs: File.WriteAllTextAsync(Path.Combine(folder, accession + \".txt\"))",
+                "LongDayFiles.cs: File.WriteAllTextAsync(Path.Combine(days, FormattableString.Invariant($\"{day:yyyy-MM-dd}.json\")))",
+                "LongDayFiles.cs: File.WriteAllTextAsync(Path.Combine(folder, file))",
+                "LongMembers.cs: File.WriteAllTextAsync(Path.Combine(folder, ChecksFile))",
+                "LongMembers.cs: File.WriteAllTextAsync(Path.Combine(folder, ChosenFile))",
+                "LongMembers.cs: File.WriteAllTextAsync(Path.Combine(folder, FiledFile))",
+                "LongMembers.cs: File.WriteAllTextAsync(documentFile)",
+                "LongMembers.cs: File.WriteAllTextAsync(file)",
+                "LongMembers.cs: File.WriteAllTextAsync(file)",
+                "LongMembers.cs: File.WriteAllTextAsync(file)",
+                "LongMembers.cs: File.WriteAllTextAsync(file)",
+                "LongScheduleFilings.cs: File.WriteAllBytesAsync(file)",
+                "LongScheduleFilings.cs: File.WriteAllTextAsync(Path.Combine(folder, \"submissions.json\"))",
+                "LongScheduleFilings.cs: File.WriteAllTextAsync(Path.Combine(folder, FormattableString.Invariant($\"list-{fund}-{form}-{start}.xml\")))",
+                "LongScheduleFilings.cs: File.WriteAllTextAsync(Path.Combine(folder, TickersFile))",
+                "LongScheduleFilings.cs: File.WriteAllTextAsync(Path.Combine(folder, page))",
+                "LongScheduleFilings.cs: File.WriteAllTextAsync(Path.Combine(kept, filing.Accession + \"-\" + IndexFile))",
+                "LongScheduleFilings.cs: File.WriteAllTextAsync(file)",
                 "MonthlyRun.cs: File.WriteAllText(report)",
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",

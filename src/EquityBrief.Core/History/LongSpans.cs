@@ -78,12 +78,12 @@ public static class LongSpans
             }
         }
 
-        if (snapshots.TryGetValue("GSPC", out var ivv))
         {
+            var ivv = snapshots.GetValueOrDefault("GSPC") ?? new Dictionary<DateOnly, IReadOnlySet<string>>();
             DateOnly[] periods = [.. ivv.Keys.Order()];
 
             var once = provider
-                .Where(span => span.Left is null || span.Left > ProviderFrom)
+                .Where(span => !(span.Left <= ProviderFrom))
                 .GroupBy(span => (Name: span.Name is { } name ? HoldingMatcher.NameKey(name) : span.Ticker, span.Joined, span.Left))
                 .Select(group => group.OrderBy(span => span.Ticker, StringComparer.Ordinal).First());
 
@@ -105,5 +105,5 @@ public static class LongSpans
 
     // Whether a code is a member of an index on a day by the spans.
     public static bool IsMember(IEnumerable<LongSpan> spans, string index, string ticker, DateOnly day) =>
-        spans.Any(span => span.Index == index && span.Ticker == ticker && span.Joined <= day && (span.Left is null || day < span.Left));
+        spans.Any(span => span.Index == index && span.Ticker == ticker && span.Joined <= day && !(span.Left <= day));
 }

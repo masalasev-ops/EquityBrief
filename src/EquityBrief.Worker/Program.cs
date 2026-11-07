@@ -345,7 +345,16 @@ static async Task<int> LongMembersRun(string[] args)
 
         foreach (var named in await EquityBrief.Worker.History.LongMembers.NamedAsync(folder, feed, EquityBrief.Worker.History.LongMembers.Match(folder)))
         {
-            Console.WriteLine(FormattableString.Invariant($"long-members: {named.Named}: {named.Index} {named.Name}, last held {named.Last:yyyy-MM-dd}, {(named.Code is null ? "matched to none" : named.LastSession >= named.Last.AddYears(EquityBrief.Worker.History.LongMembers.NamedYears).AddDays(-7) ? $"{named.Code} by {named.By}, still trading at the end of the {EquityBrief.Worker.History.LongMembers.NamedYears} years asked, {named.LastSession:yyyy-MM-dd} at {named.LastClose}" : $"{named.Code} by {named.By}, last session {named.LastSession:yyyy-MM-dd} at {named.LastClose}")}"));
+            var session = named.LastSession?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var close = named.LastClose?.ToString(CultureInfo.InvariantCulture);
+            var onward = named.LastSession >= named.Last.AddYears(EquityBrief.Worker.History.LongMembers.NamedYears).AddDays(-7);
+            var ended = named.Code is null
+                ? "matched to none"
+                : onward
+                    ? named.Code + " by " + named.By + ", still trading at the end of the years asked, " + session + " at " + close
+                    : named.Code + " by " + named.By + ", last session " + session + " at " + close;
+
+            Console.WriteLine(FormattableString.Invariant($"long-members: {named.Named}: {named.Index} {named.Name}, last held {named.Last:yyyy-MM-dd}, {ended}"));
         }
 
         Console.WriteLine(FormattableString.Invariant($"long-members: {feed.Requests} request(s) to the provider"));
@@ -402,6 +411,8 @@ static async Task<int> LongMembersRun(string[] args)
 
     if (VerbArguments.Value(args, "--write") is { } writing)
     {
+        var clock = SystemClock.ForUnitedStatesSessions();
+        var startedAt = clock.UtcNow;
         var matched = EquityBrief.Worker.History.LongMembers.Match(writing);
         var stops = EquityBrief.Worker.History.LongMembers.Stops(matched);
 
@@ -433,7 +444,7 @@ static async Task<int> LongMembersRun(string[] args)
         var forms = Directory.GetFiles(Path.Combine(writing, EquityBrief.Worker.History.LongScheduleFilings.HeadersFolder))
             .Select(file => EquityBrief.Worker.History.LongScheduleFilings.HeaderOf(Path.GetFileNameWithoutExtension(file), File.ReadAllText(file)))
             .ToDictionary(filing => filing.Accession, filing => filing.Form, StringComparer.Ordinal);
-        var written = await EquityBrief.Worker.History.LongMembers.WriteAsync(store.DatabaseFile, FormattableString.Invariant($"long-members-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}"), matched, forms, EquityBrief.Worker.History.LongMembers.CheckedAs(writing), left);
+        var written = await EquityBrief.Worker.History.LongMembers.WriteAsync(store.DatabaseFile, FormattableString.Invariant($"long-members-{startedAt:yyyyMMddTHHmmssZ}"), matched, forms, EquityBrief.Worker.History.LongMembers.CheckedAs(writing), left, clock, startedAt);
 
         Console.WriteLine(FormattableString.Invariant($"long-members: {written} row(s) written"));
 
@@ -446,8 +457,9 @@ static async Task<int> LongMembersRun(string[] args)
 
         foreach (var quarter in EquityBrief.Worker.History.LongMembers.Quarters(matched))
         {
-            Console.WriteLine(FormattableString.Invariant(
-                $"long-members: {quarter.Index} {quarter.Period:yyyy-MM-dd} {quarter.Matched} of {quarter.Holdings} matched, {(quarter.Value == 0m ? 0m : quarter.MatchedValue / quarter.Value):P2} of the value; {string.Join(", ", quarter.ByKey.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => $"{pair.Key} {pair.Value.Count}"))}"));
+            var keys = string.Join(", ", quarter.ByKey.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => pair.Key + " " + pair.Value.Count.ToString(CultureInfo.InvariantCulture)));
+
+            Console.WriteLine(FormattableString.Invariant($"long-members: {quarter.Index} {quarter.Period:yyyy-MM-dd} {quarter.Matched} of {quarter.Holdings} matched, {(quarter.Value == 0m ? 0m : quarter.MatchedValue / quarter.Value):P2} of the value; {keys}"));
         }
 
         if (args.Contains("--each", StringComparer.Ordinal))
@@ -556,7 +568,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 70 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 71 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -785,6 +797,9 @@ static int NoVerb()
         "session of its pulled history, 'data-check' classifies every stock's pulled sessions into the data check's rows, with " +
         "'--print' writing nothing and printing the counts, '--each' printing every finding a line besides, and '--end <cik> --into <folder>' reading a filer's filings from the SEC " +
         "into the folder and printing where its history ends, " +
+        "'long-members' builds the long history's folder from the trust's older filings and the provider's day files with " +
+        "'--capture', '--days', '--ask', '--filers', '--checks' and '--named', each '--into <folder>', and with '--write <folder>' " +
+        "matches the funds' schedules and writes the membership back to 2005 where no stop stands, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

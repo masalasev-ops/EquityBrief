@@ -176,6 +176,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `ticker_join` | TickerJoins | none | none |
 | `session_mark` | SessionMarks | none | none |
 | `data_check` | DataChecker | none | DataChecker |
+| `long_snapshot` | LongMembers | none | LongMembers |
+| `long_holding` | LongMembers | none | LongMembers |
+| `long_span` | LongMembers | none | LongMembers |
 | `dividend_wait` | CorporateActionChecker | CorporateActionChecker | CorporateActionChecker |
 | `chart_check` | ChartChecker | none | ChartChecker |
 | `split_event` | CorporateActionChecker | none | none |
@@ -352,6 +355,59 @@ Grain: one row per stock, session, class and kind the data check found in the st
 Primary key: `ticker`, `session_date`, `class`, `kind`.
 
 **What the data check found, read by the History page and by no rule** (see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row). From 23.1 `data-check` writes a run's rows whole and removes the run before's in the same transaction, so the table holds one run; `--print` writes nothing. No pulled row, bar or mark moves.
+
+### long_snapshot
+Grain: one row per index and quarter end of a fund's complete schedule the trust filed from 2004-12-31 to 2018-09-30.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC` for IVV's schedule, `MID` for IJH's or `SML` for IJR's |
+| `period` | TEXT | the quarter end the schedule is as of |
+| `accession` | TEXT | the trust's filing that carries it |
+| `form` | TEXT | the filing's form, N-Q, N-CSR or N-CSRS |
+| `holdings` | INTEGER | the schedule's holdings of common stock |
+| `value_usd` | TEXT | decimal in code, their value as filed |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `index_code`, `period`.
+
+### long_holding
+Grain: one row per index, quarter end and place in the schedule of a holding the trust filed.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | as in `long_snapshot` |
+| `period` | TEXT | the quarter end |
+| `holding` | INTEGER | the holding's place in the schedule, from 0 |
+| `name` | TEXT | the company's name as filed |
+| `industry` | TEXT | the industry heading it was filed under, null where none stood above it |
+| `shares` | TEXT | decimal in code, the shares as filed, null where the row carries none |
+| `value_usd` | TEXT | decimal in code, the value as filed, null where the row carries none |
+| `ticker` | TEXT | the provider's code it was matched to, null where none was |
+| `matched_by` | TEXT | the key: name, price, carried, filing or hand, null where none matched |
+| `stood_between` | TEXT | the codes it stood between, as a JSON list, null where none matched |
+| `checked` | TEXT | what its match was checked against: the hand check's verdict and the report it read, or a hand match's reading, null where it was not checked |
+| `left_as` | TEXT | where no code matched, why its company left: bought out, failed, dropped or unknown |
+| `left_read` | TEXT | where no code matched, the filing that says why, or what was read |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `index_code`, `period`, `holding`.
+
+### long_span
+Grain: one row per index, code and start of a span of membership in the long history.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | as in `long_snapshot` |
+| `ticker` | TEXT | the provider's code |
+| `joined` | TEXT | the first snapshot holding it, or the provider's start, a span with none taking the first of IVV's snapshots holding its company |
+| `left` | TEXT | the first later snapshot that does not hold it, or the provider's leave, null where it is a member still |
+| `read_from` | TEXT | `fund` where the snapshots gave it, `provider` where the provider's S&P 500 dates did |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `index_code`, `ticker`, `joined`.
+
+**The long history's membership off the funds' older filings, read by the History page and by no night** (see: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30). From 23.3 `long-members --write` writes a run's snapshots, holdings and spans whole and removes the run before's in the same transaction with its row on `run_log`, and writes nothing where a quarter end falls under the stop or a fall by half is left out by no name (see: Each quarter end of the long history stands at the coverage it reached and stops under 90 in every 100 of its holdings or their value). A member runs from a snapshot holding it to the first later snapshot that does not, one away at a single snapshot read as held there and one away at two or more as two spans, a code two funds hold at one quarter end in the larger index; the S&P 500 reads IVV's snapshots before 2012 and the provider's dates from 2012 (see: The S&P 500 before 2012 is read from IVV's filed holdings and from 2012 from the provider's dates) (see: A provider's span with no start date takes the first of IVV's snapshots holding its company by code or by name). It reads `pulled_holding` and `membership` and moves no row of either.
 
 ### dividend_wait
 Grain: one row per stock and ex-date whose dividend the provider's answer did not carry.

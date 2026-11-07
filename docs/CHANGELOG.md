@@ -7,6 +7,53 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - the long history's three components, their stores, section 17's four rows, section 18's row and the History page's members back to 2005
+Decision: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30
+Was:
+> (Read API, reads) every store but the pulled history and its bars read from 19.11 for the chart page, strip quote feed
+> 15.25 **Answers:** what the data check found in every stock's pulled history before anything is tested on it, by class and by era.
+> 15.25 **Reads:** the data checks of the newest run and that run's row on the run log, and nothing else; it decides nothing and no rule reads what it draws.
+Now:
+> (Read API, reads) every store but the pulled history and its bars read from 19.11 for the chart page and its long snapshots and holdings read from 23.3 for the History page, strip quote feed
+> 15.25 **Answers:** ... by class and by era, and from 23.3 each index's members back to 2005 as its fund filed them, by how they were matched or why they were left out.
+> 15.25 **Reads:** the data checks of the newest run and that run's row on the run log, and from 23.3 the long snapshots and long holdings of the newest long members' run, and nothing else; ...
+Added: the catalogue's and the matrix's rows for the long schedule filings, the long day files and the long members; section 16's rows for the long snapshots, long holdings and long spans; section 17's rows for the long history's stop, hand check, keys and left-out kinds; section 18's row for the long history's matching under its stop; and 15.25's row for the members back to 2005.
+Why: 23.3 builds the long history's membership as its plan states, on the operator's answers of 2026-11-06.
+
+### 2026-11-07 - docs/SCHEMA.md - long_snapshot, long_holding and long_span, and their writer
+Decision: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30
+Was:
+> (nothing; the three tables are new)
+Now:
+> the ownership table's rows naming `LongMembers` the inserter and remover of each, and a section for each table with its grain, columns and key and one paragraph on what writes it and what it reads
+Why: migration 131 creates the three tables and every table in a migrated store is one the file describes.
+
+### 2026-11-07 - docs/RUNBOOK.md - building the long history's folder and writing its membership
+Decision: Each quarter end of the long history stands at the coverage it reached and stops under 90 in every 100 of its holdings or their value
+Was:
+> (nothing; the section is new, after the data check's)
+Now:
+> the eight commands that build `data/long-members` and write from it, what each asks and costs, the write's stops and its exit code, and the reading modes
+Why: the plan's runbook for 23.3.
+
+### 2026-11-07 - CLAUDE.md - the hard rule on bars names the long history's tables
+Decision: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30
+Was:
+> ... The sessions the fetcher drops are copied into a table of their own in the drop's own transaction, append-only and read by no night, from 17.3 (see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor).
+Now:
+> ... from 17.3 (see: ...). From 23.3 the funds' older schedules, their holdings and the spans of membership read from them sit in `long_snapshot`, `long_holding` and `long_span`, holding no bar, read by no night and drawn by the History page alone, written whole by the long members' run (see: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30).
+Why: 23.3's plan names the change to the hard rule on bars, so a reader of the rule finds the tables beside the bars that no night reads.
+
+### 2026-11-07 - .claude/rules/checks.md - fixture-expectations and read-surface reach the long history's membership
+Decision: The holdings the long history leaves out are split by why they left with their share of value each year
+Was:
+> fixture-expectations: ... and no source a rule's version pins among those 23.2 writes |
+> read-surface: ... and the Loop page's, paper trading's and the Ledger's read-back in the reader's words |
+Now:
+> fixture-expectations: ... among those 23.2 writes; and from 23.3 each schedule form ... read from a captured page and a summary refused, each key ... worked by hand ..., the spans worked by hand ..., the sampled S&P announcements read against the spans with at least 95 in every 100 standing and each miss named, ... and no source a rule's version pins among those 23.3 writes |
+> read-surface: ... in the reader's words; and from 23.3 the History page's members back to 2005 read back over a constructed store, ... and the companies left out by name |
+Why: each roster row says what its check asserts, and 23.3's tests extend both.
+
 ### 2026-11-07 - docs/BUILD_PLAN.md - 23.3's floors as reached, the failures left out by name and the left-out holdings split by why
 Decision: Each quarter end of the long history stands at the coverage it reached and stops under 90 in every 100 of its holdings or their value
 Was:
@@ -15,6 +62,7 @@ Was:
 Now:
 > ... and the stop does not fire for it (see: Countrywide ...). On the operator's answers of 2026-11-06 the failures the run found are left out by name as Countrywide is and the run goes on, Belo named as unpriced and not failed, and a fall by half no name leaves out still stops it (see: The failed companies the long history cannot price are left out by name and the run goes on). Other holdings matched by none of these are listed and left out, every figure saying so, and split by why they left, bought out, failed, dropped or unknown, with their share of value each year (see: The holdings the long history leaves out are split by why they left with their share of value each year). Floors as reached, on the operator's answers of 2026-11-06: each quarter end stands at the coverage it reached, stated in the entry, and one under 90 in every 100 of its holdings or their value stops the run and goes to the operator (see: Each quarter end ...), ...; every figure of the S&P 400 and 600 for 2004 to 2008 is labelled "lower coverage: about 90% of holdings matched" (see: The S&P 400's and 600's figures for 2004 to 2008 carry the lower coverage label); no second price source; a key whose hand sample finds more than 2 of 30 wrong stops the run and goes to the operator, and each match made or refused by hand names what was read (see: A holding is matched or refused by hand from the SEC's filings and names what was read). ...
 > **Done when** ... a fall by half left out under no name stops the run and one the operator named does not, Countrywide among them, asserted; the left-out holdings' kinds are worked by hand from constructed filings, one of each; ... each fund's quarter ends stand in the entry at the coverage each reached, a quarter end under 90 in every 100 of its holdings or their value stopping the run, asserted, and the left-out holdings by why they left with their share of value each year; ...
+> and "Spans for the long history alone: a member from a snapshot holding it ..." reads "Spans for the long history alone, the long spans in `long_span`: a member from a snapshot holding it ...", so the store's due point is read from the checkpoint that builds it.
 Why: the operator's answers of 2026-11-06, word for word in `prompts/2026-11-06-23.3-operator-answers-floors-failures-ijh.md`, given when 23.3's run stopped on the proposed floors and on seven falls by half priced under no code.
 
 ### 2026-11-07 - docs/BUILD_PLAN.md - 23.6 owes the failures' share and the benchmark with each failure at nothing, and 23.4 owes the provider's spans counted against IVV's

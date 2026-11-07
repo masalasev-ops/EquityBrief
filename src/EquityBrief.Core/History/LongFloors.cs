@@ -103,13 +103,15 @@ public static class LongFloors
             .ThenBy(fall => fall.Name, StringComparer.Ordinal),
     ];
 
+    static string Stop(LongCoverage quarter) => FormattableString.Invariant($"{quarter.Index} {quarter.Period:yyyy-MM-dd}: {quarter.Matched} of {quarter.Holdings} holdings matched and priced, {quarter.HoldingsShare:P1} and {quarter.ValueShare:P1} of their value, under the stop of {HoldingsStop:P0} of either");
+
+    static string Stop(LongFall fall) => FormattableString.Invariant($"{fall.Index} {fall.Name}: a value a share of {fall.BeforePrice:0.00} at {fall.Before:yyyy-MM-dd} and {fall.LastPrice:0.00} at {fall.Last:yyyy-MM-dd}, priced under no code and not left out by the operator");
+
     // Why the run stops, none where nothing stops it: each quarter end under 90 in every 100 of its holdings or their value, and
     // each fall by half priced under no code that the operator has not left out by name.
     public static IReadOnlyList<string> Stops(IReadOnlyList<LongCoverage> coverage, IReadOnlyList<LongFall> falls) =>
     [
-        .. coverage.Where(quarter => !quarter.Stands).Select(quarter => FormattableString.Invariant(
-            $"{quarter.Index} {quarter.Period:yyyy-MM-dd}: {quarter.Matched} of {quarter.Holdings} holdings matched and priced, {quarter.HoldingsShare:P1} and {quarter.ValueShare:P1} of their value, under the stop of {HoldingsStop:P0} of either")),
-        .. falls.Where(fall => LeftOutAs(fall.Name) is null).Select(fall => FormattableString.Invariant(
-            $"{fall.Index} {fall.Name}: a value a share of {fall.BeforePrice:0.00} at {fall.Before:yyyy-MM-dd} and {fall.LastPrice:0.00} at {fall.Last:yyyy-MM-dd}, priced under no code and not left out by the operator")),
+        .. coverage.Where(quarter => !quarter.Stands).Select(Stop),
+        .. falls.Where(fall => LeftOutAs(fall.Name) is null).Select(Stop),
     ];
 }

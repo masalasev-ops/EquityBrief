@@ -37,7 +37,8 @@ internal static class ComponentVocabulary
     // purge removes together, and beside them the surprises, the market series, and
     // the companies, their share counts, their splits and their revenue as first
     // filed, and from 14.8 today's members of the S&P 400 and 600, each a pull's
-    // and removed whole with it. The fundamental readings are a computed table, one
+    // and removed whole with it, and from 23.3 the long history's snapshots,
+    // holdings and spans off the funds' older filings, which no night reads. The fundamental readings are a computed table, one
     // row a member a night, as the swing readings are, and so are the family
     // results, one row a member a night under each setup family but the pullback.
     // From 13.9 the forward returns column holds the family trades beside the
@@ -89,7 +90,7 @@ internal static class ComponentVocabulary
         ("Membership", [DataStore.Membership, DataStore.TickerJoin]),
         ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar, DataStore.LiveQuote, DataStore.TreasuryYield, DataStore.SplitEvent]),
         ("Calendar", [DataStore.Calendar]),
-        ("Pulled history", [DataStore.PulledBar, DataStore.SessionMark, DataStore.DataCheck, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
+        ("Pulled history", [DataStore.PulledBar, DataStore.SessionMark, DataStore.DataCheck, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding, DataStore.LongSnapshot, DataStore.LongHolding, DataStore.LongSpan]),
         ("Computed tables", [DataStore.SplitName, DataStore.EntryReading, DataStore.Indicator, DataStore.ChartCheck,DataStore.ChartAverage, DataStore.EarningsMove, DataStore.LongView, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.DipResult, DataStore.MemberReading, DataStore.SwitchReading, DataStore.FundamentalScore, DataStore.QualityResult, DataStore.ImprovingResult]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.DipNight, DataStore.DipPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow, DataStore.QualityNight, DataStore.ImprovingNight]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.DipTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.TradeFill, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopRuleUnit, DataStore.LoopPooled, DataStore.LoopLink, DataStore.ReleaseAnswerEdge, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm, DataStore.QualityHolding, DataStore.ImprovingTrade]),
@@ -144,7 +145,7 @@ internal static class ComponentVocabulary
     // splitting them produces fragments that resolve to nothing.
     static readonly Dictionary<string, DataStore[]> WholeCells = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["every store but the pulled history and its bars read from 19.11 for the chart page"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding])],
+        ["every store but the pulled history and its bars read from 19.11 for the chart page and its long snapshots and holdings read from 23.3 for the History page"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding, DataStore.LongSpan])],
         ["none"] = [],
         ["read API"] = [],
         ["a file the user chooses"] = [],
@@ -339,6 +340,9 @@ internal static class ComponentVocabulary
         ["ticker joins"] = DataStore.TickerJoin,
         ["session marks"] = DataStore.SessionMark,
         ["data checks"] = DataStore.DataCheck,
+        ["long snapshots"] = DataStore.LongSnapshot,
+        ["long holdings"] = DataStore.LongHolding,
+        ["long spans"] = DataStore.LongSpan,
         ["dividend waits"] = DataStore.DividendWait,
         ["late bar asks"] = DataStore.LateBarAsk,
         ["entry readings"] = DataStore.EntryReading,

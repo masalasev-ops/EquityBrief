@@ -28,8 +28,9 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.LongSpan, EquityBrief.Core.Components.Touch.Insert | EquityBrief.Core.Components.Touch.Delete),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.PulledHolding, EquityBrief.Core.Components.Touch.Read),
             new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.Membership, EquityBrief.Core.Components.Touch.Read),
+            new EquityBrief.Core.Components.StoreTouch(EquityBrief.Core.Components.Store.RunLog, EquityBrief.Core.Components.Touch.Insert),
         ],
-        Feeds: []);
+        Feeds: [EquityBrief.Core.Components.Feed.FilingsArchive, EquityBrief.Core.Components.Feed.HistoricalPrice]);
 
     public sealed record Matched(IReadOnlyList<LongSchedule> Schedules, IReadOnlyDictionary<string, IReadOnlyDictionary<(DateOnly Period, int Place), LongMatch>> Matches, IReadOnlyList<string> Unread);
 
@@ -74,9 +75,19 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
             read[Path.GetFileNameWithoutExtension(file)] = PricesOf(File.ReadAllText(file));
         }
 
-        return (period, code) => read.TryGetValue(code, out var prices)
-            ? prices.Where(pair => pair.Key <= period && pair.Key > period.AddDays(-LongDayFiles.SessionDays)).Select(pair => (decimal?)pair.Value).LastOrDefault()
-            : null;
+        decimal? LastWithin(IReadOnlyDictionary<DateOnly, decimal> prices, DateOnly period)
+        {
+            decimal? last = null;
+
+            foreach (var pair in prices.Where(one => one.Key <= period && one.Key > period.AddDays(-LongDayFiles.SessionDays)))
+            {
+                last = pair.Value;
+            }
+
+            return last;
+        }
+
+        return (period, code) => read.TryGetValue(code, out var prices) ? LastWithin(prices, period) : null;
     }
 
     // A code's daily closes as the provider answered them.
@@ -287,7 +298,8 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
                 .OrderBy(one => one.Index, StringComparer.Ordinal))
             {
                 var match = matched.Matches[last.Index].GetValueOrDefault((last.Period, last.Place));
-                var (session, close) = ((DateOnly?)null, (decimal?)null);
+                DateOnly? session = null;
+                decimal? close = null;
 
                 if (match is not null)
                 {
@@ -710,6 +722,12 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
 
     const string ClearRun = "DELETE FROM long_span; DELETE FROM long_holding; DELETE FROM long_snapshot;";
 
+    public const string Stage = "long-members";
+
+    const string AppendRun = @"
+        INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
+        VALUES ($run_id, $stage, $started_at, $ended_at, 'ok', $rows, 0, 0, '0', $detail);";
+
     const string SelectPulledHoldings = "SELECT index_code, period, ticker FROM pulled_holding WHERE ticker IS NOT NULL;";
 
     const string SelectProviderSpans = "SELECT ticker, joined, left, name FROM membership WHERE index_code = 'GSPC';";
@@ -718,7 +736,7 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
     // matched by or why it was left out, and every code's spans of membership read over these schedules, the members pull's
     // later ones and the provider's dates of the S&P 500, the run before's rows removed with them; nothing written where a stop
     // stands.
-    public static async Task<int> WriteAsync(string databaseFile, string runId, Matched matched, IReadOnlyDictionary<string, string> forms, IReadOnlyDictionary<(string Index, string Name), string> checks, IReadOnlyDictionary<(string Index, string Name), LongLeft> left, CancellationToken cancellation = default)
+    public static async Task<int> WriteAsync(string databaseFile, string runId, Matched matched, IReadOnlyDictionary<string, string> forms, IReadOnlyDictionary<(string Index, string Name), string> checks, IReadOnlyDictionary<(string Index, string Name), LongLeft> left, EquityBrief.Core.Time.IClock clock, DateTimeOffset startedAt, CancellationToken cancellation = default)
     {
         await using var connection = new Microsoft.Data.Sqlite.SqliteConnection(EquityBrief.Data.StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
@@ -856,9 +874,21 @@ public sealed class LongMembers : EquityBrief.Core.Components.IComponent
                 ("$run_id", runId));
         }
 
+        var holdings = matched.Schedules.Sum(schedule => schedule.Holdings.Count);
+        var priced = matched.Schedules.Sum(schedule => Enumerable.Range(0, schedule.Holdings.Count).Count(place => matched.Matches[schedule.Index].ContainsKey((schedule.Period, place))));
+        var writtenRows = written;
+
+        await ExecuteAsync(AppendRun,
+            ("$run_id", runId),
+            ("$stage", Stage),
+            ("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)),
+            ("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)),
+            ("$rows", writtenRows),
+            ("$detail", FormattableString.Invariant($"{matched.Schedules.Count} schedule(s) and {holdings} holding(s) written, {priced} matched and {holdings - priced} left out, {spans.Count} span(s)")));
+
         await transaction.CommitAsync(cancellation);
 
-        return written;
+        return writtenRows;
     }
 
     // Each quarter end's figures of each fund's matching.
