@@ -34,7 +34,7 @@ public sealed partial class SinglePageApp
     public const string HistoryLede =
         "Every stock's pulled sessions sorted by fixed rules, so the counts are read before anything is tested on the longer history. Nothing here changes a price: a bad print or a start is marked only on the operator's word.";
 
-    public string HistoryRegion(DataCheckView view)
+    public string HistoryRegion(DataCheckView view, LongMembershipView? membership = null)
     {
         var region = new StringBuilder();
 
@@ -44,6 +44,11 @@ public sealed partial class SinglePageApp
         if (view.RunId is null)
         {
             region.Append(Cards.Computed("Data check", "<p class=\"empty\">The data check has not run. <code>data-check</code> writes its rows over the years the pull holds.</p>", title: "The data check", lede: HistoryLede, region: "data-check"));
+
+            if (membership is not null)
+            {
+                region.Append(LongMembershipCard(membership));
+            }
 
             return region.Append("</section>").ToString();
         }
@@ -112,6 +117,11 @@ public sealed partial class SinglePageApp
             title: "To read against the filings",
             lede: "The jumps nothing stored explains and the starts and changes a rule flags, each read against the company's filings and its chart before the operator's word marks it.",
             region: "data-check-read"));
+
+        if (membership is not null)
+        {
+            region.Append(LongMembershipCard(membership));
+        }
 
         return region.Append("</section>").ToString();
     }

@@ -417,9 +417,10 @@ public partial class ArchitectureConformance
         // dividend waits' store row, and 1546 from 23.1, the data checker's and the history end filings' catalogue and matrix
         // rows, the data checks' store, section 17's four rows, section 18's row and the History page's two, and 1555 from
         // 23.2, the pooled test's catalogue and matrix rows, its two stores, section 17's row, section 18's row and the three
-        // page rows.
+        // page rows, and 1570 from 23.3, the long history's three catalogue and three matrix rows, its three stores, section 17's
+        // four rows, section 18's row and the History page's row.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1555),
+            (789, 853, 6, 4, 855, 876, 1570),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

@@ -45,6 +45,9 @@ public class SchemaColumns
     // 23.2's two: the rule test units and the pooled verdicts.
     internal static string[] PooledStoreRows => [CheckReach.Key(Scope.StoresTable, "Rule test units"), CheckReach.Key(Scope.StoresTable, "Pooled verdicts")];
 
+    // 23.3's three: the long history's snapshots, holdings and spans.
+    internal static string[] LongStoreRows => [CheckReach.Key(Scope.StoresTable, "Long snapshots"), CheckReach.Key(Scope.StoresTable, "Long holdings"), CheckReach.Key(Scope.StoresTable, "Long spans")];
+
     // 22.42's: each name a page splits at its capitals.
     internal static string[] SplitNameStoreRows => [CheckReach.Key(Scope.StoresTable, "Split names")];
 
@@ -294,6 +297,7 @@ public class SchemaColumns
             .. EntryReadingStoreRows,
             .. DataCheckStoreRows,
             .. PooledStoreRows,
+            .. LongStoreRows,
             .. SplitNameStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.

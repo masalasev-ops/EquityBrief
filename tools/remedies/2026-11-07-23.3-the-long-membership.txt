@@ -1,0 +1,11 @@
+# The remedy of 23.3, the long history's membership back to 2005. Migration 131 creates long_snapshot, long_holding and
+# long_span. The write reads the long history's folder under the data root, data/long-members, which the capture commands
+# the runbook shows built from the trust's 56 filings at the SEC, the provider's 57 day files and two symbol lists, its
+# answers for the codes asked and the filers' indexes, pages and reports; it asks nothing of any provider or the SEC, makes
+# no model call, prints every quarter end's coverage and each fall by half, and writes the snapshots, holdings and spans whole
+# with its row on the run log, about 87,600 rows, or writes nothing and exits 2 where a stop stands. No row of the pulled
+# holdings, the membership or a bar moves, and no source a rule's version or the readings' version pins moves. The History
+# page draws what it wrote. Run from main after the merge, when no night, off-peak run, local run, ledger build or monthly
+# run is writing, and restart the read surface after it.
+migrate
+long-members --write data/long-members

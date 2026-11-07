@@ -16356,3 +16356,70 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 130, against `data-ci` and never `data`; the phase report 66 tables, 1555 claims, 1555 passing,
             none out of scope and none unexamined, 1570 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.3 - membership as it stood back to 2005, from the funds' older filings   2026-11-07
+
+Built:      `long-members`, the long history's membership off the trust's filings of IVV's, IJH's and IJR's complete schedules
+            at each quarter end from 2004-12-31 to 2018-09-30, kept in a folder before anything reads them: `--capture` the 56
+            N-Q, N-CSR and N-CSRS filings as the archive sent their bytes, `--days` the provider's day file at each quarter end
+            and its two symbol lists, `--ask` each code a left-out holding could be read as, `--filers` each left-out name's own
+            SEC filer with its older pages and the code its annual report names, `--checks` the hand check's sample against the
+            companies' own reports, `--named` the plan's named companies, and `--write`. Migration 131 creates `long_snapshot`,
+            `long_holding` and `long_span`. The keys, each stored: the name; the price at the cent at two adjacent quarter ends,
+            standing only where neither is matched to another code; a run at one ratio; the code the next quarter carried back;
+            the company's own filings, its report's code and every common stock the provider files under exactly a name its
+            filer took; and by hand, 5 matches and 10 refusals in code, each naming what was read; every code held to the fund's
+            values a share. The left-out holdings split by why their companies left, read off their filers' filings. The spans,
+            the S&P 500 reading IVV before 2012 and the provider's dates from 2012, a span with no start taking the first of
+            IVV's snapshots holding its company by code or by name. The History page's members back to 2005. On the operator's
+            answers of 2026-11-06, kept word for word in `prompts/2026-11-06-23.3-operator-answers-floors-failures-ijh.md`, the
+            floors stand as reached with a stop under 90 in every 100 of a quarter end's holdings or their value, the S&P 400's
+            and 600's figures to 2008 carry the lower coverage label, and the failures found are left out by name, Belo as
+            unpriced; this checkpoint amends its own done condition on those answers, its floors and its stop on a failed
+            company. No row of `pulled_holding`, `membership` or a bar moves; no source a rule's version or the readings'
+            version pins moves.
+Found:      the provider's S&P 500 spans from 2012 count 505 to 535 members at IVV's quarter ends from 2012-03-31 to
+            2018-09-30, where the fund holds 500 to 506: renamed companies whose old and new codes both carry an open span, ELV
+            beside ANTM and BBT beside TFC among them. Carried to 23.4 on the plan's carried obligations, and put to the
+            operator. A reading of filers by shared words matched Computer Associates to a Nevada bank and Sovereign to Banco
+            Santander, three of six wrong in IVV's sample, and was replaced by the exact name. A price at the cent at two quarter
+            ends matched three holdings to other companies where the quarter end beside was matched by name to the company's
+            own code, RF Micro Devices, Washington Federal and Rex Energy, which the price key now gives way to.
+Measured:   164 of the 168 schedules read, the four left summaries: IJH's at 2009-03-31 and all three funds' at 2013-09-30.
+            Matched and priced: IVV 27,053 of 27,589 holdings at its quarter ends, IJH 20,872 of 21,627, IJR 32,146 of 33,070;
+            each fund's lowest quarter end is 2004-12-31, IVV's at 94.2 in every 100 holdings and 97.0 of their value, IJH's at
+            92.5 and 93.9, IJR's at 92.8 and 92.3. Left out by why, a share of the value held each year: bought out the largest
+            every year, 4.65 in every 100 of IJH's in 2004 and 4.57 of IJR's, under 1 by 2016; failed at most 0.37, IJR's in
+            2007. The falls by half priced under no code, each left out by name: Ambac, Building Materials Holding, Anchor
+            BanCorp, Sterling Financial of Washington and Adeptus Health as failed, Belo as unpriced; BankAtlantic is priced since
+            its filer took the name BBX Capital. The companies the plan names, each with its code, its last session with a
+            volume and that session's close: Bear Stearns BSC_old 2008-05-30 at 9.33; Lehman LEH 2008-09-17 at 0.13; Merrill MER
+            2008-12-31 at 11.64; Wachovia WB_old1 2008-12-31 at 5.54; Washington Mutual WAMUQ still trading at 2011-06-30 at
+            0.13; Countrywide left out on the operator's word; National City NCC_old 2008-12-31 at 1.81; Fannie Mae FNMA still
+            trading at 2011-06-30 at 0.331; Freddie Mac FMCC still trading at 2011-06-30 at 0.35; CIT CITGQ 2009-12-09 at 0.05;
+            General Motors GM_old 2011-03-31 at 0.04. The hand check's sample, 30 a key a fund and every match made at one
+            quarter end alone: after the refusals no key's sample holds a wrong match, every difference a rename, a share class
+            or a company's code in bankruptcy. S&P's announcements: 81 of 84 sampled changes stand, 96.4 in every 100, the misses
+            KEMET and Forest Oil, left out, and Ensco, which the provider's S&P 500 spans carry none of from 2012.
+Read:       the History page at 1440 from the branch's build over the rehearsal store: each index's fifteen years, the lower
+            coverage label on the S&P 400's and 600's years to 2008 alone, the hand matches counted.
+Tests:      3532, from 3522, 10 new: 9 in the fixture's expectations and 1 in the read surface, the schedule forms read from four
+            captured pages, each key worked by hand and the announcements read against the spans computed from the run's input.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property 23.3 adds, filtered to its tests by name,
+            12 in all, each red at its test once one was mended: the price key standing against a match beside it; a hand
+            match at any close; a refusal read nowhere; the stop at 0.80 of the holdings, which survived at first, a missing
+            property, since the quarter end built under the holdings stop also fell under the value stop, and is red now that
+            the case falls under the holdings alone; a named fall stopping the run; item 1.03 read as no failure; a code away
+            one snapshot read as two spans; a code two funds hold read in both; a provider span with no start read by its code
+            alone, red at the spans and at the announcements; the write keeping the run before; every year labelled lower
+            coverage; a summary read as a schedule.
+Remedy:     `tools/remedies/2026-11-07-23.3-the-long-membership.txt`, `migrate` then `long-members --write data/long-members`,
+            no request, to run from main after the merge with the capture of 2026-11-06 copied to `data/long-members`.
+Carried:    the provider's S&P 500 spans from 2012 held against IVV's own holdings, due at 23.4; the operator's word on whether
+            the S&P 500 reads IVV's snapshots to 2018-09-30; the first verdicts across the indices after the monthly run of
+            2026-11-07; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3532 of 3532 tests ran with none failed, migrations 0 to 131 with none
+            pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
+            none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

@@ -917,6 +917,24 @@ public class PinnedConstants
             new("The verdict across the indices", "12", Core.Loop.LoopGate.RunsAYear, "LoopGate.RunsAYear"),
             new("The verdict across the indices", "2", Core.Loop.PooledJudge.FewestIndices, "PooledJudge.FewestIndices"),
             new("The verdict across the indices", "0.05", (decimal)Core.Loop.PooledJudge.FalsePassesAYear(1), "PooledJudge.FalsePassesAYear(1)"),
+            // The long history's membership, 23.3, the figures in the rows' order.
+            new("The long history's stop", "0.90", (decimal)Core.History.LongFloors.HoldingsStop, "LongFloors.HoldingsStop"),
+            new("The long history's stop", "0.90", Core.History.LongFloors.ValueStop, "LongFloors.ValueStop"),
+            new("The long history's stop", "0.5", Core.History.LongFloors.FellBy, "LongFloors.FellBy"),
+            new("The long history's stop", "2004", Core.History.LongFloors.LowerFrom, "LongFloors.LowerFrom"),
+            new("The long history's stop", "2008", Core.History.LongFloors.LowerThrough, "LongFloors.LowerThrough"),
+            new("The long history's hand check", "30", Worker.History.LongMembers.SampleOf, "LongMembers.SampleOf"),
+            new("The long history's hand check", "2", Worker.History.LongMembers.WrongAtMost, "LongMembers.WrongAtMost"),
+            new("The long history's hand check", "30", Worker.History.LongMembers.SampleOf, "LongMembers.SampleOf"),
+            new("The long history's keys", "2", Core.History.LongMatching.PriceQuarters, "LongMatching.PriceQuarters"),
+            new("The long history's keys", "2", Core.History.LongMatching.PriceQuarters, "LongMatching.PriceQuarters, the fewest quarter ends a run holds"),
+            new("The long history's keys", "2", Core.History.LongMatching.LongestRun, "LongMatching.LongestRun"),
+            new("The long history's keys", "25", Core.History.LongNames.RareAt, "LongNames.RareAt"),
+            new("The long history's keys", "4", Core.History.LongNames.OlderForms, "LongNames.OlderForms"),
+            new("The long history's keys", "6", Worker.History.LongMembers.FilersRead, "LongMembers.FilersRead"),
+            new("The long history's left-out kinds", "12", Core.History.LongLeaving.MonthsBefore, "LongLeaving.MonthsBefore"),
+            new("The long history's left-out kinds", "24", Core.History.LongLeaving.MonthsAfter, "LongLeaving.MonthsAfter"),
+            new("The long history's left-out kinds", "15", Core.History.LongLeaving.WentOnAfterMonths, "LongLeaving.WentOnAfterMonths"),
         ];
     }
 

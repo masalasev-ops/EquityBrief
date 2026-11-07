@@ -98,6 +98,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ticker-join" => await TickerJoinRun(args),
     "session-mark" => await SessionMarkRun(args),
     "data-check" => await DataCheckRun(args),
+    "long-members" => await LongMembersRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -239,6 +240,269 @@ static async Task<int> SessionMarkRun(string[] args)
     return 0;
 }
 
+// The long history's membership from the trust's older schedules. With '--capture --into <folder>' the trust's filings of the
+// three funds' schedules are kept whole in the folder, their documents too with '--documents'.
+// see: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30
+static async Task<int> LongMembersRun(string[] args)
+{
+    var configuration = Configuration();
+
+    if (args.Contains("--capture", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--capture --into <folder>', with '--documents' to keep the schedules' documents too.");
+
+            return 2;
+        }
+
+        var filings = new EquityBrief.Worker.History.LongScheduleFilings(SecEdgarTrustScheduleFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty)));
+        var read = await filings.CaptureAsync(folder, args.Contains("--documents", StringComparer.Ordinal), line => Console.WriteLine("long-members: " + line));
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {filings.Requests} request(s) to the SEC; {read.Count} filing(s) in the long history's periods"));
+
+        return 0;
+    }
+
+    if (args.Contains("--days", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--days --into <folder>'.");
+
+            return 2;
+        }
+
+        var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+        var days = new EquityBrief.Worker.History.LongDayFiles(EodhdLongHistoryFeed.Live(
+            string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+            new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)));
+        var found = await days.CaptureAsync(folder, line => Console.WriteLine("long-members: " + line));
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {days.Requests} request(s) to the provider; {found.Count} quarter end(s) hold a day file"));
+
+        return 0;
+    }
+
+    if (args.Contains("--ask", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--ask --into <folder>'.");
+
+            return 2;
+        }
+
+        var matched = EquityBrief.Worker.History.LongMembers.Match(folder);
+        var codes = EquityBrief.Worker.History.LongMembers.ToAsk(folder, matched);
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {codes.Count} code(s) to ask at 1 weighted call each, {codes.Count} in all, before the first request"));
+
+        if (args.Contains("--print", StringComparer.Ordinal))
+        {
+            return 0;
+        }
+
+        var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+        var feed = EodhdLongHistoryFeed.Live(string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address, new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty));
+        var answered = await EquityBrief.Worker.History.LongMembers.AskAsync(folder, feed, codes, line => Console.WriteLine("long-members: " + line));
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {feed.Requests} request(s) to the provider; {answered} answer(s) kept"));
+
+        return 0;
+    }
+
+    if (args.Contains("--filers", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--filers --into <folder>', with '--top <n>' for the largest names alone.");
+
+            return 2;
+        }
+
+        var top = int.TryParse(VerbArguments.Value(args, "--top"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var largest) ? largest : int.MaxValue;
+        var feed = SecEdgarTrustScheduleFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty));
+
+        await EquityBrief.Worker.History.LongMembers.FindFilersAsync(folder, feed, top, line => Console.WriteLine("long-members: " + line));
+        Console.WriteLine(FormattableString.Invariant($"long-members: {feed.Requests} request(s) to the SEC"));
+
+        return 0;
+    }
+
+    // The companies the plan names, each with its code, its last session with a volume and that session's close.
+    if (args.Contains("--named", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--named --into <folder>'.");
+
+            return 2;
+        }
+
+        var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+        var feed = EodhdLongHistoryFeed.Live(string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address, new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty));
+
+        foreach (var named in await EquityBrief.Worker.History.LongMembers.NamedAsync(folder, feed, EquityBrief.Worker.History.LongMembers.Match(folder)))
+        {
+            var session = named.LastSession?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var close = named.LastClose?.ToString(CultureInfo.InvariantCulture);
+            var onward = named.LastSession >= named.Last.AddYears(EquityBrief.Worker.History.LongMembers.NamedYears).AddDays(-7);
+            var ended = named.Code is null
+                ? "matched to none"
+                : onward
+                    ? named.Code + " by " + named.By + ", still trading at the end of the years asked, " + session + " at " + close
+                    : named.Code + " by " + named.By + ", last session " + session + " at " + close;
+
+            Console.WriteLine(FormattableString.Invariant($"long-members: {named.Named}: {named.Index} {named.Name}, last held {named.Last:yyyy-MM-dd}, {ended}"));
+        }
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {feed.Requests} request(s) to the provider"));
+
+        return 0;
+    }
+
+    // A match by hand's reading: the company's own annual report from the years given, looked for under the words given.
+    if (VerbArguments.Value(args, "--check-name") is { } words)
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder
+            || !DateOnly.TryParseExact(VerbArguments.Value(args, "--held"), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var held))
+        {
+            Console.Error.WriteLine("long-members: give '--check-name <words> --held <yyyy-MM-dd> --into <folder>'.");
+
+            return 2;
+        }
+
+        var feed = SecEdgarTrustScheduleFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty));
+        var filers = Path.Combine(folder, EquityBrief.Worker.History.LongMembers.FilersFolder);
+
+        Directory.CreateDirectory(filers);
+
+        var found = await EquityBrief.Worker.History.LongMembers.ReadCodeAsync(filers, feed, words, held, held);
+
+        Console.WriteLine(found is null
+            ? $"long-members: no annual report named a code for '{words}'"
+            : $"long-members: {found.Filer} (CIK {found.Cik}), {found.Accession}: {found.Code}, read as \"{found.Sentence}\"");
+
+        return 0;
+    }
+
+    if (args.Contains("--checks", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-members: give '--checks --into <folder>'.");
+
+            return 2;
+        }
+
+        var feed = SecEdgarTrustScheduleFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty));
+        var checks = await EquityBrief.Worker.History.LongMembers.CheckAsync(folder, feed, EquityBrief.Worker.History.LongMembers.Match(folder));
+
+        foreach (var group in checks.GroupBy(check => (check.Index, check.Single ? "single" : check.By)).OrderBy(group => group.Key.Index, StringComparer.Ordinal).ThenBy(group => group.Key.Item2, StringComparer.Ordinal))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: {group.Key.Index} {group.Key.Item2}: {group.Count()} checked, {group.Count(check => check.Verdict == EquityBrief.Worker.History.LongMembers.Agrees)} agree, {group.Count(check => check.Verdict == EquityBrief.Worker.History.LongMembers.Differs)} differ, {group.Count(check => check.Verdict == EquityBrief.Worker.History.LongMembers.NotRead)} with no report read"));
+        }
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {feed.Requests} request(s) to the SEC"));
+
+        return 0;
+    }
+
+    if (VerbArguments.Value(args, "--write") is { } writing)
+    {
+        var clock = SystemClock.ForUnitedStatesSessions();
+        var startedAt = clock.UtcNow;
+        var matched = EquityBrief.Worker.History.LongMembers.Match(writing);
+        var stops = EquityBrief.Worker.History.LongMembers.Stops(matched);
+
+        foreach (var coverage in EquityBrief.Core.History.LongFloors.Coverage(matched.Schedules, EquityBrief.Worker.History.LongMembers.IsMatched(matched)))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: {coverage.Index} {coverage.Period:yyyy-MM-dd} {coverage.Matched} of {coverage.Holdings} holdings, {coverage.HoldingsShare:P1}, {coverage.ValueShare:P1} of the value{(coverage.Stands ? string.Empty : ", under a floor")}"));
+        }
+
+        foreach (var fall in EquityBrief.Core.History.LongFloors.Falls(matched.Schedules, EquityBrief.Worker.History.LongMembers.IsMatched(matched)))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: fell by half and priced under no code: {fall.Index} {fall.Name}, {fall.BeforePrice:0.00} at {fall.Before:yyyy-MM-dd} and {fall.LastPrice:0.00} at {fall.Last:yyyy-MM-dd}, {(EquityBrief.Core.History.LongFloors.LeftOutAs(fall.Name) is { } named ? "left out by name, " + named.NamedAs : "not left out by name")}"));
+        }
+
+        var left = EquityBrief.Worker.History.LongMembers.LeftAs(writing, matched);
+
+        foreach (var year in EquityBrief.Core.History.LongLeaving.ByYear(matched.Schedules, EquityBrief.Worker.History.LongMembers.IsMatched(matched), (index, name) => left[(index, name)]))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: left out {year.Index} {year.Year}: {string.Join(", ", EquityBrief.Core.History.LongLeaving.Kinds.Select(kind => $"{kind} {year.Share(kind):P2}"))} of the value held at its quarter ends"));
+        }
+
+        if (stops.Count > 0)
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: stopped, {stops.Count} stop(s), nothing written; this goes to the operator with what was found"));
+
+            return 2;
+        }
+
+        var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+        var forms = Directory.GetFiles(Path.Combine(writing, EquityBrief.Worker.History.LongScheduleFilings.HeadersFolder))
+            .Select(file => EquityBrief.Worker.History.LongScheduleFilings.HeaderOf(Path.GetFileNameWithoutExtension(file), File.ReadAllText(file)))
+            .ToDictionary(filing => filing.Accession, filing => filing.Form, StringComparer.Ordinal);
+        var written = await EquityBrief.Worker.History.LongMembers.WriteAsync(store.DatabaseFile, FormattableString.Invariant($"long-members-{startedAt:yyyyMMddTHHmmssZ}"), matched, forms, EquityBrief.Worker.History.LongMembers.CheckedAs(writing), left, clock, startedAt);
+
+        Console.WriteLine(FormattableString.Invariant($"long-members: {written} row(s) written"));
+
+        return 0;
+    }
+
+    if (VerbArguments.Value(args, "--match") is { } captured)
+    {
+        var matched = EquityBrief.Worker.History.LongMembers.Match(captured);
+
+        foreach (var quarter in EquityBrief.Worker.History.LongMembers.Quarters(matched))
+        {
+            var keys = string.Join(", ", quarter.ByKey.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => pair.Key + " " + pair.Value.Count.ToString(CultureInfo.InvariantCulture)));
+
+            Console.WriteLine(FormattableString.Invariant($"long-members: {quarter.Index} {quarter.Period:yyyy-MM-dd} {quarter.Matched} of {quarter.Holdings} matched, {(quarter.Value == 0m ? 0m : quarter.MatchedValue / quarter.Value):P2} of the value; {keys}"));
+        }
+
+        if (args.Contains("--each", StringComparer.Ordinal))
+        {
+            foreach (var schedule in matched.Schedules.OrderBy(one => one.Index, StringComparer.Ordinal).ThenBy(one => one.Period))
+            {
+                for (var place = 0; place < schedule.Holdings.Count; place++)
+                {
+                    if (!matched.Matches[schedule.Index].ContainsKey((schedule.Period, place)))
+                    {
+                        var holding = schedule.Holdings[place];
+
+                        Console.WriteLine(FormattableString.Invariant($"long-members: none {schedule.Index} {schedule.Period:yyyy-MM-dd} {holding.Name} | {holding.ValuePerShare:0.0000} a share, {holding.Value:N0}"));
+                    }
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    if (VerbArguments.Value(args, "--read") is { } kept)
+    {
+        var (schedules, unread) = EquityBrief.Worker.History.LongScheduleFilings.Read(kept);
+
+        foreach (var schedule in schedules.OrderBy(one => one.Period).ThenBy(one => one.Index, StringComparer.Ordinal))
+        {
+            Console.WriteLine(FormattableString.Invariant($"long-members: {schedule.Period:yyyy-MM-dd} {schedule.Index} {schedule.Holdings.Count} holding(s), {schedule.Holdings.Select(one => one.Industry).Distinct().Count()} heading(s), {schedule.Holdings.Sum(one => one.Value ?? 0m):N0} dollars, off {schedule.Accession}"));
+        }
+
+        foreach (var line in unread)
+        {
+            Console.WriteLine("long-members: not read: " + line);
+        }
+
+        return 0;
+    }
+
+    Console.Error.WriteLine("long-members: give '--capture --into <folder>' or '--read <folder>'.");
+
+    return 2;
+}
+
 // The data check over every stock's pulled sessions, written whole for the run or, with '--print', printed and written nowhere;
 // or one filer's filings read from the SEC into a folder and the end its history takes from them.
 // see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row
@@ -304,7 +568,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 70 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 71 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -533,6 +797,9 @@ static int NoVerb()
         "session of its pulled history, 'data-check' classifies every stock's pulled sessions into the data check's rows, with " +
         "'--print' writing nothing and printing the counts, '--each' printing every finding a line besides, and '--end <cik> --into <folder>' reading a filer's filings from the SEC " +
         "into the folder and printing where its history ends, " +
+        "'long-members' builds the long history's folder from the trust's older filings and the provider's day files with " +
+        "'--capture', '--days', '--ask', '--filers', '--checks' and '--named', each '--into <folder>', and with '--write <folder>' " +
+        "matches the funds' schedules and writes the membership back to 2005 where no stop stands, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

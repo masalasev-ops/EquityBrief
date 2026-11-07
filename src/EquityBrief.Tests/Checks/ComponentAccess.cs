@@ -84,6 +84,17 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Pooled test"),
     ];
 
+    // 23.3's three: the long history's schedule filings, its day files and its members.
+    internal static string[] LongMembershipRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Long schedule filings"),
+        CheckReach.Key(Scope.MatrixTable, "Long schedule filings"),
+        CheckReach.Key(Scope.CatalogueTable, "Long day files"),
+        CheckReach.Key(Scope.MatrixTable, "Long day files"),
+        CheckReach.Key(Scope.CatalogueTable, "Long members"),
+        CheckReach.Key(Scope.MatrixTable, "Long members"),
+    ];
+
     // 22.38's one: the session marks.
     internal static string[] SessionMarkRows =>
     [
@@ -260,6 +271,9 @@ public partial class ComponentAccess
 
             // 23.2, the pooled test.
             .. PooledTestRows,
+
+            // 23.3, the long history's schedule filings, day files and members.
+            .. LongMembershipRows,
             .. LateBarRows,
             .. EntryReaderRows,
             .. SplitNameRows,
@@ -911,8 +925,10 @@ public partial class ComponentAccess
         // comparison, which opens the store read-only and writes its figures to a file under the data root, and from
         // 21.3 the score audit, which reads the setups and the stored models and writes its page under the data root, and
         // from 21.14 the drift surprises check, which prints what it reads and writes nothing, and from 23.1 the history end
-        // filings, which keep the archive's answers in a folder the command names.
-        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // filings, which keep the archive's answers in a folder the command names, and from 23.3 the long schedule filings
+        // and the long day files, which keep the trust's filings and the provider's day files and lists in the long history's
+        // folder the command names.
+        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongScheduleFilings", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

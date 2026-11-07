@@ -115,6 +115,10 @@ public partial class ArchitectureConformance
 
         // From 23.2: the pooled test, its two stores, section 17's row, section 18's row and the three page rows.
         .. FixtureExpectations.PooledRows,
+
+        // From 23.3: the long history's three components, its three stores, section 17's four rows, section 18's row and the
+        // History page's row.
+        .. FixtureExpectations.LongMembershipRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

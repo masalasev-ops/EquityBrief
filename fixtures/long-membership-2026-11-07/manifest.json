@@ -1,0 +1,11 @@
+{
+  "fixture": "long-membership-2026-11-07",
+  "capturedFor": "2026-11-07",
+  "noCredentials": true,
+  "inputs": [
+    { "file": "documents/0001193125-05-039953-dnq.htm", "endpoint": "a filing's document in the SEC's archive, www.sec.gov", "query": "/Archives/edgar/data/1100663/000119312505039953/dnq.htm", "fetchedAt": "2026-11-06T23:30:00Z", "trimmedTo": "IJH's schedule of 2004-12-31: from the stretch before its heading to its twelfth holding, then its total of common stocks, the bytes as the archive sent them" },
+    { "file": "documents/0001193125-05-122978-dncsr.htm", "endpoint": "a filing's document in the SEC's archive, www.sec.gov", "query": "/Archives/edgar/data/1100663/000119312505122978/dncsr.htm", "fetchedAt": "2026-11-06T23:30:00Z", "trimmedTo": "IJR's summary schedule of 2005-03-31 and its complete schedule further on, each from the stretch before its heading to its twelfth holding, then its total of common stocks, the bytes as the archive sent them" },
+    { "file": "documents/0001193125-13-466531-d609194dncsrs.htm", "endpoint": "a filing's document in the SEC's archive, www.sec.gov", "query": "/Archives/edgar/data/1100663/000119312513466531/d609194dncsrs.htm", "fetchedAt": "2026-11-06T23:31:00Z", "trimmedTo": "IJH's summary schedule of 2013-09-30, the only one the filing carries: from the stretch before its heading to its twelfth holding, its row of other securities and its total of common stocks, the bytes as the archive sent them" },
+    { "file": "documents/0001193125-18-261300-d577177dnq.htm", "endpoint": "a filing's document in the SEC's archive, www.sec.gov", "query": "/Archives/edgar/data/1100663/000119312518261300/d577177dnq.htm", "fetchedAt": "2026-11-06T23:32:00Z", "trimmedTo": "IVV's schedule of 2018-06-30: from the stretch before its heading to its twelfth holding, then its total of common stocks, the bytes as the archive sent them" }
+  ]
+}
