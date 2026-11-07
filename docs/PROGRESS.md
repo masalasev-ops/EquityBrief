@@ -16981,5 +16981,8 @@ Claims:     none new.
 Pins:       none move: no rule reads a flag.
 Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test by its name. m1
             the retracement flag never raised: red.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
-            pull request's last.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3556 of 3556 tests ran with none failed, migrations 0 to 131 with none
+            pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
+            none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
