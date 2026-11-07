@@ -494,6 +494,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-key-mark[data-standing='combined']{border-top-width:4px}
 .paper-combined-skips{font-size:14px;color:var(--ink-2);margin:0 0 10px;max-width:78ch}
 .paper-walks,.paper-combined-books{font-size:13px;color:var(--soft);margin:0 0 8px;max-width:78ch}
+.paper-bought td.pb-sells{font-size:13px;color:var(--ink-2);max-width:32ch}
 .paper-combined-table{min-width:640px}
 .strip-line{font-size:12.5px;color:var(--ink-2);margin:0 0 8px}
 .strip-tiles{display:flex;flex-wrap:wrap;gap:8px}

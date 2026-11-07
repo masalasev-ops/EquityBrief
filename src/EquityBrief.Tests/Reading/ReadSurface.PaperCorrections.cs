@@ -301,4 +301,46 @@ public partial class ReadSurface
         Assert.DoesNotContain("aits on the next", page, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"ABNB\" data-family=\"heavyweight\"", page, StringComparison.Ordinal);
     }
+
+    // On 2026-11-06 FTNT, a Fundamentals holding, and MGM, Quality at a fair price's, drew "none" under Stop and Target and
+    // "Not read tonight" under Where it stands. Each draws how its own rule sells it across the two cells, and whether it
+    // still qualifies tonight by that rule.
+    // see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+    [Fact]
+    public void AHoldingWithNoPriceStopDrawsHowItsRuleSellsItAndWhetherItStillQualifiesTonight()
+    {
+        var night = new DateOnly(2026, 11, 6);
+        var bought = new DateOnly(2026, 11, 3);
+        PaperTrade Holding(string ticker) => new(ticker, bought, 100m, null, null, null, 0m, 1, 22, Listed: new DateOnly(2026, 11, 2));
+
+        // The live S&P 500 Fundamentals rule holds at 7 in 9 for at most 126 sessions: FTNT at 8 of 9 still qualifies, a
+        // holding at 6 of 9 does not; at 5 of 7 it is under 7 in every 9 too, 45 of 63.
+        Assert.Equal("Sells when a filing drops it below 7 in every 9 of the checks that apply, or after 126 trading days", EquityBrief.Api.Reading.PaperScreen.FundamentalsSells(7, 126));
+        Assert.Equal("Still qualifies: 8 of 9 apply, at least 7 in every 9", EquityBrief.Api.Reading.PaperScreen.FundamentalsTonight(8, 9, 7));
+        Assert.Equal("No longer qualifies: 6 of 9 apply, under 7 in every 9", EquityBrief.Api.Reading.PaperScreen.FundamentalsTonight(6, 9, 7));
+        Assert.Equal("No longer qualifies: 5 of 7 apply, under 7 in every 9", EquityBrief.Api.Reading.PaperScreen.FundamentalsTonight(5, 7, 7));
+        Assert.Equal("Sold at the reshuffle if it no longer qualifies, next on 1 Dec", EquityBrief.Api.Reading.PaperScreen.QualitySells(new DateOnly(2026, 12, 1)));
+        Assert.Equal("Sold at the reshuffle if it no longer leads its sector, next on 1 Dec", EquityBrief.Api.Reading.PaperScreen.HeavyweightSells(false, new DateOnly(2026, 12, 1)));
+
+        EquityBrief.Api.Reading.PaperAccountSource Book(string family, string ticker) =>
+            new("list-" + family, family, PaperAccountView.Live, "Live", "the live rule", null, true, [(Holding(ticker), null)], new DateOnly(2026, 11, 2));
+        PaperAccountView View(EquityBrief.Api.Reading.PaperAccountSource source) =>
+            new(source.Key, source.Family, PaperAccountView.Live, "Live", source.Words, "within luck", null, MarkRenderer.LoopPoints, [], new PaperWalk([(night, 100_000m)], [new PaperTaken(source.Trades[0].Trade, 45, null)], 1, 0, 0, 0.0, 0.0, null, null, night, [(night, 0.0)]), 1, 0, null, source.Since);
+
+        var improving = Book("improving", "FTNT");
+        var quality = Book("quality", "MGM");
+        var books = new Dictionary<string, EquityBrief.Api.Reading.PaperBookLine>(StringComparer.Ordinal)
+        {
+            ["improving"] = new(EquityBrief.Api.Reading.PaperScreen.FundamentalsSells(7, 126), new Dictionary<string, string>(StringComparer.Ordinal) { ["FTNT"] = EquityBrief.Api.Reading.PaperScreen.FundamentalsTonight(8, 9, 7) }),
+            ["quality"] = new(EquityBrief.Api.Reading.PaperScreen.QualitySells(new DateOnly(2026, 12, 1)), new Dictionary<string, string>(StringComparer.Ordinal) { ["MGM"] = "Still qualifies." }),
+        };
+        var built = EquityBrief.Api.Reading.PaperScreen.Page([improving, quality], [View(improving), View(quality)], night, [night], (_, _) => 110m, new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal), _ => null, null, "improving", "SPY", _ => null, null, books);
+        var page = PaperPageOf(built);
+
+        Assert.Contains("<td class=\"pb-sells\" colspan=\"2\" data-sells>Sells when a filing drops it below 7 in every 9 of the checks that apply, or after 126 trading days</td>", page, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"pb-sells\" colspan=\"2\" data-sells>Sold at the reshuffle if it no longer qualifies, next on 1 Dec</td>", page, StringComparison.Ordinal);
+        Assert.Contains(">Still qualifies: 8 of 9 apply, at least 7 in every 9</span>", page, StringComparison.Ordinal);
+        Assert.Contains(">Still qualifies.</span>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("Not read tonight", page, StringComparison.Ordinal);
+    }
 }

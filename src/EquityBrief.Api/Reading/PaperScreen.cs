@@ -51,6 +51,11 @@ public sealed record PaperAccountSource(
         Listed is { } name && (row.Account == name || row.Account.StartsWith(name + ", from version ", StringComparison.Ordinal));
 }
 
+// From the 19.4 correction of 2026-11-07 a monthly setup's holdings as what the system bought draws them: how its rule sells
+// a holding, in words with its next reshuffle where one falls, and each open holding's state tonight by its own rule.
+// see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+public sealed record PaperBookLine(string Sells, IReadOnlyDictionary<string, string> Tonight);
+
 // An index's paper accounts as a page reads them: each before its walk, each drawn, the closes they were marked by, the
 // sessions they were walked over, each stock's company and readings on the night, the index's fund's closes, and each
 // open holding's standing tonight.
@@ -63,7 +68,11 @@ public sealed record PaperAccounts(
     Func<DateOnly, decimal?>? Fund = null,
     IReadOnlyDictionary<string, string>? Standings = null,
     PaperCombinedView? Combined = null,
-    TradeGroupsView? Groups = null);
+    TradeGroupsView? Groups = null)
+{
+    // From the 19.4 correction of 2026-11-07 each monthly setup's line by its family.
+    public IReadOnlyDictionary<string, PaperBookLine> Books { get; init; } = new Dictionary<string, PaperBookLine>(StringComparer.Ordinal);
+}
 
 // The projection from stored trades and test rows to paper trading's accounts and their trade logs. The accounts are an
 // index's: each family's live or provisional rule's list, the page's own, each registered variant's own list or book,
@@ -97,6 +106,25 @@ public static class PaperScreen
     };
 
     static string ListKey(string family) => ReadApi.PageList + "-" + family;
+
+    // From the 19.4 correction of 2026-11-07 how each monthly setup sells a holding with no price stop, in the operator's
+    // words, and a Fundamentals holding's state tonight by its rule's hold score.
+    // see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+    public static string HeavyweightSells(bool underAverage, DateOnly? next) =>
+        "Sold at the reshuffle if it no longer leads its sector" + (underAverage ? " or on a close under its 200-day average" : string.Empty) + NextOn(next);
+
+    public static string QualitySells(DateOnly? next) => "Sold at the reshuffle if it no longer qualifies" + NextOn(next);
+
+    public static string FundamentalsSells(int holdInNine, int sessions) =>
+        string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Sells when a filing drops it below {holdInNine} in every 9 of the checks that apply, or after {sessions} trading days");
+
+    public static string FundamentalsTonight(int passed, int applied, int holdInNine) =>
+        Core.Ledger.FundamentalScorecard.Clears(passed, applied, holdInNine)
+            ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"Still qualifies: {passed} of {applied} apply, at least {holdInNine} in every 9")
+            : string.Create(System.Globalization.CultureInfo.InvariantCulture, $"No longer qualifies: {passed} of {applied} apply, under {holdInNine} in every 9");
+
+    static string NextOn(DateOnly? next) =>
+        next is { } on ? ", next on " + on.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
 
     // The words a provisional account and the operator's own name what they count, having no registered version.
     public const string ProvisionalVersion = "provisional settings, no registered version: every trade since its first";
@@ -757,7 +785,8 @@ public static class PaperScreen
         string variants,
         string fundName,
         Func<DateOnly, decimal?> fund,
-        PaperCombinedView? combined = null)
+        PaperCombinedView? combined = null,
+        IReadOnlyDictionary<string, PaperBookLine>? books = null)
     {
         var heads = views.Where(view => view.Head && (show is null || view.Family == show)).ToArray();
         var source = sources.ToDictionary(account => account.Key, StringComparer.Ordinal);
@@ -766,8 +795,14 @@ public static class PaperScreen
 
         string? Company(string ticker) => stocks.TryGetValue(ticker, out var held) ? held.Company : null;
 
-        PaperPosition? Opened(PaperTrade trade) =>
-            trade.Ended is null || trade.Ended > night ? PaperAccount.Position(trade, night, sessions, close, Move(trade.Ticker), trade.Stop is null ? standing(trade.Ticker) : null) : null;
+        // A holding's state tonight by its own setup's rule: the heavyweights' standing handed in, and from the 19.4
+        // correction of 2026-11-07 Quality at a fair price's and the Fundamentals family's off their book's line.
+        // see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+        string? Tonight(string family, string ticker) =>
+            books?.GetValueOrDefault(family)?.Tonight.GetValueOrDefault(ticker) ?? (family == HeavyweightRule.Name ? standing(ticker) : null);
+
+        PaperPosition? Opened(PaperTrade trade, string family = HeavyweightRule.Name) =>
+            trade.Ended is null || trade.Ended > night ? PaperAccount.Position(trade, night, sessions, close, Move(trade.Ticker), trade.Stop is null ? Tonight(family, trade.Ticker) : null) : null;
 
         PaperEnded? Shut(PaperTrade trade, double? result) =>
             trade.Ended is { } end && end <= night ? PaperAccount.Ended(trade, result, sessions, close) : null;
@@ -793,12 +828,15 @@ public static class PaperScreen
                 trade.Trail is not null,
                 trade.Cap,
                 trade.Ended,
-                Opened(trade),
+                Opened(trade, head.Family),
                 Shut(trade, result),
                 version is null && (trade.Ended is null || trade.Ended > night) ? PaperAccount.HeldBy(trade.Ticker, night, VariantsOf(head.Family)) : [],
                 trade.Past,
                 version,
-                PaperAccount.Selling(trade, night, close));
+                PaperAccount.Selling(trade, night, close))
+            {
+                Sells = trade.Stop is null ? books?.GetValueOrDefault(head.Family)?.Sells : null,
+            };
 
         var bought = heads
             .SelectMany(head => (head.Walk?.Trades ?? [])

@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - a holding with no price stop draws how its rule sells it and its state tonight
+Decision: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+Was:
+> (15.21, an open trade) ... opened under its stop or opened over its target from its fill; a holding's still leading or lost its lead or under its average as the heavyweights card reads it
+Now:
+> ... a holding's still leading or lost its lead or under its average as the heavyweights card reads it; from the 19.4 correction of 2026-11-07 a holding with no price stop drawing how its own setup's rule sells it across its stop's and target's cells with its next reshuffle where one falls; and whether it still qualifies tonight by that rule, ... (see: ...)
+Why: the operator's order of 2026-11-07, its eighth item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - a listing waiting on the next open is to buy, never not bought
 Decision: A listing waiting on its next session's open is drawn as to buy in its own account and never as not bought, nor where that account holds it
 Was:

@@ -103,7 +103,12 @@ public sealed record PaperBoughtView(
     IReadOnlyList<string> AlsoHeld,
     string? Past,
     string? Version = null,
-    string? Selling = null);
+    string? Selling = null)
+{
+    // From the 19.4 correction of 2026-11-07 how a holding with no price stop sells, by its own setup's rule, which its row
+    // draws in its stop's and target's place; none for a trade with a stop.
+    public string? Sells { get; init; }
+}
 
 // A trade a family's variants took that its live or provisional rule did not take off the same night: its stock and
 // company, the variants that took it by their short names, the night that listed it, the session it was bought on and its
@@ -521,11 +526,13 @@ public sealed partial class MarkRenderer
             html.Append(StockCell(trade.Ticker, trade.Company, Copying ? null : AlsoHeld(trade.AlsoHeld)));
             html.Append(FamilyCell(trade.Family));
             html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
+            // A holding with no price stop draws how its rule sells it across its stop's and target's cells.
+            // see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
             html.Append(book
-                ? "<td class=\"r\"><span class=\"degraded\">none</span></td>"
+                ? Formatted($"<td class=\"pb-sells\" colspan=\"2\" data-sells>{(trade.Sells is { } sells ? Escaped(sells) : "<span class=\"degraded\">sold by its rule, which this page did not read</span>")}</td>")
                 : Formatted($"<td class=\"r num\">{(open?.Stop is { } stop ? Figures.Price(stop) : "<span class=\"degraded\">none</span>")}{(trade.Trails && open?.Stop is { } raised && trade.Stop is { } first && raised > first ? Formatted($"<span class=\"pb-day\">raised from {Figures.Price(first)}</span>") : string.Empty)}</td>"));
             html.Append(book
-                ? "<td class=\"r\"><span class=\"degraded\">none</span></td>"
+                ? string.Empty
                 : trade.Target is { } target ? Formatted($"<td class=\"r num\">{Figures.Price(target)}</td>")
                 : trade.Trails ? "<td class=\"r\">it trails</td>"
                 : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
@@ -551,6 +558,8 @@ public sealed partial class MarkRenderer
         HeavyweightStandings.StillLeading => "leading",
         HeavyweightStandings.LostItsLead => "lost-lead",
         HeavyweightStandings.BelowItsAverage => "below-average",
+        { } still when still.StartsWith("Still qualifies", StringComparison.Ordinal) => "leading",
+        { } fell when fell.StartsWith("No longer qualifies", StringComparison.Ordinal) || fell.StartsWith("Score ", StringComparison.Ordinal) || fell.StartsWith("Now dearer", StringComparison.Ordinal) => "lost-lead",
         _ => "steady",
     };
 

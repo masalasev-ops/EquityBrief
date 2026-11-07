@@ -16631,3 +16631,24 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             waiting listing kept among the stocks not bought: red. m2 a waiting stock the account holds kept on its line: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: a holding with no price stop draws how its rule sells it and whether it still qualifies tonight   2026-11-07
+
+Found:      the order's eighth item: on 2026-11-06 the Fundamentals family's and Quality at a fair price's holdings drew "none"
+            under Stop and Target and "Not read tonight" under Where it stands, the standing worked for the sector heavyweights
+            alone; on the S&P 500 FTNT, LYB, AIG, CVS, ODFL, AES, DOC, IT, MPC and MGM.
+Corrected:  each holding draws across its stop's and target's cells how its own setup's rule sells it, and where it stands its
+            state tonight by that rule: the Fundamentals family's from its rule's night row, "Sells when a filing drops it below
+            7 in every 9 of the checks that apply, or after 126 trading days" on the S&P 500's live rule and its score tonight
+            against the hold; Quality at a fair price's "Sold at the reshuffle if it no longer qualifies, next on" its card's
+            next reshuffle and its card's line; the sector heavyweights' at the reshuffle if it no longer leads its sector, with
+            its next rebalance, and its standing as before. The decision, 15.21's row, the changelog and the guide.
+Tests:      1 new, by hand: the words at 7 in 9 and 126 sessions; 8 of 9 qualifies, 6 of 9 and 5 of 7 do not; the next
+            reshuffle on 1 Dec; and the page drawing both holdings' sale across the two cells and each one's state, no "Not read
+            tonight".
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to the new test by its name. m1 a
+            holding's cells back to none: red. m2 the hold score read as 9 in every 9: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

@@ -2580,7 +2580,8 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             variants,
             PaperScreen.Fund(reading.Code),
             accounts.Fund ?? (_ => null),
-            accounts.Combined)
+            accounts.Combined,
+            accounts.Books)
         : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
 
     // From 21.20 the variants registered after the newest night, which no night has read yet.
@@ -3007,6 +3008,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     decimal? Fund(DateOnly session) => fund.TryGetValue(session, out var close) ? close : null;
 
     var views = PaperScreen.Views(sources, tests, years, settings, sessions, night, Close, Fund);
+    var standings = await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks);
 
     return new PaperAccounts(
         sources,
@@ -3015,9 +3017,56 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
         sessions,
         stocks,
         Fund,
-        await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks),
+        standings,
         PaperScreen.Averaged(views, settings, sessions, night, Close, Fund),
-        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions));
+        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions))
+    {
+        Books = await BookLinesAsync(read, reading, night, sources, register, standings),
+    };
+}
+
+// From the 19.4 correction of 2026-11-07 each monthly setup's line on an index as of a night: how its live or provisional
+// rule sells a holding, and each open holding's state tonight by that rule. The sector heavyweights sell at the next
+// rebalance a holding no longer leading, and on a close under its 200-day average where the settings say so, their standing
+// the one worked above; Quality at a fair price sells at its next reshuffle a holding that no longer qualifies, its line
+// tonight its card's; and the Fundamentals family sells when a filing drops a holding below its hold score or after its
+// sessions, its line tonight read off its rule's row of the night.
+// see: A holding with no price stop draws how its rule sells it and whether it still qualifies tonight by its own rule
+async Task<IReadOnlyDictionary<string, PaperBookLine>> BookLinesAsync(ReadApi read, UniverseChoice reading, DateOnly night, IReadOnlyList<PaperAccountSource> sources, IReadOnlyList<CandidateRow> register, IReadOnlyDictionary<string, string> standings)
+{
+    var large = reading == Universes.Large;
+    var lines = new Dictionary<string, PaperBookLine>(StringComparer.Ordinal);
+    var heads = sources.Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional).ToArray();
+
+    if (heads.FirstOrDefault(account => account.Family == EquityBrief.Core.Families.HeavyweightRule.Name) is { } heavy)
+    {
+        var settings = large ? EquityBrief.Core.Families.HeavyweightRule.Live : RuleScreen.HeavyweightSettingsOf(heavy.Listed, register) ?? EquityBrief.Core.Families.HeavyweightRule.Live;
+        var last = heavy.Trades.Select(one => (DateOnly?)one.Trade.ListedOn).Max();
+        var next = last is null ? null : EquityBrief.Core.Families.HeavyweightRule.NextRebalance(night, last, settings);
+
+        lines[heavy.Family] = new PaperBookLine(PaperScreen.HeavyweightSells(settings.SoldUnderAverage, next), standings);
+    }
+
+    if (heads.Any(account => account.Family == EquityBrief.Core.Families.QualityRule.Name))
+    {
+        var card = await QualityCardAsync(read, reading.Code, night, new Dictionary<string, UniverseCell>(StringComparer.Ordinal));
+
+        lines[EquityBrief.Core.Families.QualityRule.Name] = new PaperBookLine(
+            PaperScreen.QualitySells(card.NextReshuffle),
+            card.Cells.ToDictionary(cell => cell.Ticker, cell => cell.Tonight, StringComparer.Ordinal));
+    }
+
+    if (heads.Any(account => account.Family == EquityBrief.Core.Families.ImprovingRule.Name))
+    {
+        var rule = await read.ImprovingCardRuleAsync(reading.Code, night);
+        var setting = TonightScreen.SettingOf((await read.ImprovingNightAsync(reading.Code, night, rule))?.Settings);
+
+        lines[EquityBrief.Core.Families.ImprovingRule.Name] = new PaperBookLine(
+            PaperScreen.FundamentalsSells(setting.HoldInNine, setting.Sessions),
+            (await read.ImprovingResultsAsync(reading.Code, night, rule)).ToDictionary(row => row.Ticker, row => PaperScreen.FundamentalsTonight(row.PassedChecks, row.Applied, setting.HoldInNine), StringComparer.Ordinal));
+    }
+
+    return lines;
 }
 
 // The standing tonight of each holding the family's live or provisional heavyweights account holds open, worked by the
