@@ -4888,6 +4888,44 @@ internal static class Scope
             Verdict.Pass,
             "the rule's verdict from its first test year read back with the years its setting never saw apart from those it was chosen on, the rules summed across the three over the same history, a rule the long walk does not reach saying why and one no long test read saying so",
             ByReadSurface),
+        // 23.8's long search and plan points: their components, their stores, section 17's two rows and the Loop page's row.
+        [CheckReach.Key(CatalogueTable, "Long search")] = new Scoped(
+            Verdict.Pass,
+            "the class declares every store it reads and writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long search")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Plan point test")] = new Scoped(
+            Verdict.Pass,
+            "the class declares every store it reads and writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Plan point test")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Long searches")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Plan points")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The search over the long history")] = new Scoped(
+            Verdict.Pass,
+            "the carried setting worked by hand across two searches, the floors in proportion worked by hand, a fold's choice reading nothing ending in its test year, and a constructed search's verdict against the tester's over the same trades",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The buy and sell points")] = new Scoped(
+            Verdict.Pass,
+            "one combination worked by hand over a constructed path, a pick its entry never fills counted as offered and not taken, the tally against the figures over a list, the combinations counted, and each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LoopPage, "The long history")] = new Scoped(
+            Verdict.Pass,
+            "each family's newest long search and plan points read back over a constructed store, a family's newest by the order written, and the line drawn where neither is stored",
+            ByReadSurface),
+
         // 23.9's sector splits: its component, section 17's two rows and the History page's labels row.
         [CheckReach.Key(CatalogueTable, "Sector splits reader")] = new Scoped(
             Verdict.Pass,
@@ -6599,6 +6637,10 @@ internal static class Scope
         ["Long ledger reader"] = "23.6",
         // 23.9's one, which the plan describes as the read-only sector splits.
         ["Sector splits reader"] = "23.9",
+        // 23.8's two, which the plan describes as each family's search run as a procedure over the long reader and the
+        // traded plan's buy and sell points tested.
+        ["Long search"] = "23.8",
+        ["Plan point test"] = "23.8",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -7618,6 +7660,7 @@ internal static class Scope
         [CheckReach.Key("15.25 History", "Prices back to 2004")] = "23.4",
         [CheckReach.Key("15.25 History", "Each family by year")] = "23.6",
         [CheckReach.Key("15.25 History", "Labels for the industry news mood")] = "23.9",
+        [CheckReach.Key(LoopPage, "The long history")] = "23.8",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
@@ -8751,6 +8794,8 @@ internal static class Scope
         ["The long history's first test years"] = "23.5",
         ["The long tables' budget"] = "23.6",
         ["The per-rule test over the long history"] = "23.7",
+        ["The search over the long history"] = "23.8",
+        ["The buy and sell points"] = "23.8",
         ["The sector map"] = "23.9",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",

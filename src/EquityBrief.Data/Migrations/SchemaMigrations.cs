@@ -756,7 +756,60 @@ public static class SchemaMigrations
         new Migration(133, "create long_fact", CreateLongFacts),
         new Migration(134, "create long_setup, long_reading and departed_setup", CreateLongLedger),
         new Migration(135, "add loop_rule's and loop_pooled's history", AddLoopHistory),
+        new Migration(136, "create long_search and plan_point", CreateLongSearch),
     ];
+
+    // From 23.8 each family's search over the long history on an index as a procedure, its test years in the run's row, and
+    // each price family's recommended buy and sell points on an index beside the traded plan's; read by the Loop page alone.
+    const string CreateLongSearch = @"
+        CREATE TABLE long_search (
+            run_id TEXT NOT NULL,
+            index_code TEXT NOT NULL,
+            family TEXT NOT NULL,
+            through TEXT NOT NULL,
+            first_test_year INTEGER NOT NULL,
+            words TEXT,
+            current_words TEXT NOT NULL,
+            units INTEGER NOT NULL,
+            blocks INTEGER NOT NULL,
+            adjusted REAL,
+            gate INTEGER NOT NULL,
+            stable INTEGER NOT NULL,
+            counted INTEGER NOT NULL,
+            better INTEGER NOT NULL,
+            trimmed REAL,
+            counts INTEGER NOT NULL,
+            stable_folds INTEGER NOT NULL,
+            searches INTEGER NOT NULL,
+            passed INTEGER NOT NULL,
+            years TEXT NOT NULL,
+            PRIMARY KEY (run_id, index_code, family)
+        );
+        CREATE TABLE plan_point (
+            run_id TEXT NOT NULL,
+            index_code TEXT NOT NULL,
+            family TEXT NOT NULL,
+            through TEXT NOT NULL,
+            setups INTEGER NOT NULL,
+            combination TEXT,
+            picks INTEGER,
+            fills INTEGER,
+            fill_rate REAL,
+            hit_rate REAL,
+            break_even REAL,
+            result_per_pick REAL,
+            edge_per_pick REAL,
+            edge_per_fill REAL,
+            days_held REAL,
+            worst_drawdown REAL,
+            traded_fills INTEGER,
+            traded_edge_per_pick REAL,
+            later_fills INTEGER,
+            later_edge_per_pick REAL,
+            traded_later_edge_per_pick REAL,
+            PRIMARY KEY (run_id, index_code, family)
+        );
+    ";
 
     // From 23.7 which history a per-rule run or a pooled run read: the standing one, which every row before it read, or the
     // long one the monthly run's last step reads.

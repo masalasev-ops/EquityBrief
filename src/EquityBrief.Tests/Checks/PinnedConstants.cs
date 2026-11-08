@@ -933,6 +933,19 @@ public class PinnedConstants
             new("The per-rule test over the long history", "20,000", Core.Loop.LongTest.LeastDraws, "LongTest.LeastDraws"),
             new("The per-rule test over the long history", "3", (decimal)Core.Loop.LongTest.Cap.TotalHours, "LongTest.Cap"),
 
+            // The buy and sell points, 23.8, the figures in the row's order.
+            new("The buy and sell points", "3", Core.Loop.PlanPoints.Zones.Count, "PlanPoints.Zones"),
+            new("The buy and sell points", "20", Core.Loop.PlanPoints.AverageSessions, "PlanPoints.AverageSessions"),
+            new("The buy and sell points", "5", Core.Loop.PlanPoints.Windows[0], "PlanPoints.Windows"),
+            new("The buy and sell points", "10", Core.Loop.PlanPoints.Windows[1], "PlanPoints.Windows"),
+            new("The buy and sell points", "20", Core.Loop.PlanPoints.Windows[2], "PlanPoints.Windows"),
+            new("The buy and sell points", "0.75", (decimal)Core.Loop.PlanPoints.TypicalDays[0], "PlanPoints.TypicalDays"),
+            new("The buy and sell points", "1", (decimal)Core.Loop.PlanPoints.TypicalDays[1], "PlanPoints.TypicalDays"),
+            new("The buy and sell points", "1.5", (decimal)Core.Loop.PlanPoints.TypicalDays[2], "PlanPoints.TypicalDays"),
+            new("The buy and sell points", "2", (decimal)Core.Loop.PlanPoints.TypicalDays[3], "PlanPoints.TypicalDays"),
+            new("The buy and sell points", "296", Core.Loop.PlanPoints.Combinations.Count, "PlanPoints.Combinations"),
+            new("The buy and sell points", "100", Core.Loop.PlanPoints.FewestFills, "PlanPoints.FewestFills"),
+
             // The sector splits, 23.9, the figures in the row's order.
             new("The sector splits", "5", Core.History.SectorSplits.ChangeDays, "SectorSplits.ChangeDays"),
             new("The sector splits", "20", Core.History.SectorSplits.AverageDays, "SectorSplits.AverageDays"),

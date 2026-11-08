@@ -60,6 +60,9 @@ public class SchemaColumns
     // 22.42's: each name a page splits at its capitals.
     internal static string[] SplitNameStoreRows => [CheckReach.Key(Scope.StoresTable, "Split names")];
 
+    // 23.8's two: the long searches and the plan points.
+    internal static string[] LongSearchStoreRows => [.. new[] { "Long searches", "Plan points" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
+
     // 22.40's other: each ask for a member the night's day file did not carry.
     internal static string[] LateBarAskStoreRows => [CheckReach.Key(Scope.StoresTable, "Late bar asks")];
 
@@ -310,6 +313,7 @@ public class SchemaColumns
             .. LongPriceStoreRows,
             .. LongFactStoreRows,
             .. LongLedgerStoreRows,
+            .. LongSearchStoreRows,
             .. SplitNameStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.

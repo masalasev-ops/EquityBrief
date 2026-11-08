@@ -238,6 +238,9 @@ public partial class ReadSurface
             // 23.9, the History page's labels for the industry news mood.
             .. NewsMoodRows,
 
+            // 23.8, the Loop page's row of the long history.
+            .. LongSearchPageRows,
+
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 
