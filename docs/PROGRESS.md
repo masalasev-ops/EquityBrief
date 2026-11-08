@@ -17549,3 +17549,84 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 136, against `data-ci` and never `data`; the phase report 66 tables, 1616 claims, 1616 passing,
             none out of scope and none unexamined, 1631 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.8 - correction: the buy and sell points read against the benchmark as ruled, and every long result with its index's fund beside it   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its first item, word for word in
+            `prompts/2026-11-08-23.10-operator-before-the-restart.md`. 23.8 read the buy and sell points' edge against SPY's,
+            IJH's or IJR's return held over each pick's sessions, where their decision names the benchmark sold the same way.
+            Two shorter readings were tried over the live store before this one and dropped, each named in the decision below:
+            each setup's benchmark as the ledger stored it read the S&P 500's drift held to its time limit at +0.866 a pick
+            where the same picks read -0.198 against the fund, and the members walked under the rule's sale in place of the
+            first band and the staged sales read the drift's staged sales at +0.616 against -0.241. And with every member read,
+            the S&P 400's drift read +19.830 a pick, a few members' results in a risk near nothing running to hundreds; a member
+            past 20 risks either way is left out of the benchmark.
+Corrected:  each pick's edge is its result less its benchmark: the rule's own plan entered on every member of the index that
+            session in the member's own typical moves, each bought at its own next open and walked under the combination's
+            own stop and sale, a zone's stop, the first band above and the staged sales off the member's own levels plan read
+            as of that session. Beside it, the second line, the result less the index's own fund held over the pick's
+            sessions in the same risk, printed, written to `plan_point` and drawn on the Loop page's card. The long search's
+            and the long test's walks already read the benchmark as ruled, the sweeps selling trade and members alike; the
+            long search adds the fund line beside its verdict, a trade on average over each test year's chosen setting and
+            over the rule today, written to `long_search`, and `--again` searches a family written through the same session
+            afresh. Migration 137. One decision, section 17's two rows, 15.20's row, `SCHEMA.md`, the runbook, the roster's
+            row, the guide and the changelog.
+Measured:   `plan-points --print` over the live store through 2026-11-06, writing nothing. The S&P 500's, each recommendation,
+            its edge a pick offered over 2005 to 2018 against the traded plan's, then from 2019, then its edge over the fund
+            over 2005 to 2018 against the traded plan's, then from 2019:
+            - pullback: the second zone within 20 sessions, 2 typical days under the buy, the first band above; +0.340 over
+              4,478 fills of 7,491 picks against -0.096; from 2019 +0.091 over 2,944 against -0.124; the fund +0.218 against
+              -0.044, from 2019 -0.134 against -0.195.
+            - breakout: the 20-session average within 20 sessions, 2 typical days, the first band above; +0.225 over 954 of
+              3,026 against -0.132; from 2019 +0.134 over 427 against -0.097; the fund +0.132 against -0.088, from 2019 -0.008
+              against -0.231.
+            - drift: the next open, 2 typical days, the time limit alone; +1.074 over 3,220 of 3,220 against -0.117; from 2019
+              +1.195 over 2,286 against -0.288; the fund -0.198 against -0.161, from 2019 -0.650 against -0.384, the two lines
+              apart in sign: its members under the same tight stop are stopped out early while the fund is held to the end.
+            - dip: the second zone within 10 sessions, 2 typical days, the rule's sale; +0.034 over 24,200 of 71,814 against
+              -0.038; from 2019 +0.022 over 13,937 against -0.046; the fund +0.020 against -0.038, from 2019 +0.005 against
+              -0.074.
+            The S&P 400's:
+            - pullback: the second zone within 10 sessions, 0.75 typical days, the time limit alone; +0.394 over 471 of 819
+              against -0.054; from 2019 +0.232 over 606 against -0.099; the fund +0.164 against -0.021, from 2019 +0.132
+              against -0.137.
+            - breakout: the first zone within 20 sessions, 2 typical days, the first band above; +0.180 over 989 of 1,751
+              against -0.137; from 2019 +0.068 over 884 against -0.079; the fund +0.082 against -0.079, from 2019 +0.020
+              against -0.096.
+            - drift: the next open, 1 typical day, the time limit alone; +0.611 over 1,819 of 1,819 against -0.002; from 2019
+              +1.918 over 2,282 against +0.011; the fund -0.172 against -0.080, from 2019 +0.502 against -0.081.
+            - dip: the second zone within 20 sessions, the rule's stop, the rule's sale; +0.036 over 19,676 of 45,389 against
+              -0.030; from 2019 +0.023 over 12,860 against -0.042; the fund +0.027 against -0.034, from 2019 +0.018 against
+              -0.044.
+            The S&P 600's:
+            - pullback: the second zone within 20 sessions, 0.75 typical days, the time limit alone; +0.690 over 510 of 709
+              against -0.147; from 2019 +0.074 over 555 against +0.059; the fund +0.593 against -0.100, from 2019 -0.125
+              against +0.082.
+            - breakout: the 20-session average within 20 sessions, 2 typical days, the staged sales; +0.238 over 724 of 1,773
+              against -0.234; from 2019 +0.186 over 517 against -0.087; the fund +0.142 against -0.202, from 2019 +0.050
+              against -0.118.
+            - drift: the next open, 1 typical day, the time limit alone; +0.652 over 487 of 487 against +0.123; from 2019
+              +1.769 over 1,193 against +0.462; the fund +0.254 against +0.095, from 2019 +0.574 against +0.350.
+            - dip: the first zone within 10 sessions, the rule's stop, the rule's sale; +0.196 over 36,222 of 46,890 against
+              +0.173; from 2019 -0.004 over 27,731 against -0.030; the fund +0.193 against +0.164, from 2019 -0.003 against
+              -0.032.
+            CTSH of 2026-11-06 stays untraded, the store's newest session its own; under the third zone at its own stop and the
+            rule's sale it buys at 56.22 with a stop of 52.49 and sells at 71.26, against the next open's stop of 61.55. The
+            long search's fund line is measured with its rerun under the third item's correction below.
+Provisional: each on the operator's review: a member bought at its next open whatever the combination's entry, as the ruled
+            benchmark buys; a member whose zone its levels plan does not draw left out of a zone stop's benchmark; the fund
+            held from the close before the fill to the close before the sale.
+Tests:      5 new in the fixture's expectations: the fund's edge worked by hand; a pick's edge read off its benchmark and not
+            the fund; the tally keeping the fund line apart; a walked trade's fund line over its own sessions; a member's
+            benchmark walked by hand under a stop, a target, the time limit and staged sales, a member past 20 risks left out.
+            The Loop page's read-back test reads each card's fund line.
+Pins:       none move: every source the correction changes is among those the 23.8 test holds no rule's version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 7 in all, each red: m1 the pick's edge read off the fund; m2 a member walked with no stop; m3 a member held
+            to the time limit whatever the combination's sale; m4 a member whose walk has not ended counted as nothing; m5 a
+            walked trade's fund read to its listing session; m6 the fund line a fill's mean where it is a pick's; m7 a member
+            past 20 risks kept in the benchmark.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the provisional choices above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.

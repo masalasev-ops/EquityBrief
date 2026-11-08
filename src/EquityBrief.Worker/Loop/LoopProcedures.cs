@@ -23,8 +23,17 @@ public sealed record LoopRead(
     DateOnly[] Calendar,
     int FirstScored,
     IReadOnlyList<LoopFold> Folds,
-    bool Long = false)
+    bool Long = false,
+    double[]? Fund = null)
 {
+    // From the 23.8 correction the edge of a trade a walk kept over its index's own fund held from its listing session to the
+    // session it ended on, in the trade's own risk; none where the read holds no fund or the trade has not ended.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    public double? FundEdge(int entry, int? exit, FamilyTrade trade) =>
+        exit is { } ended && trade.Result is { } result
+            ? FundLine.Edge(Fund, result, trade.Listing.Entry, trade.Listing.Entry - trade.Listing.Stop, entry, ended)
+            : null;
+
     // The year a session's figures are kept under: the standing history's from the sweeps' first scored year, and from 23.7
     // the long history's from its own, every year past the figures' last kept in their last, since the per-rule test reads
     // its folds and not those buckets.

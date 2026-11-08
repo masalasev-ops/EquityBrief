@@ -48,17 +48,21 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
     const string Written = "SELECT family FROM long_search WHERE index_code = $index AND through = $through;";
 
     const string InsertSearch = @"
-        INSERT INTO long_search (run_id, index_code, family, through, first_test_year, words, current_words, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, stable_folds, searches, passed, years)
-        VALUES ($run_id, $index_code, $family, $through, $first_test_year, $words, $current_words, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $stable_folds, $searches, $passed, $years);";
+        INSERT INTO long_search (run_id, index_code, family, through, first_test_year, words, current_words, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, stable_folds, searches, passed, years, fund_units, fund_edge, current_fund_edge)
+        VALUES ($run_id, $index_code, $family, $through, $first_test_year, $words, $current_words, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $stable_folds, $searches, $passed, $years, $fund_units, $fund_edge, $current_fund_edge);";
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
         VALUES ($run_id, $stage, $started_at, $ended_at, 'ok', 1, 0, 0, '0', $detail);";
 
     // One family's search on an index: its folds, the proposal run on all finished data and its verdict.
-    public sealed record SearchRead(string Family, int FirstTestYear, IReadOnlyList<LongFold<int[]>> Folds, int[]? Proposal, string? Words, string Current, LoopEvidence Evidence, LoopVerdict Verdict, int StableFolds);
+    // From the 23.8 correction beside it the second line: each test year's chosen setting's trades and the rule today's
+    // against the index's own fund held over each trade's sessions, a trade on average.
+    public sealed record SearchRead(string Family, int FirstTestYear, IReadOnlyList<LongFold<int[]>> Folds, int[]? Proposal, string? Words, string Current, LoopEvidence Evidence, LoopVerdict Verdict, int StableFolds, int FundUnits = 0, double? FundEdge = null, double? CurrentFundEdge = null);
 
-    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default)
+    // From the 23.8 correction `again` searches every family afresh where the store holds its search through the same
+    // session, a correction's remedy writing a newer row the Loop page reads beside the one it replaces.
+    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default, bool again = false)
     {
         if (NightLock.Holder(dataRoot) is { } holder)
         {
@@ -76,7 +80,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
 
         var history = new SweepHistory(databaseFile);
         var through = await history.NewestSessionAsync(cancellation);
-        var written = print ? [] : await WrittenAsync(index, through, cancellation);
+        var written = print || again ? [] : await WrittenAsync(index, through, cancellation);
 
         foreach (var family in StandingAlone)
         {
@@ -90,8 +94,9 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
             return 0;
         }
 
-        var inputs = await new LongHistoryReader(databaseFile).ReadAsync(index, through, output.WriteLine, cancellation);
-        var read = await WalkForwardTester.ReadLongAsync(index, history, through, inputs, cancellation);
+        var longHistory = new LongHistoryReader(databaseFile);
+        var inputs = await longHistory.ReadAsync(index, through, output.WriteLine, cancellation);
+        var read = await WalkForwardTester.WithFundAsync(await WalkForwardTester.ReadLongAsync(index, history, through, inputs, cancellation), longHistory, through, cancellation);
 
         foreach (var family in Searched.Where(family => !written.Contains(family)))
         {
@@ -177,6 +182,15 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
         var verdict = Verdict(evidence, read.Calendar, folds, cap);
         var floorWords = drift ? FormattableString.Invariant($", its stop held at least {LoopProcedures.DriftStopFloor:0.##} typical move under the buy") : string.Empty;
 
+        // The second line: the trades each test year's chosen setting and the rule today entered in that year, against the
+        // index's own fund held over each trade's sessions.
+        // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+        IEnumerable<double?> FundIn(IReadOnlyList<LoopProcedures.Walked> trades, int year) =>
+            trades.Where(one => read.Calendar[one.Entry].Year == year).Select(one => read.FundEdge(one.Entry, one.Exit, one.Trade));
+
+        var (fundUnits, fundEdge) = FundLine.Mean(longFolds.Where(one => one.Chosen is not null).SelectMany(one => FundIn(walked[placeOf[adapter.Grid.Key(one.Chosen!)]], one.Year)));
+        var (_, currentFund) = FundLine.Mean(longFolds.SelectMany(one => FundIn(current, one.Year)));
+
         return new SearchRead(
             family,
             firstTestYear,
@@ -186,7 +200,10 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
             RuleReplay.SwingWords(family, provisional),
             evidence,
             verdict,
-            proposal is null ? 0 : longFolds.Count(one => one.Chosen is { } setting && setting.Zip(proposal).All(pair => Math.Abs(pair.First - pair.Second) <= 1)));
+            proposal is null ? 0 : longFolds.Count(one => one.Chosen is { } setting && setting.Zip(proposal).All(pair => Math.Abs(pair.First - pair.Second) <= 1)),
+            fundUnits,
+            fundEdge,
+            currentFund);
     }
 
     // A search's verdict, judged as the tester judges a proposal: its blocks from its first fold's first session to the
@@ -207,7 +224,9 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
 
     static string Line(string index, SearchRead searched) =>
         FormattableString.Invariant(
-            $"{Verb}: the {searched.Family} on the {DecisionCards.NameOf(index)} from {searched.FirstTestYear}, {searched.Folds.Count(one => one.Searched)} search(es) over {searched.Folds.Count} test year(s): {(searched.Words is null ? "no setting meets the floors on all finished data" : "would run " + searched.Words)} against {searched.Current}; {searched.Verdict.Units} trade(s), adjusted p {(searched.Verdict.Adjusted is { } p ? p.ToString("0.0000", CultureInfo.InvariantCulture) : "none")}, better in {searched.Verdict.Better} of {searched.Verdict.Counted} counted year(s), {(searched.Verdict.Passes && searched.Words is not null ? "passed, and goes to the operator as a proposal" : "not passed")}");
+            $"{Verb}: the {searched.Family} on the {DecisionCards.NameOf(index)} from {searched.FirstTestYear}, {searched.Folds.Count(one => one.Searched)} search(es) over {searched.Folds.Count} test year(s): {(searched.Words is null ? "no setting meets the floors on all finished data" : "would run " + searched.Words)} against {searched.Current}; {searched.Verdict.Units} trade(s), adjusted p {(searched.Verdict.Adjusted is { } p ? p.ToString("0.0000", CultureInfo.InvariantCulture) : "none")}, better in {searched.Verdict.Better} of {searched.Verdict.Counted} counted year(s), {(searched.Verdict.Passes && searched.Words is not null ? "passed, and goes to the operator as a proposal" : "not passed")}; against the index's own fund held over the same sessions, {Shown(searched.FundEdge)} a trade over {searched.FundUnits} against the rule today's {Shown(searched.CurrentFundEdge)}");
+
+    static string Shown(double? figure) => figure is { } held ? held.ToString("+0.000;-0.000;0.000", CultureInfo.InvariantCulture) : "none";
 
     async Task<HashSet<string>> WrittenAsync(string index, DateOnly through, CancellationToken cancellation)
     {
@@ -294,6 +313,9 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
             ("$searches", searched.Folds.Count(one => one.Searched)),
             ("$passed", verdict.Passes && searched.Words is not null ? 1 : 0),
             ("$years", JsonSerializer.Serialize(years)),
+            ("$fund_units", searched.FundUnits),
+            ("$fund_edge", Or(searched.FundEdge)),
+            ("$current_fund_edge", Or(searched.CurrentFundEdge)),
         ]);
 
         await ExecuteAsync(AppendRun,

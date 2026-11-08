@@ -14,6 +14,21 @@ public sealed partial class WalkForwardTester
 {
     public const string LongStep = "long";
 
+    // From the 23.8 correction a long read with its index's own fund laid against its calendar from the long pull, the
+    // second line every result over the long history reads beside its benchmark.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    public static async Task<LoopRead> WithFundAsync(LoopRead read, History.LongHistoryReader reader, DateOnly through, CancellationToken cancellation = default)
+    {
+        if (FundLine.FundOf(read.Index) is not { } fund)
+        {
+            return read;
+        }
+
+        var series = await reader.SeriesOfAsync([fund], through, cancellation);
+
+        return series.Count == 0 ? read : read with { Fund = FundLine.Aligned(read.Calendar, series[0].Closes) };
+    }
+
     const string LongRunsOfTheMonth = "SELECT DISTINCT index_code FROM loop_rule WHERE month = $month AND history = 'long';";
 
     public async Task<(bool Held, string Words)> LongMonthAsync(string month, CancellationToken cancellation = default)

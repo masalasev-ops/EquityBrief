@@ -747,6 +747,9 @@ Grain: one row per run, index and family a search over the long history read.
 | `searches` | INTEGER | the test years the search ran at, the rest carrying its setting |
 | `passed` | INTEGER | 1 where all four parts held and the proposal names a setting |
 | `years` | TEXT | JSON: each test year, whether the search ran at it, the setting chosen or carried, whether it is complete, and each side's trades and total edge after costs |
+| `fund_units` | INTEGER | from migration 137, the trades of each test year's chosen setting the fund line reads, ended and with the fund held over their sessions |
+| `fund_edge` | REAL | from migration 137, their mean result less the index's own fund held over each trade's sessions in its risk; null where none is read |
+| `current_fund_edge` | REAL | from migration 137, the same over the rule's provisional setting's trades in the test years |
 
 Primary key: `run_id`, `index_code`, `family`.
 
@@ -778,10 +781,14 @@ Grain: one row per run, index and price family the test of the buy and sell poin
 | `later_fills` | INTEGER | the recommended combination's fills from 2019, years it was not chosen on |
 | `later_edge_per_pick` | REAL | its mean edge a pick offered from 2019 |
 | `traded_later_edge_per_pick` | REAL | the traded plan's mean edge a pick offered from 2019 |
+| `fund_edge_per_pick` | REAL | from migration 137, the recommendation's mean result a pick offered less the index's own fund held over each fill's sessions in the rule's risk |
+| `traded_fund_edge_per_pick` | REAL | from migration 137, the traded plan's over the same years |
+| `later_fund_edge_per_pick` | REAL | from migration 137, the recommendation's from 2019 |
+| `traded_later_fund_edge_per_pick` | REAL | from migration 137, the traded plan's from 2019 |
 
 Primary key: `run_id`, `index_code`, `family`.
 
-**Written once by the test of the buy and sell points with its run, and never updated** (see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index). Every combination's figures by year, era and market regime stand in its report under the data root's loop folder; the store keeps the recommendation the Loop page draws. A recommendation is the best of every combination over 2005 to 2018, so its edge there reads high for having been chosen there, and its edge from 2019, years it was not chosen on, stands beside it. Every figure is a statistic and stored as the double it is. No rule, plan, night or card reads it, and nothing is registered on it.
+**Written once by the test of the buy and sell points with its run, and never updated** (see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index). Every combination's figures by year, era and market regime stand in its report under the data root's loop folder; the store keeps the recommendation the Loop page draws. A recommendation is the best of every combination over 2005 to 2018, so its edge there reads high for having been chosen there, and its edge from 2019, years it was not chosen on, stands beside it. From the 23.8 correction every edge is over the benchmark of its combination, the rule's own plan entered on every member at its own next open and walked under the combination's stop and sale, and each fund column is the second line beside it (see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line). Every figure is a statistic and stored as the double it is. No rule, plan, night or card reads it, and nothing is registered on it.
 
 ### dividend_wait
 Grain: one row per stock and ex-date whose dividend the provider's answer did not carry.

@@ -287,13 +287,13 @@ static async Task<int> LongSearchRun(string[] args)
 
     if (!args.Contains("--long", StringComparer.Ordinal) || at < 0 || at + 1 >= args.Length)
     {
-        Console.Error.WriteLine("loop-search: give '--long --index <GSPC, MID or SML>', and '--print' to write nothing.");
+        Console.Error.WriteLine("loop-search: give '--long --index <GSPC, MID or SML>', '--print' to write nothing, and '--again' to search a family again that is written through the same session.");
 
         return 1;
     }
 
     return await new EquityBrief.Worker.Loop.LongSearch(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
-        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal));
+        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal), again: args.Contains("--again", StringComparer.Ordinal));
 }
 
 // From 23.8 the traded plan's buy and sell points tested over the long history on one index; '--print' writes nothing.
@@ -907,7 +907,8 @@ static int NoVerb()
         "'long-ledger --measure' reads the long ledger's measure and writes nothing, " +
         "'sector-splits --measure' reads each family's setups split by its sector as it stood and writes nothing, " +
         "'loop-search --long --index <GSPC, MID or SML>' searches the breakout's and the drift's grids again over the " +
-        "long history, every third test year with the setting carried between, a family at a time, and " +
+        "long history, every third test year with the setting carried between, a family at a time, '--again' searching a " +
+        "family written through the same session afresh, and " +
         "'plan-points --index <GSPC, MID or SML>' walks every flagged setup of the four price families under every entry, " +
         "stop and sale, each with '--print' writing nothing, " +
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +

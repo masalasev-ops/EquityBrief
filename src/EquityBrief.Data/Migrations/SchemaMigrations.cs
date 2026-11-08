@@ -757,7 +757,21 @@ public static class SchemaMigrations
         new Migration(134, "create long_setup, long_reading and departed_setup", CreateLongLedger),
         new Migration(135, "add loop_rule's and loop_pooled's history", AddLoopHistory),
         new Migration(136, "create long_search and plan_point", CreateLongSearch),
+        new Migration(137, "add the fund line to long_search and plan_point", AddFundLine),
     ];
+
+    // From the 23.8 correction each result read against the ruled benchmark keeps its index's own fund held over the same
+    // sessions beside it: a search's chosen settings and its rule today a trade, and a recommendation's and the traded
+    // plan's a pick offered over each span.
+    const string AddFundLine = @"
+        ALTER TABLE long_search ADD COLUMN fund_units INTEGER;
+        ALTER TABLE long_search ADD COLUMN fund_edge REAL;
+        ALTER TABLE long_search ADD COLUMN current_fund_edge REAL;
+        ALTER TABLE plan_point ADD COLUMN fund_edge_per_pick REAL;
+        ALTER TABLE plan_point ADD COLUMN traded_fund_edge_per_pick REAL;
+        ALTER TABLE plan_point ADD COLUMN later_fund_edge_per_pick REAL;
+        ALTER TABLE plan_point ADD COLUMN traded_later_fund_edge_per_pick REAL;
+    ";
 
     // From 23.8 each family's search over the long history on an index as a procedure, its test years in the run's row, and
     // each price family's recommended buy and sell points on an index beside the traded plan's; read by the Loop page alone.

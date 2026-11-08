@@ -7,6 +7,30 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the buy and sell points read against the benchmark as ruled, the fund beside it
+Decision: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+Corrects: 23.8 read the buy and sell points' edge against the index's fund alone, where their decision names the benchmark sold the same way.
+Was:
+> (17, The search over the long history, rationale) ... so the floors alone are read there as the long ledger reads them
+> (17, The search over the long history, check) ... and a constructed search's verdict against the tester's over the same trades
+> (17, The buy and sell points, rationale) ... a hundred fills keeps a recommendation off a handful of trades
+> (17, The buy and sell points, check) ... the tally against the figures over a list, and the combinations counted
+> (15.20, The long history) ... over the years it was chosen on and from 2019; no press for any (see: ...)
+> (SCHEMA, plan_point) ... its edge from 2019, years it was not chosen on, stands beside it. Every figure is a statistic ...
+> (RUNBOOK, the long search and the buy and sell points) ... to `plan_point` (see: ...). Each with `--print` writes nothing.
+> (checks.md, fixture-expectations) ... and no source a rule's version pins among those 23.8 writes |
+Now:
+> (17, The search over the long history, rationale) ... as the long ledger reads them; from the 23.8 correction each trade's edge stays over its sweep's benchmark, which sells its members as the trade is, with the index's own fund held over the trade's sessions beside it
+> (17, The search over the long history, check) ... over the same trades, and a walked trade's fund line over its own sessions
+> (17, The buy and sell points, rationale) ... off a handful of trades; from the 23.8 correction each edge is over the rule's plan on every member bought at its own next open and walked under the combination's stop and sale, with the index's own fund held over the same sessions beside it as a second line (see: ...)
+> (17, The buy and sell points, check) ... the combinations counted, a pick's edge read off its benchmark and not the fund, and a member's benchmark walked by hand under the combination's stop and sale
+> (15.20, The long history) ... and from 2019; from the 23.8 correction each edge over the benchmark as ruled with its edge over the index's own fund held the same days beside it (see: ...); no press for any (see: ...)
+> (SCHEMA, plan_point) ... stands beside it. From the 23.8 correction every edge is over the benchmark of its combination ... walked under the combination's stop and sale, and each fund column is the second line beside it (see: ...). Every figure is a statistic ...
+> (SCHEMA, long_search and plan_point) the fund columns of migration 137, added
+> (RUNBOOK, the long search and the buy and sell points) ... to `plan_point` (see: ...). From the 23.8 correction each edge is over the rule's plan on every member of the index that session, bought at its own next open and walked under the combination's stop and sale, and beside it stands the edge over the index's own fund held the same sessions ... (see: ...), and with `--again` searches afresh a family already written through the same session, as a correction's remedy does. Each with `--print` writes nothing.
+> (checks.md, fixture-expectations) ... among those 23.8 writes; and from the 23.8 correction of 2026-11-08 the fund's edge worked by hand ... and a member's benchmark walked by hand under the combination's stop and sale |
+Why: the operator's order of 2026-11-08, item 1.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, .claude/rules/checks.md - the long search and the buy and sell points
 Decision: A search over the long history re-runs every third test year with its setting carried between
 Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
