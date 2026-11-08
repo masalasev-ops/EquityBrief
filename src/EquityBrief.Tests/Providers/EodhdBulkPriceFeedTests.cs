@@ -349,8 +349,9 @@ public class EodhdBulkPriceFeedTests
         // until 21.19 added DeepSeek's search tool, which the measurement asks by hand and no night does, and thirty-two until
         // 23.1 added a filer's filing index and documents at the archive, which the data check's read of a history's end asks
         // by hand and no night does, and thirty-three until 23.3 added the trust's older filings at the archive and the
-        // provider's day files, symbol lists and prices for the long history, which the long members' commands ask by hand.
-        Assert.Equal(35, Checks.NightlyCost.MayHoldAClient.Length);
+        // provider's day files, symbol lists and prices for the long history, which the long members' commands ask by hand,
+        // and thirty-five until 23.5 added a filer's facts at the archive, which the long facts' capture asks by hand.
+        Assert.Equal(36, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));
