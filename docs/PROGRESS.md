@@ -17428,10 +17428,11 @@ Built:      `sector-splits --measure`, read-only and writing no store row: the s
             One decision, section 17's two rows, 15.25's row, the catalogue rows, the runbook, the roster's rows, the guide and
             the changelog. No source a rule's version pins moves.
 Measured:   over the S&P 400 rehearsal copy, before the live long ledger was built for the 400 and 600: the map agrees with
-            today's GICS on 1,733 of the 1,911 names both read, 90.7%, with no heading it names nothing for; the S&P 400's
-            pullback below its 20-day average against above it, edge after costs -0.189 against -0.199 in 2005 to 2009, -0.157
-            against -0.078 in 2010 to 2014 and 0.040 against -0.177 in 2015 to 2019, so the variant does not hold and goes to
-            the operator as nothing. The live measure over the three, once their long ledgers stand, goes to an entry after.
+            today's GICS on 1,818 of the 1,911 names both read, 95.1%, with no heading it names nothing for, where it agreed
+            on 1,733, 90.7%, before the suite found an oil and gas heading read as a utility and the oil key was put ahead of
+            the gas one; the S&P 400's pullback below its 20-day average against above it, edge after costs -0.210 against
+            -0.184 in 2005 to 2009, -0.148 against -0.084 in 2010 to 2014 and 0.046 against -0.182 in 2015 to 2019, so the
+            variant does not hold and goes to the operator as nothing. The live measure over the three, once their long ledgers stand, goes to an entry after.
 Provisional: each on the operator's review: the map's keys, read in order with the first match taking a heading; a setup
             whose fund or sector cannot be read on its session counted as none read rather than dropped; an era with no setup
             on a side failing the variant.
