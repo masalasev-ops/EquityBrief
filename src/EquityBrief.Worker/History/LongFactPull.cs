@@ -18,7 +18,7 @@ public sealed record LongFactJoin(FilerSuccession Succession, int Copied, int In
 // What a long facts write read and wrote.
 public sealed record LongFactOutcome(int Filers, int Answered, IReadOnlyList<string> Refused, long Facts, int Filed, IReadOnlyList<LongFactJoin> Joins, string? Earliest, bool Written);
 
-// The long history's facts. Each filer the long price pull matched to its company is asked once for its facts, the whole answer
+// The long history's facts. Every filer the store knows, the long price pull's and every company row's, is asked once for its facts, the whole answer
 // kept as the archive sent it, compressed, in a folder before anything reads it; the write reads the folder alone and stores
 // each figure of a period ending before the standing table's first, as first filed, in `long_fact`, whole, with its run's
 // row. A company that re-filed under a new number has its predecessor's figures copied under its new filer where the two
@@ -33,6 +33,8 @@ public sealed class LongFactPull : IComponent
         [
             new StoreTouch(Store.LongFact, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongFiling, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.PulledCompany, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -46,7 +48,12 @@ public sealed class LongFactPull : IComponent
     // The time one ask is taken to cost, the archive's own answer and the pause the feed keeps between two.
     public const double SecondsARequest = 0.7;
 
-    const string SelectFilers = "SELECT DISTINCT cik FROM long_filing ORDER BY cik;";
+    // Every filer the store knows: those the long price pull matched to their companies and every company row's, the standing
+    // members' among them, whose facts before the standing table's first the long history reads too.
+    const string SelectFilers = @"
+        SELECT DISTINCT cik FROM long_filing
+        UNION SELECT DISTINCT cik FROM company WHERE cik IS NOT NULL
+        UNION SELECT DISTINCT cik FROM pulled_company WHERE cik IS NOT NULL;";
 
     const string Clear = "DELETE FROM long_fact;";
 
@@ -84,7 +91,7 @@ public sealed class LongFactPull : IComponent
             filers.Add(Padded(reader.GetString(0)));
         }
 
-        return [.. filers.Distinct(StringComparer.Ordinal)];
+        return [.. filers.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
     }
 
     // The line printed before the first request: the filers to ask, those kept already and the time.

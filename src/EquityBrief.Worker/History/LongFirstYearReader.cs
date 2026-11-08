@@ -14,7 +14,8 @@ public sealed record LongFirstYearsRead(
     IReadOnlyList<(FamilyFirstYear Year, IReadOnlyList<YearShare> Shares)> Families,
     IReadOnlyList<DriftFirstYear> Drifts,
     IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>> WhyLeft,
-    IReadOnlyList<(string Index, int Year, int Groups, int Agreed, int Compared)> Agreement);
+    IReadOnlyList<(string Index, int Year, int Groups, int Agreed, int Compared)> Agreement,
+    IReadOnlyDictionary<string, IReadOnlyList<YearShare>> Unmatched);
 
 // The first-year measure over the long history, read-only and writing no store row. For each index and year: the members
 // on the year's first session, from the long spans, whose filer's facts filed before it, in the long table or the standing
@@ -129,7 +130,7 @@ public sealed class LongFirstYearReader : IComponent
 
             foreach (var (year, session) in firstOf.OrderBy(year => year.Key))
             {
-                var members = spans.Where(span => span.Index == index && span.Joined <= session && (span.Left is null || span.Left > session)).Select(span => span.Ticker).Distinct(StringComparer.Ordinal).ToArray();
+                var members = spans.Where(span => span.Index == index && span.Joined <= session && (!span.Left.HasValue || span.Left > session)).Select(span => span.Ticker).Distinct(StringComparer.Ordinal).ToArray();
                 var (scores, counts) = (0, 0);
 
                 foreach (var ticker in members)
@@ -185,27 +186,31 @@ public sealed class LongFirstYearReader : IComponent
         });
 
         var drifts = new List<DriftFirstYear>();
+        var unmatched = new Dictionary<string, IReadOnlyList<YearShare>>(StringComparer.Ordinal);
         var whyLeft = new Dictionary<string, IReadOnlyDictionary<string, int>>(StringComparer.Ordinal);
 
         foreach (var index in indices)
         {
             var last = spans.Where(span => span.Index == index).GroupBy(span => span.Ticker, StringComparer.Ordinal)
-                .ToDictionary(code => code.Key, code => code.Any(span => span.Left is null) ? (DateOnly?)null : code.Max(span => span.Left), StringComparer.Ordinal);
+                .ToDictionary(code => code.Key, code => code.Any(span => !span.Left.HasValue) ? (DateOnly?)null : code.Max(span => span.Left), StringComparer.Ordinal);
             var gone = last.Where(code => code.Value is { } left && left <= newest).Select(code => code.Key).ToHashSet(StringComparer.Ordinal);
             var coverage = new List<YearShare>();
+            var raw = new List<YearShare>();
             var uncovered = new HashSet<string>(StringComparer.Ordinal);
 
             foreach (var year in firstOf.Keys.Order())
             {
                 var (from, through) = (new DateOnly(year, 1, 1), new DateOnly(year, 12, 31));
-                var held = spans.Where(span => span.Index == index && gone.Contains(span.Ticker) && span.Joined <= through && (span.Left is null || span.Left >= from)).Select(span => span.Ticker).Distinct(StringComparer.Ordinal).ToArray();
+                var held = spans.Where(span => span.Index == index && gone.Contains(span.Ticker) && span.Joined <= through && (!span.Left.HasValue || span.Left >= from)).Select(span => span.Ticker).Distinct(StringComparer.Ordinal).ToArray();
                 var covered = held.Count(ticker => surprised.Contains((ticker, year)) || surprised.Contains((LongFirstYears.CalendarCode(ticker), year)));
 
                 uncovered.UnionWith(held.Where(ticker => !surprised.Contains((ticker, year)) && !surprised.Contains((LongFirstYears.CalendarCode(ticker), year))));
                 coverage.Add(new YearShare(year, held.Length, covered));
+                raw.Add(new YearShare(year, held.Length, held.Count(ticker => surprised.Contains((ticker, year)))));
             }
 
             drifts.Add(LongFirstYears.DriftYear(index, coverage));
+            unmatched[index] = raw;
             whyLeft[index] = uncovered
                 .GroupBy(ticker => LongFirstYears.WhyLeft(failed.Contains(ticker), ended.Contains(ticker), lastPriced.TryGetValue(ticker, out var priced) && last[ticker] is { } left && priced > left.AddDays(PricedAfterDays)), StringComparer.Ordinal)
                 .ToDictionary(why => why.Key, why => why.Count(), StringComparer.Ordinal);
@@ -262,7 +267,7 @@ public sealed class LongFirstYearReader : IComponent
             agreement.Add((group.Key.Index, group.Key.Year, groups, agreed, compared));
         }
 
-        return new LongFirstYearsRead(families, drifts, whyLeft, agreement);
+        return new LongFirstYearsRead(families, drifts, whyLeft, agreement, unmatched);
     }
 
     // What a person reads of the measure.
@@ -279,7 +284,10 @@ public sealed class LongFirstYearReader : IComponent
         foreach (var drift in read.Drifts)
         {
             lines.Add(FormattableString.Invariant($"drift on {drift.Index}: ") + (drift.Reached ? FormattableString.Invariant($"first test year {drift.Year}") : FormattableString.Invariant($"no year's surprises reach {LongFirstYears.SurpriseShare:P0} of its since-gone members, so it is judged from {drift.Year}, every year labelled {LongFirstYears.MostlySurvivors}"))
-                + "; coverage by year " + string.Join(", ", drift.Coverage.Where(share => share.Members > 0).Select(share => FormattableString.Invariant($"{share.Year} {share.Read} of {share.Members}"))));
+                + "; coverage by year " + string.Join(", ", drift.Coverage.Where(share => share.Members > 0).Select(share => FormattableString.Invariant($"{share.Year} {share.Read} of {share.Members}")))
+                + (read.Unmatched.TryGetValue(drift.Index, out var raw)
+                    ? "; before the older codes are matched to the calendar's " + string.Join(", ", raw.Where(share => share.Members > 0).Select(share => FormattableString.Invariant($"{share.Year} {share.Read}")))
+                    : string.Empty));
         }
 
         foreach (var (index, why) in read.WhyLeft)

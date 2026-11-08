@@ -4816,7 +4816,7 @@ internal static class Scope
         // 23.5's long facts: its two components, its store and section 17's row.
         [CheckReach.Key(CatalogueTable, "Long fact pull")] = new Scoped(
             Verdict.Pass,
-            "the class declares the long filings and the standing facts it reads, the long facts it reads, writes and removes, the run log it appends to and the filings archive it asks",
+            "the class declares the long filings, the company rows, the pulled companies and the standing facts it reads, the long facts it reads, writes and removes, the run log it appends to and the filings archive it asks",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Long fact pull")] = new Scoped(
             Verdict.Pass,
