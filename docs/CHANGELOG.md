@@ -31,6 +31,17 @@ Now:
 > ... the chart scrolling inside its own frame (see: The paper chart draws each account ...), from the 19.4 correction of 2026-11-07 opening scrolled to its newest day (see: The paper chart opens scrolled to its newest day where it is wider than the screen)
 Why: the operator's order of 2026-11-07 after the monthly run, its second item.
 
+### 2026-11-07 - docs/RUNBOOK.md - a branch's build read back over a copy of the store
+Decision: A branch build is served over a copy of the store, and its server refuses to start on the live store
+Was:
+> (Opening the screens) ... **It runs from a Release build of `main`.** ... a page whose checkout reads a newer schema than the store's draws nothing.
+> **It reads the store the worker writes.** ...
+Now:
+> ... a page whose checkout reads a newer schema than the store's draws nothing.
+> **A branch's build is read back over a copy of the store, never the live one.** A Debug build, or a build in this checkout while it is on a branch other than `main`, refuses to start where its store is the checkout's `data/equitybrief.db` ... The copy is made, and a read-back or a sweep is run, only while nothing writes the store ... (see: A branch build is served over a copy of the store, and its server refuses to start on the live store).
+> **It reads the store the worker writes.** ...
+Why: the operator's order of 2026-11-07 after the monthly run, its third item. Nothing was removed; the entry records the paragraph added between two that stand.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - a plan's arithmetic flagged beside it
 Decision: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
 Was:

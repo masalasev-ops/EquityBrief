@@ -17033,3 +17033,28 @@ Mutated:    the rule, stated before the run: the smallest edit bringing back tod
             m3 the line removed from the read surface's script: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 1.3 - correction: a branch build's server refuses to start on the live store   2026-11-07
+
+Found:      the operator's order of 2026-11-07 after the monthly run, its third item. A branch's Debug build was served over
+            the live store for a read-back while the monthly run wrote it, and nothing in the read surface stopped it; 1.3
+            built its start row, which writes to whichever store it is pointed at.
+Corrected:  `BranchBuild.Refusal` reads whether the build is Debug or its checkout's HEAD names a branch other than main, and
+            whether its store is the checkout's `data/equitybrief.db`; where both hold, the read surface writes why with how
+            to serve a copy, exits with code 3 and serves nothing, before its start row. A clean copy of main's commit is
+            judged by its configuration alone. A decision, the runbook's paragraph on reading a branch back over a copy and
+            never while a night, the off-peak run, the local run, a ledger build or the monthly run writes, and the changelog.
+Tests:      2 new: the refusal over constructed checkouts on a branch, on main, detached and holding no repository, in Debug and
+            Release, against the live store's file and a copy; and the read surface asking after it is built and before its
+            start row, returning with its own exit code.
+Read back:  this branch's build started with no data root set exited with code 3 and the refusal, and the live store's file
+            was not written.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit bringing back today's start, filtered to the new tests by name.
+            m4 a Debug build never refused: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3559 of 3559 tests ran with none failed, migrations 0 to 131 with none
+            pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
+            none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

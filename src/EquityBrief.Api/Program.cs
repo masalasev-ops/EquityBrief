@@ -4148,6 +4148,20 @@ if (copyServer is not null)
     return;
 }
 
+// A branch build's server is refused on the live store before it writes a row there or serves a page from it.
+// see: A branch build is served over a copy of the store, and its server refuses to start on the live store
+if (BranchBuild.Refusal(
+        checkout,
+        app.Services.GetRequiredService<StoreLocation>().DatabaseFile,
+        System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyConfigurationAttribute>(typeof(Program).Assembly)?.Configuration,
+        BranchBuild.BranchOf(checkout)) is { } refused)
+{
+    Console.Error.WriteLine(refused);
+    Environment.ExitCode = BranchBuild.Refused;
+
+    return;
+}
+
 // One run log row for each start of the surface, which is the grain SCHEMA declares
 // and what section 15.10's run page reads. Written after the host is built so a
 // store that cannot be opened fails the start rather than a request.
