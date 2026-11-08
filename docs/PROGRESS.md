@@ -17041,11 +17041,11 @@ Found:      the operator's order of 2026-11-07 after the monthly run, its third 
             built its start row, which writes to whichever store it is pointed at.
 Corrected:  `BranchBuild.Refusal` reads whether the build is Debug or its checkout's HEAD names a branch other than main, and
             whether its store is the checkout's `data/equitybrief.db`; where both hold, the read surface writes why with how
-            to serve a copy, exits with code 3 and serves nothing, before its start row. A clean copy of main's commit is
-            judged by its configuration alone. A decision, the runbook's paragraph on reading a branch back over a copy and
+            to serve a copy, exits with code 3 and serves nothing, before its start row. A folder holding no repository, as
+            the night's clean copy of main's commit or a checkout the suite constructs, is not refused. A decision, the runbook's paragraph on reading a branch back over a copy and
             never while a night, the off-peak run, the local run, a ledger build or the monthly run writes, and the changelog.
 Tests:      2 new: the refusal over constructed checkouts on a branch, on main, detached and holding no repository, in Debug and
-            Release, against the live store's file and a copy; and the read surface asking after it is built and before its
+            Release, against the live store's file and a copy, the last refused nowhere since it holds no live store; and the read surface asking after it is built and before its
             start row, returning with its own exit code.
 Read back:  this branch's build started with no data root set exited with code 3 and the refusal, and the live store's file
             was not written.

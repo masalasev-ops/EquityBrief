@@ -2,8 +2,8 @@ namespace EquityBrief.Core.Configuration;
 
 // Whether a server about to start is a branch build on the live store. A branch build is a Debug build, which is what
 // every branch's gates and tests build, or a build in a checkout whose HEAD names a branch other than main; the live store
-// is the one under the checkout's own data folder. A build in a folder holding no repository, as the night's clean copy
-// of main's commit, is judged by its configuration alone.
+// is the one under the repository checkout's own data folder. A build in a folder holding no repository, as the night's
+// clean copy of main's commit or a checkout the suite constructs, is not refused.
 // see: A branch build is served over a copy of the store, and its server refuses to start on the live store
 public static class BranchBuild
 {
@@ -36,16 +36,17 @@ public static class BranchBuild
     public static string LiveStore(string checkout) =>
         Path.GetFullPath(Path.Combine(checkout, LiveFolder, StoreLocation.DatabaseFileName));
 
-    // Why the server refuses to start, or null where it may: a branch build whose store is the live store's file.
+    // Why the server refuses to start, or null where it may: a branch build in a repository whose store is the live store's
+    // file. The branch is BranchOf's, null where the checkout holds no repository.
     public static string? Refusal(string? checkout, string databaseFile, string? configuration, string? branch)
     {
-        if (checkout is null || !string.Equals(Path.GetFullPath(databaseFile), LiveStore(checkout), StringComparison.OrdinalIgnoreCase))
+        if (checkout is null || branch is null || !string.Equals(Path.GetFullPath(databaseFile), LiveStore(checkout), StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
 
         var debug = string.Equals(configuration, "Debug", StringComparison.OrdinalIgnoreCase);
-        var offMain = branch is not null && !string.Equals(branch, Main, StringComparison.Ordinal);
+        var offMain = !string.Equals(branch, Main, StringComparison.Ordinal);
 
         if (!debug && !offMain)
         {

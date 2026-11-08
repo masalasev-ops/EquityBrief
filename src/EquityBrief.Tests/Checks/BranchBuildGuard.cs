@@ -51,12 +51,12 @@ public class BranchBuildGuard
         Assert.StartsWith("Refused to start: a Debug build on the branch plan-diagrams-back ", BranchBuild.Refusal(onBranch, Live(onBranch), "Debug", "plan-diagrams-back"), StringComparison.Ordinal);
         Assert.StartsWith("Refused to start: a Debug build would serve ", BranchBuild.Refusal(onMain, Live(onMain), "Debug", "main"), StringComparison.Ordinal);
         Assert.NotNull(BranchBuild.Refusal(onCommit, Live(onCommit), "Release", BranchBuild.BranchOf(onCommit)));
-        Assert.NotNull(BranchBuild.Refusal(clean, Live(clean), "Debug", null));
 
-        // Main's Release build serves the live store, and a clean copy of main's commit holding no repository is judged by its
-        // configuration alone.
+        // Main's Release build serves the live store, and a folder holding no repository, as the night's clean copy of main's
+        // commit or a checkout the suite constructs, holds no live store to refuse.
         Assert.Null(BranchBuild.Refusal(onMain, Live(onMain), "Release", "main"));
         Assert.Null(BranchBuild.Refusal(clean, Live(clean), "Release", null));
+        Assert.Null(BranchBuild.Refusal(clean, Live(clean), "Debug", BranchBuild.BranchOf(clean)));
 
         // Any build is served over a copy: a store anywhere but the checkout's data folder.
         var readBack = Path.Combine(copy.Path, "readback", "equitybrief.db");
