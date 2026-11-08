@@ -240,7 +240,7 @@ public static class ExitProcedures
 
         double Benchmark(FamilyListing listing) => fills.Benchmark(exit is null ? adapter.Benchmark(listing) : MenuBenchmark(read, closes, listing, exit), listing, exit);
 
-        int YearOf(int session) => read.Calendar[session].Year - SweepColumns.FirstScored.Year;
+        int YearOf(int session) => read.YearOf(session);
 
         var trades = skip is null
             ? FamilySweep.Walk(listings, tickers, YearOf, Exit, Benchmark)

@@ -17,14 +17,14 @@ public static class LoopJudge
 {
     // The proposals' verdicts in the order given: the test span opens on a session, the history's newest is another, and
     // a block is read once the cap's sessions have traded after its last.
-    public static IReadOnlyList<LoopVerdict> Judge(IReadOnlyList<LoopEvidence> proposals, int opens, int newest, int cap)
+    public static IReadOnlyList<LoopVerdict> Judge(IReadOnlyList<LoopEvidence> proposals, int opens, int newest, int cap, long draws = 0)
     {
         var blocks = proposals.Select(proposal => LoopGate.Blocks(proposal.Units, opens, newest, cap)).ToArray();
         var held = blocks.SelectMany(own => own.Select(block => block.Block)).Distinct().Order().ToArray();
         var sums = blocks
             .Select(own => (IReadOnlyList<double>)[.. held.Select(block => own.FirstOrDefault(one => one.Block == block).Sum)])
             .ToArray();
-        var adjusted = held.Length >= Returns.Blocks.Floor ? LoopGate.Adjusted(sums) : null;
+        var adjusted = held.Length >= Returns.Blocks.Floor ? LoopGate.Adjusted(sums, draws) : null;
 
         return
         [

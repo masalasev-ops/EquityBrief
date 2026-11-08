@@ -13,12 +13,13 @@ public static class LoopFolds
 {
     public const int FirstTestYear = 2022;
 
-    // The folds over a calendar, each year from the first test year that holds a session at or before the newest.
-    public static IReadOnlyList<LoopFold> Of(IReadOnlyList<DateOnly> calendar, DateOnly newest)
+    // The folds over a calendar, each year from the first test year that holds a session at or before the newest; from
+    // 23.7 the long test's from the first test year it hands.
+    public static IReadOnlyList<LoopFold> Of(IReadOnlyList<DateOnly> calendar, DateOnly newest, int firstTestYear = FirstTestYear)
     {
         var folds = new List<LoopFold>();
 
-        foreach (var year in calendar.Where(session => session <= newest && session.Year >= FirstTestYear).GroupBy(session => session.Year).OrderBy(group => group.Key))
+        foreach (var year in calendar.Where(session => session <= newest && session.Year >= firstTestYear).GroupBy(session => session.Year).OrderBy(group => group.Key))
         {
             folds.Add(new LoopFold(year.Key, year.Min(), year.Max(), year.Key < newest.Year));
         }

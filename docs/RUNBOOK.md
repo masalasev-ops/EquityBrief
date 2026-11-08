@@ -1328,6 +1328,16 @@ dotnet run --project src/EquityBrief.Worker -- loop-pooled --month 2026-11 --pri
 
 It reads each index's newest per-rule test of the month with the units it kept and sums each family's live or provisional rules on the three indices, each at its own settings, into blocks of 63 sessions counted from the test span's first session, read at the tester's bar and screens; each kind of change registered on two or more indices, the settings a variant moves from its family's live rule on its index and which way, is summed beside them, a family's kinds read together by the step-down. A book's months count once a calendar month, a rule reading a release reading is judged from its cutoff's year, and a pass the other indices together gain nothing on names the index that carried it. An index whose test of the month was written before 23.2, and so kept no units, adds nothing and is named; tests whose sessions do not line up write nothing and say which. It writes `loop_pooled` and its run log row in one transaction under the drain's lock, changes no rule, makes no request and calls no model, and `--print` prints each verdict and writes nothing. The Loop page's summary draws each family's verdict under All three indexes together, and the scorecard beneath its two halves, each with the passes luck alone would bring a year. The monthly run runs it after the three per-rule tests.
 
+From 23.7 the same per-rule test and verdict across the three run over the long history, the monthly run's last step after its report (see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours):
+
+```
+dotnet run --project src/EquityBrief.Worker -- loop-rules --long --index GSPC --print
+dotnet run --project src/EquityBrief.Worker -- loop-pooled --long --month 2026-11
+dotnet run --project src/EquityBrief.Worker -- loop-long --month 2026-11
+```
+
+`--long` reads the long history's reader scored from 2005 and judges each family on its own folds, the price families from 2008 and the drift and the filing-based families from 23.5's measured years; the families its walk reads off the standing history alone, the books, the dip and the rules needing the sweeps' own reads, are written with the reason that they are read on the standing years alone. Its rows sit beside the standing test's, marked as the long history's, and the month's report, the standing verdict across the three and paper trading's verdict read the standing rows alone. `loop-long` is the step by hand: it runs the long test on each index the month holds none for, cutting its sign vectors to the fewest once it has used half its three hours and starting no index once it has used them all, then the verdict across the three over the long rows. Where the monthly run's step stopped at its cap, run `loop-long` for the month the next day and it goes on from the indices the month holds. The step's time stands on its row on the run log.
+
 From 19.12 the tester also works which readings go with winners on an index, which the Ledger page draws (see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule):
 
 ```

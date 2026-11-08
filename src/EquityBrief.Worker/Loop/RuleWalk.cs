@@ -325,7 +325,7 @@ public sealed class RuleWalk(
                     : (null, double.NaN, plan.Ends[exit]);
         }
 
-        int YearOf(int session) => read.Calendar[session].Year - SweepColumns.FirstScored.Year;
+        int YearOf(int session) => read.YearOf(session);
 
         // The listings handed in, each night's in their order, five a night with one open trade a stock.
         IReadOnlyList<ExitProcedures.Walked> OwnWalk(IReadOnlyList<FamilyListing> chosen)

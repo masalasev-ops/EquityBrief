@@ -22,6 +22,7 @@ public sealed class LongHistoryReader : IComponent
         [
             new StoreTouch(Store.LongSpan, Touch.Read),
             new StoreTouch(Store.LongBar, Touch.Read),
+            new StoreTouch(Store.LongMarketBar, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.LongPrint, Touch.Read),
@@ -180,6 +181,39 @@ public sealed class LongHistoryReader : IComponent
             0,
             names.Count);
     }
+
+    // From 23.7 the named market series' closes through the session given from the long pull, which holds each from 2004 or
+    // its start through the newest session it was asked for, one statement a series, none for a series it holds no session
+    // of; the record the sweeps' own reads take, their pull named as the long one.
+    public async Task<IReadOnlyList<SweepMarketSeries>> SeriesOfAsync(IReadOnlyList<string> named, DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        var found = new List<SweepMarketSeries>();
+
+        foreach (var series in named)
+        {
+            var closes = new List<(DateOnly, double)>();
+
+            await foreach (var row in RowsAsync(
+                connection,
+                "SELECT session_date, close FROM long_market_bar WHERE series = $series AND session_date <= $through ORDER BY session_date;",
+                [("$series", series), ("$through", Text(through))],
+                cancellation))
+            {
+                closes.Add((Day(row.GetString(0)), Core.Prices.Statistic.FromPrice(Money.FromStorage(row.GetString(1)))));
+            }
+
+            if (closes.Count > 0)
+            {
+                found.Add(new SweepMarketSeries(series, closes, LongPull));
+            }
+        }
+
+        return found;
+    }
+
+    public const string LongPull = "long";
 
     // Each code's surprises: the pulled ones where the pull holds the day, and the long calendar's on every other day it
     // holds a percent for.

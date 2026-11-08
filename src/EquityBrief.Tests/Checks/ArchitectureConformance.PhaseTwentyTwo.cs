@@ -129,6 +129,9 @@ public partial class ArchitectureConformance
         // From 23.6: the long history reader and the long ledger reader, their three stores, section 17's row, section 18's
         // row and the History page's row.
         .. FixtureExpectations.LongLedgerRows,
+
+        // From 23.7: section 17's row of the long test and paper trading's row of the verdict over the long history.
+        .. FixtureExpectations.LongTestRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

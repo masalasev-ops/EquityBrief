@@ -37,7 +37,7 @@ public sealed class PooledTest(IClock clock, string databaseFile, string dataRoo
     public const string Verb = "loop-pooled";
 
     // Each index's newest per-rule test of the month.
-    const string RunsOfTheMonth = "SELECT index_code, run_id, MAX(rowid) FROM loop_rule WHERE month = $month GROUP BY index_code;";
+    const string RunsOfTheMonth = "SELECT index_code, run_id, MAX(rowid) FROM loop_rule WHERE month = $month AND history = $history GROUP BY index_code;";
 
     const string RulesOfTheRun = @"
         SELECT family, rule, standing, unit, cap, span, through, judged_from, why
@@ -50,8 +50,8 @@ public sealed class PooledTest(IClock clock, string databaseFile, string dataRoo
     const string Register = "SELECT candidate, parameters FROM candidate_register ORDER BY id;";
 
     const string InsertPooled = @"
-        INSERT INTO loop_pooled (run_id, month, family, kind, indices, rules, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, judged_from, carried_by)
-        VALUES ($run_id, $month, $family, $kind, $indices, $rules, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $judged_from, $carried_by);";
+        INSERT INTO loop_pooled (run_id, month, family, kind, indices, rules, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, judged_from, carried_by, history)
+        VALUES ($run_id, $month, $family, $kind, $indices, $rules, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $judged_from, $carried_by, $history);";
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
@@ -61,7 +61,7 @@ public sealed class PooledTest(IClock clock, string databaseFile, string dataRoo
     public sealed record Read(IReadOnlyList<PooledRule> Rules, IReadOnlyList<(string Index, string Run)> Pooled, IReadOnlyList<(string Index, string Why)> Left, string? Refused);
 
     // The step for a month: each verdict printed, and written with its run log row unless printing.
-    public async Task<(bool Held, string Words)> RunAsync(string month, bool print = false, CancellationToken cancellation = default)
+    public async Task<(bool Held, string Words)> RunAsync(string month, bool print = false, CancellationToken cancellation = default, string history = LongTest.Standing)
     {
         if (NightLock.Holder(dataRoot) is { } holder)
         {
@@ -69,7 +69,7 @@ public sealed class PooledTest(IClock clock, string databaseFile, string dataRoo
         }
 
         var started = clock.UtcNow;
-        var read = await ReadAsync(month, cancellation);
+        var read = await ReadAsync(month, cancellation, history);
 
         foreach (var (index, why) in read.Left)
         {
@@ -87,7 +87,7 @@ public sealed class PooledTest(IClock clock, string databaseFile, string dataRoo
         }
 
         var verdicts = PooledJudge.Judge(read.Rules);
-        var runId = FormattableString.Invariant($"{Verb}-{started:yyyyMMddTHHmmssZ}");
+        var runId = FormattableString.Invariant($"{Verb}-{(history == LongTest.Long ? LongTest.Long + "-" : string.Empty)}{started:yyyyMMddTHHmmssZ}");
 
         foreach (var verdict in verdicts)
         {
@@ -98,7 +98,7 @@ public sealed class PooledTest(IClock clock, string databaseFile, string dataRoo
 
         if (!print)
         {
-            await WriteAsync(runId, month, started, verdicts, read, words, cancellation);
+            await WriteAsync(runId, month, started, verdicts, read, words, cancellation, history);
         }
 
         return (true, words + (print ? ", printed and not written" : string.Empty));
@@ -106,14 +106,14 @@ public sealed class PooledTest(IClock clock, string databaseFile, string dataRoo
 
     // The month's per-rule tests and their units, each variant's kind read from the register against its family's rule on
     // the same index.
-    public async Task<Read> ReadAsync(string month, CancellationToken cancellation = default)
+    public async Task<Read> ReadAsync(string month, CancellationToken cancellation = default, string history = LongTest.Standing)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var runs = new Dictionary<string, string>(StringComparer.Ordinal);
 
-        await using (var command = Command(connection, RunsOfTheMonth, [("$month", month)]))
+        await using (var command = Command(connection, RunsOfTheMonth, [("$month", month), ("$history", history)]))
         await using (var reader = await command.ExecuteReaderAsync(cancellation))
         {
             while (await reader.ReadAsync(cancellation))
@@ -257,7 +257,7 @@ public sealed class PooledTest(IClock clock, string databaseFile, string dataRoo
             $"{own.Count(verdict => verdict.Passed)} of {own.Length} family verdict(s) and {kinds.Count(verdict => verdict.Passed)} of {kinds.Length} kind(s) of change passed across {string.Join(", ", read.Pooled.Select(one => DecisionCards.NameOf(one.Index)))} for {month}{(read.Left.Count > 0 ? ", " + string.Join(" and ", read.Left.Select(one => "the " + DecisionCards.NameOf(one.Index))) + " adding nothing" : string.Empty)}");
     }
 
-    async Task WriteAsync(string runId, string month, DateTimeOffset started, IReadOnlyList<PooledVerdict> verdicts, Read read, string words, CancellationToken cancellation)
+    async Task WriteAsync(string runId, string month, DateTimeOffset started, IReadOnlyList<PooledVerdict> verdicts, Read read, string words, CancellationToken cancellation, string history = LongTest.Standing)
     {
         using var held = await DrainLock.AcquireAsync(dataRoot, () => (pause ?? Task.Delay)(SetupLedger.Poll, cancellation), cancellation);
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -293,6 +293,7 @@ public sealed class PooledTest(IClock clock, string databaseFile, string dataRoo
                 ("$passed", verdict.Passed ? 1 : 0),
                 ("$judged_from", Or(verdict.JudgedFrom)),
                 ("$carried_by", Or(verdict.CarriedBy)),
+                ("$history", history),
             ], cancellation);
         }
 

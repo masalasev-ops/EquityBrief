@@ -755,7 +755,15 @@ public static class SchemaMigrations
         new Migration(132, "create long_bar, long_market_bar, long_print, long_split, long_dividend and long_filing", CreateLongPrices),
         new Migration(133, "create long_fact", CreateLongFacts),
         new Migration(134, "create long_setup, long_reading and departed_setup", CreateLongLedger),
+        new Migration(135, "add loop_rule's and loop_pooled's history", AddLoopHistory),
     ];
+
+    // From 23.7 which history a per-rule run or a pooled run read: the standing one, which every row before it read, or the
+    // long one the monthly run's last step reads.
+    const string AddLoopHistory = @"
+        ALTER TABLE loop_rule ADD COLUMN history TEXT NOT NULL DEFAULT 'standing';
+        ALTER TABLE loop_pooled ADD COLUMN history TEXT NOT NULL DEFAULT 'standing';
+    ";
 
     // From 23.6 the long ledger, each setup of 2005 to 2018 under both readings with each family's year under each beside it,
     // apart from the standing ledger so no card, hook or night reads them; and the standing ledger's

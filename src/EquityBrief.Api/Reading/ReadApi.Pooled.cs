@@ -9,14 +9,15 @@ namespace EquityBrief.Api.Reading;
 // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
 public sealed partial class ReadApi
 {
-    // The newest pooled run, of a month where one is named, by the order the runs were written.
+    // The newest pooled run over a history, of a month where one is named, by the order the runs were written; from 23.7 the
+    // standing history's unless the long one is asked for.
     const string PooledOf = @"
         SELECT run_id, month, family, kind, indices, rules, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, judged_from, carried_by
         FROM loop_pooled
-        WHERE run_id = (SELECT p.run_id FROM loop_pooled p WHERE $month IS NULL OR p.month = $month ORDER BY p.rowid DESC LIMIT 1)
+        WHERE run_id = (SELECT p.run_id FROM loop_pooled p WHERE p.history = $history AND ($month IS NULL OR p.month = $month) ORDER BY p.rowid DESC LIMIT 1)
         ORDER BY rowid;";
 
-    public async Task<IReadOnlyList<LoopPooledRow>> PooledAsync(string? month = null)
+    public async Task<IReadOnlyList<LoopPooledRow>> PooledAsync(string? month = null, string history = LongTest.Standing)
     {
         var rows = new List<LoopPooledRow>();
 
@@ -25,6 +26,7 @@ public sealed partial class ReadApi
 
         command.CommandText = PooledOf;
         command.Parameters.AddWithValue("$month", (object?)month ?? DBNull.Value);
+        command.Parameters.AddWithValue("$history", history);
 
         await using var reader = await command.ExecuteReaderAsync();
 

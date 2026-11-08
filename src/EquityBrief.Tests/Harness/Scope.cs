@@ -4879,6 +4879,15 @@ internal static class Scope
             Verdict.Pass,
             "the older jumps' comparison worked on both sides of twice, the eras and the years the settings were chosen on read by hand, a trade, a bankruptcy and a benchmark member whose prices stop worked under both readings, and the long reader's series under its marks over a constructed store",
             ByExpectations),
+        // 23.7's long test: section 17's row and paper trading's row.
+        [CheckReach.Key(LimitsTable, "The per-rule test over the long history")] = new Scoped(
+            Verdict.Pass,
+            "each family judged from its own first test year over a constructed history worked by hand, a block spanning 2018 and 2019 summed once, the fewest sign vectors worked from the bar and the margin and the gate reading the draws it is handed, the cap's cut and stop on both sides, and the long step's failure leaving the month's report standing; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key("15.21 Paper trading", "An account's verdict over the long history")] = new Scoped(
+            Verdict.Pass,
+            "the rule's verdict from its first test year read back with the years its setting never saw apart from those it was chosen on, the rules summed across the three over the same history, a rule the long walk does not reach saying why and one no long test read saying so",
+            ByReadSurface),
         [CheckReach.Key("15.25 History", "Each family by year")] = new Scoped(
             Verdict.Pass,
             "each family's years read back off the page over a constructed store, each index's and the pooled trades, share at target and edge with the last price beside it, 2008 marked, the years chosen on and never seen, the drift's survivors line and the lower coverage label, and a store not written saying so",
@@ -6868,6 +6877,7 @@ internal static class Scope
         [CheckReach.Key("15.21 Paper trading", PaperCombined)] = "21.11",
         [CheckReach.Key("15.21 Paper trading", PaperToneLine)] = "21.14",
         [CheckReach.Key("15.21 Paper trading", PaperSurvivorsLine)] = "23.5",
+        [CheckReach.Key("15.21 Paper trading", "An account's verdict over the long history")] = "23.7",
         [CheckReach.Key(LoopPage, LoopChoices)] = "21.10",
         // 17.9's Loop page regions, Tonight's line and the card's row for a rule standing at an approved change.
         [CheckReach.Key(LoopPage, LoopWord)] = "17.9",
@@ -8716,6 +8726,7 @@ internal static class Scope
         ["The long history's prices"] = "23.4",
         ["The long history's first test years"] = "23.5",
         ["The long tables' budget"] = "23.6",
+        ["The per-rule test over the long history"] = "23.7",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

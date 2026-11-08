@@ -2487,10 +2487,11 @@ Grain: one row per per-rule test run, index, family and rule.
 | `span` | INTEGER | from 23.2, the sessions from the test span's first to the history's newest; null on a row written before |
 | `through` | TEXT | from 23.2, the history's newest session, as `yyyy-MM-dd`; null on a row written before |
 | `judged_from` | INTEGER | from 23.2, the year its verdict was judged from where it reads a release reading; null where every test year counted and on a row written before |
+| `history` | TEXT | from 23.7, from migration 135, `standing` for the month's test over the standing history, every row before it among them, or `long` for the monthly run's last step over the long history |
 
 Primary key: `run_id`, `index_code`, `family`, `rule`.
 
-**Written once by the walk-forward tester's per-rule test with its run log row**, from 19.4, in one transaction under the drain's lock, and never updated, so a later run for the same month stands beside it and paper trading reads the newest on each index. Every figure is a statistic and stored as the double it is. It adopts and retires nothing (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark).
+**Written once by the walk-forward tester's per-rule test with its run log row**, from 19.4, in one transaction under the drain's lock, and never updated, so a later run for the same month stands beside it and paper trading reads the newest on each index. Every figure is a statistic and stored as the double it is. It adopts and retires nothing (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark). From 23.7 the monthly run's last step and `loop-rules --long` write a run over the long history, each family's units and years from its own first test year, its run named `loop-rules-long`; the month's report, the pooled test over the standing history and paper trading's verdict read the standing rows alone, and the long step reads the long rows of the month for the indices it holds (see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours).
 
 ### loop_rule_year
 Grain: one row per per-rule test run, index, family, rule and test year.
@@ -2555,10 +2556,11 @@ Grain: one row per pooled run, family and kind, from migration 130.
 | `passed` | INTEGER | 1 where all four parts held |
 | `judged_from` | INTEGER | the year it was judged from where a rule it summed reads a release reading; null where every test year counted |
 | `carried_by` | TEXT | for a pass, the index whose units hold the largest paired total where the other indices' together stand at or under nothing; null otherwise |
+| `history` | TEXT | from 23.7, from migration 135, `standing` for a run over the standing history, every row before it among them, or `long` for one over the long history's per-rule runs |
 
 Primary key: `run_id`, `family`, `kind`.
 
-**Written once by the pooled test with its run log row**, from 23.2, in one transaction under the drain's lock, and never updated, so a later run for the same month stands beside it and the pages read the newest. It reads each index's newest per-rule test of the month, changes no rule, and is read by the Loop page's summary and paper trading's scorecard beside each index's own verdict (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule). Every figure is a statistic and stored as the double it is.
+**Written once by the pooled test with its run log row**, from 23.2, in one transaction under the drain's lock, and never updated, so a later run for the same month stands beside it and the pages read the newest. It reads each index's newest per-rule test of the month, changes no rule, and is read by the Loop page's summary and paper trading's scorecard beside each index's own verdict (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule). Every figure is a statistic and stored as the double it is. From 23.7 a run reads the per-rule tests over one history, the standing one unless `loop-pooled --long` or the monthly run's last step asks for the long, and writes its rows marked with it; the Loop page reads the standing runs and paper trading's scorecard both (see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours).
 
 ### loop_link
 Grain: one row per run, index, family and reading of which readings go with winners, from migration 95.

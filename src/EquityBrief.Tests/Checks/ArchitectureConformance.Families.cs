@@ -422,9 +422,10 @@ public partial class ArchitectureConformance
         // rows, its six stores, section 17's row, section 18's two rows and the History page's row, and 1590 from 23.5, the
         // long fact pull's and the long first-year reader's catalogue and matrix rows, its store, section 17's row, section
         // 18's row and paper trading's survivors line, and 1600 from 23.6, the long history reader's and the long ledger
-        // reader's catalogue and matrix rows, its three stores, section 17's row, section 18's row and the History page's row.
+        // reader's catalogue and matrix rows, its three stores, section 17's row, section 18's row and the History page's row,
+        // and 1602 from 23.7, section 17's row of the long test and paper trading's row of the verdict over the long history.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1600),
+            (789, 853, 6, 4, 855, 876, 1602),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

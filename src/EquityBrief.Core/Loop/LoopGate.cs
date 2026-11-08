@@ -66,7 +66,7 @@ public static class LoopGate
 
     // The adjusted p-value of each proposal tested for one rule in a run, in the order given; each proposal's sums are
     // over the same blocks. A single proposal's is its own sign-flip p-value.
-    public static double[] Adjusted(IReadOnlyList<IReadOnlyList<double>> proposals)
+    public static double[] Adjusted(IReadOnlyList<IReadOnlyList<double>> proposals, long draws = 0)
     {
         if (proposals.Count == 0)
         {
@@ -138,7 +138,11 @@ public static class LoopGate
         {
             var random = new Random(Seed);
 
-            for (long draw = 1; draw < 1L << Enumerated; draw++)
+            // From 23.7 the long test's judgement may read fewer, its draws cut to fit its time and never below the fewest.
+            // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+            var drawn = draws > 0 ? draws : 1L << Enumerated;
+
+            for (long draw = 1; draw < drawn; draw++)
             {
                 Array.Clear(signed);
 
