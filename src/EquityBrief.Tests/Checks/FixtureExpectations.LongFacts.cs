@@ -23,7 +23,7 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.LimitsTable, "The long history's first test years"),
     ];
 
-    internal static string[] LongFactsRows => [.. ComponentAccess.LongFactsRows, .. SchemaColumns.LongFactStoreRows, .. LongFactsClaims];
+    internal static string[] LongFactsRows => [.. ComponentAccess.LongFactsRows, .. SchemaColumns.LongFactStoreRows, .. LongFactsClaims, .. Reading.ReadSurface.SurvivorsLineClaims];
 
     // A feed answering each filer with the facts given, counting what it was asked.
     sealed class KeptFactsFeed(IReadOnlyDictionary<string, string> answers) : IFilerFactsFeed

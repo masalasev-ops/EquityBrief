@@ -80,6 +80,8 @@ internal static class Scope
 
     internal const string PaperToneLine = "The tone variant's line";
 
+    internal const string PaperSurvivorsLine = "The drift's survivors line";
+
     internal const string PaperTwoFamilies = "Two families pick one stock in the combined account";
 
     internal const string LoopChoices = "Choosing a version by its recent record";
@@ -4279,6 +4281,8 @@ internal static class Scope
             Verdict.Pass, "the live setups' accounts averaged worked by hand over two accounts starting on different days, each one's growth from its close before the later start, a trade bought and sold before it and a skip before it left out, and its tile, its line and its card with the line on what it is read back off the rendered page from the views the rules' own accounts are walked into", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", PaperToneLine)] = new Scoped(
             Verdict.Pass, "the operator's sentence read back beneath the tone variant's words in the variants' table and the scorecard's variants over a constructed register, and no other rule's row carrying it", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", PaperSurvivorsLine)] = new Scoped(
+            Verdict.Pass, "the survivors line read back beneath every drift row in the variants' table and the scorecard over constructed accounts, the live rule's and a variant's, and no other family's row carrying it", ByReadSurface),
         [CheckReach.Key(LimitsTable, PaperCombined)] = new Scoped(
             Verdict.Pass, "the averaged account worked by hand over two accounts, and a rule's own account over eleven picks of one session holding ten at a tenth of its value each; the figure read off the document against the constant", ByReadSurface),
         [CheckReach.Key(FailureTable, PaperTwoFamilies)] = new Scoped(
@@ -6814,6 +6818,7 @@ internal static class Scope
         [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = "21.9",
         [CheckReach.Key("15.21 Paper trading", PaperCombined)] = "21.11",
         [CheckReach.Key("15.21 Paper trading", PaperToneLine)] = "21.14",
+        [CheckReach.Key("15.21 Paper trading", PaperSurvivorsLine)] = "23.5",
         [CheckReach.Key(LoopPage, LoopChoices)] = "21.10",
         // 17.9's Loop page regions, Tonight's line and the card's row for a rule standing at an approved change.
         [CheckReach.Key(LoopPage, LoopWord)] = "17.9",

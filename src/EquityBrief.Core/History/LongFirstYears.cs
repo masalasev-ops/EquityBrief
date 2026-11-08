@@ -53,6 +53,9 @@ public static class LongFirstYears
 
     public const string MostlySurvivors = "mostly survivors";
 
+    // The words every page drawing the drift's years carries beside them, the standing years included.
+    public const string SurvivorsNote = "Every year mostly survivors: the surprises the drift reads cover too few of the companies that have since left the index and its years read mostly the ones that stayed.";
+
     public const string Fundamentals = "Fundamentals";
     public const string Heavyweights = "heavyweights";
     public const string Quality = "quality";
