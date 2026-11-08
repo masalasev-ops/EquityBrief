@@ -17184,6 +17184,6 @@ Carried:    the operator's marks on the 337 unexplained jumps and on the 334 end
             the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
             that run: all six steps, 0 warnings, 0 errors, 3573 of 3573 tests ran with none failed, migrations 0 to 132 with none
-            pending, schema version 132, against `data-ci` and never `data`; the phase report 66 tables, 1574 claims, 1574 passing,
-            none out of scope and none unexamined, 1589 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            pending, schema version 132, against `data-ci` and never `data`; the phase report 66 tables, 1582 claims, 1582 passing,
+            none out of scope and none unexamined, 1597 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
