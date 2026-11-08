@@ -3589,8 +3589,9 @@ IResult SweepReportPage(StoreLocation store, string? run)
 // person reads against the filings, and from 23.3 each index's members back to 2005 by how they were matched or why left out.
 // see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row
 // see: The funds' older schedules are read from the trust's N-Q and N-CSR filings at each quarter end from 2004-12-31 to 2018-09-30
+// see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
 app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
-    Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync()), "text/html; charset=utf-8"));
+    Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync(), await read.LongPricesAsync()), "text/html; charset=utf-8"));
 
 // The setup ledger's page under Universe: the summary the ledger's writers refresh for the index chosen, one family's
 // newest settled setups, its first family's where the link names none, and a chosen setup's path, named in the link as

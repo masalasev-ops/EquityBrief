@@ -17102,3 +17102,88 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.8 ruling - every price family's traded plan's buy and sell points tested over the long history
+
+Not a checkpoint entry: it records the operator's addition and lands nothing.
+Ruled:      word for word in `prompts/2026-11-08-23.8-operator-addition-plan-points.md`, given on 2026-11-08 while 23.4 was in
+            progress: "Addition to 23.8, on my word: test every traded plan's buy and sell points over the 2005 to 2026 history,
+            for every family with a price stop (pullback, breakout, drift, dip) on all three indexes ... It goes to 23.10's
+            restart only on my word." 23.8's text and done condition carry it, with one decision and the changelog (see: Every
+            price family's traded plan's buy and sell points are tested over the long history and one combination is
+            recommended a family an index). Built at 23.8; nothing is registered or changed before 23.10.
+Queue:      done, November's monthly run and its log's correction; in progress, 23.4 with this ruling in its pull request; next,
+            23.5 to 23.9, then 23.10's restart on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 17.10 - correction: a monthly step is read as running with a line in the last fifteen minutes   2026-11-08
+
+Found:      November's run by hand from main's 18d26fad wrote its S&P 600 per-rule test's lines at 03:37:59, 03:48:48, 03:58:48 and
+            04:12:19 UTC, the last 13.5 minutes after the one before under the step's load, so the runbook's ten minutes would have
+            read a running step as stopped. The run held every step at 04:15:46, the rerun 50 minutes in all.
+Corrected:  the runbook reads a step as running with a line in the last fifteen minutes and says why; the changelog. No code moves.
+Tests:      none new.
+Claims:     none new.
+Pins:       none move.
+Mutated:    none: no assertion added, a sentence of the runbook alone.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 23.4 - prices for every stock ever a member, and the data check over 2005 onward   2026-11-08
+
+Built:      `long-prices`: `--capture --into <folder>` states its asks, their weight and time before the first request and
+            refuses past the day's stop, then keeps every answer as sent; `--write <folder>` reads the folder alone and writes
+            `long_bar`, `long_market_bar`, `long_print`, `long_split`, `long_dividend` and `long_filing` whole, migration 132, with
+            the ends' marks and its run's row in one transaction; `--print` writes nothing; `--counts-read` records the
+            operator's word on the counts. `data-check --long` runs 23.1's check over the long prices from 2005. The History
+            page's prices back to 2004. A row the bar reader refuses is skipped and named by its code and session, and stops no
+            write (see: A row of the long prices the bar reader refuses is skipped and listed, and stops no write). No row of
+            `bar`, `pulled_bar` or a mark the write does not own moves; no source a rule's version pins moves.
+Found:      the rehearsal's first write stopped at its 1,750th code on LTRPA's row of 2015-02-10, a session that could not have
+            traded once adjusted, and nothing else was written; the skip above is the repair, the one row named in the second.
+Measured:   the capture, 3,394 codes, 3,393 answered, SE1 refused by the provider (404) on its prices, splits, dividends and
+            company record. The rehearsal's write over the capture into 23.3's scratch store, after the live store's inputs were
+            copied into it read-only: 3,384 of 3,394 codes priced, 12,637,984 sessions, 90,343 market sessions, 76,976 prints,
+            1,970 splits, 109,587 dividends, 5,492,573 filing rows. Left out, priced by nothing: ACE, IILGV, LEN-N, MHFI, MRP_old,
+            RE, SE1, UA-C, VAL1, WPO, none named failed. The S&P 500's count from 2012 at IVV's 26 quarter ends to 2018-09-30: 542
+            to 554 once two codes carrying one series count once, against the fund's 500 to 507, 36 to 53 apart, so it reads IVV's
+            schedules to their last and the provider's dates from 2018-10-01. Lowest coverage over the spans: the S&P 600 at
+            2004-12-31, 549 of 600 holdings, 91.5 in every 100, 90.6 of value; the S&P 400 at 2006-03-31, 91.7 and 93.8; the S&P
+            500 at 2004-12-31, 92.8 and 96.7; no stop. 249 filers refused, their names not the company's. 1,630 departed codes:
+            1,296 ended by a filing, 586 of them marked where the answer runs on past the end, Merrill's at 2008-12-31 from its 8-K
+            0000950123-09-000005, and 334 to the operator at their last session with volume. The overlap with the pull: 2,277
+            codes, 5,335,908 sessions shared, 112,254 apart by a cent, 19,921 by one per cent on 31 codes, 15,819 traded apart.
+            The data check over 2004-01-02 to 2026-11-06, 3,384 stocks, 225,523 findings, by class and era (2005 to 2009, 2010 to
+            2014, 2015 to 2019, 2020 on): missing session, thin 17,691, 24,072, 16,455, 7,514, liquid 6,980, 12,394, 8,412,
+            2,146; no volume, thin 24,877, 39,107, 31,592, 11,556, copied 160, 221, 344, 479, liquid 8, 30, 202, 38; jump, a
+            stored action 16, 8, 6, 9, the operator's word 7, 6, 9, 20, thin 2,322, 2,854, 2,379, 1,176, on volume 2,708, 1,088,
+            1,538, 3,432, market or sector wide 476, 17, 10, 248, spike back 157, 69, 18, 37, unexplained 124, 67, 43, 103; action
+            not carried, split 43, 14, 7, 7, dividend 900, 615, 249, 21; to read against the filings, ticker change 0, 1, 7, 12,
+            when-issued start 26, 28, 77, 53, bankruptcy emergence 54, 59, 59, 66. Unexplained jumps: 191 over 23,915
+            stock-years in 2005 to 2014, 7.99 a thousand, against 146 over 25,767 in 2015 to 2026, 5.67, 1.41 times, not more
+            than twice. The 337 on 211 stocks go to the operator to mark in `prompts/2026-11-08-23.4-unexplained-jumps.csv`.
+Provisional: each on the operator's review, taken under their instruction of 2026-11-07: a holding priced where the code's
+            sessions cover 98 in every 100 of its span's; two codes read as one series where 95 in every 100 of at least 20 shared
+            closes agree; a code departed where its last close stands 10 days or more before the newest session; a company record
+            asked for each code the pull holds no filer's number for; a mark written only where the answer runs on past the end;
+            the long check's run standing in the pull's place as the newest data check; the unexplained jumps listed for the
+            operator rather than read by hand against the filings; IVV's count read off its holdings lines; and a row the bar
+            reader refuses skipped and listed.
+Tests:      3573, from 3561, 12 new: 11 in the fixture's expectations and 1 in the read surface.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property 23.4 adds, filtered to its tests by name, 13
+            in all, each red: the span floor at its boundary read as strictly above; the count's margin read as at or above; two
+            codes of one series counted twice; a filer of another company kept, its names read against its own; an end marked
+            wherever a filing gives it; a code priced by nothing not listed; a stop writing all the same; the day's stop not
+            held; the counts word standing before the newest check; the long check writing findings before 2005; the overlap
+            read at no common scale; the statement printed after the first request; a row the reader refuses not listed.
+Remedy:     `tools/remedies/2026-11-07-23.4-the-long-prices.txt`, `migrate`, `long-prices --write data/long-prices` and
+            `data-check --long`, no request, to run from main after the merge with the capture copied to `data/long-prices`.
+Discharged: the provider's S&P 500 spans from 2012 held against IVV's own holdings, the count above.
+Carried:    the operator's marks on the 337 unexplained jumps and on the 334 ends no filing settles, for 23.10's long ledger;
+            the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3573 of 3573 tests ran with none failed, migrations 0 to 132 with none
+            pending, schema version 132, against `data-ci` and never `data`; the phase report 66 tables, 1582 claims, 1582 passing,
+            none out of scope and none unexamined, 1597 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

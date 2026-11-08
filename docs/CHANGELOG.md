@@ -7,6 +7,56 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/BUILD_PLAN.md - 23.8's fill windows worded each in turn
+Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
+Was:
+> ... each filled within 5, 10 or 20 sessions and an unfilled pick counted as a trade not taken; ...
+Now:
+> ... each filled within 5, 10 and 20 sessions in turn and an unfilled pick counted as a trade not taken; ...
+Corrects: `pinned-constants` read "or 20 sessions" as a restatement of a setup's session cap.
+
+### 2026-11-08 - docs/BUILD_PLAN.md - the obligation on the provider's S&P 500 spans from 2012 discharged at 23.4
+Obligation: The provider's S&P 500 spans from 2012 held against IVV's own holdings
+Was:
+> | **The provider's S&P 500 spans from 2012 held against IVV's own holdings** | 23.3 | 23.4 | ... 23.4 states the count with each series counted once, by quarter end, and puts what remains to the operator before 23.6 reads a span |
+Now:
+> | **The provider's S&P 500 spans from 2012 held against IVV's own holdings** | 23.3 | 23.4, discharged | ... before 23.6 reads a span. 23.4's rehearsal counted 542 to 554 once two codes carrying one series count once, against the fund's 500 to 507 at its 26 quarter ends, 36 to 53 apart, so on the operator's answer of 2026-11-07 the S&P 500 reads IVV's schedules to their last and the provider's dates from 2018-10-01 |
+Why: 23.4 measured the count its row was due at.
+
+### 2026-11-08 - docs/RUNBOOK.md - a monthly step is read as running with a line in the last fifteen minutes
+Decision: The monthly run writes its own stamped log and says every ten minutes that a step still runs
+Was:
+> Read the run's progress there, never from the store while it writes: a step with a line in the last ten minutes is running, and one with none for longer has stopped.
+Now:
+> Read the run's progress there, never from the store while it writes: a step with a line in the last fifteen minutes is running, and one with none for longer has stopped. The ten minutes are a wait, and under a step's load its lines came 10 to 13.5 minutes apart in November's run.
+Corrects: November's run by hand of 2026-11-08 wrote its S&P 600 per-rule test's lines at 03:37:59, 03:48:48, 03:58:48 and 04:12:19 UTC, the last 13.5 minutes after the one before, which the ten minutes would have read as stopped.
+
+### 2026-11-08 - docs/ARCHITECTURE.html - section 18's row of a code priced by nothing names a row the bar reader refuses
+Decision: A row of the long prices the bar reader refuses is skipped and listed, and stops no write
+Was:
+> A code the provider prices by nothing | from 23.4 a code the provider answers with no session is listed ... (see: The failed companies the long history cannot price are left out by name and the run goes on) | ... | a code with no prices cannot be read for the years it was held, and naming it keeps every figure that leaves it out saying so
+Now:
+> A code the provider prices by nothing | ... (see: The failed companies the long history cannot price are left out by name and the run goes on); and a row of a code's answer the bar reader refuses, a session that could not have traded among them, is skipped and listed by its code and session, leaving a missing session the data check reads, the run going on (see: A row of the long prices the bar reader refuses is skipped and listed, and stops no write) | ... | ...; and one bad row in twenty years of a code's answer stopped the whole write in its rehearsal of 2026-11-08
+Corrects: the rehearsal of the long write over the capture on 2026-11-08 stopped at LTRPA's row of 2015-02-10, which could not have traded once adjusted.
+
+### 2026-11-08 - docs/RUNBOOK.md - the long write prints the rows the bar reader refused
+Decision: A row of the long prices the bar reader refuses is skipped and listed, and stops no write
+Was:
+> `--write` prints ... the codes the provider priced by nothing, the filers refused and the departed codes' ends, `--each` naming each; ...
+Now:
+> `--write` prints ... the codes the provider priced by nothing, the rows the bar reader refused, each skipped and named by its code and session (see: A row of the long prices the bar reader refuses is skipped and listed, and stops no write), the filers refused and the departed codes' ends, `--each` naming each; ...
+Why: the same rehearsal.
+
+### 2026-11-08 - docs/BUILD_PLAN.md - 23.8 tests the traded plan's buy and sell points over the long history
+Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
+Was:
+> ### 23.8 ... Nothing is registered or retired without their word (see: History reaches a list only through a test on years a proposal never saw and the operator's approval). Writes the report's rows, ...
+> **Done when** ... each family on each index stands as a proposal or as none passing in an entry; nothing is registered, asserted; ...
+Now:
+> ### 23.8 ... Nothing is registered or retired without their word (...). On the operator's addition of 2026-11-08, the traded plan's buy and sell points are tested too: every setup the pullback, the breakout, the drift and the dip flagged on each index over 2005 to 2026 ... walked under every combination of an entry, ... a stop, ... and an exit, ... to 23.10's restart only on their word (see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index). Writes the report's rows, ...
+> **Done when** ... each family on each index stands as a proposal or as none passing in an entry; one combination of each entry, stop and exit is worked by hand over a constructed path, a pick its entry never fills counted as offered and not taken, asserted; CTSH of 2026-11-06 stands in the entry under every combination; each price family on each index stands in the entry with its recommended combination, its edge and its trades, or none; nothing is registered, asserted; ...
+Why: the operator's addition to 23.8 of 2026-11-08, word for word in `prompts/2026-11-08-23.8-operator-addition-plan-points.md`.
+
 ### 2026-11-08 - docs/RUNBOOK.md - the monthly run's own log, its measured time and the task's limit of 18 hours
 Decision: The monthly run writes its own stamped log and says every ten minutes that a step still runs
 Was:
@@ -54,6 +104,90 @@ Now:
 > **A branch's build is read back over a copy of the store, never the live one.** A Debug build, or a build in this checkout while it is on a branch other than `main`, refuses to start where its store is the checkout's `data/equitybrief.db` ... The copy is made, and a read-back or a sweep is run, only while nothing writes the store ... (see: A branch build is served over a copy of the store, and its server refuses to start on the live store).
 > **It reads the store the worker writes.** ...
 Why: the operator's order of 2026-11-07 after the monthly run, its third item. Nothing was removed; the entry records the paragraph added between two that stand.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - the long price pull, its six stores, section 17's row, section 18's two rows and the History page's prices back to 2004
+Decision: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+Was:
+> (Session marks, does) ... and from 23.1 the session a company's history ends on where no filing settles it; no pulled row moves ...
+> (Data checker, reads) membership, ticker joins, pulled bars, pulled splits, split events, dividend events, session marks
+> (Data checker, does) ... the run's findings written whole and the run before's removed in the same transaction, or printed and written nowhere; asks nothing of the network and no pulled row, bar or mark moves ...
+> (Long members, reads) filings archive, historical price feed, membership, pulled holdings
+> (Long members, does) ... and no row of the pulled holdings or the membership moves (see: ...)
+> (Session marks store) ... and from 23.1 the session a company's history ends on among its kinds
+> 15.25 **Answers:** ... by class and by era, and from 23.3 each index's members back to 2005 as its fund filed them, by how they were matched or why they were left out.
+> 15.25 **Reads:** ... and from 23.3 the long snapshots and long holdings of the newest long members' run, and nothing else; ...
+Now:
+> (Session marks, does) ... where no filing settles it, and from 23.4 the sessions the long price pull reads by rule from its filers' filings, written inside that run's transaction; no pulled row moves ...
+> (Data checker, reads) ... session marks, long bars, long splits, long dividends
+> (Data checker, does) ... or printed and written nowhere; from 23.4, asked for the long history, reads every code's long bars from 2004 with their splits and dividends in place of the pull and writes the findings from 2005 on under a stage of its own, the year before read behind them; asks nothing of the network ...
+> (Long members, reads) filings archive, historical price feed, membership, pulled holdings, long holdings
+> (Long members, does) ... and no row of the pulled holdings or the membership moves; from 23.4 reads the spans again from what the store holds, and writes them again whole inside the long price pull's transaction where its count moves the S&P 500's cutover (see: ...)
+> (Session marks store) ... among its kinds, from 23.4 written by rule inside the long price pull's run where the provider's answer runs on past it
+> 15.25 **Answers:** ... or why they were left out, and from 23.4 what the prices back to 2004 read and the ends no filing settles.
+> 15.25 **Reads:** ... of the newest long members' run, and from 23.4 the newest long price pull's row on the run log, and nothing else; ...
+Added: the catalogue's and the matrix's rows for the long price pull; section 16's rows for the long bars, long market bars, long prints, long splits, long dividends and long filings; section 17's row for the long history's prices; section 18's rows for a code the provider prices by nothing and a filer whose names are not the company's; and the History page's prices back to 2004.
+Why: 23.4 builds the long history's prices as its plan states, on the operator's answers of 2026-11-07.
+
+### 2026-11-07 - docs/SCHEMA.md - the six long price tables and their writer, the spans and marks the long price pull writes through their own writers, and the long data check
+Decision: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+Was:
+> (session_mark) ... set by rule from its filings and on the operator's word only where no such filing is found (see: ...).
+> (data_check) ... so the table holds one run; `--print` writes nothing. No pulled row, bar or mark moves.
+> (long_span) ... It reads `pulled_holding` and `membership` and moves no row of either.
+Now:
+> (session_mark) ... (see: ...). From 23.4 `long-prices --write` writes those ends by rule through SessionMarks' own writer inside its run's transaction, a session already marked changing nothing, and only where the provider's answer runs on past the session the filing gives (see: ...).
+> (data_check) ... `--print` writes nothing. From 23.4 `data-check --long` writes its run the same way over the long history's prices from 2005, under the stage `data-check-long` on `run_log`, replacing the run over the pull. No pulled row, bar or mark moves.
+> (long_span) ... moves no row of either. From 23.4 the long price pull's write reads the spans again ... and where its count moves the S&P 500's cutover has LongMembers' writer write them whole again inside its own transaction, the run before's removed with them (see: ...).
+Added: the ownership table's rows naming `LongPricePull` the inserter and remover of each of the six tables, and a section for each with its grain, columns and key and one paragraph on what writes them and what they read.
+Why: migration 132 creates the six tables and every table in a migrated store is one the file describes.
+
+### 2026-11-07 - docs/RUNBOOK.md - capturing the long history's prices and writing them
+Decision: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+Was:
+> (nothing; the section is new, after the long members')
+Now:
+> the five commands that capture `data/long-prices`, print and write from it, run the data check over it and record the operator's word on its counts, what each asks and costs, the write's stop and its exit code
+Why: the plan's runbook for 23.4.
+
+### 2026-11-07 - docs/BUILD_PLAN.md - the operator's answers of 2026-11-07 in 23.4, 23.5, 23.6 and 23.7
+Decision: The S&P 500's provider dates from 2012 are held against IVV's holdings and read from IVV's last schedule where they stand more than 5 apart
+Was:
+> (23.4) A code the provider holds nothing for is listed and left out, every figure saying so, and a failed company among them stops the run as at 23.3.
+> (23.4) ... two codes carrying one series inside one span counted once, and the count stands in the entry (owes: The provider's S&P 500 spans from 2012 held against IVV's own holdings).
+> (23.4) ... listed with the filing it was read from, those no filing settles going to the operator as one list. Then 23.1's check runs over 2005 onward, ... The long test and the searches refuse to start until their word that the counts are read stands on the run log.
+> (23.5) ... a measured year differing from its estimate by more than a year stops the work and goes to them, and the long test refuses a family until its year stands on the operator's reading where it stopped.
+> (23.5) Where no year reaches it on the S&P 400 or 600 the entry says so and it goes to the operator.
+> (23.6) ... section 17's budget for the long tables, proposed at 4.5 gigabytes, ...
+> (23.6) ... (see: The S&P 400's and 600's figures for 2004 to 2008 carry the lower coverage label). Then the measure: ...
+> (23.7) Past 24 blocks the gate reads sampled sign vectors as it stands; its time is measured on the first run and fewer draws are put to the operator only if it runs over an hour.
+Now:
+> (23.4) ... and a failed company among them is left out by name and the run goes on, as at 23.3, on the operator's answers of 2026-11-06 and 2026-11-07 (see: ...).
+> (23.4) ... (owes: ...); on the operator's answer of 2026-11-07, ... where any quarter end stands more than 5 apart once those codes count once, the S&P 500 reads IVV's schedules to their last and the provider's dates from 2018-10-01 (see: ...).
+> (23.4) ... as one list, each reading its last session with volume until they rule on it, on the operator's answer of 2026-11-07 (see: ...). ... stands on the run log; on the operator's answer of 2026-11-07 the long test runs without it that night, as 23.6 states.
+> (23.5) ... where it stopped; on the operator's answer of 2026-11-07 such a year is used as measured with both years in the entry, and the work does not stop for it.
+> (23.5) Where no year reaches it on the S&P 400 or 600 the entry says so and, on the operator's answer of 2026-11-07, the drift there is judged from 2019, every year labelled mostly survivors, as the S&P 500's is.
+> (23.6) ... section 17's budget for the long tables, 4.5 gigabytes on the operator's answer of 2026-11-07, ...
+> (23.6) ... (see: ...). On the operator's answer of 2026-11-07 the long test runs without their word that the data check's counts are read: an unexplained jump never counts as a real result, ... and 23.10 writes the long ledger again with their marks. Then the measure: ...
+> (23.7) ... its time is measured on the first run and, on the operator's answer of 2026-11-07, the long test is capped at 3 hours: ... at least 20,000 and stated in the entry, and where 3 hours cannot hold that many it runs over the first Saturday and Sunday in parts, saving between them, rather than cutting further; its time stands on the run log each month.
+Why: the operator's answers of 2026-11-07, word for word in `prompts/2026-11-07-23.4-operator-answers-spans-budget-stops.md`, each standing in the checkpoint it rules.
+
+### 2026-11-07 - CLAUDE.md - the hard rule on bars names the long price tables
+Decision: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+Was:
+> ... From 23.3 the funds' older schedules, their holdings and the spans of membership read from them sit in `long_snapshot`, `long_holding` and `long_span`, holding no bar, read by no night and drawn by the History page alone, written whole by the long members' run (see: ...).
+Now:
+> ... written whole by the long members' run (see: ...). From 23.4 every code's prices from 2004, the market series, the earnings calendar's older prints, the splits, the dividends and each filer's filings sit in `long_bar`, `long_market_bar`, `long_print`, `long_split`, `long_dividend` and `long_filing`, apart from the bars and the pull's tables, read by no night, card, hook or standing test and by the long data check alone until 23.6's long reader, and written whole by the long price pull (see: ...).
+Why: the hard rule names every table holding history before the store's year, and 23.4 adds six.
+
+### 2026-11-07 - .claude/rules/checks.md - the roster's fixture-expectations and read-surface rows reach 23.4
+Decision: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+Was:
+> (fixture-expectations) ... and no source a rule's version pins among those 23.3 writes |
+> (read-surface) ... and the companies left out by name |
+Now:
+> (fixture-expectations) ... among those 23.3 writes; and from 23.4 the long prices' statement before the first request and the stop before any request worked over a constructed feed, ... and no source a rule's version pins among those 23.4 writes |
+> (read-surface) ... and the companies left out by name; and from 23.4 the History page's prices back to 2004 read back over a constructed store off the newest long price pull's row, the cutover, the lowest coverage and the folds of the codes priced by nothing and the ends no filing settles |
+Why: the roster's rows state what each check asserts, and 23.4 adds to both.
 
 ### 2026-11-07 - docs/ARCHITECTURE.html - a plan's arithmetic flagged beside it
 Decision: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
