@@ -186,6 +186,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_dividend` | LongPricePull | none | LongPricePull |
 | `long_filing` | LongPricePull | none | LongPricePull |
 | `long_fact` | LongFactPull | none | LongFactPull |
+| `long_setup` | SetupLedger | none | none |
+| `long_reading` | SetupLedger | none | SetupLedger |
+| `departed_setup` | SetupLedger | none | SetupLedger |
 | `dividend_wait` | CorporateActionChecker | CorporateActionChecker | CorporateActionChecker |
 | `chart_check` | ChartChecker | none | ChartChecker |
 | `split_event` | CorporateActionChecker | none | none |
@@ -506,7 +509,7 @@ Grain: one row per code and filing of its company's filer.
 
 Primary key: `ticker`, `accession`.
 
-**The long history's prices, read by the long data check and by no night, card, hook or standing test** (see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night). From 23.4 `long-prices --write` reads a capture folder the long price pull kept, asking nothing of anyone, and writes the six tables whole, the run before's rows removed in the same transaction, with its row on `run_log`, which the History page reads, and the ends it reads by rule as `session_mark` rows through SessionMarks' own writer where the provider's answer runs on past them (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger); it writes nothing where a quarter end of the long history falls under the floor over its holdings' spans. A filing is kept only where its filer's names are the code's company's, and a code the provider prices by nothing is written nowhere and named on the run's row. It reads `long_snapshot`, `long_holding`, `long_span`, `membership`, `pulled_bar`, `pulled_company` and `bar` and moves no row of them. From 23.4 `data-check --long` reads `long_bar`, `long_split` and `long_dividend` in place of the pull. From 23.5 the same write, and `long-prices --report-days` alone, writes again whole the `long_print` rows whose `read_from` is `8-K item 2.02`: one for each 8-K of `long_filing` carrying item 2.02, on the day it was filed, its timing unstated and no figure, for a gate reading a date alone (see: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone).
+**The long history's prices, read by the long data check and by no night, card, hook or standing test** (see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night). From 23.4 `long-prices --write` reads a capture folder the long price pull kept, asking nothing of anyone, and writes the six tables whole, the run before's rows removed in the same transaction, with its row on `run_log`, which the History page reads, and the ends it reads by rule as `session_mark` rows through SessionMarks' own writer where the provider's answer runs on past them (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger); it writes nothing where a quarter end of the long history falls under the floor over its holdings' spans. A filing is kept only where its filer's names are the code's company's, and a code the provider prices by nothing is written nowhere and named on the run's row. It reads `long_snapshot`, `long_holding`, `long_span`, `membership`, `pulled_bar`, `pulled_company` and `bar` and moves no row of them. From 23.4 `data-check --long` reads `long_bar`, `long_split` and `long_dividend` in place of the pull. From 23.5 the same write, and `long-prices --report-days` alone, writes again whole the `long_print` rows whose `read_from` is `8-K item 2.02`: one for each 8-K of `long_filing` carrying item 2.02, on the day it was filed, its timing unstated and no figure, for a gate reading a date alone (see: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone). From 23.6 the long reader reads `long_bar` and `long_print`, the ledger's long build `long_market_bar` and `long_filing`, and the long ledger's measure `long_bar`, `long_market_bar` and `long_filing`, each by hand and none a night's (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price).
 
 ### long_fact
 Grain: one row per filer, concept and period of the long history's facts, as first filed.
@@ -526,6 +529,196 @@ Grain: one row per filer, concept and period of the long history's facts, as fir
 Primary key: `cik`, `concept`, `period_start`, `period_end`.
 
 **The long history's facts, read by no night, card, hook or family** (see: The long history's facts are the SEC's figures before the standing table's first, kept as first filed apart from it). From 23.5 `long-facts --write` reads a capture folder the long fact pull kept, asking nothing of anyone, and writes the table whole, the run before's rows removed in the same transaction, with its row on `run_log`. It reads `long_filing`, `company` and `pulled_company` for the filers to read and `filed_fact` for the figures a predecessor and its company's new filer state in common, and moves no row of either (see: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts). `long-facts --measure` reads it with `long_span`, `long_filing`, `long_print`, `pulled_surprise`, `long_bar`, `long_market_bar`, `long_holding`, `filed_fact`, `membership`, `company`, `pulled_company` and `bar`, and writes nothing.
+
+### long_setup
+Grain: one row per index, family, stock and session of 2005 to 2018 a family's loose gates passed the stock on over the long history.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | as `setup` carries it |
+| `ticker` | TEXT | as `setup` carries it |
+| `session_date` | TEXT | the session of 2005 to 2018 the setup was read on |
+| `rule` | TEXT | as `setup` carries it |
+| `live_pass` | INTEGER | as `setup` carries it |
+| `picked` | INTEGER | as `setup` carries it |
+| `entry` | TEXT | decimal in code, as `setup` carries it |
+| `stop` | TEXT | decimal in code, as `setup` carries it |
+| `target` | TEXT | decimal in code, as `setup` carries it |
+| `trail` | TEXT | decimal in code, as `setup` carries it |
+| `cap` | INTEGER | as `setup` carries it |
+| `risk_moves` | REAL | as `setup` carries it |
+| `close_over_twenty` | REAL | the first of the catalogue's readings, each as `setup` carries it, read over the long history as it stood on the session |
+| `close_over_fifty` | REAL | as `setup` carries it |
+| `close_over_long` | REAL | as `setup` carries it |
+| `fifty_over_long` | REAL | as `setup` carries it |
+| `move_share` | REAL | as `setup` carries it |
+| `rsi` | REAL | as `setup` carries it |
+| `rsi_up` | REAL | as `setup` carries it |
+| `volume_ratio` | REAL | as `setup` carries it |
+| `return_quarter` | REAL | as `setup` carries it |
+| `return_half_year` | REAL | as `setup` carries it |
+| `return_twelve_less_one` | REAL | as `setup` carries it |
+| `strength` | REAL | as `setup` carries it |
+| `strength_twelve_less_one` | REAL | as `setup` carries it |
+| `high_ratio` | REAL | as `setup` carries it |
+| `since_high` | REAL | as `setup` carries it |
+| `depth` | REAL | as `setup` carries it |
+| `dry_up` | REAL | as `setup` carries it |
+| `gap_down` | REAL | as `setup` carries it |
+| `rsi_low` | REAL | as `setup` carries it |
+| `tightness` | REAL | as `setup` carries it |
+| `liquidity` | REAL | as `setup` carries it |
+| `earnings_sessions` | REAL | as `setup` carries it |
+| `surprise_sessions` | REAL | as `setup` carries it |
+| `surprise_percent` | REAL | as `setup` carries it |
+| `reward_to_risk` | REAL | as `setup` carries it |
+| `freshness` | REAL | as `setup` carries it |
+| `band_strength` | REAL | as `setup` carries it |
+| `volume_multiple` | REAL | as `setup` carries it |
+| `range_ratio` | REAL | as `setup` carries it |
+| `reaction_moves` | REAL | as `setup` carries it |
+| `breadth` | REAL | as `setup` carries it |
+| `highs_less_lows` | REAL | as `setup` carries it |
+| `index_over_long` | REAL | as `setup` carries it |
+| `vix` | REAL | as `setup` carries it |
+| `vix_change` | REAL | as `setup` carries it |
+| `mid_over_large` | REAL | as `setup` carries it |
+| `small_over_large` | REAL | as `setup` carries it |
+| `credit_over_fifty` | REAL | as `setup` carries it |
+| `profit` | REAL | as `setup` carries it |
+| `coverage` | REAL | as `setup` carries it |
+| `result` | REAL | the result as ruled: none where the stock's prices stop with the path open |
+| `benchmark` | REAL | the benchmark as ruled, a member whose prices stop with its path open left out |
+| `cost` | REAL | as `setup` carries it |
+| `edge` | REAL | as `setup` carries it |
+| `edge_after_cost` | REAL | as `setup` carries it |
+| `sessions` | INTEGER | as `setup` carries it |
+| `end` | TEXT | as `setup` carries it |
+| `ended_on` | TEXT | as `setup` carries it |
+| `settled` | INTEGER | as `setup` carries it |
+| `source` | TEXT | `history`, the long build being a history build |
+| `pin` | TEXT | as `setup` carries it |
+| `revenue_growth` | REAL | as `setup` carries it |
+| `growth_change` | REAL | as `setup` carries it |
+| `gross_margin_change` | REAL | as `setup` carries it |
+| `operating_margin_change` | REAL | as `setup` carries it |
+| `cash_over_income` | REAL | as `setup` carries it |
+| `value_place` | REAL | as `setup` carries it |
+| `fill` | TEXT | decimal in code, as `setup` carries it |
+| `past` | TEXT | as `setup` carries it |
+| `return_week` | REAL | as `setup` carries it |
+| `return_month` | REAL | as `setup` carries it |
+| `largest_return` | REAL | as `setup` carries it |
+| `volatility_month` | REAL | as `setup` carries it |
+| `residual_volatility` | REAL | as `setup` carries it |
+| `beta` | REAL | as `setup` carries it |
+| `skewness` | REAL | as `setup` carries it |
+| `close_place` | REAL | as `setup` carries it |
+| `up_volume_share` | REAL | as `setup` carries it |
+| `price_volume_correlation` | REAL | as `setup` carries it |
+| `illiquidity` | REAL | as `setup` carries it |
+| `overnight_less_intraday` | REAL | as `setup` carries it |
+| `sector_month` | REAL | as `setup` carries it |
+| `sector_quarter` | REAL | as `setup` carries it |
+| `low_ratio` | REAL | as `setup` carries it |
+| `streak` | REAL | as `setup` carries it |
+| `volume_slope` | REAL | as `setup` carries it |
+| `alpha_one` | REAL | as `setup` carries it |
+| `alpha_two` | REAL | as `setup` carries it |
+| `alpha_three` | REAL | as `setup` carries it |
+| `alpha_four` | REAL | as `setup` carries it |
+| `alpha_six` | REAL | as `setup` carries it |
+| `insider_net_buy` | REAL | as `setup` carries it |
+| `insider_buyers` | REAL | as `setup` carries it |
+| `insider_officer_buy` | REAL | as `setup` carries it |
+| `insider_unplanned_sale` | REAL | as `setup` carries it |
+| `release_results` | REAL | as `setup` carries it |
+| `release_outlook` | REAL | as `setup` carries it |
+| `release_tone` | REAL | as `setup` carries it |
+| `release_demand` | REAL | as `setup` carries it |
+| `rsi_two` | REAL | as `setup` carries it |
+| `drop_fall` | REAL | as `setup` carries it |
+| `drop_largest` | REAL | as `setup` carries it |
+| `drop_volume` | REAL | as `setup` carries it |
+| `drop_against_sector` | REAL | as `setup` carries it |
+| `large_breadth` | REAL | as `setup` carries it |
+| `fund_over_long` | REAL | as `setup` carries it |
+| `vix_over_median` | REAL | as `setup` carries it |
+| `fundamentals_score` | REAL | as `setup` carries it |
+| `gross_profitability` | REAL | as `setup` carries it |
+| `return_on_assets` | REAL | as `setup` carries it |
+| `return_on_assets_change` | REAL | as `setup` carries it |
+| `leverage_fall` | REAL | as `setup` carries it |
+| `current_ratio_change` | REAL | as `setup` carries it |
+| `share_fall` | REAL | as `setup` carries it |
+| `turnover_change` | REAL | as `setup` carries it |
+| `gross_margin_year_change` | REAL | as `setup` carries it |
+| `relative_strength_high` | REAL | as `setup` carries it |
+| `insider_cluster_buyers` | REAL | as `setup` carries it |
+| `rating_actions_net` | REAL | as `setup` carries it |
+| `estimate_revision_month` | REAL | as `setup` carries it |
+| `short_interest_share` | REAL | as `setup` carries it |
+| `business_state_filed` | REAL | as `setup` carries it |
+| `last_result` | REAL | the result with each stock whose prices stop held at its last price, the trade ending there |
+| `last_benchmark` | REAL | the benchmark with each member whose prices stop ended at its last price, none left out for stopping |
+| `last_edge` | REAL | the edge at the last price |
+| `last_edge_after_cost` | REAL | as `edge_after_cost`, at the last price |
+| `last_sessions` | INTEGER | the sessions held at the last price |
+| `last_end` | TEXT | how the trade ended at the last price |
+| `last_ended_on` | TEXT | the session it ended on at the last price |
+| `last_settled` | INTEGER | 1 where the trade and its benchmark both ended at the last price |
+| `run_id` | TEXT | the run that wrote it |
+| `company_value` | REAL | the base-10 logarithm of the company's value on the session as the valuation reading works it, a statistic and never money, added last by the migration as `setup`'s was |
+
+Primary key: `index_code`, `family`, `ticker`, `session_date`.
+
+**The long ledger, read by no card, hook or night** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes it a chunk of sessions at a time under the night's wait and the drain's lock, each setup read by the standing ledger's own build over the long reader's history and written under both readings in one row; a session it holds a setup of is frozen, and a build writes only the sessions it holds none of, so the table has no updater and no deleter until the restart writes it again. It reads `long_market_bar`, `long_filing`, `long_fact` and through the long reader `long_span`, `long_bar`, `bar`, `session_mark`, `long_print`, `pulled_earnings`, `calendar`, `pulled_surprise`, `membership`, `company` and `pulled_company`, and moves no row of `setup`. `ledger-check --long` and `long-ledger --measure` read it and write nothing but the check's row on `run_log`.
+
+### long_reading
+Grain: one row per index, family, year and reading of the long ledger's and the standing ledger's setups.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | as `setup` carries it |
+| `year` | INTEGER | the year of the setups' sessions, 2005 to 2018 off `long_setup` and from 2019 off `setup` |
+| `reading` | TEXT | `as ruled` or `last price` |
+| `setups` | INTEGER | the setups of the year |
+| `settled` | INTEGER | those whose trade and benchmark both ended |
+| `targets` | INTEGER | those settled that reached their target |
+| `edge_mean` | REAL | the mean edge over the settled, null where none |
+| `edge_after_cost_mean` | REAL | the mean edge after the round trip the published table charges, null where none |
+| `crossing` | INTEGER | the settled setups whose hold crosses an unexplained jump of the stock's or of a member's of the index, whose benchmark holds it |
+| `edge_after_cost_without` | REAL | the mean edge after costs over the settled setups crossing none, null where none |
+| `read_through` | TEXT | the session the long history was read through |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `index_code`, `family`, `year`, `reading`.
+
+**Each family's years under the two readings, which the History page draws** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes an index's rows whole at its end, the build before's removed in the same transaction: the long years off `long_setup` under both readings, and the standing years off `setup` as ruled and with each of its rows `departed_setup` holds read at the last price. It reads `data_check` for each stock's unexplained jumps and `long_span` for the members of the index on each jump's day. Read by the History page and the long ledger's measure, and by no card, hook or night.
+
+### departed_setup
+Grain: one row per index, family, stock and session of a standing setup left open with no result whose stock's prices stop after it was bought.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | as `setup` carries it |
+| `ticker` | TEXT | as `setup` carries it |
+| `session_date` | TEXT | the setup's session |
+| `source` | TEXT | the `setup` row's source |
+| `bought_at` | TEXT | decimal in code, the price it was bought at, its fill where `setup` holds one and its entry otherwise |
+| `last_session` | TEXT | the stock's last session in the long reader's series |
+| `last_close` | TEXT | decimal in code, its close there |
+| `last_result` | REAL | the result at that close in the family's form, a swing trade's in its risk and a book's in its buy |
+| `benchmark` | REAL | the benchmark as the `setup` row holds it, null where none |
+| `last_edge` | REAL | the result less the benchmark, null where either is |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `index_code`, `family`, `ticker`, `session_date`.
+
+**The standing years' setups at their last price, apart from `setup` so no row of it moves** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes an index's rows whole at its end, the build before's removed in the same transaction, off the `setup` rows of the index with no result and not settled whose stock's series in the long reader stops after the setup's session. Read by the long build's years and the long ledger's measure, and by no card, hook or night.
 
 ### dividend_wait
 Grain: one row per stock and ex-date whose dividend the provider's answer did not carry.

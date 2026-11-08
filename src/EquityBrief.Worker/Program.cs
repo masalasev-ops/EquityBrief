@@ -101,6 +101,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "long-members" => await LongMembersRun(args),
     "long-prices" => await LongPricesRun(args),
     "long-facts" => await LongFactsRun(args),
+    "long-ledger" => await LongLedgerRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -247,6 +248,29 @@ static async Task<int> SessionMarkRun(string[] args)
 // or nothing where a stop stands, '--print <folder>' reads them and writes nothing, and '--counts-read' records the operator's word
 // that the data check's counts over the long history have been read.
 // see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+// The long ledger's measure, read-only: the jumps' comparison at its top, each family on each index by era under the two
+// readings, the stopped and failed stocks, the left-out holdings and the standing years' leavers.
+// see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
+static async Task<int> LongLedgerRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!args.Contains("--measure", StringComparer.Ordinal))
+    {
+        Console.Error.WriteLine("long-ledger: give '--measure'.");
+
+        return 1;
+    }
+
+    foreach (var line in await EquityBrief.Worker.History.LongLedgerReader.MeasureAsync(store.DatabaseFile))
+    {
+        Console.WriteLine("long-ledger: " + line);
+    }
+
+    return 0;
+}
+
 // The long history's facts. With '--capture --into <folder>' every filer the store knows, the long price pull's and every company row's, is asked
 // the SEC once for its facts, after the asks are stated, and each answer kept as sent; '--write <folder>' writes the periods
 // before the standing table's first whole, '--print <folder>' writing nothing.
@@ -717,7 +741,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 73 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 74 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -807,10 +831,13 @@ static int NoVerb()
         "history for one index over the span, every member-session a family's loose gates pass over the pulled bars " +
         "merged with the store's, each replayed to its end, a chunk of sessions at a time, going on from the sessions " +
         "not yet written, waiting for the night and holding the drain's lock while it writes, with '--again' writing " +
-        "the span again, " +
+        "the span again, and 'ledger-build --long --index <GSPC, MID or SML>' writing the long ledger of 2005 to 2018 over " +
+        "the long history under both readings, the sessions it holds frozen, then the standing setups whose prices stopped " +
+        "at their last price and each family's years, " +
         "'ledger-check --index <GSPC, MID or SML>' rebuilds a seeded sample of each year's history setups from the " +
         "history read through the build's own end and cut at each one's session, a swing setup's own readings by its " +
-        "family's gates, and names every reading that differs from the one stored, " +
+        "family's gates, and names every reading that differs from the one stored, '--long' checking the long ledger's, " +
+        "'long-ledger --measure' reads the long ledger's measure and writes nothing, " +
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
         "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +
         "family and year with how often the next open fell under the stop or over the target, writing nothing, " +
@@ -1399,6 +1426,21 @@ static async Task<int> LedgerBuildRun(string[] args)
     var from = VerbArguments.Value(args, "--from");
     var through = VerbArguments.Value(args, "--through");
 
+    // From 23.6 the long ledger over 2005 to 2018, its span its own.
+    // see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
+    if (args.Contains("--long", StringComparer.Ordinal))
+    {
+        if (index is null || from is not null || through is not null)
+        {
+            Console.Error.WriteLine("ledger-build: give '--long --index <GSPC, MID or SML>', the long ledger's span being 2005 to 2018.");
+
+            return 1;
+        }
+
+        return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
+            .LongBuildAsync(store.DataRoot, index, Console.Out);
+    }
+
     if (index is null || from is null || through is null
         || !DateOnly.TryParseExact(from, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var fromDay)
         || !DateOnly.TryParseExact(through, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var throughDay))
@@ -1427,7 +1469,9 @@ static async Task<int> LedgerCheckRun(string[] args)
         return 1;
     }
 
-    return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).CheckAsync(index, Console.Out);
+    var ledger = new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile);
+
+    return args.Contains("--long", StringComparer.Ordinal) ? await ledger.LongCheckAsync(index, Console.Out) : await ledger.CheckAsync(index, Console.Out);
 }
 
 // The fill step by hand, over every stored trade, writing the fills and its run log row alone; the remedy runs it with

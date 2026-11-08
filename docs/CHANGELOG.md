@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, .claude/rules/checks.md - the long ledger
+Decision: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
+Was:
+> (Setup ledger, catalogue) ... candidate register, heavyweight nights, setups, setup nights, ledger readings | setups, setup nights, ledger summaries, ledger readings | ... and writing nothing (see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room)
+> (Read API, catalogue) every store but the pulled history and its bars read from 19.11 for the chart page and its long snapshots and holdings read from 23.3 for the History page, strip quote feed | ...
+> (15.25 History) **Answers:** ... and from 23.4 what the prices back to 2004 read and the ends no filing settles. **Reads:** ... and from 23.4 the newest long price pull's row on the run log, and nothing else; ...
+> (SCHEMA, long_filing) ... for a gate reading a date alone (see: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone).
+> (checks.md, fixture-expectations) ... no night reading the long facts and no source a rule's version pins among those 23.5 writes |
+> (checks.md, read-surface) ... from 23.5 the drift's survivors line read back beneath every drift row in paper trading's variants and scorecard and no other family's |
+Now:
+> (Setup ledger, catalogue) ... candidate register, heavyweight nights, setups, setup nights, ledger readings, long market bars, long filings, long facts, long spans, data checks, long setups, long readings, departed setups | setups, setup nights, ledger summaries, ledger readings, long setups, long readings, departed setups | ... and writing nothing (...); and from 23.6 by hand `ledger-build --long --index <index>` writes the long ledger of 2005 to 2018 ... and `ledger-check --long` checks a seeded sample of its setups at 25 a year as the standing check does (...)
+> (Read API, catalogue) every store but the pulled history and its bars read from 19.11 for the chart page and its long snapshots and holdings read from 23.3 for the History page and but the long ledger's setups and departed setups from 23.6, strip quote feed | ...
+> (15.25 History) **Answers:** ... and the ends no filing settles, and from 23.6 each family's result by year from 2005 on each index and the three pooled. **Reads:** ... and from 23.4 the newest long price pull's row on the run log, and from 23.6 the long readings, and nothing else; ...
+> (SCHEMA, long_filing) ... for a gate reading a date alone (...). From 23.6 the long reader reads `long_bar` and `long_print`, the ledger's long build `long_market_bar` and `long_filing`, and the long ledger's measure `long_bar`, `long_market_bar` and `long_filing`, each by hand and none a night's (...).
+> (checks.md, fixture-expectations) ... among those 23.5 writes; and from 23.6 the long reader's series over a constructed store ... and no source a rule's version pins among those 23.6 writes |
+> (checks.md, read-surface) ... and no other family's; and from 23.6 the History page's families by year read back over a constructed store ... and the lower coverage label |
+Why: 23.6 builds the long ledger, its reader, its measure, its three stores and the History page's families by year.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md - the long facts ask every filer the store knows
 Decision: The long history's facts are the SEC's figures before the standing table's first, kept as first filed apart from it
 Was:

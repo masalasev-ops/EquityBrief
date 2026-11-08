@@ -421,9 +421,10 @@ public partial class ArchitectureConformance
         // four rows, section 18's row and the History page's row, and 1582 from 23.4, the long price pull's catalogue and matrix
         // rows, its six stores, section 17's row, section 18's two rows and the History page's row, and 1590 from 23.5, the
         // long fact pull's and the long first-year reader's catalogue and matrix rows, its store, section 17's row, section
-        // 18's row and paper trading's survivors line.
+        // 18's row and paper trading's survivors line, and 1600 from 23.6, the long history reader's and the long ledger
+        // reader's catalogue and matrix rows, its three stores, section 17's row, section 18's row and the History page's row.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1590),
+            (789, 853, 6, 4, 855, 876, 1600),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

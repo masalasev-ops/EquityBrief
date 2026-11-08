@@ -17285,3 +17285,80 @@ Pins:       none move.
 Mutated:    the rule, stated before the run: the count one off. m1 the count read as 297 with 23.6's row in place: the test red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
             the figures it states.
+
+### 23.6 - the long history read, departed stocks kept, and each family's result by year   2026-11-08
+
+Built:      the long history reader, the record the sweeps and the ledger build take over each index's long spans, `long_bar`
+            with the store's own bars after it at their scale, under the marks: a bad print skipped, the sessions before a start
+            and after a history's end left out; the long prints with the pull's and the calendar's, the pull's surprises and the
+            long calendar's on the days it holds none. `ledger-build --long --index <index>`: the standing ledger's own build over
+            it for 2005 to 2018, the market series from the long pull, a filer's facts from both fact tables, the heavyweights'
+            rebalances counted from the long run's first session, each setup walked as ruled and with every series whose prices
+            stop held at its last close and open, both readings in one row of `long_setup`, migration 134; a session written is
+            frozen; a chunk that would start with the store past its size before the long history and the budget, or whose
+            sessions cannot be read, stops the build with its row on the run log. At its end `departed_setup`, the standing
+            setups left open whose prices stop, at their last price, and `long_reading`, each family's years under both readings,
+            the long years and the standing ones, the trades crossing an unexplained jump apart. `ledger-check --long`, the
+            point-in-time check at 25 a year. `long-ledger --measure`, read-only. The History page's families by year. One
+            decision, section 17's row and section 18's row, 13.10's paragraph, the catalogue and matrix rows, the stores,
+            `SCHEMA.md`, the runbook, the roster's rows, the guide and the changelog. No row of `setup`, a bar or a pulled row
+            moves; no source a rule's version or the readings' version pins moves: `SetupLedger.cs` gains the long reads behind
+            optional parameters and pins nothing.
+Found:      the bundled SQLite carries no page statistics, so a table's own bytes cannot be read; the budget holds the store's
+            file to its size when the operator was asked, 5.82 gigabytes, and the 4.5 together, 10.32. The rehearsal read an
+            S&P 400 breakout benchmark of -295 risks on 2008-05-13 off BLC, whose prices stood with no range for 14 sessions,
+            so its typical move and its risk read nought; the trades set apart now include a hold crossing a member's
+            unexplained jump, and the measure names the swing setups past 20 risks either way.
+Measured:   the rehearsal over 23.5's scratch store, the S&P 400 alone, its standing ledger empty there: 429,430 long setups of
+            2005 to 2018, 47,990 passing the live rule, in about 95 minutes on the SSD, a quarter's chunk in 60 to 110 seconds
+            and the history read in 6, the build stopped once part way and gone on from its frozen sessions; the store grew by
+            427 megabytes, about 995 bytes a setup, so the three indexes at about 1.6 million setups come to about 1.6 gigabytes
+            against the 10.32 ceiling and the live store's 8.40. 170 family years written; run again it wrote none and read
+            the years again in a minute. The measure: unexplained jumps 191 over 23,904 stock-years from 2005 to 2014 against
+            146 over 25,739 from 2015, not past twice; 124, 67, 43 and 103 by era. As ruled against the last price, edge after
+            costs over 2005 to 2018: the pullback -0.195, -0.108 and -0.092 by era against -0.194, -0.108, -0.092; the drift
+            -0.740, -0.303, -0.056 against -0.740, -0.304, -0.060; the breakout 4.489, 1.366, -0.055, carried by 349 of its
+            9,225 setups of 2005 to 2009 and 20 of 11,338 of 2010 to 2014 past 20 risks, -0.093 and -0.117 without them; the
+            dip -0.020, -0.018, -0.005 alike under both; leaving the stopped out flatters the breakout, 1.992 against 1.979, the
+            drift -0.318 against -0.320, and the dip and improving by under 0.001, each a proposal for the operator. Setups
+            crossing an unexplained jump, the trade's or a member's: 972 of the breakout's 9,225 of 2005 to 2009, 2,748 of the
+            dip's 110,748. Stocks ending with a trade open: 1,610 setups on 198 stocks read at the last price, 20 on 4 stocks
+            with an 8-K carrying item 1.03, their mean 0.475 risks at the last price and -176.7 at nothing. The failures left
+            out at nothing in the equal-weighted quarter after their last quarter end: Ambac -0.0228 as run and -0.0248,
+            Orchard Supply 0.1277 and 0.1254, Peabody -0.0062 and -0.0082 on the S&P 500; Adeptus, Anchor BanCorp, Building
+            Materials, Forest Oil, Frontier Financial and Sterling Financial on the S&P 600, each moved by 0.0014 to 0.0023.
+            The leavers' dates add 5,807, 7,062 and 14,338 member-sessions from 2019 on the three indexes. The History page's
+            families by year read back off the rehearsal's store at 1440 and a true 390 in both palettes, the tables scrolling
+            inside their own frames at 390, the page none.
+Provisional: each on the operator's review: a departed stock read at its last price by holding its series flat at its last
+            close and open after it, so the pinned walks end the trade at the cap or the hold's end there, rather than a third
+            walk; the opens held at the last close, the last price a sale after it can read; `long_reading` as each family's
+            years under the two readings, which the page and the measure read, where the plan named the store and not its grain;
+            `departed_setup` as the plan's table of its own for the standing years, the trade at its last price and its benchmark
+            as the standing ledger holds it; the standing years' member-sessions a leaver's date adds read off the long spans
+            and the last priced session; a trade crossing an unexplained jump read by its own stock's jumps and every member's of
+            its index inside its hold, a member read by its long spans on the jump's day; the outlying bound at 20 risks; the edge after costs off the published table at each setup's company value reading,
+            none where the reading is none, as the cards read it; the S&P 500's heavyweights over the long years read the standing
+            counts and market series alone, their first test year 2023 measured at 23.5; the budget as the store's own size.
+Tests:      3594, from 3585, 9 new: 8 in the fixture's expectations and 1 in the read surface. The page's 2008 and 2010 breakout
+            years on the S&P 400 draw the outlying setups' means, +43.98 and +6.17 risks; the measure states them without.
+Claims:     1600, from 1590, 10 new: two components' catalogue and matrix rows, three stores, section 17's row, section 18's row
+            and the History page's row; the plan counted about 9, the walk's row landing as 13.10's paragraph and the stores
+            three where it counted two.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property 23.6 adds, filtered to its tests by name,
+            7 in all, each red: m1 a bad print kept by the reader's marks; m2 a stopped series not held at its last price; m3 a
+            swing trade at its last price read as a book; m4 a jump on the setup's own session counted as crossed; m5 the older
+            jumps read at twice rather than past it; m6 the page's last price read as ruled; m7 a delete of the long setups in
+            the long build's statements.
+Remedy:     `tools/remedies/2026-11-08-23.6-the-long-ledger.txt`: `migrate`, `ledger-build --long` on each index and `ledger-check
+            --long` on each, no request and no model call, run from main after the merge with no other writer running.
+Carried:    the measure over the live store, each family on each index by era under both readings, the left-out holdings and the
+            failures at nothing, the stocks ending so and the point-in-time check, to an entry after the remedy; the operator's
+            marks on the unexplained jumps and the unsettled ends for 23.10's long ledger; the provisional choices above; the
+            sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3594 of 3594 tests ran with none failed, migrations 0 to 134 with none
+            pending, schema version 134, against `data-ci` and never `data`; the phase report 66 tables, 1600 claims, 1600 passing,
+            none out of scope and none unexamined, 1615 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

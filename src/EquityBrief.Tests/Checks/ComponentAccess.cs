@@ -111,6 +111,15 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Long first-year reader"),
     ];
 
+    // 23.6's two: the long history reader and the long ledger reader.
+    internal static string[] LongLedgerRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Long history reader"),
+        CheckReach.Key(Scope.MatrixTable, "Long history reader"),
+        CheckReach.Key(Scope.CatalogueTable, "Long ledger reader"),
+        CheckReach.Key(Scope.MatrixTable, "Long ledger reader"),
+    ];
+
     // 22.38's one: the session marks.
     internal static string[] SessionMarkRows =>
     [
@@ -296,6 +305,9 @@ public partial class ComponentAccess
 
             // 23.5, the long fact pull and the long first-year reader.
             .. LongFactsRows,
+
+            // 23.6, the long history reader and the long ledger reader.
+            .. LongLedgerRows,
             .. LateBarRows,
             .. EntryReaderRows,
             .. SplitNameRows,
@@ -949,8 +961,9 @@ public partial class ComponentAccess
         // from 21.14 the drift surprises check, which prints what it reads and writes nothing, and from 23.1 the history end
         // filings, which keep the archive's answers in a folder the command names, and from 23.3 the long schedule filings
         // and the long day files, which keep the trust's filings and the provider's day files and lists in the long history's
-        // folder the command names.
-        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongFirstYearReader", "LongScheduleFilings", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // folder the command names, and from 23.6 the long history reader and the long ledger reader, which read the store
+        // and write nothing.
+        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongFirstYearReader", "LongHistoryReader", "LongLedgerReader", "LongScheduleFilings", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(
