@@ -23,6 +23,14 @@ Now:
 > ... from the corrections of 2026-11-07 that plan drawn open on a pick's page with its stop named as its own against the pick's (see: A pick's page heads ...); ...
 Why: the operator's order of 2026-11-07 after the monthly run, its first item.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - the paper chart opens on its newest day at a phone's width
+Decision: The paper chart opens scrolled to its newest day where it is wider than the screen
+Was:
+> (15.21, the chart) ... at a width under the chart's own a width its labels read at, the chart scrolling inside its own frame (see: The paper chart draws each account ...)
+Now:
+> ... the chart scrolling inside its own frame (see: The paper chart draws each account ...), from the 19.4 correction of 2026-11-07 opening scrolled to its newest day (see: The paper chart opens scrolled to its newest day where it is wider than the screen)
+Why: the operator's order of 2026-11-07 after the monthly run, its second item.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - a plan's arithmetic flagged beside it
 Decision: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
 Was:

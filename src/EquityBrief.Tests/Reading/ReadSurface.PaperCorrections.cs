@@ -648,4 +648,28 @@ public partial class ReadSurface
 
         Assert.True(kept < drawn && int.Parse(narrow.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) >= kept);
     }
+
+    // Read back at a true 390 on 2026-11-07, the chart scrolled inside its frame opened on its oldest day, each line's end and
+    // its label off the screen to the right. Every time a screen is drawn, on the read surface and on the read-only copy, the
+    // page's script scrolls each paper chart's frame to its right-hand end after it places the page, so a phone opens it on
+    // the newest day; a frame the chart fits has nothing to scroll.
+    // see: The paper chart opens scrolled to its newest day where it is wider than the screen
+    [Fact]
+    public async Task ThePaperChartOpensOnItsNewestDayAtAPhonesWidth()
+    {
+        Assert.Equal("for (const wide of screen.querySelectorAll('.paper-chart')) { wide.scrollLeft = wide.scrollWidth; }", MarkRenderer.PaperChartToNewest);
+
+        using var store = new TemporaryStore().Migrated();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var shell = await client.GetStringAsync("/");
+        Assert.Matches(new Regex(@"function settle\(view, hash, query\) \{.*?else \{ scrollTo\(0, 0\); \}\s*" + Regex.Escape(MarkRenderer.PaperChartToNewest) + @"\s*keptPlace = null;", RegexOptions.Singleline), shell);
+        Assert.Single(Regex.Matches(shell, Regex.Escape(MarkRenderer.PaperChartToNewest)));
+
+        var copied = EquityBrief.Web.Cloudflare.SiteCopy.Shell(new DateOnly(2026, 11, 6), new Dictionary<string, string>());
+
+        Assert.Matches(new Regex(@"async function show\(\) \{.*?scrollTo\(0, 0\);\s*" + Regex.Escape(MarkRenderer.PaperChartToNewest) + @"\s*paintTheme\(\);\s*\}", RegexOptions.Singleline), copied);
+        Assert.Single(Regex.Matches(copied, Regex.Escape(MarkRenderer.PaperChartToNewest)));
+    }
 }

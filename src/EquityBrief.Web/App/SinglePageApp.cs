@@ -602,6 +602,7 @@ public sealed partial class SinglePageApp : IComponent
           else if (reasonRow) { reasonRow.scrollIntoView({ block: 'center' }); }
           else if (query.get('{{{HomeSetupKey}}}') && document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}'))) { document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')).scrollIntoView({ block: 'start' }); }
           else { scrollTo(0, 0); }
+          {{{MarkRenderer.PaperChartToNewest}}}
           keptPlace = null;
           fresh = false;
           drawing = false;

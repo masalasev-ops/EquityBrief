@@ -17017,3 +17017,19 @@ Mutated:    the rule, stated before the run: the smallest edit bringing back tod
             m1 Tonight's plan folded again: red. m2 the stock page's plan folded again: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
             pull request's last.
+
+### 19.4 - correction: the paper chart opens on its newest day at a phone's width   2026-11-07
+
+Found:      the operator's order of 2026-11-07 after the monthly run, its second item. From the 19.4 correction of that day
+            the chart scrolls inside its own frame under 760 pixels, and a phone opened it on its oldest day, each line's end
+            and its label off the screen to the right.
+Corrected:  `MarkRenderer.PaperChartToNewest`, run each time a screen is drawn on the read surface and on the read-only copy,
+            scrolls each paper chart's frame to its right-hand end. A chart its frame holds does not scroll. A decision, 15.21's
+            row and the changelog.
+Tests:      1 new: the line stands in the read surface's script after it places the page and in the copy's, once each.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit bringing back today's page, filtered to the new test by name.
+            m3 the line removed from the read surface's script: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
