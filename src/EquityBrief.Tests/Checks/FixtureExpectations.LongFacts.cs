@@ -21,6 +21,7 @@ public partial class FixtureExpectations
     internal static string[] LongFactsClaims =>
     [
         CheckReach.Key(Scope.LimitsTable, "The long history's first test years"),
+        CheckReach.Key(Scope.FailureTable, "A filer whose facts the archive refuses"),
     ];
 
     internal static string[] LongFactsRows => [.. ComponentAccess.LongFactsRows, .. SchemaColumns.LongFactStoreRows, .. LongFactsClaims, .. Reading.ReadSurface.SurvivorsLineClaims];
@@ -190,6 +191,37 @@ public partial class FixtureExpectations
         Assert.Equal("BBBY", LongFirstYears.CalendarCode("BBBY_old"));
         Assert.Equal("WB", LongFirstYears.CalendarCode("WB_old1"));
         Assert.Equal("AAPL", LongFirstYears.CalendarCode("AAPL"));
+    }
+
+    // A variant reading HYG reads no year before HYG's first, a search reading it tests from three years after, and the one-off
+    // reading none before the first stored release.
+    [Fact]
+    public void AVariantReadingHygReadsNoYearBeforeItsFirstAndTheOneOffReadingNoneBeforeTheStoredReleases()
+    {
+        Assert.Equal(2008, LongFirstYears.HygFirstYear);
+        Assert.Equal(2011, LongFirstYears.HygSearchTestFrom);
+        Assert.Equal(2008, LongFirstYears.JudgedFrom(2006, readsHyg: true));
+        Assert.Equal(2006, LongFirstYears.JudgedFrom(2006, readsHyg: false));
+        Assert.Equal(2012, LongFirstYears.JudgedFrom(2012, readsHyg: true));
+        Assert.Equal(2019, LongFirstYears.OneOffFrom(2008, 2019));
+        Assert.Equal(2021, LongFirstYears.OneOffFrom(2021, 2019));
+    }
+
+    // The heavyweights' agreement over a constructed heading worked by hand: three of three agreeing goes to the operator, two of
+    // three does not, and nothing is adopted either way.
+    [Fact]
+    public void TheHeavyweightsAgreementIsWorkedByHandOnBothSidesOf95InEvery100AndAdoptsNothing()
+    {
+        (string, decimal, decimal)[] same = [("A", 90m, 900m), ("B", 80m, 800m), ("C", 70m, 700m), ("D", 10m, 100m)];
+        (string, decimal, decimal)[] apart = [("A", 90m, 900m), ("B", 80m, 800m), ("C", 70m, 50m), ("D", 10m, 650m)];
+
+        Assert.Equal(3, LongFirstYears.Agreed(same, 3));
+        Assert.Equal(2, LongFirstYears.Agreed(apart, 3));
+        Assert.True(LongFirstYears.GoesToTheOperator(19, 20));
+        Assert.False(LongFirstYears.GoesToTheOperator(18, 20));
+        Assert.False(LongFirstYears.GoesToTheOperator(0, 0));
+        Assert.Equal([], typeof(LongFirstYearReader).GetMethods().Where(method => method.Name.Contains("Write", StringComparison.Ordinal)).Select(method => method.Name));
+        Assert.DoesNotContain(LongFirstYearReader.Access.Stores, touch => touch.Touch != Core.Components.Touch.Read);
     }
 
     [Fact]

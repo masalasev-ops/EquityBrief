@@ -106,6 +106,34 @@ public static class LongFirstYears
     public static string WhyLeft(bool bankruptcy, bool endedByFiling, bool pricedAfter) =>
         bankruptcy ? "failed" : endedByFiling ? "bought out" : pricedAfter ? "dropped" : "not read";
 
+    // A variant reading HYG is judged from HYG's first full year, its fund having started in 2007, and a search reading it
+    // learns from that year and tests from three after it.
+    public const int HygFirstYear = 2008;
+
+    public static int HygSearchTestFrom => HygFirstYear + LearningYears;
+
+    // The first year a rule is judged from: the family's own, and no year before HYG's first where it reads HYG.
+    public static int JudgedFrom(int familyFirst, bool readsHyg) => readsHyg ? Math.Max(familyFirst, HygFirstYear) : familyFirst;
+
+    // The entry check's one-off reading reads stored releases alone, so it is read from the first year the store holds a release
+    // and from no year before it, whatever the family's own first year.
+    public static int OneOffFrom(int familyFirst, int firstStoredRelease) => Math.Max(familyFirst, firstStoredRelease);
+
+    // The share of each heading's largest holdings by the fund's value that the live ranking by the close times the filed share
+    // count must pick too before the fund's ranking goes to the operator as the heavyweights' input before filed counts.
+    public const double AgreementShare = 0.95;
+
+    // How many of a heading's largest by the fund's value are among its largest by the close times the filed count.
+    public static int Agreed(IReadOnlyCollection<(string Ticker, decimal Value, decimal Cap)> holdings, int largest)
+    {
+        var byValue = holdings.OrderByDescending(one => one.Value).ThenBy(one => one.Ticker, StringComparer.Ordinal).Take(largest).Select(one => one.Ticker).ToHashSet(StringComparer.Ordinal);
+
+        return holdings.OrderByDescending(one => one.Cap).ThenBy(one => one.Ticker, StringComparer.Ordinal).Take(largest).Count(one => byValue.Contains(one.Ticker));
+    }
+
+    // Whether the fund's ranking agrees enough to go to the operator; it is adopted only on their word.
+    public static bool GoesToTheOperator(int agreed, int compared) => compared > 0 && agreed >= AgreementShare * compared;
+
     // The calendar's code for a store's older code: its suffix marking an older listing taken off.
     public static string CalendarCode(string ticker)
     {

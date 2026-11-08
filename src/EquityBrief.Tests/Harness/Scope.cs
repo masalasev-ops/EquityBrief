@@ -4834,6 +4834,10 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(FailureTable, "A filer whose facts the archive refuses")] = new Scoped(
+            Verdict.Pass,
+            "a constructed filer the feed refuses named in the folder's list with no answer kept, and asked again by the next capture",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "The long history's first test years")] = new Scoped(
             Verdict.Pass,
             "a filer's answer kept as sent and asked nothing again, the periods before the standing table's first kept as first filed, each first year worked by hand on both sides of its share, the estimate on both sides of a year apart and the drift's fallback with its label",
@@ -8337,6 +8341,7 @@ internal static class Scope
         ["The long history's matching under its stop"] = "23.3",
         ["A code the provider prices by nothing"] = "23.4",
         ["A filer whose names are not the company's"] = "23.4",
+        ["A filer whose facts the archive refuses"] = "23.5",
         // 21.6's two, which the plan names as section 18's rows for a source refusing and a member unanswered.
         ["A new reading's source refuses"] = "21.6",
         ["A member a new reading's source answers nothing for"] = "21.6",

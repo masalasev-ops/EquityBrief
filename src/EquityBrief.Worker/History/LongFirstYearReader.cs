@@ -254,12 +254,9 @@ public sealed class LongFirstYearReader : IComponent
                     continue;
                 }
 
-                var byValue = priced.OrderByDescending(one => one.Value).Take(Largest).Select(one => one.Ticker).ToHashSet(StringComparer.Ordinal);
-                var byCap = priced.OrderByDescending(one => one.Cap).Take(Largest).Select(one => one.Ticker);
-
                 groups++;
                 compared += Largest;
-                agreed += byCap.Count(byValue.Contains);
+                agreed += LongFirstYears.Agreed(priced, Largest);
             }
 
             agreement.Add((group.Key.Index, group.Key.Year, groups, agreed, compared));
@@ -292,7 +289,8 @@ public sealed class LongFirstYearReader : IComponent
 
         foreach (var (index, year, groups, agreed, compared) in read.Agreement)
         {
-            lines.Add(FormattableString.Invariant($"heavyweights' agreement on {index} {year}: {agreed} of {compared} over {groups} heading(s), {(compared == 0 ? 0 : (double)agreed / compared):P1}"));
+            lines.Add(FormattableString.Invariant($"heavyweights' agreement on {index} {year}: {agreed} of {compared} over {groups} heading(s), {(compared == 0 ? 0 : (double)agreed / compared):P1}")
+                + (LongFirstYears.GoesToTheOperator(agreed, compared) ? ", which goes to the operator, adopted only on their word" : string.Empty));
         }
 
         return lines;
