@@ -120,6 +120,15 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Long ledger reader"),
     ];
 
+    // 23.8's two: the long search and the plan point test.
+    internal static string[] LongSearchRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Long search"),
+        CheckReach.Key(Scope.MatrixTable, "Long search"),
+        CheckReach.Key(Scope.CatalogueTable, "Plan point test"),
+        CheckReach.Key(Scope.MatrixTable, "Plan point test"),
+    ];
+
     // 23.9's one: the sector splits reader.
     internal static string[] SectorSplitsRows =>
     [
@@ -318,6 +327,9 @@ public partial class ComponentAccess
 
             // 23.9, the sector splits reader.
             .. SectorSplitsRows,
+
+            // 23.8, the long search and the plan point test.
+            .. LongSearchRows,
             .. LateBarRows,
             .. EntryReaderRows,
             .. SplitNameRows,

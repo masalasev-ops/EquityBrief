@@ -100,7 +100,7 @@ public static class LoopProcedures
     public const double DriftStopFloor = 1;
 
     // One trade a setting kept: its listing's session and the session it ended on, none while open, and the trade.
-    sealed record Walked(int Entry, int? Exit, FamilyTrade Trade)
+    internal sealed record Walked(int Entry, int? Exit, FamilyTrade Trade)
     {
         public double? Edge => Trade.Result is { } result && !double.IsNaN(Trade.Benchmark) ? result - Trade.Benchmark : null;
     }
@@ -318,7 +318,9 @@ public static class LoopProcedures
 
     // A setting's trades over the whole history, kept where they clear the index's floors and gate, each result after
     // its round trip and its exit session beside it.
-    static IReadOnlyList<Walked> Walk(LoopRead read, FamilySweepRunner.Adapter adapter, int[] setting)
+    // From 23.8 the long search hands the walk its own clear, the index's floors alone, since the profit gate's quarters
+    // are not held over the long years.
+    internal static IReadOnlyList<Walked> Walk(LoopRead read, FamilySweepRunner.Adapter adapter, int[] setting, Func<SweepSeries, int, bool>? clears = null)
     {
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var held = new ConcurrentDictionary<(int Name, int Session), int>();
@@ -337,7 +339,9 @@ public static class LoopProcedures
         int YearOf(int session) => read.YearOf(session);
 
         var listings = adapter.Listings(setting)
-            .Where(listing => IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? []));
+            .Where(listing => clears is not null
+                ? clears(read.Series[listing.Name], listing.Bar)
+                : IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? []));
         var trades = FamilySweep.Walk(listings, tickers, YearOf, Exit, listing => fills.Benchmark(adapter.Benchmark(listing), listing));
 
         return

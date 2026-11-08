@@ -17452,3 +17452,100 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 135, against `data-ci` and never `data`; the phase report 66 tables, 1607 claims, 1607 passing,
             none out of scope and none unexamined, 1622 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.8 - each family's starting settings searched again over 2005 to 2026, and the traded plan's buy and sell points   2026-11-08
+
+Built:      `loop-search --long`: the breakout's and the drift's grids walked over the long reader's history once a setting,
+            each test year from the family's first choosing on what ended before it began, the floors in proportion to its
+            learning years against the years the long history scores, searched at the first test year and every third after
+            with the setting carried between, judged against the rule's provisional setting as the tester judges a proposal,
+            written to `long_search` a family at a time so a run stopped before the night's window goes on from the next.
+            `plan-points`: every setup the pullback, the breakout, the drift and the dip passed under its live rule, the long
+            ledger's from 2005 and the standing ledger's from 2019, walked under 296 combinations, the next open and each of
+            the levels plan's 3 zones and the 20-session average within 5, 10 and 20 sessions, the rule's stop, a zone's own
+            and 0.75, 1, 1.5 and 2 typical days, and the rule's sale, the first band above with real touches, the staged sales
+            and the time limit alone; each combination's figures by year, era and market regime to its report under the data
+            root's loop folder, CTSH of 2026-11-06 worked through every combination, and each family's recommendation over
+            2005 to 2018 with its edge from 2019 beside the traded plan's to `plan_point`. Migration 136. The Loop page's card
+            of the long history. One decision, section 17's two rows, 15.20's row, the catalogue, matrix and store rows,
+            `SCHEMA.md`, the runbook, the roster's rows, the guide and the changelog. No source a rule's version pins moves.
+Found:      the sweeps' walk holds each listing to the profit gate, whose pulled quarters hold none of the long years, so the
+            first rehearsal read no listing over 2005 to 2018 on the S&P 400, its rule today included; a result read in a
+            combination's own risk read a buy far down at a tight stop as five risks a pick; and a recommendation chosen as
+            the best of 296 over 2005 to 2018 reads high there for that alone. Each is settled by the new decision below.
+Measured:   the long ledger's live builds of 23.6's remedy, from a clean copy of d28ee874: the S&P 500's 580,009 setups,
+            88,636 passing the live rule, 393 standing setups at their last price and 302 family years; the S&P 400's 429,258,
+            55,439, 605 and 282; the S&P 600's 526,796, 54,683, 1,180 and 278.
+            `loop-search --long --print` over the live store through 2026-11-06, writing nothing, about four minutes an index:
+            none passed. The S&P 500's breakout from 2008, 7 searches over 19 test years, would run a 251-session high on twice
+            the volume, ranges at 1 and the stop 3 typical moves beneath, 1,996 trades, adjusted p 0.5401, better in 9 of 16;
+            its drift from 2016, 4 searches over 11, within 3 sessions up 1 typical move on twice the volume and the target at
+            twice the risk, 2,702 trades, 0.0891, 7 of 10. The S&P 400's breakout 2 times the volume, 1,667 trades, 0.7900, 8
+            of 14; its drift up 1.5 typical moves on 1.25 times the volume, the target at twice the risk, 1,995, 0.0929, 6 of
+            10. The S&P 600's breakout a 251-session high on twice the volume, 1,293 trades, 0.0035, better in 9 of 13, its
+            gate held and the proposal not passed on its other parts; its drift within 5 sessions up 1.5 typical moves on 1.5
+            times the volume, the target at twice the risk, 2,912, 0.1227, 5 of 10. The pullback, the dip, the books and the
+            quality and Fundamentals families were named as searched on the standing history alone.
+            `plan-points --print` over the live store, writing nothing, about two minutes an index: 135,610 setups on the S&P
+            500 with 264 the long history does not hold, 84,881 on the S&P 400 with 529, 89,762 on the S&P 600 with 647. Each
+            recommendation, its edge a pick offered over 2005 to 2018 against the traded plan's, then from 2019, which it was
+            not chosen on, against the traded plan's:
+            - S&P 500 pullback: the second zone within 20 sessions, 2 typical days under the buy, the time limit alone; +0.248
+              over 4,477 fills of 7,490 picks against -0.044; from 2019 -0.157 over 2,929 against -0.195.
+            - S&P 500 breakout: the 20-session average within 20 sessions, 2 typical days, the first band above; +0.132 over 954
+              of 3,026 against -0.088; from 2019 -0.008 over 427 against -0.231.
+            - S&P 500 drift: the third zone within 20 sessions, 2 typical days, the rule's sale; +0.200 over 448 of 3,220
+              against -0.161; from 2019 +0.035 over 413 against -0.384.
+            - S&P 500 dip: the second zone within 20 sessions, 0.75 typical days, the rule's sale; +0.029 over 31,496 of 71,806
+              against -0.038; from 2019 +0.004 over 18,258 against -0.074.
+            - S&P 400 pullback: the second zone within 10 sessions, 0.75 typical days, the time limit alone; +0.164 over 471 of
+              819 against -0.021; from 2019 +0.132 over 606 against -0.137.
+            - S&P 400 breakout: the first zone within 20 sessions, 1.5 typical days, the rule's sale; +0.143 over 989 of 1,751
+              against -0.079; from 2019 +0.044 over 889 against -0.096.
+            - S&P 400 drift: the second zone within 20 sessions, 0.75 typical days, the time limit alone; +0.090 over 620 of
+              1,819 against -0.080; from 2019 -0.015 over 858 against -0.081.
+            - S&P 400 dip: the second zone within 20 sessions, 0.75 typical days, the first band above; +0.029 over 20,016 of
+              45,400 against -0.034; from 2019 +0.021 over 13,087 against -0.044.
+            - S&P 600 pullback: the second zone within 20 sessions, 1.5 typical days, the first band above; +0.654 over 510 of
+              709 against -0.100; from 2019 -0.176 over 553 against +0.082, the one pair where the traded plan reads better.
+            - S&P 600 breakout: the 20-session average within 20 sessions, 2 typical days, the first band above; +0.142 over 724
+              of 1,773 against -0.202; from 2019 +0.050 over 517 against -0.118.
+            - S&P 600 drift: the next open, 1 typical day under the buy, the time limit alone; +0.254 over 487 of 487 against
+              +0.095; from 2019 +0.574 over 1,193 against +0.350.
+            - S&P 600 dip: the first zone within 20 sessions, 1.5 typical days, the staged sales; +0.197 over 38,141 of 46,896
+              against +0.164; from 2019 -0.001 over 29,265 against -0.032.
+            From 2019 the recommendation reads better than the traded plan on 11 of the 12, and above nothing on 7; those years
+            are the ones the traded plan's settings were chosen on, which favours it.
+            CTSH of 2026-11-06, the S&P 500 pullback's pick at a close of 64.72, the rule's stop 61.545 and its target 71.26,
+            under all 296 combinations: none trades yet, the store's newest session being the pick's own. Its levels plan
+            draws the first zone's top at 66.26 over the close, so a buy there fills as the next open does, the zone's stop
+            57.91; the second zone's top 58.04, its stop 54.70; the third zone's top 56.22, its stop 52.49, the zone the
+            operator's addition names; the 20-session average 65.98; the staged sales at 67.72, 69.18 and 71.26; and no
+            resistance band with real touches above any buy, so the first band above sells at the time limit. Every
+            combination's buy, stop and sale stands in the report the remedy writes.
+Provisional: each on the operator's review: the listings held to the index's floors alone over the long years, every
+            result in the rule's risk at the pick's close, and a recommendation's edge from 2019 beside it (see: The long search
+            reads the index's floors alone and the buy and sell points read every result in the rule's risk); the families
+            whose search reads the standing history alone named with that reason; the rule's provisional setting as the one
+            judged against on every index; a dip's rule sale at its time limit, its exit over its average not walked; the
+            staged sales' last share held to the stop or the time limit; the benchmark the index's own fund held over the same
+            sessions; the market regime the S&P 500 against its 200-day average; a recommendation the highest edge per pick
+            offered over 2005 to 2018 resting on 100 fills or more.
+Tests:      3617, from 3606, 11 new: 9 in the fixture's expectations and 2 in the read surface.
+Claims:     1616, from 1607, 9 new: the two components' catalogue and matrix rows, their two stores, section 17's two rows
+            and the Loop page's row; the plan counted about 3, the components and their stores landing as rows of their own.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property 23.8 adds, filtered to its tests by name,
+            5 in all, each red: m1 a search every test year; m2 the floors read whole in every fold; m3 a pick its entry never
+            fills not counted as offered; m4 a target sold at the close that signalled it rather than the next open; m5 a
+            zone's own stop left out. Not mutated: the worker's walk reading every result in the rule's risk, held by the
+            rehearsal's and the live figures alone.
+Remedy:     `tools/remedies/2026-11-08-23.8-the-long-search.txt`: `migrate`, then `loop-search --long` and `plan-points` on
+            each index, no request and no model call, run from main after the merge with no other writer running.
+Carried:    the provisional choices above; each recommendation to 23.10 only on the operator's word; 23.6's long checks and
+            23.7's long step's time to the entry after their remedies; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3617 of 3617 tests ran with none failed, migrations 0 to 136 with none
+            pending, schema version 136, against `data-ci` and never `data`; the phase report 66 tables, 1616 claims, 1616 passing,
+            none out of scope and none unexamined, 1631 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

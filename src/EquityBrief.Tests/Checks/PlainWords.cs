@@ -42,7 +42,7 @@ public partial class PlainWords
         (TonightPage, "22.6", ["market-strip", "one-minute", "buy-points", "close-to-buy", "setups", "family", "heavyweights", "quality", "improving", "words"], true),
         (FundamentalsPage, "22.8", ["chart-page-fundamentals", "fundamentals"], false),
         (PaperPage, "21.13", ["account", "paper-chart", "paper-combined", "paper-bought", "paper-variants", "paper-scorecard", "paper-yours"], true),
-        (LoopPage, "21.13", ["loop-none", "loop-summary", "loop-pullback", "loop-breakout", "loop-drift", "loop-dip", "loop-heavyweight", "loop-quality", "loop-improving", "loop-decisions", "loop-alarm"], true),
+        (LoopPage, "21.13", ["loop-none", "loop-summary", "loop-pullback", "loop-breakout", "loop-drift", "loop-dip", "loop-heavyweight", "loop-quality", "loop-improving", "loop-decisions", "loop-alarm", "loop-long"], true),
         (LedgerPage, "21.13", ["ledger-none", "ledger-pullback", "ledger-breakout", "ledger-drift", "ledger-dip", "ledger-heavyweight", "ledger-quality", "ledger-improving", "ledger-fundamentals", "ledger-path", "reading-links", "release-answers"], true),
     ];
 

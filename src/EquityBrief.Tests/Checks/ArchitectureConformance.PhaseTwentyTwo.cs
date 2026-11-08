@@ -135,6 +135,9 @@ public partial class ArchitectureConformance
 
         // From 23.9: the sector splits reader, section 17's two rows and the History page's labels row.
         .. FixtureExpectations.SectorSplitsRows,
+
+        // From 23.8: the long search and the plan point test, their stores, section 17's two rows and the Loop page's row.
+        .. FixtureExpectations.LongSearchRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

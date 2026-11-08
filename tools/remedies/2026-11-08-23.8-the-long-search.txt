@@ -1,0 +1,14 @@
+# The remedy of 23.8, the starting settings searched again over the long history and the traded plan's buy and sell points.
+# Migration 136 creates the long search's and the buy and sell points' tables. Then on each index the breakout's and the
+# drift's searches over the long history, each family written as it finishes, and the buy and sell points of the four price
+# families under every combination, each recommendation written beside the traded plan's and every figure to its report
+# under the data root's loop folder. It asks nothing of anyone, calls no model and registers nothing; no source a rule's
+# version or the readings' version pins moves. Run from main after the merge, after 23.6's long builds and 23.7's remedy,
+# when no night, off-peak run, local run, ledger build or monthly run is writing.
+migrate
+loop-search --long --index GSPC
+loop-search --long --index MID
+loop-search --long --index SML
+plan-points --index GSPC
+plan-points --index MID
+plan-points --index SML

@@ -1499,8 +1499,9 @@ public partial class ArchitectureConformance
         // 294 at 23.2: the Loop page's verdict across the three indexes and the passes luck would bring, and the scorecard's.
         // 295 at 23.3: the History page's members back to 2005. 296 at 23.4: its prices back to 2004.
         // 297 at 23.5: paper trading's survivors line. 298 at 23.6: the History page's families by year.
-        // 299 at 23.7: paper trading's verdict over the long history. 300 at 23.9: the History page's labels row.
-        Assert.Equal(300, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 299 at 23.7: paper trading's verdict over the long history. 300 at 23.9: the History page's labels row. 301 at 23.8: the Loop
+        // page's row of the long history.
+        Assert.Equal(301, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1681,8 +1682,9 @@ public partial class ArchitectureConformance
         // 696 at 23.2: the Loop page's verdict across the three indexes and the passes luck would bring, and the scorecard's.
         // 697 at 23.3: the History page's members back to 2005. 698 at 23.4: its prices back to 2004.
         // 699 at 23.5: paper trading's survivors line. 700 at 23.6: the History page's families by year.
-        // 701 at 23.7: paper trading's verdict over the long history. 702 at 23.9: the History page's labels row.
-        Assert.Equal(702, inDocument.Length);
+        // 701 at 23.7: paper trading's verdict over the long history. 702 at 23.9: the History page's labels row. 703 at 23.8: the Loop
+        // page's row of the long history.
+        Assert.Equal(703, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

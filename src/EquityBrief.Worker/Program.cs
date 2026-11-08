@@ -104,6 +104,8 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "long-facts" => await LongFactsRun(args),
     "long-ledger" => await LongLedgerRun(args),
     "sector-splits" => await SectorSplitsRun(args),
+    "loop-search" => await LongSearchRun(args),
+    "plan-points" => await PlanPointsRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -272,6 +274,45 @@ static async Task<int> SectorSplitsRun(string[] args)
     }
 
     return 0;
+}
+
+// From 23.8 each family's search over the long history on one index, written a family at a time and going on from the next
+// family when run again; '--print' writes nothing.
+// see: A search over the long history re-runs every third test year with its setting carried between
+static async Task<int> LongSearchRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var at = Array.IndexOf(args, "--index");
+
+    if (!args.Contains("--long", StringComparer.Ordinal) || at < 0 || at + 1 >= args.Length)
+    {
+        Console.Error.WriteLine("loop-search: give '--long --index <GSPC, MID or SML>', and '--print' to write nothing.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.LongSearch(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal));
+}
+
+// From 23.8 the traded plan's buy and sell points tested over the long history on one index; '--print' writes nothing.
+// see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
+static async Task<int> PlanPointsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var at = Array.IndexOf(args, "--index");
+
+    if (at < 0 || at + 1 >= args.Length)
+    {
+        Console.Error.WriteLine("plan-points: give '--index <GSPC, MID or SML>', and '--print' to write nothing.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.PlanPointTest(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal));
 }
 
 // The long ledger's measure, read-only: the jumps' comparison at its top, each family on each index by era under the two
@@ -767,7 +808,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 76 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 78 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -865,6 +906,10 @@ static int NoVerb()
         "family's gates, and names every reading that differs from the one stored, '--long' checking the long ledger's, " +
         "'long-ledger --measure' reads the long ledger's measure and writes nothing, " +
         "'sector-splits --measure' reads each family's setups split by its sector as it stood and writes nothing, " +
+        "'loop-search --long --index <GSPC, MID or SML>' searches the breakout's and the drift's grids again over the " +
+        "long history, every third test year with the setting carried between, a family at a time, and " +
+        "'plan-points --index <GSPC, MID or SML>' walks every flagged setup of the four price families under every entry, " +
+        "stop and sale, each with '--print' writing nothing, " +
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
         "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +
         "family and year with how often the next open fell under the stop or over the target, writing nothing, " +

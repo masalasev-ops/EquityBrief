@@ -189,6 +189,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_setup` | SetupLedger | none | none |
 | `long_reading` | SetupLedger | none | SetupLedger |
 | `departed_setup` | SetupLedger | none | SetupLedger |
+| `long_search` | LongSearch | none | none |
+| `plan_point` | PlanPointTest | none | none |
 | `dividend_wait` | CorporateActionChecker | CorporateActionChecker | CorporateActionChecker |
 | `chart_check` | ChartChecker | none | ChartChecker |
 | `split_event` | CorporateActionChecker | none | none |
@@ -719,6 +721,67 @@ Grain: one row per index, family, stock and session of a standing setup left ope
 Primary key: `index_code`, `family`, `ticker`, `session_date`.
 
 **The standing years' setups at their last price, apart from `setup` so no row of it moves** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes an index's rows whole at its end, the build before's removed in the same transaction, off the `setup` rows of the index with no result and not settled whose stock's series in the long reader stops after the setup's session. Read by the long build's years and the long ledger's measure, and by no card, hook or night.
+
+### long_search
+Grain: one row per run, index and family a search over the long history read.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run, naming the verb, the index, the family and its start |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | `breakout` or `drift` |
+| `through` | TEXT | the newest session the run read |
+| `first_test_year` | INTEGER | the family's first test year on the index |
+| `words` | TEXT | the setting the search run on all finished data would run, in words; null where none met the floors |
+| `current_words` | TEXT | the rule's provisional setting, in words |
+| `units` | INTEGER | the trades the setting chosen or carried entered over the test years |
+| `blocks` | INTEGER | the blocks of 63 sessions the gate read |
+| `adjusted` | REAL | the adjusted p-value; null where the blocks are under the floor |
+| `gate` | INTEGER | 1 where the adjusted p-value is at or under the bar |
+| `stable` | INTEGER | 1 where the stability screen held |
+| `counted` | INTEGER | the complete test years the screen counted |
+| `better` | INTEGER | of those, the years the setting's total stood above the rule's |
+| `trimmed` | REAL | the setting's total less the rule's with the five largest results left out of each side; null where neither side holds one |
+| `counts` | INTEGER | 1 where the trades reach the count the family is judged on |
+| `stable_folds` | INTEGER | the test years whose setting stood within a grid step of the proposal |
+| `searches` | INTEGER | the test years the search ran at, the rest carrying its setting |
+| `passed` | INTEGER | 1 where all four parts held and the proposal names a setting |
+| `years` | TEXT | JSON: each test year, whether the search ran at it, the setting chosen or carried, whether it is complete, and each side's trades and total edge after costs |
+
+Primary key: `run_id`, `index_code`, `family`.
+
+**Written once a family by the long search as it finishes, and never updated** (see: A search over the long history re-runs every third test year with its setting carried between). A run stopped before the night's window writes the families it finished and goes on from the next when run again. Every figure is a statistic and stored as the double it is. The Loop page reads each family's newest; no rule, night or card reads it, and nothing is registered on it (see: History reaches a list only through a test on years a proposal never saw and the operator's approval).
+
+### plan_point
+Grain: one row per run, index and price family the test of the buy and sell points read.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run, naming the verb, the index and its start |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | `pullback`, `breakout`, `drift` or `dip` |
+| `through` | TEXT | the newest session the run read |
+| `setups` | INTEGER | the family's flagged setups the run walked |
+| `combination` | TEXT | the recommended entry, window, stop and sale, in words; null where no combination rests on enough fills |
+| `picks` | INTEGER | the picks it was offered over the years no setting was chosen on |
+| `fills` | INTEGER | those it filled |
+| `fill_rate` | REAL | fills over picks |
+| `hit_rate` | REAL | the fills reaching their sale |
+| `break_even` | REAL | the mean rate a fill had to reach its sale at to break even, where its sale names one price |
+| `result_per_pick` | REAL | the mean result after costs a pick offered, in the risk the rule's plan set |
+| `edge_per_pick` | REAL | the mean edge a pick offered |
+| `edge_per_fill` | REAL | the mean edge a fill |
+| `days_held` | REAL | the mean sessions a fill was held |
+| `worst_drawdown` | REAL | the worst fall of the fills' results summed in the order they ended |
+| `traded_fills` | INTEGER | the traded plan's fills, the next open at the rule's stop and sale, over the same years |
+| `traded_edge_per_pick` | REAL | the traded plan's mean edge a pick offered |
+| `later_fills` | INTEGER | the recommended combination's fills from 2019, years it was not chosen on |
+| `later_edge_per_pick` | REAL | its mean edge a pick offered from 2019 |
+| `traded_later_edge_per_pick` | REAL | the traded plan's mean edge a pick offered from 2019 |
+
+Primary key: `run_id`, `index_code`, `family`.
+
+**Written once by the test of the buy and sell points with its run, and never updated** (see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index). Every combination's figures by year, era and market regime stand in its report under the data root's loop folder; the store keeps the recommendation the Loop page draws. A recommendation is the best of every combination over 2005 to 2018, so its edge there reads high for having been chosen there, and its edge from 2019, years it was not chosen on, stands beside it. Every figure is a statistic and stored as the double it is. No rule, plan, night or card reads it, and nothing is registered on it.
 
 ### dividend_wait
 Grain: one row per stock and ex-date whose dividend the provider's answer did not carry.

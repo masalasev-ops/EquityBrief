@@ -51,6 +51,8 @@ public enum Store
     LongSetup,
     LongReading,
     DepartedSetup,
+    LongSearch,
+    PlanPoint,
     DividendWait,
     LateBarAsk,
     EntryReading,

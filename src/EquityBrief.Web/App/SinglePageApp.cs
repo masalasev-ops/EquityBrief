@@ -4002,7 +4002,8 @@ public sealed partial class SinglePageApp : IComponent
         LoopDecided? decided = null,
         IReadOnlyDictionary<string, IReadOnlyList<string>>? chips = null,
         IReadOnlyList<LoopChoiceView>? choices = null,
-        IReadOnlyList<EquityBrief.Core.Loop.LoopPooledRow>? pooled = null)
+        IReadOnlyList<EquityBrief.Core.Loop.LoopPooledRow>? pooled = null,
+        (IReadOnlyList<LongSearchRow> Searches, IReadOnlyList<PlanPointRow> Points)? longRead = null)
     {
         static string Named(string word) => word switch
         {
@@ -4041,6 +4042,12 @@ public sealed partial class SinglePageApp : IComponent
                 title: "The loop",
                 stamp: Cards.Night(night),
                 region: "loop-none"));
+
+            if (longRead is { } heldLong)
+            {
+                region.Append(LongSearchCard(heldLong.Searches, heldLong.Points));
+            }
+
             region.Append("</section>");
 
             return ReaderText.Page(region.ToString());
@@ -4126,6 +4133,12 @@ public sealed partial class SinglePageApp : IComponent
                 title: "The live alarm",
                 stamp: Cards.Night(night),
                 region: "loop-alarm"));
+        }
+
+        // From 23.8 the long history's searches and buy and sell points, each a proposal.
+        if (longRead is { } read)
+        {
+            region.Append(LongSearchCard(read.Searches, read.Points));
         }
 
         region.Append("</section>");

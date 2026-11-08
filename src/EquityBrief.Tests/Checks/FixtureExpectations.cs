@@ -213,6 +213,8 @@ public partial class FixtureExpectations
             .. LongTestClaims,
             // 23.9, the sector splits: section 17's two rows.
             .. SectorSplitsClaims,
+            // 23.8, the long search and the buy and sell points: section 17's two rows.
+            .. LongSearchClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

@@ -7,6 +7,21 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, .claude/rules/checks.md - the long search and the buy and sell points
+Decision: A search over the long history re-runs every third test year with its setting carried between
+Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
+Was:
+> (15.20, Answers) ... each proposal's verdict part by part and its test years against the rule.
+> (15.20, Reads) ... from 20.8 the local model's cutoff the newest reading version whose history read is complete states, and the months the index's runs are for. ...
+> (checks.md, fixture-expectations) ... and no source a rule's version pins among those 23.9 writes |
+> (checks.md, read-surface) ... and the sessions after it of the 126 the industry news mood split waits for |
+Now:
+> (15.20, Answers) ... each proposal's verdict part by part and its test years against the rule; and from 23.8 what each family's search over the long history and each price family's buy and sell points would run now.
+> (15.20, Reads) ... from 20.8 the local model's cutoff ..., from 23.8 each family's newest long search and plan points on the index, and the months the index's runs are for. ...
+> (checks.md, fixture-expectations) ... among those 23.9 writes; and from 23.8 the long search's schedule worked by hand across two searches ... and no source a rule's version pins among those 23.8 writes |
+> (checks.md, read-surface) ... waits for; and from 23.8 the Loop page's card of the long history read back over a constructed store ... where neither is stored |
+Why: 23.8 searches the breakout's and the drift's starting settings again over the long history and tests every price family's buy and sell points on the operator's addition of 2026-11-08.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, .claude/rules/checks.md - the sector splits and the labels row
 Decision: The sector splits read a sector as it stood off the funds' industry headings through a stated map, and the filed GICS sector after the schedules end
 Was:
