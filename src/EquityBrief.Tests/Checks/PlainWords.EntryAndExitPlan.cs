@@ -7,7 +7,7 @@ namespace EquityBrief.Tests.Checks;
 // plain-words over the entry and exit plan a buy point's fold draws on Tonight, from the 22.6 correction of 2026-10-25:
 // the plan in every form its stored ladder takes, drawn inside a pick's card beneath the setup's own plan as the fold
 // draws it, speaks in the reader's words; and the check fails the full page's own words for the same plan drawn there.
-// see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+// see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
 public partial class PlainWords
 {
     // A stored plan of every row the ladder writes: a tranche on each of the five conditions, one with no stop beneath

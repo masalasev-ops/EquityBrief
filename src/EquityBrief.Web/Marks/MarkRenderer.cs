@@ -1474,7 +1474,7 @@ public sealed partial class MarkRenderer : IComponent
     // see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
     // Drawn plain, as a buy point's fold on Tonight draws it, the top exit's stop that follows the price up is named in the
     // reader's words.
-    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
     public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows, string? reason = null, string? forms = null, bool plain = false)
     {
         if (rows.Count == 0)
@@ -3482,7 +3482,7 @@ public sealed partial class MarkRenderer : IComponent
             // region is for whichever row is selected, and a row a reader cannot select is a row the
             // region can never be about. The address it selects carries the night as well as the name,
             // so a selected view of an earlier night is a link like every other view.
-            // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+            // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
             list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" ");
             list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\" ");
             list.Append(Invariant, $"data-selects=\"{Escaped(row.Ticker)}\" data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\"{(row.RepeatOf is { } again ? Formatted($" data-repeat-of=\"{DayOf(again)}\"") : string.Empty)}>");

@@ -222,7 +222,7 @@ public partial class ReadSurface
     // drew, and every row folding beneath it its pick's card, from 22.6 with its setup's own plan and from the 22.6
     // correction of 2026-10-25 the stock's entry and exit plan beneath it, each fold closed where the link names no row and
     // the one a link names open, opened and closed by the control in its row's stock cell.
-    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
     // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the Fundamentals family's among them
     [Fact]
     public async Task TonightOpensOnATileASetupAndOneTableOfBuyPointsEachFoldingItsPlanAndCardBeneathIt()
@@ -232,10 +232,11 @@ public partial class ReadSurface
         await new EquityBrief.Worker.Cards.DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
 
         // F3's plan as the night stored it: one tranche from 95.5 to 97.25 stopped at 94, the whole position wrong under 94,
-        // and one exit from 110 to 112, three rows of a plan over a band beneath the price and one above it.
+        // and one exit from 110 to 112, three rows of a plan over a band beneath the price and one above it, with no event, no
+        // sizing and no earnings rule, which the stock's page reads.
         store.Execute(
             "INSERT INTO ladder (ticker, as_of, trend_state, plan) VALUES " +
-            $"('F3', '{TheSwitch}', 'uptrend', '{{\"tranches\":[{{\"lowEdge\":\"95.5\",\"highEdge\":\"97.25\",\"condition\":\"ReachesTheZone\",\"stop\":\"94\"}}],\"exits\":[{{\"lowEdge\":\"110\",\"highEdge\":\"112\",\"traded\":true,\"trailing\":false,\"fraction\":\"1/1\",\"reason\":null}}],\"invalidation\":\"94\"}}');");
+            $"('F3', '{TheSwitch}', 'uptrend', '{{\"tranches\":[{{\"lowEdge\":\"95.5\",\"highEdge\":\"97.25\",\"condition\":\"ReachesTheZone\",\"stop\":\"94\"}}],\"exits\":[{{\"lowEdge\":\"110\",\"highEdge\":\"112\",\"traded\":true,\"trailing\":false,\"fraction\":\"1/1\",\"reason\":null}}],\"invalidation\":\"94\",\"events\":[],\"arithmetic\":{{\"absent\":\"No sizing is stored for it.\"}},\"earningsRule\":[]}}');");
         store.Execute(
             "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) VALUES " +
             $"('F3', '{TheSwitch}', '95.5', '97.25', 'support', 1, 3, 1, '[]'), ('F3', '{TheSwitch}', '110', '112', 'resistance', 1, 2, 1, '[]');");
@@ -326,8 +327,9 @@ public partial class ReadSurface
         Assert.Single(Regex.Matches(planned, "<div class=\"plan-tile\" data-tile=\"stop\"><span class=\"tile-label\">Sell if it closes below</span><b class=\"loss\">96.00</b>"));
         Assert.Single(Regex.Matches(planned, "<div class=\"plan-tile\" data-tile=\"target\"><span class=\"tile-label\">Sell if it reaches</span><b class=\"gain\">110.00</b>"));
         Assert.Contains($"<p class=\"card-note\">{EquityBrief.Web.Marks.MarkRenderer.OnePlanSays("pullback", below: true)}</p>", planned, StringComparison.Ordinal);
-        Assert.StartsWith("<section class=\"card-levels\" data-ticker=\"F3\" data-plan-rows=\"3\"><details class=\"another-way\" data-way=\"levels\" data-traded=\"false\"><summary>Not traded: another way in, for comparison</summary><h5>Entry and exit plan</h5><div class=\"plan-grid\"><div class=\"fig\"><svg class=\"plan-column\"", levels, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"another-stops\">Its stop, 94.00, is its own: the pullback's trade is sold on a close below 96.00.</p></details>", levels, StringComparison.Ordinal);
+        Assert.StartsWith("<section class=\"card-levels\" data-ticker=\"F3\" data-plan-rows=\"3\" data-traded=\"false\"><h5>Entry and exit plan: another way in, worked from the support and resistance levels, not traded</h5><div class=\"plan-grid\"><div class=\"fig\"><svg class=\"plan-column\"", levels, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"another-stops\">Its stop, 94.00, is its own: the pullback's trade is sold on a close below 96.00.</p></section>", levels, StringComparison.Ordinal);
+        Assert.DoesNotContain("<details", levels, StringComparison.Ordinal);
         Assert.Contains($"data-ticker=\"F3\" data-rows=\"3\" data-close=\"{close}\"", levels, StringComparison.Ordinal);
         Assert.Equal(
             ["tranche|95.5|97.25", "invalidation|94|94", "exit|110|112"],
@@ -343,6 +345,39 @@ public partial class ReadSurface
 
         Assert.Contains("<section class=\"card-levels\" data-ticker=\"F1\" data-plan-rows=\"0\"><h5>Entry and exit plan</h5><p class=\"degraded\" data-plan=\"none\">No entry and exit plan is drawn for F1: This stock started trading on ", unplanned, StringComparison.Ordinal);
         Assert.Contains("and too few for any support or resistance level, so no plan can be drawn.</p></section>", unplanned, StringComparison.Ordinal);
+
+        // Every pick's fold draws its plan section open, as it drew before PR 660 folded it, none of them inside a fold of its
+        // own: the rule's plan headed as traded, and the entry and exit plan beneath it headed as not traded wherever it
+        // draws a plan. F3's stock page draws the plan open beneath the pick's own exit in the order it drew before: the
+        // diagram, the share of each tranche, around the next report, the sizing arithmetic and how to read it.
+        // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
+        Assert.All(folds, fold =>
+        {
+            Assert.DoesNotContain("<details", fold.Body, StringComparison.Ordinal);
+            Assert.Contains("<h5>The plan, as traded</h5>", fold.Body, StringComparison.Ordinal);
+            Assert.Single(Blocks(fold.Body, "<section class=\"card-levels\".*?</section>"));
+        });
+        Assert.All(
+            folds.Where(fold => fold.Body.Contains("plan-grid", StringComparison.Ordinal)),
+            fold => Assert.Contains($"<section class=\"card-levels\" data-ticker=\"{fold.Ticker}\" data-plan-rows=\"3\" data-traded=\"false\"><h5>Entry and exit plan: another way in, worked from the support and resistance levels, not traded</h5><div class=\"plan-grid\">", fold.Body, StringComparison.Ordinal));
+        Assert.Contains(folds, fold => fold.Ticker == "F3" && fold.Body.Contains("plan-grid", StringComparison.Ordinal));
+
+        var stockPage = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/F3"));
+        var planRegion = stockPage[stockPage.IndexOf("<p class=\"picks-exit\" data-family=\"pullback\">", StringComparison.Ordinal)..];
+
+        Assert.DoesNotContain("<details class=\"another-way\"", stockPage, StringComparison.Ordinal);
+        Assert.Contains("<h5>The plan, as traded</h5>", stockPage, StringComparison.Ordinal);
+        Assert.Equal(
+            [0, 1, 2, 3, 4, 5],
+            new[]
+            {
+                "<p class=\"picks-exit\"",
+                "<h5 class=\"another-way\" data-traded=\"false\">Entry and exit plan: another way in, worked from the support and resistance levels, not traded</h5><div class=\"plan-grid\">",
+                "<div class=\"sub\">Each tranche's share, risk and reward to risk</div>",
+                "<div class=\"sub\">Around the next report</div>",
+                "<div class=\"sub\">Sizing arithmetic</div>",
+                "How to read the plan.",
+            }.Select(part => planRegion.IndexOf(part, StringComparison.Ordinal)).Select((at, place) => (at, place)).OrderBy(one => one.at).Select(one => one.at < 0 ? -1 : one.place));
 
         // F2 named in the link: its fold alone open, straight after its row and before F3's, its row selected and its
         // control saying it is open, every other control closed.

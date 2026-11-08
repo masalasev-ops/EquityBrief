@@ -16988,3 +16988,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 22.6 - correction: a pick's plans are drawn open again and told apart by headings   2026-11-07
+
+Found:      the operator's order of 2026-11-07 after the monthly run, its first item, word for word in
+            `prompts/2026-11-07-plan-diagrams-order.md`. PR 660 folded shut every pick's entry and exit plan, its diagram and
+            its tables, beneath the card on Tonight and in the stock page's plan region, and the entry check's wait plan on the
+            stock and chart pages, so the figure the operator reads a plan by stood behind a press.
+Corrected:  each draws open where it drew before PR 660. On Tonight the card's plan is headed "The plan, as traded" and the
+            levels' plan beneath it "Entry and exit plan: another way in, worked from the support and resistance levels, not
+            traded", a plan placing nothing keeping its own heading. The stock page draws the pick's own exit, then that heading,
+            the diagram, each tranche's share, the stops line, around the next report, the sizing arithmetic with PR 660's
+            flags, and how to read the plan, in the order before PR 660. The wait plan stands open with its stop named as its
+            own, at the entry check's own size. The fold and its words removed. The decision superseding PR 660's, five rows of section 15, the changelog and
+            the guide.
+Tests:      1 new in place of PR 660's fold test: CTSH's levels' plan open under its heading with its stops line, its wait plan
+            open, the card's plan headed as traded, and a stock no family picked under its own heading. Tonight's family page
+            test reads every pick's fold holding no fold of its own and its card's plan headed as traded, every plan drawn
+            open under the heading, and F3's stock page drawing its plan's parts in the order before PR 660; its F3 plan
+            stores the empty events, sizing and earnings rule the stock page reads.
+Read back:  over a copy of the store made at 01:33Z on 2026-11-08 for the read-back, on 5299 from this branch's build beside
+            5301 from the build of db558d3d before PR 660, both over the copy: each index's Tonight, the S&P 500's nine picks
+            drawing their plans before and after with the same rows, none folded, the S&P 400's and 600's drawing none either
+            side; the stock and chart pages of CTSH, BMY, EXPD, AFG and ADMA in the same order as before.
+Claims:     none new.
+Pins:       none move: the web and read surface's sources are none a rule pins.
+Mutated:    the rule, stated before the run: the smallest edit bringing back today's page, filtered to the new tests by name.
+            m1 Tonight's plan folded again: red. m2 the stock page's plan folded again: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.

@@ -2239,7 +2239,7 @@ async Task<IResult> TonightScreenAsync(
     // entry and exit plan beneath its setup's own, the plan the night shown stored against that night's close. On a night
     // before them, whichever row the reader selected, and the first row where they selected none: section 15.7's region
     // is for whichever row is selected, and a row of either list can be selected.
-    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
     var asked = request.Query["name"].FirstOrDefault();
     var pointed = cards is null ? [] : cards.SelectMany(card => card.Picks).Select(pick => pick.Row.Ticker).Distinct(StringComparer.Ordinal).ToArray();
     var opened = asked is { } named && pointed.Contains(named, StringComparer.Ordinal) ? named : null;

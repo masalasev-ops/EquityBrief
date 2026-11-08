@@ -2,12 +2,14 @@ using System.Globalization;
 
 namespace EquityBrief.Core.Cards;
 
-// The words a pick's page draws for a way in it does not trade: the heading of each fold beneath the rule's own plan, and the
-// line naming that way's stops as its own beside the stop the pick's trade is sold on.
-// see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+// The words a pick's page labels its plans with: the heading of the rule's own plan, the heading of the entry and exit plan
+// drawn open beneath it, and the line naming that way's stops as its own beside the stop the pick's trade is sold on.
+// see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
 public static class PlanWords
 {
-    public const string AnotherWay = "Not traded: another way in, for comparison";
+    public const string AsTraded = "The plan, as traded";
+
+    public const string AnotherWay = "Entry and exit plan: another way in, worked from the support and resistance levels, not traded";
 
     // That way's stops as its own: "Its stop, 54.70, is its own" or "Its stops, 57.91, 54.70 and 52.49, are its own", then
     // the stop the pick's trade is sold below, or that the pick's trade sells by its own exits where its rule states no stop.

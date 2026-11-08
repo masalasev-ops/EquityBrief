@@ -147,7 +147,7 @@ public sealed record HeldTradeView(DecisionCardView Card, PickCell Pick)
 
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
-// see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+// see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 public sealed partial class MarkRenderer
 {
@@ -160,12 +160,12 @@ public sealed partial class MarkRenderer
     // entry and exit plan, worked separately from its support and resistance levels, stands: below it where a buy point's
     // fold draws it, on the stock's full page where the card is drawn without it, and nowhere for a stock of an index the
     // night works no such plan for.
-    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
     public static string OnePlanSays(string setup, bool below = false, string? index = null) =>
         $"This is the {setup}'s own plan, and its trade is sold by these exits alone. " + (
-            below ? "Another way in, worked from the stock's support and resistance levels, is folded below it: not traded, with stops of its own."
+            below ? "The entry and exit plan below it is another way in, worked separately from the stock's support and resistance levels, and is not traded."
             : index is { } other ? $"No entry and exit plan is worked for the {other}'s stocks; it is read for the S&P 500's alone."
-            : "Another way in, worked from its support and resistance levels, is folded on the stock's full page: not traded, with stops of its own.");
+            : "The entry and exit plan on the stock's full page is another way in, worked separately from its support and resistance levels, and is not traded.");
 
     // A plan's arithmetic flags as a list beneath it, said to change nothing; none drawn where none applies.
     // see: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
@@ -194,10 +194,6 @@ public sealed partial class MarkRenderer
     // The bands a level summary draws, as the plan flags read them.
     public static IReadOnlyList<EquityBrief.Core.Cards.FlagBand> FlagBandsOf(IEnumerable<SummaryBand> bands) =>
         [.. bands.Select(band => EquityBrief.Core.Cards.FlagBand.Of(band.LowEdge, band.HighEdge, [.. band.Members.Select(member => (member.Kind, member.Date))]))];
-
-    // A way in the pick does not trade, folded shut beneath its own plan under the words saying so.
-    public static string AnotherWayFold(string way, string markup) =>
-        $"<details class=\"another-way\" data-way=\"{Escaped(way)}\" data-traded=\"false\"><summary>{Escaped(EquityBrief.Core.Cards.PlanWords.AnotherWay)}</summary>{markup}</details>";
 
     // The control on a pick's row that opens its card in place beneath the row.
     public static string CardToggle(DecisionCardView card) =>
@@ -399,8 +395,8 @@ public sealed partial class MarkRenderer
         var sold = SoldBy(card);
 
         return held is { } holding
-            ? FormattableString.Invariant($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\" data-held=\"{DayOf(holding.Night)}\">This stock is held on the trade the {Escaped(setup)} picked it for on {holding.Night:d MMM yyyy}, sold {Escaped(sold)}, whichever comes first. That is the plan. Another way in, worked from its support and resistance levels, is folded beneath: not traded, with stops of its own.</p>")
-            : Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. That is the plan. Another way in, worked from its support and resistance levels, is folded beneath: not traded, with stops of its own.</p>");
+            ? FormattableString.Invariant($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\" data-held=\"{DayOf(holding.Night)}\">This stock is held on the trade the {Escaped(setup)} picked it for on {holding.Night:d MMM yyyy}, sold {Escaped(sold)}, whichever comes first. The plan beneath is another way in, worked from its support and resistance levels for a buyer without that trade, and is not traded.</p>")
+            : Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. The plan beneath is another way in, worked from its support and resistance levels for a buyer without the pick, and is not traded.</p>");
     }
 
     // A trade's own exits in words: from 21.14 at the next open after a close at its target or below its stop, and after
@@ -615,7 +611,7 @@ public sealed partial class MarkRenderer
     {
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\"><h5>The plan</h5><div class=\"plan-tiles\">");
+        body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\" data-traded=\"true\"><h5>{Escaped(EquityBrief.Core.Cards.PlanWords.AsTraded)}</h5><div class=\"plan-tiles\">");
         body.Append(PlanTile("buy", "Buy", "At the next day's open", card.Entry is { } entry ? Formatted($"at about {Price(entry)}") : "no buy price stored"));
         body.Append(StopTile(card, pick));
         body.Append(TargetTile(card, pick));
