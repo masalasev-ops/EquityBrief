@@ -7,6 +7,62 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md - the long facts ask every filer the store knows
+Decision: The long history's facts are the SEC's figures before the standing table's first, kept as first filed apart from it
+Was:
+> (Long fact pull, catalogue) filings archive, filed facts, long facts, long filings | ... | from 23.5 asks the SEC once for the facts of each filer the long price pull matched to its company, after ...
+> (SCHEMA, long_fact) ... It reads `long_filing` for the filers to read and `filed_fact` ...
+> (RUNBOOK) **The long history's facts, from 23.5.** Each filer the long price pull matched to its company is asked the SEC once for its facts, ... `--capture` reads the filers off `long_filing`, states ...
+Now:
+> (Long fact pull, catalogue) companies, filings archive, filed facts, long facts, long filings, pulled companies | ... | from 23.5 asks the SEC once for the facts of every filer the store knows, those the long price pull matched to their companies and every company row's, after ...
+> (SCHEMA, long_fact) ... It reads `long_filing`, `company` and `pulled_company` for the filers to read and `filed_fact` ...
+> (RUNBOOK) **The long history's facts, from 23.5.** Every filer the store knows, those the long price pull matched to their companies and every company row's, is asked the SEC once for its facts, ... `--capture` reads the filers off `long_filing`, `company` and `pulled_company`, states ...
+Corrects: 23.5's rehearsal of 2026-11-08 read 49 of the S&P 500's 498 members of 2015, Chevron, Ford and American Express among them, with no fact before 2015: the long filings hold the codes 23.4 read ends for and none of the standing members.
+
+### 2026-11-08 - docs/ARCHITECTURE.html - the long calendar runs to the first month the pull holds a surprise
+Decision: The long history's earnings calendar runs to the first month the pull holds a surprise
+Was:
+> (Long price pull, catalogue) ... the earnings calendar a month at a time before the pull's first month, the market series once each ...
+> (The long history's prices, section 17) ... and the earnings calendar a month at a time before the pull's first month in 2015; ... | ...; the pull holds the calendar from its own first month; ...
+Now:
+> (Long price pull, catalogue) ... the earnings calendar a month at a time before the first month the pull holds a surprise, the market series once each ...
+> (The long history's prices, section 17) ... and the earnings calendar a month at a time before the first month the pull holds a surprise, in 2018 (see: The long history's earnings calendar runs to the first month the pull holds a surprise); ... | ...; the pull holds surprises from its 2018, its calendar from 2015-10 holding the days alone; ...
+Corrects: 23.5's rehearsal of 2026-11-08 read the drift's coverage of since-gone members as 0 in 2016 and 2017 on every index: the long calendar stopped at 2015-09 and the pull's surprises start in 2018-01.
+
+### 2026-11-08 - docs/BUILD_PLAN.md - 23.4's calendar asked to 2018-01
+Decision: The long history's earnings calendar runs to the first month the pull holds a surprise
+Was:
+> ### 23.4 ... the earnings calendar for each month before 2015-10; and the index's ...
+Now:
+> ### 23.4 ... the earnings calendar for each month before 2018-01, the first month the pull holds a surprise (see: The long history's earnings calendar runs to the first month the pull holds a surprise); and the index's ...
+Corrects: the same gap.
+
+### 2026-11-08 - docs/ARCHITECTURE.html - the long price pull reads the long filings for the report days
+Decision: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone
+Was:
+> Long price pull | compute | by hand, on the operator's command | bar store, company financials, earnings calendar feed, filings archive, historical price feed, long holdings, long snapshots, long spans, membership, pulled bars, pulled companies, run log, splits and dividends feed | ...
+Now:
+> Long price pull | compute | by hand, on the operator's command | bar store, company financials, earnings calendar feed, filings archive, historical price feed, long filings, long holdings, long snapshots, long spans, membership, pulled bars, pulled companies, run log, splits and dividends feed | ...
+Why: from 23.5 the long write and `long-prices --report-days` read the long filings for the 8-Ks carrying item 2.02.
+
+### 2026-11-08 - docs/SCHEMA.md - the long prints carry the report days read off 8-Ks carrying item 2.02
+Decision: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone
+Was:
+> ... From 23.4 `data-check --long` reads `long_bar`, `long_split` and `long_dividend` in place of the pull.
+Now:
+> ... From 23.4 `data-check --long` reads `long_bar`, `long_split` and `long_dividend` in place of the pull. From 23.5 the same write, and `long-prices --report-days` alone, writes again whole the `long_print` rows whose `read_from` is `8-K item 2.02`: ...
+Why: 23.5's report days stand beside the provider's prints in the table the long price pull owns.
+
+### 2026-11-08 - .claude/rules/checks.md - fixture-expectations and read-surface state 23.5's long facts and the survivors line
+Decision: The long history's facts are the SEC's figures before the standing table's first, kept as first filed apart from it
+Was:
+> (fixture-expectations) ... and no source a rule's version pins among those 23.4 writes |
+> (read-surface) ... and the folds of the codes priced by nothing and the ends no filing settles |
+Now:
+> (fixture-expectations) ... and no source a rule's version pins among those 23.4 writes; and from 23.5 a long filer's facts kept as sent and asked nothing again, ... no night reading the long facts and no source a rule's version pins among those 23.5 writes |
+> (read-surface) ... and the ends no filing settles; and from 23.5 the drift's survivors line read back beneath every drift row in paper trading's variants and scorecard and no other family's |
+Why: the roster's rows state what each check asserts, and 23.5 adds to both.
+
 ### 2026-11-08 - docs/BUILD_PLAN.md - 23.8's fill windows worded each in turn
 Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
 Was:

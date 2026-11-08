@@ -1074,8 +1074,11 @@ public sealed partial class MarkRenderer
     public static string ComingLine(PaperComingView one) =>
         Formatted($"Registered {DayOf(one.Registered)}. Its first night is {(one.FirstNight is { } first ? first.DayOfWeek + " " + DayOf(first) : "the next night the exchange trades")}.");
 
+    // From 23.5 a drift account carries the words that its years read mostly survivors, beside any other note.
+    // see: The S&P 500 drift is judged from 2019 where no year's surprises reach the coverage its rule asks and every year is labelled mostly survivors
     static string AccountNote(PaperAccountView account) =>
         (account.Note is { } note ? Formatted($"<span class=\"pv-note\" data-note=\"tone\">{Escaped(note)}</span>") : string.Empty)
+        + (account.Family == EquityBrief.Core.Families.DriftRule.Name ? Formatted($"<span class=\"pv-note\" data-note=\"survivors\">{Escaped(EquityBrief.Core.History.LongFirstYears.SurvivorsNote)}</span>") : string.Empty)
         + (StandsAtTheTarget(account.Words) ? Formatted($"<span class=\"pv-note\" data-note=\"standing\">{Escaped(EquityBrief.Core.Loop.ExitMenu.StandingWords)}</span>") : string.Empty);
 
     // From 21.17 the words beside a variant's years better where its rule reads a release reading: its verdict reads the

@@ -185,6 +185,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_split` | LongPricePull | none | LongPricePull |
 | `long_dividend` | LongPricePull | none | LongPricePull |
 | `long_filing` | LongPricePull | none | LongPricePull |
+| `long_fact` | LongFactPull | none | LongFactPull |
 | `dividend_wait` | CorporateActionChecker | CorporateActionChecker | CorporateActionChecker |
 | `chart_check` | ChartChecker | none | ChartChecker |
 | `split_event` | CorporateActionChecker | none | none |
@@ -505,7 +506,26 @@ Grain: one row per code and filing of its company's filer.
 
 Primary key: `ticker`, `accession`.
 
-**The long history's prices, read by the long data check and by no night, card, hook or standing test** (see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night). From 23.4 `long-prices --write` reads a capture folder the long price pull kept, asking nothing of anyone, and writes the six tables whole, the run before's rows removed in the same transaction, with its row on `run_log`, which the History page reads, and the ends it reads by rule as `session_mark` rows through SessionMarks' own writer where the provider's answer runs on past them (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger); it writes nothing where a quarter end of the long history falls under the floor over its holdings' spans. A filing is kept only where its filer's names are the code's company's, and a code the provider prices by nothing is written nowhere and named on the run's row. It reads `long_snapshot`, `long_holding`, `long_span`, `membership`, `pulled_bar`, `pulled_company` and `bar` and moves no row of them. From 23.4 `data-check --long` reads `long_bar`, `long_split` and `long_dividend` in place of the pull.
+**The long history's prices, read by the long data check and by no night, card, hook or standing test** (see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night). From 23.4 `long-prices --write` reads a capture folder the long price pull kept, asking nothing of anyone, and writes the six tables whole, the run before's rows removed in the same transaction, with its row on `run_log`, which the History page reads, and the ends it reads by rule as `session_mark` rows through SessionMarks' own writer where the provider's answer runs on past them (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger); it writes nothing where a quarter end of the long history falls under the floor over its holdings' spans. A filing is kept only where its filer's names are the code's company's, and a code the provider prices by nothing is written nowhere and named on the run's row. It reads `long_snapshot`, `long_holding`, `long_span`, `membership`, `pulled_bar`, `pulled_company` and `bar` and moves no row of them. From 23.4 `data-check --long` reads `long_bar`, `long_split` and `long_dividend` in place of the pull. From 23.5 the same write, and `long-prices --report-days` alone, writes again whole the `long_print` rows whose `read_from` is `8-K item 2.02`: one for each 8-K of `long_filing` carrying item 2.02, on the day it was filed, its timing unstated and no figure, for a gate reading a date alone (see: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone).
+
+### long_fact
+Grain: one row per filer, concept and period of the long history's facts, as first filed.
+
+| Column | Type | Notes |
+|---|---|---|
+| `cik` | TEXT | the filer's CIK padded to ten digits |
+| `concept` | TEXT | the archive's concept, one of the standing facts' |
+| `period_start` | TEXT | the first day of the period, and for a share count or a balance sheet line the day it stands for |
+| `period_end` | TEXT | the last day of the period, before 2015-01-01, and for a share count or a balance sheet line the day it stands for |
+| `dollars` | TEXT | decimal in code, the figure as the first filing stating the period states it, and for a share count the shares |
+| `filed` | TEXT | the day that filing was made |
+| `form` | TEXT | its form, as the archive names it |
+| `accession` | TEXT | its accession number, a predecessor's own where its figure was copied under its company's new filer |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `cik`, `concept`, `period_start`, `period_end`.
+
+**The long history's facts, read by no night, card, hook or family** (see: The long history's facts are the SEC's figures before the standing table's first, kept as first filed apart from it). From 23.5 `long-facts --write` reads a capture folder the long fact pull kept, asking nothing of anyone, and writes the table whole, the run before's rows removed in the same transaction, with its row on `run_log`. It reads `long_filing`, `company` and `pulled_company` for the filers to read and `filed_fact` for the figures a predecessor and its company's new filer state in common, and moves no row of either (see: A company that re-filed under a new SEC number carries its predecessor's facts up to the day its new filer's first report starts). `long-facts --measure` reads it with `long_span`, `long_filing`, `long_print`, `pulled_surprise`, `long_bar`, `long_market_bar`, `long_holding`, `filed_fact`, `membership`, `company`, `pulled_company` and `bar`, and writes nothing.
 
 ### dividend_wait
 Grain: one row per stock and ex-date whose dividend the provider's answer did not carry.

@@ -122,6 +122,9 @@ public partial class ArchitectureConformance
 
         // From 23.4: the long price pull, its six stores, section 17's row, section 18's two rows and the History page's row.
         .. FixtureExpectations.LongPricesRows,
+
+        // From 23.5: the long fact pull and the long first-year reader, their store and section 17's row.
+        .. FixtureExpectations.LongFactsRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

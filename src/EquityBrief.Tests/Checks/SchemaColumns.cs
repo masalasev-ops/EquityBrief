@@ -51,6 +51,9 @@ public class SchemaColumns
     // 23.4's six: the long history's prices, market series, prints, splits, dividends and filings.
     internal static string[] LongPriceStoreRows => [.. new[] { "Long bars", "Long market bars", "Long prints", "Long splits", "Long dividends", "Long filings" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
+    // 23.5's one: the long history's facts.
+    internal static string[] LongFactStoreRows => [CheckReach.Key(Scope.StoresTable, "Long facts")];
+
     // 22.42's: each name a page splits at its capitals.
     internal static string[] SplitNameStoreRows => [CheckReach.Key(Scope.StoresTable, "Split names")];
 
@@ -302,6 +305,7 @@ public class SchemaColumns
             .. PooledStoreRows,
             .. LongStoreRows,
             .. LongPriceStoreRows,
+            .. LongFactStoreRows,
             .. SplitNameStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.

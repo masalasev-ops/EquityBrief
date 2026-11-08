@@ -100,6 +100,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "data-check" => await DataCheckRun(args),
     "long-members" => await LongMembersRun(args),
     "long-prices" => await LongPricesRun(args),
+    "long-facts" => await LongFactsRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -246,6 +247,67 @@ static async Task<int> SessionMarkRun(string[] args)
 // or nothing where a stop stands, '--print <folder>' reads them and writes nothing, and '--counts-read' records the operator's word
 // that the data check's counts over the long history have been read.
 // see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+// The long history's facts. With '--capture --into <folder>' every filer the store knows, the long price pull's and every company row's, is asked
+// the SEC once for its facts, after the asks are stated, and each answer kept as sent; '--write <folder>' writes the periods
+// before the standing table's first whole, '--print <folder>' writing nothing.
+// see: The long history's facts are the SEC's figures before the standing table's first, kept as first filed apart from it
+static async Task<int> LongFactsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+
+    static void Say(string line) => Console.WriteLine("long-facts: " + line);
+
+    if (args.Contains("--capture", StringComparer.Ordinal))
+    {
+        if (VerbArguments.Value(args, "--into") is not { } folder)
+        {
+            Console.Error.WriteLine("long-facts: give '--capture --into <folder>'.");
+
+            return 2;
+        }
+
+        var filers = await EquityBrief.Worker.History.LongFactPull.FilersAsync(store.DatabaseFile);
+        var feed = SecEdgarFilerFactsFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty));
+        var asked = await EquityBrief.Worker.History.LongFactPull.CaptureAsync(folder, filers, feed, Say);
+
+        Say(FormattableString.Invariant($"{asked:N0} request(s) to the SEC"));
+
+        return 0;
+    }
+
+    if (args.Contains("--measure", StringComparer.Ordinal))
+    {
+        var read = await EquityBrief.Worker.History.LongFirstYearReader.ReadAsync(store.DatabaseFile, Say);
+
+        foreach (var line in EquityBrief.Worker.History.LongFirstYearReader.Lines(read))
+        {
+            Say(line);
+        }
+
+        return 0;
+    }
+
+    var write = VerbArguments.Value(args, "--write");
+
+    if ((write ?? VerbArguments.Value(args, "--print")) is not { } kept)
+    {
+        Console.Error.WriteLine("long-facts: give '--capture --into <folder>', '--write <folder>', '--print <folder>' or '--measure'.");
+
+        return 2;
+    }
+
+    var outcome = await EquityBrief.Worker.History.LongFactPull.WriteAsync(store.DatabaseFile, kept, FormattableString.Invariant($"long-facts-{clock.UtcNow:yyyyMMddTHHmmssZ}"), clock, write is not null, Say);
+
+    foreach (var line in EquityBrief.Worker.History.LongFactPull.Lines(outcome, args.Contains("--each", StringComparer.Ordinal)))
+    {
+        Say(line);
+    }
+
+    return 0;
+}
+
 static async Task<int> LongPricesRun(string[] args)
 {
     var configuration = Configuration();
@@ -258,6 +320,15 @@ static async Task<int> LongPricesRun(string[] args)
     {
         await EquityBrief.Worker.History.LongPricePull.CountsReadAsync(store.DatabaseFile, FormattableString.Invariant($"long-counts-read-{clock.UtcNow:yyyyMMddTHHmmssZ}"), clock);
         Say("the operator's word that the long history's counts are read is on the run log");
+
+        return 0;
+    }
+
+    if (args.Contains("--report-days", StringComparer.Ordinal))
+    {
+        var days = await EquityBrief.Worker.History.LongPricePull.ReportDaysAsync(store.DatabaseFile, FormattableString.Invariant($"long-report-days-{clock.UtcNow:yyyyMMddTHHmmssZ}"), clock);
+
+        Say(FormattableString.Invariant($"{days:N0} report day(s) read off 8-K filings carrying item 2.02, written again whole"));
 
         return 0;
     }
@@ -646,7 +717,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 72 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 73 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -882,6 +953,10 @@ static int NoVerb()
         "'--capture --into <folder>', after stating what it asks, '--past-the-stop' asking past the day's stop on the operator's word, and with " +
         "'--write <folder>' writes them whole where no stop stands, '--print <folder>' writing nothing, '--each' naming every end and difference, " +
         "and '--counts-read' recording the operator's word that the long data check's counts have been read, " +
+        "'--report-days' writing again the report days read off 8-K filings carrying item 2.02, " +
+        "'long-facts' asks the SEC once for each long filer's facts with '--capture --into <folder>', after stating what it asks, and with " +
+        "'--write <folder>' writes the periods before the standing table's first whole, '--print <folder>' writing nothing, " +
+        "and '--measure' reading each filing-based family's and the drift's first test year on each index, writing nothing, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

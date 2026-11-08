@@ -66,7 +66,7 @@ public sealed class LongPricePull : IComponent
             new StoreTouch(Store.LongPrint, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongSplit, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongDividend, Touch.Insert | Touch.Delete),
-            new StoreTouch(Store.LongFiling, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.LongFiling, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongSnapshot, Touch.Read),
             new StoreTouch(Store.LongHolding, Touch.Read),
             new StoreTouch(Store.LongSpan, Touch.Read),
@@ -83,6 +83,8 @@ public sealed class LongPricePull : IComponent
     // The operator's word that the data check's counts over the long history have been read, which the long test and the searches
     // wait on.
     public const string CountsStage = "long-counts-read";
+
+    public const string ReportDaysStage = "long-report-days";
 
     public const string CodesFile = "codes.json";
     public const string PricesFolder = "prices";
@@ -138,6 +140,11 @@ public sealed class LongPricePull : IComponent
         INSERT INTO long_dividend (ticker, ex_date, amount, raw_amount, run_id)
         VALUES ($ticker, $ex_date, $amount, $raw_amount, $run_id)
         ON CONFLICT (ticker, ex_date) DO NOTHING;";
+
+    // From 23.5 the report days read off the long filings: every 8-K carrying item 2.02, written again whole.
+    const string ClearReportDays = "DELETE FROM long_print WHERE read_from = $read_from;";
+
+    const string SelectAnnouncements = "SELECT ticker, form, items, filed FROM long_filing WHERE form = '8-K' AND items IS NOT NULL ORDER BY ticker, filed;";
 
     const string InsertFiling = @"
         INSERT INTO long_filing (ticker, cik, accession, form, items, reported, filed, run_id)
@@ -646,6 +653,7 @@ public sealed class LongPricePull : IComponent
             prints = await WritePrintsAsync(connection, (SqliteTransaction)transaction!, folder, codes, runId, cancellation);
             (splits, dividends) = await WriteActionsAsync(connection, (SqliteTransaction)transaction!, folder, codes, runId, cancellation);
             filingRows = await WriteFilingsAsync(connection, (SqliteTransaction)transaction!, folder, filers, runId, cancellation);
+            prints += await WriteReportDaysAsync(connection, (SqliteTransaction)transaction!, runId, cancellation);
 
             if (cutover != LongSpans.ProviderFrom)
             {
@@ -866,6 +874,79 @@ public sealed class LongPricePull : IComponent
                 written += await insert.ExecuteNonQueryAsync(cancellation);
             }
         }
+
+        return written;
+    }
+
+    // From 23.5 each report day the long filings give, an 8-K carrying item 2.02 on the day it was filed, written again whole
+    // beside the provider's prints, its timing unstated and no figure; a day the provider's calendar also holds stands twice,
+    // once a source.
+    // see: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone
+    public static async Task<int> WriteReportDaysAsync(SqliteConnection connection, SqliteTransaction transaction, string runId, CancellationToken cancellation)
+    {
+        await using (var clear = connection.CreateCommand())
+        {
+            clear.Transaction = transaction;
+            clear.CommandText = ClearReportDays;
+            clear.Parameters.AddWithValue("$read_from", LongPrices.FilingPrint);
+            await clear.ExecuteNonQueryAsync(cancellation);
+        }
+
+        var days = new List<(string Ticker, string Filed)>();
+
+        await ReadAsync(connection, SelectAnnouncements, reader =>
+        {
+            if (LongPrices.AnnouncesResults(reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)))
+            {
+                days.Add((reader.GetString(0), reader.GetString(3)));
+            }
+        }, cancellation, transaction);
+
+        await using var insert = connection.CreateCommand();
+        insert.Transaction = transaction;
+        insert.CommandText = InsertPrint;
+
+        var written = 0;
+
+        foreach (var (ticker, filed) in days)
+        {
+            insert.Parameters.Clear();
+            insert.Parameters.AddWithValue("$ticker", ticker);
+            insert.Parameters.AddWithValue("$event_date", filed);
+            insert.Parameters.AddWithValue("$timing", "unstated");
+            insert.Parameters.AddWithValue("$eps_actual", DBNull.Value);
+            insert.Parameters.AddWithValue("$eps_estimate", DBNull.Value);
+            insert.Parameters.AddWithValue("$surprise_percent", DBNull.Value);
+            insert.Parameters.AddWithValue("$read_from", LongPrices.FilingPrint);
+            insert.Parameters.AddWithValue("$run_id", runId);
+            written += await insert.ExecuteNonQueryAsync(cancellation);
+        }
+
+        return written;
+    }
+
+    // From 23.5 the report days alone, written again whole over the long filings the store holds, with the run's row.
+    public static async Task<int> ReportDaysAsync(string databaseFile, string runId, IClock clock, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        var written = await WriteReportDaysAsync(connection, transaction, runId, cancellation);
+
+        await using var run = connection.CreateCommand();
+        run.Transaction = transaction;
+        run.CommandText = AppendRun;
+        run.Parameters.AddWithValue("$run_id", runId);
+        run.Parameters.AddWithValue("$stage", ReportDaysStage);
+        run.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        run.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        run.Parameters.AddWithValue("$rows", written);
+        run.Parameters.AddWithValue("$detail", FormattableString.Invariant($"{written} report day(s) read off 8-K filings carrying item 2.02"));
+        await run.ExecuteNonQueryAsync(cancellation);
+        await transaction.CommitAsync(cancellation);
 
         return written;
     }

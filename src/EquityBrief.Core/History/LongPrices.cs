@@ -35,8 +35,10 @@ public static class LongPrices
 {
     public static DateOnly From { get; } = new(2004, 1, 2);
 
-    // The pull's first month: the calendar's prints are asked for each month before it, the pull holding those after.
-    public static DateOnly PrintsBefore { get; } = new(2015, 10, 1);
+    // The first month the pull holds a surprise: the calendar's prints are asked for each month before it, the pull holding
+    // those after. The pull's own calendar starts in 2015-10 with the days alone, and its surprises in 2018-01.
+    // see: The long history's earnings calendar runs to the first month the pull holds a surprise
+    public static DateOnly PrintsBefore { get; } = new(2018, 1, 1);
 
     // The requests a code costs: its prices, its splits and its dividends, each one weighted call.
     public const int RequestsACode = 3;
@@ -66,6 +68,19 @@ public static class LongPrices
     public const int DepartedDays = 10;
 
     public const string ProviderPrint = "provider";
+
+    // From 23.5 a report day read off a filer's 8-K carrying item 2.02, its results announced, for a gate reading a date
+    // alone: the day it was filed, its timing unstated and no figure.
+    // see: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone
+    public const string FilingPrint = "8-K item 2.02";
+
+    public const string ResultsItem = "2.02";
+
+    // Whether a filing of the long list announces its results: an 8-K whose items carry 2.02. An amendment is not read, since
+    // it is filed on a later day than the announcement it amends.
+    public static bool AnnouncesResults(string form, string? items) =>
+        form == "8-K" && items is not null
+        && items.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Contains(ResultsItem, StringComparer.Ordinal);
 
     public static int Weighted(int codes, int companiesAsked, int months, int series) =>
         (codes * RequestsACode * ProviderWeights.HistoricalPerTicker) + (companiesAsked * ProviderWeights.Fundamentals) + (months * ProviderWeights.EarningsCalendar) + series;

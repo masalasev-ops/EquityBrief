@@ -17187,3 +17187,86 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 132, against `data-ci` and never `data`; the phase report 66 tables, 1582 claims, 1582 passing,
             none out of scope and none unexamined, 1597 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.4 - correction: the long calendar is asked to the first month the pull holds a surprise, 2018-01   2026-11-08
+
+Found:      23.5's rehearsal read the drift's coverage of since-gone members as 0 in 2016 and 2017 on every index. The long
+            calendar stopped at 2015-09, read as the pull's first month; the pull holds the calendar's days from 2015-10 in
+            `pulled_earnings`, and its surprises only from 2018-01 in `pulled_surprise`, so no source held 2015-10 to 2017-12.
+Corrected:  `LongPrices.PrintsBefore` is 2018-01-01, so the capture asks the calendar a month at a time through 2017-12, 168
+            months, 27 more, and the write keeps them. A decision narrowing the long prices' own, section 17's row and the
+            catalogue's, 23.4's text and the changelog (see: The long history's earnings calendar runs to the first month the pull
+            holds a surprise).
+Measured:   the 27 months asked into the capture, 40 weighted calls with the one code and company record refused before and
+            asked again. With them the drift's coverage of 2016 and 2017 reads 176 of 203 and 173 of 185 on the S&P 500, 285 of 323
+            and 291 of 311 on the S&P 400, 396 of 479 and 401 of 452 on the S&P 600.
+Tests:      none new; the statement's test reads 168 months, 192 requests and 201 weighted calls.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the month brought back to 2015-10. m1 `PrintsBefore` of 2015-10-01: the statement's
+            test red, at 141 months.
+Remedy:     23.5's: the 27 months copied into `data/long-prices/prints`, `codes.json` and `filers.json` left as the live capture
+            wrote them, and `long-prices --write data/long-prices` run before the facts.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
+
+### 23.5 - company filing figures back as far as XBRL goes   2026-11-08
+
+Built:      `long-facts`: `--capture --into <folder>` asks the SEC once for the facts of every filer the store knows, the long
+            filings' and every company row's, after stating how many and how long, free, each answer kept compressed and none
+            asked again, a refusal named in the folder's list; `--write <folder>` writes `long_fact` whole, migration 133, each
+            figure of the standing facts' concepts for a period ending before 2015-01-01 as first filed, a predecessor's copied
+            under its company's new filer where the standing join's rule holds; `--measure` reads each family's first test year
+            and writes nothing. `long-prices --report-days`, and the long write, keep each 8-K carrying item 2.02 as a report day
+            in `long_print` beside the provider's. The drift's survivors line beneath every drift row of paper trading's
+            variants and scorecard. Core rules for the first years, the HYG and one-off limits and the heavyweights' agreement.
+            Three decisions, section 17's row and section 18's row, the catalogue and matrix rows, `SCHEMA.md`, the runbook, the
+            roster's rows and the changelog. No row of `filed_fact`, a bar or a pulled row moves; no source a rule's version or
+            the readings' version pins moves.
+Found:      the rehearsal's first write read the filers off the long filings alone, which hold the codes 23.4 read ends for and
+            none of the standing members, so Chevron, Ford and American Express among 49 of the S&P 500's 498 members of 2015
+            had no fact before 2015; the filers now include every company row's. The calendar's gap, corrected under 23.4 above.
+Measured:   the capture: 3,112 filers asked, 2,743 answered, 369 refused by the archive with no facts (404). The rehearsal's
+            write over 23.4's scratch store: 2,741 of 3,153 filers read, 2,401 stating a period before 2015-01-01, 619,996 facts,
+            the earliest period ending 1995-01-13; joined, BG 452, BLK 291, DINO 299, FUN 335, MRVL 351, NE 368, NWE 337, PNFP 115,
+            TPL 151 and XOM 290 facts copied, FERG, LQDA and UNIT none needed, APA and APO not joined, a figure in common 100.0%
+            and 183.9% apart. Report days read off 8-Ks carrying item 2.02: 190,758 on the live capture's filings.
+            First test years, the first year 90 in every 100 members read the score plus three, against the plan's estimate:
+            Fundamentals 2016 on the S&P 500 against 2015, 2016 on the S&P 400 against 2017, 2017 on the S&P 600 against 2017;
+            quality 2016 against 2016, 2016 against 2018, apart and used as measured, 2017 against 2018; heavyweights 2023
+            against 2015 and 2015 against 2017, both apart and used as measured, 2016 on the S&P 600 against 2017. The score's
+            share by year runs 0 to 2009, 3 in every 100 of the S&P 500 in 2010, 54 in 2011, 86 in 2012 and 90 in 2013; the
+            heavyweights' share count holds 88 to 90 of the S&P 500 from 2011 to 2015 and falls to 83 to 89 from 2016 to 2019.
+            The drift's first test year is 2016 on all three, the first year its surprises cover at least 80 in every 100 of
+            the since-gone members, after the older codes are matched to the calendar's: the S&P 500 176 of 203, the S&P 400 285
+            of 323, the S&P 600 396 of 479; before matching 171, 284 and 396. The S&P 500 falls under 80 again in 2018 and 2019,
+            145 of 189 and 135 of 171. Since-gone with no surprise, by why it left: the S&P 500 bought out 261, failed 25,
+            dropped 10, not read 18; the S&P 400 302, 33, 11, 18; the S&P 600 563, 88, 28, 40. The heavyweights' agreement,
+            each industry heading's 3 largest by the fund's value against the close times the filed count: the S&P 500 76.6 to
+            90.7 in every 100 from 2009 to 2018, the S&P 400 75.2 to 87.1 from 2010, the S&P 600 72.3 to 77.2; none at 95, so
+            none goes to the operator and nothing is adopted.
+Provisional: each on the operator's review: a member reads the Fundamentals and the quality score where the scorecard gives a
+            word, at least five of nine checks read, over the long and the standing facts filed before the year's first
+            session, the share check reading no closes; a financial company read off the store's Financials; the heavyweights
+            read a share count standing within 400 days; an older code matched to the calendar's by its `_old` suffix taken off;
+            a since-gone code bought out where its filer filed a Form 25 or an 8-K carrying item 2.01, dropped where its prices
+            run 30 days past its leave; the agreement read within the funds' industry headings, 3 largest a heading; report
+            days off 8-Ks alone, their amendments not read. The plan's "the report's row" is not built: no report reads the long
+            facts before 23.6, which draws each family's years and carries the first years with them.
+Tests:      3585, from 3573, 12 new: 11 in the fixture's expectations, the predecessor join's three cases among them, and 1 in
+            the read surface.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property 23.5 adds, filtered to its tests by name,
+            10 in all, each red: the long table keeping periods from 2015; a refusal kept as an answer; a join ignoring a
+            disagreement; the score's share read as strictly above 90 in every 100; the drift's fallback read as reached with no
+            label; an item read as a substring, 12.02 as 2.02; the survivors line dropped; the filers read off the long filings
+            alone; a HYG variant judged from the family's own year; the agreement's share read as strictly above.
+Remedy:     `tools/remedies/2026-11-08-23.5-the-long-facts.txt`, after the capture is copied to `data/long-facts` and the 27
+            months to `data/long-prices/prints`: `migrate`, `long-prices --write data/long-prices`, `long-facts --write
+            data/long-facts` and `long-prices --report-days`, no request.
+Carried:    the operator's marks on the unexplained jumps and the unsettled ends for 23.10's long ledger; the provisional choices
+            above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3585 of 3585 tests ran with none failed, migrations 0 to 133 with none
+            pending, schema version 133, against `data-ci` and never `data`; the phase report 66 tables, 1590 claims, 1590 passing,
+            none out of scope and none unexamined, 1605 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

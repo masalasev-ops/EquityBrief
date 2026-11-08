@@ -107,6 +107,9 @@ public partial class ReadSurface
             // 21.14, the tone variant's line on paper trading.
             .. ToneLineClaims,
 
+            // 23.5, the drift's survivors line on paper trading.
+            .. SurvivorsLineClaims,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 
