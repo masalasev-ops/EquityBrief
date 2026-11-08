@@ -387,7 +387,7 @@ public partial class FixtureExpectations
         using var console = new StringWriter();
         using var log = new MonthlyLog(clock, console, file);
 
-        Assert.Equal(Path.Combine(store.Root, "loop", "2026-11", "run.log"), file);
+        Assert.Equal("loop/2026-11/run.log", Path.GetRelativePath(store.Root, file).Replace(Path.DirectorySeparatorChar, '/'));
 
         log.Write("loop-month: history ");
         log.WriteLine("started");

@@ -17084,3 +17084,21 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 17.10 - correction: the month's log test names its path without a literal the path check refuses   2026-11-08
+
+Found:      pull request 663 merged at 03:11 UTC on 2026-11-08 while its gates ran; `tools/ci.ps1` over it failed at the suite on
+            `path-casing`, the new test's literal `loop` matching the source folder `Loop` in another case, so the entry above's
+            Verified line was never met and `tools/verify-phase.ps1` never ran over it.
+Corrected:  the test reads the log's path relative to the store's root as `loop/2026-11/run.log`, as the report's test reads
+            its own. No shipped source changes; November's run by hand from main's 18d26fad started at 03:25 UTC on it.
+Tests:      none new.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the literal that failed brought back. m1 the path compared by `Path.Combine` over
+            the literal `loop`: `path-casing` red, as the run over pull request 663 measured.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3561 of 3561 tests ran with none failed, migrations 0 to 131 with none
+            pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
+            none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
