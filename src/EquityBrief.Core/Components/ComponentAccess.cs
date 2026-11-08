@@ -47,6 +47,7 @@ public enum Store
     LongSplit,
     LongDividend,
     LongFiling,
+    LongFact,
     DividendWait,
     LateBarAsk,
     EntryReading,
