@@ -3623,7 +3623,7 @@ IResult SweepReportPage(StoreLocation store, string? run)
 // see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
 // see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
 app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
-    Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync(), await read.LongPricesAsync(), await read.LongYearsAsync()), "text/html; charset=utf-8"));
+    Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync(), await read.LongPricesAsync(), await read.LongYearsAsync(), await read.NewsMoodAsync()), "text/html; charset=utf-8"));
 
 // The setup ledger's page under Universe: the summary the ledger's writers refresh for the index chosen, one family's
 // newest settled setups, its first family's where the link names none, and a chosen setup's path, named in the link as

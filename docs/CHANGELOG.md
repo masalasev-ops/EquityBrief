@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, .claude/rules/checks.md - the sector splits and the labels row
+Decision: The sector splits read a sector as it stood off the funds' industry headings through a stated map, and the filed GICS sector after the schedules end
+Was:
+> (15.25, Answers) ... and from 23.6 each family's result by year from 2005 on each index and the three pooled.
+> (15.25, Reads) ... and from 23.6 the long readings, and nothing else; it decides nothing and no rule reads what it draws.
+> (checks.md, fixture-expectations) ... and the long step's failure leaving the month's report standing |
+> (checks.md, read-surface) ... a rule the long walk does not reach saying why and one no long test read saying so |
+Now:
+> (15.25, Answers) ... and from 23.6 each family's result by year from 2005 on each index and the three pooled, and from 23.9 how far each index stands from the industry news mood split.
+> (15.25, Reads) ... and from 23.6 the long readings, and from 23.9 the news articles and labels with the members and the bar store's sessions, and nothing else; it decides nothing and no rule reads what it draws.
+> (checks.md, fixture-expectations) ... and the long step's failure leaving the month's report standing; and from 23.9 the sector map read by hand ... and no source a rule's version pins among those 23.9 writes |
+> (checks.md, read-surface) ... and one no long test read saying so; and from 23.9 the History page's labels row read back over a constructed store ... of the 126 the industry news mood split waits for |
+Why: 23.9 measures the sector splits over 2005 onward and builds the labels row the industry news mood split is read on.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, .claude/rules/checks.md - the monthly test over the long history
 Decision: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
 Was:

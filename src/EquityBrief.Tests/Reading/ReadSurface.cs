@@ -235,6 +235,9 @@ public partial class ReadSurface
             // 23.7, paper trading's verdict over the long history.
             .. LongVerdictRows,
 
+            // 23.9, the History page's labels for the industry news mood.
+            .. NewsMoodRows,
+
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 

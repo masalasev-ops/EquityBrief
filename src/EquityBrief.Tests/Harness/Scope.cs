@@ -4888,6 +4888,27 @@ internal static class Scope
             Verdict.Pass,
             "the rule's verdict from its first test year read back with the years its setting never saw apart from those it was chosen on, the rules summed across the three over the same history, a rule the long walk does not reach saying why and one no long test read saying so",
             ByReadSurface),
+        // 23.9's sector splits: its component, section 17's two rows and the History page's labels row.
+        [CheckReach.Key(CatalogueTable, "Sector splits reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares every store it reads and none it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Sector splits reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(LimitsTable, "The sector splits")] = new Scoped(
+            Verdict.Pass,
+            "each split's rule on both sides of its line, one split worked over a constructed store, the variant's test on both sides of an era and no store row written; each figure read off the document against its constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The sector map")] = new Scoped(
+            Verdict.Pass,
+            "the map read by hand on headings of each kind, Real Estate and Communication Services under their older sectors on both sides of each date, and a heading no key matches naming none",
+            ByExpectations),
+        [CheckReach.Key("15.25 History", "Labels for the industry news mood")] = new Scoped(
+            Verdict.Pass,
+            "each index's members holding a story, those holding one unlabelled, the day every such story stood labelled from or not yet, and the sessions after it read back over a constructed store",
+            ByReadSurface),
         [CheckReach.Key("15.25 History", "Each family by year")] = new Scoped(
             Verdict.Pass,
             "each family's years read back off the page over a constructed store, each index's and the pooled trades, share at target and edge with the last price beside it, 2008 marked, the years chosen on and never seen, the drift's survivors line and the lower coverage label, and a store not written saying so",
@@ -6576,6 +6597,8 @@ internal static class Scope
         // take, and the measure of each family on each index over 20 years.
         ["Long history reader"] = "23.6",
         ["Long ledger reader"] = "23.6",
+        // 23.9's one, which the plan describes as the read-only sector splits.
+        ["Sector splits reader"] = "23.9",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -7594,6 +7617,7 @@ internal static class Scope
         [CheckReach.Key("15.25 History", "Members back to 2005")] = "23.3",
         [CheckReach.Key("15.25 History", "Prices back to 2004")] = "23.4",
         [CheckReach.Key("15.25 History", "Each family by year")] = "23.6",
+        [CheckReach.Key("15.25 History", "Labels for the industry news mood")] = "23.9",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
@@ -8727,6 +8751,7 @@ internal static class Scope
         ["The long history's first test years"] = "23.5",
         ["The long tables' budget"] = "23.6",
         ["The per-rule test over the long history"] = "23.7",
+        ["The sector map"] = "23.9",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

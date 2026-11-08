@@ -222,7 +222,7 @@ public partial class FixtureExpectations
     ];
 
     // The long ledger writes only its own tables, a session once written frozen, and no row of `setup` moves; no card, hook or
-    // night reads them, the History page's read and the measure alone; and no source a rule's version or the readings'
+    // night reads them, the History page's read and the measures alone, from 23.9 the sector splits' among them; and no source a rule's version or the readings'
     // version pins is one 23.6 writes.
     [Fact]
     public void NoRowOfSetupMovesNoNightOrCardReadsTheLongLedgerAndNoSourceARulesVersionPinsIsOne23Point6Writes()
@@ -246,7 +246,7 @@ public partial class FixtureExpectations
             .ToArray();
 
         Assert.Equal(
-            ["src/EquityBrief.Api/Reading/ReadApi.LongYears.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs"],
+            ["src/EquityBrief.Api/Reading/ReadApi.LongYears.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/History/SectorSplitsReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs"],
             readers);
 
         var pinned = CandidateEvaluators.All

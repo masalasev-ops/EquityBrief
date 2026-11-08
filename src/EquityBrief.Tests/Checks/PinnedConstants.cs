@@ -933,6 +933,14 @@ public class PinnedConstants
             new("The per-rule test over the long history", "20,000", Core.Loop.LongTest.LeastDraws, "LongTest.LeastDraws"),
             new("The per-rule test over the long history", "3", (decimal)Core.Loop.LongTest.Cap.TotalHours, "LongTest.Cap"),
 
+            // The sector splits, 23.9, the figures in the row's order.
+            new("The sector splits", "5", Core.History.SectorSplits.ChangeDays, "SectorSplits.ChangeDays"),
+            new("The sector splits", "20", Core.History.SectorSplits.AverageDays, "SectorSplits.AverageDays"),
+            new("The sector splits", "63", Core.History.SectorSplits.ReturnDays, "SectorSplits.ReturnDays"),
+            new("The sector splits", "20", Core.History.SectorSplits.AverageDays, "SectorSplits.AverageDays"),
+            new("The sector splits", "50", Core.History.SectorSplits.SideTrades, "SectorSplits.SideTrades"),
+            new("The sector splits", "126", Web.App.SinglePageApp.NewsMoodSessions, "SinglePageApp.NewsMoodSessions"),
+
             // The long history's membership, 23.3, the figures in the rows' order.
             new("The long history's stop", "0.90", (decimal)Core.History.LongFloors.HoldingsStop, "LongFloors.HoldingsStop"),
             new("The long history's stop", "0.90", Core.History.LongFloors.ValueStop, "LongFloors.ValueStop"),

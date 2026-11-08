@@ -211,6 +211,8 @@ public partial class FixtureExpectations
             .. LongLedgerClaims,
             // 23.7, the long test: section 17's row.
             .. LongTestClaims,
+            // 23.9, the sector splits: section 17's two rows.
+            .. SectorSplitsClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 
