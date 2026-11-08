@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html - the long calendar runs to the first month the pull holds a surprise
+Decision: The long history's earnings calendar runs to the first month the pull holds a surprise
+Was:
+> (Long price pull, catalogue) ... the earnings calendar a month at a time before the pull's first month, the market series once each ...
+> (The long history's prices, section 17) ... and the earnings calendar a month at a time before the pull's first month in 2015; ... | ...; the pull holds the calendar from its own first month; ...
+Now:
+> (Long price pull, catalogue) ... the earnings calendar a month at a time before the first month the pull holds a surprise, the market series once each ...
+> (The long history's prices, section 17) ... and the earnings calendar a month at a time before the first month the pull holds a surprise, in 2018 (see: The long history's earnings calendar runs to the first month the pull holds a surprise); ... | ...; the pull holds surprises from its 2018, its calendar from 2015-10 holding the days alone; ...
+Corrects: 23.5's rehearsal of 2026-11-08 read the drift's coverage of since-gone members as 0 in 2016 and 2017 on every index: the long calendar stopped at 2015-09 and the pull's surprises start in 2018-01.
+
+### 2026-11-08 - docs/BUILD_PLAN.md - 23.4's calendar asked to 2018-01
+Decision: The long history's earnings calendar runs to the first month the pull holds a surprise
+Was:
+> ### 23.4 ... the earnings calendar for each month before 2015-10; and the index's ...
+Now:
+> ### 23.4 ... the earnings calendar for each month before 2018-01, the first month the pull holds a surprise (see: The long history's earnings calendar runs to the first month the pull holds a surprise); and the index's ...
+Corrects: the same gap.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html - the long price pull reads the long filings for the report days
 Decision: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone
 Was:

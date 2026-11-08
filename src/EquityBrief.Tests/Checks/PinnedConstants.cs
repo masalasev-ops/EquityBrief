@@ -939,7 +939,7 @@ public class PinnedConstants
             new("The long history's prices", "2004", Core.History.LongPrices.From.Year, "LongPrices.From's year"),
             new("The long history's prices", "3", Core.History.LongPrices.RequestsACode, "LongPrices.RequestsACode"),
             new("The long history's prices", "1.2", (decimal)Core.History.LongPrices.SecondsARequest, "LongPrices.SecondsARequest"),
-            new("The long history's prices", "2015", Core.History.LongPrices.PrintsBefore.Year, "LongPrices.PrintsBefore's year"),
+            new("The long history's prices", "2018", Core.History.LongPrices.PrintsBefore.Year, "LongPrices.PrintsBefore's year"),
             new("The long history's prices", "0.98", (decimal)Core.History.LongPrices.SpanPricedShare, "LongPrices.SpanPricedShare"),
             new("The long history's prices", "0.95", (decimal)Core.History.LongPrices.OneSeriesShare, "LongPrices.OneSeriesShare"),
             new("The long history's prices", "20", Core.History.LongPrices.OneSeriesSessions, "LongPrices.OneSeriesSessions"),
