@@ -28,7 +28,7 @@ Decision: The paper chart opens scrolled to its newest day where it is wider tha
 Was:
 > (15.21, the chart) ... at a width under the chart's own a width its labels read at, the chart scrolling inside its own frame (see: The paper chart draws each account ...)
 Now:
-> ... the chart scrolling inside its own frame (see: The paper chart draws each account ...), from the 19.4 correction of 2026-11-07 opening scrolled to its newest day (see: The paper chart opens scrolled to its newest day where it is wider than the screen)
+> ... the chart scrolling inside its own frame and opening scrolled to its newest day (see: The paper chart draws each account ...) (see: The paper chart opens scrolled to its newest day where it is wider than the screen)
 Why: the operator's order of 2026-11-07 after the monthly run, its second item.
 
 ### 2026-11-07 - docs/RUNBOOK.md - a branch's build read back over a copy of the store
