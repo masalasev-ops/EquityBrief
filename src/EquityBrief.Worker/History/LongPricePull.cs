@@ -43,7 +43,8 @@ public sealed record LongPriceOutcome(
     IReadOnlyList<LongEnd> Ends,
     IReadOnlyList<LongOverlap> Overlaps,
     IReadOnlyList<string> Stops,
-    bool Written);
+    bool Written,
+    IReadOnlyList<string> Unreadable);
 
 // The long history's prices. Every code the long history's membership matched and every code the pull holds is asked once for its
 // prices from 2004-01-02, its splits and its dividends, one request each; the earnings calendar once a month before the pull's
@@ -416,8 +417,11 @@ public sealed class LongPricePull : IComponent
     }
 
     // A kept answer of prices as sessions, none where the provider refused it or sent nothing readable; the rows no session is read
-    // from skipped, as the night's bulk reader skips them.
-    public static IReadOnlyList<ProviderBar> BarsOf(string answer, string ticker)
+    // from skipped, as the night's bulk reader skips them. A row the reader refuses, a session that could not have traded among them,
+    // is skipped too and named in the list given, so one bad old row leaves a session missing, which the data check reads, and
+    // stops no write.
+    // see: A row of the long prices the bar reader refuses is skipped and listed, and stops no write
+    public static IReadOnlyList<ProviderBar> BarsOf(string answer, string ticker, ICollection<string>? unreadable = null)
     {
         using var document = JsonDocument.Parse(answer);
 
@@ -430,9 +434,16 @@ public sealed class LongPricePull : IComponent
 
         foreach (var entry in document.RootElement.EnumerateArray())
         {
-            if (ProviderBarReader.TryRead(entry, ticker, out var bar) && bar is not null)
+            try
             {
-                bars.Add(bar);
+                if (ProviderBarReader.TryRead(entry, ticker, out var bar) && bar is not null)
+                {
+                    bars.Add(bar);
+                }
+            }
+            catch (FormatException refused)
+            {
+                unreadable?.Add(refused.Message);
             }
         }
 
@@ -549,6 +560,7 @@ public sealed class LongPricePull : IComponent
 
         var heldBy = new Dictionary<string, (HashSet<DateOnly> Held, DateOnly? Last)>(StringComparer.Ordinal);
         var nothing = new List<string>();
+        var unreadable = new List<string>();
         var ends = new List<LongEnd>();
         var overlaps = new List<LongOverlap>();
         var marks = new List<(string Ticker, DateOnly Session, string Says)>();
@@ -558,7 +570,7 @@ public sealed class LongPricePull : IComponent
         foreach (var code in codes)
         {
             var file = FileOf(folder, PricesFolder, code.Ticker);
-            var series = File.Exists(file) ? BarsOf(await File.ReadAllTextAsync(file, cancellation), code.Ticker) : [];
+            var series = File.Exists(file) ? BarsOf(await File.ReadAllTextAsync(file, cancellation), code.Ticker, unreadable) : [];
 
             if (++done % 250 == 0)
             {
@@ -630,7 +642,7 @@ public sealed class LongPricePull : IComponent
 
         if (write && stops.Count == 0)
         {
-            marketBars = await WriteMarketAsync(connection, (SqliteTransaction)transaction!, folder, runId, cancellation);
+            marketBars = await WriteMarketAsync(connection, (SqliteTransaction)transaction!, folder, runId, unreadable, cancellation);
             prints = await WritePrintsAsync(connection, (SqliteTransaction)transaction!, folder, codes, runId, cancellation);
             (splits, dividends) = await WriteActionsAsync(connection, (SqliteTransaction)transaction!, folder, codes, runId, cancellation);
             filingRows = await WriteFilingsAsync(connection, (SqliteTransaction)transaction!, folder, filers, runId, cancellation);
@@ -666,6 +678,7 @@ public sealed class LongPricePull : IComponent
                 apartAtMost = counts.Select(count => Math.Abs(count.Apart)).DefaultIfEmpty().Max(),
                 lowest = coverage.OrderBy(quarter => quarter.HoldingsShare).Take(3).Select(quarter => FormattableString.Invariant($"{quarter.Index} {quarter.Period:yyyy-MM-dd} {quarter.HoldingsShare:P1} of holdings, {quarter.ValueShare:P1} of value")).ToArray(),
                 nothing,
+                unreadable,
                 refused = refusedCount,
                 ends = ends.Count(end => end.Session is not null),
                 unsettled = ends.Where(end => end.Session is null).Select(end => FormattableString.Invariant($"{end.Ticker} {end.LastTraded ?? end.LastClose:yyyy-MM-dd}")).ToArray(),
@@ -696,7 +709,8 @@ public sealed class LongPricePull : IComponent
             ends,
             overlaps,
             stops,
-            write && stops.Count == 0);
+            write && stops.Count == 0,
+            unreadable);
     }
 
     // A departed code's end: the filer's filings read by the core's rule where its filer is the code's company, the session before
@@ -822,7 +836,7 @@ public sealed class LongPricePull : IComponent
         return new LongOverlap(ticker, shared.Length, cent, percent, traded, firstApart, largest);
     }
 
-    static async Task<int> WriteMarketAsync(SqliteConnection connection, SqliteTransaction transaction, string folder, string runId, CancellationToken cancellation)
+    static async Task<int> WriteMarketAsync(SqliteConnection connection, SqliteTransaction transaction, string folder, string runId, ICollection<string> unreadable, CancellationToken cancellation)
     {
         var written = 0;
 
@@ -839,7 +853,7 @@ public sealed class LongPricePull : IComponent
                 continue;
             }
 
-            foreach (var bar in BarsOf(await File.ReadAllTextAsync(file, cancellation), series))
+            foreach (var bar in BarsOf(await File.ReadAllTextAsync(file, cancellation), series, unreadable))
             {
                 insert.Parameters.Clear();
                 insert.Parameters.AddWithValue("$series", series);
@@ -1006,6 +1020,7 @@ public sealed class LongPricePull : IComponent
 
         lines.AddRange(outcome.Stops.Select(stop => "stop: " + stop));
         lines.Add(FormattableString.Invariant($"{outcome.Nothing.Count} code(s) the provider holds nothing for, left out") + (outcome.Nothing.Count > 0 ? ": " + string.Join("; ", outcome.Nothing) : string.Empty));
+        lines.Add(FormattableString.Invariant($"{outcome.Unreadable.Count} row(s) the bar reader refused, skipped and left a missing session") + (outcome.Unreadable.Count > 0 ? ": " + string.Join("; ", each ? outcome.Unreadable : outcome.Unreadable.Take(10)) + (!each && outcome.Unreadable.Count > 10 ? "; the rest with '--each'" : string.Empty) : string.Empty));
         lines.Add(FormattableString.Invariant($"{outcome.Refused.Count} filer(s) refused, their names not the company's"));
         lines.AddRange(each ? outcome.Refused.Select(filer => FormattableString.Invariant($"  refused {filer.Ticker}: {filer.Cik ?? "none"} {string.Join("; ", filer.Entity)} ({filer.By})")) : []);
 

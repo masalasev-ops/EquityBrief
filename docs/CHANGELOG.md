@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/BUILD_PLAN.md - the obligation on the provider's S&P 500 spans from 2012 discharged at 23.4
+Obligation: The provider's S&P 500 spans from 2012 held against IVV's own holdings
+Was:
+> | **The provider's S&P 500 spans from 2012 held against IVV's own holdings** | 23.3 | 23.4 | ... 23.4 states the count with each series counted once, by quarter end, and puts what remains to the operator before 23.6 reads a span |
+Now:
+> | **The provider's S&P 500 spans from 2012 held against IVV's own holdings** | 23.3 | 23.4, discharged | ... before 23.6 reads a span. 23.4's rehearsal counted 542 to 554 once two codes carrying one series count once, against the fund's 500 to 507 at its 26 quarter ends, 36 to 53 apart, so on the operator's answer of 2026-11-07 the S&P 500 reads IVV's schedules to their last and the provider's dates from 2018-10-01 |
+Why: 23.4 measured the count its row was due at.
+
 ### 2026-11-08 - docs/RUNBOOK.md - a monthly step is read as running with a line in the last fifteen minutes
 Decision: The monthly run writes its own stamped log and says every ten minutes that a step still runs
 Was:
@@ -14,6 +22,22 @@ Was:
 Now:
 > Read the run's progress there, never from the store while it writes: a step with a line in the last fifteen minutes is running, and one with none for longer has stopped. The ten minutes are a wait, and under a step's load its lines came 10 to 13.5 minutes apart in November's run.
 Corrects: November's run by hand of 2026-11-08 wrote its S&P 600 per-rule test's lines at 03:37:59, 03:48:48, 03:58:48 and 04:12:19 UTC, the last 13.5 minutes after the one before, which the ten minutes would have read as stopped.
+
+### 2026-11-08 - docs/ARCHITECTURE.html - section 18's row of a code priced by nothing names a row the bar reader refuses
+Decision: A row of the long prices the bar reader refuses is skipped and listed, and stops no write
+Was:
+> A code the provider prices by nothing | from 23.4 a code the provider answers with no session is listed ... (see: The failed companies the long history cannot price are left out by name and the run goes on) | ... | a code with no prices cannot be read for the years it was held, and naming it keeps every figure that leaves it out saying so
+Now:
+> A code the provider prices by nothing | ... (see: The failed companies the long history cannot price are left out by name and the run goes on); and a row of a code's answer the bar reader refuses, a session that could not have traded among them, is skipped and listed by its code and session, leaving a missing session the data check reads, the run going on (see: A row of the long prices the bar reader refuses is skipped and listed, and stops no write) | ... | ...; and one bad row in twenty years of a code's answer stopped the whole write in its rehearsal of 2026-11-08
+Corrects: the rehearsal of the long write over the capture on 2026-11-08 stopped at LTRPA's row of 2015-02-10, which could not have traded once adjusted.
+
+### 2026-11-08 - docs/RUNBOOK.md - the long write prints the rows the bar reader refused
+Decision: A row of the long prices the bar reader refuses is skipped and listed, and stops no write
+Was:
+> `--write` prints ... the codes the provider priced by nothing, the filers refused and the departed codes' ends, `--each` naming each; ...
+Now:
+> `--write` prints ... the codes the provider priced by nothing, the rows the bar reader refused, each skipped and named by its code and session (see: A row of the long prices the bar reader refuses is skipped and listed, and stops no write), the filers refused and the departed codes' ends, `--each` naming each; ...
+Why: the same rehearsal.
 
 ### 2026-11-08 - docs/BUILD_PLAN.md - 23.8 tests the traded plan's buy and sell points over the long history
 Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index

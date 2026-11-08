@@ -22,6 +22,28 @@ namespace EquityBrief.Tests.Checks;
 // see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
 public partial class FixtureExpectations
 {
+    // A row the bar reader refuses, LTRPA's of 2015-02-10 adjusting to a low above its open as the rehearsal met it, is skipped and
+    // named with its code and session, the rows either side kept, and stops nothing.
+    // see: A row of the long prices the bar reader refuses is skipped and listed, and stops no write
+    [Fact]
+    public void ALongPricesRowTheReaderRefusesIsSkippedAndListedAndTheRowsBesideItKept()
+    {
+        const string answer = """
+            [
+              {"date":"2015-02-09","open":25.30,"high":25.60,"low":25.10,"close":25.40,"adjusted_close":25.40,"volume":1000},
+              {"date":"2015-02-10","open":25.12,"high":25.51,"low":25.26,"close":25.26,"adjusted_close":25.26,"volume":1000},
+              {"date":"2015-02-11","open":25.20,"high":25.70,"low":25.00,"close":25.50,"adjusted_close":25.50,"volume":1000}
+            ]
+            """;
+        var unreadable = new List<string>();
+
+        var bars = LongPricePull.BarsOf(answer, "LTRPA", unreadable);
+
+        Assert.Equal([new DateOnly(2015, 2, 9), new DateOnly(2015, 2, 11)], bars.Select(bar => bar.SessionDate));
+        Assert.Equal(["LTRPA on 2015-02-10 adjusts to low 25.26, open 25.12, high 25.51, close 25.26, which is a session that could not have traded."], unreadable);
+        Assert.Equal(2, LongPricePull.BarsOf(answer, "LTRPA").Count);
+    }
+
     internal static string[] LongPricesClaims =>
     [
         CheckReach.Key(Scope.LimitsTable, "The long history's prices"),
