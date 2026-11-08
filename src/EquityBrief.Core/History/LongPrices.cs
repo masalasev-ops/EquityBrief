@@ -35,8 +35,10 @@ public static class LongPrices
 {
     public static DateOnly From { get; } = new(2004, 1, 2);
 
-    // The pull's first month: the calendar's prints are asked for each month before it, the pull holding those after.
-    public static DateOnly PrintsBefore { get; } = new(2015, 10, 1);
+    // The first month the pull holds a surprise: the calendar's prints are asked for each month before it, the pull holding
+    // those after. The pull's own calendar starts in 2015-10 with the days alone, and its surprises in 2018-01.
+    // see: The long history's earnings calendar runs to the first month the pull holds a surprise
+    public static DateOnly PrintsBefore { get; } = new(2018, 1, 1);
 
     // The requests a code costs: its prices, its splits and its dividends, each one weighted call.
     public const int RequestsACode = 3;

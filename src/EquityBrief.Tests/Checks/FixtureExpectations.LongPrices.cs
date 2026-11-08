@@ -91,15 +91,15 @@ public partial class FixtureExpectations
 
         var asked = await LongPricePull.CaptureAsync(folder, codes, feed, new DateOnly(2026, 11, 6), false, line => said.Add((line, feed.Requests)));
 
-        // Two codes at three asks each, one company record, the calendar's 141 months and the 17 series: 165 requests, weighing
-        // 6 + 10 + 141 + 17 = 174 calls.
-        Assert.Equal(141, LongPrices.Months().Count);
+        // Two codes at three asks each, one company record, the calendar's 168 months to 2017-12, where the pull's surprises
+        // start, and the 17 series: 192 requests, weighing 6 + 10 + 168 + 17 = 201 calls.
+        Assert.Equal(168, LongPrices.Months().Count);
         Assert.Equal((new DateOnly(2004, 1, 1), new DateOnly(2004, 1, 31)), LongPrices.Months()[0]);
-        Assert.Equal(new DateOnly(2015, 9, 1), LongPrices.Months()[^1].First);
+        Assert.Equal(new DateOnly(2017, 12, 1), LongPrices.Months()[^1].First);
         Assert.Equal(17, LongPricePull.MarketSeries.Count);
-        Assert.Equal(165, asked);
+        Assert.Equal(192, asked);
         Assert.Equal(0, said[0].Requests);
-        Assert.Equal("asks about 174 weighted call(s) of the provider's 100,000 a day: 2 code(s), each its prices from 2004-01-02, splits and dividends; 1 company record(s) for a filer; 141 month(s) of the earnings calendar; 17 market series: 165 request(s), about 174 weighted call(s), about 0.1 hour(s)", said[0].Line);
+        Assert.Equal("asks about 201 weighted call(s) of the provider's 100,000 a day: 2 code(s), each its prices from 2004-01-02, splits and dividends; 1 company record(s) for a filer; 168 month(s) of the earnings calendar; 17 market series: 192 request(s), about 201 weighted call(s), about 0.1 hour(s)", said[0].Line);
 
         // Everything kept is asked nothing again.
         Assert.Equal(0, await LongPricePull.CaptureAsync(folder, codes, feed, new DateOnly(2026, 11, 6), false, _ => { }));
