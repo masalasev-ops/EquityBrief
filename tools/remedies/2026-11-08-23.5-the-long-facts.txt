@@ -1,11 +1,14 @@
-# The remedy of 23.5, the long history's facts. Migration 133 creates long_fact. The write reads the long facts' folder under the
-# data root, data/long-facts, which the capture the runbook shows built from the SEC's facts of each filer the long price pull
-# matched to its company; it asks nothing of anyone, makes no model call, and writes long_fact whole with its row on the run log,
-# each figure of the standing facts' concepts for a period ending before 2015-01-01 as first filed and a predecessor's copied
-# under its company's new filer where the two agree. The report days are then read off the long filings' 8-Ks carrying item
-# 2.02 into long_print beside the provider's prints. No bar, pulled row, standing fact or night moves, and no source a rule's
+# The remedy of 23.5, the long history's facts, with 23.4's correction of the same day. Migration 133 creates long_fact. The long
+# write reads the long prices' folder under the data root, data/long-prices, into which the earnings calendar's 27 months from
+# 2015-10 to 2017-12 are copied first, and writes its six tables whole again with the report days read off the long filings'
+# 8-Ks carrying item 2.02 beside the provider's prints. The facts' write reads the long facts' folder, data/long-facts, which the
+# capture the runbook shows built from the SEC's facts of every filer the store knows, and writes long_fact whole, each figure of
+# the standing facts' concepts for a period ending before 2015-01-01 as first filed and a predecessor's copied under its
+# company's new filer where the two agree. Neither asks anything of anyone or calls a model. The report days are written again
+# last so they read the filings the long write left. No bar, pulled row, standing fact or night moves, and no source a rule's
 # version or the readings' version pins moves. Run from main after the merge, when no night, off-peak run, local run, ledger
 # build or monthly run is writing.
 migrate
+long-prices --write data/long-prices
 long-facts --write data/long-facts
 long-prices --report-days
