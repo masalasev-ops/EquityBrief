@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/BUILD_PLAN.md - 23.8 tests the traded plan's buy and sell points over the long history
+Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
+Was:
+> ### 23.8 ... Nothing is registered or retired without their word (see: History reaches a list only through a test on years a proposal never saw and the operator's approval). Writes the report's rows, ...
+> **Done when** ... each family on each index stands as a proposal or as none passing in an entry; nothing is registered, asserted; ...
+Now:
+> ### 23.8 ... Nothing is registered or retired without their word (...). On the operator's addition of 2026-11-08, the traded plan's buy and sell points are tested too: every setup the pullback, the breakout, the drift and the dip flagged on each index over 2005 to 2026 ... walked under every combination of an entry, ... a stop, ... and an exit, ... to 23.10's restart only on their word (see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index). Writes the report's rows, ...
+> **Done when** ... each family on each index stands as a proposal or as none passing in an entry; one combination of each entry, stop and exit is worked by hand over a constructed path, a pick its entry never fills counted as offered and not taken, asserted; CTSH of 2026-11-06 stands in the entry under every combination; each price family on each index stands in the entry with its recommended combination, its edge and its trades, or none; nothing is registered, asserted; ...
+Why: the operator's addition to 23.8 of 2026-11-08, word for word in `prompts/2026-11-08-23.8-operator-addition-plan-points.md`.
+
 ### 2026-11-08 - docs/RUNBOOK.md - the monthly run's own log, its measured time and the task's limit of 18 hours
 Decision: The monthly run writes its own stamped log and says every ten minutes that a step still runs
 Was:

@@ -17102,3 +17102,17 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.8 ruling - every price family's traded plan's buy and sell points tested over the long history
+
+Not a checkpoint entry: it records the operator's addition and lands nothing.
+Ruled:      word for word in `prompts/2026-11-08-23.8-operator-addition-plan-points.md`, given on 2026-11-08 while 23.4 was in
+            progress: "Addition to 23.8, on my word: test every traded plan's buy and sell points over the 2005 to 2026 history,
+            for every family with a price stop (pullback, breakout, drift, dip) on all three indexes ... It goes to 23.10's
+            restart only on my word." 23.8's text and done condition carry it, with one decision and the changelog (see: Every
+            price family's traded plan's buy and sell points are tested over the long history and one combination is
+            recommended a family an index). Built at 23.8; nothing is registered or changed before 23.10.
+Queue:      done, November's monthly run and its log's correction; in progress, 23.4 with this ruling in its pull request; next,
+            23.5 to 23.9, then 23.10's restart on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
