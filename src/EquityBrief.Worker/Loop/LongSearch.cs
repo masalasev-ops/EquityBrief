@@ -41,9 +41,18 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
     // family's search reads the standing history alone and is named with that reason.
     public static IReadOnlyList<string> Searched { get; } = [BreakoutRule.Name, DriftRule.Name];
 
-    public static IReadOnlyList<string> StandingAlone { get; } = [SetupFamilies.Pullback, DipRule.Name, HeavyweightRule.Name, QualityRule.Name, ImprovingRule.Name, FundamentalsRule.Name];
+    // From the 23.8 correction the dip searched over the long history too, its own sweep's grid at its first stage.
+    // see: A search over the long history re-runs every third test year with its setting carried between
+    public static IReadOnlyList<string> SearchedOwn { get; } = [DipRule.Name];
+
+    public static IReadOnlyList<string> StandingAlone { get; } = [SetupFamilies.Pullback, HeavyweightRule.Name, QualityRule.Name, ImprovingRule.Name, FundamentalsRule.Name];
 
     public const string StandingAloneWhy = "its search reads the standing history alone, so it is searched there by the monthly run";
+
+    // What blocks the pullback's search over the long history on an index, and what would unblock it.
+    public static string PullbackBlocked(string index) => index == IndexFamilies.LargeIndex
+        ? "the S&P 500's pullback is the swing filter, changed through the shape moves proposed for its open version and walked over no grid a search chooses from, so no setting of it can be searched; nothing 23.10 brings unblocks it, which wants the filter's own settings laid out as a grid and searched as a procedure, a checkpoint of its own"
+        : "its search, the pullback's two-stage design search, keeps the sweeps' eight scored years a stock's year each, so a fold learning on more than eight would fold its earlier years into its last; nothing 23.10 brings unblocks it, which wants the design search's tally laid out over the long history's years, a checkpoint of its own";
 
     const string Written = "SELECT family FROM long_search WHERE index_code = $index AND through = $through;";
 
@@ -84,10 +93,10 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
 
         foreach (var family in StandingAlone)
         {
-            output.WriteLine($"{Verb}: the {family} on the {DecisionCards.NameOf(index)} is not searched over the long history: {StandingAloneWhy}");
+            output.WriteLine($"{Verb}: the {family} on the {DecisionCards.NameOf(index)} is not searched over the long history: {(family == SetupFamilies.Pullback ? PullbackBlocked(index) : StandingAloneWhy)}");
         }
 
-        if (Searched.All(written.Contains))
+        if (Searched.Concat(SearchedOwn).All(written.Contains))
         {
             output.WriteLine($"{Verb}: every family's search on the {DecisionCards.NameOf(index)} through {Text(through)} is written; nothing to do");
 
@@ -115,6 +124,36 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
             if (!print)
             {
                 await WriteAsync(index, through, started, searched, cancellation);
+            }
+        }
+
+        // From the 23.8 correction the dip, over its own sweep's reading of the long history, against its live rule.
+        if (!written.Contains(DipRule.Name))
+        {
+            if (SweepRunner.InTheNightsWindow(clock.UtcNow, WalkForwardTester.Expected))
+            {
+                output.WriteLine($"{Verb}: stopped before the night's window with the {DipRule.Name} not yet searched; run it again after the night and it goes on from there");
+
+                return 0;
+            }
+
+            var started = clock.UtcNow;
+            var (dip, why) = await WalkForwardTester.LongDipAsync(databaseFile, read, longHistory, history, through, started, output.WriteLine, cancellation);
+
+            if (dip is null)
+            {
+                output.WriteLine($"{Verb}: the {DipRule.Name} on the {DecisionCards.NameOf(index)} is not searched over the long history: {why}");
+            }
+            else
+            {
+                var searched = SearchOwn(read, dip.Read, dip.Setting, dip.Levels, dip.Words, LongTest.FirstTestYear(DipRule.Name, index), output.WriteLine);
+
+                output.WriteLine(Line(index, searched));
+
+                if (!print)
+                {
+                    await WriteAsync(index, through, started, searched, cancellation);
+                }
             }
         }
 
@@ -151,6 +190,52 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
         }
 
         var current = LoopProcedures.Walk(read, currentAdapter, provisional, Floors(read.Index));
+        var floorWords = drift ? FormattableString.Invariant($", its stop held at least {LoopProcedures.DriftStopFloor:0.##} typical move under the buy") : string.Empty;
+
+        return SearchOver(read, family, firstTestYear, adapter.Grid, settings, walked, current, setting => RuleReplay.SwingWords(family, setting) + floorWords, RuleReplay.SwingWords(family, provisional));
+    }
+
+    // From the 23.8 correction the dip searched over the long history the same way: its own sweep's grid walked once a
+    // setting over the long reader's history, its second stage not read, against its live rule's setting and levels.
+    // see: A search over the long history re-runs every third test year with its setting carried between
+    public static SearchRead SearchOwn(LoopRead read, OwnProcedures.IOwnSwing own, int[] liveSetting, IReadOnlyList<DialLevel<FamilyListing>> liveLevels, string liveWords, int firstTestYear, Action<string> progress)
+    {
+        var settings = own.Grid.Settings;
+        var walked = new IReadOnlyList<LoopProcedures.Walked>[settings.Count];
+
+        static IReadOnlyList<LoopProcedures.Walked> Kept(IReadOnlyList<FamilyTrade> trades, System.Collections.Concurrent.ConcurrentDictionary<(int Name, int Session), int> held) =>
+        [
+            .. trades.Select(trade => new LoopProcedures.Walked(
+                trade.Listing.Session,
+                trade.Result is not null && held.TryGetValue((trade.Listing.Name, trade.Listing.Session), out var sessions) ? trade.Listing.Session + sessions : null,
+                trade)),
+        ];
+
+        progress(FormattableString.Invariant($"{Verb}: walking the {own.Family}'s {settings.Count} setting(s) on the {DecisionCards.NameOf(read.Index)} over the long history"));
+
+        for (var at = 0; at < settings.Count; at++)
+        {
+            var held = new System.Collections.Concurrent.ConcurrentDictionary<(int Name, int Session), int>();
+
+            walked[at] = Kept(own.TradesUnder(settings[at], [], held), held);
+
+            if ((at + 1) % 25 == 0)
+            {
+                progress(FormattableString.Invariant($"{Verb}: {at + 1} of {settings.Count} setting(s) walked"));
+            }
+        }
+
+        var heldNow = new System.Collections.Concurrent.ConcurrentDictionary<(int Name, int Session), int>();
+        var current = Kept(own.TradesUnder(liveSetting, liveLevels, heldNow), heldNow);
+
+        return SearchOver(read, own.Family, firstTestYear, own.Grid, settings, walked, current, setting => "the " + own.Family + " rule at " + own.Grid.Key(setting), liveWords);
+    }
+
+    // The search's folds and verdict over walks already made: each fold reading only what ended before its year through its
+    // view, searched or carried as the schedule says, and the setting walked beside it judged on the folds' years as the
+    // tester judges a proposal, with the fund line beside it.
+    static SearchRead SearchOver(LoopRead read, string family, int firstTestYear, FamilyGrid grid, IReadOnlyList<int[]> settings, IReadOnlyList<LoopProcedures.Walked>[] walked, IReadOnlyList<LoopProcedures.Walked> current, Func<int[], string> words, string currentWords)
+    {
         var folds = LoopFolds.Of(read.Calendar, read.Calendar[^1], firstTestYear);
         var historyYears = read.Calendar[^1].Year - read.Calendar[read.FirstScored].Year + 1;
 
@@ -165,7 +250,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
                         var learning = new FoldView<LoopProcedures.Walked>(fold, walked[at], one => read.Calendar[one.Entry], one => one.Exit is { } exit ? read.Calendar[exit] : null).Learning;
                         var trades = learning.Where(one => one.Edge is not null).Select(one => (read.Calendar[one.Entry].Year, one.Edge!.Value)).ToArray();
 
-                        return (setting, LongSearchRules.FiguresOf(adapter.Grid.Key(setting), trades), adapter.Grid.Changes(setting));
+                        return (setting, LongSearchRules.FiguresOf(grid.Key(setting), trades), grid.Changes(setting));
                     }),
                 ],
                 floors);
@@ -173,14 +258,13 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
 
         var longFolds = LongSearchRules.Folds([.. folds.Select(fold => fold.Year)], firstTestYear, year => ChooseIn(folds.First(fold => fold.Year == year)));
         var proposal = ChooseIn(new LoopFold(read.Calendar[^1].Year + 1, read.Calendar[^1].AddDays(1), read.Calendar[^1].AddDays(1), false));
-        var placeOf = settings.Select((setting, place) => (setting, place)).ToDictionary(pair => adapter.Grid.Key(pair.setting), pair => pair.place, StringComparer.Ordinal);
+        var placeOf = settings.Select((setting, place) => (setting, place)).ToDictionary(pair => grid.Key(pair.setting), pair => pair.place, StringComparer.Ordinal);
 
         static IReadOnlyList<(int Entry, double? Edge)> Units(IReadOnlyList<LoopProcedures.Walked> trades) => [.. trades.Select(one => (one.Entry, one.Edge))];
 
-        var evidence = LoopProcedures.Evidence(folds, read.Calendar, [.. longFolds.Select(one => one.Chosen is null ? null : Units(walked[placeOf[adapter.Grid.Key(one.Chosen)]]))], Units(current));
+        var evidence = LoopProcedures.Evidence(folds, read.Calendar, [.. longFolds.Select(one => one.Chosen is null ? null : Units(walked[placeOf[grid.Key(one.Chosen)]]))], Units(current));
         var cap = walked.SelectMany(one => one).Concat(current).Select(one => one.Trade.Listing.Cap).DefaultIfEmpty(0).Max();
         var verdict = Verdict(evidence, read.Calendar, folds, cap);
-        var floorWords = drift ? FormattableString.Invariant($", its stop held at least {LoopProcedures.DriftStopFloor:0.##} typical move under the buy") : string.Empty;
 
         // The second line: the trades each test year's chosen setting and the rule today entered in that year, against the
         // index's own fund held over each trade's sessions.
@@ -188,7 +272,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
         IEnumerable<double?> FundIn(IReadOnlyList<LoopProcedures.Walked> trades, int year) =>
             trades.Where(one => read.Calendar[one.Entry].Year == year).Select(one => read.FundEdge(one.Entry, one.Exit, one.Trade));
 
-        var (fundUnits, fundEdge) = FundLine.Mean(longFolds.Where(one => one.Chosen is not null).SelectMany(one => FundIn(walked[placeOf[adapter.Grid.Key(one.Chosen!)]], one.Year)));
+        var (fundUnits, fundEdge) = FundLine.Mean(longFolds.Where(one => one.Chosen is not null).SelectMany(one => FundIn(walked[placeOf[grid.Key(one.Chosen!)]], one.Year)));
         var (_, currentFund) = FundLine.Mean(longFolds.SelectMany(one => FundIn(current, one.Year)));
 
         return new SearchRead(
@@ -196,8 +280,8 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
             firstTestYear,
             longFolds,
             proposal,
-            proposal is null ? null : RuleReplay.SwingWords(family, proposal) + floorWords,
-            RuleReplay.SwingWords(family, provisional),
+            proposal is null ? null : words(proposal),
+            currentWords,
             evidence,
             verdict,
             proposal is null ? 0 : longFolds.Count(one => one.Chosen is { } setting && setting.Zip(proposal).All(pair => Math.Abs(pair.First - pair.Second) <= 1)),

@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the long search over the dip, and each pullback's block named
+Decision: The long search walks the dip's own sweep's grid at its first stage and names what blocks each pullback's search
+Was:
+> (catalogue, Long search) ... the families whose search reads the standing history alone named with that reason; registers nothing (see: ...)
+> (17, The search over the long history, rationale) ... with the index's own fund held over the trade's sessions beside it
+> (17, The search over the long history, check) ... and a walked trade's fund line over its own sessions
+> (SCHEMA, long_search, family) `breakout` or `drift`
+> (RUNBOOK, the long search) ... a family whose search reads the standing history alone is named with that reason.
+> (checks.md, fixture-expectations) ... with the RSI read as the dip's rule reads it |
+Now:
+> (catalogue, Long search) ... named with that reason; from the 23.8 correction the dip's own sweep's grid walked the same way at its first stage against its live rule, and each pullback named with what blocks its search (see: ...); registers nothing (see: ...)
+> (17, The search over the long history, rationale) ... beside it; and the dip's own grid searched the same way at its first stage, the pullback's search on each index named with what blocks it (see: ...)
+> (17, The search over the long history, check) ... a walked trade's fund line over its own sessions, and the dip's own grid searched over a constructed grid of two settings
+> (SCHEMA, long_search, family) `breakout`, `drift` or, from the 23.8 correction, `dip`
+> (RUNBOOK, the long search) ... named with that reason. From the 23.8 correction it searches the dip's own sweep's grid the same way at its first stage ... (see: ...).
+> (checks.md, fixture-expectations) ... with the RSI read as the dip's rule reads it, and the dip's own grid searched over the long history over a constructed grid of two settings with each pullback's block named |
+Why: the operator's order of 2026-11-08, item 3.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, .claude/rules/checks.md - the dip sold on its 2-session RSI in the buy and sell points
 Decision: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
 Was:

@@ -729,7 +729,7 @@ Grain: one row per run, index and family a search over the long history read.
 |---|---|---|
 | `run_id` | TEXT | the run, naming the verb, the index, the family and its start |
 | `index_code` | TEXT | `GSPC`, `MID` or `SML` |
-| `family` | TEXT | `breakout` or `drift` |
+| `family` | TEXT | `breakout`, `drift` or, from the 23.8 correction, `dip` |
 | `through` | TEXT | the newest session the run read |
 | `first_test_year` | INTEGER | the family's first test year on the index |
 | `words` | TEXT | the setting the search run on all finished data would run, in words; null where none met the floors |

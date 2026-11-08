@@ -906,7 +906,7 @@ static int NoVerb()
         "family's gates, and names every reading that differs from the one stored, '--long' checking the long ledger's, " +
         "'long-ledger --measure' reads the long ledger's measure and writes nothing, " +
         "'sector-splits --measure' reads each family's setups split by its sector as it stood and writes nothing, " +
-        "'loop-search --long --index <GSPC, MID or SML>' searches the breakout's and the drift's grids again over the " +
+        "'loop-search --long --index <GSPC, MID or SML>' searches the breakout's, the drift's and the dip's grids again over the " +
         "long history, every third test year with the setting carried between, a family at a time, '--again' searching a " +
         "family written through the same session afresh, and " +
         "'plan-points --index <GSPC, MID or SML>' walks every flagged setup of the four price families under every entry, " +

@@ -17675,3 +17675,34 @@ Remedy:     the corrections' remedy, written with the last correction's entry be
 Carried:    the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.8 - correction: the long search walks the dip's own grid, and names what blocks each pullback's search   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its third item. 23.8 searched the breakout and the drift over the long history
+            and named every other family as searched on the standing history alone.
+Corrected:  `loop-search --long` searches the dip as well: its own sweep's reading of the long history, the dip's fund and the
+            VIX from the long pull with the standing pull's closes after it, every setting of its grid's first stage walked
+            once, through the same schedule as the breakout's and the drift's, against its live rule's setting and levels, with
+            the fund line beside its verdict; an index whose live dip rule stands at hooks, or holds none, says so. The
+            pullbacks are named with what blocks them: the S&P 500's is the swing filter, walked over no grid a search chooses
+            from; the S&P 400's and 600's design search keeps eight scored years a stock's year each. Nothing 23.10 brings
+            unblocks either; each wants a checkpoint of its own. The decision, the catalogue's row, section 17's row,
+            `SCHEMA.md`, the runbook, the roster's row, the guide and the changelog.
+Measured:   over 23.3's scratch copy of the store, the S&P 400's long ledger in it and its register empty, `loop-search --long
+            --index MID --print` wrote nothing: the breakout and the drift as before, each with its fund line, the breakout
+            -0.033 a trade over 1,619 against the rule today's -0.055, the drift -0.020 over 1,742 against -0.108; the dip "not
+            searched over the long history: no live dip rule stands on the index", the copy holding no register. The live
+            figures with the long search's rerun under the sixth item's correction below.
+Provisional: each on the operator's review: the dip's first stage alone, its second stage's levels not crossed over the long
+            history; its trades' years read off the calendar.
+Tests:      1 new in the fixture's expectations: the dip's own grid searched over a constructed grid of two settings against
+            its live rule, every third test year with the setting carried between, and each pullback's block named.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its test
+            by name, 4 in all, each red: m1 every setting of the dip's grid walked at the live rule's; m2 the dip's walk keeping
+            no trade's last session; m3 the swing filter's block named on every index; m4 the dip left to the standing history.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the provisional choices above; the pullbacks' searches over the long history, each a checkpoint of its own on the
+            operator's word; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
