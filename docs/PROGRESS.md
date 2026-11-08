@@ -17411,3 +17411,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 135, against `data-ci` and never `data`; the phase report 66 tables, 1602 claims, 1602 passing,
             none out of scope and none unexamined, 1617 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.9 - the sector splits measured again over 2005 onward   2026-11-08
+
+Built:      `sector-splits --measure`, read-only and writing no store row: the sector map's agreement with today's GICS on
+            the names both read, then on each index and the three together each family's settled setups, the long ledger's as
+            ruled before 2019 and the standing ledger's from it, split by the sector fund's 5-day change, the fund against its
+            20-day average and the sector's third among the sectors by its members' 63-day mean return, each by era with its
+            trades, share at target and mean edge after costs, and whether the pullback with its sector below its 20-day
+            average holds in every era at 50 trades a side, per index beside it. A sector as it stood is read from the fund's
+            industry heading through an ordered map of keywords, Real Estate under Financials before 2016-09-19 and media,
+            internet and telecom under their older sectors before 2018-09-24, and from the filed GICS sector after the schedules
+            end. The History page's labels row on each index: the members holding a stored story, those holding one no label
+            stands on, the day every such story stood labelled from or not yet, and the sessions after it of the 126 the
+            industry news mood split waits for (owes: The industry news mood split read once every member holds its labels).
+            One decision, section 17's two rows, 15.25's row, the catalogue rows, the runbook, the roster's rows, the guide and
+            the changelog. No source a rule's version pins moves.
+Measured:   over the S&P 400 rehearsal copy, before the live long ledger was built for the 400 and 600: the map agrees with
+            today's GICS on 1,733 of the 1,911 names both read, 90.7%, with no heading it names nothing for; the S&P 400's
+            pullback below its 20-day average against above it, edge after costs -0.189 against -0.199 in 2005 to 2009, -0.157
+            against -0.078 in 2010 to 2014 and 0.040 against -0.177 in 2015 to 2019, so the variant does not hold and goes to
+            the operator as nothing. The live measure over the three, once their long ledgers stand, goes to an entry after.
+Provisional: each on the operator's review: the map's keys, read in order with the first match taking a heading; a setup
+            whose fund or sector cannot be read on its session counted as none read rather than dropped; an era with no setup
+            on a side failing the variant.
+Tests:      3606, from 3599, 7 new: 6 in the fixture's expectations and 1 in the read surface.
+Claims:     1607, from 1602, 5 new: the reader's catalogue and matrix rows, section 17's two rows and 15.25's labels row; the
+            plan counted about 3.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property 23.9 adds, filtered to its tests by name,
+            5 in all, each red: m1 Real Estate's cutover three days early; m2 a side counting setups not settled; m3 the side
+            below winning on a tie; m4 a floor of 49 trades on the side below; m5 the labels row counting the backlog's own day
+            among the sessions after it.
+Remedy:     none: no migration and no store row.
+Carried:    the live measure over the three indices to an entry after the long ledger's remedy; the industry news mood split
+            at its trigger; the provisional choices above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3606 of 3606 tests ran with none failed, migrations 0 to 135 with none
+            pending, schema version 135, against `data-ci` and never `data`; the phase report 66 tables, 1607 claims, 1607 passing,
+            none out of scope and none unexamined, 1622 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

@@ -132,6 +132,9 @@ public partial class ArchitectureConformance
 
         // From 23.7: section 17's row of the long test and paper trading's row of the verdict over the long history.
         .. FixtureExpectations.LongTestRows,
+
+        // From 23.9: the sector splits reader, section 17's two rows and the History page's labels row.
+        .. FixtureExpectations.SectorSplitsRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

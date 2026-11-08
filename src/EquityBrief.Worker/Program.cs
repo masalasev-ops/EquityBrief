@@ -103,6 +103,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "long-prices" => await LongPricesRun(args),
     "long-facts" => await LongFactsRun(args),
     "long-ledger" => await LongLedgerRun(args),
+    "sector-splits" => await SectorSplitsRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -249,6 +250,30 @@ static async Task<int> SessionMarkRun(string[] args)
 // or nothing where a stop stands, '--print <folder>' reads them and writes nothing, and '--counts-read' records the operator's word
 // that the data check's counts over the long history have been read.
 // see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
+// The sector splits over 2005 onward, read-only: the map's agreement with today's GICS, each family's setups split by its
+// sector fund's 5-day change, its 20-day average and its sector's rank, by era on each index and the three together, and the
+// pullback variant's test over every era.
+// see: The sector splits read a sector as it stood off the funds' industry headings through a stated map, and the filed GICS sector after the schedules end
+static async Task<int> SectorSplitsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!args.Contains("--measure", StringComparer.Ordinal))
+    {
+        Console.Error.WriteLine("sector-splits: give '--measure'.");
+
+        return 1;
+    }
+
+    foreach (var line in await EquityBrief.Worker.History.SectorSplitsReader.MeasureAsync(store.DatabaseFile, Console.WriteLine))
+    {
+        Console.WriteLine("sector-splits: " + line);
+    }
+
+    return 0;
+}
+
 // The long ledger's measure, read-only: the jumps' comparison at its top, each family on each index by era under the two
 // readings, the stopped and failed stocks, the left-out holdings and the standing years' leavers.
 // see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
@@ -742,7 +767,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 75 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 76 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -839,6 +864,7 @@ static int NoVerb()
         "history read through the build's own end and cut at each one's session, a swing setup's own readings by its " +
         "family's gates, and names every reading that differs from the one stored, '--long' checking the long ledger's, " +
         "'long-ledger --measure' reads the long ledger's measure and writes nothing, " +
+        "'sector-splits --measure' reads each family's setups split by its sector as it stood and writes nothing, " +
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
         "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +
         "family and year with how often the next open fell under the stop or over the target, writing nothing, " +
