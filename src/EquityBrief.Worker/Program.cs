@@ -247,7 +247,7 @@ static async Task<int> SessionMarkRun(string[] args)
 // or nothing where a stop stands, '--print <folder>' reads them and writes nothing, and '--counts-read' records the operator's word
 // that the data check's counts over the long history have been read.
 // see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night
-// The long history's facts. With '--capture --into <folder>' each filer the long price pull matched to its company is asked
+// The long history's facts. With '--capture --into <folder>' every filer the store knows, the long price pull's and every company row's, is asked
 // the SEC once for its facts, after the asks are stated, and each answer kept as sent; '--write <folder>' writes the periods
 // before the standing table's first whole, '--print <folder>' writing nothing.
 // see: The long history's facts are the SEC's figures before the standing table's first, kept as first filed apart from it

@@ -76,6 +76,24 @@ public partial class FixtureExpectations
         Assert.Equal([("NetIncomeLoss", new DateOnly(2014, 9, 30), 10m, "A-2")], rows.Select(row => (row.Concept, row.End, row.Value, row.Accession)));
     }
 
+    // The filers asked are every filer the store knows: the long filings', the company rows' and the pulled companies', padded and
+    // each once, so a standing member whose filings the long price pull never read, Chevron as the rehearsal found it, is asked too.
+    [Fact]
+    public async Task TheFilersAskedAreEveryFilerTheStoreKnowsTheStandingMembersAmongThem()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute("INSERT INTO long_filing (ticker, cik, accession, form, items, reported, filed, run_id) VALUES ('OLD', '1001', 'a-1', '10-K', NULL, NULL, '2009-01-01', 'r');");
+
+        // A company row with only its required columns filled, the filer's number among them.
+        var columns = Query(store, "SELECT name FROM pragma_table_info('company') WHERE \"notnull\" = 1 AND dflt_value IS NULL ORDER BY cid;");
+        var values = string.Join(", ", columns.Select(column => column switch { "ticker" => "'CVX'", "cik" => "'0000093410'", _ => "'x'" }));
+
+        store.Execute($"INSERT INTO company ({string.Join(", ", columns.Concat(columns.Contains("cik") ? [] : ["cik"]))}) VALUES ({values}{(columns.Contains("cik") ? string.Empty : ", '0000093410'")});");
+
+        Assert.Equal(["0000001001", "0000093410"], await LongFactPull.FilersAsync(store.DatabaseFile));
+    }
+
     // A predecessor's figures are copied under its company's new filer where at least five stated by both agree within the
     // widest gap, and not where four do or where one is past it; no standing fact moves.
     [Theory]
