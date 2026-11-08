@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/RUNBOOK.md - a monthly step is read as running with a line in the last fifteen minutes
+Decision: The monthly run writes its own stamped log and says every ten minutes that a step still runs
+Was:
+> Read the run's progress there, never from the store while it writes: a step with a line in the last ten minutes is running, and one with none for longer has stopped.
+Now:
+> Read the run's progress there, never from the store while it writes: a step with a line in the last fifteen minutes is running, and one with none for longer has stopped. The ten minutes are a wait, and under a step's load its lines came 10 to 13.5 minutes apart in November's run.
+Corrects: November's run by hand of 2026-11-08 wrote its S&P 600 per-rule test's lines at 03:37:59, 03:48:48, 03:58:48 and 04:12:19 UTC, the last 13.5 minutes after the one before, which the ten minutes would have read as stopped.
+
 ### 2026-11-08 - docs/BUILD_PLAN.md - 23.8 tests the traded plan's buy and sell points over the long history
 Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
 Was:

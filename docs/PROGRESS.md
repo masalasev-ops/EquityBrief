@@ -17116,3 +17116,16 @@ Queue:      done, November's monthly run and its log's correction; in progress, 
             23.5 to 23.9, then 23.10's restart on the operator's word.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
             the figures it states.
+
+### 17.10 - correction: a monthly step is read as running with a line in the last fifteen minutes   2026-11-08
+
+Found:      November's run by hand from main's 18d26fad wrote its S&P 600 per-rule test's lines at 03:37:59, 03:48:48, 03:58:48 and
+            04:12:19 UTC, the last 13.5 minutes after the one before under the step's load, so the runbook's ten minutes would have
+            read a running step as stopped. The run held every step at 04:15:46, the rerun 50 minutes in all.
+Corrected:  the runbook reads a step as running with a line in the last fifteen minutes and says why; the changelog. No code moves.
+Tests:      none new.
+Claims:     none new.
+Pins:       none move.
+Mutated:    none: no assertion added, a sentence of the runbook alone.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
