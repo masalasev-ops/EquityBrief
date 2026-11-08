@@ -17270,3 +17270,18 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 133, against `data-ci` and never `data`; the phase report 66 tables, 1590 claims, 1590 passing,
             none out of scope and none unexamined, 1605 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.5 - correction: the screens tables' row count asserted again   2026-11-08
+
+Found:      23.6's build read `ArchitectureConformance.cs` as merged at 46928249: the assertion holding the screens tables' row
+            count, 296 at 23.4, and its comment line stood replaced by a line of spaces, and the file's first line, its first
+            `using`, stood indented. The suite stayed green because nothing then held the count, so 23.5's survivors line landed
+            a row the count never read.
+Corrected:  the `using` line at the margin again, and the count asserted again with its comment: 297 at 23.5, paper trading's
+            survivors line, and 298 at 23.6, the History page's families by year, which lands in the same pull request.
+Tests:      none new; the count's own test holds it again.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the count one off. m1 the count read as 297 with 23.6's row in place: the test red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request, with
+            the figures it states.
