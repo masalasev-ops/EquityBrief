@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, .claude/rules/checks.md - the dip sold on its 2-session RSI in the buy and sell points
+Decision: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+Was:
+> (17, The buy and sell points, rationale) ... with the index's own fund held over the same sessions beside it as a second line (see: ...)
+> (17, The buy and sell points, check) ... and a member's benchmark walked by hand under the combination's stop and sale
+> (checks.md, fixture-expectations) ... and a member's benchmark walked by hand under the combination's stop and sale |
+Now:
+> (17, The buy and sell points, rationale) ... as a second line (see: ...); and the dip's own sale at the next open after its 2-session RSI closes above 65 (see: ...)
+> (17, The buy and sell points, check) ... under the combination's stop and sale, and the dip sold on its RSI worked by hand
+> (checks.md, fixture-expectations) ... under the combination's stop and sale, and the dip sold at the next open after its 2-session RSI closes above 65 worked by hand with the RSI read as the dip's rule reads it |
+Why: the operator's order of 2026-11-08, item 2.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the long test's fund line beside its verdict
 Decision: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
 Was:

@@ -200,7 +200,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         {
             FormattableString.Invariant($"{setups.Count} flagged setup(s) of the pullback, the breakout, the drift and the dip on the {DecisionCards.NameOf(index)}, the long ledger's from 2005 and the standing ledger's from 2019, {unread} whose stock or session the long history does not hold left out; each walked under {PlanPoints.Combinations.Count} combination(s) of an entry, a stop and a sale."),
             "A level's buy fills on the first session after the pick within its window that trades into it, at its open where it opens at or under the level and at the level otherwise; the next open fills on the session after the pick. A pick its entry does not fill, whose levels plan draws no such zone, or whose fill stands at or under its stop, is offered and not taken, and counts as nothing in a figure per pick offered.",
-            "A sale is signalled by a close and sold at the next session's open, as the ledger's fill step sells: a close under the stop, at or over the target or the first band above, at or over each staged level for its equal share, under the trail, or the time limit's last close. A result is in the risk the rule's own plan set at the pick's close, so every combination holds the next-open buy's number of shares, less the published round trip for its company's size at its prices. Its edge is that less its benchmark: the rule's own plan entered on every member of the index that session in the member's own typical moves, each bought at its own next open and walked under the combination's stop and sale, a zone's stop, the first band above and the staged sales read off the member's own levels plan, a member they cannot be placed on not entered. Beside it, as a second line, the result less its index's own fund held over the pick's own sessions in the same risk. A rule naming neither a target nor a trail, the dip, sells at its time limit.",
+            "A sale is signalled by a close and sold at the next session's open, as the ledger's fill step sells: a close under the stop, at or over the target or the first band above, at or over each staged level for its equal share, under the trail, or the time limit's last close. A result is in the risk the rule's own plan set at the pick's close, so every combination holds the next-open buy's number of shares, less the published round trip for its company's size at its prices. Its edge is that less its benchmark: the rule's own plan entered on every member of the index that session in the member's own typical moves, each bought at its own next open and walked under the combination's stop and sale, a zone's stop, the first band above and the staged sales read off the member's own levels plan, a member they cannot be placed on not entered. Beside it, as a second line, the result less its index's own fund held over the pick's own sessions in the same risk. The dip's own sale, which names neither a target nor a trail, sells at the next open after a close whose 2-session RSI stands above 65, or at its time limit, the pick and its benchmark's members alike.",
             FormattableString.Invariant($"The settings were chosen on {LongLedger.StandingFrom.Year} onward, so the years before it are the years no setting was chosen on, and the recommendation reads them alone: the highest edge per pick offered among the combinations resting on {PlanPoints.FewestFills} fills or more there. It is a proposal, and nothing here changes a pick, a plan, a rule or a version."),
         };
 
@@ -459,6 +459,10 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         readonly Lazy<(double[] Closes, double[] Opens)>[] prices = [.. series.Select(one => new Lazy<(double[], double[])>(() =>
             ([.. one.Bars.Select(bar => Statistic.FromPrice(bar.Close))], [.. one.Bars.Select(bar => Statistic.FromPrice(bar.Open))])))];
 
+        // From the 23.8 correction every name's 2-session RSI once, which the dip's own sale reads.
+        // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+        readonly Lazy<double[]>[] rsis = [.. series.Select(one => new Lazy<double[]>(() => PlanPoints.RsiOf([.. one.Bars.Select(bar => Statistic.FromPrice(bar.Close))])))];
+
         readonly Lazy<List<(int Name, int Bar)>[]> members = new(() =>
         {
             var held = new List<(int Name, int Bar)>[calendar.Length];
@@ -519,13 +523,14 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     PlanSale? SaleAt(double fill) => key.Sale switch
                     {
                         PlanPoints.RuleSale => plan.TrailMoves is { } moves ? new PlanSale(null, moves * typical, [])
-                            : new PlanSale(plan.RewardToRisk is { } reward ? close + (reward * risk) : null, null, []),
+                            : plan.RewardToRisk is { } reward ? new PlanSale(close + (reward * risk), null, [])
+                            : PlanPoints.DipSale,
                         PlanPoints.FirstBand => new PlanSale(levels!.Bands.Where(edge => edge > fill).Order().Cast<double?>().FirstOrDefault(), null, []),
                         PlanPoints.StagedSales => new PlanSale(null, null, levels!.Staged),
                         _ => new PlanSale(null, null, []),
                     };
 
-                    return PlanPoints.MemberResult(closes, opens, member.Bar, risk, StopAt, SaleAt, plan.Cap);
+                    return PlanPoints.MemberResult(closes, opens, member.Bar, risk, StopAt, SaleAt, plan.Cap, rsis[member.Name].Value);
                 })));
         }
 
@@ -564,7 +569,11 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             var one = series[name];
             var factor = setup.Entry > 0 ? closes[bar] / setup.Entry : 1;
             var ruleStop = setup.Stop * factor;
-            var ruleSale = new PlanSale(setup.Target * factor, setup.Trail * factor, []);
+            // From the 23.8 correction the dip's own sale on its 2-session RSI, which names no target and no trail.
+            // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+            var dip = setup.Family == Core.Families.DipRule.Name;
+            var ruleSale = dip ? PlanPoints.DipSale : new PlanSale(setup.Target * factor, setup.Trail * factor, []);
+            var rsi = rsis[name].Value;
 
             // Every combination's result in the risk the rule's own plan set at the pick's close, so each is read on the same
             // number of shares as the next-open buy, a buy far down at a tight stop not reading large for its small risk.
@@ -608,7 +617,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                 {
                     var sale = combination.Exit switch
                     {
-                        PlanPoints.RuleSale => ruleSale.Target is null && ruleSale.Trail is null ? new PlanSale(null, null, []) : ruleSale,
+                        PlanPoints.RuleSale => ruleSale,
                         PlanPoints.FirstBand => new PlanSale(levels.Bands.Where(edge => edge > price).Order().Cast<double?>().FirstOrDefault(), null, []),
                         PlanPoints.StagedSales => new PlanSale(null, null, levels.Staged),
                         _ => new PlanSale(null, null, []),
@@ -617,6 +626,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     return (sale, sale.Target is { } target ? FormattableString.Invariant($"at {target:0.00}")
                         : sale.Trail is { } trail ? FormattableString.Invariant($"trailing {trail:0.00} under the highest close")
                         : sale.Staged.Any(edge => edge > price) ? "at " + string.Join(", ", sale.Staged.Where(edge => edge > price).Order().Select(edge => edge.ToString("0.00", CultureInfo.InvariantCulture)))
+                        : sale.RsiAbove is { } above ? FormattableString.Invariant($"at the next open after its {Core.Families.DipRule.RsiSessions}-session RSI closes above {above:0}, or at session {setup.Cap}")
                         : FormattableString.Invariant($"at the close of session {setup.Cap}"));
                 }
 
@@ -648,7 +658,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
                 var (sale, saleWords) = SaleAt(fill.Price);
 
-                if (PlanPoints.Walk(closes, opens, fill.Bar, fill.Price, stop, sale, setup.Cap) is not { } outcome)
+                if (PlanPoints.Walk(closes, opens, fill.Bar, fill.Price, stop, sale, setup.Cap, rsi) is not { } outcome)
                 {
                     worked.Add(new Worked(combination, level, fill.Price, stop, saleWords, null, "open: the history ends before its sale"));
 

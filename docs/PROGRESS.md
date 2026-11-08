@@ -17654,3 +17654,24 @@ Remedy:     the corrections' remedy, written with the last correction's entry be
 Carried:    the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.8 - correction: the buy and sell points sell the dip at the next open after its 2-session RSI closes above 65   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its second item. 23.8 sold a dip pick at its time limit under the rule's own
+            sale, its exit not walked, where the dip's rule sells on its 2-session RSI.
+Corrected:  under the rule's sale a dip pick sells at the next session's open after a close whose 2-session RSI, read off the
+            stored closes as the dip's rule reads it, stands above 65, its stop read first and its time limit last; every
+            member of its benchmark is sold the same way off its own closes; the combinations' other sales read no RSI. The
+            decision, section 17's row, the roster's row and the changelog.
+Measured:   with the buy and sell points' rerun under the sixth item's correction below, over the tree carrying the first six.
+Tests:      2 new in the fixture's expectations: the dip sold on its RSI worked by hand over a constructed path, its stop read
+            first and its time limit last, and a member of its benchmark sold the same way; the RSI read off the closes as the
+            dip's rule reads it.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the RSI's sale never reached; m2 a member walked without its RSI; m3 the RSI read
+            over 14 sessions; m4 the RSI's sale read before the stop.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.

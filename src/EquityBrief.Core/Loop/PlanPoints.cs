@@ -12,7 +12,13 @@ public sealed record PlanCombination(string Entry, int Window, string Stop, stri
 
 // What the sale reads: a target the close must reach, a trail the stop follows the highest close by, the staged levels
 // each selling an equal share with the last share held to the stop or the time limit, or none of them, the time limit alone.
-public sealed record PlanSale(double? Target, double? Trail, IReadOnlyList<double> Staged);
+public sealed record PlanSale(double? Target, double? Trail, IReadOnlyList<double> Staged)
+{
+    // From the 23.8 correction the dip's own sale: a close whose 2-session RSI stands above this level sells what is held at
+    // the next open; none for every other family.
+    // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+    public double? RsiAbove { get; init; }
+}
 
 // How one filled pick ended: its result in its own risk before costs, the price each share sold at weighted by its share,
 // the sessions held from the fill and how it ended; none where the history ends before it does.
@@ -260,7 +266,7 @@ public static class PlanPoints
     // the target sells what is held; a close under the trail, the highest earlier close less its distance and never under
     // the stop, sells what is held; and the close of the time limit's last session sells what is left; each sale at the
     // next session's open. None where the history ends before the sale.
-    public static PlanOutcome? Walk(ReadOnlySpan<double> closes, ReadOnlySpan<double> opens, int fillBar, double fill, double stop, PlanSale sale, int cap)
+    public static PlanOutcome? Walk(ReadOnlySpan<double> closes, ReadOnlySpan<double> opens, int fillBar, double fill, double stop, PlanSale sale, int cap, ReadOnlySpan<double> rsi = default)
     {
         if (!(fill > stop) || cap <= 0 || fillBar >= closes.Length)
         {
@@ -299,6 +305,11 @@ public static class PlanPoints
                 return Ended(sold + (held * open), session, Reached);
             }
 
+            if (sale.RsiAbove is { } level && session < rsi.Length && rsi[session] > level)
+            {
+                return Ended(sold + (held * open), session, Reached);
+            }
+
             if (sale.Trail is not null && session > fillBar && close < floor)
             {
                 return Ended(sold + (held * open), session, Trailed);
@@ -324,7 +335,7 @@ public static class PlanPoints
     // One member's result, in the risk the rule's plan sets on it at the session's close: bought at its next open, its stop
     // and its sale placed from that fill, and walked as the pick is; none where the member places no trade or its walk has
     // not ended.
-    public static double? MemberResult(ReadOnlySpan<double> closes, ReadOnlySpan<double> opens, int bar, double risk, Func<double, double?> stopAt, Func<double, PlanSale?> saleAt, int cap)
+    public static double? MemberResult(ReadOnlySpan<double> closes, ReadOnlySpan<double> opens, int bar, double risk, Func<double, double?> stopAt, Func<double, PlanSale?> saleAt, int cap, ReadOnlySpan<double> rsi = default)
     {
         if (bar < 0 || bar + 1 >= closes.Length || bar + 1 >= opens.Length || !(risk > 0) || !(closes[bar] - risk > 0))
         {
@@ -338,7 +349,7 @@ public static class PlanPoints
             return null;
         }
 
-        return Walk(closes, opens, bar + 1, fill, placed, sale, cap) is { } outcome ? (outcome.Sold - fill) / risk : null;
+        return Walk(closes, opens, bar + 1, fill, placed, sale, cap, rsi) is { } outcome ? (outcome.Sold - fill) / risk : null;
     }
 
     // The mean of the members' results, none where none ended. A member whose result lies past 20 risks either way is left
@@ -363,6 +374,14 @@ public static class PlanPoints
     // the risk and the reward together.
     public static double? BreakEvenOf(double fill, double stop, double? target) =>
         target is { } held && held > fill && fill > stop ? (fill - stop) / (held - stop) : null;
+
+    // The dip's own sale: no target and no trail, sold at the next open after a close whose 2-session RSI stands above 65.
+    // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+    public static PlanSale DipSale { get; } = new(null, null, []) { RsiAbove = global::EquityBrief.Core.Families.DipRule.RsiExit };
+
+    // A series' 2-session RSI as the dip reads it, NaN where it reads none.
+    public static double[] RsiOf(IReadOnlyList<double> closes) =>
+        [.. global::EquityBrief.Core.Families.DipRule.Rsi(closes, global::EquityBrief.Core.Families.DipRule.RsiSessions).Select(one => one ?? double.NaN)];
 
     // Whether an outcome reached its sale, the time limit alone reaching it at its last session.
     public static bool HitOf(string sale, string end) =>
