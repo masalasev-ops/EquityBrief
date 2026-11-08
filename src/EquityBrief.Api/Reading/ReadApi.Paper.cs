@@ -164,7 +164,7 @@ public sealed partial class ReadApi
     // The newest per-rule test on an index, by the order the runs were written.
     const string RuleTestsOn = @"
         SELECT run_id, month, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why
-        FROM loop_rule WHERE index_code = $index AND run_id = (SELECT run_id FROM loop_rule WHERE index_code = $index ORDER BY rowid DESC LIMIT 1)
+        FROM loop_rule WHERE index_code = $index AND run_id = (SELECT run_id FROM loop_rule WHERE index_code = $index AND history = $history ORDER BY rowid DESC LIMIT 1)
         ORDER BY rowid;";
 
     const string RuleTestYearsOn = @"
@@ -320,8 +320,9 @@ public sealed partial class ReadApi
         return read;
     }
 
-    // An index's newest per-rule test and its test years, none where no test has run on it.
-    public async Task<(IReadOnlyList<RuleTestRow> Rules, IReadOnlyList<RuleTestYearRow> Years)> RuleTestsAsync(string index)
+    // An index's newest per-rule test and its test years, none where no test has run on it; from 23.7 over the standing
+    // history unless the long one is asked for.
+    public async Task<(IReadOnlyList<RuleTestRow> Rules, IReadOnlyList<RuleTestYearRow> Years)> RuleTestsAsync(string index, string history = Core.Loop.LongTest.Standing)
     {
         var rules = new List<RuleTestRow>();
         var years = new List<RuleTestYearRow>();
@@ -332,6 +333,7 @@ public sealed partial class ReadApi
         {
             command.CommandText = RuleTestsOn;
             command.Parameters.AddWithValue("$index", index);
+            command.Parameters.AddWithValue("$history", history);
 
             await using var reader = await command.ExecuteReaderAsync();
 

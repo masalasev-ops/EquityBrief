@@ -209,6 +209,8 @@ public partial class FixtureExpectations
             .. LongFactsClaims,
             // 23.6, the long ledger: section 17's row and section 18's row.
             .. LongLedgerClaims,
+            // 23.7, the long test: section 17's row.
+            .. LongTestClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

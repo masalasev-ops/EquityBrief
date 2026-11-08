@@ -57,7 +57,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             new StoreTouch(Store.LoopReading, Touch.Insert),
             new StoreTouch(Store.LoopModel, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LoopReference, Touch.Insert),
-            new StoreTouch(Store.LoopRule, Touch.Insert),
+            new StoreTouch(Store.LoopRule, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LoopRuleYear, Touch.Insert),
             new StoreTouch(Store.LoopRuleUnit, Touch.Insert),
             new StoreTouch(Store.LoopLink, Touch.Insert),
@@ -656,8 +656,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     ";
 
     const string InsertRule = @"
-        INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why, cap, span, through, judged_from)
-        VALUES ($run_id, $month, $index_code, $family, $rule, $standing, $words, $against, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $why, $cap, $span, $through, $judged_from);
+        INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why, cap, span, through, judged_from, history)
+        VALUES ($run_id, $month, $index_code, $family, $rule, $standing, $words, $against, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $why, $cap, $span, $through, $judged_from, $history);
     ";
 
     // From 23.2 each unit of a walked rule's evidence over the test years, which the pooled step sums across the indices.
@@ -688,7 +688,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // of those against its benchmark, written whole; with print, printed and nothing written. It adopts and retires
     // nothing.
     // see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
-    public async Task<int> RulesAsync(string index, string? month, CancellationToken cancellation = default, bool print = false)
+    public async Task<int> RulesAsync(string index, string? month, CancellationToken cancellation = default, bool print = false, bool longRun = false, long draws = 0)
     {
         if (!Indices.Contains(index, StringComparer.Ordinal))
         {
@@ -723,9 +723,12 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         var history = new SweepHistory(databaseFile);
         var through = await history.NewestSessionAsync(cancellation);
         var large = index == LargeIndex;
-        var inputs = large
-            ? await history.ReadAsync(through, output.WriteLine, cancellation)
-            : await history.ReadAsync(through, output.WriteLine, cancellation, index: index, asItStood: true);
+        var longHistory = longRun ? new History.LongHistoryReader(databaseFile) : null;
+        var inputs = longHistory is not null
+            ? await longHistory.ReadAsync(index, through, output.WriteLine, cancellation)
+            : large
+                ? await history.ReadAsync(through, output.WriteLine, cancellation)
+                : await history.ReadAsync(through, output.WriteLine, cancellation, index: index, asItStood: true);
 
         if (inputs.Names.Count == 0)
         {
@@ -734,7 +737,9 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             return 2;
         }
 
-        var read = await ReadAsync(index, history, through, inputs, cancellation);
+        var read = longHistory is not null
+            ? await ReadLongAsync(index, history, through, inputs, cancellation)
+            : await ReadAsync(index, history, through, inputs, cancellation);
 
         if (read.Folds.Count == 0)
         {
@@ -743,7 +748,9 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             return 2;
         }
 
-        var market = await history.MarketAsync(through, cancellation);
+        var market = longHistory is not null
+            ? await longHistory.SeriesOfAsync(["GSPC", "VIX"], through, cancellation)
+            : await history.MarketAsync(through, cancellation);
         (string, FilterSettings, LargePullback)? filter = null;
         IdeaReplay? pullbacks = null;
 
@@ -756,14 +763,20 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         }
 
         var standingRules = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started);
-        var qualityLay = ReadsQuality(standingRules, index)
+
+        // From 23.7 the long test walks the families its record reaches alone: the books laid over the standing facts, the
+        // dip's and the sweeps' own reads of the standing pull's market series, and the like setups and the ranking off the
+        // standing ledger are read on the standing years alone, each of those rules kept with the reason.
+        // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+        var standingOnly = longHistory is not null;
+        var qualityLay = !standingOnly && ReadsQuality(standingRules, index)
             ? await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation)
             : null;
 
         // From 22.15 the Fundamentals family's history as its own test lays it out, each filer's releases with their
         // readings beside its filings, only where a rule of the family stands on the index.
         // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
-        var releases = ReadsImproving(standingRules, index) ? await ReleasesAsync(databaseFile, clock, cancellation) : null;
+        var releases = !standingOnly && ReadsImproving(standingRules, index) ? await ReleasesAsync(databaseFile, clock, cancellation) : null;
         var improvingLay = releases is not null
             ? await ImprovingLay.ReadAsync(read, history, releases.ByFiler, through, output.WriteLine, cancellation)
             : null;
@@ -778,7 +791,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
 
-        var dipRead = ReadsDip(standingRules, index)
+        var dipRead = !standingOnly && ReadsDip(standingRules, index)
             ? IndexSweepRunner.DipRead.Of(
                 read,
                 await LargeReadAsync(),
@@ -792,7 +805,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
         var own = OwnReads.None;
 
-        if (!large)
+        if (!large && !standingOnly)
         {
             var swingsNeeded = RuleTests.OwnSwingsNeeded(standingRules, index);
             var pullbackNeeded = RuleTests.OwnPullbackNeeded(standingRules, index);
@@ -863,15 +876,17 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             dipRead,
             improvingLay,
             own,
-            Like: like,
-            Ranked: family => ranked.GetValueOrDefault(family));
-        var rules = RuleTests.Walk(ruleInputs);
-        var tested = RuleTests.Judge(read, rules, await NewestCutoffAsync(cancellation));
-        var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
+            Like: standingOnly ? null : like,
+            Ranked: standingOnly ? null : family => ranked.GetValueOrDefault(family));
+        var rules = standingOnly ? [.. RuleTests.Walk(ruleInputs).Select(StandingAlone)] : RuleTests.Walk(ruleInputs);
+        var tested = standingOnly
+            ? RuleTests.JudgeLong(read, rules, await NewestCutoffAsync(cancellation), draws)
+            : RuleTests.Judge(read, rules, await NewestCutoffAsync(cancellation));
+        var runId = FormattableString.Invariant($"{RulesVerb}-{(standingOnly ? LongTest.Long + "-" : string.Empty)}{index}-{started:yyyyMMddTHHmmssZ}");
 
         if (!print)
         {
-            await WriteRulesAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, read.Calendar, read.Opens, cancellation);
+            await WriteRulesAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, read.Calendar, read.Opens, cancellation, standingOnly ? LongTest.Long : LongTest.Standing);
         }
 
         foreach (var one in tested)
@@ -1062,7 +1077,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // to the history's newest, the year its verdict was judged from, and each unit of its evidence by its session and that
     // session's place from the test span's first, which the pooled step sums across the indices.
     // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
-    public async Task WriteRulesAsync(string runId, string month, string index, DateOnly through, DateTimeOffset started, int folds, IReadOnlyList<RuleTested> tested, IReadOnlyList<DateOnly> calendar, int opens, CancellationToken cancellation = default)
+    public async Task WriteRulesAsync(string runId, string month, string index, DateOnly through, DateTimeOffset started, int folds, IReadOnlyList<RuleTested> tested, IReadOnlyList<DateOnly> calendar, int opens, CancellationToken cancellation = default, string history = LongTest.Standing)
     {
         using var held = await DrainLock.AcquireAsync(dataRoot, () => (pause ?? Task.Delay)(Poll, cancellation), cancellation);
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -1105,6 +1120,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 ("$span", calendar.Count - 1 - opens),
                 ("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
                 ("$judged_from", Or(one.JudgedFrom)),
+                ("$history", history),
             ], cancellation);
 
             foreach (var (unit, at) in (one.Evidence?.Units ?? []).Select((unit, at) => (unit, at)))
@@ -1324,6 +1340,26 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             firstScored,
             LoopFolds.Of(calendar, through));
     }
+
+    // From 23.7 the long history's record the per-rule test walks: the long reader's history scored from its own first
+    // session, its folds from the price families' first test year, each family's own read off them when it is judged.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    public static async Task<LoopRead> ReadLongAsync(string index, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, CancellationToken cancellation)
+    {
+        var standing = await ReadAsync(index, history, through, inputs, cancellation);
+        var calendar = standing.Calendar;
+
+        return standing with
+        {
+            FirstScored = Array.FindIndex(calendar, session => session >= Core.History.LongLedger.FirstScored),
+            Folds = LoopFolds.Of(calendar, through, Core.Loop.LongTest.PriceFirstTestYear),
+            Long = true,
+        };
+    }
+
+    // From 23.7 a rule the long walk could not walk, kept with the reason that it is read on the standing years alone.
+    static RuleUnderTest StandingAlone(RuleUnderTest rule) =>
+        rule.Why is { } why ? rule with { Why = "read on the standing years alone, the long history's walk not reaching it: " + why } : rule;
 
     // From 21.17 the local model's cutoff the newest reading version whose history read is complete states, which a rule
     // or a change reading a release reading is judged from; none before one is.

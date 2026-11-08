@@ -7,6 +7,30 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, .claude/rules/checks.md - the monthly test over the long history
+Decision: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+Was:
+> (Walk-forward tester, catalogue) ... release readings, reading pins, candidate register | ... | ... which the pooled test sums across the indices (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule)
+> (Long history reader, catalogue) long spans, long bars, bar store, ... | | ... and each code's sector as the store files it today (see: ...)
+> (Pooled test, catalogue) ... changing no rule and with `--print` writing nothing (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule)
+> (Monthly run, catalogue) ... (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator)
+> (13.16) ... from 21.5 the families in Tonight's order of their cards. Each step writes a row of its own on the run log, ...
+> (SCHEMA, loop_rule) ... It adopts and retires nothing (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark).
+> (SCHEMA, loop_pooled) ... beside each index's own verdict (...). Every figure is a statistic and stored as the double it is.
+> (checks.md, fixture-expectations) ... among those 23.6 writes |
+> (checks.md, read-surface) ... the drift's survivors line and the lower coverage label |
+Now:
+> (Walk-forward tester, catalogue) ... release readings, reading pins, candidate register, rule tests | ... | ... (...); and from 23.7 the same per-rule test over the long history's reader with `--long` and as the monthly run's last step, ... (...)
+> (Long history reader, catalogue) long spans, long bars, long market bars, bar store, ... | | ... and each code's sector as the store files it today; and from 23.7 the market series from the long pull for the per-rule test over the long history (see: ...)
+> (Pooled test, catalogue) ... (...); from 23.7 over the long history's per-rule runs of the month with `--long` and in the monthly run's last step, its rows marked as the long history's (...)
+> (Monthly run, catalogue) ... (...); from 23.7 its last step, after the report, the per-rule test over the long history on each index and the verdict across the three over it, capped at three hours (...)
+> (13.16) ... from 21.5 the families in Tonight's order of their cards; and from 23.7, last, so its failure holds nothing the report needs, the per-rule test over the long history ... (...). Each step writes a row of its own on the run log, ...
+> (SCHEMA, loop_rule) ... (...). From 23.7 the monthly run's last step and `loop-rules --long` write a run over the long history, ... (...).
+> (SCHEMA, loop_pooled) ... Every figure is a statistic and stored as the double it is. From 23.7 a run reads the per-rule tests over one history, ... (...).
+> (checks.md, fixture-expectations) ... among those 23.6 writes; and from 23.7 each family judged over the long history from its own first test year ... and the long step's failure leaving the month's report standing |
+> (checks.md, read-surface) ... the drift's survivors line and the lower coverage label; and from 23.7 paper trading's verdict over the long history ... and one no long test read saying so |
+Why: 23.7 builds the monthly test over the longer history.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, .claude/rules/checks.md - the long ledger
 Decision: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
 Was:

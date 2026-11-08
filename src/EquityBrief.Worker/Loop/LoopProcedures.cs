@@ -22,8 +22,17 @@ public sealed record LoopRead(
     IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income,
     DateOnly[] Calendar,
     int FirstScored,
-    IReadOnlyList<LoopFold> Folds)
+    IReadOnlyList<LoopFold> Folds,
+    bool Long = false)
 {
+    // The year a session's figures are kept under: the standing history's from the sweeps' first scored year, and from 23.7
+    // the long history's from its own, every year past the figures' last kept in their last, since the per-rule test reads
+    // its folds and not those buckets.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    public int YearOf(int session) => Long
+        ? Math.Min(Calendar[session].Year - Calendar[FirstScored].Year, SweepFigures.Years - 1)
+        : Calendar[session].Year - SweepColumns.FirstScored.Year;
+
     public int Newest => Calendar.Length - 1;
 
     public int Opens => Array.IndexOf(Calendar, Folds[0].TestFrom);
@@ -32,12 +41,13 @@ public sealed record LoopRead(
 
     // The years a fold learns on, from the first scored year to the one before its own: the run on all finished data's own
     // year is the one after the newest session's, so it learns on every year the history holds, the newest among them.
-    public int LearningYears(LoopFold fold) => fold.Year - SweepColumns.FirstScored.Year;
+    // From 23.7 read off the history's own first scored session, the standing history's 2019 and the long history's 2005.
+    public int LearningYears(LoopFold fold) => fold.Year - Calendar[FirstScored].Year;
 
     // The folds and, last, the procedure run on all finished data: what had ended by the newest session.
     public LoopFold AllFinished => new(Calendar[^1].Year + 1, Calendar[^1].AddDays(1), Calendar[^1].AddDays(1), false);
 
-    public int YearsHeld => Calendar[^1].Year - SweepColumns.FirstScored.Year + 1;
+    public int YearsHeld => Calendar[^1].Year - Calendar[FirstScored].Year + 1;
 }
 
 // One proposal a procedure brought: its family and name, the change in words or none where the procedure run on all
@@ -324,7 +334,7 @@ public static class LoopProcedures
             return walked;
         }
 
-        int YearOf(int session) => read.Calendar[session].Year - SweepColumns.FirstScored.Year;
+        int YearOf(int session) => read.YearOf(session);
 
         var listings = adapter.Listings(setting)
             .Where(listing => IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? []));

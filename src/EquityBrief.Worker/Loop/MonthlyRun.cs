@@ -100,6 +100,10 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
         .. Indices.Select(index => "rules-" + index),
         Pooled,
         "report",
+
+        // From 23.7 the long test, last, so its failure holds nothing the report needs.
+        // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+        WalkForwardTester.LongStep,
     ];
 
     // The step summing each family's rules across the three indices after their own per-rule tests.
@@ -139,7 +143,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
     const string RulesOfTheMonth = @"
         SELECT r.run_id, r.family, r.rule, r.words, r.passed, r.why FROM loop_rule r
         WHERE r.month = $month AND r.index_code = $index
-          AND r.run_id = (SELECT s.run_id FROM loop_rule s WHERE s.month = $month AND s.index_code = $index ORDER BY s.rowid DESC LIMIT 1)
+          AND r.run_id = (SELECT s.run_id FROM loop_rule s WHERE s.month = $month AND s.index_code = $index AND s.history = 'standing' ORDER BY s.rowid DESC LIMIT 1)
         ORDER BY r.rowid;";
 
     const string RuleYears = "SELECT year, units, total, compared_total FROM loop_rule_year WHERE run_id = $run_id AND index_code = $index AND family = $family AND rule = $rule ORDER BY year;";

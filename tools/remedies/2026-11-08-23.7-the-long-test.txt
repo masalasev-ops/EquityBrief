@@ -1,0 +1,9 @@
+# The remedy of 23.7, the monthly test over the longer history. Migration 135 marks each per-rule and pooled row with the
+# history it read, every row before it the standing one's. Then the monthly run's last step by hand for November: the
+# per-rule test over the long history on each index, each family judged from its own first test year, and the verdict
+# across the three over it, capped at three hours as the step is, its time on its row on the run log for the entry after.
+# It asks nothing of anyone and calls no model, writes rows of its own beside the standing test's and moves no rule; no
+# source a rule's version or the readings' version pins moves. Run from main after the merge, after 23.6's long builds,
+# when no night, off-peak run, local run, ledger build or monthly run is writing.
+migrate
+loop-long --month 2026-11

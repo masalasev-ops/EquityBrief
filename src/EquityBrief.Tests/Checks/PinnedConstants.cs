@@ -916,6 +916,23 @@ public class PinnedConstants
             new("The verdict across the indices", "12", Core.Loop.LoopGate.RunsAYear, "LoopGate.RunsAYear"),
             new("The verdict across the indices", "2", Core.Loop.PooledJudge.FewestIndices, "PooledJudge.FewestIndices"),
             new("The verdict across the indices", "0.05", (decimal)Core.Loop.PooledJudge.FalsePassesAYear(1), "PooledJudge.FalsePassesAYear(1)"),
+
+            // The per-rule test over the long history, 23.7, the figures in the row's order.
+            new("The per-rule test over the long history", "2008", Core.Loop.LongTest.PriceFirstTestYear, "LongTest.PriceFirstTestYear"),
+            new("The per-rule test over the long history", "2016", Core.Loop.LongTest.FirstTestYear(Core.Families.DriftRule.Name, "GSPC"), "LongTest.Measured's drift"),
+            new("The per-rule test over the long history", "2016", Core.Loop.LongTest.FirstTestYear(Core.Families.ImprovingRule.Name, "GSPC"), "LongTest.Measured's Fundamentals on the S&P 500"),
+            new("The per-rule test over the long history", "2016", Core.Loop.LongTest.FirstTestYear(Core.Families.ImprovingRule.Name, "MID"), "LongTest.Measured's Fundamentals on the S&P 400"),
+            new("The per-rule test over the long history", "2017", Core.Loop.LongTest.FirstTestYear(Core.Families.ImprovingRule.Name, "SML"), "LongTest.Measured's Fundamentals on the S&P 600"),
+            new("The per-rule test over the long history", "2023", Core.Loop.LongTest.FirstTestYear(Core.Families.HeavyweightRule.Name, "GSPC"), "LongTest.Measured's heavyweights on the S&P 500"),
+            new("The per-rule test over the long history", "2015", Core.Loop.LongTest.FirstTestYear(Core.Families.HeavyweightRule.Name, "MID"), "LongTest.Measured's heavyweights on the S&P 400"),
+            new("The per-rule test over the long history", "2016", Core.Loop.LongTest.FirstTestYear(Core.Families.HeavyweightRule.Name, "SML"), "LongTest.Measured's heavyweights on the S&P 600"),
+            new("The per-rule test over the long history", "3", (decimal)Core.Loop.LongTest.Cap.TotalHours, "LongTest.Cap"),
+            new("The per-rule test over the long history", "2", (decimal)Core.Loop.LongTest.StandardErrors, "LongTest.StandardErrors"),
+            new("The per-rule test over the long history", "0.15", (decimal)Core.Loop.LongTest.Margin, "LongTest.Margin"),
+            new("The per-rule test over the long history", "42,489", Core.Loop.LongTest.FewestDraws, "LongTest.FewestDraws"),
+            new("The per-rule test over the long history", "20,000", Core.Loop.LongTest.LeastDraws, "LongTest.LeastDraws"),
+            new("The per-rule test over the long history", "3", (decimal)Core.Loop.LongTest.Cap.TotalHours, "LongTest.Cap"),
+
             // The long history's membership, 23.3, the figures in the rows' order.
             new("The long history's stop", "0.90", (decimal)Core.History.LongFloors.HoldingsStop, "LongFloors.HoldingsStop"),
             new("The long history's stop", "0.90", Core.History.LongFloors.ValueStop, "LongFloors.ValueStop"),

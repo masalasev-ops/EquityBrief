@@ -17362,3 +17362,52 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 134, against `data-ci` and never `data`; the phase report 66 tables, 1600 claims, 1600 passing,
             none out of scope and none unexamined, 1615 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.7 - the monthly test over the longer history   2026-11-08
+
+Built:      the per-rule test over the long history: `loop-rules --long` walks every registered rule over the long reader's
+            history scored from 2005, each family judged on its own folds from its first test year, the price families from 2008
+            and the drift and the filing-based families from 23.5's measured years; the families its walk reads off the
+            standing history alone kept with the reason. `loop-pooled --long` sums the long runs across the three. The monthly
+            run's last step, after its report, runs both on each index the month holds none for, capped at three hours: the
+            gate's sign vectors cut to the fewest, 42,489, once half is used, no index started past it, and `loop-long` going
+            on the next day. Migration 135 marks each per-rule and pooled row with the history it read; the month's report, the
+            standing verdict across the three and paper trading's verdict read the standing rows alone. A walk keys its
+            figures' years from its own first scored session, every year past the eighth in the last. Paper trading's scorecard
+            draws the verdict over the long history beneath the verdict across the three, the years its setting never saw apart.
+            One decision, section 17's row, paper trading's row, 13.16's step, the catalogue rows, `SCHEMA.md`, the runbook,
+            the roster's rows, the guide and the changelog. No source a rule's version or the readings' version pins moves.
+Found:      the S&P 500's pullback, walked as the swing filter replays it, reads its candidates from the standing years alone,
+            7 counted test years where the breakout counts 17 and the drift 10; its long verdict stands over those years until
+            the filter's replay is given the long history's.
+Measured:   `loop-rules --long --index GSPC --print` over the live store, writing nothing, in 1,950 seconds, beside the long
+            ledger's S&P 500 build running on the same disk: 19 folds from 2008, 31 rules, none passing, 2 not testable and
+            kept as read on the standing years alone, and 12 version choices; the live breakout did not pass against its
+            benchmark, adjusted p 0.5114, better in 8 of 17 counted years over 2,741 trades; the drift 0.9225, better in 3 of 10
+            over 3,210; the sector heavyweights 0.3409, better in 3 of 3 over 46 months, from 2023; the pullback 0.3415, better
+            in 4 of 7 over 1,896. At that pace the three indices come to about an hour and a half of the three hours.
+Provisional: each on the operator's review: one series from 2004 to the store's newest session read for every year, so no
+            block spans two reads, where the plan read the standing ledger from 2019 and the long one before it; the families
+            the walk reads off the standing history alone, the books laid over the standing facts, the dip, the S&P 400's and
+            600's rules needing the sweeps' own reads and the like setups and the ranking, read on the standing years alone
+            until a checkpoint gives each a long read; the fewest sign vectors at two standard errors and 15 in every 100 of the
+            bar; the cut at half the cap and the stop at it; a walk's figures past their eighth year kept in their last; the
+            rows in the month's own tables marked by history rather than tables of their own.
+Tests:      3599, from 3594, 5 new: 4 in the fixture's expectations and 1 in the read surface.
+Claims:     1602, from 1600, 2 new: section 17's row and paper trading's row; the plan counted about 4, the monthly step's
+            row landing as 13.16's paragraph and the store as a column of the per-rule test's and the pooled test's tables.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property 23.7 adds, filtered to its tests by name,
+            5 in all, each red: m1 every family judged from the price families' first test year; m2 the gate reading every
+            sign vector whatever it is handed; m3 the cut at the cap rather than at half of it; m4 the long step before the
+            report; m5 the scorecard's years never seen read off the years it was chosen on.
+Remedy:     `tools/remedies/2026-11-08-23.7-the-long-test.txt`: `migrate`, then `loop-long --month 2026-11`, no request and no
+            model call, run from main after the merge with no other writer running.
+Carried:    the long step's time and its window against the night, to an entry after the remedy and the operating row of the
+            monthly run's time over the longer history at the first scheduled run; the provisional choices above; the
+            sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3599 of 3599 tests ran with none failed, migrations 0 to 135 with none
+            pending, schema version 135, against `data-ci` and never `data`; the phase report 66 tables, 1602 claims, 1602 passing,
+            none out of scope and none unexamined, 1617 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

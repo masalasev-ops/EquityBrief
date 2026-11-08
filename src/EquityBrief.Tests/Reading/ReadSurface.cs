@@ -232,6 +232,9 @@ public partial class ReadSurface
             // 23.6, the History page's families by year.
             .. LongYearsRows,
 
+            // 23.7, paper trading's verdict over the long history.
+            .. LongVerdictRows,
+
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 

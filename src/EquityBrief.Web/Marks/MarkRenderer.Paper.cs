@@ -140,6 +140,12 @@ public sealed record PaperPageView(
     // From 23.2 the newest pooled run's verdicts across the three indices, which the scorecard draws beside the index's own.
     public IReadOnlyList<LoopPooledRow> Pooled { get; init; } = [];
 
+    // From 23.7 each rule's verdict over the long history on the index and the verdicts across the three over it, which the
+    // scorecard draws beneath.
+    public IReadOnlyList<PaperLongVerdict> Long { get; init; } = [];
+
+    public IReadOnlyList<LoopPooledRow> LongPooled { get; init; } = [];
+
     // Each live account's same trades before its version, drawn apart under the account.
     public IReadOnlyList<PaperSameView> Same { get; init; } = [];
 
@@ -966,6 +972,12 @@ public sealed partial class MarkRenderer
         // alone would bring a year.
         // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
         html.Append(PooledPart(page.Pooled.FirstOrDefault(row => row.Own && row.Family == head.Family), PooledSetups(page.Pooled)));
+
+        // From 23.7 the rule over the long history, the years its setting never saw apart from those it was chosen on.
+        // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+        html.Append(LongPart(
+            page.Long.FirstOrDefault(row => row.Family == head.Family && row.Standing != PaperAccountView.Variant),
+            page.LongPooled.FirstOrDefault(row => row.Own && row.Family == head.Family)));
 
         if (variants.Length == 0)
         {

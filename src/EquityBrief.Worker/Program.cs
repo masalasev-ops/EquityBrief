@@ -68,6 +68,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "loop-test" => await LoopTestRun(args),
     "loop-rules" => await LoopRulesRun(args),
     "loop-pooled" => await LoopPooledRun(args),
+    "loop-long" => await LoopLongRun(args),
     "loop-links" => await LoopLinksRun(args),
     "loop-apply" => await LoopApplyRun(),
     "loop-month" => await LoopMonthRun(args),
@@ -741,7 +742,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 74 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 75 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -893,7 +894,10 @@ static int NoVerb()
         "'loop-test' reads them, " +
         "'loop-pooled --month <yyyy-MM>' sums each family's rules across the three indices' per-rule tests of the month " +
         "into one verdict, and each kind of change registered on two or more indices beside it, and stores each, with " +
-        "'--print' printing each verdict and writing nothing, " +
+        "'--print' printing each verdict and writing nothing, '--long' on either reading the long history from each " +
+        "family's own first test year, " +
+        "'loop-long --month <yyyy-MM>' runs the monthly run's last step by hand, the long test on each index the month " +
+        "holds none for and the verdict across the three over it, " +
         "'loop-links --index <GSPC, MID or SML>' works which readings go with winners over each family's settled setups " +
         "on the index and stores every reading's row, with '--month <yyyy-MM>' and '--print' as 'loop-test' reads them, " +
         "'loop-apply' applies each change the operator approved on the Loop page that no apply has answered, as the " +
@@ -1688,8 +1692,10 @@ static async Task<int> LoopRulesRun(string[] args)
         return 1;
     }
 
+    // From 23.7 '--long' walks the rules over the long history, each family from its own first test year.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
     return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
-        .RulesAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal));
+        .RulesAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal), longRun: args.Contains("--long", StringComparer.Ordinal));
 }
 
 // The one verdict across the three indices by hand for a month, each index's newest per-rule test of the month summed,
@@ -1710,9 +1716,33 @@ static async Task<int> LoopPooledRun(string[] args)
     }
 
     var (held, words) = await new EquityBrief.Worker.Loop.PooledTest(clock, store.DatabaseFile, store.DataRoot, Console.Out)
-        .RunAsync(month, print: args.Contains("--print", StringComparer.Ordinal));
+        .RunAsync(month, print: args.Contains("--print", StringComparer.Ordinal), history: args.Contains("--long", StringComparer.Ordinal) ? EquityBrief.Core.Loop.LongTest.Long : EquityBrief.Core.Loop.LongTest.Standing);
 
     Console.WriteLine($"loop-pooled: {words}");
+
+    return held ? 0 : 2;
+}
+
+// The monthly run's last step by hand for a month, its second part where its first reached the cap: the long test on each
+// index the month's runs do not hold one for, then the verdict across the three over the long history.
+// see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+static async Task<int> LoopLongRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+    var month = VerbArguments.Value(args, "--month") ?? clock.SessionDateAt(clock.UtcNow).ToString("yyyy-MM", CultureInfo.InvariantCulture);
+
+    if (!DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+    {
+        Console.Error.WriteLine($"loop-long: '--month' takes a month as yyyy-MM, not '{month}'");
+
+        return 1;
+    }
+
+    var (held, words) = await new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).LongMonthAsync(month);
+
+    Console.WriteLine($"loop-long: {words}");
 
     return held ? 0 : 2;
 }
@@ -1975,6 +2005,13 @@ static async Task<int> LoopMonthRun(string[] args)
         TakesTheLock: true));
 
     steps.Add(new("report", (_, cancellation) => run!.ReportAsync(month, cancellation)));
+
+    // From 23.7 the long test, last, so a failure holds nothing the report needs.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    steps.Add(new(
+        EquityBrief.Worker.Loop.WalkForwardTester.LongStep,
+        (_, cancellation) => new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).LongMonthAsync(month, cancellation),
+        TakesTheLock: true));
 
     run = new EquityBrief.Worker.Loop.MonthlyRun(clock, store.DatabaseFile, store.DataRoot, Console.Out, steps);
 

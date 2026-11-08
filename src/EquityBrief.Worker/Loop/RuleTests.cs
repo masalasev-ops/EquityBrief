@@ -206,7 +206,7 @@ public static class RuleTests
     // Every rule's verdict, a family at a time in the order given: its live or provisional rule against its benchmark,
     // then its variants against it together; from 21.17 one reading a release reading judged on the test years from the
     // local model's cutoff's year alone, its evidence over every test year kept to be printed beside its verdict.
-    public static IReadOnlyList<RuleTested> Judge(LoopRead read, IReadOnlyList<RuleUnderTest> rules, DateOnly? newest = null)
+    public static IReadOnlyList<RuleTested> Judge(LoopRead read, IReadOnlyList<RuleUnderTest> rules, DateOnly? newest = null, long draws = 0)
     {
         var tested = new List<RuleTested>();
 
@@ -227,14 +227,14 @@ public static class RuleTests
                 {
                     var evidence = Against(read, head, null);
 
-                    tested.Add(new RuleTested(head, Benchmark, evidence, LoopJudge.Judge([Judged(head, evidence)], read.Opens, read.Newest, head.Cap)[0], null) { JudgedFrom = CutoffOf(head, newest)?.Year });
+                    tested.Add(new RuleTested(head, Benchmark, evidence, LoopJudge.Judge([Judged(head, evidence)], read.Opens, read.Newest, head.Cap, draws)[0], null) { JudgedFrom = CutoffOf(head, newest)?.Year });
                 }
             }
 
             var variants = family.Where(rule => rule.Standing == Variant).ToArray();
             RuleUnderTest[] walked = head is { Why: null } ? [.. variants.Where(variant => variant.Why is null)] : [];
             LoopEvidence[] evidences = [.. walked.Select(variant => Against(read, variant, head))];
-            var verdicts = evidences.Length == 0 ? [] : LoopJudge.Judge([.. walked.Select((variant, at) => Judged(variant, evidences[at]))], read.Opens, read.Newest, walked.Append(head!).Max(rule => rule.Cap));
+            var verdicts = evidences.Length == 0 ? [] : LoopJudge.Judge([.. walked.Select((variant, at) => Judged(variant, evidences[at]))], read.Opens, read.Newest, walked.Append(head!).Max(rule => rule.Cap), draws);
 
             foreach (var variant in variants)
             {
@@ -248,6 +248,22 @@ public static class RuleTests
 
         return tested;
     }
+
+    // From 23.7 the long test's verdicts: each family judged as the month's test judges it, on its own folds from its first
+    // test year on the index, a family the history holds no test year of for kept with the reason and no figure.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    public static IReadOnlyList<RuleTested> JudgeLong(LoopRead read, IReadOnlyList<RuleUnderTest> rules, DateOnly? newest = null, long draws = 0) =>
+    [
+        .. rules.GroupBy(rule => rule.Family, StringComparer.Ordinal).SelectMany(family =>
+        {
+            var first = LongTest.FirstTestYear(family.Key, read.Index);
+            LoopFold[] folds = [.. read.Folds.Where(fold => fold.Year >= first)];
+
+            return folds.Length == 0
+                ? family.Select(rule => new RuleTested(rule, rule.Standing == Variant ? NoHead : Benchmark, null, null, FormattableString.Invariant($"the long history holds no test year from its family's first, {first}")))
+                : Judge(read with { Folds = folds }, [.. family], newest, draws);
+        }),
+    ];
 
     // A rule's evidence over the test years: its units against the rule it is read against, or against its benchmark
     // where none is given, unit for unit at an edge of nothing, since every unit's edge already stands net of it; so the

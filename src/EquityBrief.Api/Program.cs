@@ -2619,6 +2619,37 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
     // see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule
     drawn = drawn with { Pooled = await read.PooledAsync() };
 
+    // From 23.7 the newest per-rule test over the long history on the index with its years, and the newest verdicts across the
+    // three over it, which the scorecard draws beneath.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    var (longRules, longYears) = await read.RuleTestsAsync(reading.Code, EquityBrief.Core.Loop.LongTest.Long);
+
+    drawn = drawn with
+    {
+        Long = [.. longRules.Select(rule =>
+        {
+            var years = longYears.Where(year => year.Family == rule.Family && year.Rule == rule.Rule).ToArray();
+            var standingFrom = EquityBrief.Core.History.LongLedger.StandingFrom.Year;
+
+            return new EquityBrief.Web.Marks.PaperLongVerdict(
+                rule.Family,
+                rule.Standing,
+                rule.Passed,
+                rule.Adjusted,
+                rule.Better,
+                rule.Counted,
+                rule.Units,
+                rule.Why,
+                EquityBrief.Core.Loop.LongTest.FirstTestYear(rule.Family, reading.Code),
+                years.Where(year => year.Year < standingFrom).Sum(year => year.Units),
+                years.Where(year => year.Year < standingFrom).Sum(year => year.Total),
+                years.Where(year => year.Year >= standingFrom).Sum(year => year.Units),
+                years.Where(year => year.Year >= standingFrom).Sum(year => year.Total),
+                rule.Unit == "points");
+        })],
+        LongPooled = await read.PooledAsync(history: EquityBrief.Core.Loop.LongTest.Long),
+    };
+
     return Results.Content(
         page.PaperRegion(
             marks,
