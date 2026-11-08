@@ -758,7 +758,15 @@ public static class SchemaMigrations
         new Migration(135, "add loop_rule's and loop_pooled's history", AddLoopHistory),
         new Migration(136, "create long_search and plan_point", CreateLongSearch),
         new Migration(137, "add the fund line to long_search and plan_point", AddFundLine),
+        new Migration(138, "add the fund line to loop_rule", AddRuleFundLine),
     ];
+
+    // From the 23.7 correction a long per-rule row's second line beside its verdict against the benchmark: its trades against
+    // its index's own fund held over the same sessions, a trade on average, with how many.
+    const string AddRuleFundLine = @"
+        ALTER TABLE loop_rule ADD COLUMN fund_units INTEGER;
+        ALTER TABLE loop_rule ADD COLUMN fund_edge REAL;
+    ";
 
     // From the 23.8 correction each result read against the ruled benchmark keeps its index's own fund held over the same
     // sessions beside it: a search's chosen settings and its rule today a trade, and a recommendation's and the traded

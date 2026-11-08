@@ -2558,6 +2558,8 @@ Grain: one row per per-rule test run, index, family and rule.
 | `through` | TEXT | from 23.2, the history's newest session, as `yyyy-MM-dd`; null on a row written before |
 | `judged_from` | INTEGER | from 23.2, the year its verdict was judged from where it reads a release reading; null where every test year counted and on a row written before |
 | `history` | TEXT | from 23.7, from migration 135, `standing` for the month's test over the standing history, every row before it among them, or `long` for the monthly run's last step over the long history |
+| `fund_units` | INTEGER | from migration 138, on a long row the trades from its family's first test year the fund line reads; null on a standing row, a book's months and a walk handing no trade's last session |
+| `fund_edge` | REAL | from migration 138, their mean result less the index's own fund held over each trade's sessions in its risk, the second line beside the verdict against the benchmark; null where `fund_units` is |
 
 Primary key: `run_id`, `index_code`, `family`, `rule`.
 

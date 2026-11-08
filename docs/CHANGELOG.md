@@ -7,6 +7,21 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the long test's fund line beside its verdict
+Decision: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+Was:
+> (17, The per-rule test over the long history, rationale) ... with too wide a margin to tell a pass from a miss
+> (17, The per-rule test over the long history, check) ... and the step's failure leaving the month's report standing
+> (RUNBOOK, the long test) ... are written with the reason that they are read on the standing years alone. Its rows sit beside the standing test's, ...
+> (checks.md, fixture-expectations) ... and the long step's failure leaving the month's report standing; and from 23.9 ...
+Now:
+> (17, The per-rule test over the long history, rationale) ... to tell a pass from a miss; from the 23.7 correction each verdict stays against the benchmark as ruled, with the index's own fund held over each trade's sessions beside it as a second line where the walk hands each trade's last session (see: ...)
+> (17, The per-rule test over the long history, check) ... the step's failure leaving the month's report standing, and the fund line worked by hand beside a verdict
+> (RUNBOOK, the long test) ... read on the standing years alone. From the 23.7 correction each verdict prints and stores beside it the rule's trades against the index's own fund held over the same sessions, or says its walk hands no trade's last session (see: ...). Its rows sit beside the standing test's, ...
+> (SCHEMA, loop_rule) the fund columns of migration 138, added
+> (checks.md, fixture-expectations) ... leaving the month's report standing, and from the 23.7 correction of 2026-11-08 the fund line worked by hand beside a long verdict, a walk handing no trade's last session and a book saying they have none; and from 23.9 ...
+Why: the operator's order of 2026-11-08, item 1.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the buy and sell points read against the benchmark as ruled, the fund beside it
 Decision: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
 Corrects: 23.8 read the buy and sell points' edge against the index's fund alone, where their decision names the benchmark sold the same way.

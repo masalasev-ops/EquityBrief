@@ -656,8 +656,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     ";
 
     const string InsertRule = @"
-        INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why, cap, span, through, judged_from, history)
-        VALUES ($run_id, $month, $index_code, $family, $rule, $standing, $words, $against, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $why, $cap, $span, $through, $judged_from, $history);
+        INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why, cap, span, through, judged_from, history, fund_units, fund_edge)
+        VALUES ($run_id, $month, $index_code, $family, $rule, $standing, $words, $against, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $why, $cap, $span, $through, $judged_from, $history, $fund_units, $fund_edge);
     ";
 
     // From 23.2 each unit of a walked rule's evidence over the test years, which the pooled step sums across the indices.
@@ -738,7 +738,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         }
 
         var read = longHistory is not null
-            ? await ReadLongAsync(index, history, through, inputs, cancellation)
+            ? await WithFundAsync(await ReadLongAsync(index, history, through, inputs, cancellation), longHistory, through, cancellation)
             : await ReadAsync(index, history, through, inputs, cancellation);
 
         if (read.Folds.Count == 0)
@@ -891,7 +891,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         foreach (var one in tested)
         {
-            output.WriteLine(RuleLine(one));
+            output.WriteLine(RuleLine(one, standingOnly));
         }
 
         // From 21.1 each tone variant's figures on each side of the local model's cutoff's year beside its opposite's, which
@@ -1035,10 +1035,18 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.ImprovingCandidate rule && rule.Index == index);
 
     // A rule's line for the console, a rule the history cannot walk naming what judges it instead.
-    public static string RuleLine(RuleTested one) =>
+    public static string RuleLine(RuleTested one, bool longRun = false) =>
         one.Why is { } why
             ? $"{one.Rule.Family}, {one.Rule.Rule}: not testable, {why}; {RuleVerdict.Judged}"
-            : FormattableString.Invariant($"{one.Rule.Family}, {one.Rule.Rule}: {(one.Passed ? "passed" : "did not pass")} against {one.Against}; {(one.Verdict!.Adjusted is { } p ? FormattableString.Invariant($"adjusted p {p:0.####} against {LoopGate.Bar:0.####}") : FormattableString.Invariant($"{one.Verdict.Blocks} block(s), under the floor of {EquityBrief.Core.Returns.Blocks.Floor}"))}; better in {one.Verdict.Better} of {one.Verdict.Counted} counted year(s); {one.Verdict.Units} {one.Rule.Unit} unit(s){(one.Verdict.Counts ? string.Empty : ", short of the count")}");
+            : FormattableString.Invariant($"{one.Rule.Family}, {one.Rule.Rule}: {(one.Passed ? "passed" : "did not pass")} against {one.Against}; {(one.Verdict!.Adjusted is { } p ? FormattableString.Invariant($"adjusted p {p:0.####} against {LoopGate.Bar:0.####}") : FormattableString.Invariant($"{one.Verdict.Blocks} block(s), under the floor of {EquityBrief.Core.Returns.Blocks.Floor}"))}; better in {one.Verdict.Better} of {one.Verdict.Counted} counted year(s); {one.Verdict.Units} {one.Rule.Unit} unit(s){(one.Verdict.Counts ? string.Empty : ", short of the count")}")
+                + (!longRun ? string.Empty : FundLineWords(one));
+
+    // From the 23.7 correction the long test's second line beside a verdict, or that its walk gives none.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    public static string FundLineWords(RuleTested one) =>
+        one.FundUnits is { } units
+            ? FormattableString.Invariant($"; against the index's own fund held over the same sessions {(one.FundEdge is { } edge ? edge.ToString("+0.000;-0.000;0.000", CultureInfo.InvariantCulture) : "none")} a trade over {units}")
+            : "; no fund line, its walk handing no trade's last session";
 
     // The register's rows, which the per-rule test reads the rules standing when its run began off.
     static async Task<IReadOnlyList<Core.Candidates.RegisterRow>> RegisterAsync(string databaseFile, CancellationToken cancellation)
@@ -1121,6 +1129,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 ("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
                 ("$judged_from", Or(one.JudgedFrom)),
                 ("$history", history),
+                ("$fund_units", Or(one.FundUnits)),
+                ("$fund_edge", Or(one.FundEdge)),
             ], cancellation);
 
             foreach (var (unit, at) in (one.Evidence?.Units ?? []).Select((unit, at) => (unit, at)))

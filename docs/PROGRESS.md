@@ -17630,3 +17630,27 @@ Remedy:     the corrections' remedy, written with the last correction's entry be
 Carried:    the provisional choices above; the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.7 - correction: the long test's verdict stays against the benchmark as ruled, with its index's fund beside it   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its first item. The long test's walks read the benchmark as ruled already, the
+            S&P 500's sweeps selling trade and members at the close and the S&P 400's and 600's and the monthly test's walks
+            selling both at the next open (see: Every swing trade is judged against a benchmark whose members are sold as the
+            trade is, and no rule's version moves because of it); no line beside a verdict said how a rule did against simply
+            holding its index's fund.
+Corrected:  beside each long verdict the second line: the rule's trades entered from its family's first test year less the
+            index's own fund held over each trade's sessions in its risk, a trade on average, printed and written to
+            `loop_rule`; a walk's units keep the trades they were read off, so the line reads each trade's last session, and a
+            book's months or a walk handing no trade's last session say they have none. Migration 138. Section 17's row,
+            `SCHEMA.md`, the runbook, the roster's row and the changelog, under the decision the correction above wrote.
+Measured:   with the long test's rerun under the fifth item's correction below, over the tree carrying the first five.
+Tests:      1 new in the fixture's expectations: the fund line worked by hand beside a long verdict over a constructed
+            history, a walk handed as a list and a long read holding no fund giving none.
+Pins:       none move: the per-rule test's and the tester's sources are none a rule's version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its test
+            by name, 3 in all, each red: m1 the fund line read over every year rather than from the family's first test year;
+            m2 the fund line read off a walk handing no trade's last session; m3 the long verdict's line without its fund line.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
