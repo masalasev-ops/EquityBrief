@@ -4809,6 +4809,31 @@ internal static class Scope
             Verdict.Pass,
             "the run's counts, the cutover, the lowest coverage and the folds of the codes priced by nothing and the ends no filing settles read back off the page over a constructed store, and a store not written saying so",
             ByReadSurface),
+        // 23.5's long facts: its two components, its store and section 17's row.
+        [CheckReach.Key(CatalogueTable, "Long fact pull")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the long filings and the standing facts it reads, the long facts it reads, writes and removes, the run log it appends to and the filings archive it asks",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long fact pull")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Long first-year reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares every store it reads and none it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long first-year reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Long facts")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The long history's first test years")] = new Scoped(
+            Verdict.Pass,
+            "a filer's answer kept as sent and asked nothing again, the periods before the standing table's first kept as first filed, each first year worked by hand on both sides of its share, the estimate on both sides of a year apart and the drift's fallback with its label",
+            ByExpectations),
         [CheckReach.Key("15.25 History", "Members back to 2005")] = new Scoped(
             Verdict.Pass,
             "each index's years read back off the page over a constructed store, its holdings by how they were matched or why left out, the lower coverage label on an S&P 400 year to 2008 and on no S&P 500 year, the companies left out by name, and a store not written saying so",
@@ -6485,6 +6510,10 @@ internal static class Scope
         ["Long members"] = "23.3",
         // 23.4's one, which the plan describes as a worker verb asking every code from 2004-01-02.
         ["Long price pull"] = "23.4",
+        // 23.5's two, which the plan describes as a worker verb asking the SEC's facts of each filer of the long list and the
+        // measure of each family's first test year.
+        ["Long fact pull"] = "23.5",
+        ["Long first-year reader"] = "23.5",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -8628,6 +8657,7 @@ internal static class Scope
         ["The long history's keys"] = "23.3",
         ["The long history's left-out kinds"] = "23.3",
         ["The long history's prices"] = "23.4",
+        ["The long history's first test years"] = "23.5",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

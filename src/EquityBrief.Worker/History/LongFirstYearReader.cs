@@ -38,6 +38,7 @@ public sealed class LongFirstYearReader : IComponent
             new StoreTouch(Store.PulledSurprise, Touch.Read),
             new StoreTouch(Store.LongBar, Touch.Read),
             new StoreTouch(Store.LongMarketBar, Touch.Read),
+            new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.LongHolding, Touch.Read),
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),

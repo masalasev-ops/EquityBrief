@@ -102,6 +102,15 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Long price pull"),
     ];
 
+    // 23.5's two: the long fact pull and the long first-year reader.
+    internal static string[] LongFactsRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Long fact pull"),
+        CheckReach.Key(Scope.MatrixTable, "Long fact pull"),
+        CheckReach.Key(Scope.CatalogueTable, "Long first-year reader"),
+        CheckReach.Key(Scope.MatrixTable, "Long first-year reader"),
+    ];
+
     // 22.38's one: the session marks.
     internal static string[] SessionMarkRows =>
     [
@@ -284,6 +293,9 @@ public partial class ComponentAccess
 
             // 23.4, the long price pull.
             .. LongPricesRows,
+
+            // 23.5, the long fact pull and the long first-year reader.
+            .. LongFactsRows,
             .. LateBarRows,
             .. EntryReaderRows,
             .. SplitNameRows,
@@ -938,7 +950,7 @@ public partial class ComponentAccess
         // filings, which keep the archive's answers in a folder the command names, and from 23.3 the long schedule filings
         // and the long day files, which keep the trust's filings and the provider's day files and lists in the long history's
         // folder the command names.
-        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongScheduleFilings", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        Assert.Equal(["ComparisonFiles", "DriftSurprises", "FilterCounts", "HistoryEndFilings", "LocalComparison", "LongDayFiles", "LongFirstYearReader", "LongScheduleFilings", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

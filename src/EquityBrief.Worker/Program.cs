@@ -277,11 +277,23 @@ static async Task<int> LongFactsRun(string[] args)
         return 0;
     }
 
+    if (args.Contains("--measure", StringComparer.Ordinal))
+    {
+        var read = await EquityBrief.Worker.History.LongFirstYearReader.ReadAsync(store.DatabaseFile, Say);
+
+        foreach (var line in EquityBrief.Worker.History.LongFirstYearReader.Lines(read))
+        {
+            Say(line);
+        }
+
+        return 0;
+    }
+
     var write = VerbArguments.Value(args, "--write");
 
     if ((write ?? VerbArguments.Value(args, "--print")) is not { } kept)
     {
-        Console.Error.WriteLine("long-facts: give '--capture --into <folder>', '--write <folder>' or '--print <folder>'.");
+        Console.Error.WriteLine("long-facts: give '--capture --into <folder>', '--write <folder>', '--print <folder>' or '--measure'.");
 
         return 2;
     }
@@ -705,7 +717,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 72 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 73 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -944,6 +956,7 @@ static int NoVerb()
         "'--report-days' writing again the report days read off 8-K filings carrying item 2.02, " +
         "'long-facts' asks the SEC once for each long filer's facts with '--capture --into <folder>', after stating what it asks, and with " +
         "'--write <folder>' writes the periods before the standing table's first whole, '--print <folder>' writing nothing, " +
+        "and '--measure' reading each filing-based family's and the drift's first test year on each index, writing nothing, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
