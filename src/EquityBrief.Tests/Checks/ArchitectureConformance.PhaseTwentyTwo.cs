@@ -125,6 +125,10 @@ public partial class ArchitectureConformance
 
         // From 23.5: the long fact pull and the long first-year reader, their store and section 17's row.
         .. FixtureExpectations.LongFactsRows,
+
+        // From 23.6: the long history reader and the long ledger reader, their three stores, section 17's row, section 18's
+        // row and the History page's row.
+        .. FixtureExpectations.LongLedgerRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

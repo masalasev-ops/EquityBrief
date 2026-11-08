@@ -4842,6 +4842,47 @@ internal static class Scope
             Verdict.Pass,
             "a filer's answer kept as sent and asked nothing again, the periods before the standing table's first kept as first filed, each first year worked by hand on both sides of its share, the estimate on both sides of a year apart and the drift's fallback with its label",
             ByExpectations),
+        // 23.6's long ledger: its two components, its three stores, section 17's row, section 18's row and the History page's row.
+        [CheckReach.Key(CatalogueTable, "Long history reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares every store it reads and none it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long history reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Long ledger reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares every store it reads and none it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long ledger reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Long setups")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Departed setups")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(FailureTable, "A long ledger session the build cannot read")] = new Scoped(
+            Verdict.Pass,
+            "the long build's source writes no row of the standing ledger and no update or delete of a long setup, so a stopped chunk leaves the sessions before it as written",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The long tables' budget")] = new Scoped(
+            Verdict.Pass,
+            "the older jumps' comparison worked on both sides of twice, the eras and the years the settings were chosen on read by hand, a trade, a bankruptcy and a benchmark member whose prices stop worked under both readings, and the long reader's series under its marks over a constructed store",
+            ByExpectations),
+        [CheckReach.Key("15.25 History", "Each family by year")] = new Scoped(
+            Verdict.Pass,
+            "each family's years read back off the page over a constructed store, each index's and the pooled trades, share at target and edge with the last price beside it, 2008 marked, the years chosen on and never seen, the drift's survivors line and the lower coverage label, and a store not written saying so",
+            ByReadSurface),
         [CheckReach.Key("15.25 History", "Members back to 2005")] = new Scoped(
             Verdict.Pass,
             "each index's years read back off the page over a constructed store, its holdings by how they were matched or why left out, the lower coverage label on an S&P 400 year to 2008 and on no S&P 500 year, the companies left out by name, and a store not written saying so",
@@ -6522,6 +6563,10 @@ internal static class Scope
         // measure of each family's first test year.
         ["Long fact pull"] = "23.5",
         ["Long first-year reader"] = "23.5",
+        // 23.6's two, which the plan describes as a reader of its own returning the record the sweeps and the ledger build
+        // take, and the measure of each family on each index over 20 years.
+        ["Long history reader"] = "23.6",
+        ["Long ledger reader"] = "23.6",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -7538,6 +7583,7 @@ internal static class Scope
         [CheckReach.Key("15.21 Paper trading", "An account's verdict across the indexes")] = "23.2",
         [CheckReach.Key("15.25 History", "Members back to 2005")] = "23.3",
         [CheckReach.Key("15.25 History", "Prices back to 2004")] = "23.4",
+        [CheckReach.Key("15.25 History", "Each family by year")] = "23.6",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 
@@ -8342,6 +8388,7 @@ internal static class Scope
         ["A code the provider prices by nothing"] = "23.4",
         ["A filer whose names are not the company's"] = "23.4",
         ["A filer whose facts the archive refuses"] = "23.5",
+        ["A long ledger session the build cannot read"] = "23.6",
         // 21.6's two, which the plan names as section 18's rows for a source refusing and a member unanswered.
         ["A new reading's source refuses"] = "21.6",
         ["A member a new reading's source answers nothing for"] = "21.6",
@@ -8668,6 +8715,7 @@ internal static class Scope
         ["The long history's left-out kinds"] = "23.3",
         ["The long history's prices"] = "23.4",
         ["The long history's first test years"] = "23.5",
+        ["The long tables' budget"] = "23.6",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

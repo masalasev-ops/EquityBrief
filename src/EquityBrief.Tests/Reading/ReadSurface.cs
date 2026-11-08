@@ -229,6 +229,9 @@ public partial class ReadSurface
             // 23.4, the History page's prices back to 2004.
             .. LongPricesPageRows,
 
+            // 23.6, the History page's families by year.
+            .. LongYearsRows,
+
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 

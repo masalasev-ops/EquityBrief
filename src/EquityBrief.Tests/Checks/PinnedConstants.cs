@@ -959,6 +959,16 @@ public class PinnedConstants
             new("The long history's first test years", "2019", Core.History.LongFirstYears.DriftFallback, "LongFirstYears.DriftFallback"),
             new("The long history's first test years", "30", Worker.History.LongFirstYearReader.PricedAfterDays, "LongFirstYearReader.PricedAfterDays"),
             new("The long history's first test years", "3", Worker.History.LongFirstYearReader.Largest, "LongFirstYearReader.Largest"),
+
+            // The long tables' budget, 23.6, the figures in the row's order.
+            new("The long tables' budget", "4.5", (decimal)Core.History.LongLedger.BudgetGigabytes, "LongLedger.BudgetGigabytes"),
+            new("The long tables' budget", "5.82", (decimal)Core.History.LongLedger.StoreBeforeGigabytes, "LongLedger.StoreBeforeGigabytes"),
+            new("The long tables' budget", "2005", Core.History.LongLedger.From.Year, "LongLedger.From's year"),
+            new("The long tables' budget", "2018", Core.History.LongLedger.Through.Year, "LongLedger.Through's year"),
+            new("The long tables' budget", "2019", Core.History.LongLedger.StandingFrom.Year, "LongLedger.StandingFrom's year"),
+            new("The long tables' budget", "25", Worker.Ledger.SetupLedger.CheckPerYear, "SetupLedger.CheckPerYear"),
+            new("The long tables' budget", "2", (decimal)Core.History.LongLedger.OlderJumpsTimes, "LongLedger.OlderJumpsTimes"),
+            new("The long tables' budget", "20", (decimal)Core.History.LongLedger.OutlyingRisks, "LongLedger.OutlyingRisks"),
         ];
     }
 

@@ -1,0 +1,16 @@
+# The remedy of 23.6, the long ledger. Migration 134 creates long_setup, long_reading and departed_setup. Each index's long ledger
+# of 2005 to 2018 is then built over the long history, each setup as ruled and with every stock whose prices stop held at its
+# last price, a chunk of a quarter's sessions at a time under the night's wait and the drain's lock, a build stopped part way
+# going on from where it stopped when run again; each ends by writing the standing setups left open whose prices stop at their
+# last price and each family's years under both readings. The check then rebuilds 25 sampled setups a year on each index and
+# names every reading that differs. Nothing asks anything of anyone or calls a model, no row of setup, bar or the pull moves,
+# and no source a rule's version or the readings' version pins moves. Run from main after the merge, when no night, off-peak
+# run, local run, ledger build or monthly run is writing, and started far enough from a night that each index's build ends
+# before it; the build pauses for a night's window rather than run across it.
+migrate
+ledger-build --long --index GSPC
+ledger-build --long --index MID
+ledger-build --long --index SML
+ledger-check --long --index GSPC
+ledger-check --long --index MID
+ledger-check --long --index SML
