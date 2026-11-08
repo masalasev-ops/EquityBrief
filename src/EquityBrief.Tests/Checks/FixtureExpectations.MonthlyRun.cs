@@ -315,4 +315,102 @@ public partial class FixtureExpectations
             File.ReadAllText(Path.Combine(store.Root, MonthlyRun.Folder, "2026-10", MonthlyRun.ReportFile)),
             StringComparison.Ordinal);
     }
+
+    // The history's step runs twenty minutes by a clock the beat's own wait moves: it says it started, says twice that it
+    // still runs with the minutes it has run, and says it held in twenty; a step that ends before a beat says none, and
+    // the run's last line says how long the month took.
+    // see: The monthly run writes its own stamped log and says every ten minutes that a step still runs
+    [Fact]
+    public async Task EachStepSaysItStartedSaysEveryTenMinutesThatItStillRunsAndSaysHowLongItTook()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var output = new StringWriter();
+        var clock = new CallClock(new DateTimeOffset(2026, 11, 7, 12, 0, 0, TimeSpan.Zero));
+        var historyRuns = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var saidTwice = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var beats = 0;
+
+        // Beats while the history runs alone; the third look comes after the second line was written, and waits until
+        // the step ends.
+        async Task Beat(TimeSpan by, CancellationToken cancellation)
+        {
+            await historyRuns.Task.WaitAsync(cancellation);
+
+            if (beats == 2)
+            {
+                saidTwice.TrySetResult();
+                await Task.Delay(Timeout.Infinite, cancellation);
+            }
+
+            clock.Advance(by);
+            beats++;
+        }
+
+        MonthlyStep[] steps =
+        [
+            .. MonthlyRun.StepNames.Select(name => new MonthlyStep(name, async (_, _) =>
+            {
+                if (name == "history")
+                {
+                    historyRuns.SetResult();
+                    await saidTwice.Task;
+                }
+
+                return (true, name + " held");
+            })),
+        ];
+
+        var outcome = await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, steps, beat: Beat).RunAsync("2026-11");
+        var lines = output.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+        Assert.Null(outcome.Stopped);
+        Assert.Equal(TimeSpan.FromMinutes(10), MonthlyRun.Beat);
+        Assert.Equal(
+            ["loop-month: history started", "loop-month: history still running, 10 min in", "loop-month: history still running, 20 min in", "loop-month: history held in 20 min: history held"],
+            lines.Where(line => line.StartsWith("loop-month: history ", StringComparison.Ordinal)));
+        Assert.Equal(2, lines.Count(line => line.Contains("still running", StringComparison.Ordinal)));
+        Assert.Contains("loop-month: facts started", lines);
+        Assert.Contains("loop-month: facts held in 0 min: facts held", lines);
+        Assert.Equal("loop-month: every step of 2026-11 held in 20 min", lines[^1]);
+    }
+
+    // The month's log beside its report: each line stamped with the instant it ends, a line written in parts kept as one,
+    // the console given the same lines; and a console that refuses every line, as the console does once the scheduler
+    // ends the shell holding its redirect, leaves each line in the log.
+    // see: The monthly run writes its own stamped log and says every ten minutes that a step still runs
+    [Fact]
+    public void TheMonthlyLogStampsEachLineAndKeepsItInTheMonthsLogWhenTheConsoleRefusesIt()
+    {
+        using var store = new TemporaryStore();
+        var clock = new CallClock(new DateTimeOffset(2026, 11, 7, 12, 0, 0, TimeSpan.Zero));
+        var file = MonthlyLog.PathOf(store.Root, "2026-11");
+        using var console = new StringWriter();
+        using var log = new MonthlyLog(clock, console, file);
+
+        Assert.Equal(Path.Combine(store.Root, "loop", "2026-11", "run.log"), file);
+
+        log.Write("loop-month: history ");
+        log.WriteLine("started");
+        clock.Advance(TimeSpan.FromMinutes(10));
+        log.WriteLine("loop-month: history still running, 10 min in");
+
+        Assert.Equal(["2026-11-07T12:00:00Z loop-month: history started", "2026-11-07T12:10:00Z loop-month: history still running, 10 min in"], File.ReadAllLines(file));
+        Assert.Equal(File.ReadAllLines(file), console.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+
+        using var gone = new MonthlyLog(clock, new RefusingConsole(), file);
+
+        clock.Advance(TimeSpan.FromHours(6));
+        gone.WriteLine("loop-month: rules-SML started");
+
+        Assert.Equal("2026-11-07T18:10:00Z loop-month: rules-SML started", File.ReadAllLines(file)[^1]);
+        Assert.Equal(3, File.ReadAllLines(file).Length);
+    }
+
+    // A console whose pipe is gone: every write throws.
+    sealed class RefusingConsole : TextWriter
+    {
+        public override System.Text.Encoding Encoding => System.Text.Encoding.UTF8;
+
+        public override void Write(char value) => throw new IOException("the pipe is gone");
+    }
 }

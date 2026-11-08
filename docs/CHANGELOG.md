@@ -7,6 +7,19 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/RUNBOOK.md - the monthly run's own log, its measured time and the task's limit of 18 hours
+Decision: The monthly run writes its own stamped log and says every ten minutes that a step still runs
+Was:
+> ... and the generator's steps ... A whole run takes the facts, about 25 minutes, the history, about 50 minutes for the three indices, the three checks, about an hour together, and the three tester runs, about 20 minutes together.
+> **Scheduling it.** ... and the action runs the script only on the month's first seven days, its output kept in `data/monthly.log`:
+> -ExecutionTimeLimit (New-TimeSpan -Hours 6)
+Now:
+> ... November's run of 2026-11-07 took the facts 22 minutes, the history 2 hours 32 minutes ... about 13 hours in all. From the 17.10 correction of 2026-11-08 the worker keeps its own log, `data/loop/<month>/run.log` ... a step with a line in the last ten minutes is running, and one with none for longer has stopped.
+> **Scheduling it.** ... its output kept in `data/monthly.log` as well as in the month's own log. The task's limit is 18 hours, above the 13 a whole run took in November; at its limit the scheduler ends the shell and its redirect and not the worker ...
+> -ExecutionTimeLimit (New-TimeSpan -Hours 18), and a task registered with six hours takes the 18 by `Set-ScheduledTask`
+Corrects: on 2026-11-07 the task's six-hour limit ended the shell holding the log's redirect at 13:00 New York time while the worker ran on, the log read as a hang and the run was ended by hand before the S&P 600's per-rule test, the pooled verdict and the report.
+Why: the run's progress is read from a log the worker keeps itself, and the limit stands above what a run takes.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - a pick's other ways in drawn open again, the plans told apart by headings
 Decision: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
 Was:

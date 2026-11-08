@@ -42,8 +42,17 @@ public sealed record MonthlyOutcome(string RunId, IReadOnlyList<(string Step, st
 // see: The monthly run asks the quarters of each member whose filer is none or not the SEC's own and the dividends of each member none were kept for, each ask stated before the first
 // see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
 // see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
-public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoot, TextWriter output, IReadOnlyList<MonthlyStep> steps, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
+// Each step says when it starts, says every ten minutes while it runs that it still runs and how long it has run, and
+// says how long it took when it ends.
+// see: The monthly run writes its own stamped log and says every ten minutes that a step still runs
+public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoot, TextWriter output, IReadOnlyList<MonthlyStep> steps, Func<TimeSpan, CancellationToken, Task>? wait = null, Func<TimeSpan, CancellationToken, Task>? beat = null) : IComponent
 {
+    // How often a step that is still running says so.
+    public static readonly TimeSpan Beat = TimeSpan.FromMinutes(10);
+
+    // The step's own lines and the beat's lines come from two threads, so one writer orders them.
+    readonly TextWriter said = TextWriter.Synchronized(output);
+
     public static ComponentAccess Access => new(
         Stores:
         [
@@ -162,7 +171,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
         var ran = new List<(string, string)>();
         var skipped = new List<string>();
 
-        output.WriteLine($"{Verb}: the run for {month}, {runId}");
+        said.WriteLine($"{Verb}: the run for {month}, {runId}");
 
         // A step an earlier try held is passed over only before the first step no try held. From that one every step
         // runs, since a step that held before that one ran read what it has since written again: a check held before
@@ -175,7 +184,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
             if (!goingOn && held.Contains(StagePrefix + step.Name))
             {
                 skipped.Add(step.Name);
-                output.WriteLine($"{Verb}: {step.Name} held on an earlier try of the month, so it is not run again");
+                said.WriteLine($"{Verb}: {step.Name} held on an earlier try of the month, so it is not run again");
 
                 continue;
             }
@@ -190,6 +199,11 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
             using (step.TakesTheLock ? null : await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation))
             {
+                said.WriteLine($"{Verb}: {step.Name} started");
+
+                using var beating = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+                var beats = BeatAsync(step.Name, stepStarted, beating.Token);
+
                 try
                 {
                     (stood, words) = await step.Work(runId, cancellation);
@@ -198,21 +212,26 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                 {
                     (stood, words) = (false, $"{failure.GetType().Name}: {failure.Message}");
                 }
+                finally
+                {
+                    await beating.CancelAsync();
+                    await beats;
+                }
             }
 
             await AppendAsync(runId, StagePrefix + step.Name, stepStarted, stood ? "ok" : "failed", words, cancellation);
             ran.Add((step.Name, words));
-            output.WriteLine($"{Verb}: {step.Name} {(stood ? "held" : "did not hold")}: {words}");
+            said.WriteLine($"{Verb}: {step.Name} {(stood ? "held" : "did not hold")} in {Minutes(clock.UtcNow - stepStarted)} min: {words}");
 
             if (!stood)
             {
-                output.WriteLine($"{Verb}: stopped on {step.Name}; run it again for {month} to go on from that step");
+                said.WriteLine($"{Verb}: stopped on {step.Name}; run it again for {month} to go on from that step");
 
                 return new MonthlyOutcome(runId, ran, skipped, step.Name);
             }
         }
 
-        output.WriteLine($"{Verb}: every step of {month} held");
+        said.WriteLine($"{Verb}: every step of {month} held in {Minutes(clock.UtcNow - started)} min");
 
         return new MonthlyOutcome(runId, ran, skipped, null);
     }
@@ -441,19 +460,42 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
     async Task WaitForTheNightAsync(Func<TimeSpan, CancellationToken, Task> pause, CancellationToken cancellation)
     {
-        var said = false;
+        var told = false;
 
         while (SetupLedger.MustWait(clock.UtcNow, NightLock.Holder(dataRoot) is not null, StepEstimate))
         {
-            if (!said)
+            if (!told)
             {
-                output.WriteLine(NightLock.Holder(dataRoot) is { } holder ? $"{Verb}: waiting while {holder} holds the night's lock" : $"{Verb}: pausing for the night's window");
-                said = true;
+                said.WriteLine(NightLock.Holder(dataRoot) is { } holder ? $"{Verb}: waiting while {holder} holds the night's lock" : $"{Verb}: pausing for the night's window");
+                told = true;
             }
 
             await pause(Poll, cancellation);
         }
     }
+
+    // Until the step ends, a line every beat naming the step and the whole minutes it has run. The beat's wait is taken
+    // after a yield, so a wait that returns at once cannot hold the step's own thread.
+    async Task BeatAsync(string name, DateTimeOffset started, CancellationToken cancellation)
+    {
+        var sleep = beat ?? Task.Delay;
+
+        try
+        {
+            while (true)
+            {
+                await Task.Yield();
+                await sleep(Beat, cancellation);
+                cancellation.ThrowIfCancellationRequested();
+                said.WriteLine($"{Verb}: {name} still running, {Minutes(clock.UtcNow - started)} min in");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    static string Minutes(TimeSpan span) => ((long)Math.Floor(span.TotalMinutes)).ToString(CultureInfo.InvariantCulture);
 
     async Task AppendAsync(string runId, string stage, DateTimeOffset started, string outcome, string detail, CancellationToken cancellation)
     {
