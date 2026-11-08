@@ -17058,3 +17058,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 17.10 - correction: the monthly run writes its own stamped log and says every ten minutes that a step still runs   2026-11-08
+
+Found:      the operator's word of 2026-11-08 after November's run, "then you need better logging for it". On 2026-11-07 the
+            scheduled task's six-hour limit ended the shell holding the `*>> monthly.log` redirect at 18:00 UTC while the
+            worker ran on unlogged and held every step to `rules-MID`; the log, silent from 17:52, was read as a hang and the
+            run ended by hand at 00:24 on 2026-11-08, twelve minutes into `rules-SML`, leaving it, `pooled` and `report`.
+Corrected:  `MonthlyLog` stamps every line the run and its steps print with the UTC instant it ends and appends it to
+            `loop/<month>/run.log` under the data root as well as to the console; a console refusing a line leaves it in the
+            log. `MonthlyRun` says when each step starts, says every ten minutes while it runs `still running, <n> min in`, and
+            says how long it took when it ends. A decision, the runbook's paragraph with November's measured times and the
+            task's limit of 18 hours, and the changelog. On the operator's answer of 2026-11-08 the machine's task carries
+            `PT18H`, set with `Set-ScheduledTask` as the runbook states.
+Tests:      2 new: a step of twenty minutes by a clock the beat's wait moves says it started, twice that it still runs and that
+            it held in 20 min, a step ending before a beat says none and the run's last line its whole minutes; and the
+            month's log stamping each line, a line written in parts kept as one, the console given the same lines, and a
+            console refusing every line leaving each in the log.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit bringing back November's silence, filtered to the new tests by
+            name. m1 the month's log not appended: red. m2 no line while a step runs: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3561 of 3561 tests ran with none failed, migrations 0 to 131 with none
+            pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
+            none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

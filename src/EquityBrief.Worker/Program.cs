@@ -1568,6 +1568,14 @@ static async Task<int> LoopMonthRun(string[] args)
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     var clock = SystemClock.ForUnitedStatesSessions();
     var month = VerbArguments.Value(args, "--month") ?? EquityBrief.Worker.Loop.MonthlyRun.MonthOf(clock);
+
+    // Every line the run and its steps print, stamped and kept in the month's own log as well as on the console.
+    // see: The monthly run writes its own stamped log and says every ten minutes that a step still runs
+    var log = new EquityBrief.Worker.Loop.MonthlyLog(clock, Console.Out, EquityBrief.Worker.Loop.MonthlyLog.PathOf(store.DataRoot, month));
+
+    Console.SetOut(log);
+    Console.SetError(log);
+
     var contact = configuration[ArchiveAgent.ContactName];
     EquityBrief.Worker.Loop.MonthlyRun? run = null;
     var steps = new List<EquityBrief.Worker.Loop.MonthlyStep>();
