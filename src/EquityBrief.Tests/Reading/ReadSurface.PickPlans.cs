@@ -26,30 +26,42 @@ public partial class ReadSurface
 
     // On 2026-11-06 Tonight drew beneath CTSH's card its entry and exit plan open, its first tranche bought at the price now
     // with a stop of 57.91, and the name page's entry check a wait plan with a stop of 54.70, beside the pullback's 61.55:
-    // two stops for one buy, neither folded nor named as not traded. Each other way in is folded beneath the rule's plan
-    // under the words that it is not traded, its stops named as its own; a stock no family picked draws its plan as before.
-    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    // two stops for one buy, neither named as not traded. PR 660 folded each other way in shut beneath the rule's plan; the
+    // operator's order of 2026-11-07 opened them again where they drew before it. The rule's own plan is headed as the plan
+    // traded, and each other way in is drawn open beneath it under a heading saying it is not traded, its stops named as its
+    // own; a stock no family picked draws its plan as before, under its own heading.
+    // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
     [Fact]
-    public void APicksPageDrawsItsRulesPlanAndFoldsEveryOtherWayInWithItsOwnStops()
+    public void APicksPageHeadsItsRulesPlanAsTradedAndDrawsEveryOtherWayInOpenWithItsOwnStops()
     {
-        var fold = NameScreen.EntryAndExitPlan(new MarkRenderer(), "CTSH", CtshLadder(), 64.72m, "pullback", 61.55m);
+        var levels = NameScreen.EntryAndExitPlan(new MarkRenderer(), "CTSH", CtshLadder(), 64.72m, "pullback", 61.55m);
 
-        Assert.Contains("<details class=\"another-way\" data-way=\"levels\" data-traded=\"false\"><summary>Not traded: another way in, for comparison</summary><h5>Entry and exit plan</h5>", fold, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"another-stops\">Its stops, 57.91, 54.70 and 52.49, are its own: the pullback's trade is sold on a close below 61.55.</p></details>", fold, StringComparison.Ordinal);
+        Assert.StartsWith("<section class=\"card-levels\" data-ticker=\"CTSH\" data-plan-rows=\"10\" data-traded=\"false\"><h5>Entry and exit plan: another way in, worked from the support and resistance levels, not traded</h5><div class=\"plan-grid\"><div class=\"fig\"><svg class=\"plan-column\"", levels, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"another-stops\">Its stops, 57.91, 54.70 and 52.49, are its own: the pullback's trade is sold on a close below 61.55.</p></section>", levels, StringComparison.Ordinal);
+        Assert.DoesNotContain("<details", levels, StringComparison.Ordinal);
 
         var reading = EntryWorked() with { WaitLow = 57.91m, WaitHigh = 58.04m, WaitStop = 54.70m, WaitExit = 67.72m, WaitReward = 3.0, ZoneDays = 2.4 };
+        var check = new MarkRenderer().EntryCheck(reading, 64.72m, 61.55m, "pullback");
 
         Assert.Contains(
-            "<details class=\"another-way\" data-way=\"wait\" data-traded=\"false\"><summary>Not traded: another way in, for comparison</summary><p class=\"entry-line\" data-entry=\"wait\">Provisional, and it sets nothing. Wait to buy between $57.91 and $58.04, 2.4 typical days below tonight's close. Stop $54.70. First exit $67.72, about 3.0 to 1. It is worth taking if it reaches its first exit before its stop more than 25.0% of the time.</p><p class=\"another-stops\">Its stop, 54.70, is its own: the pullback's trade is sold on a close below 61.55.</p></details>",
-            new MarkRenderer().EntryCheck(reading, 64.72m, 61.55m, "pullback"),
+            "<p class=\"entry-line\" data-entry=\"wait\" data-traded=\"false\">Provisional, and it sets nothing. Wait to buy between $57.91 and $58.04, 2.4 typical days below tonight's close. Stop $54.70. First exit $67.72, about 3.0 to 1. It is worth taking if it reaches its first exit before its stop more than 25.0% of the time.</p><p class=\"another-stops\">Its stop, 54.70, is its own: the pullback's trade is sold on a close below 61.55.</p>",
+            check,
             StringComparison.Ordinal);
+        Assert.DoesNotContain("<details", check, StringComparison.Ordinal);
+        Assert.Contains(".entry-line,.entry-check .another-stops{margin:4px 0;font-size:14px}", EquityBrief.Web.App.Stylesheet.Css, StringComparison.Ordinal);
         Assert.Equal(
-            "This is the pullback's own plan, and its trade is sold by these exits alone. Another way in, worked from the stock's support and resistance levels, is folded below it: not traded, with stops of its own.",
+            "This is the pullback's own plan, and its trade is sold by these exits alone. The entry and exit plan below it is another way in, worked separately from the stock's support and resistance levels, and is not traded.",
             MarkRenderer.OnePlanSays("pullback", below: true));
 
-        // A stock no family picked draws the levels' plan as its plan, unfolded; a wait plan with no stop names none.
-        Assert.DoesNotContain("another-way", NameScreen.EntryAndExitPlan(new MarkRenderer(), "CTSH", CtshLadder(), 64.72m), StringComparison.Ordinal);
-        Assert.DoesNotContain("another-way", new MarkRenderer().EntryCheck(reading, 64.72m, 61.55m, null), StringComparison.Ordinal);
+        // The pick's card heads its own plan as the plan traded.
+        var card = new DecisionCardView("GSPC", new DateOnly(2026, 11, 6), "pullback", "CTSH", "the pullback", 64.72m, 61.55m, 71.26m, [], null, Cap: 63);
+
+        Assert.Contains("data-traded=\"true\"><h5>The plan, as traded</h5><div class=\"plan-tiles\">", new MarkRenderer().DecisionCard(card, levels: levels), StringComparison.Ordinal);
+
+        // A stock no family picked draws the levels' plan as its plan, under its own heading; a wait plan with no rule names
+        // no stop against one.
+        Assert.StartsWith("<section class=\"card-levels\" data-ticker=\"CTSH\" data-plan-rows=\"10\"><h5>Entry and exit plan</h5><div class=\"plan-grid\">", NameScreen.EntryAndExitPlan(new MarkRenderer(), "CTSH", CtshLadder(), 64.72m), StringComparison.Ordinal);
+        Assert.DoesNotContain("another-stops", new MarkRenderer().EntryCheck(reading, 64.72m, 61.55m, null), StringComparison.Ordinal);
         Assert.Equal("It places no stop of its own: the dip's trade is sold by its own exits.", EquityBrief.Core.Cards.PlanWords.OwnStops([], null, "dip"));
     }
 

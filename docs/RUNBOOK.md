@@ -218,6 +218,16 @@ then open `http://localhost:5152/` in a browser, the address `src/EquityBrief.Ap
 
 **It runs from a Release build of `main`.** A branch is worked on in this same checkout, and its gates and tests build Debug, so a build for a branch never rewrites the files the page runs from. After a merge the checkout is back on `main`, and the page is stopped and started again the same way to serve what merged. Where the merge carries a migration, the page is started again only once the store holds it: `tools/migrate` applies it while nothing writes, the history read stopped for it and started again after, since a page whose checkout reads a newer schema than the store's draws nothing.
 
+**A branch's build is read back over a copy of the store, never the live one.** A Debug build, or a build in this checkout while it is on a branch other than `main`, refuses to start where its store is the checkout's `data/equitybrief.db`: it says why and exits with code 3 before it writes its start row or serves a page. Copy the store into a folder of its own made for the read-back and name that folder for the one start, in the same PowerShell call, on a port of its own:
+
+```
+$r = "<a folder of its own>"; New-Item -ItemType Directory -Force $r | Out-Null
+Copy-Item data/equitybrief.db "$r/equitybrief.db"
+$env:EquityBrief__DataRoot = $r; $env:ASPNETCORE_URLS = 'http://localhost:5299'; dotnet run --project src/EquityBrief.Api --no-launch-profile
+```
+
+The copy is made, and a read-back or a sweep is run, only while nothing writes the store: not while the night, the off-peak run, the local run, a ledger build or the monthly run is going, read off the machine's processes and those runs' own logs under the data root rather than the store, since a read of the store while a writer runs holds the lock the writer waits on (see: A branch build is served over a copy of the store, and its server refuses to start on the live store).
+
 **It reads the store the worker writes.** Its settings name the data root the worker's do, `data`, and it reads them from the settings file beside its own build, as the worker does. A relative root is read against the checkout the build sits in rather than the directory it was started from, because started this way it runs in its project directory, so the store it opens is the checkout's `data/equitybrief.db` however it is started, and so is the phase report the run page reads. `EquityBrief__DataRoot` in the environment overrides the setting, as it does for the worker, so a store kept elsewhere is named the same way for both.
 
 **It can stay open while the night runs.** It writes one run log row when it starts and a research pass only when the name page's control is pressed, and otherwise reads. A page loaded while a night is running shows that night as far as it has got, and a reload once the run page shows the night closed shows all of it. After updating the checkout, run `tools/migrate` before starting it, as "Store maintenance" below says; until then every screen names the store's schema and the checkout's rather than drawing.

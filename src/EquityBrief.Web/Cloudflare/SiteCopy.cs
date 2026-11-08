@@ -545,6 +545,7 @@ public static partial class SiteCopy
               const named = head ? head.getAttribute('data-title') : null;
               document.title = (named ? named + ' · ' : '') + '{{{PublishedSite.Name}}}';
               scrollTo(0, 0);
+              {{{EquityBrief.Web.Marks.MarkRenderer.PaperChartToNewest}}}
               paintTheme();
             }
             addEventListener('hashchange', show);

@@ -7,6 +7,41 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-07 - docs/ARCHITECTURE.html - a pick's other ways in drawn open again, the plans told apart by headings
+Decision: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
+Was:
+> (15.7, tomorrow's buys) ... the plan column beside its two tables; from the correction of 2026-11-07 that plan is folded shut as another way in not traded with its stops named as its own; and an S&amp;P 400 or 600 card ... (see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own)
+> (15.7, the list) ... beneath its setup's own and from the correction of 2026-11-07 folded shut as another way in not traded; its ticker ... (see: A pick's page draws ...)
+> (the pick's card) ... From the correction of 2026-11-07 that plan is folded shut under the words that it is another way in not traded; a line inside names its stops as its own against the stop the pick's trade is sold below (see: A pick's page draws ...).
+> (the name page) ... from the correction of 2026-11-07 the levels' plan beneath is folded shut as another way in not traded with its stops named as its own (see: A pick's page draws ...); ...
+> (the entry check) ... from the correction of 2026-11-07 that plan folded shut on a pick's page as another way in not traded with its stop named as its own (see: A pick's page draws ...); ...
+Now:
+> ... the plan column beside its two tables; from the corrections of 2026-11-07 that plan is drawn open under the heading that it is another way in not traded, with its stops named as its own; and an S&amp;P 400 or 600 card ... (see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded)
+> ... beneath its setup's own and from the corrections of 2026-11-07 drawn open under the heading that it is another way in not traded; its ticker ... (see: A pick's page heads ...)
+> ... From the corrections of 2026-11-07 the card's plan is headed "The plan, as traded" and that entry and exit plan is drawn open beneath it under the heading "Entry and exit plan: another way in, worked from the support and resistance levels, not traded"; a line beneath it names its stops as its own against the stop the pick's trade is sold below (see: A pick's page heads ...).
+> ... from the corrections of 2026-11-07 the levels' plan beneath is drawn open under the heading that it is another way in, worked from the support and resistance levels, not traded, with its stops named as its own (see: A pick's page heads ...); ...
+> ... from the corrections of 2026-11-07 that plan drawn open on a pick's page with its stop named as its own against the pick's (see: A pick's page heads ...); ...
+Why: the operator's order of 2026-11-07 after the monthly run, its first item.
+
+### 2026-11-07 - docs/ARCHITECTURE.html - the paper chart opens on its newest day at a phone's width
+Decision: The paper chart opens scrolled to its newest day where it is wider than the screen
+Was:
+> (15.21, the chart) ... at a width under the chart's own a width its labels read at, the chart scrolling inside its own frame (see: The paper chart draws each account ...)
+Now:
+> ... the chart scrolling inside its own frame and opening scrolled to its newest day (see: The paper chart draws each account ...) (see: The paper chart opens scrolled to its newest day where it is wider than the screen)
+Why: the operator's order of 2026-11-07 after the monthly run, its second item.
+
+### 2026-11-07 - docs/RUNBOOK.md - a branch's build read back over a copy of the store
+Decision: A branch build is served over a copy of the store, and its server refuses to start on the live store
+Was:
+> (Opening the screens) ... **It runs from a Release build of `main`.** ... a page whose checkout reads a newer schema than the store's draws nothing.
+> **It reads the store the worker writes.** ...
+Now:
+> ... a page whose checkout reads a newer schema than the store's draws nothing.
+> **A branch's build is read back over a copy of the store, never the live one.** A Debug build, or a build in this checkout while it is on a branch other than `main`, refuses to start where its store is the checkout's `data/equitybrief.db` ... The copy is made, and a read-back or a sweep is run, only while nothing writes the store ... (see: A branch build is served over a copy of the store, and its server refuses to start on the live store).
+> **It reads the store the worker writes.** ...
+Why: the operator's order of 2026-11-07 after the monthly run, its third item. Nothing was removed; the entry records the paragraph added between two that stand.
+
 ### 2026-11-07 - docs/ARCHITECTURE.html - a plan's arithmetic flagged beside it
 Decision: A plan's arithmetic is flagged beside it as information and changes nothing the plan does
 Was:

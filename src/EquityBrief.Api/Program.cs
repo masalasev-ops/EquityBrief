@@ -2239,7 +2239,7 @@ async Task<IResult> TonightScreenAsync(
     // entry and exit plan beneath its setup's own, the plan the night shown stored against that night's close. On a night
     // before them, whichever row the reader selected, and the first row where they selected none: section 15.7's region
     // is for whichever row is selected, and a row of either list can be selected.
-    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
     var asked = request.Query["name"].FirstOrDefault();
     var pointed = cards is null ? [] : cards.SelectMany(card => card.Picks).Select(pick => pick.Row.Ticker).Distinct(StringComparer.Ordinal).ToArray();
     var opened = asked is { } named && pointed.Contains(named, StringComparer.Ordinal) ? named : null;
@@ -4144,6 +4144,20 @@ if (copyServer is not null)
 
     Console.WriteLine(FormattableString.Invariant($"{PublishedSite.Verb}: night {copied.Night:yyyy-MM-dd}, {copied.Files.Count} screens held"));
     Environment.ExitCode = copied.Files.Count == 0 ? 1 : copied.Leaks is { Count: > 0 } ? PublishedSite.Leaked : 0;
+
+    return;
+}
+
+// A branch build's server is refused on the live store before it writes a row there or serves a page from it.
+// see: A branch build is served over a copy of the store, and its server refuses to start on the live store
+if (BranchBuild.Refusal(
+        checkout,
+        app.Services.GetRequiredService<StoreLocation>().DatabaseFile,
+        System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyConfigurationAttribute>(typeof(Program).Assembly)?.Configuration,
+        BranchBuild.BranchOf(checkout)) is { } refused)
+{
+    Console.Error.WriteLine(refused);
+    Environment.ExitCode = BranchBuild.Refused;
 
     return;
 }

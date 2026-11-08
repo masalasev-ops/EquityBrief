@@ -16988,3 +16988,73 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
             none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 22.6 - correction: a pick's plans are drawn open again and told apart by headings   2026-11-07
+
+Found:      the operator's order of 2026-11-07 after the monthly run, its first item, word for word in
+            `prompts/2026-11-07-plan-diagrams-order.md`. PR 660 folded shut every pick's entry and exit plan, its diagram and
+            its tables, beneath the card on Tonight and in the stock page's plan region, and the entry check's wait plan on the
+            stock and chart pages, so the figure the operator reads a plan by stood behind a press.
+Corrected:  each draws open where it drew before PR 660. On Tonight the card's plan is headed "The plan, as traded" and the
+            levels' plan beneath it "Entry and exit plan: another way in, worked from the support and resistance levels, not
+            traded", a plan placing nothing keeping its own heading. The stock page draws the pick's own exit, then that heading,
+            the diagram, each tranche's share, the stops line, around the next report, the sizing arithmetic with PR 660's
+            flags, and how to read the plan, in the order before PR 660. The wait plan stands open with its stop named as its
+            own, at the entry check's own size. The fold and its words removed. The decision superseding PR 660's, five rows of section 15, the changelog and
+            the guide.
+Tests:      1 new in place of PR 660's fold test: CTSH's levels' plan open under its heading with its stops line, its wait plan
+            open, the card's plan headed as traded, and a stock no family picked under its own heading. Tonight's family page
+            test reads every pick's fold holding no fold of its own and its card's plan headed as traded, every plan drawn
+            open under the heading, and F3's stock page drawing its plan's parts in the order before PR 660; its F3 plan
+            stores the empty events, sizing and earnings rule the stock page reads.
+Read back:  over a copy of the store made at 01:33Z on 2026-11-08 for the read-back, on 5299 from this branch's build beside
+            5301 from the build of db558d3d before PR 660, both over the copy: each index's Tonight, the S&P 500's nine picks
+            drawing their plans before and after with the same rows, none folded, the S&P 400's and 600's drawing none either
+            side; the stock and chart pages of CTSH, BMY, EXPD, AFG and ADMA in the same order as before.
+Claims:     none new.
+Pins:       none move: the web and read surface's sources are none a rule pins.
+Mutated:    the rule, stated before the run: the smallest edit bringing back today's page, filtered to the new tests by name.
+            m1 Tonight's plan folded again: red. m2 the stock page's plan folded again: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 19.4 - correction: the paper chart opens on its newest day at a phone's width   2026-11-07
+
+Found:      the operator's order of 2026-11-07 after the monthly run, its second item. From the 19.4 correction of that day
+            the chart scrolls inside its own frame under 760 pixels, and a phone opened it on its oldest day, each line's end
+            and its label off the screen to the right.
+Corrected:  `MarkRenderer.PaperChartToNewest`, run each time a screen is drawn on the read surface and on the read-only copy,
+            scrolls each paper chart's frame to its right-hand end. A chart its frame holds does not scroll. A decision, 15.21's
+            row and the changelog.
+Tests:      1 new: the line stands in the read surface's script after it places the page and in the copy's, once each.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit bringing back today's page, filtered to the new test by name.
+            m3 the line removed from the read surface's script: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below, this
+            pull request's last.
+
+### 1.3 - correction: a branch build's server refuses to start on the live store   2026-11-07
+
+Found:      the operator's order of 2026-11-07 after the monthly run, its third item. A branch's Debug build was served over
+            the live store for a read-back while the monthly run wrote it, and nothing in the read surface stopped it; 1.3
+            built its start row, which writes to whichever store it is pointed at.
+Corrected:  `BranchBuild.Refusal` reads whether the build is Debug or its checkout's HEAD names a branch other than main, and
+            whether its store is the checkout's `data/equitybrief.db`; where both hold, the read surface writes why with how
+            to serve a copy, exits with code 3 and serves nothing, before its start row. A folder holding no repository, as
+            the night's clean copy of main's commit or a checkout the suite constructs, is not refused. A decision, the runbook's paragraph on reading a branch back over a copy and
+            never while a night, the off-peak run, the local run, a ledger build or the monthly run writes, and the changelog.
+Tests:      2 new: the refusal over constructed checkouts on a branch, on main, detached and holding no repository, in Debug and
+            Release, against the live store's file and a copy, the last refused nowhere since it holds no live store; and the read surface asking after it is built and before its
+            start row, returning with its own exit code.
+Read back:  this branch's build started with no data root set exited with code 3 and the refusal, and the live store's file
+            was not written.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit bringing back today's start, filtered to the new tests by name.
+            m4 a Debug build never refused: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3559 of 3559 tests ran with none failed, migrations 0 to 131 with none
+            pending, schema version 131, against `data-ci` and never `data`; the phase report 66 tables, 1570 claims, 1570 passing,
+            none out of scope and none unexamined, 1585 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

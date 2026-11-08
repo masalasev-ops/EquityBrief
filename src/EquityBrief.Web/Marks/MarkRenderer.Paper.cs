@@ -237,6 +237,11 @@ public sealed partial class MarkRenderer
     // What a provisional rule's record since it went live says in its place.
     public const string NoRecordLine = "A provisional rule keeps no record: it starts one when its family is frozen or a setting is approved, and its account counts every trade from its first meanwhile.";
 
+    // The page's script line that scrolls each paper chart drawn wider than its frame to its right-hand end, so a phone
+    // opens it on its newest day; a chart that fits its frame does not scroll.
+    // see: The paper chart opens scrolled to its newest day where it is wider than the screen
+    public const string PaperChartToNewest = "for (const wide of screen.querySelectorAll('.paper-chart')) { wide.scrollLeft = wide.scrollWidth; }";
+
     // The chart of each drawn account's return over the sessions its walk read, in per cent of the account's size: the
     // live or provisional accounts always, a chosen family's variants dashed, each line a family's mark with its key
     // beneath it, a key's press hiding or showing its line in the browser alone.

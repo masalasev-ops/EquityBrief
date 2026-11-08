@@ -348,7 +348,7 @@ public sealed partial class MarkRenderer
     // with, where the page hands one, the stock's entry and exit plan drawn inside it beneath its setup's own plan, closed
     // until a press on the row or its Open plan opens it, the row the link names open; a buy no plan sells drawn as a row
     // saying how it sells and linking to its row on its own card; and one line on how to read it.
-    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
     public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, DateOnly? night = null, IReadOnlyList<PlanlessBuyView>? planless = null)
     {
         var body = new StringBuilder();

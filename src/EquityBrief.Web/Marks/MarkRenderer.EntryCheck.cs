@@ -9,9 +9,9 @@ public sealed partial class MarkRenderer
 {
     // The Entry check region of a stock a family lists: every reading as a plain sentence, and the state a dashed outline saying
     // it is not set. The read-only copy draws the sentences and leaves out the outline, which speaks of the test. A pick's wait
-    // plan is folded as a way in not traded, its stop named as its own.
+    // plan is drawn open as a way in not traded, its stop named as its own.
     // see: The entry check reads a member's bars every night into a table of its own, and no rule reads it
-    // see: A pick's page draws its rule's plan as the plan and folds every other way in beneath it as not traded, each stop named as its own
+    // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
     public string EntryCheck(EntryReading? reading, decimal? buy, decimal? stop, string? family, IReadOnlyList<EquityBrief.Core.Cards.FlagBand>? bands = null)
     {
         if (reading is null)
@@ -32,7 +32,7 @@ public sealed partial class MarkRenderer
             Line("older", EntryWords.Older(reading)) +
             (reading.ReleaseOn is null ? $"<p class=\"entry-state\" data-entry=\"one-off\">{Escaped(EntryWords.NoReleaseStored)}</p>" : Line("one-off", EntryWords.OneOff(reading))) +
             (rule is not null && reading is { WaitLow: not null, WaitHigh: not null } && EntryWords.Wait(reading) is { } wait
-                ? AnotherWayFold("wait", Line("wait", wait) + $"<p class=\"another-stops\">{Escaped(EquityBrief.Core.Cards.PlanWords.OwnStops(reading.WaitStop is { } own ? [own] : [], stop, rule))}</p>" + WaitFlags(reading, bands))
+                ? $"<p class=\"entry-line\" data-entry=\"wait\" data-traded=\"false\">{Escaped(wait)}</p>" + $"<p class=\"another-stops\">{Escaped(EquityBrief.Core.Cards.PlanWords.OwnStops(reading.WaitStop is { } own ? [own] : [], stop, rule))}</p>" + WaitFlags(reading, bands)
                 : Line("wait", EntryWords.Wait(reading))) +
             (Copying ? string.Empty : $"<p class=\"entry-state\">{Escaped(EntryWords.StateNotSet)}</p>") +
             "</section>";
