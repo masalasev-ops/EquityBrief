@@ -7,6 +7,26 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/RUNBOOK.md, .claude/rules/checks.md - the profit check read over the long history from the year the long facts cover the members
+Decision: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+Was:
+> (catalogue, Long history reader, reads) long spans, ... companies, pulled companies
+> (catalogue, Long history reader) ... and from 23.7 the market series from the long pull for the per-rule test over the long history (see: ...)
+> (catalogue, Long search) ... the listings held to the index's floors alone as the long ledger holds them; ...
+> (17, The search over the long history, value) ... each rounded up; the listings held to the index's floors alone (see: ...)
+> (17, The search over the long history, rationale) ... about 45 hours against about 120 for a yearly search; the profit gate's quarters are not held over the long years, so the floors alone are read there as the long ledger reads them; ...
+> (RUNBOOK, the long search) `loop-search --long` walks the breakout's and the drift's grids over the long history once a setting, the listings held to the index's floors alone as the long ledger holds them, ...
+> (checks.md, fixture-expectations) ... with each pullback's block named |
+Now:
+> (catalogue, Long history reader, reads) long spans, ... pulled companies, long facts, filed facts, long filings
+> (catalogue, Long history reader) ... over the long history (see: ...); and from the 23.8 correction each code's quarters of net income, operating income and interest off the long facts and the filed facts as first filed, by its filer, with each year's members reading the profit check off them (see: ...)
+> (catalogue, Long search) ... as the long ledger holds them, and from the 23.8 correction on the S&P 400 and 600 to the profit check too from the first year the SEC's facts cover nine in every ten members; ...
+> (17, The search over the long history, value) ... the listings held to the index's floors alone, and from the correction of that checkpoint on the mid-cap and small-cap indices to the floors and the profit check over the SEC's facts from the first year they cover nine in every ten members, the floors alone before it (see: ...) (see: ...)
+> (17, The search over the long history, rationale) ... for a yearly search; the pulled quarters hold none of the long years, and the operator's order of 2026-11-08 had the check read off 23.5's long facts from the year they cover the members, as 23.5 read the score's, rather than skipped everywhere; ...
+> (RUNBOOK, the long search) ... as the long ledger holds them, and from the 23.8 correction on the S&P 400 and 600 to the profit check too, read off the SEC's facts from the first year they cover 90 in every 100 members and said beside the run, the years before it on the floors alone (see: ...), ...
+> (checks.md, fixture-expectations) ... with each pullback's block named, and the long quarters read as first filed with the fourth from the year worked by hand, the profit check's first year at 90 in every 100 members and a session before it reading the floors alone |
+Why: the operator's order of 2026-11-08, item 4.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the long search over the dip, and each pullback's block named
 Decision: The long search walks the dip's own sweep's grid at its first stage and names what blocks each pullback's search
 Was:

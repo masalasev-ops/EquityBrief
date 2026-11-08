@@ -1504,13 +1504,21 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
     // Whether a listing clears the index's floors and the quality on its session: the close as it traded, the mean dollar
     // volume over the 50 bars to it on the adjusted close and the provider's split-adjusted volume against the index's
-    // floor at a multiple of it, and the quarters filed before it, the profit gate at the provisional quality.
-    public static bool Clears(string indexCode, SweepSeries series, int bar, IReadOnlyList<FiledIncome> income, IndexQuality quality = IndexQuality.Profit, decimal floors = 1m, string? sector = null)
+    // floor at a multiple of it, and the quarters filed before it, the profit gate at the provisional quality. From the 23.8
+    // correction a long read hands the first session its quarters are checked from, and a session before it reads the
+    // floors alone, the quality not checked there.
+    // see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+    public static bool Clears(string indexCode, SweepSeries series, int bar, IReadOnlyList<FiledIncome> income, IndexQuality quality = IndexQuality.Profit, decimal floors = 1m, string? sector = null, DateOnly? checkedFrom = null)
     {
         var bars = series.Bars;
         var held = bars[bar];
         var traded = held.RawClose > 0m ? held.RawClose : held.Close;
         var window = bars[Math.Max(0, bar - MemberReadings.DollarVolumeSessions + 1)..(bar + 1)].Select(one => (one.Close, one.Volume)).ToArray();
+
+        if (checkedFrom is { } from && held.Session < from)
+        {
+            quality = IndexQuality.Off;
+        }
 
         return MemberReadings.ClearsTheFloors(indexCode, traded, MemberReadings.DollarVolume(window) / floors)
             && quality switch

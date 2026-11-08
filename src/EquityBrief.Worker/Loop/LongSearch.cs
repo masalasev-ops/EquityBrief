@@ -105,7 +105,12 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
 
         var longHistory = new LongHistoryReader(databaseFile);
         var inputs = await longHistory.ReadAsync(index, through, output.WriteLine, cancellation);
-        var read = await WalkForwardTester.WithFundAsync(await WalkForwardTester.ReadLongAsync(index, history, through, inputs, cancellation), longHistory, through, cancellation);
+        var (read, income) = await WalkForwardTester.WithIncomeAsync(
+            await WalkForwardTester.WithFundAsync(await WalkForwardTester.ReadLongAsync(index, history, through, inputs, cancellation), longHistory, through, cancellation),
+            longHistory,
+            cancellation);
+
+        output.WriteLine($"{Verb}: {WalkForwardTester.ProfitWords(index, income)}");
 
         foreach (var family in Searched.Where(family => !written.Contains(family)))
         {
@@ -181,7 +186,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
 
         for (var at = 0; at < settings.Count; at++)
         {
-            walked[at] = LoopProcedures.Walk(read, adapter, settings[at], Floors(read.Index));
+            walked[at] = LoopProcedures.Walk(read, adapter, settings[at], ClearOf(read));
 
             if ((at + 1) % 25 == 0)
             {
@@ -189,7 +194,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
             }
         }
 
-        var current = LoopProcedures.Walk(read, currentAdapter, provisional, Floors(read.Index));
+        var current = LoopProcedures.Walk(read, currentAdapter, provisional, ClearOf(read));
         var floorWords = drift ? FormattableString.Invariant($", its stop held at least {LoopProcedures.DriftStopFloor:0.##} typical move under the buy") : string.Empty;
 
         return SearchOver(read, family, firstTestYear, adapter.Grid, settings, walked, current, setting => RuleReplay.SwingWords(family, setting) + floorWords, RuleReplay.SwingWords(family, provisional));
@@ -294,6 +299,12 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
     // newest, at the cap a block of its trades waits.
     public static LoopVerdict Verdict(LoopEvidence evidence, IReadOnlyList<DateOnly> calendar, IReadOnlyList<LoopFold> folds, int cap) =>
         LoopJudge.Judge([evidence], folds.Count > 0 ? calendar.ToList().IndexOf(folds[0].TestFrom) : calendar.Count - 1, calendar.Count - 1, cap)[0];
+
+    // From the 23.8 correction the clear a listing reads over the long history: on the S&P 500, whose rules read no profit
+    // gate, the index's floors alone; on the S&P 400 and 600 the walk's own clear, the floors and the profit gate over the
+    // pulled quarters and the SEC's facts from the first year they cover 90 in every 100 members, the floors alone before it.
+    // see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+    public static Func<SweepSeries, int, bool>? ClearOf(LoopRead read) => read.Index == IndexFamilies.LargeIndex ? Floors(read.Index) : null;
 
     // The clear a listing reads over the long years: the index's floors on its session, its close as traded and its dollar
     // volume over the 50 sessions to it, as the long ledger reads them, the profit gate's quarters not being held there.

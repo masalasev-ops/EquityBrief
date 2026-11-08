@@ -17706,3 +17706,34 @@ Carried:    the provisional choices above; the pullbacks' searches over the long
             operator's word; the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.8 - correction: the profit check over the long history read off the long facts from the year they cover the members   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its fourth item. 23.8 held every listing over the long years to the floors
+            alone, the profit check skipped everywhere since the pulled quarters hold none of the long years.
+Corrected:  the long history reader reads each code's quarters of net income, operating income and interest expense off the
+            SEC's facts as first filed, the long facts before 2015 and the standing ones after, the fourth quarter the year less
+            its first nine months, by the filer the store files the code under, and counts each year's members on its first
+            session reading the profit check off the quarters filed before it. A long read of the S&P 400 or 600 carries those
+            quarters beside the pulled ones and the first session of the first year 90 in every 100 members read the check;
+            the sweep runner's gate reads the floors alone before it and says so. The long search holds the S&P 400's and 600's
+            listings to it, and the S&P 500's, whose rules read no profit gate, to the floors as before. The decision, the
+            catalogue's two rows, section 17's row, the runbook, the roster's row and the changelog.
+Measured:   over 23.3's scratch copy, `loop-search --long --index MID --print` writing nothing: the profit check read off the
+            SEC's facts from 2012, when 367 of 390 members read it, the years before read on the floors alone; the breakout
+            from 2008 over 839 trades against 1,619 on the floors alone, adjusted p 0.7326, better in 4 of 9 counted years;
+            the drift from 2016 over 1,771 trades, adjusted p 0.0554, better in 6 of 10. The live figures with the long
+            search's rerun under the sixth item's correction below.
+Provisional: each on the operator's review: the share at 90 in every 100, as 23.5's score; the first checked year read across
+            every member of the index rather than a family's own listings; a pulled quarter standing where both state a period.
+Tests:      3 new in the fixture's expectations: the long quarters read as first filed with the fourth from the year worked by
+            hand; the profit check's first year at 90 in every 100 members; a session before it reading the floors alone.
+Pins:       none move: the long reader, the sweep runner's gate and the long search are among the sources the 23.8 test holds
+            no rule's version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the fourth quarter not read off the year; m2 the share read as strictly above 90 in
+            every 100; m3 the first checked session ignored; m4 the last covered year read as the first.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the provisional choices above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.

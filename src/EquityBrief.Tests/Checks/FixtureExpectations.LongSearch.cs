@@ -221,6 +221,7 @@ public partial class FixtureExpectations
         "src/EquityBrief.Api/Program.cs",
         "src/EquityBrief.Api/Reading/ReadApi.LongSearch.cs",
         "src/EquityBrief.Core/Components/ComponentAccess.cs",
+        "src/EquityBrief.Core/History/LongProfit.cs",
         "src/EquityBrief.Core/Loop/FundLine.cs",
         "src/EquityBrief.Core/Loop/LongSearchRules.cs",
         "src/EquityBrief.Core/Loop/PlanPoints.cs",
@@ -231,6 +232,8 @@ public partial class FixtureExpectations
         "src/EquityBrief.Worker/Loop/LoopProcedures.cs",
         "src/EquityBrief.Worker/Loop/PlanPointTest.cs",
         "src/EquityBrief.Worker/Loop/WalkForwardTester.Long.cs",
+        "src/EquityBrief.Worker/History/LongHistoryReader.cs",
+        "src/EquityBrief.Worker/Sweep/IndexSweepRunner.cs",
         "src/EquityBrief.Worker/Program.cs",
     ];
 

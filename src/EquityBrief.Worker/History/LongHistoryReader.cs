@@ -9,6 +9,15 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.History;
 
+// From the 23.8 correction what the long history's profit check reads on one index: each code's quarters off the SEC's facts,
+// each year's members on its first session with how many read the check, and the first year 90 in every 100 do, none where
+// no year does.
+// see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+public sealed record LongIncome(
+    IReadOnlyDictionary<string, IReadOnlyList<Core.Readings.FiledIncome>> Income,
+    IReadOnlyList<(int Year, int Members, int Read)> Years,
+    int? FirstChecked);
+
 // The long history's reader: the record the sweeps, the ledger build and the tester already take, read over the long
 // spans of one index, each code's long prices with the store's own bars after them at the store's scale under its
 // marks, the long prints beside the pulled ones and the calendar's, the long calendar's surprises before the pulled
@@ -32,6 +41,9 @@ public sealed class LongHistoryReader : IComponent
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.PulledCompany, Touch.Read),
+            new StoreTouch(Store.LongFact, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.LongFiling, Touch.Read),
         ],
         Feeds: []);
 
@@ -214,6 +226,81 @@ public sealed class LongHistoryReader : IComponent
     }
 
     public const string LongPull = "long";
+
+    // From the 23.8 correction each code's quarters of net income, operating income and interest expense off the SEC's facts
+    // as first filed, the long facts and the standing ones, by the filer the store files the code under; and over one index's
+    // codes, each year's members on its first session and how many of them read the profit check off the quarters filed
+    // before it, with the first year 90 in every 100 do.
+    // see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+    public async Task<LongIncome> IncomeAsync(IReadOnlyList<SweepName> names, IReadOnlyList<DateOnly> sessions, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        var filerOf = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var query in new[]
+        {
+            "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;",
+            "SELECT ticker, cik FROM company WHERE cik IS NOT NULL ORDER BY fetched_at;",
+            "SELECT DISTINCT ticker, cik FROM long_filing;",
+        })
+        {
+            await foreach (var row in RowsAsync(connection, query, [], cancellation))
+            {
+                filerOf[row.GetString(0)] = row.GetString(1).TrimStart('0');
+            }
+        }
+
+        var wanted = names.Select(name => name.Ticker).Where(filerOf.ContainsKey).Select(ticker => filerOf[ticker]).ToHashSet(StringComparer.Ordinal);
+        var concepts = string.Join(", ", Core.Ledger.FiledFacts.NetIncome.Concat(Core.Ledger.FiledFacts.OperatingIncome).Concat(Core.Ledger.FiledFacts.InterestExpense).Select(concept => "'" + concept + "'"));
+        var facts = new Dictionary<string, List<Core.Ledger.FiledFactRow>>(StringComparer.Ordinal);
+
+        foreach (var query in new[]
+        {
+            $"SELECT cik, concept, period_start, period_end, dollars, filed, form, accession FROM long_fact WHERE concept IN ({concepts});",
+            $"SELECT cik, concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE concept IN ({concepts});",
+        })
+        {
+            await foreach (var row in RowsAsync(connection, query, [], cancellation))
+            {
+                var cik = row.GetString(0).TrimStart('0');
+
+                if (!wanted.Contains(cik))
+                {
+                    continue;
+                }
+
+                if (!facts.TryGetValue(cik, out var rows))
+                {
+                    facts[cik] = rows = [];
+                }
+
+                rows.Add(new Core.Ledger.FiledFactRow(row.GetString(1), Day(row.GetString(2)), Day(row.GetString(3)), Money.FromStorage(row.GetString(4)), Day(row.GetString(5)), row.GetString(6), row.GetString(7)));
+            }
+        }
+
+        var quartersOf = facts.ToDictionary(pair => pair.Key, pair => LongProfit.Quarters(pair.Value), StringComparer.Ordinal);
+        var income = new Dictionary<string, IReadOnlyList<Core.Readings.FiledIncome>>(StringComparer.Ordinal);
+
+        foreach (var name in names)
+        {
+            if (filerOf.TryGetValue(name.Ticker, out var cik) && quartersOf.TryGetValue(cik, out var quarters))
+            {
+                income[name.Ticker] = quarters;
+            }
+        }
+
+        var years = new List<(int Year, int Members, int Read)>();
+
+        foreach (var first in sessions.GroupBy(session => session.Year).Select(year => year.Min()).Order())
+        {
+            var members = names.Where(name => name.MemberOn(first)).Select(name => name.Ticker).Distinct(StringComparer.Ordinal).ToArray();
+
+            years.Add((first.Year, members.Length, members.Count(ticker => income.TryGetValue(ticker, out var quarters) && LongProfit.Reads(quarters, first))));
+        }
+
+        return new LongIncome(income, years, LongProfit.FirstCheckedYear(years));
+    }
 
     // Each code's surprises: the pulled ones where the pull holds the day, and the long calendar's on every other day it
     // holds a percent for.

@@ -79,6 +79,41 @@ public sealed partial class WalkForwardTester
         return joined;
     }
 
+    // From the 23.8 correction a long read of the S&P 400 or 600 with each member's quarters off the SEC's facts beside the
+    // pulled ones, the pulled quarters standing where both state a period, and the first session its profit check is read
+    // from, the first of the first year 90 in every 100 members read it; the years before it are read on the floors alone.
+    // The S&P 500's rules read no profit gate and its read is handed back as it was.
+    // see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+    public static async Task<(LoopRead Read, History.LongIncome? Income)> WithIncomeAsync(LoopRead read, History.LongHistoryReader reader, CancellationToken cancellation = default)
+    {
+        if (read.Index == global::EquityBrief.Worker.Indices.IndexFamilies.LargeIndex)
+        {
+            return (read, null);
+        }
+
+        var income = await reader.IncomeAsync(read.Inputs.Names, read.Calendar, cancellation);
+        var merged = new Dictionary<string, IReadOnlyList<Core.Readings.FiledIncome>>(StringComparer.Ordinal);
+
+        foreach (var ticker in read.Income.Keys.Concat(income.Income.Keys).Distinct(StringComparer.Ordinal))
+        {
+            var pulled = read.Income.GetValueOrDefault(ticker) ?? [];
+            var ends = pulled.Select(quarter => quarter.PeriodEnd).ToHashSet();
+
+            merged[ticker] = [.. pulled, .. (income.Income.GetValueOrDefault(ticker) ?? []).Where(quarter => !ends.Contains(quarter.PeriodEnd))];
+        }
+
+        return (read with { Income = merged, ProfitFrom = income.FirstChecked is { } year ? new DateOnly(year, 1, 1) : null }, income);
+    }
+
+    // The words a long run says of its profit check: the year it is read from with the share of members reading it then,
+    // or that no year is covered.
+    public static string ProfitWords(string index, History.LongIncome? income) =>
+        income is null
+            ? $"the {Cards.DecisionCards.NameOf(index)}'s rules read no profit gate"
+            : income.FirstChecked is { } year && income.Years.FirstOrDefault(one => one.Year == year) is var first
+                ? FormattableString.Invariant($"the profit check on the {Cards.DecisionCards.NameOf(index)} read off the SEC's facts from {year}, when {first.Read} of {first.Members} members read it, and the years before {year} read on the floors alone, unchecked")
+                : $"the profit check on the {Cards.DecisionCards.NameOf(index)} read in no year, no year's members reading it 90 in every 100, so every year reads the floors alone, unchecked";
+
     // From the 23.8 correction a long read with its index's own fund laid against its calendar from the long pull, the
     // second line every result over the long history reads beside its benchmark.
     // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line

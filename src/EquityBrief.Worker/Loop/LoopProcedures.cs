@@ -26,6 +26,12 @@ public sealed record LoopRead(
     bool Long = false,
     double[]? Fund = null)
 {
+    // From the 23.8 correction the first session a long read's profit check is read from, the first of the first year its
+    // facts cover 90 in every 100 members; a session before it reads the floors alone. None on a standing read, which checks
+    // every session, and none where no year is covered.
+    // see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+    public DateOnly? ProfitFrom { get; init; }
+
     // From the 23.8 correction the edge of a trade a walk kept over its index's own fund held from its listing session to the
     // session it ended on, in the trade's own risk; none where the read holds no fund or the trade has not ended.
     // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
@@ -350,7 +356,7 @@ public static class LoopProcedures
         var listings = adapter.Listings(setting)
             .Where(listing => clears is not null
                 ? clears(read.Series[listing.Name], listing.Bar)
-                : IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? []));
+                : IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? [], checkedFrom: read.ProfitFrom));
         var trades = FamilySweep.Walk(listings, tickers, YearOf, Exit, listing => fills.Benchmark(adapter.Benchmark(listing), listing));
 
         return
