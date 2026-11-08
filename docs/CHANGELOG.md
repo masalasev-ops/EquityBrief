@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/BUILD_PLAN.md - 23.8's fill windows worded each in turn
+Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
+Was:
+> ... each filled within 5, 10 or 20 sessions and an unfilled pick counted as a trade not taken; ...
+Now:
+> ... each filled within 5, 10 and 20 sessions in turn and an unfilled pick counted as a trade not taken; ...
+Corrects: `pinned-constants` read "or 20 sessions" as a restatement of a setup's session cap.
+
 ### 2026-11-08 - docs/BUILD_PLAN.md - the obligation on the provider's S&P 500 spans from 2012 discharged at 23.4
 Obligation: The provider's S&P 500 spans from 2012 held against IVV's own holdings
 Was:
