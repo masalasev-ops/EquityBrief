@@ -753,7 +753,25 @@ public static class SchemaMigrations
         new Migration(130, "add loop_rule's cap, span, newest session and judged year, and create loop_rule_unit and loop_pooled", CreatePooledVerdict),
         new Migration(131, "create long_snapshot, long_holding and long_span", CreateLongMembership),
         new Migration(132, "create long_bar, long_market_bar, long_print, long_split, long_dividend and long_filing", CreateLongPrices),
+        new Migration(133, "create long_fact", CreateLongFacts),
     ];
+
+    // From 23.5 the SEC's facts of each filer the long history matched for the periods ending before the standing table's
+    // first, as first filed, apart from the standing facts so no night and no family reads them.
+    const string CreateLongFacts = @"
+        CREATE TABLE long_fact (
+            cik           TEXT NOT NULL,
+            concept       TEXT NOT NULL,
+            period_start  TEXT NOT NULL,
+            period_end    TEXT NOT NULL,
+            dollars       TEXT NOT NULL,
+            filed         TEXT NOT NULL,
+            form          TEXT NOT NULL,
+            accession     TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (cik, concept, period_start, period_end)
+        ) STRICT;
+    ";
 
     // From 23.4 every code the long history's membership matched and every code the pull holds, their daily prices from
     // 2004-01-02, their splits and dividends, the earnings calendar's prints before the pull's first month, the market series

@@ -67,6 +67,19 @@ public static class LongPrices
 
     public const string ProviderPrint = "provider";
 
+    // From 23.5 a report day read off a filer's 8-K carrying item 2.02, its results announced, for a gate reading a date
+    // alone: the day it was filed, its timing unstated and no figure.
+    // see: A report day the provider's calendar does not hold is read off the filer's 8-K carrying item 2.02, for a gate reading a date alone
+    public const string FilingPrint = "8-K item 2.02";
+
+    public const string ResultsItem = "2.02";
+
+    // Whether a filing of the long list announces its results: an 8-K whose items carry 2.02. An amendment is not read, since
+    // it is filed on a later day than the announcement it amends.
+    public static bool AnnouncesResults(string form, string? items) =>
+        form == "8-K" && items is not null
+        && items.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Contains(ResultsItem, StringComparer.Ordinal);
+
     public static int Weighted(int codes, int companiesAsked, int months, int series) =>
         (codes * RequestsACode * ProviderWeights.HistoricalPerTicker) + (companiesAsked * ProviderWeights.Fundamentals) + (months * ProviderWeights.EarningsCalendar) + series;
 

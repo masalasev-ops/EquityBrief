@@ -947,6 +947,18 @@ public class PinnedConstants
             new("The long history's prices", "5", Core.History.LongPrices.CountMargin, "LongPrices.CountMargin"),
             new("The long history's prices", "2018", Core.History.LongPrices.FallbackFrom.Year, "LongPrices.FallbackFrom's year"),
             new("The long history's prices", "10", Core.History.LongPrices.DepartedDays, "LongPrices.DepartedDays"),
+
+            // The long history's first test years, 23.5, the figures in the row's order.
+            new("The long history's first test years", "0.7", (decimal)Worker.History.LongFactPull.SecondsARequest, "LongFactPull.SecondsARequest"),
+            new("The long history's first test years", "2015", Core.History.LongFacts.Before.Year, "LongFacts.Before's year"),
+            new("The long history's first test years", "3", Core.History.LongFirstYears.LearningYears, "LongFirstYears.LearningYears"),
+            new("The long history's first test years", "0.90", (decimal)Core.History.LongFirstYears.ScoreShare, "LongFirstYears.ScoreShare"),
+            new("The long history's first test years", "400", Worker.History.LongFirstYearReader.CountWithinDays, "LongFirstYearReader.CountWithinDays"),
+            new("The long history's first test years", "1", Core.History.LongFirstYears.EstimateWithin, "LongFirstYears.EstimateWithin"),
+            new("The long history's first test years", "0.80", (decimal)Core.History.LongFirstYears.SurpriseShare, "LongFirstYears.SurpriseShare"),
+            new("The long history's first test years", "2019", Core.History.LongFirstYears.DriftFallback, "LongFirstYears.DriftFallback"),
+            new("The long history's first test years", "30", Worker.History.LongFirstYearReader.PricedAfterDays, "LongFirstYearReader.PricedAfterDays"),
+            new("The long history's first test years", "3", Worker.History.LongFirstYearReader.Largest, "LongFirstYearReader.Largest"),
         ];
     }
 

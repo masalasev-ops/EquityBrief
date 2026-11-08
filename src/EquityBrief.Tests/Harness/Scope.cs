@@ -80,6 +80,8 @@ internal static class Scope
 
     internal const string PaperToneLine = "The tone variant's line";
 
+    internal const string PaperSurvivorsLine = "The drift's survivors line";
+
     internal const string PaperTwoFamilies = "Two families pick one stock in the combined account";
 
     internal const string LoopChoices = "Choosing a version by its recent record";
@@ -4279,6 +4281,8 @@ internal static class Scope
             Verdict.Pass, "the live setups' accounts averaged worked by hand over two accounts starting on different days, each one's growth from its close before the later start, a trade bought and sold before it and a skip before it left out, and its tile, its line and its card with the line on what it is read back off the rendered page from the views the rules' own accounts are walked into", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", PaperToneLine)] = new Scoped(
             Verdict.Pass, "the operator's sentence read back beneath the tone variant's words in the variants' table and the scorecard's variants over a constructed register, and no other rule's row carrying it", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", PaperSurvivorsLine)] = new Scoped(
+            Verdict.Pass, "the survivors line read back beneath every drift row in the variants' table and the scorecard over constructed accounts, the live rule's and a variant's, and no other family's row carrying it", ByReadSurface),
         [CheckReach.Key(LimitsTable, PaperCombined)] = new Scoped(
             Verdict.Pass, "the averaged account worked by hand over two accounts, and a rule's own account over eleven picks of one session holding ten at a tenth of its value each; the figure read off the document against the constant", ByReadSurface),
         [CheckReach.Key(FailureTable, PaperTwoFamilies)] = new Scoped(
@@ -4809,6 +4813,35 @@ internal static class Scope
             Verdict.Pass,
             "the run's counts, the cutover, the lowest coverage and the folds of the codes priced by nothing and the ends no filing settles read back off the page over a constructed store, and a store not written saying so",
             ByReadSurface),
+        // 23.5's long facts: its two components, its store and section 17's row.
+        [CheckReach.Key(CatalogueTable, "Long fact pull")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the long filings and the standing facts it reads, the long facts it reads, writes and removes, the run log it appends to and the filings archive it asks",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long fact pull")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Long first-year reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares every store it reads and none it writes, and asks no feed",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Long first-year reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Long facts")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(FailureTable, "A filer whose facts the archive refuses")] = new Scoped(
+            Verdict.Pass,
+            "a constructed filer the feed refuses named in the folder's list with no answer kept, and asked again by the next capture",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The long history's first test years")] = new Scoped(
+            Verdict.Pass,
+            "a filer's answer kept as sent and asked nothing again, the periods before the standing table's first kept as first filed, each first year worked by hand on both sides of its share, the estimate on both sides of a year apart and the drift's fallback with its label",
+            ByExpectations),
         [CheckReach.Key("15.25 History", "Members back to 2005")] = new Scoped(
             Verdict.Pass,
             "each index's years read back off the page over a constructed store, its holdings by how they were matched or why left out, the lower coverage label on an S&P 400 year to 2008 and on no S&P 500 year, the companies left out by name, and a store not written saying so",
@@ -6485,6 +6518,10 @@ internal static class Scope
         ["Long members"] = "23.3",
         // 23.4's one, which the plan describes as a worker verb asking every code from 2004-01-02.
         ["Long price pull"] = "23.4",
+        // 23.5's two, which the plan describes as a worker verb asking the SEC's facts of each filer of the long list and the
+        // measure of each family's first test year.
+        ["Long fact pull"] = "23.5",
+        ["Long first-year reader"] = "23.5",
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
@@ -6785,6 +6822,7 @@ internal static class Scope
         [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = "21.9",
         [CheckReach.Key("15.21 Paper trading", PaperCombined)] = "21.11",
         [CheckReach.Key("15.21 Paper trading", PaperToneLine)] = "21.14",
+        [CheckReach.Key("15.21 Paper trading", PaperSurvivorsLine)] = "23.5",
         [CheckReach.Key(LoopPage, LoopChoices)] = "21.10",
         // 17.9's Loop page regions, Tonight's line and the card's row for a rule standing at an approved change.
         [CheckReach.Key(LoopPage, LoopWord)] = "17.9",
@@ -8303,6 +8341,7 @@ internal static class Scope
         ["The long history's matching under its stop"] = "23.3",
         ["A code the provider prices by nothing"] = "23.4",
         ["A filer whose names are not the company's"] = "23.4",
+        ["A filer whose facts the archive refuses"] = "23.5",
         // 21.6's two, which the plan names as section 18's rows for a source refusing and a member unanswered.
         ["A new reading's source refuses"] = "21.6",
         ["A member a new reading's source answers nothing for"] = "21.6",
@@ -8628,6 +8667,7 @@ internal static class Scope
         ["The long history's keys"] = "23.3",
         ["The long history's left-out kinds"] = "23.3",
         ["The long history's prices"] = "23.4",
+        ["The long history's first test years"] = "23.5",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.

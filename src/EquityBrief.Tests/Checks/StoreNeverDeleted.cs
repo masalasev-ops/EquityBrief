@@ -134,6 +134,8 @@ public class StoreNeverDeleted
                 "LocalRun.Probes.cs: File.WriteAllTextAsync(Path.Combine(folder, accession + \".txt\"))",
                 "LongDayFiles.cs: File.WriteAllTextAsync(Path.Combine(days, FormattableString.Invariant($\"{day:yyyy-MM-dd}.json\")))",
                 "LongDayFiles.cs: File.WriteAllTextAsync(Path.Combine(folder, file))",
+                "LongFactPull.cs: File.Move(file + \".part\")",
+                "LongFactPull.cs: File.WriteAllBytesAsync(file + \".part\")",
                 "LongMembers.cs: File.WriteAllTextAsync(Path.Combine(folder, ChecksFile))",
                 "LongMembers.cs: File.WriteAllTextAsync(Path.Combine(folder, ChosenFile))",
                 "LongMembers.cs: File.WriteAllTextAsync(Path.Combine(folder, FiledFile))",

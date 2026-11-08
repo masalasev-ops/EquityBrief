@@ -63,8 +63,57 @@ public partial class ReadSurface
             }
 
             Assert.Contains(Sentence, Row("v1"), StringComparison.Ordinal);
-            Assert.DoesNotContain("data-note", Row("v2"), StringComparison.Ordinal);
+            Assert.DoesNotContain("data-note=\"tone\"", Row("v2"), StringComparison.Ordinal);
             Assert.Equal(1, html.Split(Sentence).Length - 1);
+        }
+    }
+
+    // read-surface, 23.5: the drift's survivors line beneath every drift row, the live rule's and each variant's, in what the
+    // variants did differently and in the scorecard, and no other family's row carrying it.
+    // see: The S&P 500 drift is judged from 2019 where no year's surprises reach the coverage its rule asks and every year is labelled mostly survivors
+    internal static readonly string[] SurvivorsLineClaims =
+    [
+        CheckReach.Key("15.21 Paper trading", Scope.PaperSurvivorsLine),
+    ];
+
+    [Fact]
+    public void EveryDriftRowSaysItsYearsReadMostlySurvivorsAndNoOtherFamilysRowDoes()
+    {
+        const string Sentence = "Every year mostly survivors: the surprises the drift reads cover too few of the companies that have since left the index and its years read mostly the ones that stayed.";
+
+        Assert.Equal(Sentence, Core.History.LongFirstYears.SurvivorsNote);
+
+        PaperAccountSource Source(string key, string family, string standing) =>
+            new(key, family, standing, key, "the " + family + " rule " + key, null, false, [(new PaperTrade("T" + key, new DateOnly(2026, 10, 21), 100m, 95m, null, null, 0m, 1), null)], new DateOnly(2026, 10, 20));
+        PaperAccountSource[] sources =
+        [
+            Source("live", "drift", PaperAccountView.Live),
+            Source("v1", "drift", PaperAccountView.Variant),
+            Source("pull", "pullback", PaperAccountView.Live),
+            Source("pv1", "pullback", PaperAccountView.Variant),
+        ];
+
+        var views = PaperScreen.Views(sources, [], [], null, [], new DateOnly(2026, 10, 30), (_, _) => null, _ => null);
+        var page = new PaperPageView(views, [], [], [], new PaperNotBought([]), [], null);
+        var marks = new MarkRenderer();
+        var link = new PaperLink("GSPC");
+
+        foreach (var family in new[] { "drift", "pullback" })
+        {
+            foreach (var drawn in new[] { marks.PaperVariants(page, link, family), marks.PaperScorecard(page, link, family) })
+            {
+                var html = WebUtility.HtmlDecode(drawn);
+
+                if (family == "drift")
+                {
+                    Assert.True(html.Split(Sentence).Length - 1 >= 1, "the drift's rows carry the survivors line");
+                    Assert.Contains("data-note=\"survivors\"", html, StringComparison.Ordinal);
+                }
+                else
+                {
+                    Assert.DoesNotContain(Sentence, html, StringComparison.Ordinal);
+                }
+            }
         }
     }
 }
