@@ -428,9 +428,10 @@ public partial class ArchitectureConformance
         // page's labels row, and 1616 from 23.8, the long search's and the plan point test's catalogue and matrix rows, their
         // two stores, section 17's two rows and the Loop page's row of the long history, and 1617 from the 23.6 correction, the
         // long outliers' store, and 1618 from the 23.4 correction, the History page's marks owed, and 1620 from the 22.6
-        // correction of 2026-11-09, a pick's card's and Home's idea's record over the long history.
+        // correction of 2026-11-09, a pick's card's and Home's idea's record over the long history, and 1621 from its next, a
+        // setup's record on its tile.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1620),
+            (789, 853, 6, 4, 855, 876, 1621),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

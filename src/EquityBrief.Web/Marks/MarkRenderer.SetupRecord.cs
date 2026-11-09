@@ -81,4 +81,24 @@ public sealed partial class MarkRenderer
 
         return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span><span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
     }
+
+    // The line at the foot of a setup's tile on Tonight: what its plan as it stands made or lost for each dollar risked on the
+    // index from 2019, or that it has no long record yet; none where the record is unread.
+    // see: Each setup's tile on Tonight ends on its record over the long history with its plan as it stands
+    public static string TileRecordLine(SetupLongRecord? record)
+    {
+        if (record is null || record.State == "unread")
+        {
+            return string.Empty;
+        }
+
+        var line = record switch
+        {
+            { Made: true } or { Lost: true } => Formatted($"{record.From} to {record.Through} on the {Escaped(IndexNamed(record.Index))}, with its plan as it stands: <b class=\"{record.State}\">{record.State} {Escaped(RecordDollars(record.EdgePerPick!.Value))}</b> per $1 risked against the index's stocks bought the same way."),
+            { Short: true } => Formatted($"{record.From} to {record.Through} on the {Escaped(IndexNamed(record.Index))}: {record.Picks!.Value} picks, short of the {EquityBrief.Core.Cards.TakenWalk.RecordMinimum} a record needs."),
+            _ => Formatted($"<b class=\"none\">No long record yet:</b> the filings it reads reach back only to {record.ReachesBack}."),
+        };
+
+        return Formatted($"<span class=\"tile-record\" data-record=\"{record.State}\">{line}</span>");
+    }
 }

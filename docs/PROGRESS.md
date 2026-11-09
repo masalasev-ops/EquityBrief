@@ -18145,3 +18145,21 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
             setup's year read as its first test year; the card drawing no box; the oldest run read in place of the newest; and a
             stock page handed no context drawing no record.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.6 - correction: each setup's tile on Tonight ends on its record over the long history   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 2: a reader choosing between Tonight's setups saw nothing on a tile of what
+            its plan did over the long history.
+Corrected:  each tile on every index ends on one line, as the mockup draws it: "2019 to 2026 on the S&P 500, with its plan as it
+            stands: lost $0.12 per $1 risked against the index's stocks bought the same way.", or made, the figure in the loss's or
+            the gain's colour; for the three filing-based setups "No long record yet: the filings it reads reach back only to" the
+            year. It reads the record the card draws, read once for the page, and draws none where the run wrote no count.
+Tests:      1 new read-surface test: each state's words worked by hand and the S&P 400's tiles read through the host, the
+            breakout's made, the heavyweights' year and none on the drift's and the pullback's; three counts of the document's
+            rows and claims raised by its one new row.
+Claims:     1 new, section 15.7's row of a setup's record on its tile, reached by the read surface.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored from the
+            file's own bytes, 3 in all, each predicted red and each red: the tile drawing no line; the tile reading the S&P 500's
+            record on every index; and a lost line saying made.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.

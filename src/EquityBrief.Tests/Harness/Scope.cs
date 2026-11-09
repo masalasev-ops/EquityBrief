@@ -4991,6 +4991,10 @@ internal static class Scope
             Verdict.Pass,
             "the box read back beneath an idea's entry check line",
             ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A setup's record on its tile")] = new Scoped(
+            Verdict.Pass,
+            "each tile's last line read back off Tonight through the host and each state's words worked by hand",
+            ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Late bar asker")] = new Scoped(
             Verdict.Pass,
             "the class declares the historical price feed it asks, the bars it appends, the asks it states and the suspect mark it sets back, and the declaration matches this row",
@@ -7650,6 +7654,7 @@ internal static class Scope
         [CheckReach.Key("15.24 Home", "An idea's entry check")] = "22.41",
         [CheckReach.Key("15.18 The decision card", "The setup's record over the long history")] = "22.6",
         [CheckReach.Key("15.24 Home", "An idea's record over the long history")] = "22.6",
+        [CheckReach.Key("15.7 Tonight", "A setup's record on its tile")] = "22.6",
         [CheckReach.Key("15.9 Name", "A bar that arrived late")] = "22.40",
         [CheckReach.Key("15.10 Run", "Members missing from the night's day file")] = "22.40",
         // 22.6's two, which the addendum names as Tonight in one minute and the page's words at its foot.

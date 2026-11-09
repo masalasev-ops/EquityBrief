@@ -306,7 +306,7 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<span class=\"tile-top\"><span class=\"fam-tag\" data-family=\"{Escaped(tile.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(tile.Family)}\"></span>{Escaped(tile.Label)}</span><span class=\"status-pill {(since is null ? "provisional" : "live")}\">{Escaped(badge)}</span></span>");
             body.Append(version);
             body.Append(Invariant, $"<span class=\"tile-plain\">{Escaped(words.Plain)}</span>");
-            body.Append(Invariant, $"<span class=\"tile-tonight\">{Escaped(tonight.GetValueOrDefault(tile.Family) ?? tile.State)}</span>{(tile.Quiet is { } quiet ? Formatted($"<span class=\"tile-quiet\">{Escaped(quiet)}</span>") : string.Empty)}</button>");
+            body.Append(Invariant, $"<span class=\"tile-tonight\">{Escaped(tonight.GetValueOrDefault(tile.Family) ?? tile.State)}</span>{(tile.Quiet is { } quiet ? Formatted($"<span class=\"tile-quiet\">{Escaped(quiet)}</span>") : string.Empty)}{TileRecordLine(tile.LongRecord)}</button>");
         }
 
         body.Append("</nav>");

@@ -19,6 +19,7 @@ public partial class ReadSurface
     [
         CheckReach.Key("15.18 The decision card", "The setup's record over the long history"),
         CheckReach.Key("15.24 Home", "An idea's record over the long history"),
+        CheckReach.Key("15.7 Tonight", "A setup's record on its tile"),
     ];
 
     // The pullback's older run on the S&P 500 and its newer, lost; the breakout made; the dip over too few picks; the S&P 400's
@@ -115,6 +116,43 @@ public partial class ReadSurface
 
         Assert.Contains("reach back only to 2013", Read(why), StringComparison.Ordinal);
         Assert.True(why.IndexOf("entry-card-line", StringComparison.Ordinal) < why.IndexOf("setup-record", StringComparison.Ordinal));
+    }
+
+    // The 22.6 correction of 2026-11-09's next: each setup's tile on Tonight ends on its record, in each state's words worked by
+    // hand and read back off the S&P 400's tiles.
+    // see: Each setup's tile on Tonight ends on its record over the long history with its plan as it stands
+    [Fact]
+    public async Task EachSetupsTileOnTonightEndsOnItsRecordInTheWordsOfEachState()
+    {
+        Assert.Equal(
+            "2019 to 2026 on the S&P 500, with its plan as it stands: lost $0.12 per $1 risked against the index's stocks bought the same way.",
+            Read(MarkRenderer.TileRecordLine(new SetupLongRecord("GSPC", SetupFamilies.Pullback, -0.124, 2933, 2019, 2026))));
+        Assert.Contains("<b class=\"lost\">lost $0.12</b>", MarkRenderer.TileRecordLine(new SetupLongRecord("GSPC", SetupFamilies.Pullback, -0.124, 2933, 2019, 2026)), StringComparison.Ordinal);
+        Assert.Equal(
+            "2019 to 2026 on the S&P 500, with its plan as it stands: made $0.19 per $1 risked against the index's stocks bought the same way.",
+            Read(MarkRenderer.TileRecordLine(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026))));
+        Assert.Contains("<b class=\"made\">made $0.19</b>", MarkRenderer.TileRecordLine(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026)), StringComparison.Ordinal);
+        Assert.Equal("No long record yet: the filings it reads reach back only to 2013.", Read(MarkRenderer.TileRecordLine(SetupLongRecord.Filings("GSPC", QualityRule.Name))));
+        Assert.Equal("2019 to 2026 on the S&P 500: 12 picks, short of the 20 a record needs.", Read(MarkRenderer.TileRecordLine(new SetupLongRecord("GSPC", DipRule.Name, -0.04, 12, 2019, 2026))));
+        Assert.Equal(string.Empty, MarkRenderer.TileRecordLine(new SetupLongRecord("MID", DriftRule.Name, 0.3, null, 2019, 2025)));
+
+        using var store = UniversesStore();
+
+        SeedPlanPoints(store);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+        var tonight = await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400");
+
+        string Tile(string family) => Regex.Match(tonight, $"<button type=\"button\" class=\"setup-tile[^>]*data-family=\"{family}\".*?</button>", RegexOptions.Singleline).Value;
+
+        // The breakout's run made money; the sector heavyweights' filings reach back to 23.5's year on the S&P 400 less three;
+        // the drift's run wrote no count and the pullback's none at all, so neither tile draws a line.
+        Assert.EndsWith("2019 to 2026 on the S&P 400, with its plan as it stands: made $0.03 per $1 risked against the index's stocks bought the same way.", Read(Tile(BreakoutRule.Name)), StringComparison.Ordinal);
+        Assert.EndsWith("No long record yet: the filings it reads reach back only to 2012.", Read(Tile(HeavyweightRule.Name)), StringComparison.Ordinal);
+        Assert.DoesNotContain("tile-record", Tile(DriftRule.Name), StringComparison.Ordinal);
+        Assert.DoesNotContain("tile-record", Tile(SetupFamilies.Pullback), StringComparison.Ordinal);
+        Assert.NotEqual(string.Empty, Tile(SetupFamilies.Pullback));
     }
 
     [Fact]

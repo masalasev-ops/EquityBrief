@@ -1501,8 +1501,9 @@ public partial class ArchitectureConformance
         // 297 at 23.5: paper trading's survivors line. 298 at 23.6: the History page's families by year.
         // 299 at 23.7: paper trading's verdict over the long history. 300 at 23.9: the History page's labels row. 301 at 23.8: the Loop
         // page's row of the long history. 302 at the 23.4 correction: the History page's marks owed. 304 at the 22.6 correction
-        // of 2026-11-09: a pick's card's and Home's idea's record over the long history.
-        Assert.Equal(304,screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // of 2026-11-09: a pick's card's and Home's idea's record over the long history. 305 at its next: a setup's record on its
+        // tile.
+        Assert.Equal(305,screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1685,8 +1686,8 @@ public partial class ArchitectureConformance
         // 699 at 23.5: paper trading's survivors line. 700 at 23.6: the History page's families by year.
         // 701 at 23.7: paper trading's verdict over the long history. 702 at 23.9: the History page's labels row. 703 at 23.8: the Loop
         // page's row of the long history. 704 at the 23.4 correction: the History page's marks owed. 706 at the 22.6 correction of
-        // 2026-11-09: a pick's card's and Home's idea's record over the long history.
-        Assert.Equal(706, inDocument.Length);
+        // 2026-11-09: a pick's card's and Home's idea's record over the long history. 707 at its next: a setup's record on its tile.
+        Assert.Equal(707, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

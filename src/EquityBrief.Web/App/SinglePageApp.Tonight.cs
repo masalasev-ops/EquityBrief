@@ -89,6 +89,9 @@ public sealed partial class SinglePageApp
             tonight[EquityBrief.Core.Families.QualityRule.Name] = QualityTileLine(quality, night);
         }
 
+        // From the 22.6 correction of 2026-11-09 each tile ends on its setup's record over the long history on the index.
+        shown = [.. shown.Select(tile => tile with { LongRecord = longRecords?.Of(Universes.Of(universe).Code, tile.Family) })];
+
         region.Append(Cards.Computed(SetupsTitle(shown.Count), marks.SixSetups(shown, liveSince, tonight, line.FirstLive), stamp: Cards.Night(night), id: "setups", region: "setups"));
 
         // The Fundamentals family's card in the fundamentals-first family's place, before the dip's.

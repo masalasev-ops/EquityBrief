@@ -915,6 +915,8 @@ details.expander>*:not(summary){margin:10px 12px}
 .setup-tile .tile-plain{font-size:13px;color:var(--ink-2)}
 .setup-tile .tile-version{font-size:12px;color:var(--soft)}
 .setup-tile .tile-tonight{font-size:13px;font-weight:600;color:var(--ink)}
+.setup-tile .tile-record{display:block;margin-top:6px;padding-top:6px;border-top:1px solid var(--hair-2);font-size:12.5px;line-height:1.4;color:var(--ink-2);text-align:left}
+.tile-record b.made{color:var(--up)} .tile-record b.lost{color:var(--down)} .tile-record b.none{color:var(--soft)}
 .setup-about{flex-basis:100%;margin:2px 0 0;font-size:13.5px;color:var(--ink-2)}
 .rule-view{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;font-size:13px;color:var(--ink-2)}
 .rule-view>*{min-width:0}
