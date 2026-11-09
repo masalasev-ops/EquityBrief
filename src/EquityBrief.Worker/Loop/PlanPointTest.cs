@@ -676,6 +676,16 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
                 var benchmark = plan is null || session < 0 ? null : BenchmarkOf(session, plan, combination);
                 var (edge, fundEdge) = EdgesOf(result, fill.Price, rulesRisk, benchmark, bought, sold);
+
+                // From the 23.6 correction a pick past 20 risks is no result, counted as offered and in no figure.
+                // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+                if (PlanPoints.NoResult(result, edge))
+                {
+                    worked.Add(new Worked(combination, level, fill.Price, stop, saleWords, new PlanPick(setup.Session.Year, era, side, true, null, null, 0, null, 0, null), FormattableString.Invariant($"no result: {result:+0.00;-0.00} risks after costs, past {LongLedger.OutlyingRisks} either way")));
+
+                    continue;
+                }
+
                 var pick = new PlanPick(setup.Session.Year, era, side, true, result, edge, outcome.Sessions, outcome.End, one.SessionAt[ended], PlanPoints.BreakEvenOf(fill.Price, stop, sale.Target))
                 {
                     Hit = PlanPoints.HitOf(combination.Exit, outcome.End),

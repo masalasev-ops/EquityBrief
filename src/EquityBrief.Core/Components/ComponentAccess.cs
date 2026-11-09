@@ -53,6 +53,7 @@ public enum Store
     DepartedSetup,
     LongSearch,
     PlanPoint,
+    LongOutlier,
     DividendWait,
     LateBarAsk,
     EntryReading,

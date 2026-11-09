@@ -6,7 +6,11 @@ using EquityBrief.Core.History;
 namespace EquityBrief.Web.App;
 
 // One family's year on one index under one reading, as the long build wrote it.
-public sealed record LongYearRow(string Index, string Family, int Year, string Reading, int Settled, int Targets, double? EdgeAfterCost, int Crossing, double? EdgeAfterCostWithout);
+public sealed record LongYearRow(string Index, string Family, int Year, string Reading, int Settled, int Targets, double? EdgeAfterCost, int Crossing, double? EdgeAfterCostWithout)
+{
+    // From the 23.6 correction the year's settled setups past 20 risks either way, counted as no result.
+    public int Outlying { get; init; }
+}
 
 // What the History page draws of the long ledger: the session the long history was read through and each family's years.
 public sealed record LongYearsView(string? ReadThrough, IReadOnlyList<LongYearRow> Rows);
@@ -40,7 +44,9 @@ public sealed partial class SinglePageApp
             var years = rows.Select(row => row.Year).Distinct().Order().ToArray();
             var book = family is HeavyweightRule.Name or QualityRule.Name or ImprovingRule.Name;
 
-            body.Append(Invariant($"<details data-family=\"{Escaped(family)}\"><summary>{Escaped(Capital(family))}: {rows.Where(row => row.Reading == LongLedger.AsRuled).Sum(row => row.Settled):N0} trades, {years[0]} to {years[^1]}</summary>"));
+            var outlying = rows.Where(row => row.Reading == LongLedger.AsRuled).Sum(row => row.Outlying);
+
+            body.Append(Invariant($"<details data-family=\"{Escaped(family)}\"><summary>{Escaped(Capital(family))}: {rows.Where(row => row.Reading == LongLedger.AsRuled).Sum(row => row.Settled):N0} trades, {years[0]} to {years[^1]}{(outlying > 0 ? Invariant($", {outlying:N0} past {LongLedger.OutlyingRisks} risks counted as no result") : string.Empty)}</summary>"));
 
             if (family == DriftRule.Name)
             {

@@ -759,7 +759,24 @@ public static class SchemaMigrations
         new Migration(136, "create long_search and plan_point", CreateLongSearch),
         new Migration(137, "add the fund line to long_search and plan_point", AddFundLine),
         new Migration(138, "add the fund line to loop_rule", AddRuleFundLine),
+        new Migration(139, "add long_reading's outlying, and create long_outlier", CreateLongOutlier),
     ];
+
+    // From the 23.6 correction each family year's settled setups past 20 risks either way, counted as no result, and each
+    // such setup listed beside the unexplained jumps, written whole for an index with its years.
+    const string CreateLongOutlier = @"
+        ALTER TABLE long_reading ADD COLUMN outlying INTEGER NOT NULL DEFAULT 0;
+
+        CREATE TABLE long_outlier (
+            index_code    TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            edge          REAL NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (index_code, family, ticker, session_date)
+        ) STRICT;
+    ";
 
     // From the 23.7 correction a long per-rule row's second line beside its verdict against the benchmark: its trades against
     // its index's own fund held over the same sessions, a trade on average, with how many.

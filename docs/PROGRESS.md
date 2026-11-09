@@ -17771,3 +17771,37 @@ Carried:    the long step's time over the three indices against its three hours,
             month; the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.6 - correction: a long setup past 20 risks counted as no result and listed beside the unexplained jumps   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its sixth item. 23.6's measure named the settled setups whose edge lies past
+            20 risks either way, an edge read in a risk near nothing where a member's or the stock's prices stand still, and
+            every figure counted them: the S&P 400's breakout over 2005 to 2009 read +4.489 risks a trade after costs and the
+            S&P 600's +44.252; its pullback -14.277 and its drift -8.493.
+Corrected:  the long years count such a setup apart, in `long_reading`'s new column, read in no other figure, and list each
+            in `long_outlier`, both written whole with the years by `ledger-build --long`, which over an index whose long
+            ledger stands writes no setup and writes its years and that list again; the History page's folds name the count;
+            the measure's era lines say it. The long results read the same way: a long search's or a long test's trade past it
+            is no result, a pick of the buy and sell points whose result or edge lies past it is offered with no result, and a
+            member of its benchmark past it is left out, as the first correction above already left it. Migration 139. The
+            decision, the catalogue's row, the stores' row, 15.25's row, section 17's row, `SCHEMA.md`, the runbook, the
+            roster's row and the changelog.
+Measured:   23.6's live measure, `long-ledger --measure` over the store of 2026-11-08: the S&P 400's breakout over 2005 to 2009,
+            349 of 9,225 settled setups past 20 risks, its mean edge +4.518 with them and -0.093 without; the S&P 600's,
+            1,062 of 10,149, +44.322 with and -0.169 without; the rule read on every family reaches the S&P 600's pullback of
+            those years, 683 of 15,012, -14.249 with and -0.064 without, and its drift, 59 of 1,375, -8.439 with and +0.032
+            without, and the S&P 400's drift, 11 of 1,274, -0.678 with and -0.224 without. The long years written again with
+            the remedy; the long results' reruns over the tree carrying the first six corrections in the restatement entry
+            below.
+Provisional: each on the operator's review: the rule read on every family and not the breakout alone; the bound on the edge;
+            a standing setup of 2019 on past it counted the same way.
+Tests:      3 new in the fixture's expectations: a long year's setups past 20 risks counted apart and in no figure, worked by
+            hand; a pick past 20 risks no result in the buy and sell points; a long test's unit past 20 risks no result.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 a setup past 20 risks counted among the settled; m2 the bound read as at or past
+            20; m3 a pick's result past 20 risks kept; m4 a long test's unit past 20 risks kept.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the provisional choices above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.

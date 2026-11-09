@@ -188,6 +188,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_fact` | LongFactPull | none | LongFactPull |
 | `long_setup` | SetupLedger | none | none |
 | `long_reading` | SetupLedger | none | SetupLedger |
+| `long_outlier` | SetupLedger | none | SetupLedger |
 | `departed_setup` | SetupLedger | none | SetupLedger |
 | `long_search` | LongSearch | none | none |
 | `plan_point` | PlanPointTest | none | none |
@@ -695,10 +696,27 @@ Grain: one row per index, family, year and reading of the long ledger's and the 
 | `edge_after_cost_without` | REAL | the mean edge after costs over the settled setups crossing none, null where none |
 | `read_through` | TEXT | the session the long history was read through |
 | `run_id` | TEXT | the run that wrote it |
+| `outlying` | INTEGER | from migration 139, the settled setups whose edge lies past 20 risks either way, counted as no result, none of them in `settled` or any figure above |
 
 Primary key: `index_code`, `family`, `year`, `reading`.
 
-**Each family's years under the two readings, which the History page draws** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes an index's rows whole at its end, the build before's removed in the same transaction: the long years off `long_setup` under both readings, and the standing years off `setup` as ruled and with each of its rows `departed_setup` holds read at the last price. It reads `data_check` for each stock's unexplained jumps and `long_span` for the members of the index on each jump's day. Read by the History page and the long ledger's measure, and by no card, hook or night.
+**Each family's years under the two readings, which the History page draws** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes an index's rows whole at its end, the build before's removed in the same transaction: the long years off `long_setup` under both readings, and the standing years off `setup` as ruled and with each of its rows `departed_setup` holds read at the last price. It reads `data_check` for each stock's unexplained jumps and `long_span` for the members of the index on each jump's day. Read by the History page and the long ledger's measure, and by no card, hook or night. From the 23.6 correction a settled setup whose edge lies past 20 risks either way is counted as no result: counted in `outlying`, read in no other column, and listed in `long_outlier` (see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps).
+
+### long_outlier
+Grain: one row per index, family, stock and session of a settled setup the long years count as no result.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | as `setup` carries it |
+| `ticker` | TEXT | the stock |
+| `session_date` | TEXT | the setup's session |
+| `edge` | REAL | its edge as ruled, past 20 risks either way |
+| `run_id` | TEXT | the long build that wrote it |
+
+Primary key: `index_code`, `family`, `ticker`, `session_date`.
+
+**Written whole for an index by `ledger-build --long` with its years, in the same transaction, the build before's rows removed** (see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps). From migration 139: each settled setup of the long ledger as ruled, and of the standing ledger from 2019, whose edge lies past 20 risks either way. The marking page lists every row beside the unexplained jumps; no card, hook, rule or night reads it.
 
 ### departed_setup
 Grain: one row per index, family, stock and session of a standing setup left open with no result whose stock's prices stop after it was bought.

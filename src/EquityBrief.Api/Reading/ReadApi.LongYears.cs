@@ -8,7 +8,7 @@ namespace EquityBrief.Api.Reading;
 public sealed partial class ReadApi
 {
     const string LongYears = @"
-        SELECT index_code, family, year, reading, settled, targets, edge_after_cost_mean, crossing, edge_after_cost_without, read_through
+        SELECT index_code, family, year, reading, settled, targets, edge_after_cost_mean, crossing, edge_after_cost_without, read_through, outlying
         FROM long_reading
         ORDER BY family, year, index_code, reading;";
 
@@ -35,7 +35,10 @@ public sealed partial class ReadApi
                 reader.GetInt32(5),
                 reader.IsDBNull(6) ? null : reader.GetDouble(6),
                 reader.GetInt32(7),
-                reader.IsDBNull(8) ? null : reader.GetDouble(8)));
+                reader.IsDBNull(8) ? null : reader.GetDouble(8))
+            {
+                Outlying = reader.GetInt32(10),
+            });
 
             through = reader.GetString(9) is var read && (through is null || string.CompareOrdinal(read, through) > 0) ? read : through;
         }

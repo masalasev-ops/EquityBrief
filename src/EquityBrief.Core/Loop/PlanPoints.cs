@@ -375,6 +375,12 @@ public static class PlanPoints
     public static double? BreakEvenOf(double fill, double stop, double? target) =>
         target is { } held && held > fill && fill > stop ? (fill - stop) / (held - stop) : null;
 
+    // From the 23.6 correction a pick whose result or whose edge over its benchmark lies past 20 risks either way is no result,
+    // counted as offered and in no figure, as an open pick is.
+    // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+    public static bool NoResult(double result, double? edge) =>
+        Math.Abs(result) > History.LongLedger.OutlyingRisks || History.LongLedger.Outlying(edge);
+
     // The dip's own sale: no target and no trail, sold at the next open after a close whose 2-session RSI stands above 65.
     // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
     public static PlanSale DipSale { get; } = new(null, null, []) { RsiAbove = global::EquityBrief.Core.Families.DipRule.RsiExit };

@@ -253,7 +253,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
                     .. settings.Select((setting, at) =>
                     {
                         var learning = new FoldView<LoopProcedures.Walked>(fold, walked[at], one => read.Calendar[one.Entry], one => one.Exit is { } exit ? read.Calendar[exit] : null).Learning;
-                        var trades = learning.Where(one => one.Edge is not null).Select(one => (read.Calendar[one.Entry].Year, one.Edge!.Value)).ToArray();
+                        var trades = learning.Where(one => one.Edge is not null && !LongLedger.Outlying(one.Edge)).Select(one => (read.Calendar[one.Entry].Year, one.Edge!.Value)).ToArray();
 
                         return (setting, LongSearchRules.FiguresOf(grid.Key(setting), trades), grid.Changes(setting));
                     }),
@@ -265,7 +265,9 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
         var proposal = ChooseIn(new LoopFold(read.Calendar[^1].Year + 1, read.Calendar[^1].AddDays(1), read.Calendar[^1].AddDays(1), false));
         var placeOf = settings.Select((setting, place) => (setting, place)).ToDictionary(pair => grid.Key(pair.setting), pair => pair.place, StringComparer.Ordinal);
 
-        static IReadOnlyList<(int Entry, double? Edge)> Units(IReadOnlyList<LoopProcedures.Walked> trades) => [.. trades.Select(one => (one.Entry, one.Edge))];
+        // From the 23.6 correction a trade whose edge lies past 20 risks either way is no result.
+        // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+        static IReadOnlyList<(int Entry, double? Edge)> Units(IReadOnlyList<LoopProcedures.Walked> trades) => [.. trades.Select(one => (one.Entry, LongLedger.Outlying(one.Edge) ? null : one.Edge))];
 
         var evidence = LoopProcedures.Evidence(folds, read.Calendar, [.. longFolds.Select(one => one.Chosen is null ? null : Units(walked[placeOf[grid.Key(one.Chosen)]]))], Units(current));
         var cap = walked.SelectMany(one => one).Concat(current).Select(one => one.Trade.Listing.Cap).DefaultIfEmpty(0).Max();
@@ -275,7 +277,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
         // index's own fund held over each trade's sessions.
         // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
         IEnumerable<double?> FundIn(IReadOnlyList<LoopProcedures.Walked> trades, int year) =>
-            trades.Where(one => read.Calendar[one.Entry].Year == year).Select(one => read.FundEdge(one.Entry, one.Exit, one.Trade));
+            trades.Where(one => read.Calendar[one.Entry].Year == year && !LongLedger.Outlying(one.Edge)).Select(one => read.FundEdge(one.Entry, one.Exit, one.Trade));
 
         var (fundUnits, fundEdge) = FundLine.Mean(longFolds.Where(one => one.Chosen is not null).SelectMany(one => FundIn(walked[placeOf[grid.Key(one.Chosen!)]], one.Year)));
         var (_, currentFund) = FundLine.Mean(longFolds.SelectMany(one => FundIn(current, one.Year)));

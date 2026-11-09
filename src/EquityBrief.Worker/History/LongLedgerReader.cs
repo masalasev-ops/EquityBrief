@@ -85,11 +85,13 @@ public sealed class LongLedgerReader : IComponent
         lines.Add("unexplained jumps by era: " + string.Join(", ", LongLedger.Eras.Select(era => FormattableString.Invariant($"{era.Era} {jumps.GetValueOrDefault(era.Era)}"))));
 
         // Each family on each index by era under the two readings.
-        var years = new List<(string Index, string Family, int Year, string Reading, int Settled, int Targets, double? Edge, double? After, int Crossing, double? Without)>();
+        var years = new List<(string Index, string Family, int Year, string Reading, int Settled, int Targets, double? Edge, double? After, int Crossing, double? Without, int Outlying)>();
 
-        await EachAsync("SELECT index_code, family, year, reading, settled, targets, edge_mean, edge_after_cost_mean, crossing, edge_after_cost_without FROM long_reading ORDER BY index_code, family, year, reading;", row =>
+        // From the 23.6 correction each year's setups past 20 risks either way, counted as no result and in none of its figures.
+        // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+        await EachAsync("SELECT index_code, family, year, reading, settled, targets, edge_mean, edge_after_cost_mean, crossing, edge_after_cost_without, outlying FROM long_reading ORDER BY index_code, family, year, reading;", row =>
             years.Add((row.GetString(0), row.GetString(1), row.GetInt32(2), row.GetString(3), row.GetInt32(4), row.GetInt32(5),
-                row.IsDBNull(6) ? null : row.GetDouble(6), row.IsDBNull(7) ? null : row.GetDouble(7), row.GetInt32(8), row.IsDBNull(9) ? null : row.GetDouble(9))));
+                row.IsDBNull(6) ? null : row.GetDouble(6), row.IsDBNull(7) ? null : row.GetDouble(7), row.GetInt32(8), row.IsDBNull(9) ? null : row.GetDouble(9), row.IsDBNull(10) ? 0 : row.GetInt32(10))));
 
         static double? Weighted(IEnumerable<(int Count, double? Mean)> parts)
         {
@@ -112,7 +114,7 @@ public sealed class LongLedgerReader : IComponent
                 }
 
                 lines.Add(FormattableString.Invariant(
-                    $"{group.Key.Index} {group.Key.Family} {era.Era}: as ruled {asRuled.Sum(year => year.Settled)} settled, {asRuled.Sum(year => year.Targets)} at target, edge after costs {Shown(Weighted(asRuled.Select(year => (year.Settled, year.After))))}, without the {asRuled.Sum(year => year.Crossing)} crossing a jump {Shown(Weighted(asRuled.Select(year => (year.Settled - year.Crossing, year.Without))))}; at the last price {lastPrice.Sum(year => year.Settled)} settled, edge after costs {Shown(Weighted(lastPrice.Select(year => (year.Settled, year.After))))}, without {Shown(Weighted(lastPrice.Select(year => (year.Settled - year.Crossing, year.Without))))}"));
+                    $"{group.Key.Index} {group.Key.Family} {era.Era}: as ruled {asRuled.Sum(year => year.Settled)} settled and {asRuled.Sum(year => year.Outlying)} past {LongLedger.OutlyingRisks} risks counted as no result, {asRuled.Sum(year => year.Targets)} at target, edge after costs {Shown(Weighted(asRuled.Select(year => (year.Settled, year.After))))}, without the {asRuled.Sum(year => year.Crossing)} crossing a jump {Shown(Weighted(asRuled.Select(year => (year.Settled - year.Crossing, year.Without))))}; at the last price {lastPrice.Sum(year => year.Settled)} settled, edge after costs {Shown(Weighted(lastPrice.Select(year => (year.Settled, year.After))))}, without {Shown(Weighted(lastPrice.Select(year => (year.Settled - year.Crossing, year.Without))))}"));
             }
 
             var longRuled = Weighted(group.Where(year => year.Reading == LongLedger.AsRuled && year.Year <= LongLedger.Through.Year).Select(year => (year.Settled, year.After)));

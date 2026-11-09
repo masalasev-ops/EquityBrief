@@ -103,6 +103,7 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.LongFact, Touch.Read),
             new StoreTouch(Store.LongSetup, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LongReading, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.LongOutlier, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.DepartedSetup, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.DataCheck, Touch.Read),
             new StoreTouch(Store.LongSpan, Touch.Read),
@@ -304,8 +305,16 @@ public sealed partial class SetupLedger : IComponent
     const string ClearLongReading = "DELETE FROM long_reading WHERE index_code = $index;";
 
     const string InsertLongReading = @"
-        INSERT INTO long_reading (index_code, family, year, reading, setups, settled, targets, edge_mean, edge_after_cost_mean, crossing, edge_after_cost_without, read_through, run_id)
-        VALUES ($index, $family, $year, $reading, $setups, $settled, $targets, $edge_mean, $edge_after_cost_mean, $crossing, $edge_after_cost_without, $read_through, $run_id);";
+        INSERT INTO long_reading (index_code, family, year, reading, setups, settled, targets, edge_mean, edge_after_cost_mean, crossing, edge_after_cost_without, read_through, run_id, outlying)
+        VALUES ($index, $family, $year, $reading, $setups, $settled, $targets, $edge_mean, $edge_after_cost_mean, $crossing, $edge_after_cost_without, $read_through, $run_id, $outlying);";
+
+    // From the 23.6 correction the setups the long years count as no result, written whole for an index with its years.
+    // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+    const string ClearLongOutlier = "DELETE FROM long_outlier WHERE index_code = $index;";
+
+    const string InsertLongOutlier = @"
+        INSERT INTO long_outlier (index_code, family, ticker, session_date, edge, run_id)
+        VALUES ($index, $family, $ticker, $session, $edge, $run_id);";
 
     // A member's readings as stored: the catalogue's in its order as a list in the invariant form, null where none.
     public static string ReadingsText(IReadOnlyList<double?> readings) =>

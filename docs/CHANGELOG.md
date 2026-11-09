@@ -7,6 +7,31 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - a long setup past 20 risks counted as no result
+Decision: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+Was:
+> (catalogue, Setup ledger, writes) setups, setup nights, ledger summaries, ledger readings, long setups, long readings, departed setups
+> (stores) ... Plan points ... (no row for the long outliers)
+> (15.25, Each family by year) ... the session the long history was read through; and a store the long build has not written saying so (see: ...)
+> (17, The long tables' budget, rationale) ... past 20 risks, carrying its mean
+> (17, The long tables' budget, check) ... and each figure read off the document against its constant
+> (SCHEMA, long_reading) ... Read by the History page and the long ledger's measure, and by no card, hook or night.
+> (SCHEMA, ownership) ... `long_reading` | SetupLedger | none | SetupLedger | ...
+> (RUNBOOK, the long ledger) ... `--measure` prints the measure the entry states and writes nothing (see: ...).
+> (checks.md, fixture-expectations) ... and a session before it reading the floors alone |
+Now:
+> (catalogue, Setup ledger, writes) ... long readings, departed setups, long outliers
+> (stores) Long outliers: from the 23.6 correction per index, family, stock and session, each settled setup ... past 20 risks either way, counted as no result (see: ...); written whole for an index with its years by each long build, the marking page reading every row
+> (15.25, Each family by year) ... read through; from the 23.6 correction each family's fold naming its setups past 20 risks counted as no result (see: ...); and a store ... (see: ...)
+> (17, The long tables' budget, rationale) ... carrying its mean; from the 23.6 correction such a setup is counted as no result in the long years and every long result and listed beside the unexplained jumps (see: ...)
+> (17, The long tables' budget, check) ... each figure read off the document against its constant, and a setup, a pick and a long test's unit past 20 risks read as no result
+> (SCHEMA, long_reading) `outlying` of migration 139, added; ... and by no card, hook or night. From the 23.6 correction a settled setup whose edge lies past 20 risks either way is counted as no result ... listed in `long_outlier` (see: ...).
+> (SCHEMA, long_outlier) the table of migration 139, added
+> (SCHEMA, ownership) `long_outlier` | SetupLedger | none | SetupLedger, added
+> (RUNBOOK, the long ledger) ... writes nothing (see: ...). From the 23.6 correction a settled setup whose edge lies past 20 risks either way is counted as no result ... (see: ...).
+> (checks.md, fixture-expectations) ... reading the floors alone, and from the 23.6 correction a long setup, a pick and a long test's unit past 20 risks either way read as no result worked by hand |
+Why: the operator's order of 2026-11-08, item 6.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/RUNBOOK.md, .claude/rules/checks.md - the long test's own sweep readings and the dip over the long history
 Decision: The long test lays out the dip's and the S&P 400's and 600's own sweep readings over the long history
 Was:

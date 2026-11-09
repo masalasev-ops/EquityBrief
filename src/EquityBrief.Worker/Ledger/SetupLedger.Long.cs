@@ -324,6 +324,19 @@ public sealed partial class SetupLedger
         var asRuled = new List<LongTrade>();
         var lastPrice = new List<LongTrade>();
 
+        // From the 23.6 correction each settled setup counted as no result, its edge past 20 risks either way, listed beside
+        // the unexplained jumps.
+        // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+        var outlying = new List<(string Family, string Ticker, DateOnly Session, double Edge)>();
+
+        void Outlying(string family, string ticker, DateOnly session, double? edge, bool settled)
+        {
+            if (settled && LongLedger.Outlying(edge))
+            {
+                outlying.Add((family, ticker, session, edge!.Value));
+            }
+        }
+
         LongTrade Trade(string family, string ticker, DateOnly session, double entry, double stop, double? companyValue, double? result, double? edge, string end, DateOnly? endedOn, bool settled)
         {
             var afterCost = LikeSetups.AfterCost(LikeSetups.IsBook(family) ? Core.Loop.ChanceForm.Book : Core.Loop.ChanceForm.Trailing, result, null, entry, stop, companyValue);
@@ -356,6 +369,7 @@ public sealed partial class SetupLedger
 
                 asRuled.Add(Trade(family, ticker, session, entry, stop, Real(reader, 6), Real(reader, 7), Real(reader, 9), reader.GetString(10), Day(reader, 11), reader.GetInt64(12) == 1));
                 lastPrice.Add(Trade(family, ticker, session, entry, stop, Real(reader, 6), Real(reader, 13), Real(reader, 15), reader.GetString(16), Day(reader, 17), reader.GetInt64(18) == 1));
+                Outlying(family, ticker, session, Real(reader, 9), reader.GetInt64(12) == 1);
             }
         }
 
@@ -389,6 +403,7 @@ public sealed partial class SetupLedger
                 var trade = Trade(family, ticker, session, entry, stop, Real(reader, 6), Real(reader, 7), Real(reader, 9), reader.GetString(10), Day(reader, 11), reader.GetInt64(12) == 1);
 
                 asRuled.Add(trade);
+                Outlying(family, ticker, session, Real(reader, 9), reader.GetInt64(12) == 1);
                 lastPrice.Add(departed.TryGetValue((family, ticker, session), out var gone) && gone.Edge is not null
                     ? Trade(family, ticker, session, entry, stop, Real(reader, 6), gone.Result, gone.Edge, string.Empty, gone.Last, true)
                     : trade);
@@ -400,6 +415,7 @@ public sealed partial class SetupLedger
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
         await ExecuteAsync(connection, transaction, ClearLongReading, [("$index", index)], cancellation);
+        await ExecuteAsync(connection, transaction, ClearLongOutlier, [("$index", index)], cancellation);
 
         foreach (var year in years)
         {
@@ -412,7 +428,15 @@ public sealed partial class SetupLedger
                 ("$crossing", year.Crossing),
                 ("$edge_after_cost_without", year.EdgeAfterCostWithout is { } without ? without : DBNull.Value),
                 ("$read_through", Stamp(through)), ("$run_id", runId),
+                ("$outlying", year.Outlying),
             ], cancellation);
+        }
+
+        foreach (var (family, ticker, session, edge) in outlying)
+        {
+            await ExecuteAsync(connection, transaction, InsertLongOutlier,
+                [("$index", index), ("$family", family), ("$ticker", ticker), ("$session", Stamp(session)), ("$edge", edge), ("$run_id", runId)],
+                cancellation);
         }
 
         await transaction.CommitAsync(cancellation);
