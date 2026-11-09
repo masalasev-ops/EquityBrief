@@ -426,9 +426,10 @@ public partial class ArchitectureConformance
         // and 1602 from 23.7, section 17's row of the long test and paper trading's row of the verdict over the long history,
         // and 1607 from 23.9, the sector splits reader's catalogue and matrix rows, section 17's two rows and the History
         // page's labels row, and 1616 from 23.8, the long search's and the plan point test's catalogue and matrix rows, their
-        // two stores, section 17's two rows and the Loop page's row of the long history.
+        // two stores, section 17's two rows and the Loop page's row of the long history, and 1617 from the 23.6 correction, the
+        // long outliers' store.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1616),
+            (789, 853, 6, 4, 855, 876, 1617),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }
