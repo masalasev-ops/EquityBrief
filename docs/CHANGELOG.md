@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-09 - docs/ARCHITECTURE.html - section 15.20's summary row written a clause at a time
+Corrects: the row 22.61 wrote listed its parts between commas, which the conformance reader takes as parts each owing a verdict of their own.
+Was:
+> then a card for each change that reached the operator, in plain words with its test years as paired bars, its four checks and its presses or the word given; then a line a setup in the one order naming what it does, the changes tried and what the month came to, each opening the setup's own page, which holds its rule today as chips, why none is put and when one next can be, its changes under their kinds and, folded, the full workings
+Now:
+> then a card for each change that reached the operator; the card draws the change in plain words with its test years as paired bars; it draws the change's four checks and its presses or the word given; then a line a setup in the one order; and each part after it a clause of its own
+Why: the row says the same; each clause now stands between semicolons, which the reader reads as one part each and the verdict reaches.
+
 ### 2026-11-09 - docs/BUILD_PLAN.md - the Loop page drawn as the Monthly check-up is planned as 22.61
 Decision: The Monthly check-up opens on what needs the reader and draws each setup's changes on a page of its own
 Was:

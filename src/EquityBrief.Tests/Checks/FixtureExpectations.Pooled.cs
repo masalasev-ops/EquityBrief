@@ -243,8 +243,8 @@ public partial class FixtureExpectations
         Assert.Equal(20, PooledJudge.YearsAPass(1));
         Assert.Null(PooledJudge.YearsAPass(0));
 
-        Assert.Contains("about 0.35 a year across the 7 setups: one pass in about three years may be luck.", MarkRenderer.PooledLuckLine(7), StringComparison.Ordinal);
-        Assert.Contains("about 0.05 a year across the 1 setup: one pass in about twenty years may be luck.", MarkRenderer.PooledLuckLine(1), StringComparison.Ordinal);
+        Assert.Contains("about 0.35 passes a year across the 7 strategies: one pass in about three years may be luck.", MarkRenderer.PooledLuckLine(7), StringComparison.Ordinal);
+        Assert.Contains("about 0.05 passes a year across the 1 strategy: one pass in about twenty years may be luck.", MarkRenderer.PooledLuckLine(1), StringComparison.Ordinal);
     }
 
     static void PooledExecute(TemporaryStore store, string sql)

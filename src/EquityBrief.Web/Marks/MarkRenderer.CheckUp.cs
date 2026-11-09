@@ -42,7 +42,7 @@ public sealed partial class MarkRenderer
         }
 
         var newest = state.Words.OrderByDescending(word => word.DecidedAt, StringComparer.Ordinal).First();
-        var day = LongDay(DateOnly.ParseExact(DayOf(newest.DecidedAt), "yyyy-MM-dd", Invariant));
+        var day = LongDay(DateOnly.ParseExact(DayOf(newest.DecidedAt), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
         var what = state.Words.Count == 1 ? "one change" : Formatted($"{state.Words.Count} changes");
         var approved = state.Words.Where(word => word.Decision == LoopDecisions.Approved).ToArray();
 
