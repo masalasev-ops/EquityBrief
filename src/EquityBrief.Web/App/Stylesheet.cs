@@ -1564,6 +1564,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .setup-record{display:flex;flex-direction:column;gap:3px;margin:8px 0;padding:8px 10px;border:1px solid var(--hair-2);border-radius:6px;font-size:13.5px;line-height:1.45;color:var(--ink-2)} .home-idea .setup-record{margin:0}
 .setup-record .rec-h{font:600 11.5px var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)} .setup-record .rec-sub{color:var(--soft);font-size:12.5px}
 .setup-record b.made{color:var(--up)} .setup-record b.lost{color:var(--down)} .setup-record b.none{color:var(--soft)}
+.home-watch{margin:14px 0 0;padding:10px 14px;border:1px solid var(--hair-2);border-radius:8px;font-size:14.5px;line-height:1.5;color:var(--ink-2)} .home-watch b{color:var(--ink)}
 .home-note{margin:14px 0 0;padding:10px 14px;border-radius:8px;background:var(--warn-fill);font-size:14px;color:var(--ink)}
 .home-results{display:flex;flex-wrap:wrap;gap:24px}
 .home-results .home-system{flex:1 1 100%;margin:0;padding-top:12px;border-top:1px solid var(--hair);color:var(--ink-2);font-size:14px}

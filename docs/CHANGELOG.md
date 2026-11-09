@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-09 - docs/ARCHITECTURE.html - section 15.24, Home's count of tonight's ideas is of the cards it draws
+Decision: Home draws a card only for a pick whose setup made money over the long history or has none, and names the rest as watched
+Was:
+> the count of the night's buys across every swing family and the Fundamentals family with the session they are bought at
+Now:
+> the count of the night's buys across every swing family and the Fundamentals family drawn as cards with the session they are bought at
+Why: the operator's order of 2026-11-09, item 3, in `prompts/2026-11-09-card-record-ruling.md`: the heading counts only the cards, and a new row names the picks watched and not drawn.
+
 ### 2026-11-09 - docs/SCHEMA.md - plan_point, the traded plan's picks from 2019 and the pages reading it
 Decision: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's
 Was:

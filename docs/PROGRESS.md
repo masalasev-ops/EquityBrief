@@ -18163,3 +18163,24 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
             file's own bytes, 3 in all, each predicted red and each red: the tile drawing no line; the tile reading the S&P 500's
             record on every index; and a lost line saying made.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.16 - correction: Home draws a card only for a setup that made money over the long history or has none, and names the rest as watched   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 3: Home offered a reader new to investing a card for every buy, a setup whose
+            plan lost money on the index since 2019 among them.
+Corrected:  of the night's buys in Tonight's order, Home draws a card only where its setup's record made money or there is none yet,
+            the heading counting those cards and the first six drawn, the rest of them named as before. Beneath them one line names
+            every pick whose setup's record lost, as the mockup draws it: "Watching, not buying: 9 picks tonight." with the tickers
+            and their tags, that their setups have not made money on the index since 2019 with their plans as they stand and are
+            traded on paper only, and "See them on Tonight"; one setup and one pick in the singular. "See all" counts every pick,
+            and with no card the summary says every pick is watched. Tonight, Paper trading and the paper accounts keep every pick.
+Tests:      2 new read-surface tests: the line in both numbers, the heading's count, the order of the lines and the link's count
+            worked by hand, and the S&P 400's Home read through the host before and after a newer run finds its breakout lost; one
+            assertion of the link moved with its words; three counts of the document's rows and claims raised by its one new row.
+Claims:     1 new, section 15.24's row of the picks watched, reached by the read surface; its row of tonight's ideas says the
+            heading counts the cards.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its two tests, restored from the
+            file's own bytes, 4 in all, each predicted red and each red: a losing setup's pick still a card; the heading counting
+            every pick; one setup said as several; and the link counting the cards alone.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.

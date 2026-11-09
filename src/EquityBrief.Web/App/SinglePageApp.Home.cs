@@ -47,6 +47,10 @@ public sealed record HomeView(
     // The buys Tonight draws after the ideas Home draws, in Tonight's order.
     public IReadOnlyList<HomeIdea> LeftOut { get; init; } = [];
 
+    // From the 22.16 correction of 2026-11-09 the buys whose setup lost over the long history, in Tonight's order, named and
+    // not drawn as cards.
+    public IReadOnlyList<HomeIdea> Watching { get; init; } = [];
+
     // The monthly books' holdings bought at tonight's reshuffle, each with its book's family, in Tonight's order.
     public IReadOnlyList<(string Family, string Ticker)> Reshuffled { get; init; } = [];
 }
@@ -71,6 +75,9 @@ public sealed partial class SinglePageApp
     public const string IdeasNote = "These are ideas found by fixed rules from prices and company filings, not advice. A rule's record is shown on its own page and is never a promise about any one stock.";
 
     public const string RisesLine = "The give-up price rises as the stock climbs, so a winner can keep running.";
+
+    // Why there is no card on a night every pick is watched.
+    public static string WatchedOnly => Invariant($"Every pick tonight is from a setup that has not made money on this index since {EquityBrief.Core.History.LongLedger.StandingFrom.Year}, so none is drawn as an idea.");
 
     // What the Fundamentals family's card says in a give-up price's place: it sets none and sells on its filings; and a
     // monthly book's, which sells at a reshuffle.
@@ -168,6 +175,26 @@ public sealed partial class SinglePageApp
         }
 
         return string.Join(", ", groups.Select(group => Listed(group.Tickers) + " (" + group.Tag + ")"));
+    }
+
+    // The buys whose setup lost over the long history, named in Tonight's order with their families' tags: "Watching, not buying: 2
+    // picks tonight. ABNB and MCD (Strong earnings). This setup has not made money on the S&P 500 since 2019 with its plan as it
+    // stands, so it is traded on paper only. See them on Tonight."; none on a night no pick is watched.
+    // see: Home draws a card only for a pick whose setup made money over the long history or has none, and names the rest as watched
+    public static string? WatchingLine(IReadOnlyList<HomeIdea> watching, UniverseChoice reading, string tonight)
+    {
+        if (watching.Count == 0)
+        {
+            return null;
+        }
+
+        var setups = watching.Select(idea => idea.Family).Distinct(StringComparer.Ordinal).Count();
+        var since = watching[0].LongRecord?.From ?? EquityBrief.Core.History.LongLedger.StandingFrom.Year;
+        var why = setups == 1
+            ? Invariant($"This setup has not made money on the {reading.Name} since {since} with its plan as it stands, so it is traded on paper only.")
+            : Invariant($"These setups have not made money on the {reading.Name} since {since} with their plans as they stand, so they are traded on paper only.");
+
+        return Invariant($"<p class=\"home-watch\" data-watching=\"{watching.Count}\"><b>Watching, not buying: {watching.Count} {(watching.Count == 1 ? "pick" : "picks")} tonight.</b> {Escaped(Grouped(watching.Select(idea => (idea.Family, idea.Ticker))))}. {Escaped(why)} <a href=\"{tonight}\">{(watching.Count == 1 ? "See it on Tonight" : "See them on Tonight")}</a>.</p>");
     }
 
     // The monthly books' buys at tonight's reshuffle, named apart from the new picks: "The monthly books reshuffled tonight
@@ -337,9 +364,11 @@ public sealed partial class SinglePageApp
 
         region.Append(Invariant($"<section class=\"card\" id=\"ideas\" data-ideas=\"{view.IdeasCount}\"><div class=\"card-h\"><div><div class=\"lbl\">Tonight's ideas</div><h2>{Escaped(title)}</h2></div><div>{stamp}</div></div><div class=\"card-b\">"));
 
+        // From the 22.16 correction of 2026-11-09 the cards are the picks whose setup made money over the long history or has none,
+        // the heading counting them; the rest are named beneath them as watched, and the link to Tonight counts every pick.
         if (view.IdeasCount == 0)
         {
-            region.Append(Invariant($"<p class=\"card-summary\" data-ideas=\"none\">No new ideas tonight. {Escaped(view.NoIdeas ?? "Nothing qualified tonight.")}</p>"));
+            region.Append(Invariant($"<p class=\"card-summary\" data-ideas=\"none\">No new ideas tonight. {Escaped(view.Watching.Count > 0 ? WatchedOnly : view.NoIdeas ?? "Nothing qualified tonight.")}</p>"));
         }
         else
         {
@@ -353,7 +382,15 @@ public sealed partial class SinglePageApp
 
             region.Append("</div>");
             region.Append(LeftOutLine(view.LeftOut) is { } more ? Invariant($"<p class=\"home-more\" data-more=\"{view.LeftOut.Count}\">{Escaped(more)}</p>") : string.Empty);
-            region.Append(Invariant($"<p style=\"margin:12px 0 0\"><a href=\"{TonightHref(view.Reading)}\">See all {view.IdeasCount} with their full plans</a></p>"));
+        }
+
+        region.Append(WatchingLine(view.Watching, view.Reading, TonightHref(view.Reading)) ?? string.Empty);
+
+        if (view.IdeasCount + view.Watching.Count > 0)
+        {
+            var every = view.IdeasCount + view.Watching.Count;
+
+            region.Append(Invariant($"<p style=\"margin:12px 0 0\"><a href=\"{TonightHref(view.Reading)}\">{(every == 1 ? "See it with its full plan" : Invariant($"See all {every} picks with their full plans"))}</a></p>"));
         }
 
         region.Append(ReshuffleLine(view.Reshuffled) is { } reshuffle ? Invariant($"<p class=\"home-more home-reshuffle\" data-reshuffled=\"{view.Reshuffled.Count}\">{Escaped(reshuffle)}</p>") : string.Empty);
