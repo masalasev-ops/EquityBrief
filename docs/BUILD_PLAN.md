@@ -2537,6 +2537,11 @@ Word for word in `prompts/2026-11-06-22.60-operator-ci-too-slow.md`. Each store 
 
 **Done when** a kept store is built once and a write into one copy is in no other copy nor in one taken after it, every file beside the store copied; a chain built by a lambda or over a value is refused; a new store's migrated copy holds the schema the migrations build at the latest version; the changelog's walk reads each of the newest eighty commits' diffs as `git show` reads them, merges among them; the batch reads each revision as `git show` does and refuses one missing; the whole suite runs its same tests green; and one mutation of each property is shown red, the rule stated before the run.
 
+### 22.61 On the operator's word of 2026-11-09: the Loop page drawn as the Monthly check-up, for a reader new to investing
+Word for word in `prompts/2026-11-09-22.61-operator-monthly-check-up.md`. The page opens on what needs the reader and the month's counts, then each change that reached the operator in plain words with its years as paired bars and its four checks, then a line a setup; each setup's changes stand under their kinds on a page of its own with the whole of what the page drew before folded beneath them; and the decisions, the live alarm and the long history each open from a link. No rule, figure or test result moves, and the presses write as they did (see: The Monthly check-up opens on what needs the reader and draws each setup's changes on a page of its own).
+
+**Done when** the opening page draws no proposal's verdict and links each of the seven setups' pages and the three further parts; a run with a change waiting, one approved and one where none passed each open on its own sentence worked by hand; a stored chance reads as one in so many worked by hand at the bar and at the operator's 0.00245; each shape of stored change reads in the plain words worked by hand from its stored words, each kind under its own heading; a setup's page draws every change tried under one kind or in the count of those that found nothing; a word given no longer says the change waits for it; the plain-words check reads the opening page, the card of what passed, every setup's page and the three parts; and one mutation of each property is shown red, the rule stated before the run.
+
 ---
 
 ## Tabled for phase 23

@@ -33,7 +33,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+        var page = await LoopWhole(client, "universe=400");
 
         Assert.Contains("<div class=\"loop-proposal\" data-family=\"drift\" data-proposal=\"the idea generator, ranked 1\"", page, StringComparison.Ordinal);
         Assert.Contains("<h4 class=\"loop-name\">An idea the local model put, ranked 1: did not pass the tester</h4>", page, StringComparison.Ordinal);

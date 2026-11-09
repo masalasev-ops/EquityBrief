@@ -7,6 +7,36 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-09 - docs/ARCHITECTURE.html - section 15.20's summary row written a clause at a time
+Corrects: the row 22.61 wrote listed its parts between commas, which the conformance reader takes as parts each owing a verdict of their own.
+Was:
+> then a card for each change that reached the operator, in plain words with its test years as paired bars, its four checks and its presses or the word given; then a line a setup in the one order naming what it does, the changes tried and what the month came to, each opening the setup's own page, which holds its rule today as chips, why none is put and when one next can be, its changes under their kinds and, folded, the full workings
+Now:
+> then a card for each change that reached the operator; the card draws the change in plain words with its test years as paired bars; it draws the change's four checks and its presses or the word given; then a line a setup in the one order; and each part after it a clause of its own
+Why: the row says the same; each clause now stands between semicolons, which the reader reads as one part each and the verdict reaches.
+
+### 2026-11-09 - docs/BUILD_PLAN.md - the Loop page drawn as the Monthly check-up is planned as 22.61
+Decision: The Monthly check-up opens on what needs the reader and draws each setup's changes on a page of its own
+Was:
+> the build plan's phase 22 checkpoints, to 22.60
+Now:
+> the build plan's phase 22 checkpoints, to 22.61
+Why: the operator's word of 2026-11-09 on the page, in `prompts/2026-11-09-22.61-operator-monthly-check-up.md`.
+
+### 2026-11-09 - docs/ARCHITECTURE.html - section 15.20, the Loop page drawn as the Monthly check-up
+Decision: The Monthly check-up opens on what needs the reader and draws each setup's changes on a page of its own
+Was:
+> Route: #/loop, reached from the header's menu from 19.2, where a badge counts the proposals put to the operator that hold no decision, with the index and the month in the hash so a view is a link.
+> The summary: from 19.7 a row a setup in the one order at the page's top; its rule today as chips; the proposals the run tested; the strongest one's adjusted p as a meter against the bar with the complete years it was better in; the one put to the operator with its presses; or why none is and when one next can be; from 19.9 to 21.4 the business-first family a row and a card as every family is, where 19.7 drew it saying it waited; and from 21.5 the seven families the loop proposes for in Tonight's order of their cards, each a row and a card under its own label; the fundamentals-first family's proposals drawn nowhere (see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night); from 21.13 each row opening on how many changes were tried for its setup and whether one beat luck, "n changes were tried for this setup this month; none beat luck." or "n changes were tried for this setup this month; one did, and waits for your word."
+> From 19.7 the page opens on the summary, read before any family's card, and beneath it the one line saying what a change must pass, each figure in it from the constant the tester reads. A proposal is one row closed, and opening it shows its verdict part by part and its test years.
+> Figure 15.5. The Loop page and its parts in the order the page draws them, every figure drawn as n or n.nnnn rather than any run's: 1 the summary, a row a setup in the one order with its rule today as chips, the proposals the run tested, the strongest one's adjusted p as a meter and the one put to you with its Approve and Decline; 2 the one line saying what a change must pass; 3 a proposal's row while it is closed; 4 the same row opened, its verdict part by part and its test years as a pair of bars a year; 5 the learned score beneath a family's proposals.
+Now:
+> Route: drawn under the name Monthly check-up from 22.61, with the setup or the part shown in the hash beside the index and the month.
+> The summary: from 22.61 the opening sentence and the month's counts, a card for each change that reached the operator, and a line a setup each opening the setup's own page, the workings folded on that page.
+> From 22.61 the page opens on what needs the reader, the changes that reached the operator and a line a setup, and a setup's changes stand on a page of its own under their kinds.
+> Figure 15.5 draws the opening, a change that reached the operator, a line a setup, a setup's own page and its full workings.
+Why: the operator's word of 2026-11-09 that the page was too many words and made no sense to a reader new to investing. Every region the section's table names still stands; the opening and the summary are what moved.
+
 ### 2026-11-08 - CLAUDE.md, docs/RUNBOOK.md, .claude/rules/checks.md - a merge applies its migrations, and a store behind says it needs migrating
 Decision: A merge carrying a migration applies it in the merge step, and every page over a store behind says it needs migrating
 Was:

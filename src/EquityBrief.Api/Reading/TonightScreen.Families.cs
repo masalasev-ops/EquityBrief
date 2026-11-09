@@ -143,7 +143,7 @@ public static partial class TonightScreen
     static string RuleOf(SetupFamily family, FilterSettings? pullback, RegisterRow? live, string? pullbackChange) => family.Name switch
     {
         SetupFamilies.Pullback => RuleWords.Pullback(pullback ?? FilterSettings.Proposed)
-            + (pullbackChange is { } words && words != "no change" ? $" It stands at a change approved on the Loop page: {words}." : string.Empty),
+            + (pullbackChange is { } words && words != "no change" ? $" It stands at a change approved on the Monthly check-up: {words}." : string.Empty),
         BreakoutRule.Name => RuleWords.Breakout(BreakoutRule.Live) + Changed(live),
         DriftRule.Name => RuleWords.Drift(DriftRule.Live) + Changed(live),
         _ => family.Rule,
@@ -154,7 +154,7 @@ public static partial class TonightScreen
     // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     static string Changed(RegisterRow? live) =>
         live is not null && EquityBrief.Core.Loop.RuleHooks.Of(CandidateEvaluator.Read(live.Parameters)).Words() is { } words
-            ? $" It stands at a change approved on the Loop page: {words}."
+            ? $" It stands at a change approved on the Monthly check-up: {words}."
             : string.Empty;
 
     // A pick as its family's card draws it. A pullback's trade is the plan its night's trade gate read, off

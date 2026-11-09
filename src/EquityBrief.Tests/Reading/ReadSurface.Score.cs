@@ -137,7 +137,7 @@ public partial class ReadSurface
 
         return (
             WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/AAA/{ScoreStamp(70)}")),
-            WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500")));
+            await LoopWhole(client, "universe=500"));
     }
 
     // The chart of what is behind AAA, drawn once on its own page.

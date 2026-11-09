@@ -14,7 +14,8 @@ public sealed record LoopSummaryRow(
     LoopProposalRow? Put,
     string Presses,
     string? Waiting,
-    LoopPooledRow? Pooled = null);
+    LoopPooledRow? Pooled = null,
+    LoopDecisionRow? Word = null);
 
 // The Loop page's summary and its proposal rows from 19.7: a row a family in the one order, each strongest proposal's
 // adjusted p drawn as a meter against the bar the tester reads, one line saying what a change must pass, each proposal a
@@ -29,7 +30,7 @@ public sealed partial class MarkRenderer
 
     // What a change must pass, each figure from its constant.
     public static string LoopChangeLine() =>
-        Formatted($"<p class=\"loop-must\" data-bar=\"{LoopGate.Bar.ToString("R", Invariant)}\">A change is put to you only where it passes all four: an adjusted p at or under the bar of {LoopGate.Bar.ToString("0.0000", Invariant)}; better in {LoopScreens.StableOf} of {LoopScreens.StableIn} complete test years with the latest complete year better; its total less the rule's above nothing with the {LoopScreens.LeftOut} largest results on each side left out; and {LoopScreens.SwingTrades} trades, or {LoopScreens.BookMonths} months for a book, over the test years.</p>");
+        Formatted($"<p class=\"loop-must\" data-bar=\"{LoopGate.Bar.ToString("R", Invariant)}\">A change reaches you only if it passes all four checks: {LoopPlain.Luck(LoopGate.Bar).ToLowerInvariant()} or less that it is luck; better in at least {LoopScreens.StableOf} of every {LoopScreens.StableIn} full test years, including the latest; still ahead of today's rule with the {LoopScreens.LeftOut} biggest results on each side taken out; and at least {LoopScreens.SwingTrades} trades, or {LoopScreens.BookMonths} months for a strategy that holds companies.</p>");
 
     // An adjusted p as a meter on a log scale from a ten-thousandth to one, the bar marked, filled in the gain's green at
     // or under the bar and the loss's red over it; a p not read drawn as an empty track saying so.
@@ -49,43 +50,29 @@ public sealed partial class MarkRenderer
         return Formatted($"<svg class=\"p-meter\" data-adjusted=\"{p.ToString("R", Invariant)}\" data-held=\"{Flag(held)}\" viewBox=\"0 0 {MeterWide} 14\" width=\"{MeterWide}\" height=\"14\" role=\"img\" aria-label=\"an adjusted p of {p.ToString("0.0000", Invariant)} against the bar of {LoopGate.Bar.ToString("0.0000", Invariant)}\"><rect class=\"pm-track\" x=\"0\" y=\"3\" width=\"{MeterWide}\" height=\"8\" rx=\"4\"></rect><rect class=\"pm-fill {(held ? "gain" : "loss")}\" x=\"{Number(X(p))}\" y=\"3\" width=\"{Number(MeterWide - X(p))}\" height=\"8\" rx=\"4\"></rect><line class=\"pm-bar\" x1=\"{Number(bar)}\" y1=\"0\" x2=\"{Number(bar)}\" y2=\"14\"></line></svg>");
     }
 
-    // The summary at the page's top: a row a family, its rule today as chips, the proposals tested, the strongest one's
-    // adjusted p as a meter with its years better, and the one put to you with its presses, or why nothing is.
-    public string LoopSummary(IReadOnlyList<LoopSummaryRow> rows)
+    // A strategy's rule today as chips, or that it was not read.
+    public static string LoopChips(IReadOnlyList<string> chips) =>
+        chips.Count > 0
+            ? "<span class=\"rule-chips\">" + string.Concat(chips.Select(chip => $"<span class=\"chip\">{Escaped(chip)}</span>")) + "</span>"
+            : "<span class=\"degraded\" data-chips=\"none\">not read</span>";
+
+    // The opening page's list: a line a strategy in the one order, what it does, how many changes were tried and what the
+    // month came to, each opening the strategy's own page at the address the route gives.
+    public string LoopSummary(IReadOnlyList<LoopSummaryRow> rows, Func<string, string> route)
     {
         var html = new StringBuilder();
 
-        html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"loop-summary\" data-families=\"{rows.Count}\"><thead><tr>");
-        html.Append(TippedHeading("Setup", "the family, in the one order"));
-        html.Append(TippedHeading("The rule today", "the rule standing on this index, in short words"));
-        html.Append(TippedHeading("Tested", "the proposals this run tested against the rule today", "r"));
-        html.Append(TippedHeading("Strongest", "the proposal with the lowest adjusted p, drawn against the bar on a scale from a ten-thousandth to one, with the complete test years it was better in"));
-        html.Append(TippedHeading("Put to you", "the strongest proposal that passed and states a change, with its presses"));
-        html.Append(TippedHeading(PooledHeading, "the setup's rules on the three indexes summed into one test, each keeping its own settings, read by the same bar; beside each index's own verdict, and changing no rule"));
-        html.Append("</tr></thead><tbody>");
+        html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"loop-summary\" data-families=\"{rows.Count}\"><thead><tr><th>Strategy</th><th>What it does</th><th class=\"r\">Tried</th><th>This month</th></tr></thead><tbody>");
 
         foreach (var row in rows)
         {
+            var (result, kind) = CheckUpResult(row, row.Word);
+
             html.Append(Invariant, $"<tr data-family=\"{Escaped(row.Family)}\" data-tested=\"{row.Tested}\" data-strongest=\"{Escaped(row.Strongest?.Proposal ?? "none")}\" data-put=\"{Escaped(row.Put?.Proposal ?? "none")}\">");
-            html.Append(Invariant, $"<td><span class=\"fam-tag\" data-family=\"{Escaped(row.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(row.Family)}\"></span>{Escaped(FamilyName(row.Family))}</span><span class=\"loop-tried\" data-tried=\"{row.Tested}\">{Escaped(LoopTriedSaid(row.Tested, row.Put is not null))}</span></td>");
-            html.Append(row.Chips.Count > 0
-                ? "<td><span class=\"rule-chips\">" + string.Concat(row.Chips.Select(chip => $"<span class=\"chip\">{Escaped(chip)}</span>")) + "</span></td>"
-                : "<td class=\"degraded\">not read</td>");
+            html.Append(Invariant, $"<td><a class=\"cu-open-link\" href=\"{route(row.Family)}\" data-family-page=\"{Escaped(row.Family)}\"><span class=\"fam-tag\" data-family=\"{Escaped(row.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(row.Family)}\"></span>{Escaped(FamilyName(row.Family))}</span></a></td>");
+            html.Append($"<td>{Escaped(LoopPlain.Does(row.Family))}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{row.Tested}</td>");
-
-            if (row.Strongest is { } strongest)
-            {
-                html.Append(Invariant, $"<td>{PMeter(strongest.Adjusted)} <span class=\"loop-better\" data-better=\"{strongest.Better}\" data-counted=\"{strongest.Counted}\">{(strongest.Adjusted is { } p ? Formatted($"p {p.ToString("0.0000", Invariant)}, ") : "p not read, ")}better in {strongest.Better} of {Counted(strongest.Counted, "year", "years")}</span></td>");
-            }
-            else
-            {
-                html.Append("<td class=\"degraded\">none</td>");
-            }
-
-            html.Append(row.Put is { } put
-                ? $"<td><b>{Escaped(Capitalised(put.Proposal))}</b>{row.Presses}</td>"
-                : $"<td class=\"degraded\" data-waiting=\"{Escaped(row.Waiting ?? "none")}\">{Escaped(row.Waiting ?? "Nothing is put to you.")}</td>");
-            html.Append("<td>" + PooledCell(row.Pooled) + "</td>");
+            html.Append($"<td class=\"cu-result\" data-result=\"{kind}\">{Escaped(result)}</td>");
             html.Append("</tr>");
         }
 

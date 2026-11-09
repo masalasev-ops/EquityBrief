@@ -29,6 +29,25 @@ public partial class ReadSurface
 
     const string OctoberRun = "loop-test-MID-20261009T120000Z";
 
+    // Everything the Monthly check-up draws for a query: its opening page, each strategy's page in the one order and its
+    // three further parts, decoded and read as one.
+    internal static async Task<string> LoopWhole(HttpClient client, string query = "universe=500")
+    {
+        var drawn = new System.Text.StringBuilder(await client.GetStringAsync($"/screens/loop?{query}"));
+
+        foreach (var family in EquityBrief.Core.Loop.LoopDecisions.LoopFamilies)
+        {
+            drawn.Append(await client.GetStringAsync($"/screens/loop?{query}&strategy={family}"));
+        }
+
+        foreach (var part in new[] { EquityBrief.Web.App.SinglePageApp.LoopDecisionsPart, EquityBrief.Web.App.SinglePageApp.LoopAlarmPart, EquityBrief.Web.App.SinglePageApp.LoopLongPart })
+        {
+            drawn.Append(await client.GetStringAsync($"/screens/loop?{query}&part={part}"));
+        }
+
+        return WebUtility.HtmlDecode(drawn.ToString());
+    }
+
     static void LoopProposalRow(TemporaryStore store, string family, string proposal, string? words, string current, string unit, int units, string? adjusted, int gate, int stable, int counted, int better, string? trimmed, int counts, string detectable, int stableFolds, string? finding = null) =>
         store.Execute(
             "INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding) "
@@ -57,7 +76,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+        var page = await LoopWhole(client, "universe=400");
 
         // Beneath the drift's proposals, folded shut: a row a reading, its listings, winners and losers, each side's
         // median and the edge of each tenth; a reading no listing holds drawing none for each figure.
@@ -97,7 +116,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+        var page = await LoopWhole(client, "universe=400");
 
         // The drift's figures beneath its rule today, each with the value and the trades its row stored, in the run's
         // order; and its proposal's finding beneath its change.
@@ -143,7 +162,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+        var page = await LoopWhole(client, "universe=400");
 
         // October's run drawn and September's linked.
         Assert.Contains($"data-month=\"2026-10\" data-run=\"{OctoberRun}\" data-proposals=\"3\"", page, StringComparison.Ordinal);
@@ -184,7 +203,7 @@ public partial class ReadSurface
 
         // September's run named in the link, its families each saying none was tested, the seven the loop proposes for: the
         // dip's and the two books' cards among them and the business-first family's not.
-        var september = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400&month=2026-09"));
+        var september = await LoopWhole(client, "universe=400&month=2026-09");
 
         Assert.Contains("data-month=\"2026-09\" data-run=\"loop-test-MID-20260905T120000Z\" data-proposals=\"0\"", september, StringComparison.Ordinal);
         Assert.Equal(7, september.Split("data-loop-rule=\"none\"").Length - 1);
@@ -192,7 +211,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-card=\"loop-fundamentals\"", september, StringComparison.Ordinal);
 
         // An index with no run says so in one line.
-        var small = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600"));
+        var small = await LoopWhole(client, "universe=600");
 
         Assert.Contains("<p class=\"degraded\" data-summary data-loop=\"none\">No tester run is stored for this index.", small, StringComparison.Ordinal);
         Assert.DoesNotContain("data-card=\"loop-breakout\"", small, StringComparison.Ordinal);

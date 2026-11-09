@@ -33,7 +33,7 @@ public partial class ReadSurface
         using (var host = new Host(store.Root))
         {
             using var client = host.CreateClient();
-            var unsummed = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500"));
+            var unsummed = await LoopWhole(client, "universe=500");
 
             // No pooled run for the month: each setup says so and no line of luck is drawn.
             Assert.Contains("<span class=\"degraded\" data-pooled=\"none\">not summed yet</span>", unsummed, StringComparison.Ordinal);
@@ -56,7 +56,7 @@ public partial class ReadSurface
         using (var host = new Host(store.Root))
         {
             using var client = host.CreateClient();
-            var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500"));
+            var page = await LoopWhole(client, "universe=500");
 
             Assert.Contains("All three indexes together", page, StringComparison.Ordinal);
             Assert.Contains("<span class=\"pill pooled-pill\" data-pooled=\"passed\" data-indices=\"GSPC MID SML\" title=\"adjusted p 0.0010 against the bar 0.0042\">passed</span> <span class=\"loop-better\" data-better=\"3\" data-counted=\"4\">p 0.0010, better in 3 of 4 years, 1,234 trades on the S&P 500, S&P 400 and S&P 600; the S&P 600 carried it</span>", page, StringComparison.Ordinal);
@@ -65,7 +65,7 @@ public partial class ReadSurface
             Assert.DoesNotContain("not summed yet", page, StringComparison.Ordinal);
 
             // Worked by hand: seven setups' own rules summed, 0.05 a setup a year, 0.35, one pass in about three years.
-            Assert.Contains("<p class=\"pooled-luck\" data-setups=\"7\" data-false-passes=\"0.35000000000000003\" data-years=\"3\">Passes luck alone would bring: about 0.35 a year across the 7 setups: one pass in about three years may be luck.</p>", page, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"pooled-luck\" data-setups=\"7\" data-false-passes=\"0.35000000000000003\" data-years=\"3\">Trying this many changes, luck alone would bring about 0.35 passes a year across the 7 strategies: one pass in about three years may be luck.</p>", page, StringComparison.Ordinal);
             Assert.True(page.IndexOf("pooled-luck", StringComparison.Ordinal) > page.IndexOf("loop-must", StringComparison.Ordinal));
         }
     }
@@ -95,7 +95,7 @@ public partial class ReadSurface
         Assert.True(drawn.IndexOf("<div class=\"score-pooled\" data-pooled=\"passed\">", StringComparison.Ordinal) > drawn.IndexOf("score-half live", StringComparison.Ordinal));
         Assert.Contains("<h4>All three indexes together</h4>", drawn, StringComparison.Ordinal);
         Assert.Contains("Its setup's rules on the S&P 500, S&P 400 and S&P 600, each at its own settings, summed into one test over the same years: it passed, better in 3 of 4 complete years over 108 months. One index carried it: without the S&P 400 the others together gained nothing. Each index's own verdict above stands, and an approval still changes one index's rule.", drawn, StringComparison.Ordinal);
-        Assert.Contains("Passes luck alone would bring: about 0.1 a year across the 2 setups: one pass in about ten years may be luck.", drawn, StringComparison.Ordinal);
+        Assert.Contains("Trying this many changes, luck alone would bring about 0.1 passes a year across the 2 strategies: one pass in about ten years may be luck.", drawn, StringComparison.Ordinal);
 
         // The lower floor's same change across the S&P 500 and 400 beside its verdict, and none beside the variant no run
         // summed.

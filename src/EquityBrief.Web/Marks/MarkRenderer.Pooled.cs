@@ -50,7 +50,7 @@ public sealed partial class MarkRenderer
             _ => Formatted($"one pass in about {(years < SmallNumbers.Length ? SmallNumbers[years.Value] : years.Value.ToString(Invariant))} years may be luck"),
         };
 
-        return Formatted($"<p class=\"pooled-luck\" data-setups=\"{setups}\" data-false-passes=\"{expected.ToString("R", Invariant)}\" data-years=\"{(years is { } held ? held.ToString(Invariant) : "none")}\">Passes luck alone would bring: about {expected.ToString("0.##", Invariant)} a year across the {setups} {(setups == 1 ? "setup" : "setups")}: {once}.</p>");
+        return Formatted($"<p class=\"pooled-luck\" data-setups=\"{setups}\" data-false-passes=\"{expected.ToString("R", Invariant)}\" data-years=\"{(years is { } held ? held.ToString(Invariant) : "none")}\">Trying this many changes, luck alone would bring about {expected.ToString("0.##", Invariant)} passes a year across the {setups} {(setups == 1 ? "strategy" : "strategies")}: {once}.</p>");
     }
 
     // The summary's cell: the setup's rules summed across the indices, passed or not, its chance of luck and years better,

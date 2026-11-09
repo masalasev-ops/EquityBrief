@@ -36,16 +36,19 @@ public sealed record PlanPointRow(string Family, string Through, int Setups, str
 public sealed partial class SinglePageApp
 {
     public const string LongSearchLede =
-        "Each family's starting setting searched again over 2005 onward, every third year with the setting carried between, and each price family's buy and sell points tested over the years no setting was chosen on. Each is a proposal and changes nothing until you say so.";
+        "Using prices back to 2005, the system looks again for each strategy's best settings and tests each price strategy's ways of buying and selling. None of it changes anything until you say so.";
 
     static string Edge(double? figure) => figure is { } held ? held.ToString("+0.000;-0.000;0.000", CultureInfo.InvariantCulture) : "none";
 
+    // What the long history came to in a sentence, on its own card and in the opening page's link to it.
+    static string LongSearchSaid(IReadOnlyList<LongSearchRow> searches, IReadOnlyList<PlanPointRow> points) =>
+        searches.Count == 0 && points.Count == 0
+            ? "Nothing has been searched over the long history on this index yet."
+            : Invariant($"{searches.Count(row => row.Passed)} of {searches.Count} searches over the long history passed, and {points.Count(row => row.Combination is not null)} of {points.Count} strategies have a recommended way to buy and sell. None of it changes anything until you say so.");
+
     string LongSearchCard(IReadOnlyList<LongSearchRow> searches, IReadOnlyList<PlanPointRow> points)
     {
-        var passed = searches.Count(row => row.Passed);
-        var body = new StringBuilder(Marks.MarkRenderer.CardSummary(searches.Count == 0 && points.Count == 0
-            ? "Nothing has been searched over the long history on this index yet."
-            : Invariant($"{passed} of {searches.Count} setups' searches over the long history passed, and {points.Count(row => row.Combination is not null)} of {points.Count} setups have buy and sell points recommended; none of it changes anything until you say so.")));
+        var body = new StringBuilder(Marks.MarkRenderer.CardSummary(LongSearchSaid(searches, points)));
 
         if (searches.Count == 0 && points.Count == 0)
         {
@@ -54,14 +57,14 @@ public sealed partial class SinglePageApp
 
         if (searches.Count > 0)
         {
-            body.Append("<p class=\"card-note\">Each family's setting searched again from its first test year, against the rule today. Each edge is over the same plan bought on every stock in the index that day and sold the same way; beside it, a trade's edge over simply holding the index's own fund for the same days.</p>");
-            body.Append("<div class=\"tbl-wrap\"><table class=\"loop-table\" data-table=\"long-search\"><thead><tr><th>Family</th><th>From</th><th>Would run, and the rule today</th><th class=\"r\">Trades</th><th class=\"r\">Adjusted p</th><th class=\"r\">Years better</th><th class=\"r\">Against the fund</th><th>Passed</th></tr></thead><tbody>");
+            body.Append("<p class=\"card-note\">Would a fresh search choose different settings? Each row sets what the search would use against today's rule. The last figures are the gain per trade over simply holding the index's own fund for the same days.</p>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"loop-table\" data-table=\"long-search\"><thead><tr><th>Strategy</th><th>First test year</th><th>What the search would use, and today's rule</th><th class=\"r\">Trades</th><th class=\"r\">Chance it is luck</th><th class=\"r\">Full years better</th><th class=\"r\">Against the fund</th><th>Passed</th></tr></thead><tbody>");
 
             foreach (var row in searches)
             {
-                var p = row.Adjusted is { } held ? held.ToString("0.0000", CultureInfo.InvariantCulture) : "none";
+                var would = row.Words is null ? "no setting was good enough" : row.Words.Contains('=', StringComparison.Ordinal) ? "a different combination of this strategy's settings" : row.Words;
 
-                body.Append(Invariant($"<tr data-family=\"{Escaped(row.Family)}\" data-passed=\"{(row.Passed ? "yes" : "no")}\"><td>{Escaped(row.Family)}</td><td class=\"n\">{row.FirstTestYear}</td><td>{Escaped(row.Words ?? "no setting meets the floors")}<br><span class=\"muted\">against {Escaped(row.Current)}</span></td><td class=\"n\">{row.Units:N0}</td><td class=\"n\">{p}</td><td class=\"n\">{row.Better} of {row.Counted}</td><td class=\"n\">{Edge(row.FundEdge)}<br><span class=\"muted\">today {Edge(row.CurrentFundEdge)}</span></td><td>{(row.Passed ? "yes" : "no")}</td></tr>"));
+                body.Append(Invariant($"<tr data-family=\"{Escaped(row.Family)}\" data-passed=\"{(row.Passed ? "yes" : "no")}\"><td>{Escaped(FamilyLabel(row.Family))}</td><td class=\"n\">{row.FirstTestYear}</td><td{(row.Words is { } stored && stored.Contains('=', StringComparison.Ordinal) ? $" title=\"{Escaped(stored)}\"" : string.Empty)}>{Escaped(would)}<br><span class=\"muted\">against {Escaped(row.Current)}</span></td><td class=\"n\">{row.Units:N0}</td><td class=\"n\">{Escaped(Marks.LoopPlain.Luck(row.Adjusted))}</td><td class=\"n\">{row.Better} of {row.Counted}</td><td class=\"n\">{Edge(row.FundEdge)}<br><span class=\"muted\">today {Edge(row.CurrentFundEdge)}</span></td><td>{(row.Passed ? "yes" : "no")}</td></tr>"));
             }
 
             body.Append("</tbody></table></div>");
@@ -69,19 +72,19 @@ public sealed partial class SinglePageApp
 
         if (points.Count > 0)
         {
-            body.Append("<p class=\"card-note\">Each price family's best way to buy and sell on 2005 to 2018, the years no setting was chosen on, beside the plan traded today. It was picked as the best there, so its edge there reads high; from 2019 is the years it was not picked on. Each edge is over the same plan bought on every stock in the index that day and sold the same way; the last column is the edge over holding the index's own fund for the same days instead.</p>");
-            body.Append("<div class=\"tbl-wrap\"><table class=\"loop-table\" data-table=\"plan-points\"><thead><tr><th>Family</th><th>Recommended buy and sell points</th><th class=\"r\">Fills</th><th class=\"r\">Fill rate</th><th class=\"r\">Edge per pick</th><th class=\"r\">Traded plan's edge per pick</th><th class=\"r\">From 2019</th><th class=\"r\">Traded plan's from 2019</th><th class=\"r\">Against the fund</th></tr></thead><tbody>");
+            body.Append("<p class=\"card-note\">The best way found to buy and sell each price strategy on 2005 to 2018, beside the plan traded today. It was picked as the best there, so its gain there looks high; the columns from 2019 cover years it was not picked on. Gains are per $1 risked, over the same plan bought on every stock in the index that day and sold the same way. The last column is the gain over holding the index's own fund for the same days.</p>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"loop-table\" data-table=\"plan-points\"><thead><tr><th>Strategy</th><th>Recommended way to buy and sell</th><th class=\"r\">Times bought</th><th class=\"r\">Share of picks bought</th><th class=\"r\">Gain per pick, 2005 to 2018</th><th class=\"r\">Today's plan, 2005 to 2018</th><th class=\"r\">Gain per pick, from 2019</th><th class=\"r\">Today's plan, from 2019</th><th class=\"r\">Against the fund</th></tr></thead><tbody>");
 
             foreach (var row in points)
             {
                 var rate = row.FillRate is { } held ? held.ToString("0%", CultureInfo.InvariantCulture) : "none";
 
-                body.Append(Invariant($"<tr data-family=\"{Escaped(row.Family)}\"><td>{Escaped(row.Family)}</td><td>{Escaped(row.Combination ?? "none rests on enough fills")}</td><td class=\"n\">{(row.Fills is { } fills ? fills.ToString("N0", CultureInfo.InvariantCulture) : "none")}</td><td class=\"n\">{rate}</td><td class=\"n\">{Edge(row.EdgePerPick)}</td><td class=\"n\">{Edge(row.TradedEdgePerPick)}</td><td class=\"n\">{Edge(row.LaterEdgePerPick)}</td><td class=\"n\">{Edge(row.TradedLaterEdgePerPick)}</td><td class=\"n\">{Edge(row.FundEdgePerPick)}<br><span class=\"muted\">from 2019 {Edge(row.LaterFundEdgePerPick)}</span></td></tr>"));
+                body.Append(Invariant($"<tr data-family=\"{Escaped(row.Family)}\"><td>{Escaped(FamilyLabel(row.Family))}</td><td>{Escaped(row.Combination ?? "none was bought often enough to judge")}</td><td class=\"n\">{(row.Fills is { } fills ? fills.ToString("N0", CultureInfo.InvariantCulture) : "none")}</td><td class=\"n\">{rate}</td><td class=\"n\">{Edge(row.EdgePerPick)}</td><td class=\"n\">{Edge(row.TradedEdgePerPick)}</td><td class=\"n\">{Edge(row.LaterEdgePerPick)}</td><td class=\"n\">{Edge(row.TradedLaterEdgePerPick)}</td><td class=\"n\">{Edge(row.FundEdgePerPick)}<br><span class=\"muted\">from 2019 {Edge(row.LaterFundEdgePerPick)}</span></td></tr>"));
             }
 
             body.Append("</tbody></table></div>");
         }
 
-        return Cards.Computed("Loop", body.ToString(), title: "The long history", lede: LongSearchLede, region: "loop-long");
+        return Cards.Computed(Marks.MarkRenderer.CheckUpName, body.ToString(), title: "The long history", lede: LongSearchLede, region: "loop-long");
     }
 }

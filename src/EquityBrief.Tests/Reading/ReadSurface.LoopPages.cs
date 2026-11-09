@@ -62,13 +62,21 @@ public partial class ReadSurface
                 "INSERT INTO loop_reading (run_id, index_code, family, reading, units, winners, losers, winners_median, losers_median, deciles) VALUES " +
                 $"('{OctoberRun}', 'MID', 'drift', 'rsi', 1200, 560, 640, 63.1, 58.4, '[-0.2,-0.1,0,0.05,0.1,0.1,0.15,0.2,0.25,0.3]');");
 
+            Proposed(loop, OctoberRun, "MID", "dip", "the autopsy's exit, ranked 1", true, Exit(7));
+
+            string[] parts = [EquityBrief.Web.App.SinglePageApp.LoopDecisionsPart, EquityBrief.Web.App.SinglePageApp.LoopAlarmPart, EquityBrief.Web.App.SinglePageApp.LoopLongPart];
+
             await Read(
                 PlainWords.LoopPage,
                 "the S&P 400's runs and the S&P 600 with none",
                 loop,
-                "/screens/loop?universe=400",
-                "/screens/loop?universe=400&month=2026-09",
-                "/screens/loop?universe=600");
+                [
+                    "/screens/loop?universe=400",
+                    "/screens/loop?universe=400&month=2026-09",
+                    "/screens/loop?universe=600",
+                    .. EquityBrief.Core.Loop.LoopDecisions.LoopFamilies.Select(family => $"/screens/loop?universe=400&strategy={family}"),
+                    .. parts.Select(part => $"/screens/loop?universe=400&part={part}"),
+                ]);
         }
 
         using (var empty = new TemporaryStore().Migrated())

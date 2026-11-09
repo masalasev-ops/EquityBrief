@@ -5167,7 +5167,7 @@ public sealed partial class MarkRenderer : IComponent
         }
 
         region.Append(Invariant, $"<p class=\"looks\" data-first-look=\"{edge.FirstLookSessions}\" data-promotion=\"{edge.PromotionSessions}\">");
-        region.Append(Invariant, $"Each candidate's first look is read at {Looks.At[0]} non-empty blocks, no earlier than {edge.FirstLookSessions} sessions after its first night, and it can retire the candidate or leave it and promotes nothing: a look is monitoring, and a rule changes only through the monthly test and your approval on the Loop page.</p>");
+        region.Append(Invariant, $"Each candidate's first look is read at {Looks.At[0]} non-empty blocks, no earlier than {edge.FirstLookSessions} sessions after its first night, and it can retire the candidate or leave it and promotes nothing: a look is monitoring, and a rule changes only through the monthly test and your approval on the Monthly check-up.</p>");
         region.Append("<div class=\"tbl-wrap\"><table class=\"edge-table\"><tr><th>Candidate</th><th>Defined against</th><th>Sessions run</th><th class=\"num\">Blocks</th><th class=\"num\">Resolved setups</th><th>Against its null</th></tr>");
 
         foreach (var candidate in edge.Candidates)
@@ -5255,7 +5255,7 @@ public sealed partial class MarkRenderer : IComponent
 
         if (proposal is null)
         {
-            region.Append("<p class=\"proposal\" data-proposal=\"none\">No shape proposal is stored. The proposer writes one once the shape clock's trigger is crossed, and nothing moves until you approve one of its moves on the Loop page.</p></section>");
+            region.Append("<p class=\"proposal\" data-proposal=\"none\">No shape proposal is stored. The proposer writes one once the shape clock's trigger is crossed, and nothing moves until you approve one of its moves on the Monthly check-up.</p></section>");
 
             return region.ToString();
         }
@@ -5264,7 +5264,7 @@ public sealed partial class MarkRenderer : IComponent
         // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
         var decided = proposal.Decision switch
         {
-            null => Formatted($"waiting: each of its moves is put to you on the Loop page once the tester has tested it on years it never saw, and shape --reject {proposal.Id} --reason records why not"),
+            null => Formatted($"waiting: each of its moves is put to you on the Monthly check-up once the tester has tested it on years it never saw, and shape --reject {proposal.Id} --reason records why not"),
             "accepted" => $"accepted, opening filter version {Escaped(proposal.Opened ?? "none")}",
             _ => $"rejected: {Escaped(proposal.Reason ?? string.Empty)}",
         };

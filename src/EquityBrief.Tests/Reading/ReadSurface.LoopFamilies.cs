@@ -35,7 +35,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600"));
+        var page = await LoopWhole(client, "universe=600");
         var summary = Card(page, "loop-summary");
 
         // A row and a card for each of the seven, in Tonight's order of their cards, each card under its family's label.

@@ -231,27 +231,36 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+        var page = await LoopWhole(client, "universe=400");
         var summary = Card(page, "loop-summary");
 
-        // A row a family in Tonight's order of the seven the loop proposes for, the dip and the two books among them.
+        // A line a family in Tonight's order of the seven the loop proposes for, the dip and the two books among them,
+        // each opening its own page.
         Assert.Equal(
             ["pullback", "breakout", "drift", "improving", "dip", "heavyweight", "quality"],
             Regex.Matches(summary, "<tr data-family=\"([^\"]+)\" data-tested").Select(match => match.Groups[1].Value));
         Assert.Contains("<tr data-family=\"pullback\" data-tested=\"2\" data-strongest=\"winners against losers, ranked 1\" data-put=\"winners against losers, ranked 1\">", summary, StringComparison.Ordinal);
-        Assert.Contains("data-adjusted=\"0.0001\" data-held=\"true\"", summary, StringComparison.Ordinal);
-        Assert.Contains("p 0.0001, better in 3 of 4 years", summary, StringComparison.Ordinal);
-        Assert.Contains("class=\"loop-press\"", Regex.Match(summary, "<tr data-family=\"pullback\".*?</tr>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+        Assert.Contains("href=\"#/loop?universe=400&month=2026-10&strategy=pullback\" data-family-page=\"pullback\"", summary, StringComparison.Ordinal);
+
+        // The change put to you draws its presses in the card of what passed, and its strategy's line says it waits.
+        Assert.Contains("class=\"loop-press\"", Card(page, "loop-passed"), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"cu-result\" data-result=\"waiting\">Waiting for you</td>", Regex.Match(summary, "<tr data-family=\"pullback\".*?</tr>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"cu-result\" data-result=\"none\">No change</td>", Regex.Match(summary, "<tr data-family=\"breakout\".*?</tr>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"cu-result\" data-result=\"none\">Nothing tried</td>", Regex.Match(summary, "<tr data-family=\"drift\".*?</tr>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+
+        // A strategy's full workings draw the strongest change's meter against the bar.
+        Assert.Contains("data-adjusted=\"0.0001\" data-held=\"true\"", page, StringComparison.Ordinal);
+        Assert.Contains("p 0.0001, better in 3 of 4 years", page, StringComparison.Ordinal);
 
         // The breakout at 0.05: 160 times log10(0.05) plus 4 over 4 is 107.96, over the bar and drawn in red.
-        Assert.Contains("data-adjusted=\"0.05\" data-held=\"false\"", summary, StringComparison.Ordinal);
-        Assert.Contains("<rect class=\"pm-fill loss\" x=\"107.96\"", summary, StringComparison.Ordinal);
-        Assert.Contains("Its one proposal did not pass with a change to put to you; the next monthly run is on 2026-11-07.", summary, StringComparison.Ordinal);
+        Assert.Contains("data-adjusted=\"0.05\" data-held=\"false\"", page, StringComparison.Ordinal);
+        Assert.Contains("<rect class=\"pm-fill loss\" x=\"107.96\"", page, StringComparison.Ordinal);
+        Assert.Contains("Its one change did not pass, so it stays as it is. The next check-up is on 2026-11-07.", page, StringComparison.Ordinal);
 
         // 2026-11-01 is a Sunday, so the first Saturday after the run's month is the seventh.
         Assert.Equal(new DateOnly(2026, 11, 7), SinglePageApp.NextMonthlyRun("2026-10"));
         Assert.Equal(new DateOnly(2026, 12, 5), SinglePageApp.NextMonthlyRun("2026-11"));
-        Assert.Contains("Nothing was tested for this setup in the run for 2026-10; the next monthly run is on 2026-11-07.", summary, StringComparison.Ordinal);
+        Assert.Contains("Nothing was tried for this strategy in the run for 2026-10. The next check-up is on 2026-11-07.", page, StringComparison.Ordinal);
 
         // The Fundamentals family is a row and a card as every family is, its one proposal drawn from the run under its own
         // name and nothing said of a checkpoint.
@@ -260,19 +269,21 @@ public partial class ReadSurface
         Assert.Single(Blocks(page, "<details class=\"loop-row\" data-family=\"improving\" data-proposal=\"the grid\">.*?</details>"));
         Assert.DoesNotContain("21.5", page, StringComparison.Ordinal);
 
-        // The line on what a change must pass, each figure its constant.
+        // The line on what a change must pass, each figure its constant, the bar of 0.05 over twelve a year read as one in 240.
+        Assert.Equal("About 1 in 240", LoopPlain.Luck(LoopGate.Bar));
         Assert.Contains(
-            FormattableString.Invariant($"a chance it is luck at or under the bar of {LoopGate.Bar:0.0000}; better in 3 of 5 complete test years with the latest complete year better; its total less the rule's above nothing with the 5 largest results on each side left out; and 300 trades, or 36 months for holdings, over the test years."),
+            "A change reaches you only if it passes all four checks: about 1 in 240 or less that it is luck; better in at least 3 of every 5 full test years, including the latest; still ahead of today's rule with the 5 biggest results on each side taken out; and at least 300 trades, or 36 months for a strategy that holds companies.",
             summary,
             StringComparison.Ordinal);
 
-        // Each proposal a folded row, the one put pointing to the summary's presses, its year as a pair of bars.
+        // Each change a folded row in the full workings, the one put pointing to the opening page's presses, its year as a
+        // pair of bars.
         var row = Assert.Single(Blocks(page, "<details class=\"loop-row\" data-family=\"pullback\" data-proposal=\"winners against losers, ranked 1\">.*?</details>"));
 
         Assert.Contains("<span class=\"lr-years\">better in 3 of 4</span>", row, StringComparison.Ordinal);
         Assert.Contains("<span class=\"lr-count\">400 trade(s) of 300</span>", row, StringComparison.Ordinal);
         Assert.Contains("<g data-year=\"2024\" data-current=\"2.5\" data-proposed=\"4\">", row, StringComparison.Ordinal);
-        Assert.Contains("Its presses stand in the summary above.", row, StringComparison.Ordinal);
+        Assert.Contains("Its buttons are at the top of the <a href=\"#/loop?universe=400&month=2026-10\">Monthly check-up</a>.", row, StringComparison.Ordinal);
         Assert.True(page.IndexOf("data-card=\"loop-summary\"", StringComparison.Ordinal) < page.IndexOf("data-card=\"loop-pullback\"", StringComparison.Ordinal));
     }
 
@@ -308,7 +319,7 @@ public partial class ReadSurface
         // its row or its card, whatever setting its night stored.
         foreach (var universe in new[] { "400", "500" })
         {
-            var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/loop?universe={universe}"));
+            var page = await LoopWhole(client, $"universe={universe}");
 
             Assert.DoesNotContain("<tr data-family=\"fundamentals\"", Card(page, "loop-summary"), StringComparison.Ordinal);
             Assert.DoesNotContain("data-card=\"loop-fundamentals\"", page, StringComparison.Ordinal);

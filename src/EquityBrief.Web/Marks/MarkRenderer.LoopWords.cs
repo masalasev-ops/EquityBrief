@@ -24,20 +24,36 @@ public sealed partial class MarkRenderer
                 ? Formatted($"Quiet {quiet.Stretch} {(quiet.Stretch == 1 ? "night" : "nights")}; up to {level} in its history")
                 : Formatted($"Quiet {quiet.Stretch} {(quiet.Stretch == 1 ? "night" : "nights")}; too new to know its usual");
 
-    // A setup's month: how many changes were tried for it and whether one beat luck and waits for the operator's word.
-    public static string LoopTriedSaid(int tried, bool put) =>
-        tried == 0
-            ? "No change was tried for this setup this month."
-            : Formatted($"{(tried == 1 ? "1 change was" : Formatted($"{tried} changes were"))} tried for this setup this month; {(put ? "one did, and waits for your word." : (tried == 1 ? "it did not beat luck." : "none beat luck."))}");
+    // A strategy's month: how many changes were tried for it, how many passed, and whether the strongest waits for the
+    // operator's word or holds it already.
+    public static string LoopTriedSaid(int tried, int passed, bool put, bool waiting)
+    {
+        if (tried == 0)
+        {
+            return "No change was tried for this strategy this month.";
+        }
+
+        var opening = Formatted($"{(tried == 1 ? "1 change was" : Formatted($"{tried} changes were"))} tried for this strategy this month; ");
+        var did = passed == 1 ? "one passed" : Formatted($"{passed} passed");
+
+        return opening + (passed == 0
+            ? (tried == 1 ? "it did not beat luck." : "none beat luck.")
+            : !put
+                ? did + ", and none is put to you this month."
+                : waiting
+                    ? did + (passed == 1 ? ", and waits for your word." : ", and the strongest waits for your word.")
+                    : did + (passed == 1 ? ", and you have decided on it." : ", and you have decided on the strongest."));
+    }
 
     public static string LoopSummarySaid(string month, IReadOnlyList<LoopSummaryRow> rows)
     {
         var tried = rows.Sum(row => row.Tested);
         var put = rows.Count(row => row.Put is not null);
+        var waiting = rows.Count(row => row.Put is not null && row.Word is null);
 
         return tried == 0
-            ? Formatted($"No change was tried for any setup in the run for {month}.")
-            : Formatted($"The run for {month} tried {tried} changes across {rows.Count(row => row.Tested > 0)} setups; {(put == 0 ? "none beat luck" : put == 1 ? "one beat luck and waits for your word" : Formatted($"{put} beat luck and wait for your word"))}.");
+            ? Formatted($"No change was tried for any strategy in the run for {month}.")
+            : Formatted($"The run for {month} tried {tried} changes across {rows.Count(row => row.Tested > 0)} strategies; {(put == 0 ? "none beat luck" : waiting == 0 ? (put == 1 ? "one beat luck and you have decided on it" : Formatted($"{put} beat luck and you have decided on them")) : waiting == 1 ? "one beat luck and waits for your word" : Formatted($"{waiting} beat luck and wait for your word"))}.");
     }
 
     public static string LoopDecisionsSaid(LoopDecided decided) =>
@@ -50,9 +66,9 @@ public sealed partial class MarkRenderer
         var flagged = decided.Alarms.GroupBy(one => one.Family).Count(family => family.OrderByDescending(one => one.Period).First().Flagged);
 
         return decided.Alarms.Count == 0
-            ? "The live alarm has read no month on this index yet."
+            ? "The safety alarm has no finished month to read on this index yet."
             : flagged == 0
-                ? Formatted($"The live alarm read {decided.Alarms.GroupBy(one => one.Family).Count()} setups on this index, and none is flagged.")
-                : Formatted($"The live alarm flags {(flagged == 1 ? "1 setup" : Formatted($"{flagged} setups"))} on this index: its trades have done worse than chance would give it two months running.");
+                ? Formatted($"The safety alarm read {decided.Alarms.GroupBy(one => one.Family).Count()} strategies on this index, and none is flagged.")
+                : Formatted($"The safety alarm flags {(flagged == 1 ? "1 strategy" : Formatted($"{flagged} strategies"))} on this index: its trades have done worse than chance would give it two months running.");
     }
 }

@@ -38,10 +38,10 @@ public partial class ReadSurface
             "|");
 
         Assert.Contains("data-card=\"loop-long\"", page, StringComparison.Ordinal);
-        Assert.Equal("|breakout||2008||a wider stop||against rule today|||1,619||0.0123||9 of 14||+0.400||today +0.100|||yes|", Row("long-search", "breakout"));
+        Assert.Equal("|Breakout||2008||a wider stop||against rule today|||1,619||About 1 in 81||9 of 14||+0.400||today +0.100|||yes|", Row("long-search", "breakout"));
         Assert.Equal(string.Empty, Row("long-search", "drift"));
         // The page reads every stored word through the reader's phrases, sessions among them.
-        Assert.Equal("|pullback||the second zone within 20 trading days, the rule's stop, the time limit alone||2,048||64%||+0.292||-0.135||+0.050||-0.020||+0.150||from 2019 -0.030||", Row("plan-points", "pullback"));
+        Assert.Equal("|Pullback||the second zone within 20 trading days, the rule's stop, the time limit alone||2,048||64%||+0.292||-0.135||+0.050||-0.020||+0.150||from 2019 -0.030||", Row("plan-points", "pullback"));
     }
 
     [Fact]

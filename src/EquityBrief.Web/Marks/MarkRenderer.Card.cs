@@ -337,7 +337,7 @@ public sealed partial class MarkRenderer
 
     // Words the night stored, said as the reader reads them: its counts in words and its long figures as prices are, then
     // its phrasings in the reader's words.
-    static string Said(string stored) => ReaderWords.Plain(StoredWords(stored));
+    static string Said(string stored) => ReaderWords.Plain(StoredWords(stored)).Replace("the Loop page", "the " + CheckUpName, StringComparison.Ordinal);
 
     // Why it qualified: a ticked sentence for each step the setup passed, read from the card's first line.
     static string WhyItQualified(DecisionCardView card)
@@ -976,7 +976,7 @@ public sealed partial class MarkRenderer
 
     // What a card says in place of the record of a rule standing at a change an approval set.
     public static string ApprovedRecord(string approved) =>
-        $"Not this setup's record: it stands at a change approved on the Loop page, {approved}, and the record stored for it replays its settings before the change, so none is drawn as this setup's.";
+        $"Not this setup's record: it stands at a change approved on the Monthly check-up, {approved}, and the record stored for it replays its settings before the change, so none is drawn as this setup's.";
 
     // Beneath the drift's record on the S&P 500, the same rule replayed skipping a fill whose reward to risk at the open is
     // under the floor, beside the rule's own walk over the same sessions, each followed forward from the first replay's last

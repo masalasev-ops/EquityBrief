@@ -206,7 +206,7 @@ public partial class ReadSurface
         using var client = host.CreateClient();
 
         var ledger = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger"));
-        var loop = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500"));
+        var loop = await LoopWhole(client, "universe=500");
         string[] order = ["pullback", "breakout", "drift", "fundamentals", "heavyweight"];
 
         Assert.Equal(order, EquityBrief.Core.Families.SetupFamilies.Order);

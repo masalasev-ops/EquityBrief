@@ -235,7 +235,7 @@ public sealed partial class MarkRenderer
     public const string EntryPriceLine = "Each entry is bought at the open of the session after the night that listed it.";
 
     // The line beneath the variants' table saying how a variant is adopted.
-    public const string AdoptedLine = "A variant is adopted only through the monthly test and your approval on the Loop page.";
+    public const string AdoptedLine = "A variant is adopted only through the monthly test and your approval on the Monthly check-up.";
 
     // The warning beside a rule's test years where its setting was chosen on them.
     public const string TunedLine = "Its settings were tuned on these same years, so expect it to look worse from here on.";
