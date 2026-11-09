@@ -17910,8 +17910,10 @@ Measured:   over the live store through 2026-11-06 with the first six correction
             pullback named with what blocks its search; the S&P 400's and 600's profit check read from 2012 and 2013. The
             long test's rerun on all three indices and the verdict across them, the long years written again with their
             outliers and the S&P 500's long check are the remedy's, the long test taking about an hour an index.
-Also:       the commit after this entry's first gives 23.5's list of the sources naming the long facts the long history
-            reader the fourth correction made one, read by no night, which the suite's first run over this tree found.
+Also:       the two commits after this entry's first, from the suite's first runs over this tree: 23.5's list of the sources
+            naming the long facts gains the long history reader the fourth correction made one, and 23.4's list naming the
+            long prices the marking page, neither read by a night; and the marking page's three rows formatting a date hand
+            it to the invariant culture in the call that formats it, as the clock check reads.
 Tests:      none new.
 Pins:       none move: no source a rule's version or the readings' version pins moves in this pull request.
 Mutated:    none: this entry adds no assertion; each correction above mutated its own.

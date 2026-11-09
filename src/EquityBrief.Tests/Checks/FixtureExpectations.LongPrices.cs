@@ -476,8 +476,10 @@ public partial class FixtureExpectations
             .Order(StringComparer.Ordinal)
             .ToArray();
 
+        // From the 23.4 correction the marking page reads the long bars and the long filings about each mark owed, a read of
+        // the read surface's and of no night.
         Assert.Equal(
-            ["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/DataChecker.cs", "src/EquityBrief.Worker/History/LongFactPull.cs", "src/EquityBrief.Worker/History/LongFirstYearReader.cs", "src/EquityBrief.Worker/History/LongHistoryReader.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/History/LongPricePull.cs", "src/EquityBrief.Worker/History/SectorSplitsReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs"],
+            ["src/EquityBrief.Api/Reading/ReadApi.Marking.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/DataChecker.cs", "src/EquityBrief.Worker/History/LongFactPull.cs", "src/EquityBrief.Worker/History/LongFirstYearReader.cs", "src/EquityBrief.Worker/History/LongHistoryReader.cs", "src/EquityBrief.Worker/History/LongLedgerReader.cs", "src/EquityBrief.Worker/History/LongPricePull.cs", "src/EquityBrief.Worker/History/SectorSplitsReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs"],
             readers);
 
         var pinned = CandidateEvaluators.All

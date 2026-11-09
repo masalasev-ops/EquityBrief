@@ -63,7 +63,7 @@ public sealed partial class SinglePageApp
 
             foreach (var row in view.Outlying)
             {
-                body.Append(Invariant($"<tr><td>{Escaped(row.Index)}</td><td>{Escaped(row.Family)}</td><td>{Escaped(row.Ticker)}</td><td class=\"n\">{row.Session:yyyy-MM-dd}</td><td class=\"n\">{row.Edge:+0.0;-0.0;0.0}</td></tr>"));
+                body.Append(FormattableString.Invariant($"<tr><td>{Escaped(row.Index)}</td><td>{Escaped(row.Family)}</td><td>{Escaped(row.Ticker)}</td><td class=\"n\">{row.Session:yyyy-MM-dd}</td><td class=\"n\">{row.Edge:+0.0;-0.0;0.0}</td></tr>"));
             }
 
             body.Append("</tbody></table></div>");
@@ -94,7 +94,7 @@ public sealed partial class SinglePageApp
                 ? "none"
                 : string.Join("; ", row.Evidence.Filings.Select(filing => Invariant($"{Escaped(filing.Form)}{(filing.Items is { } items ? " " + Escaped(items) : string.Empty)} {filing.Filed:yyyy-MM-dd}")));
 
-            body.Append(Invariant($"<tr data-mark=\"{Escaped(row.Key)}\"><td class=\"n\">{number}</td><td>{Escaped(row.Ticker)}</td><td class=\"n\">{row.Session:yyyy-MM-dd}</td><td class=\"muted\">{around}<br>{median}{(row.Says is { } says ? "<br>" + Escaped(says) : string.Empty)}</td><td>{filings}</td><td>"));
+            body.Append(FormattableString.Invariant($"<tr data-mark=\"{Escaped(row.Key)}\"><td class=\"n\">{number}</td><td>{Escaped(row.Ticker)}</td><td class=\"n\">{row.Session:yyyy-MM-dd}</td><td class=\"muted\">{around}<br>{median}{(row.Says is { } says ? "<br>" + Escaped(says) : string.Empty)}</td><td>{filings}</td><td>"));
 
             if (row.Marked is { } marked)
             {
@@ -102,7 +102,7 @@ public sealed partial class SinglePageApp
             }
             else
             {
-                body.Append(Invariant($"<select name=\"m|{Escaped(row.Key)}\" aria-label=\"Mark for {Escaped(row.Ticker)} {row.Session:yyyy-MM-dd}\">"));
+                body.Append(FormattableString.Invariant($"<select name=\"m|{Escaped(row.Key)}\" aria-label=\"Mark for {Escaped(row.Ticker)} {row.Session:yyyy-MM-dd}\">"));
 
                 foreach (var kind in new[] { row.Proposed }.Concat(MarkProposals.Kinds.Where(kind => kind != row.Proposed)).Append(Unmarked))
                 {
