@@ -4705,10 +4705,13 @@ public sealed partial class SinglePageApp : IComponent
     public static string NotANight(string asked) =>
         Invariant($"<p class=\"notice\" role=\"status\" data-not-a-night=\"{Escaped(asked)}\">{Escaped(asked)} is not an evening this reads, so this is tonight.</p>");
 
-    // Every screen over a store behind this checkout, which names both schema numbers
-    // rather than failing on the first column the store lacks.
+    public const string NeedsMigrating = "The store needs migrating.";
+
+    // Every screen over a store behind this checkout, which says so as a banner and names both schema numbers rather than
+    // failing on the first column the store lacks or drawing blank.
+    // see: A merge carrying a migration applies it in the merge step, and every page over a store behind says it needs migrating
     public string StoreBehind(int store, int checkout) =>
-        Invariant($"<p class=\"degraded\" data-schema=\"{store}\" data-needs=\"{checkout}\">the store is at schema {store} and this checkout reads schema {checkout}, so nothing is drawn from it until tools/migrate applies the rest</p>");
+        Invariant($"<p class=\"banner\" role=\"status\" data-schema=\"{store}\" data-needs=\"{checkout}\"><b>{NeedsMigrating}</b> It is at schema {store} and this checkout reads schema {checkout}, so nothing is drawn from it until tools/migrate applies the rest; tools/merge runs it as part of a merge.</p>");
 
     static string Invariant(FormattableString text) =>
         text.ToString(CultureInfo.InvariantCulture);

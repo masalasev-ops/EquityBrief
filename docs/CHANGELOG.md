@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - CLAUDE.md, docs/RUNBOOK.md, .claude/rules/checks.md - a merge applies its migrations, and a store behind says it needs migrating
+Decision: A merge carrying a migration applies it in the merge step, and every page over a store behind says it needs migrating
+Was:
+> (CLAUDE.md, layout) no line for `merge  merge.ps1`
+> (CLAUDE.md, Commands) no row for merging a pull request
+> (CLAUDE.md, Merge) After the merge the branch is deleted, locally and on the remote, and the checkout is fast-forwarded to `main`. Nothing is merged ...
+> (RUNBOOK) no section on merging a pull request
+> (checks.md, read-surface) ... and its confirm writing only what was chosen, refused without the page's header |
+Now:
+> (CLAUDE.md, layout) merge  merge.ps1   merge a pull request, fast-forward main and apply the migrations it carries in the same step
+> (CLAUDE.md, Commands) | Merge a pull request | `tools/merge.ps1 <number>` | `tools/merge <number>` | ...
+> (CLAUDE.md, Merge) ... fast-forwarded to `main`. A merge is made with `tools/merge`, which does those three and then applies the migrations the merged `main` carries in the same step, and every page over a store behind the checkout says the store needs migrating until they run (see: ...). Nothing is merged ...
+> (RUNBOOK) Merging a pull request, added before Running a remedy
+> (checks.md, read-surface) ... refused without the page's header; and from the 23.7 correction every page over a store behind the checkout opening with a banner saying the store needs migrating, and `tools/merge` merging, fast-forwarding and migrating in that order, refused while the night's lock file stands |
+Why: the operator's order of 2026-11-08, item 9.
+
 ### 2026-11-08 - docs/RUNBOOK.md - the long check leaves unread the rating actions the long build holds none of
 Decision: The long ledger's point-in-time check leaves unread a reading the long build holds none of by design, and says so
 Was:

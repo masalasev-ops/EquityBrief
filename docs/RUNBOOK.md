@@ -1938,6 +1938,16 @@ Every open, replacement, close and backfill, refused or not, is one row on the r
 
 **Closing and opening a window again after midnight in New York costs the coming session.** A score counts only for a session after the New York date its window opened on, so a window reopened at, say, twenty past midnight Eastern opens on that day's own date and the night that runs that evening is flagged in sample and counts toward no record. Run the remedy before midnight Eastern where the choice is there, and where it is not, read the first counted session as the one after (see: A version's score counts only for a session after the New York date its window opened on).
 
+### Merging a pull request
+
+A pull request whose gates are green is merged from the main checkout with one command, which merges it with its branch deleted, puts the checkout on `main`, fast-forwards it and applies the migrations the merged `main` carries, in that order:
+
+```
+tools/merge.ps1 <number>
+```
+
+It is refused while the night's lock file stands under the data root, and is run only when no night, off-peak run, local run, ledger build or monthly run is writing, as the merge rule says. Until the migrations run, every page over the store says "The store needs migrating." with both schema numbers and draws nothing from it; a merge carrying none applies none. A remedy the change owes is run after it, and the read surface is started again from the merged `main` (see: A merge carrying a migration applies it in the merge step, and every page over a store behind says it needs migrating).
+
 ### Running a remedy
 
 A remedy is the worker commands a change owes the operator's store: the windows closed and opened again where a pin moved, and the filter's rule correction where the family is registered again. It is committed as a file under `tools/remedies/`, named by date, checkpoint and what it does, one step a line written exactly as the change's PROGRESS entry prints the arguments after `--`, with a comment at the top saying what it is for; the entry's `Remedy:` field names the file. It is run once, from the main checkout after its fast-forward to the merge, with no night, drain or queue running, and before midnight in New York where the choice is there:

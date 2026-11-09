@@ -17867,3 +17867,26 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
 Carried:    the remedy's S&P 500 check, to an entry after the remedy; the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.7 - correction: a merge applies the migrations it carries, and every page over a store behind says it needs migrating   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its ninth item. 23.7's merge left its migrations to the remedy, and between
+            the two the read surface, started again from the merged main, drew every page over the store a schema behind as
+            one small italic line, which read as a page drawing blank.
+Corrected:  `tools/merge` and its Windows wrapper: refused while the night's lock file stands, it merges the pull request with
+            its branch deleted, puts the checkout on main, fast-forwards it and applies the migrations the merged main carries,
+            in that order, none where it carries none. Every page over a store behind the checkout opens with a banner, "The
+            store needs migrating.", naming both schema numbers and the commands, and draws nothing from the store, as
+            before. The decision, `CLAUDE.md`'s layout, commands and merge rule, the runbook, the roster's row and the
+            changelog.
+Tests:      1 new on the read surface: five pages over a store at schema 23 each opening with the banner, and the merge
+            script's lock, merge, checkout, fast-forward and migration in that order, its wrapper handing the work to it.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the store behind drawn without the banner's words; m2 the merge step without the
+            migrations; m3 the merge started without reading the night's lock file; m4 the merge step without the
+            fast-forward.
+Carried:    this pull request merged with `tools/merge` itself, read back on the pages after it; the sign-offs of phases 21
+            and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
