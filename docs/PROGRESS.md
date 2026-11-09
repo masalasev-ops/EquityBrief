@@ -18243,3 +18243,20 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
             card drawing no record; the copy's check refusing the record line as a threshold; and the copy's check no longer
             refusing a threshold.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 23.10 ruling - the S&P 500 drift's first-pullback variant, a zone plan's card and the record of the plan traded, added to the restart
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      item 7 of the order of 2026-11-09 in `prompts/2026-11-09-card-record-ruling.md`: the S&P 500 drift with the first-pullback
+            entry the S&P 400's and 600's drift already read, registered as a variant counted in its family's correction, measured
+            read-only over the long history first, from 2019 beside 2005 to 2018, and in 23.10's table.
+Labelled:   23.10, which builds it, its parts and its done condition gaining it; with it what items 1 and 5 leave for the restart:
+            each card handed its traded plan's zone, and the test of the buy and sell points reading the restarted plan as traded,
+            so each pick's record reads the new plan's.
+Queue:      done, 22.61; in progress, this order's pull request; next, its remedy and read-back, then phase 22's sign-off and 23.10,
+            each on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3658 of 3658 tests ran with none failed, migrations 0 to 140 with none
+            pending, schema version 140, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

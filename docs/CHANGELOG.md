@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-09 - docs/BUILD_PLAN.md - 23.10 gains the S&P 500 drift's first-pullback variant, a zone plan's card and the record of the plan traded
+Decision: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+Was:
+> ; and what the operator ruled in from 23.6, 23.8 and 23.9. The entry names every rule that restarts
+> each rule's earlier trades are read back in their group; and one mutation of each property is shown red, the rule stated before the run.
+Now:
+> ; on the operator's order of 2026-11-09 ... the S&P 500 drift with the first-pullback entry the S&P 400's and 600's drift already read, registered as a variant counted in its family's correction and measured read-only over the long history first, from 2019 beside 2005 to 2018, its figures in the restart's table; each card handed the zone its traded plan buys at; the test of the buy and sell points reading as traded the plan each price family trades after the restart; and what the operator ruled in from 23.6, 23.8 and 23.9. The entry names every rule that restarts
+> each rule's earlier trades are read back in their group; the S&P 500 drift's first-pullback variant is measured read-only ... and registered ...; a card of a plan buying at a zone is handed its zone and draws it ...; the test of the buy and sell points reads a restarted plan as traded ...; and one mutation of each property is shown red, the rule stated before the run.
+Why: the operator's order of 2026-11-09, item 7, in `prompts/2026-11-09-card-record-ruling.md`, and what items 1 and 5 leave for the restart to hand the cards.
+
 ### 2026-11-09 - docs/ARCHITECTURE.html - the read-only copy's card carries its setup's record and a zone plan's line
 Decision: The read-only copy draws each pick's record and the picks watched as the app does, and its check still refuses the method
 Was:
