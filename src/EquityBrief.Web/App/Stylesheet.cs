@@ -349,6 +349,7 @@ svg .gain{fill:var(--up)} svg .loss{fill:var(--down)}
 .btn-2,.export-report{font:600 13px var(--sans);color:var(--ink);background:transparent;border:1px solid var(--hair-2);border-radius:6px;padding:0 12px;min-height:36px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 form[method='post']{display:inline-block;margin:8px 10px 0 0}
 form[method='post'] button:disabled{opacity:.6;cursor:progress}
+form.marking-press{display:block;margin:8px 0 0}
 .export{margin:18px 0 0;display:flex;justify-content:flex-end}
 
 /* tables: every table a region draws reads the same way */

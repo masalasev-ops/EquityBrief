@@ -7,6 +7,32 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the marking page
+Decision: The marking page proposes a mark for each unexplained jump and unsettled end from its evidence, and writes none without the operator's confirm
+Was:
+> (catalogue, Read API, writes) run log, research requests, quote requests, analyst requests, watch list, taken trades, loop decisions
+> (catalogue, Read API) from 20.13 a chart page's ask ...
+> (matrix, Read API, Pulled history) R
+> (15.25, Answers) ... and from 23.9 how far each index stands from the industry news mood split.
+> (15.25, Reads) ... and from 23.9 the news articles and labels with the members and the bar store's sessions, and nothing else; it decides nothing and no rule reads what it draws.
+> (15.25) no Marks owed row
+> (SCHEMA, session_mark) ... (see: A departed company's end no filing settles reads its last session with volume and goes to the operator on one list).
+> (SCHEMA, ownership) `session_mark` | SessionMarks | none | none
+> (RUNBOOK) no paragraph on the marks owed
+> (checks.md, read-surface) ... and the line drawn where neither is stored |
+Now:
+> (catalogue, Read API, writes) ... loop decisions, session marks
+> (catalogue, Read API) from the 23.4 correction the marking page's confirm writes the marks the operator chose ... (see: ...); from 20.13 a chart page's ask ...
+> (matrix, Read API, Pulled history) R W
+> (15.25, Answers) ... the industry news mood split; and from the 23.4 correction, on a page of its own reached from the History page, each mark owed with its evidence and a proposed mark for the operator to confirm.
+> (15.25, Reads) ... the bar store's sessions, and from the 23.4 correction the marking page the long bars and the bar store about each mark owed with the long filings beside it, the session marks and the long outliers, and nothing else; ... and the marking page writes only the marks the operator confirms.
+> (15.25, Marks owed) the row, added
+> (SCHEMA, session_mark) ... (see: ...). From the 23.4 correction the read surface writes the marks the operator confirms on the marking page ... (see: ...).
+> (SCHEMA, ownership) `session_mark` | SessionMarks, ReadApi | none | none
+> (RUNBOOK) the marks owed, from the 23.4 correction, added before the long history's facts
+> (checks.md, read-surface) ... where neither is stored, and from the 23.4 correction the marking page read back over a constructed store with its evidence and proposals and its confirm writing only what was chosen, refused without the page's header |
+Why: the operator's order of 2026-11-08, item 7.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - a long setup past 20 risks counted as no result
 Decision: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
 Was:

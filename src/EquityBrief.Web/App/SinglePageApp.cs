@@ -511,6 +511,10 @@ public sealed partial class SinglePageApp : IComponent
             view = 'history';
             const history = await fetch('/screens/history');
             screen.innerHTML = await history.text();
+          } else if (path === '{{{MarkingRoute}}}') {
+            view = 'marking';
+            const marking = await fetch('/screens/marking');
+            screen.innerHTML = await marking.text();
           } else if (path === '{{{LoopRoute}}}') {
             view = 'loop';
             const loop = await fetch('/screens/loop' + (query ? '?' + query : ''));
@@ -920,6 +924,26 @@ public sealed partial class SinglePageApp : IComponent
           if (!said || said.getAttribute('data-resume') !== 'started') {
             for (const button of form.querySelectorAll('button')) { button.disabled = false; }
           }
+        });
+        // From the 23.4 correction the marking page's confirm: every mark chosen, or the one row pressed, sent with the page's
+        // own header, the page drawn again, and what the read surface said put in its line.
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.classList.contains('marking-press')) { return; }
+          event.preventDefault();
+          const fields = new FormData(form, event.submitter);
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const response = await fetch(form.getAttribute('action'), {
+            method: 'POST',
+            headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+            body: new URLSearchParams(fields),
+          });
+          const said = await response.text();
+          const kept = scrollY;
+          await show();
+          scrollTo(0, kept);
+          const place = screen.querySelector('.marking-said');
+          if (place) { place.innerHTML = said; }
         });
         // The Loop page's presses, approve or decline of a proposal and approve of a restore: the form's fields sent with
         // the page's own header, the page drawn again, and what the read surface said put in the line of what was pressed.

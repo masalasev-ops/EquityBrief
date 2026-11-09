@@ -17805,3 +17805,41 @@ Remedy:     the corrections' remedy, written with the last correction's entry be
 Carried:    the provisional choices above; the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.4 - correction: the marking page lists each unexplained jump and unsettled end with its evidence and a proposed mark   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its seventh item: a page listing each of the unexplained jumps and the ends no
+            filing settles with its evidence and a proposed mark, confirmed in bulk or changed one at a time, nothing marked
+            without the operator's confirm.
+Corrected:  the marking page under History, `#/marking`: every jump the newest data check classed as unexplained and every end
+            the newest long price pull settled by no filing, each with the five sessions either side by close and volume, its
+            median volume over the 50 before and its filer's filings within three days, and the mark a stated rule proposes
+            from that evidence alone; one press confirms every row as chosen, a row's own press confirms it alone, a row may be
+            changed or left unmarked first. The read surface writes the marks chosen into `session_mark` under the page's own
+            header, the proposal's words or words naming both where another was chosen, a session already marked keeping its
+            first word, and refuses a session the page does not list or a kind the marks do not hold. The long setups counted
+            as no result are listed beneath, marked by no press. The decision, the catalogue's row, the stores' row, 15.25's
+            rows, `SCHEMA.md`'s owners of `session_mark`, the runbook, the roster's row, the guide and the changelog.
+Measured:   read back over a copy of the store of 2026-11-08 migrated to 139, the branch's build on a port of its own: 337
+            unexplained jumps, 96 proposed a bad print and 241 checked and kept, and 285 ends, not the 334 the order named:
+            334 was the rehearsal's count over the capture in 23.4's entry, and the live pull of 2026-11-08 settled 1,343 ends
+            by filings and left 285, the list the History page names; 622 to mark. One row confirmed changed on the copy wrote
+            one mark naming both, a second press on it wrote nothing; a press without the page's header was refused. At a true
+            390 the page first ran 819 wide, the post form drawn inline-block taking the table's width, and holds 390 with the
+            form drawn as a block.
+Also:       the two commits before this one give the sixth correction's store of the long outliers its place in the phase
+            report's scope and in the claims' total, which that correction's own commit left out, so the conformance check
+            failed over its tree; found by this correction's filtered run.
+Provisional: each on the operator's review: the proposal's rule, its three days and its median of 50 sessions.
+Tests:      1 new on the read surface: the page's rows, proposals and evidence over a constructed store, the confirm writing
+            only what was chosen, one row or every row shown, a second word keeping the first, refused without the page's
+            header, for a kind the marks do not hold or a session not listed.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 5 in all, each red: m1 the confirm written without the page's header; m2 a kind the marks do not hold not
+            counted refused; m3 a changed mark written with the proposal's words; m4 the bad print proposed on volume above its
+            median; m5 every row written when one row is pressed. A first m2, the write's own guard on the kind dropped, stayed
+            green: the store's own check refuses the kind beneath it, so it was replaced by the refusal's count.
+Carried:    the operator's marks, confirmed on the page; the provisional choices above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.

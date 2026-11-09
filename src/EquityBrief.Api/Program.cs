@@ -3625,6 +3625,38 @@ IResult SweepReportPage(StoreLocation store, string? run)
 app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
     Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync(), await read.LongPricesAsync(), await read.LongYearsAsync(), await read.NewsMoodAsync()), "text/html; charset=utf-8"));
 
+// From the 23.4 correction the marking page and its confirm: every unexplained jump and unsettled end with its evidence and a
+// proposed mark, and the operator's confirm writing the marks chosen, every one shown or one alone, under the page's header.
+// see: The marking page proposes a mark for each unexplained jump and unsettled end from its evidence, and writes none without the operator's confirm
+app.MapGet("/screens/marking", async (ReadApi read, SinglePageApp page) =>
+    Results.Content(page.MarkingRegion(await read.MarkingAsync()), "text/html; charset=utf-8"));
+
+app.MapPost(SinglePageApp.MarkingPostRoute, async (HttpRequest request, ReadApi read) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("nothing was marked");
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+
+    if (form is null)
+    {
+        return Said(false, "Nothing was marked: the confirm carried no marks.");
+    }
+
+    var only = form["only"].ToString();
+    var marks = form.Keys
+        .Where(key => key.StartsWith("m|", StringComparison.Ordinal) && (only.Length == 0 || key == "m|" + only))
+        .Select(key => (Key: key[2..], Kind: form[key].ToString()))
+        .Where(mark => mark.Kind.Length > 0 && mark.Key.Split('|') is { Length: 2 })
+        .Select(mark => (Ticker: mark.Key.Split('|')[0], Session: mark.Key.Split('|')[1], mark.Kind))
+        .ToArray();
+    var written = await read.ConfirmMarksAsync(marks);
+
+    return Said(written.Written, written.Line);
+});
+
 // The setup ledger's page under Universe: the summary the ledger's writers refresh for the index chosen, one family's
 // newest settled setups, its first family's where the link names none, and a chosen setup's path, named in the link as
 // its stock and its session.

@@ -126,6 +126,10 @@ public sealed partial class SinglePageApp
             read.Append("</details>");
         }
 
+        // From the 23.4 correction the unexplained jumps and the unsettled ends are marked on a page of their own.
+        // see: The marking page proposes a mark for each unexplained jump and unsettled end from its evidence, and writes none without the operator's confirm
+        read.Append(Invariant($"<p class=\"card-note\" data-marking=\"link\"><a href=\"{MarkingRoute}\">Mark the unexplained jumps and the ends no filing settles</a>, each with its evidence and a proposed mark.</p>"));
+
         region.Append(Cards.Computed(
             "Data check",
             read.ToString(),
