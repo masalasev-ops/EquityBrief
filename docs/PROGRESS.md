@@ -17928,3 +17928,14 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
             none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.4 - correction: the marking page's count of the ends no filing settles, read on the live store   2026-11-09
+
+Not a checkpoint entry: it corrects a statement of the record and builds nothing.
+Corrects:   the entry "23.4 - correction: the marking page lists each unexplained jump and unsettled end with its evidence
+            and a proposed mark" of 2026-11-08, whose Measured line says the live pull settled 1,343 ends by filings and left
+            285, not the 334 the order named. That count was read over the scratch copy, whose newest long price run was an
+            older one. The live store's newest run lists 334 ends no filing settles, the operator's figure: read on the
+            marking page served from main after the merge of 2026-11-09, 337 unexplained jumps and 334 ends, 671 to mark.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull
+            request's last.
