@@ -194,12 +194,16 @@ public sealed partial class IndexSweepRunner
             SweepHistory history,
             DateOnly through,
             double stopFloor,
-            CancellationToken cancellation)
+            CancellationToken cancellation,
+            Func<IReadOnlyList<string>, Task<IReadOnlyList<SweepMarketSeries>>>? seriesOf = null)
         {
             var (indexCode, inputs, companies, income) = (read.Index, read.Inputs, read.Companies, read.Income);
             var (series, sessions, members, calendar, firstScored) = (read.Series, read.Sessions, read.Members, read.Calendar, read.FirstScored);
             var otherFund = IndexFunds.Single(pair => pair.Key != indexCode).Value;
-            var market = await history.SeriesOfAsync(["SPY", IndexFunds[indexCode], otherFund, "HYG"], through, cancellation);
+
+            // From the 23.7 correction a long read hands the market series over the long history in place of the pull's.
+            IReadOnlyList<string> named = ["SPY", IndexFunds[indexCode], otherFund, "HYG"];
+            var market = seriesOf is null ? await history.SeriesOfAsync(named, through, cancellation) : await seriesOf(named);
             var industries = await history.IndustriesAsync(cancellation);
             var marketLevels = MarketLevels(indexCode);
             var open = MarketOpen(sessions, SweepSwitches.LargeBreadth(large, calendar), calendar, market.FirstOrDefault(one => one.Series == IndexFunds[indexCode]));
@@ -238,10 +242,19 @@ public sealed partial class IndexSweepRunner
                 new SweepIndustries(large, companies, industries),
                 new SweepSwitches(calendar, market, IndexFunds[indexCode]),
                 new SweepSwitches(calendar, market, otherFund),
-                wideReadings);
+                wideReadings)
+            {
+                ProfitFrom = read.ProfitFrom,
+            };
         }
 
-        public int YearOf(int session) => Calendar[session].Year - SweepColumns.FirstScored.Year;
+        // From the 23.7 correction a session before the standing history's first scored year, which a long read holds, keeps
+        // its trade in the first year's bucket, every standing session reading as before.
+        public int YearOf(int session) => Math.Max(0, Calendar[session].Year - SweepColumns.FirstScored.Year);
+
+        // From the 23.7 correction a long read's first session its profit check is read from, none on a standing read.
+        // see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+        public DateOnly? ProfitFrom { get; init; }
 
         public string? SectorOf(int name) => Companies.Companies.GetValueOrDefault(Tickers[name]).Sector;
 
@@ -252,7 +265,7 @@ public sealed partial class IndexSweepRunner
             var level = Open[setting[^1]];
             var listed = Adapter.Listings(setting[..^1]).Where(listing => level[listing.Session]).ToArray();
 
-            return (listed, [.. listed.Where(listing => Clears(Index, Series[listing.Name], listing.Bar, Income.GetValueOrDefault(Tickers[listing.Name]) ?? []))]);
+            return (listed, [.. listed.Where(listing => Clears(Index, Series[listing.Name], listing.Bar, Income.GetValueOrDefault(Tickers[listing.Name]) ?? [], checkedFrom: ProfitFrom))]);
         }
 
         // A setting's trades at the next open before costs, one open trade a stock, under the search's exits or another
@@ -342,7 +355,7 @@ public sealed partial class IndexSweepRunner
             int[] setting = [.. Grid.Provisional];
             var level = Open[setting[^1]];
             var listings = NightsAdapter.Listings(setting[..^1])
-                .Where(listing => level[listing.Session] && Clears(Index, Series[listing.Name], listing.Bar, Income.GetValueOrDefault(Tickers[listing.Name]) ?? []))
+                .Where(listing => level[listing.Session] && Clears(Index, Series[listing.Name], listing.Bar, Income.GetValueOrDefault(Tickers[listing.Name]) ?? [], checkedFrom: ProfitFrom))
                 .ToArray();
 
             return Costed(AtOpen(listings, held, NightsAdapter), 1);
@@ -381,7 +394,7 @@ public sealed partial class IndexSweepRunner
                 .Where(listing => together.All(one => one.Keep is not { } keep || keep(listing)))
                 .SelectMany(listing => Through(listing, entries))
                 .DistinctBy(listing => (listing.Name, listing.Session))
-                .Where(listing => level[listing.Session] && Clears(Index, Series[listing.Name], listing.Bar, Income.GetValueOrDefault(Tickers[listing.Name]) ?? [], quality, floors, SectorOf(listing.Name)))
+                .Where(listing => level[listing.Session] && Clears(Index, Series[listing.Name], listing.Bar, Income.GetValueOrDefault(Tickers[listing.Name]) ?? [], quality, floors, SectorOf(listing.Name), ProfitFrom))
                 .Select(listing => hold > 0 ? listing with { Cap = hold } : listing)
                 .SelectMany(listing => Through(listing, exits))
                 .ToArray();

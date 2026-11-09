@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/RUNBOOK.md, .claude/rules/checks.md - the long test's own sweep readings and the dip over the long history
+Decision: The long test lays out the dip's and the S&P 400's and 600's own sweep readings over the long history
+Was:
+> (17, The per-rule test over the long history, rationale) ... as a second line where the walk hands each trade's last session (see: ...)
+> (17, The per-rule test over the long history, check) ... and the fund line worked by hand beside a verdict
+> (RUNBOOK, the long test) ... the families its walk reads off the standing history alone, the books, the dip and the rules needing the sweeps' own reads, are written with the reason that they are read on the standing years alone.
+> (checks.md, fixture-expectations) ... a walk handing no trade's last session and a book saying they have none; and from 23.9 ...
+Now:
+> (17, The per-rule test over the long history, rationale) ... (see: ...); and the dip's and the S&amp;P 400's and 600's own sweep readings laid out over the long history (see: ...)
+> (17, The per-rule test over the long history, check) ... the fund line worked by hand beside a verdict, and the long market series read off the long pull then the standing one after it
+> (RUNBOOK, the long test) ... the books and the like setups and the ranking, are written with the reason that they are read on the standing years alone; from the 23.7 correction the dip and the S&P 400's and 600's rules needing the sweeps' own reads are laid out over the long history ... (see: ...).
+> (checks.md, fixture-expectations) ... a book saying they have none, the long market series read off the long pull then the standing pull after it and the dip and the own sweep readings no longer held off a long run; and from 23.9 ...
+Why: the operator's order of 2026-11-08, item 5.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/RUNBOOK.md, .claude/rules/checks.md - the profit check read over the long history from the year the long facts cover the members
 Decision: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
 Was:

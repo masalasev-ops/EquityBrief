@@ -17737,3 +17737,37 @@ Remedy:     the corrections' remedy, written with the last correction's entry be
 Carried:    the provisional choices above; the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.7 - correction: the long test lays out the S&P 400's and 600's own sweep readings and the dip's over the long history   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its fifth item. 23.7's long test kept 13 rules on each of the S&P 400 and 600
+            not testable, each "a level its sweep's own reading would walk, which the run laid out no reading for", and walked
+            no dip rule, the own readings and the dip's being read off the standing pull's market series alone.
+Corrected:  a long run reads the breakout's, the drift's and the pullback's own sweep readings over the long reader's history
+            wherever a rule needs them, and the dip's wherever a dip rule stands: the market series from the long pull with the
+            standing pull's closes after its last, the S&P 500 over the long history for the breadth the 400 and 600 read, and
+            the long quarters with the profit check's first session from the fourth item's correction above, which reaches the
+            per-rule walks' gate as well. A sweep's own year buckets read a session before 2019 in their first. A level reading
+            what the standing pull alone holds, a quarter's revenue as first filed or the analysts' counts, keeps no listing
+            before the pull holds it. The decision, section 17's row, the runbook, the roster's row and the changelog.
+Measured:   `loop-rules --long --index MID --print` over the live store through 2026-11-06, writing nothing, in 63 minutes
+            against 23.7's 14: the profit check read from 2012, when 366 of 390 members read it; 19 rules against 14, none
+            passing and none not testable, and 0 of 12 version choices. The live pullback did not pass against its benchmark,
+            adjusted p 0.0369 against the bar of 0.0042, better in 4 of 6 counted years over 732 trades; the live breakout
+            0.2835, 11 of 16 over 2,693; the live drift 0.0667, 7 of 10 over 2,462; the heavyweights 0.0888, 4 of 6 over 93
+            months; the live dip, walked over the long history for the first time, 0.3073, 6 of 12 over 1,110. The breakout's
+            variant with its market check off carries the fund line; every walk through a sweep's own reading hands no trade's
+            last session and says it has none. The S&P 500's and 600's with the long test's rerun under the sixth item's
+            correction below, over the tree carrying the first six. At this pace the long step's three hours hold the three
+            indices with little to spare, which the remedy's run measures.
+Tests:      2 new in the fixture's expectations: the long market series read off the long pull then the standing pull after
+            its last, worked over a constructed store; the dip and the own readings no longer held off a long run.
+Pins:       none move: the sweep runner's own readings, the per-rule walks and the tester are none a rule's version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the long series read off the standing pull alone; m2 the overlap read off the
+            standing pull as well; m3 the dip held off a long run again; m4 the own sweep readings not handed the long series.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the long step's time over the three indices against its three hours, to the remedy's run and the first scheduled
+            month; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.

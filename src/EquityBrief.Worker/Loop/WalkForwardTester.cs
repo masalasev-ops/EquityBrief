@@ -741,6 +741,17 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             ? await WithFundAsync(await ReadLongAsync(index, history, through, inputs, cancellation), longHistory, through, cancellation)
             : await ReadAsync(index, history, through, inputs, cancellation);
 
+        // From the 23.7 correction a long read of the S&P 400 or 600 carries the long quarters and the first session its profit
+        // check is read from, as the long search's does.
+        // see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+        if (longHistory is not null)
+        {
+            var (withIncome, income) = await WithIncomeAsync(read, longHistory, cancellation);
+
+            read = withIncome;
+            output.WriteLine($"{RulesVerb}: {ProfitWords(index, income)}");
+        }
+
         if (read.Folds.Count == 0)
         {
             output.WriteLine(FormattableString.Invariant($"{RulesVerb}: the history ends {through:yyyy-MM-dd}, before the first test year, {LoopFolds.FirstTestYear}"));
@@ -789,13 +800,20 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // The S&P 500 as it stood, read once where the dip's or the sweeps' own readings need it on the S&P 400 or 600.
         SweepHistoryInputs? largeRead = large ? inputs : null;
 
-        async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
+        // From the 23.7 correction a long run reads the S&P 500 over the long history and the market series from the long pull
+        // with the standing pull's closes after it, so the dip's and the sweeps' own readings are laid out over the long years.
+        // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+        async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= longHistory is not null
+            ? await longHistory.ReadAsync(LargeIndex, through, null, cancellation)
+            : await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
 
-        var dipRead = !standingOnly && ReadsDip(standingRules, index)
+        Func<IReadOnlyList<string>, Task<IReadOnlyList<SweepMarketSeries>>>? seriesOf = longHistory is null ? null : named => LongSeriesAsync(longHistory, history, named, through, cancellation);
+
+        var dipRead = ReadsDip(standingRules, index)
             ? IndexSweepRunner.DipRead.Of(
                 read,
                 await LargeReadAsync(),
-                await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation))
+                seriesOf is null ? await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation) : await seriesOf([IndexSweepRunner.DipFund(index), MarketCloses.Vix]))
             : null;
         var tones = await TonesAsync(read, cancellation);
 
@@ -805,7 +823,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
         var own = OwnReads.None;
 
-        if (!large && !standingOnly)
+        if (!large)
         {
             var swingsNeeded = RuleTests.OwnSwingsNeeded(standingRules, index);
             var pullbackNeeded = RuleTests.OwnPullbackNeeded(standingRules, index);
@@ -817,7 +835,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 foreach (var (family, stopFloor) in swingsNeeded)
                 {
                     output.WriteLine(FormattableString.Invariant($"{RulesVerb}: reading the {DecisionCards.NameOf(index)}'s {family} as its own sweep reads it{(stopFloor > 0 ? $", its stop held at least {stopFloor:0.##} typical move under the buy" : string.Empty)}, for the rules stating a level the extended grid's walk does not read"));
-                    swings[(family, stopFloor)] = await IndexSweepRunner.OwnSwingRead.ReadAsync(read, await LargeReadAsync(), family, history, through, stopFloor, cancellation);
+                    swings[(family, stopFloor)] = await IndexSweepRunner.OwnSwingRead.ReadAsync(read, await LargeReadAsync(), family, history, through, stopFloor, cancellation, seriesOf);
                 }
 
                 IndexSweepRunner.OwnPullbackRead? pullback = null;
@@ -825,7 +843,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 if (pullbackNeeded)
                 {
                     output.WriteLine($"{RulesVerb}: reading the {DecisionCards.NameOf(index)}'s pullback as its own search reads it, for the rules stating a level the extended grid's walk does not read");
-                    pullback = await IndexSweepRunner.OwnPullbackRead.ReadAsync(read, await LargeReadAsync(), history, through, output.WriteLine, cancellation);
+                    pullback = await IndexSweepRunner.OwnPullbackRead.ReadAsync(read, await LargeReadAsync(), history, through, output.WriteLine, cancellation, seriesOf);
                     pullback.Charge(1);
                 }
 

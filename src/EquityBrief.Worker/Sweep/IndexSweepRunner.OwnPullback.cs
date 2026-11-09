@@ -82,11 +82,14 @@ public sealed partial class IndexSweepRunner
 
         public IReadOnlyList<DialLevel<SweepCandidate>> Levels { get; private set; } = [];
 
-        public static async Task<OwnPullbackRead> ReadAsync(LoopRead laid, SweepHistoryInputs large, SweepHistory history, DateOnly through, Action<string> progress, CancellationToken cancellation)
+        public static async Task<OwnPullbackRead> ReadAsync(LoopRead laid, SweepHistoryInputs large, SweepHistory history, DateOnly through, Action<string> progress, CancellationToken cancellation, Func<IReadOnlyList<string>, Task<IReadOnlyList<SweepMarketSeries>>>? seriesOf = null)
         {
             var (indexCode, series, calendar, firstScored) = (laid.Index, laid.Series, laid.Calendar, laid.FirstScored);
             var industries = await history.IndustriesAsync(cancellation);
-            var market = await history.SeriesOfAsync(["SPY", IndexFunds[indexCode], "HYG"], through, cancellation);
+
+            // From the 23.7 correction a long read hands the market series over the long history in place of the pull's.
+            IReadOnlyList<string> named = ["SPY", IndexFunds[indexCode], "HYG"];
+            var market = seriesOf is null ? await history.SeriesOfAsync(named, through, cancellation) : await seriesOf(named);
             var parallelism = Environment.ProcessorCount;
             var fills = new OpenFills(series, laid.Members);
             var found = new List<SweepCandidate>[series.Length];
@@ -221,7 +224,7 @@ public sealed partial class IndexSweepRunner
         string? SectorOf(int name) => Laid.Companies.Companies.GetValueOrDefault(Laid.Ticker(name)).Sector;
 
         public bool ClearsAt(SweepCandidate candidate, IndexQuality quality, decimal floors) =>
-            Clears(Index, Laid.Series[candidate.Name], BarOf(candidate), Laid.Income.GetValueOrDefault(Laid.Ticker(candidate.Name)) ?? [], quality, floors, SectorOf(candidate.Name));
+            Clears(Index, Laid.Series[candidate.Name], BarOf(candidate), Laid.Income.GetValueOrDefault(Laid.Ticker(candidate.Name)) ?? [], quality, floors, SectorOf(candidate.Name), Laid.ProfitFrom);
 
         // Each exit's round trip taken off its result at a multiple of the table, or given back at a negative one.
         public void Charge(int multiple)
