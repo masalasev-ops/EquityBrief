@@ -430,9 +430,10 @@ public partial class ArchitectureConformance
         // long outliers' store, and 1618 from the 23.4 correction, the History page's marks owed, and 1620 from the 22.6
         // correction of 2026-11-09, a pick's card's and Home's idea's record over the long history, and 1621 from its next, a
         // setup's record on its tile, and 1622 from the 22.16 correction of 2026-11-09, Home's picks watched and not drawn, and
-        // 1623 from its next, a plan that buys at a zone.
+        // 1623 from its next, a plan that buys at a zone, and 1624 from the 22.17 correction of 2026-11-09, the records and the
+        // picks watched on the read-only copy.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1623),
+            (789, 853, 6, 4, 855, 876, 1624),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

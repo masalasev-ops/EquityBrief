@@ -1503,8 +1503,8 @@ public partial class ArchitectureConformance
         // page's row of the long history. 302 at the 23.4 correction: the History page's marks owed. 304 at the 22.6 correction
         // of 2026-11-09: a pick's card's and Home's idea's record over the long history. 305 at its next: a setup's record on its
         // tile. 306 at the 22.16 correction of 2026-11-09: Home's picks watched and not drawn. 307 at its next: a plan that buys at
-        // a zone.
-        Assert.Equal(307,screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // a zone. 308 at the 22.17 correction of 2026-11-09: the records and the picks watched on the read-only copy.
+        Assert.Equal(308,screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1689,7 +1689,8 @@ public partial class ArchitectureConformance
         // page's row of the long history. 704 at the 23.4 correction: the History page's marks owed. 706 at the 22.6 correction of
         // 2026-11-09: a pick's card's and Home's idea's record over the long history. 707 at its next: a setup's record on its tile.
         // 708 at the 22.16 correction of 2026-11-09: Home's picks watched and not drawn. 709 at its next: a plan that buys at a zone.
-        Assert.Equal(709, inDocument.Length);
+        // 710 at the 22.17 correction of 2026-11-09: the records and the picks watched on the read-only copy.
+        Assert.Equal(710, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

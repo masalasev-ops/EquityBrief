@@ -4999,6 +4999,10 @@ internal static class Scope
             Verdict.Pass,
             "Home's card, a pick's card and the copy's over a constructed zone plan, its prices, its time limit in the target's place and the line beneath them worked by hand, and each card as before with no zone",
             ByReadSurface),
+        [CheckReach.Key("15.24 Home", "Records and watched picks on the read-only copy")] = new Scoped(
+            Verdict.Pass,
+            "the copy's cards and line of the picks watched read word for word as the app's, its card's record and a tile's line, and the copy's check passing them while still finding each kind of leak planted beside them",
+            ByReadSurface),
         [CheckReach.Key("15.24 Home", "Watching, not buying")] = new Scoped(
             Verdict.Pass,
             "the cards, the heading's count, the watching line in both numbers and the link's count worked by hand and read back off the S&P 400's Home before and after its breakout's record lost",
@@ -7665,6 +7669,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "A setup's record on its tile")] = "22.6",
         [CheckReach.Key("15.24 Home", "Watching, not buying")] = "22.16",
         [CheckReach.Key("15.18 The decision card", "A plan that buys at a zone")] = "22.16",
+        [CheckReach.Key("15.24 Home", "Records and watched picks on the read-only copy")] = "22.17",
         [CheckReach.Key("15.9 Name", "A bar that arrived late")] = "22.40",
         [CheckReach.Key("15.10 Run", "Members missing from the night's day file")] = "22.40",
         // 22.6's two, which the addendum names as Tonight in one minute and the page's words at its foot.

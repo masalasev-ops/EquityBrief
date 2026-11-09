@@ -18221,3 +18221,25 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
             own bytes, 3 in all, each predicted red and each red: Home's card drawing a zone plan's prices as the next open's; the
             line saying the zone's price was tonight's close; and a pick's card drawing no line beneath its tiles.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.17 - correction: the read-only copy draws each pick's record and the picks watched as the app does   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 6: items 1 to 5 are to draw on the copy's Home, Tonight and stock pages exactly
+            as on the app, and the copy's check is to allow the record line and the watching line and still refuse thresholds,
+            version data and test tables. The copy drew the Fundamentals family's line without its setting's figures.
+Corrected:  the copy draws the record box, each tile's line, the picks watched and a zone plan's words through the app's own code,
+            and from this entry the Fundamentals family's line with its index's setting, on the operator's word, which supersedes
+            the sell line decision's clause that the copy leaves it off. The check is unchanged: none of the new lines is a route
+            to the Loop or the Ledger, a register's name or setting, a version's label, a settings line or a threshold's phrase,
+            and it still refuses each of those.
+Tests:      1 new read-surface test: the copy's cards and line of the picks watched read word for word as the app's, the copy's
+            card and a tile drawing the record, and the check passing all of it while finding each kind of leak planted beside it;
+            the test of OGS's card holds the copy to the app's line; three counts of the document's rows and claims raised by its
+            one new row.
+Claims:     1 new, section 15.24's row of the records and the picks watched on the copy, reached by the read surface.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored from the file's
+            own bytes, 4 in all, each predicted red and each red: the copy's Fundamentals line left without its figures; the copy's
+            card drawing no record; the copy's check refusing the record line as a threshold; and the copy's check no longer
+            refusing a threshold.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.

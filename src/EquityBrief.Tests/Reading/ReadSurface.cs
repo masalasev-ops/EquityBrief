@@ -253,6 +253,9 @@ public partial class ReadSurface
             // The 22.16 correction of 2026-11-09's next, a plan that buys at a zone.
             .. ZonePlanRows,
 
+            // The 22.17 correction of 2026-11-09, the records and the picks watched on the read-only copy.
+            .. CopyRecordRows,
+
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 

@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-09 - docs/ARCHITECTURE.html - the read-only copy's card carries its setup's record and a zone plan's line
+Decision: The read-only copy draws each pick's record and the picks watched as the app does, and its check still refuses the method
+Was:
+> with no version, variant or setting of the method: a pick's card is its sentence and its prices;
+Now:
+> with no version, variant or setting of the method: a pick's card is its sentence and its prices, and from the 22.17 correction of 2026-11-09 its setup's record over the long history and a zone plan's line;
+Why: the operator's order of 2026-11-09, item 6, in `prompts/2026-11-09-card-record-ruling.md`: the copy draws items 1 to 5 exactly as the app does; a sentence added after the check's list says so.
+
 ### 2026-11-09 - docs/ARCHITECTURE.html - section 15.24, Home's count of tonight's ideas is of the cards it draws
 Decision: Home draws a card only for a pick whose setup made money over the long history or has none, and names the rest as watched
 Was:

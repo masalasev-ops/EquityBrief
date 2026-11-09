@@ -86,18 +86,17 @@ public sealed partial class SinglePageApp
     public const string ReshuffleDrops = "a monthly reshuffle drops it";
 
     // The line under a card's sell price, from its family's own exit rule: the Fundamentals family's filings and time limit,
-    // its figures left off the read-only copy, a give-up price rising or staying where it is; none where a plan holds no
-    // give-up price or an exit changed on the Loop page moves it.
+    // from the 22.17 correction of 2026-11-09 with its figures on the read-only copy as on the app, a give-up price rising or
+    // staying where it is; none where a plan holds no give-up price or an exit changed on the Loop page moves it.
     // see: A card's line under its sell price is worded from its family's own exit rule
+    // see: The read-only copy draws each pick's record and the picks watched as the app does, and its check still refuses the method
     public static string? SellLine(HomeIdea idea, bool copying)
     {
         if (idea.Family == ImprovingRule.Name)
         {
             var setting = idea.Setting ?? ImprovingGrid.Starting;
 
-            return copying
-                ? "No price is set in advance: it sells when a new filing weakens its score, or at its time limit."
-                : Invariant($"No price is set in advance: it sells when a new filing drops its score below {MarkRenderer.InEveryNine(setting.HoldInNine)},{(setting.SoldUnderAverage ? " on a close under its 200-day average," : string.Empty)} or after {setting.Sessions} trading days.");
+            return Invariant($"No price is set in advance: it sells when a new filing drops its score below {MarkRenderer.InEveryNine(setting.HoldInNine)},{(setting.SoldUnderAverage ? " on a close under its 200-day average," : string.Empty)} or after {setting.Sessions} trading days.");
         }
 
         if (Planless(idea.Family))

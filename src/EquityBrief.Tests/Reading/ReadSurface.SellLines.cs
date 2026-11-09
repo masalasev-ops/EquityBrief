@@ -18,8 +18,6 @@ namespace EquityBrief.Tests.Reading;
 // see: A card's line under its sell price is worded from its family's own exit rule
 public partial class ReadSurface
 {
-    static readonly string FundamentalsCopyLine = "No price is set in advance: it sells when a new filing weakens its score, or at its time limit.";
-
     // One idea of a family buying at 100 with its give-up price at 90, as Home is handed it.
     static HomeIdea SellIdea(string family, decimal? target = 125m, bool rises = false, decimal? trail = null) =>
         new(family, "AAA", "Alpha Inc", "Why it was picked.", 100m, 90m, target, rises, null, trail);
@@ -121,7 +119,7 @@ public partial class ReadSurface
     }
 
     // OGS's card: the Fundamentals family sets no price and sells on its filings or its time limit, at the setting its index's
-    // rule stands at, whose figures the read-only copy leaves off.
+    // rule stands at, whose figures the read-only copy draws as the app does from the 22.17 correction of 2026-11-09.
     [Fact]
     public void AHomeFundamentalsCardSaysItSellsOnItsFilingsAndNamesNoPriceToFallTo()
     {
@@ -147,10 +145,11 @@ public partial class ReadSurface
             OneHomeCard(idea with { Setting = null }, copying: false),
             StringComparison.Ordinal);
 
+        // From the 22.17 correction of 2026-11-09 the read-only copy draws the app's line, its setting's figures among it.
         var copied = OneHomeCard(idea, copying: true);
 
-        Assert.Contains($"<div class=\"home-odds\" data-sell-line>{FundamentalsCopyLine}</div>", copied, StringComparison.Ordinal);
-        Assert.DoesNotContain("252", copied, StringComparison.Ordinal);
+        Assert.Contains($"<div class=\"home-odds\" data-sell-line>{SinglePageApp.SellLine(idea, copying: false)}</div>", copied, StringComparison.Ordinal);
+        Assert.Contains("or after 252 trading days.", copied, StringComparison.Ordinal);
         Assert.Contains("its filings weaken", copied, StringComparison.Ordinal);
     }
 

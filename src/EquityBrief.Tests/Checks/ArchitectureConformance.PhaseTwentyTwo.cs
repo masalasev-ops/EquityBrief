@@ -149,6 +149,9 @@ public partial class ArchitectureConformance
         // From the 22.16 correction of 2026-11-09: Home's picks watched and not drawn; and from its next a plan that buys at a zone.
         .. Reading.ReadSurface.HomeWatchingRows,
         .. Reading.ReadSurface.ZonePlanRows,
+
+        // From the 22.17 correction of 2026-11-09: the records and the picks watched on the read-only copy.
+        .. Reading.ReadSurface.CopyRecordRows,
     ];
 
     // The rows the document loses after phase 22's report: none.
