@@ -17985,3 +17985,22 @@ Read back:  on main's build, the marking page: 337 unexplained jumps and 334 end
 Carried:    the operator's marks on the marking page; 23.10 on the operator's word, after the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over f3bfa67e, whose tree PR 673 merged, with its entry's
             figures; records alone change in this entry.
+
+### 21.10 - correction: a choice's test holds unfinished trades at a count where they would reach the floor   2026-11-09
+
+Found:      phase 21's first sign-off review, F1 in `prompts/2026-11-09-21.21-phase-21-signoff-findings.md`, carried in this pull
+            request: with `unit.Entry + cap < start` in `VersionChoices.Record` cut to `unit.Entry < start`,
+            `AChoiceReadsNoTradeThatHasNotEndedByItsMonth` stayed green. At its cap of 10 at most 10 unfinished trades fall before
+            the month, under the floor of 50, so the record is none either way. An unreachable boundary in the test; the code
+            is right and is unchanged.
+Corrected:  two assertions added to the method, every existing one as it stood: at month 1,000, window 126 and cap 10, 45 ended
+            trades and 5 entered from 995 read none, and 50 ended and the same 5 read 0.1.
+Tests:      none new, 2 assertions added.
+Claims:     none new.
+Pins:       none move: no shipped source changes.
+Mutated:    the rule, stated before the runs: the review's mutation undoing that a choice reads only ended trades, shown green
+            before the assertions and red after. Green at the method before. After, red in that method alone of the 1,353 in
+            `Checks.FixtureExpectations`, the first new assertion reading 0.29 for none; with that assertion taken out
+            for one run filtered to the method, the second reading about 0.27 for 0.1. Reverted byte for byte.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's
+            last.

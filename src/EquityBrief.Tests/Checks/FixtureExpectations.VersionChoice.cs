@@ -63,6 +63,11 @@ public partial class FixtureExpectations
         Assert.Null(VersionChoices.Record(Entered(800, 50, 2), 10, 1000, 126, false));
         Assert.Equal(0, VersionChoices.Choose([(live, 10), ([.. Entered(800, 50, 2), .. Entered(991, 50, 2)], 10)], 1000, 126, false));
 
+        // Five entered before the month and not ended by it, read beside trades that have ended: they do not lift
+        // forty-five to the floor of fifty, and they do not move the mean of fifty.
+        Assert.Null(VersionChoices.Record([.. Entered(880, 45, 0.1), .. Entered(995, 5, 2)], 10, 1000, 126, false));
+        Assert.Equal(0.1, VersionChoices.Record([.. Entered(880, 50, 0.1), .. Entered(995, 5, 2)], 10, 1000, 126, false)!.Value, 12);
+
         // The cut a fold's year opens on is one of these months: over a weekday calendar the first session of 2024 opens a
         // month, and a trade entered in the last ten sessions of 2023 is not read by the choice made on it.
         var calendar = Weekdays(new DateOnly(2023, 1, 2), 300);
