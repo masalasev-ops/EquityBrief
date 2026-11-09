@@ -18102,3 +18102,18 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
 Carried:    none. A card's first line is stored naming the Loop page, the night's own words, and is drawn naming the Monthly check-up.
+
+### 22.6 ruling - each pick's record on its card, Home's ideas and the S&P 500 drift's variant
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      word for word in `prompts/2026-11-09-card-record-ruling.md`, committed with this entry, its mockup kept locally beside it:
+            on every pick's card a box with its setup's record over the long history; a line at the foot of each of Tonight's setup
+            tiles; Home drawing a card only for a setup that made money since 2019 or has no long record, the rest named in a
+            watching line; the Fundamentals cards on Home; a zone plan's words on the card; the read-only copy drawing all of it;
+            and the S&P 500 drift with the first-pullback entry added to 23.10's restart.
+Labelled:   each item a correction under the checkpoint that built what it changes, each in its own commit of one pull request:
+            items 1 and 2, the card and Tonight's tiles, under 22.6; items 3 to 5, Home and its cards, under 22.16; item 6, the
+            read-only copy, under 22.17; and item 7 a ruling under 23.10, which builds it.
+Queue:      done, 22.61; in progress, this order; next, phase 22's sign-off and 23.10, each on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull request, with the
+            figures it states.
