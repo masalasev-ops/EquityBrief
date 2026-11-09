@@ -38,6 +38,13 @@ public partial class FixtureExpectations
         Assert.Equal(own.Trades(0).Count(trade => calendar[trade.Listing.Session].Year >= 2008), searched.Verdict.Units);
         Assert.True(searched.Verdict.Better > 0);
 
+        // The years its row keeps name each fold's chosen setting in the dip's own grid's words, as the write keeps them.
+        using (var years = System.Text.Json.JsonDocument.Parse(LongSearch.YearsOf(searched)))
+        {
+            Assert.Equal(searched.Folds.Count, years.RootElement.GetArrayLength());
+            Assert.All(years.RootElement.EnumerateArray(), year => Assert.Equal("the dip rule at drop=5", year.GetProperty("chosen").GetString()));
+        }
+
         Assert.Contains("the swing filter", LongSearch.PullbackBlocked("GSPC"), StringComparison.Ordinal);
         Assert.Contains("eight scored years", LongSearch.PullbackBlocked("MID"), StringComparison.Ordinal);
         Assert.Equal(LongSearch.PullbackBlocked("MID"), LongSearch.PullbackBlocked("SML"));

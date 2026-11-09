@@ -17928,3 +17928,38 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
             none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.4 - correction: the marking page's count of the ends no filing settles, read on the live store   2026-11-09
+
+Not a checkpoint entry: it corrects a statement of the record and builds nothing.
+Corrects:   the entry "23.4 - correction: the marking page lists each unexplained jump and unsettled end with its evidence
+            and a proposed mark" of 2026-11-08, whose Measured line says the live pull settled 1,343 ends by filings and left
+            285, not the 334 the order named. That count was read over the scratch copy, whose newest long price run was an
+            older one. The live store's newest run lists 334 ends no filing settles, the operator's figure: read on the
+            marking page served from main after the merge of 2026-11-09, 337 unexplained jumps and 334 ends, 671 to mark.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull
+            request's last.
+
+### 23.8 - correction: the long search writes the dip's folds in its own grid's words   2026-11-09
+
+Found:      the corrections' remedy of 2026-11-09 stopped at its fifth step, `loop-search --long --index GSPC --again`: the
+            third correction's search of the dip wrote each fold's chosen setting through the words the breakout's and the
+            drift's grids are named in, which read the dip's setting off the drift's grid and ran past its dials. The printed
+            runs the entry measured wrote nothing and never reached the write.
+Corrected:  each search carries the words it named its own settings in, and the years its row keeps name each fold's chosen
+            setting in them, the dip's in its own grid's and the breakout's and the drift's as before with the profit floor's
+            words they already carried.
+Tests:      none new: the dip's search test reads the years its row would keep, each fold's chosen setting named in the dip's
+            own grid's words, through the one function the write calls.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to its test by name, 1 in all,
+            red: m1 the dip's folds named through the breakout's and the drift's words, the test failing as the remedy did.
+Remedy:     the corrections' remedy run again from its fifth step after the merge, `tools/remedy.ps1
+            tools/remedies/2026-11-08-23.8-the-corrections-before-the-restart.txt --from 5`.
+Carried:    the remedy's figures, to an entry after it; 23.10 on the operator's word, after the sign-offs of phases 21
+            and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3637 of 3637 tests ran with none failed, migrations 0 to 139 with none
+            pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
+            none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
