@@ -3754,7 +3754,7 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     // see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
     var longRead = await read.LongSearchAsync(reading.Code);
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered), chips, choices, pooled, longRead), "text/html; charset=utf-8");
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered), chips, choices, pooled, longRead, request.Query["strategy"].FirstOrDefault(), request.Query["part"].FirstOrDefault()), "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.

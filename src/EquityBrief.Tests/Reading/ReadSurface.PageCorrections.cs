@@ -290,15 +290,15 @@ public partial class ReadSurface
             using var host = new Host(store.Root);
             using var client = host.CreateClient();
 
-            return Regex.Match(Card(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500")), "loop-summary"), "<tr data-family=\"heavyweight\".*?</td><td.*?</td>", RegexOptions.Singleline).Value;
+            return Regex.Match(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500&strategy=heavyweight")), "<div class=\"cu-today\">.*?</div>", RegexOptions.Singleline).Value;
         }
 
-        Assert.EndsWith("<td class=\"degraded\">not read</td>", await RuleToday(), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"degraded\" data-chips=\"none\">not read</span>", await RuleToday(), StringComparison.Ordinal);
 
         RunAgainAt(store, "GSPC", RunAgainReadAt);
 
-        Assert.EndsWith(
-            "<td><span class=\"rule-chips\"><span class=\"chip\">10 largest</span><span class=\"chip\">251-day look-back</span><span class=\"chip\">2 leaders</span><span class=\"chip\">against the fund</span><span class=\"chip\">beta at least 1</span><span class=\"chip\">sold on losing the lead</span></span></td>",
+        Assert.Contains(
+            "<span class=\"rule-chips\"><span class=\"chip\">10 largest</span><span class=\"chip\">251-day look-back</span><span class=\"chip\">2 leaders</span><span class=\"chip\">against the fund</span><span class=\"chip\">beta at least 1</span><span class=\"chip\">sold on losing the lead</span></span>",
             await RuleToday(),
             StringComparison.Ordinal);
     }

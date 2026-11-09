@@ -148,7 +148,7 @@ public static class RuleWords
     // The change an approval set on the family, where the night read it at one.
     // see: An approved change is applied by the night's own build on the index it was approved on alone
     public static string Approved(IndexRuleSettings settings, string family) =>
-        settings.Approved is { } approved && approved.TryGetValue(family, out var words) ? $" It stands at a change approved on the Loop page: {words}." : string.Empty;
+        settings.Approved is { } approved && approved.TryGetValue(family, out var words) ? $" It stands at a change approved on the Monthly check-up: {words}." : string.Empty;
 
     // The fundamentals-first family on any index, in the words its night's settings state, its business read from the
     // facts the company filed before the night as first filed; on the S&P 400 and 600 with the floors their rules read.

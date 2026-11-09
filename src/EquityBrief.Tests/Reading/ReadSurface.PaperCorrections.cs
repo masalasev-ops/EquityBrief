@@ -49,7 +49,7 @@ public partial class ReadSurface
     public void NoHeadingReadsTheReadersWordsIntoADoubledWord()
     {
         var paper = PaperPageOf(new PaperPageView([], [BlockTrade()], [], [], new PaperNotBought([]), [], null));
-        var loop = WebUtility.HtmlDecode(ReaderText.Page(new MarkRenderer().LoopSummary([])));
+        var loop = WebUtility.HtmlDecode(ReaderText.Page(new MarkRenderer().LoopSummary([], family => family)));
 
         static IEnumerable<string> Doubled(string html) =>
             Regex.Matches(Regex.Replace(html, "<[^>]*>", "|"), @"\b([A-Za-z]{3,}) \1\b", RegexOptions.IgnoreCase).Select(match => match.Value);
@@ -57,7 +57,7 @@ public partial class ReadSurface
         Assert.Empty(Doubled(paper));
         Assert.Empty(Doubled(loop));
         Assert.Contains("the setup whose live or not-yet-tested rule bought it, in that setup's own account", paper, StringComparison.Ordinal);
-        Assert.Contains("the setup, in the one order", loop, StringComparison.Ordinal);
+        Assert.Contains("What it does", loop, StringComparison.Ordinal);
     }
 
     // The breakout's live rule registered on 2026-11-03, its version's first session that day, and a replay under its version

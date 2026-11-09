@@ -439,7 +439,7 @@ public sealed partial class SinglePageApp : IComponent
         + $"<a href=\"{TonightRoute}\" data-view=\"tonight\">Tonight</a>"
         + $"<a href=\"{UniverseRoute}\" data-view=\"universe\">Universe</a>"
         + $"<a href=\"{PaperRoute}\" data-view=\"paper\">Paper trading</a>"
-        + $"<a href=\"{LoopRoute}\" data-view=\"loop\">Loop<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a>"
+        + $"<a href=\"{LoopRoute}\" data-view=\"loop\">{MarkRenderer.CheckUpName}<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a>"
         + MenuGroup("research", "Research", $"<a href=\"{ResearchedRoute}\" data-view=\"researched\">Researched</a><a href=\"{QueueRoute}\" data-view=\"queue\">Queue</a><a href=\"{WatchRoute}\" data-view=\"watch\">Watch list</a>" + LaneSwitch(lane))
         + MenuGroup("records", "Records", $"<a href=\"{PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{RunRoute}\" data-view=\"run\">Run</a><a href=\"{LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{HistoryRoute}\" data-view=\"history\">History</a>")
         + "</nav>";
@@ -4027,7 +4027,9 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyDictionary<string, IReadOnlyList<string>>? chips = null,
         IReadOnlyList<LoopChoiceView>? choices = null,
         IReadOnlyList<EquityBrief.Core.Loop.LoopPooledRow>? pooled = null,
-        (IReadOnlyList<LongSearchRow> Searches, IReadOnlyList<PlanPointRow> Points)? longRead = null)
+        (IReadOnlyList<LongSearchRow> Searches, IReadOnlyList<PlanPointRow> Points)? longRead = null,
+        string? strategy = null,
+        string? part = null)
     {
         static string Named(string word) => word switch
         {
@@ -4042,16 +4044,26 @@ public sealed partial class SinglePageApp : IComponent
         };
 
         var region = new StringBuilder();
-        var heading = "Loop: " + reading.Titled;
+        var shown = strategy is not null && LoopFamilies.Contains(strategy, StringComparer.Ordinal) ? strategy : null;
+        var section = shown is null && part is LoopDecisionsPart or LoopAlarmPart or LoopLongPart ? part : null;
+        var heading = (shown is null ? MarkRenderer.CheckUpName : Named(shown)) + ": " + reading.Titled;
 
-        region.Append(Invariant($"<section class=\"loop\" data-universe=\"{reading.Word}\" data-month=\"{Escaped(run?.Month ?? "none")}\" data-run=\"{Escaped(run?.RunId ?? "none")}\" data-proposals=\"{proposals.Count}\">"));
+        // The address of a place on this page, for the index and the month drawn.
+        string Here(string query) => $"{LoopRoute}?universe={reading.Word}" + (run is null ? string.Empty : $"&amp;month={Uri.EscapeDataString(run.Month)}") + query;
+
+        region.Append(Invariant($"<section class=\"loop\" data-universe=\"{reading.Word}\" data-month=\"{Escaped(run?.Month ?? "none")}\" data-run=\"{Escaped(run?.RunId ?? "none")}\" data-proposals=\"{proposals.Count}\" data-shown=\"{Escaped(shown ?? section ?? "opening")}\">"));
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            run is { } held ? Invariant($"Proposals tested on years they never saw, the run for {held.Month} through the close of {held.Through:yyyy-MM-dd}") : "No tester run is stored for this index"));
+            run is { } held ? Invariant($"Changes tried on years they never saw, the run for {held.Month} through the close of {held.Through:yyyy-MM-dd}") : "No tester run is stored for this index"));
         region.Append(selector);
 
-        if (months.Count > 1)
+        if (shown is not null || section is not null)
+        {
+            region.Append($"<p class=\"cu-back\"><a href=\"{Here(string.Empty)}\" data-back>Back to the {Escaped(MarkRenderer.CheckUpName)}</a></p>");
+        }
+
+        if (months.Count > 1 && shown is null && section is null)
         {
             region.Append("<p class=\"loop-months\">" + string.Join(" · ", months.Select(month => month == run?.Month
                 ? $"<b data-month-chosen=\"{Escaped(month)}\">{Escaped(month)}</b>"
@@ -4061,9 +4073,9 @@ public sealed partial class SinglePageApp : IComponent
         if (run is null)
         {
             region.Append(Cards.Computed(
-                "Loop",
+                MarkRenderer.CheckUpName,
                 "<p class=\"degraded\" data-summary data-loop=\"none\">No tester run is stored for this index. The tester runs by hand with 'loop-test' on each index, and each month in the monthly run.</p>",
-                title: "The loop",
+                title: MarkRenderer.CheckUpName,
                 stamp: Cards.Night(night),
                 region: "loop-none"));
 
@@ -4077,20 +4089,23 @@ public sealed partial class SinglePageApp : IComponent
             return ReaderText.Page(region.ToString());
         }
 
-        // From 19.7 the page opens on a summary a family in the one order, its rule today as chips, the proposals tested,
-        // the strongest one's adjusted p as a meter against the bar with its years better and the one put to you with its
-        // presses, or why nothing is and when it next can be; beneath it the one line saying what a change must pass.
+        // A strategy's page holds its rule, its changes under their kinds and, folded, the full workings: each change's
+        // verdict part by part and its test years, the readings, the score and the versions chosen.
+        // see: The Monthly check-up opens on what needs the reader and draws each setup's changes on a page of its own
         var summary = new List<LoopSummaryRow>();
-        var cards = new StringBuilder();
+        var cards = new Dictionary<string, string>(StringComparer.Ordinal);
+        var changes = new StringBuilder();
+        var words = decided is null ? [] : decided.Decisions.Where(one => one.Run == run.RunId).ToArray();
 
         foreach (var family in LoopFamilies)
         {
             var own = proposals.Where(proposal => proposal.Family == family).ToArray();
             var put = decided is null ? null : EquityBrief.Core.Loop.LoopDecisions.PutOf(own, one => MarkRenderer.HeldBack(run, one, decided));
-            var body = new StringBuilder(MarkRenderer.CardSummary(MarkRenderer.LoopTriedSaid(own.Length, put is not null)) + marks.LoopRule(family, own.FirstOrDefault()?.Current));
+            var word = put is null ? null : words.FirstOrDefault(one => one.Family == family && one.Proposal == put.Proposal);
+            var workings = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));
             var presses = string.Empty;
 
-            body.Append(marks.LoopFindings(family, [.. (findings ?? []).Where(finding => finding.Family == family)]));
+            workings.Append(marks.LoopFindings(family, [.. (findings ?? []).Where(finding => finding.Family == family)]));
 
             foreach (var proposal in own)
             {
@@ -4099,13 +4114,13 @@ public sealed partial class SinglePageApp : IComponent
                 if (put is not null && proposal.Proposal == put.Proposal)
                 {
                     presses = decision;
-                    decision = "<p class=\"loop-pressed-above\">Its presses stand in the summary above.</p>";
+                    decision = Invariant($"<p class=\"loop-pressed-above\">Its buttons are at the top of the <a href=\"{Here(string.Empty)}\">{MarkRenderer.CheckUpName}</a>.</p>");
                 }
 
-                body.Append(marks.LoopProposalRow(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)], decision, decided?.Cutoff));
+                workings.Append(marks.LoopProposalRow(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)], decision, decided?.Cutoff));
             }
 
-            summary.Add(new LoopSummaryRow(
+            var row = new LoopSummaryRow(
                 family,
                 chips?.GetValueOrDefault(family) ?? [],
                 own.Length,
@@ -4113,67 +4128,171 @@ public sealed partial class SinglePageApp : IComponent
                 put,
                 presses,
                 put is not null ? null : LoopWaiting(family, run, own, decided),
-                (pooled ?? []).FirstOrDefault(row => row.Own && row.Family == family)));
+                (pooled ?? []).FirstOrDefault(pool => pool.Own && pool.Family == family),
+                word);
 
-            body.Append(marks.LoopReadings(family, [.. (spreads ?? []).Where(spread => spread.Family == family)]));
-            body.Append(marks.LoopScore(family, own, (models ?? []).FirstOrDefault(model => model.Family == family), [.. (ranks ?? []).Where(rank => rank.Family == family)], run.Month));
-            body.Append(marks.LoopChoices(family, choices ?? []));
+            summary.Add(row);
 
-            cards.Append(Cards.Computed(
-                "Loop",
+            workings.Append(marks.LoopReadings(family, [.. (spreads ?? []).Where(spread => spread.Family == family)]));
+            workings.Append(marks.LoopScore(family, own, (models ?? []).FirstOrDefault(model => model.Family == family), [.. (ranks ?? []).Where(rank => rank.Family == family)], run.Month));
+            workings.Append(marks.LoopChoices(family, choices ?? []));
+
+            if (put is not null)
+            {
+                var replaced = (reading == Universes.Large && family != EquityBrief.Core.Families.SetupFamilies.Pullback) || decided?.Registered?.Contains(family) == true;
+
+                changes.Append(marks.CheckUpChangeBlock(new CheckUpChange(put, [.. tests.Where(test => test.Family == family && test.Proposal == put.Proposal)], presses, word, row.Pooled, replaced)));
+            }
+
+            var body = new StringBuilder(MarkRenderer.CardSummary(MarkRenderer.LoopTriedSaid(own.Length, own.Count(proposal => proposal.Passed), put is not null, word is null)));
+
+            body.Append(Invariant($"<p class=\"cu-does\">{Escaped(LoopPlain.Does(family))}</p><div class=\"cu-today\"><h4>Today's rule</h4>{MarkRenderer.LoopChips(row.Chips)}</div>"));
+
+            if (row.Waiting is { } waiting)
+            {
+                body.Append(Invariant($"<p class=\"cu-waiting\" data-waiting=\"{Escaped(waiting)}\">{Escaped(waiting)}</p>"));
+            }
+
+            body.Append(marks.CheckUpGroups(own, put, words));
+            body.Append("<details class=\"cu-workings\"><summary>Show the full workings</summary>");
+            body.Append(MarkRenderer.CheckUpStrongest(row));
+            body.Append(workings);
+            body.Append("</details>");
+
+            cards[family] = Cards.Computed(
+                MarkRenderer.CheckUpName,
                 body.ToString(),
                 title: Escaped(Named(family)),
                 stamp: Cards.Night(night),
-                region: "loop-" + family));
+                region: "loop-" + family);
         }
-
-        region.Append(Cards.Computed(
-            "Loop",
-            MarkRenderer.CardSummary(MarkRenderer.LoopSummarySaid(run.Month, summary)) + Guide(LoopGuide) + marks.LoopSummary(summary) + MarkRenderer.LoopChangeLine()
-                + (pooled is { Count: > 0 } summed ? MarkRenderer.PooledLuckLine(MarkRenderer.PooledSetups(summed)) : string.Empty),
-            title: Invariant($"What the run for {Escaped(run.Month)} found"),
-            lede: "A row a setup: the rule today, what was tested against it, the strongest proposal against the bar, and the one put to you.",
-            stamp: Cards.Night(night),
-            region: "loop-summary"));
-        region.Append(cards);
 
         // What the operator decided on this index and what the apply step did, and the live alarm's periods.
         // see: An approved change is applied by the night's own build on the index it was approved on alone
         // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
-        if (decided is not null)
-        {
-            region.Append(Cards.Computed(
-                "Loop",
+        var decisionsCard = decided is null
+            ? string.Empty
+            : Cards.Computed(
+                MarkRenderer.CheckUpName,
                 MarkRenderer.CardSummary(MarkRenderer.LoopDecisionsSaid(decided)) + marks.LoopHistory(decided),
                 title: "Your decisions",
                 stamp: Cards.Night(night),
-                region: "loop-decisions"));
-            region.Append(Cards.Computed(
-                "Loop",
+                region: "loop-decisions");
+        var alarmCard = decided is null
+            ? string.Empty
+            : Cards.Computed(
+                MarkRenderer.CheckUpName,
                 MarkRenderer.CardSummary(MarkRenderer.LoopAlarmSaid(decided)) + marks.LoopAlarm(reading.Code, decided) + Cards.Key(
-                    "The live alarm.",
-                    "Each month a live rule's mean edge after costs over the trades that ended in it is read against the fifth percentile of ten thousand draws of as many of its reference's trades, the rule today's over the newest run's test years in weekly blocks; two counted months running under it flag the rule, a sector heavyweights' book read by quarter.",
-                    "The rule today was chosen on those same test years, so its reference reads high and the alarm is for a rule that has broken, not one drifting a little."),
-                title: "The live alarm",
+                    "The safety alarm.",
+                    "Each month a live strategy's trades that ended in it are compared with how its trades did in the test years. If it does clearly worse two months running, the strategy is flagged. A sector heavyweights' holdings are read by quarter.",
+                    "Today's rule was chosen on those same test years, so the comparison is a demanding one and the alarm is for a strategy that has broken, not one drifting a little."),
+                title: "The safety alarm",
                 stamp: Cards.Night(night),
-                region: "loop-alarm"));
-        }
+                region: "loop-alarm");
 
-        // From 23.8 the long history's searches and buy and sell points, each a proposal.
-        if (longRead is { } read)
+        // From 23.8 the long history's searches and buy and sell points, each a change tried.
+        var longCard = longRead is { } read ? LongSearchCard(read.Searches, read.Points) : string.Empty;
+
+        if (shown is not null)
         {
-            region.Append(LongSearchCard(read.Searches, read.Points));
+            region.Append(cards[shown]);
+        }
+        else if (section is not null)
+        {
+            region.Append(section switch
+            {
+                LoopDecisionsPart => decisionsCard,
+                LoopAlarmPart => alarmCard,
+                _ => longCard,
+            });
+        }
+        else
+        {
+            var state = new CheckUpState(
+                proposals.Count,
+                LoopFamilies.Count,
+                summary.Count(row => row.Put is not null),
+                summary.Count(row => row.Put is not null && row.Word is null),
+                [.. summary.Where(row => row.Word is not null).Select(row => row.Word!)],
+                NextMonthlyRun(run.Month));
+
+            region.Append(Cards.Computed(
+                MarkRenderer.CheckUpName,
+                MarkRenderer.CheckUpHeadline(state),
+                title: Invariant($"{MarkRenderer.FittedMonth(run.Month)}"),
+                lede: "Once a month the system tries small changes to each strategy on past years. A change only reaches you if it clearly beats what we do today.",
+                stamp: Cards.Night(night),
+                region: "loop-headline"));
+
+            if (changes.Length > 0)
+            {
+                region.Append(Cards.Computed(
+                    MarkRenderer.CheckUpName,
+                    MarkRenderer.CardSummary(state.Put == 1 ? "This change passed all four checks." : "These changes passed all four checks.") + changes,
+                    title: state.Put == 1 ? "The change that passed" : "The changes that passed",
+                    stamp: Cards.Night(night),
+                    region: "loop-passed"));
+            }
+
+            region.Append(Cards.Computed(
+                MarkRenderer.CheckUpName,
+                MarkRenderer.CardSummary(MarkRenderer.LoopSummarySaid(run.Month, summary)) + Guide(LoopGuide) + LoopGlossary
+                    + "<p class=\"cu-hint\">Open a strategy to see every change tried for it.</p>"
+                    + marks.LoopSummary(summary, family => Here("&amp;strategy=" + Uri.EscapeDataString(family))) + MarkRenderer.LoopChangeLine()
+                    + (pooled is { Count: > 0 } summed ? MarkRenderer.PooledLuckLine(MarkRenderer.PooledSetups(summed)) : string.Empty),
+                title: Invariant($"All {LoopFamilies.Count} strategies"),
+                stamp: Cards.Night(night),
+                region: "loop-summary"));
+            region.Append("<nav class=\"cu-more\" aria-label=\"More\">");
+
+            if (decided is not null)
+            {
+                region.Append(MoreLink("Your decisions", MarkRenderer.LoopDecisionsSaid(decided), Here($"&amp;part={LoopDecisionsPart}")));
+                region.Append(MoreLink("The safety alarm", MarkRenderer.LoopAlarmSaid(decided), Here($"&amp;part={LoopAlarmPart}")));
+            }
+
+            if (longRead is { } shownLong)
+            {
+                region.Append(MoreLink("The long view, back to 2005", LongSearchSaid(shownLong.Searches, shownLong.Points), Here($"&amp;part={LoopLongPart}")));
+            }
+
+            region.Append("</nav>");
         }
 
         region.Append("</section>");
 
         // see: Paper trading, the Loop page and the Ledger draw every stored word through one table of phrases into the reader's words
         return ReaderText.Page(region.ToString());
+
+        static string MoreLink(string title, string said, string href) =>
+            $"<a class=\"cu-more-link\" href=\"{href}\"><b>{Escaped(title)}</b><span>{Escaped(said)}</span></a>";
     }
 
-    // How the Loop page is read, opened from its fold.
+    // The words the Monthly check-up leans on, for a reader new to investing, folded shut.
+    static readonly string LoopGlossary =
+        "<details class=\"guide\" data-words><summary>What the words mean</summary>"
+        + Cards.Words(
+            ("Chance it is luck", "How likely it is that luck alone produced a result this good. About 1 in 400 means very unlikely."),
+            ("Points", "The unit for a strategy that holds companies for months. One point is 1 percent of the money put into a holding."),
+            ("Per $1 risked", "The unit for a strategy that trades in and out. The amount at risk is the gap between the buy price and the stop, so this says how much a trade gained or lost for each $1 of that gap."),
+            ("The easy alternative", "What a change has to beat: the same plan bought on every stock in the index that day and sold the same way, or holding every stock in equal amounts."),
+            ("Stop", "A price set under the buy price. A stock that falls below it is sold, to limit the loss."),
+            ("Target", "A price set above the buy price. A stock that reaches it is sold, to take the gain."),
+            ("A typical day's move", "How far a stock usually moves in one day."),
+            ("Reshuffle", "The day a monthly list of holdings is chosen again. A company that no longer qualifies is sold and new ones are bought."),
+            ("The index's own fund", "A single fund that tracks the whole index. Holding it for the same days is a second, simpler comparison."))
+        + "</details>";
+
+    // The three further places the opening page links to, by the part named in the address.
+    public const string LoopDecisionsPart = "decisions";
+
+    public const string LoopAlarmPart = "alarm";
+
+    public const string LoopLongPart = "long";
+
+    // How the Monthly check-up is read, opened from its fold.
     public const string LoopGuide =
-        "Each month the tester runs a set of procedures for each setup on the years before each test year and scores what they choose on that year against the rule today; a proposal is the procedure run on all finished data. The meter draws a proposal's adjusted p, its chance of a result this strong by luck corrected for every proposal tested beside it, on a scale from a ten-thousandth to one with the bar marked: green at or under the bar, red over it. A proposal passes only where all four parts hold, and the strongest that passes and states a change is put to you; nothing changes a rule until you approve it. Each proposal opens to its four parts and its test years drawn as a pair of bars a year, the rule today's above and the proposal's beneath. The rule today was chosen on these same test years, so a proposal reads understated against it.";
+        "Once a month the system tries small changes to each strategy. Each change is chosen using only earlier years and then scored on later years it never saw, against what the strategy does today. A change is put to you only if it passes all four checks, and nothing changes until you approve it. Open a strategy to see every change tried for it and how each did. Today's rule was picked on these same years, so a change has to clear a high bar to beat it.";
 
     // Why nothing is put to the operator for a family and when it next can be: a family the run tested nothing for or none
     // of whose proposals passed waiting on the next monthly run, the first Saturday of the month after the run's, a
@@ -4187,7 +4306,7 @@ public sealed partial class SinglePageApp : IComponent
 
         if (own.Count == 0)
         {
-            return Invariant($"Nothing was tested for this setup in the run for {run.Month}; the next monthly run is on {next:yyyy-MM-dd}.");
+            return Invariant($"Nothing was tried for this strategy in the run for {run.Month}. The next check-up is on {next:yyyy-MM-dd}.");
         }
 
         if (decided is not null && own.Any(one => one.Passed && one.Change is not null && MarkRenderer.Declined(run, one, decided)))
@@ -4196,8 +4315,8 @@ public sealed partial class SinglePageApp : IComponent
         }
 
         return decided is { Cutoff: { } cutoff } && own.Any(one => one.Passed && one.Change is not null && MarkRenderer.HeldByCutoff(one, decided))
-            ? Invariant($"Its passing proposal reads a release reading. {EquityBrief.Core.Loop.LoopDecisions.HeldByCutoffWords(cutoff)} The next monthly run is on {next:yyyy-MM-dd}.")
-            : Invariant($"{(own.Count == 1 ? "Its one proposal did not pass" : $"None of its {own.Count} proposals passed")} with a change to put to you; the next monthly run is on {next:yyyy-MM-dd}.");
+            ? Invariant($"Its passing proposal reads a release reading. {EquityBrief.Core.Loop.LoopDecisions.HeldByCutoffWords(cutoff)} The next check-up is on {next:yyyy-MM-dd}.")
+            : Invariant($"{(own.Count == 1 ? "Its one change did not pass" : $"None of its {own.Count} changes passed")}, so it stays as it is. The next check-up is on {next:yyyy-MM-dd}.");
     }
 
     // The first Saturday of the month after a run's month, the day the monthly run is scheduled on.
@@ -4217,7 +4336,7 @@ public sealed partial class SinglePageApp : IComponent
             ? string.Empty
             : Invariant($"<div class=\"loop-alarm-notice\" data-flagged=\"{flags.Count}\" data-universe=\"{reading.Word}\">")
                 + string.Concat(flags.Select(flag => Invariant(
-                    $"<p data-family=\"{Escaped(flag.Family)}\" data-period=\"{flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\" data-streak=\"{flag.Streak}\"><b>The live alarm flags the {Escaped(flag.Family)} rule on the {Escaped(reading.Name)}.</b> Its edge after costs stood under its reference's low {flag.Streak} counted periods running, the newest from {flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}. It changes nothing by itself; <a href=\"{LoopRoute}?universe={reading.Word}\">the Loop page</a> holds the periods and any restore waiting for your approval.</p>")))
+                    $"<p data-family=\"{Escaped(flag.Family)}\" data-period=\"{flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\" data-streak=\"{flag.Streak}\"><b>The live alarm flags the {Escaped(flag.Family)} rule on the {Escaped(reading.Name)}.</b> Its edge after costs stood under its reference's low {flag.Streak} counted periods running, the newest from {flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}. It changes nothing by itself; <a href=\"{LoopRoute}?universe={reading.Word}\">the Monthly check-up</a> holds the periods and any restore waiting for your approval.</p>")))
                 + "</div>";
 
     public string YourTradesRegion(string indexName, IReadOnlyList<YourTradeView> trades)

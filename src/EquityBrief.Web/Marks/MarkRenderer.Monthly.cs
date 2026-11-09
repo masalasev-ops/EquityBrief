@@ -51,7 +51,7 @@ public sealed partial class MarkRenderer
             html.Append("<div class=\"tbl-wrap\"><table class=\"monthly-table\"><thead><tr>");
             html.Append(TippedHeading("Setup", "the setup family the tester read"));
             html.Append(TippedHeading("Tested", "the proposals the tester's newest run on the S&P 500 tested against the rule today, and how many passed", "r"));
-            html.Append(TippedHeading("Put to you", "the strongest proposal that passed and states a change, which waits for your word on the Loop page"));
+            html.Append(TippedHeading("Put to you", "the strongest proposal that passed and states a change, which waits for your word on the Monthly check-up"));
             html.Append(TippedHeading("Each rule's verdict", "the per-rule test of each registered rule over the ledger's test years: the live or provisional rule against its benchmark, each variant against it"));
             html.Append("</tr></thead><tbody>");
 
@@ -76,7 +76,7 @@ public sealed partial class MarkRenderer
             html.Append("</tbody></table></div>");
         }
 
-        html.Append(Invariant, $"<p class=\"mr-links\"><a href=\"{Escaped(loop)}\">The Loop page &#8594;</a> <a href=\"{Escaped(paper)}\">Paper trading &#8594;</a></p>");
+        html.Append(Invariant, $"<p class=\"mr-links\"><a href=\"{Escaped(loop)}\">The Monthly check-up &#8594;</a> <a href=\"{Escaped(paper)}\">Paper trading &#8594;</a></p>");
         html.Append(Invariant, $"<p class=\"mr-shape\" data-ordinary=\"{view.Ordinary}\" data-wanted=\"{view.Wanted}\">The shape clock: {view.Ordinary} of the {view.Wanted} ordinary nights {(view.Version is { } version ? "under filter version " + Escaped(version) : "under no open filter version")}, after which the page proposes how many stocks each check should pass.</p>");
         html.Append("</div>");
 

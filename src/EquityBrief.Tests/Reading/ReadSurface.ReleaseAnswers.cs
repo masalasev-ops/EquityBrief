@@ -123,7 +123,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        async Task<string> Loop() => WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+        async Task<string> Loop() => await LoopWhole(client, "universe=400");
 
         // No reading version's history read is complete, so no cutoff is read and no split drawn.
         Assert.DoesNotContain("class=\"loop-cutoff\"", await Loop(), StringComparison.Ordinal);
@@ -143,8 +143,8 @@ public partial class ReadSurface
             page,
             StringComparison.Ordinal);
 
-        var first = page.IndexOf("data-proposal=\"winners against losers, ranked 1\"", StringComparison.Ordinal);
-        var second = page.IndexOf("data-proposal=\"winners against losers, ranked 2\"", StringComparison.Ordinal);
+        var first = page.IndexOf("data-proposal=\"winners against losers, ranked 1\"><summary>", StringComparison.Ordinal);
+        var second = page.IndexOf("data-proposal=\"winners against losers, ranked 2\"><summary>", StringComparison.Ordinal);
         var split = page.IndexOf("class=\"loop-cutoff\"", StringComparison.Ordinal);
 
         Assert.True(first < split && split < second, "The split is drawn beneath the proposal reading a release reading and before the next.");
@@ -187,7 +187,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        async Task<string> Loop() => WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+        async Task<string> Loop() => await LoopWhole(client, "universe=400");
         async Task<string> Badge() => await client.GetStringAsync(SinglePageApp.LoopPutRoute);
         async Task<(HttpStatusCode Status, string Said)> Press(string family, string proposal, string decision, string? reason = null) =>
             await CardPress(client, Decide("MID", OctoberRun, family), [("proposal", proposal), ("decision", decision), .. reason is null ? Array.Empty<(string, string)>() : [("reason", reason)]], true);
@@ -208,7 +208,7 @@ public partial class ReadSurface
         Assert.Equal(2, Regex.Count(page, "<p class=\"degraded\" data-decision=\"held-cutoff\">" + Regex.Escape(OnPage) + "</p>"));
         Assert.Contains("data-after=\"-2.5\"", page, StringComparison.Ordinal);
         Assert.Contains("data-after=\"0\"", page, StringComparison.Ordinal);
-        Assert.Contains("Its passing change tried reads a release reading. " + OnPage + " The next monthly run is on 2026-11-07.", page, StringComparison.Ordinal);
+        Assert.Contains("Its passing change tried reads a release reading. " + OnPage + " The next check-up is on 2026-11-07.", page, StringComparison.Ordinal);
         Assert.Equal("1", await Badge());
 
         // The presses: the held proposals refused with the words, an approval and a decline alike, writing nothing; the

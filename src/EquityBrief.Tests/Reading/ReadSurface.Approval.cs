@@ -175,7 +175,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600"));
+        var page = await LoopWhole(client, "universe=600");
 
         // The breakout's exit, passing and undecided on the newest run, carries both presses to its own route.
         var breakout = Assert.Single(Blocks(page, "<div class=\"loop-decision\" data-loop-key=\"breakout\\|the autopsy's exit, ranked 1\">.*?</div>"));
@@ -214,10 +214,10 @@ public partial class ReadSurface
         Assert.Equal(HttpStatusCode.Forbidden, (await CardPress(client, $"{SinglePageApp.LoopRestorePostRoute}SML/drift/1", [], fromThePage: false)).Status);
         Assert.Contains("restored before the next night", (await CardPress(client, $"{SinglePageApp.LoopRestorePostRoute}SML/drift/1", [])).Said, StringComparison.Ordinal);
         Assert.Contains("already holds your word", (await CardPress(client, $"{SinglePageApp.LoopRestorePostRoute}SML/drift/1", [])).Said, StringComparison.Ordinal);
-        Assert.Contains("data-restore=\"waiting\"><b>Restore approved</b> on ", WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600")), StringComparison.Ordinal);
+        Assert.Contains("data-restore=\"waiting\"><b>Restore approved</b> on ", await LoopWhole(client, "universe=600"), StringComparison.Ordinal);
 
         // From 17.13 the S&P 500's passing drift exit carries its presses, and from 17.14 its pullback's condition.
-        var large = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500"));
+        var large = await LoopWhole(client, "universe=500");
 
         Assert.Contains($"<form class=\"loop-press\" method=\"post\" action=\"{Decide("GSPC", LargeOctober, "drift")}\" data-loop-key=\"drift|the autopsy's exit, ranked 1\">", large, StringComparison.Ordinal);
         Assert.Contains($"<form class=\"loop-press\" method=\"post\" action=\"{Decide("GSPC", LargeOctober, "pullback")}\" data-loop-key=\"pullback|winners against losers, ranked 1\">", large, StringComparison.Ordinal);
@@ -227,7 +227,7 @@ public partial class ReadSurface
         var notice = WebUtility.HtmlDecode(SinglePageApp.LoopAlarmNotice(Universes.Of("600"), [("drift", new DateOnly(2026, 8, 1), 2)]));
 
         Assert.Contains("<b>The live alarm flags the drift rule on the S&P 600.</b> Its edge after costs stood under its reference's low 2 counted periods running, the newest from 2026-08-01.", notice, StringComparison.Ordinal);
-        Assert.Contains("<a href=\"#/loop?universe=600\">the Loop page</a>", notice, StringComparison.Ordinal);
+        Assert.Contains("<a href=\"#/loop?universe=600\">the Monthly check-up</a>", notice, StringComparison.Ordinal);
         Assert.Empty(SinglePageApp.LoopAlarmNotice(Universes.Of("400"), []));
     }
 
@@ -269,10 +269,10 @@ public partial class ReadSurface
         // Read back off the rendered pages: the S&P 600's breakout card states the change; the S&P 400's and the S&P 500's
         // pages are drawn as before it, byte for byte.
         var small600 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600"));
-        var stated = Assert.Single(Blocks(small600, "<p class=\"rule-words\">[^<]*approved on the Loop page[^<]*</p>"));
+        var stated = Assert.Single(Blocks(small600, "<p class=\"rule-words\">[^<]*approved on the Monthly check-up[^<]*</p>"));
 
         Assert.StartsWith("<p class=\"rule-words\">A stock closes above its highest price of the 126 trading days before", stated, StringComparison.Ordinal);
-        Assert.Contains("its list closes while the S&P 600's own share above the 200-day average is under 45%; each trade's result is read after the published spread, half paid at each end. It stands at a change approved on the Loop page: exit: ", stated, StringComparison.Ordinal);
+        Assert.Contains("its list closes while the S&P 600's own share above the 200-day average is under 45%; each trade's result is read after the published spread, half paid at each end. It stands at a change approved on the Monthly check-up: exit: ", stated, StringComparison.Ordinal);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
         Assert.Equal(large, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}")));
         Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", mid, StringComparison.Ordinal);
@@ -317,7 +317,7 @@ public partial class ReadSurface
         var replaced = EquityBrief.Worker.Candidates.TheSetupFamilies.Breakouts[0].Candidate;
         var picker = Assert.Single(Blocks(large, "<select id=\"rule-breakout\" class=\"rule-select\" data-rule-choice=\"breakout\".*?</select>"));
 
-        Assert.Contains("It stands at a change approved on the Loop page: exit: a target at 1.5 times the risk.", large, StringComparison.Ordinal);
+        Assert.Contains("It stands at a change approved on the Monthly check-up: exit: a target at 1.5 times the risk.", large, StringComparison.Ordinal);
         Assert.Contains($"data-variant=\"none\" title=\"{replaced}; exit: a target at 1.5 risks\" selected>The live setup</option>", picker, StringComparison.Ordinal);
         Assert.Matches($"data-variant=\"[0-9]+\" title=\"{Regex.Escape(replaced)}\">Version: without ", picker);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
@@ -400,7 +400,7 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}"));
 
-        Assert.Contains($"It stands at a change approved on the Loop page: {ReaderWords.Plain(change.Words())}.", page, StringComparison.Ordinal);
+        Assert.Contains($"It stands at a change approved on the Monthly check-up: {ReaderWords.Plain(change.Words())}.", page, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -418,7 +418,7 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600"));
+        var page = await LoopWhole(client, "universe=600");
 
         foreach (var family in SinglePageApp.LoopFamilies)
         {

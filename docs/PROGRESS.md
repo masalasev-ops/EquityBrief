@@ -18061,3 +18061,44 @@ Table:      the operator's rule of 2026-11-01, to 7680a441, widened on their wor
             removing 22.14's hold-back line and 21.5 removing 19.7's chips for the family it took out of the loop. No correction undone.
 Carried:    none of phase 21's own. The operating row The monthly run's time with every family tested is past its trigger, 13 h 03 min
             read off the run log against about 3 h 40 min planned, and waits on the operator's ruling.
+
+### 22.61 ruling - the Loop page drawn as the Monthly check-up, for a reader new to investing
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      word for word in `prompts/2026-11-09-22.61-operator-monthly-check-up.md`, committed with this entry: the page redone in a
+            much more user friendly manner, since it was a lot of words and none of it made sense to a novice; renamed the Monthly
+            check-up, its address staying as it is; and built without a clickable prototype.
+Labelled:   22.61, phase 22's next number, as Home was at 22.16, so phase 22's sign-off covers it.
+Queue:      done, phase 21's sign-off; in progress, this page; next, phase 22's sign-off and 23.10, each on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull request, with the
+            figures it states.
+
+### 22.61 - the Loop page drawn as the Monthly check-up   2026-11-09
+
+Built:      `#/loop` keeps its address and is drawn as the Monthly check-up, in the header's menu and on every page naming it. It opens on
+            one sentence saying whether anything needs the reader and the month's four counts, then each change that reached the
+            operator with its years as paired bars, its four checks and its presses, then a line a setup and links to the decisions,
+            the live alarm and the long history. `strategy=` opens a setup's own page, its changes under five kinds with the
+            whole of what the page drew before folded beneath them; `part=` opens the three further parts. `LoopPlain` names each
+            stored change in plain words and reads a stored chance as one in so many, the only working the page does. The month's
+            sentences stop saying a change waits once a word is given, and say how many passed where they said one did. The
+            verdict across the three indexes is said on the card as a test of today's rules and not of the change.
+Measured:   over the live store's small tables, the S&P 500's November run: the opening page 13 KB, where the one page was 1.5 MB with 136
+            tables and 126 folded sections; a strategy's page 236 KB to 284 KB, its workings folded.
+Tests:      12 new, 5 fixture expectations worked by hand and 7 read-surface; the read-surface tests of the page read the opening page,
+            every strategy's page and the three parts as one through `LoopWhole`, each assertion on a drawn word moved with the word; the plain-words
+            check reads the opening page, the card of what passed, every strategy's page and the three parts.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its tests by name, restored from the
+            file's own bytes, 21 in all, each predicted red and each red: a strategy's workings on the opening page; the
+            address of a strategy's page and of a further part; one change waiting read as nothing; an applied approval said to go
+            live; the odds at two figures; a chance of one in two read as odds; a limit on a fall read as a fall; a ratio read as
+            itself; a selling rule filed under settings; changes finding nothing drawn as rows; each of the two sentences saying a
+            decided change waits; an approved strategy's line; a book's year drawn as a fraction and held to the trades' count; the
+            pullback said to run beside its change; the three indexes' line; a check not met drawn as met; a card's first line drawing
+            the old name; and the plain-words check not reading the card of what passed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3649 of 3649 tests ran with none failed, migrations 0 to 139 with none
+            pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
+            none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
+Carried:    none. A card's first line is stored naming the Loop page, the night's own words, and is drawn naming the Monthly check-up.

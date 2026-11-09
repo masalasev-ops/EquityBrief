@@ -165,6 +165,8 @@ public partial class ReadSurface
 
             pages.Add(("/screens/ledger", await client.GetStringAsync("/screens/ledger")));
             pages.Add(("/screens/loop", await client.GetStringAsync("/screens/loop?universe=500")));
+            pages.Add(("/screens/loop drift", await client.GetStringAsync("/screens/loop?universe=500&strategy=drift")));
+            pages.Add(("/screens/loop alarm", await client.GetStringAsync($"/screens/loop?universe=500&part={EquityBrief.Web.App.SinglePageApp.LoopAlarmPart}")));
         }
 
         // Each page read, and the pages together writing signed figures, so the reader is shown to have read some.
