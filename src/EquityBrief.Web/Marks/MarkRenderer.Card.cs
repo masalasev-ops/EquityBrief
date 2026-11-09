@@ -108,6 +108,9 @@ public sealed record DecisionCardView(
     // check line.
     public SetupLongRecord? LongRecord { get; init; }
 
+    // From the 22.16 correction of 2026-11-09 the zone its traded plan buys at, none before 23.10.
+    public ZoneBuy? Zone { get; init; }
+
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
 }
 
@@ -258,11 +261,14 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<div class=\"decision-card plain\" data-index=\"{Escaped(card.Index)}\" data-family=\"{Escaped(card.Family)}\" data-ticker=\"{Escaped(card.Ticker)}\" data-night=\"{DayOf(card.Night)}\">");
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(CardSummary(card, SetupOf(card.Family)))}</p>");
         body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\"><h5>The plan</h5><div class=\"plan-tiles\">");
-        body.Append(PlanTile("buy", "Buy at about", card.Entry is { } entry ? Price(entry) : "Not stored", "at the next day's open"));
+        body.Append(card.Zone is { } zone
+            ? PlanTile("buy", "Buy if it dips to about", Price(zone.Price), Formatted($"within {zone.Within} trading days"))
+            : PlanTile("buy", "Buy at about", card.Entry is { } entry ? Price(entry) : "Not stored", "at the next day's open"));
         body.Append(card.Stop is { } stop && TrailOf(card, pick) is null ? PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is null ? StaysUnlessChanged(card) : null, "loss") : StopTile(card, pick));
         body.Append(card.Target is { } target ? PlanTile("target", "Sell if it reaches", Price(target), null, "gain") : TargetTile(card, pick));
         body.Append("</div>");
         body.Append(TrailLines(card, pick));
+        body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
         body.Append("</section>");
         body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
         body.Append(SetupRecordBox(card.LongRecord));
@@ -618,7 +624,9 @@ public sealed partial class MarkRenderer
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\" data-traded=\"true\"><h5>{Escaped(EquityBrief.Core.Cards.PlanWords.AsTraded)}</h5><div class=\"plan-tiles\">");
-        body.Append(PlanTile("buy", "Buy", "At the next day's open", card.Entry is { } entry ? Formatted($"at about {Price(entry)}") : "no buy price stored"));
+        body.Append(card.Zone is { } zone
+            ? PlanTile("buy", "Buy if it dips to about", Price(zone.Price), Formatted($"within {zone.Within} trading days"))
+            : PlanTile("buy", "Buy", "At the next day's open", card.Entry is { } entry ? Formatted($"at about {Price(entry)}") : "no buy price stored"));
         body.Append(StopTile(card, pick));
         body.Append(TargetTile(card, pick));
 
@@ -628,6 +636,7 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</div>");
+        body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
 
         // The share of the time the plan must reach its target before its stop to break even, beside its reward to risk.
         // see: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position

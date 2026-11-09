@@ -18202,3 +18202,22 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
             own bytes, 2 in all, each predicted red and each red: Home's card drawing no box; and the box drawn after the line of
             how it sells.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.16 - correction: a plan that buys at a zone draws the price it waits for, how long and tonight's close on every card   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 5: from 23.10 a traded plan may buy at a zone, and every card read as if the buy
+            came at the next open.
+Corrected:  a card handed its traded plan's zone, its price, its window, tonight's close and a time limit, draws it: on Home "Buy
+            if it dips to about", "Sell if it closes below", and "Aim to sell at" or "Otherwise sell after" its days, then "Tonight's
+            close was $51.30. The buy waits for the price to dip to about $49.20 within 20 trading days; if it never does, there is
+            no trade.", as the mockup's state after the restart draws it; a pick's card and the copy's its buy tile as the price it
+            waits for and the same line beneath the tiles. No plan buys at a zone before 23.10, which hands each card its zone.
+Tests:      1 new read-surface test over a constructed zone plan: Home's card, a pick's card and the copy's, a plan with no target
+            drawing its time limit, and each card as before with no zone; three counts of the document's rows and claims raised by
+            its one new row.
+Claims:     1 new, section 15.18's row of a plan that buys at a zone, reached by the read surface.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored from the file's
+            own bytes, 3 in all, each predicted red and each red: Home's card drawing a zone plan's prices as the next open's; the
+            line saying the zone's price was tonight's close; and a pick's card drawing no line beneath its tiles.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.

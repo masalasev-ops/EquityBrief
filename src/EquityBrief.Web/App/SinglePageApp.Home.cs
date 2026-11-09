@@ -12,7 +12,7 @@ namespace EquityBrief.Web.App;
 // target, the distance it rises behind the highest close at and its rule's winning trades; whether an exit changed on the
 // Loop page moves its give-up price; for the Fundamentals family the setting its index's rule stands at; and from the 22.6
 // correction of 2026-11-09 its setup's record over the long history.
-public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null, SetupLongRecord? LongRecord = null);
+public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null, SetupLongRecord? LongRecord = null, ZoneBuy? Zone = null);
 
 // How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
 // many made money; the live setups' accounts averaged, their return, the day every live rule took effect and the index's
@@ -453,6 +453,37 @@ public sealed partial class SinglePageApp
         card.Append(Invariant($"<article class=\"home-idea fam-edge\" data-family=\"{family}\" data-ticker=\"{Escaped(idea.Ticker)}\">"));
         card.Append(Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(idea.Ticker)}</div>{(idea.Company is { } company ? Invariant($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(idea.Family))}</span></div>"));
         card.Append(Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
+
+        // From the 22.16 correction of 2026-11-09 a plan that buys at a zone: the price it waits for, the close that sells it,
+        // its target or its time limit, and beneath them how long the buy waits from tonight's close.
+        // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+        if (idea.Zone is { } zone)
+        {
+            card.Append("<div class=\"home-prices\">");
+            card.Append(Invariant($"<div><span>Buy if it dips to about</span><b>{Dollars(zone.Price)}</b></div>"));
+            card.Append(Invariant($"<div><span>Sell if it closes below</span><b class=\"stop\">{(idea.Stop is { } below ? Dollars(below) : NoFigure)}</b></div>"));
+            card.Append(idea.Target is { } aimed
+                ? Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{Dollars(aimed)}</b></div>")
+                : Invariant($"<div><span>Otherwise sell after</span><b class=\"aim\">{(zone.Sessions is { } sessions ? Invariant($"{sessions} trading days") : NoFigure)}</b></div>"));
+            card.Append("</div>");
+            card.Append(Invariant($"<p class=\"home-cond\">{Escaped(MarkRenderer.ZoneWaitLine(zone))}</p>"));
+        }
+        else
+        {
+            card.Append(PricesOf(idea));
+        }
+
+        card.Append(MarkRenderer.HomeEntryCheckLine(idea.EntryCheck, idea.Ticker));
+        card.Append(MarkRenderer.SetupRecordBox(idea.LongRecord));
+
+        return Rest(idea, card, copying, reading);
+    }
+
+    // An idea's three prices bought at the next open.
+    static string PricesOf(HomeIdea idea)
+    {
+        var card = new StringBuilder();
+
         card.Append("<div class=\"home-prices\">");
         card.Append(Invariant($"<div><span>Buy at about</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
         card.Append(idea.Family == ImprovingRule.Name
@@ -464,9 +495,13 @@ public sealed partial class SinglePageApp
         card.Append(Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
         card.Append("</div>");
 
-        card.Append(MarkRenderer.HomeEntryCheckLine(idea.EntryCheck, idea.Ticker));
-        card.Append(MarkRenderer.SetupRecordBox(idea.LongRecord));
+        return card.ToString();
+    }
 
+    // An idea's lines beneath its record: how it sells, the close past which it cannot lose and its rule's winners or what it
+    // risks for what it aims at, and its link to Tonight.
+    static string Rest(HomeIdea idea, StringBuilder card, bool copying, UniverseChoice reading)
+    {
         // see: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence
         card.Append(SellLine(idea, copying) is { } line ? Invariant($"<div class=\"home-odds\" data-sell-line>{Escaped(line)}</div>") : string.Empty);
 

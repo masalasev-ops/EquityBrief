@@ -50,8 +50,19 @@ public sealed record SetupRecords(IReadOnlyList<SetupLongRecord> Records)
         Records.FirstOrDefault(record => record.Index == index && record.Family == family);
 }
 
+// From the 22.16 correction of 2026-11-09 a traded plan that buys at a zone: the price it waits for, the trading days it waits,
+// tonight's close and, where it sets no target, the trading days after which it sells. No plan buys at a zone before 23.10.
+// see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+public sealed record ZoneBuy(decimal Price, int Within, decimal Close, int? Sessions = null);
+
 public sealed partial class MarkRenderer
 {
+    // The line beneath a zone plan's prices: tonight's close, the price the buy waits for and for how long, and that no dip is no
+    // trade.
+    // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+    public static string ZoneWaitLine(ZoneBuy zone) =>
+        Formatted($"Tonight's close was ${zone.Close:N2}. The buy waits for the price to dip to about ${zone.Price:N2} within {zone.Within} trading days; if it never does, there is no trade.");
+
     public const string RecordNote = "The rule's record over every stock it bought, not this stock's chance.";
 
     // The index a record is on, by its name.

@@ -146,8 +146,9 @@ public partial class ArchitectureConformance
         // a tile.
         .. Reading.ReadSurface.SetupRecordRows,
 
-        // From the 22.16 correction of 2026-11-09: Home's picks watched and not drawn.
+        // From the 22.16 correction of 2026-11-09: Home's picks watched and not drawn; and from its next a plan that buys at a zone.
         .. Reading.ReadSurface.HomeWatchingRows,
+        .. Reading.ReadSurface.ZonePlanRows,
     ];
 
     // The rows the document loses after phase 22's report: none.
