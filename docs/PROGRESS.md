@@ -17890,3 +17890,37 @@ Carried:    this pull request merged with `tools/merge` itself, read back on the
             and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.8 - correction: the long results restated after the corrections, and their remedy   2026-11-08
+
+Found:      the operator's order of 2026-11-08 asks every result of 23.7 and 23.8 rerun and restated after its first two
+            items, and 23.10 put to them as one table after them.
+Corrected:  nothing in the code beyond the corrections above: this entry restates the results and writes their remedy.
+Measured:   over the live store through 2026-11-06 with the first six corrections, each run printing alone and writing
+            nothing. `plan-points`, the edge per pick offered against the benchmark as ruled from 2019, the years no
+            setting was chosen on, the recommendation against the traded plan: the S&P 500's pullback +0.038 against -0.124,
+            its breakout +0.119 against -0.097, its drift -0.036 against -0.192, its dip +0.022 against -0.038; the S&P
+            400's +0.530 against -0.099, +0.068 against -0.079, +0.081 against +0.003, +0.023 against -0.037; the S&P 600's
+            +0.188 against +0.059, +0.186 against -0.087, +0.324 against +0.339, +0.027 against -0.029. Against the fund
+            held over the same sessions from 2019 the S&P 500's pullback reads -0.180 against -0.195, its breakout -0.023
+            against -0.231, its drift -0.072 against -0.288, and the S&P 600's drift -0.166 against +0.257. `loop-search
+            --long`, each family's search against the benchmark as ruled, none passed: the S&P 500's breakout adjusted p
+            0.5401 over 1,996 trades, drift 0.3364 over 2,702, dip 0.7805 over 509; the S&P 400's 0.4482 over 1,960, 0.0792
+            over 1,962, 0.6490 over 641; the S&P 600's 0.2210 over 1,359, 0.3489 over 2,151, 0.3239 over 597; each
+            pullback named with what blocks its search; the S&P 400's and 600's profit check read from 2012 and 2013. The
+            long test's rerun on all three indices and the verdict across them, the long years written again with their
+            outliers and the S&P 500's long check are the remedy's, the long test taking about an hour an index.
+Tests:      none new.
+Pins:       none move: no source a rule's version or the readings' version pins moves in this pull request.
+Mutated:    none: this entry adds no assertion; each correction above mutated its own.
+Remedy:     `tools/remedies/2026-11-08-23.8-the-corrections-before-the-restart.txt`: `migrate`, `plan-points` on each index,
+            `loop-search --long` on each index with `--again`, `ledger-build --long` on each index, `loop-rules --long` on
+            each index for 2026-11, `loop-pooled --long` for 2026-11 and `ledger-check --long` on the S&P 500. It asks
+            nothing of anyone, calls no model, registers nothing and moves no rule.
+Carried:    the remedy's figures, to an entry after it; 23.10 on the operator's word, after the sign-offs of phases 21
+            and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3637 of 3637 tests ran with none failed, migrations 0 to 139 with none
+            pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
+            none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

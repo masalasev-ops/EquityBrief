@@ -1,0 +1,25 @@
+# The remedy of the corrections the operator ordered on 2026-11-08 before 23.10. Migrations 137 to 139 add the fund line to
+# long_search, plan_point and loop_rule, long_reading's count of setups past 20 risks and the long_outlier list. Then on each
+# index the buy and sell points again, every edge over the benchmark as ruled and the dip sold on its RSI; the long search
+# again, the dip searched beside the breakout and the drift and the S&P 400's and 600's listings held to the profit check
+# from the year the long facts cover their members; the long ledger's years and its outliers written again, no setup
+# written; the per-rule test over the long history again with the S&P 400's and 600's own sweep readings and the dip laid
+# out over it, and the verdict across the three over it; and the S&P 500's long check again, the rating actions the long
+# build holds none of left unread. It asks nothing of anyone, calls no model, registers nothing and moves no rule; no source
+# a rule's version or the readings' version pins moves. Run from main after the merge, when no night, off-peak run, local
+# run, ledger build or monthly run is writing; the per-rule test takes about an hour an index over the long history.
+migrate
+plan-points --index GSPC
+plan-points --index MID
+plan-points --index SML
+loop-search --long --index GSPC --again
+loop-search --long --index MID --again
+loop-search --long --index SML --again
+ledger-build --long --index GSPC
+ledger-build --long --index MID
+ledger-build --long --index SML
+loop-rules --long --index GSPC --month 2026-11
+loop-rules --long --index MID --month 2026-11
+loop-rules --long --index SML --month 2026-11
+loop-pooled --long --month 2026-11
+ledger-check --long --index GSPC
