@@ -18184,3 +18184,21 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
             file's own bytes, 4 in all, each predicted red and each red: a losing setup's pick still a card; the heading counting
             every pick; one setup said as several; and the link counting the cards alone.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.16 - correction: the Fundamentals cards on Home drawn as the mockup draws them   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 4: the Fundamentals cards on Home are to draw the buy price, "Sell when its
+            filings weaken", "Aim to sell at No fixed target", the record box, the line of how its filings sell it and "How it
+            sells", in the mockup's order. Each part but the box stood already; Home drew none of them where six losing picks came
+            first in Tonight's order.
+Corrected:  nothing further in the code: the box is the 22.6 correction's of this day, drawn between the entry check line and the
+            line of how it sells, and the 22.16 correction before this entry draws these cards first where the losing setups'
+            picks are watched. The test holds every part and its order on a card read off the S&P 400's Home.
+Tests:      1 new read-surface test: the ten parts of M1's Fundamentals card in the mockup's order, the year its filings reach back
+            to worked from 23.5's first test year less three, and its rule at the starting setting, 7 in every 9 and 126 days.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored from the file's
+            own bytes, 2 in all, each predicted red and each red: Home's card drawing no box; and the box drawn after the line of
+            how it sells.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
