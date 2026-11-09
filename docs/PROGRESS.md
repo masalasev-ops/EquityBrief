@@ -17843,3 +17843,27 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
 Carried:    the operator's marks, confirmed on the page; the provisional choices above; the sign-offs of phases 21 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
             this pull request's last.
+
+### 23.6 - correction: the long check leaves unread the rating actions the long build holds none of, and says so   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its eighth item. The long build reads the analysts' rating actions for no
+            setup, while `ledger-check --long` rebuilt each sampled setup reading the store's rating actions through its
+            session, so every setup of a stock the refresh has stored actions for since read as a difference the long build
+            was built not to hold.
+Corrected:  the long check leaves the rating actions unread on a setup whose long row holds none of them, reads them as before
+            where the row holds a figure, holds every other reading to its rebuild as before, and its line says on how many
+            setups it left them unread. The standing check is unchanged. The decision, the runbook and the changelog.
+Measured:   the S&P 400's long check over a copy of the store of 2026-11-08 holding its long ledger was stopped after 82
+            minutes with no line written, its sampled rebuilds reading the S&P 500's long history for the breadth as well; the
+            remedy's S&P 500 check measures it over the live store, in an entry after the remedy.
+Tests:      1 new in the fixture's expectations: a sampled setup's readings worked by hand, the rating actions stored none and
+            rebuilt a count left unread and counted, stored a count and read, and any other reading stored none still a
+            difference.
+Pins:       none move: the point-in-time check is no source a rule's version or the readings' version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the rating actions read where the long row holds none; m2 left unread where it
+            holds a figure; m3 the setups left unread not counted; m4 every reading left unread. Not mutated: the long check's
+            own call choosing the long reading over the standing one, held by the remedy's run alone.
+Carried:    the remedy's S&P 500 check, to an entry after the remedy; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.

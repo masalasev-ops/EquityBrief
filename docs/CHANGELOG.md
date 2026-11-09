@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - docs/RUNBOOK.md - the long check leaves unread the rating actions the long build holds none of
+Decision: The long ledger's point-in-time check leaves unread a reading the long build holds none of by design, and says so
+Was:
+> `ledger-check --long` rebuilds 25 sampled setups a year from the long history and names every reading that differs, and `long-ledger --measure` ...
+Now:
+> `ledger-check --long` rebuilds 25 sampled setups a year from the long history and names every reading that differs, but for the analysts' rating actions where the long row holds none, which the long build holds none of by design, and its line says on how many setups it left them unread (see: ...), and `long-ledger --measure` ...
+Why: the operator's order of 2026-11-08, item 8.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the marking page
 Decision: The marking page proposes a mark for each unexplained jump and unsettled end from its evidence, and writes none without the operator's confirm
 Was:

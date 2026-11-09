@@ -2065,6 +2065,7 @@ public sealed partial class SetupLedger : IComponent
         var gics = await GicsAsync(connection, history: true, cancellation);
         var findings = new List<string>();
         var read = 0;
+        var unread = 0;
 
         foreach (var session in sample.GroupBy(row => row.Session).OrderBy(group => group.Key))
         {
@@ -2090,7 +2091,13 @@ public sealed partial class SetupLedger : IComponent
                 }
 
                 read++;
-                findings.AddRange(LedgerPointInTime.Differences(row.Readings, rebuilt).Select(differ =>
+
+                // From the 23.6 correction the long check leaves unread a reading the long build holds none of by design.
+                // see: The long ledger's point-in-time check leaves unread a reading the long build holds none of by design, and says so
+                var (differences, notRead) = longHistory is null ? (LedgerPointInTime.Differences(row.Readings, rebuilt), 0) : LedgerPointInTime.LongDifferences(row.Readings, rebuilt);
+
+                unread += notRead;
+                findings.AddRange(differences.Select(differ =>
                     FormattableString.Invariant($"{row.Family} {row.Ticker} {Stamp(row.Session)}: {differ.Reading} stored {Shown(differ.Stored)}, rebuilt {Shown(differ.Rebuilt)}")));
             }
         }
@@ -2101,7 +2108,8 @@ public sealed partial class SetupLedger : IComponent
         }
 
         var detail = FormattableString.Invariant($"{read} of {sample.Length} sampled history setup(s) on the {DecisionCards.NameOf(index)} rebuilt from the history read through {Stamp(through)} and cut at each one's session, {perYear} a year by seed {seed}; ")
-            + (findings.Count == 0 ? "every reading the same" : FormattableString.Invariant($"{findings.Count} difference(s), each named on the command's output"));
+            + (findings.Count == 0 ? "every reading the same" : FormattableString.Invariant($"{findings.Count} difference(s), each named on the command's output"))
+            + (unread > 0 ? FormattableString.Invariant($"; {string.Join(" and ", LedgerPointInTime.HeldNoneByTheLongBuild)} not read on {unread} setup(s), the long build holding none of it by design") : string.Empty);
 
         await AppendAsync(connection, runId, stage, startedAt, 0, findings.Count == 0 ? Ok : NotComputed, detail, cancellation);
         output.WriteLine("ledger-check: " + detail);
