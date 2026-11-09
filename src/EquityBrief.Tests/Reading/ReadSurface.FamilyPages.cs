@@ -267,7 +267,7 @@ public partial class ReadSurface
                 ("heavyweight", "0", "0 holdings. Next reshuffle in 2 trading days.", "rebalance in 2 sessions"),
                 ("quality", "0", "Its first holdings are chosen on its first night.", "kept monthly"),
             ],
-            Regex.Matches(tiles, "<button type=\"button\" class=\"setup-tile fam-edge\" data-family=\"([^\"]+)\" data-card=\"\\1\" data-count=\"(\\d+)\" data-state=\"([^\"]+)\">.*?<span class=\"tile-tonight\">([^<]+)</span></button>", RegexOptions.Singleline)
+            Regex.Matches(tiles, "<button type=\"button\" class=\"setup-tile fam-edge\" data-family=\"([^\"]+)\" data-card=\"\\1\" data-count=\"(\\d+)\" data-state=\"([^\"]+)\">.*?<span class=\"tile-tonight\">([^<]+)</span>(?:<span class=\"tile-record\"[^>]*>.*?</span>)?</button>", RegexOptions.Singleline)
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[4].Value, match.Groups[3].Value)));
 
         // From 22.13 the Fundamentals family's tile in the fundamentals-first family's slot, after the drift's.
