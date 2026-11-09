@@ -14,6 +14,121 @@ public sealed partial class WalkForwardTester
 {
     public const string LongStep = "long";
 
+    // From the 23.8 correction the dip's own sweep's reading of the long history with its live rule's setting, levels and
+    // words, which the long search walks its grid over; none, with why, where no live dip rule stands on the index or it
+    // stands at hooks the grid's walk reads none of.
+    // see: A search over the long history re-runs every third test year with its setting carried between
+    public sealed record LongDip(Sweep.IndexSweepRunner.DipRead Read, int[] Setting, IReadOnlyList<Sweep.DialLevel<Sweep.FamilyListing>> Levels, string Words);
+
+    public static async Task<(LongDip? Dip, string? Why)> LongDipAsync(string databaseFile, LoopRead read, History.LongHistoryReader longHistory, Sweep.SweepHistory history, DateOnly through, DateTimeOffset at, Action<string> progress, CancellationToken cancellation = default)
+    {
+        var standing = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), at);
+
+        if (LiveOn(standing, read.Index, Core.Families.DipRule.Name) is not { } live)
+        {
+            return (null, "no live dip rule stands on the index");
+        }
+
+        var parameters = Core.Candidates.DipCandidate.Renamed(Core.Candidates.CandidateEvaluator.Read(live.Parameters));
+        var evaluator = Core.Candidates.CandidateEvaluators.Find(live.Evaluator)!;
+
+        if (LoopRegistrations.HooksOf(evaluator, parameters).Count > 0)
+        {
+            return (null, "its live rule stands at hooks the grid's walk reads none of");
+        }
+
+        progress("reading the dip's own sweep over the long history");
+
+        var large = read.Index == global::EquityBrief.Worker.Indices.IndexFamilies.LargeIndex
+            ? read.Inputs
+            : await longHistory.ReadAsync(global::EquityBrief.Worker.Indices.IndexFamilies.LargeIndex, through, null, cancellation);
+        var market = await LongSeriesAsync(longHistory, history, [Sweep.IndexSweepRunner.DipFund(read.Index), Core.Families.MarketCloses.Vix], through, cancellation);
+        var dipRead = Sweep.IndexSweepRunner.DipRead.Of(read, large, market);
+        var (setting, levels) = dipRead.SettingOf(parameters);
+
+        return (new LongDip(dipRead, setting, levels, "the dip rule at " + Dips.DipRules.Short(((Core.Candidates.DipCandidate)evaluator).SettingOf(parameters), read.Index)), null);
+    }
+
+    // The named market series over the long history: the long pull's closes, then the standing pull's after its last.
+    public static async Task<IReadOnlyList<Sweep.SweepMarketSeries>> LongSeriesAsync(History.LongHistoryReader longHistory, Sweep.SweepHistory history, IReadOnlyList<string> named, DateOnly through, CancellationToken cancellation = default)
+    {
+        var longs = await longHistory.SeriesOfAsync(named, through, cancellation);
+        var standing = await history.SeriesOfAsync(named, through, cancellation);
+        var joined = new List<Sweep.SweepMarketSeries>();
+
+        foreach (var series in named)
+        {
+            var older = longs.FirstOrDefault(one => one.Series == series);
+            var newer = standing.FirstOrDefault(one => one.Series == series);
+
+            if (older is null || older.Closes.Count == 0)
+            {
+                if (newer is not null)
+                {
+                    joined.Add(newer);
+                }
+
+                continue;
+            }
+
+            var last = older.Closes[^1].Session;
+
+            joined.Add(older with { Closes = [.. older.Closes, .. (newer?.Closes ?? []).Where(one => one.Session > last)] });
+        }
+
+        return joined;
+    }
+
+    // From the 23.8 correction a long read of the S&P 400 or 600 with each member's quarters off the SEC's facts beside the
+    // pulled ones, the pulled quarters standing where both state a period, and the first session its profit check is read
+    // from, the first of the first year 90 in every 100 members read it; the years before it are read on the floors alone.
+    // The S&P 500's rules read no profit gate and its read is handed back as it was.
+    // see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+    public static async Task<(LoopRead Read, History.LongIncome? Income)> WithIncomeAsync(LoopRead read, History.LongHistoryReader reader, CancellationToken cancellation = default)
+    {
+        if (read.Index == global::EquityBrief.Worker.Indices.IndexFamilies.LargeIndex)
+        {
+            return (read, null);
+        }
+
+        var income = await reader.IncomeAsync(read.Inputs.Names, read.Calendar, cancellation);
+        var merged = new Dictionary<string, IReadOnlyList<Core.Readings.FiledIncome>>(StringComparer.Ordinal);
+
+        foreach (var ticker in read.Income.Keys.Concat(income.Income.Keys).Distinct(StringComparer.Ordinal))
+        {
+            var pulled = read.Income.GetValueOrDefault(ticker) ?? [];
+            var ends = pulled.Select(quarter => quarter.PeriodEnd).ToHashSet();
+
+            merged[ticker] = [.. pulled, .. (income.Income.GetValueOrDefault(ticker) ?? []).Where(quarter => !ends.Contains(quarter.PeriodEnd))];
+        }
+
+        return (read with { Income = merged, ProfitFrom = income.FirstChecked is { } year ? new DateOnly(year, 1, 1) : null }, income);
+    }
+
+    // The words a long run says of its profit check: the year it is read from with the share of members reading it then,
+    // or that no year is covered.
+    public static string ProfitWords(string index, History.LongIncome? income) =>
+        income is null
+            ? $"the {Cards.DecisionCards.NameOf(index)}'s rules read no profit gate"
+            : income.FirstChecked is { } year && income.Years.FirstOrDefault(one => one.Year == year) is var first
+                ? FormattableString.Invariant($"the profit check on the {Cards.DecisionCards.NameOf(index)} read off the SEC's facts from {year}, when {first.Read} of {first.Members} members read it, and the years before {year} read on the floors alone, unchecked")
+                : $"the profit check on the {Cards.DecisionCards.NameOf(index)} read in no year, no year's members reading it 90 in every 100, so every year reads the floors alone, unchecked";
+
+    // From the 23.8 correction a long read with its index's own fund laid against its calendar from the long pull, the
+    // second line every result over the long history reads beside its benchmark.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    public static async Task<LoopRead> WithFundAsync(LoopRead read, History.LongHistoryReader reader, DateOnly through, CancellationToken cancellation = default)
+    {
+        if (FundLine.FundOf(read.Index) is not { } fund)
+        {
+            return read;
+        }
+
+        var series = await reader.SeriesOfAsync([fund], through, cancellation);
+
+        return series.Count == 0 ? read : read with { Fund = FundLine.Aligned(read.Calendar, series[0].Closes) };
+    }
+
     const string LongRunsOfTheMonth = "SELECT DISTINCT index_code FROM loop_rule WHERE month = $month AND history = 'long';";
 
     public async Task<(bool Held, string Words)> LongMonthAsync(string month, CancellationToken cancellation = default)

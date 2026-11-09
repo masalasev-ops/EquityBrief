@@ -823,11 +823,14 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.KeptBar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
-            new StoreTouch(Store.SessionMark, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read | Touch.Insert),
             new StoreTouch(Store.DataCheck, Touch.Read),
             new StoreTouch(Store.LongSnapshot, Touch.Read),
             new StoreTouch(Store.LongHolding, Touch.Read),
             new StoreTouch(Store.LongReading, Touch.Read),
+            new StoreTouch(Store.LongBar, Touch.Read),
+            new StoreTouch(Store.LongFiling, Touch.Read),
+            new StoreTouch(Store.LongOutlier, Touch.Read),
             new StoreTouch(Store.DividendWait, Touch.Read),
             new StoreTouch(Store.LateBarAsk, Touch.Read),
             new StoreTouch(Store.EntryReading, Touch.Read),
@@ -4043,6 +4046,13 @@ public sealed partial class ReadApi : IComponent
         INSERT INTO taken_trade (ticker, taken_at, index_code, family, night, sector, fill, fill_date, provisional, entered, stop, target, trail, cap, exit_price, exit_date, followed_through)
         VALUES ($ticker, $taken_at, $index, $family, $night, $sector, $fill, $fill_date, $provisional, $entered, $stop, $target, $trail, $cap, NULL, NULL, NULL);
     ";
+
+    // From the 23.4 correction the operator's confirm on the marking page, one mark a row, a session marked already keeping
+    // its first word.
+    // see: The marking page proposes a mark for each unexplained jump and unsettled end from its evidence, and writes none without the operator's confirm
+    const string InsertMark = @"
+        INSERT OR IGNORE INTO session_mark (ticker, session_date, kind, says, ruled, run_id)
+        VALUES ($ticker, $session, $kind, $says, $ruled, $run_id);";
 
     // The operator's word on a loop proposal or a restore, the Loop page's presses' one write.
     // see: An approved change is applied by the night's own build on the index it was approved on alone

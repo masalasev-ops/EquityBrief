@@ -12,7 +12,13 @@ public sealed record PlanCombination(string Entry, int Window, string Stop, stri
 
 // What the sale reads: a target the close must reach, a trail the stop follows the highest close by, the staged levels
 // each selling an equal share with the last share held to the stop or the time limit, or none of them, the time limit alone.
-public sealed record PlanSale(double? Target, double? Trail, IReadOnlyList<double> Staged);
+public sealed record PlanSale(double? Target, double? Trail, IReadOnlyList<double> Staged)
+{
+    // From the 23.8 correction the dip's own sale: a close whose 2-session RSI stands above this level sells what is held at
+    // the next open; none for every other family.
+    // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+    public double? RsiAbove { get; init; }
+}
 
 // How one filled pick ended: its result in its own risk before costs, the price each share sold at weighted by its share,
 // the sessions held from the fill and how it ended; none where the history ends before it does.
@@ -36,6 +42,11 @@ public sealed record PlanPick(
     // Whether the fill reached its sale: the target, a band, every staged level or the trail; for the time limit alone,
     // its last session rather than the stop.
     public bool Hit { get; init; }
+
+    // From the 23.8 correction the edge is over the benchmark as ruled, and this is the second line: the result less its
+    // index's own fund held over the same sessions in the same risk.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    public double? FundEdge { get; init; }
 }
 
 // What a combination came to over a group of picks: every pick offered, those filled, the fill rate, the share of fills
@@ -53,7 +64,9 @@ public sealed record PlanFigures(
     double? EdgePerPick,
     double? EdgePerFill,
     double? DaysHeld,
-    double? WorstDrawdown);
+    double? WorstDrawdown,
+    double? FundEdgePerPick = null,
+    double? FundEdgePerFill = null);
 
 // A combination's figures gathered a pick at a time, the same arithmetic as the figures over a list, the fills' results kept
 // for the worst drawdown only where the tally is asked to keep them.
@@ -65,9 +78,11 @@ public sealed class PlanTally(bool drawdown)
     int hits;
     int breaks;
     int edges;
+    int funds;
     double breakSum;
     double resultSum;
     double edgeSum;
+    double fundSum;
     double sessionSum;
 
     public void Add(PlanPick pick)
@@ -94,6 +109,12 @@ public sealed class PlanTally(bool drawdown)
         {
             edges++;
             edgeSum += edge;
+        }
+
+        if (pick.FundEdge is { } fund)
+        {
+            funds++;
+            fundSum += fund;
         }
 
         if (drawdown)
@@ -131,7 +152,9 @@ public sealed class PlanTally(bool drawdown)
             picks > 0 && edges > 0 ? edgeSum / picks : null,
             edges > 0 ? edgeSum / edges : null,
             fills > 0 ? sessionSum / fills : null,
-            worst);
+            worst,
+            picks > 0 && funds > 0 ? fundSum / picks : null,
+            funds > 0 ? fundSum / funds : null);
     }
 }
 
@@ -243,7 +266,7 @@ public static class PlanPoints
     // the target sells what is held; a close under the trail, the highest earlier close less its distance and never under
     // the stop, sells what is held; and the close of the time limit's last session sells what is left; each sale at the
     // next session's open. None where the history ends before the sale.
-    public static PlanOutcome? Walk(ReadOnlySpan<double> closes, ReadOnlySpan<double> opens, int fillBar, double fill, double stop, PlanSale sale, int cap)
+    public static PlanOutcome? Walk(ReadOnlySpan<double> closes, ReadOnlySpan<double> opens, int fillBar, double fill, double stop, PlanSale sale, int cap, ReadOnlySpan<double> rsi = default)
     {
         if (!(fill > stop) || cap <= 0 || fillBar >= closes.Length)
         {
@@ -282,6 +305,11 @@ public static class PlanPoints
                 return Ended(sold + (held * open), session, Reached);
             }
 
+            if (sale.RsiAbove is { } level && session < rsi.Length && rsi[session] > level)
+            {
+                return Ended(sold + (held * open), session, Reached);
+            }
+
             if (sale.Trail is not null && session > fillBar && close < floor)
             {
                 return Ended(sold + (held * open), session, Trailed);
@@ -298,10 +326,68 @@ public static class PlanPoints
         PlanOutcome Ended(double price, int session, string end) => new((price - fill) / (fill - stop), price, session + 1 - fillBar, end);
     }
 
+    // From the 23.8 correction the benchmark a combination is read against: the same plan entered on every member of the
+    // index that session, each bought at its own next open and sold as the combination sells, its stop and its sale placed
+    // on the member as the combination places them on the pick, a zone's stop, the first band above and the staged sales
+    // read off the member's own levels plan; a member its stop or sale cannot be placed on is not entered.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    //
+    // One member's result, in the risk the rule's plan sets on it at the session's close: bought at its next open, its stop
+    // and its sale placed from that fill, and walked as the pick is; none where the member places no trade or its walk has
+    // not ended.
+    public static double? MemberResult(ReadOnlySpan<double> closes, ReadOnlySpan<double> opens, int bar, double risk, Func<double, double?> stopAt, Func<double, PlanSale?> saleAt, int cap, ReadOnlySpan<double> rsi = default)
+    {
+        if (bar < 0 || bar + 1 >= closes.Length || bar + 1 >= opens.Length || !(risk > 0) || !(closes[bar] - risk > 0))
+        {
+            return null;
+        }
+
+        var fill = opens[bar + 1];
+
+        if (!(fill > 0) || stopAt(fill) is not { } placed || !(fill > placed) || saleAt(fill) is not { } sale)
+        {
+            return null;
+        }
+
+        return Walk(closes, opens, bar + 1, fill, placed, sale, cap, rsi) is { } outcome ? (outcome.Sold - fill) / risk : null;
+    }
+
+    // The mean of the members' results, none where none ended. A member whose result lies past 20 risks either way is left
+    // out: a member whose prices stand still sets a risk near nought, and its result read in it runs to hundreds.
+    public static double? BenchmarkOf(IEnumerable<double?> results)
+    {
+        var (sum, count) = (0.0, 0);
+
+        foreach (var result in results)
+        {
+            if (result is { } held && Math.Abs(held) <= History.LongLedger.OutlyingRisks)
+            {
+                sum += held;
+                count++;
+            }
+        }
+
+        return count > 0 ? sum / count : null;
+    }
+
     // The rate a fill must reach its sale at to break even before costs, where the sale names one price: the risk over
     // the risk and the reward together.
     public static double? BreakEvenOf(double fill, double stop, double? target) =>
         target is { } held && held > fill && fill > stop ? (fill - stop) / (held - stop) : null;
+
+    // From the 23.6 correction a pick whose result or whose edge over its benchmark lies past 20 risks either way is no result,
+    // counted as offered and in no figure, as an open pick is.
+    // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+    public static bool NoResult(double result, double? edge) =>
+        Math.Abs(result) > History.LongLedger.OutlyingRisks || History.LongLedger.Outlying(edge);
+
+    // The dip's own sale: no target and no trail, sold at the next open after a close whose 2-session RSI stands above 65.
+    // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+    public static PlanSale DipSale { get; } = new(null, null, []) { RsiAbove = global::EquityBrief.Core.Families.DipRule.RsiExit };
+
+    // A series' 2-session RSI as the dip reads it, NaN where it reads none.
+    public static double[] RsiOf(IReadOnlyList<double> closes) =>
+        [.. global::EquityBrief.Core.Families.DipRule.Rsi(closes, global::EquityBrief.Core.Families.DipRule.RsiSessions).Select(one => one ?? double.NaN)];
 
     // Whether an outcome reached its sale, the time limit alone reaching it at its last session.
     public static bool HitOf(string sale, string end) =>
@@ -313,6 +399,7 @@ public static class PlanPoints
     {
         var fills = picks.Where(pick => pick.Filled && pick.Result is not null).ToArray();
         var edges = fills.Where(pick => pick.Edge is not null).ToArray();
+        var funds = fills.Where(pick => pick.FundEdge is not null).ToArray();
         var breaks = fills.Where(pick => pick.BreakEven is not null).ToArray();
         var (sum, peak, worst) = (0.0, 0.0, 0.0);
 
@@ -334,7 +421,9 @@ public static class PlanPoints
             picks.Count > 0 && edges.Length > 0 ? edges.Sum(one => one.Edge!.Value) / picks.Count : null,
             edges.Length > 0 ? edges.Average(one => one.Edge!.Value) : null,
             fills.Length > 0 ? fills.Average(one => one.Sessions) : null,
-            fills.Length > 0 ? worst : null);
+            fills.Length > 0 ? worst : null,
+            picks.Count > 0 && funds.Length > 0 ? funds.Sum(one => one.FundEdge!.Value) / picks.Count : null,
+            funds.Length > 0 ? funds.Average(one => one.FundEdge!.Value) : null);
     }
 
     // The combination recommended on a family and index: the highest edge per pick offered over the years no setting was

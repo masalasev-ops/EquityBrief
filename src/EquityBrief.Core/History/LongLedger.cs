@@ -129,7 +129,11 @@ public static class LongLedger
             .ThenBy(group => group.Key.Year)
             .Select(group =>
             {
-                var settled = group.Where(trade => trade.Settled).ToArray();
+                // From the 23.6 correction a settled setup whose edge lies past 20 risks either way is no result: it is
+                // counted apart and read in no figure, as an unexplained jump is never a real result.
+                // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+                var outlying = group.Count(trade => trade.Settled && Outlying(trade.Edge));
+                var settled = group.Where(trade => trade.Settled && !Outlying(trade.Edge)).ToArray();
 
                 return new LongYear(
                     group.Key.Family,
@@ -141,9 +145,16 @@ public static class LongLedger
                     Mean(settled.Select(trade => trade.Edge)),
                     Mean(settled.Select(trade => trade.EdgeAfterCost)),
                     settled.Count(trade => trade.Crossing),
-                    Mean(settled.Where(trade => !trade.Crossing).Select(trade => trade.EdgeAfterCost)));
+                    Mean(settled.Where(trade => !trade.Crossing).Select(trade => trade.EdgeAfterCost)))
+                {
+                    Outlying = outlying,
+                };
             }),
     ];
+
+    // Whether an edge lies past 20 risks either way, which the long history counts as no result.
+    // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+    public static bool Outlying(double? edge) => edge is { } held && Math.Abs(held) > OutlyingRisks;
 
     static double? Mean(IEnumerable<double?> values)
     {
@@ -170,4 +181,9 @@ public static class LongLedger
 public sealed record LongTrade(string Family, int Year, bool Settled, bool Target, double? Edge, double? EdgeAfterCost, bool Crossing);
 
 // One family's year under one reading, as the long readings keep it.
-public sealed record LongYear(string Family, int Year, string Reading, int Setups, int Settled, int Targets, double? EdgeMean, double? EdgeAfterCostMean, int Crossing, double? EdgeAfterCostWithout);
+public sealed record LongYear(string Family, int Year, string Reading, int Setups, int Settled, int Targets, double? EdgeMean, double? EdgeAfterCostMean, int Crossing, double? EdgeAfterCostWithout)
+{
+    // From the 23.6 correction the settled setups whose edge lies past 20 risks either way, counted as no result and read in
+    // none of the figures above.
+    public int Outlying { get; init; }
+}

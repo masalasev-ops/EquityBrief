@@ -174,7 +174,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `version_block` | RuleVersionScorer | none | none |
 | `series_state` | CorporateActionChecker | CorporateActionChecker, LateBarAsker | none |
 | `ticker_join` | TickerJoins | none | none |
-| `session_mark` | SessionMarks | none | none |
+| `session_mark` | SessionMarks, ReadApi | none | none |
 | `data_check` | DataChecker | none | DataChecker |
 | `long_snapshot` | LongMembers | none | LongMembers |
 | `long_holding` | LongMembers | none | LongMembers |
@@ -188,6 +188,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_fact` | LongFactPull | none | LongFactPull |
 | `long_setup` | SetupLedger | none | none |
 | `long_reading` | SetupLedger | none | SetupLedger |
+| `long_outlier` | SetupLedger | none | SetupLedger |
 | `departed_setup` | SetupLedger | none | SetupLedger |
 | `long_search` | LongSearch | none | none |
 | `plan_point` | PlanPointTest | none | none |
@@ -349,7 +350,7 @@ Grain: one row per stock and session of its pulled history the operator gave the
 
 Primary key: `ticker`, `session_date`.
 
-**Written once by `session-mark` on the operator's word, a second word changing nothing, and no pulled row moves** (see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart). A session a history starts on leaves the sessions before it out of the chart's and the name page's reads of the pull, the chart's averages and the page history reader; a bad print is read past by the chart check's moves and draws a small mark; a move checked and kept is a line and no flag. No rule reads it until phase 23's restart. From migration 129, which builds the table again with its rows copied across since SQLite can add to the kinds a table was created with only that way, a mark may be the session a company's history ends on, set by rule from its filings and on the operator's word only where no such filing is found (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger). From 23.4 `long-prices --write` writes those ends by rule through SessionMarks' own writer inside its run's transaction, a session already marked changing nothing, and only where the provider's answer runs on past the session the filing gives (see: A departed company's end no filing settles reads its last session with volume and goes to the operator on one list).
+**Written once by `session-mark` on the operator's word, a second word changing nothing, and no pulled row moves** (see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart). A session a history starts on leaves the sessions before it out of the chart's and the name page's reads of the pull, the chart's averages and the page history reader; a bad print is read past by the chart check's moves and draws a small mark; a move checked and kept is a line and no flag. No rule reads it until phase 23's restart. From migration 129, which builds the table again with its rows copied across since SQLite can add to the kinds a table was created with only that way, a mark may be the session a company's history ends on, set by rule from its filings and on the operator's word only where no such filing is found (see: A stock's history ends by rule on its company's last regular session read from its Form 25 or the 8-K completing its merger). From 23.4 `long-prices --write` writes those ends by rule through SessionMarks' own writer inside its run's transaction, a session already marked changing nothing, and only where the provider's answer runs on past the session the filing gives (see: A departed company's end no filing settles reads its last session with volume and goes to the operator on one list). From the 23.4 correction the read surface writes the marks the operator confirms on the marking page, each an unexplained jump or an end no filing settles the page lists, a kind the table holds, its words the proposal's where the mark is the one proposed and naming both where the operator chose another, the run named `marking-page-` and its instant, a session already marked changing nothing (see: The marking page proposes a mark for each unexplained jump and unsettled end from its evidence, and writes none without the operator's confirm).
 
 ### data_check
 Grain: one row per stock, session, class and kind the data check found in the stock's pulled sessions.
@@ -695,10 +696,27 @@ Grain: one row per index, family, year and reading of the long ledger's and the 
 | `edge_after_cost_without` | REAL | the mean edge after costs over the settled setups crossing none, null where none |
 | `read_through` | TEXT | the session the long history was read through |
 | `run_id` | TEXT | the run that wrote it |
+| `outlying` | INTEGER | from migration 139, the settled setups whose edge lies past 20 risks either way, counted as no result, none of them in `settled` or any figure above |
 
 Primary key: `index_code`, `family`, `year`, `reading`.
 
-**Each family's years under the two readings, which the History page draws** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes an index's rows whole at its end, the build before's removed in the same transaction: the long years off `long_setup` under both readings, and the standing years off `setup` as ruled and with each of its rows `departed_setup` holds read at the last price. It reads `data_check` for each stock's unexplained jumps and `long_span` for the members of the index on each jump's day. Read by the History page and the long ledger's measure, and by no card, hook or night.
+**Each family's years under the two readings, which the History page draws** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes an index's rows whole at its end, the build before's removed in the same transaction: the long years off `long_setup` under both readings, and the standing years off `setup` as ruled and with each of its rows `departed_setup` holds read at the last price. It reads `data_check` for each stock's unexplained jumps and `long_span` for the members of the index on each jump's day. Read by the History page and the long ledger's measure, and by no card, hook or night. From the 23.6 correction a settled setup whose edge lies past 20 risks either way is counted as no result: counted in `outlying`, read in no other column, and listed in `long_outlier` (see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps).
+
+### long_outlier
+Grain: one row per index, family, stock and session of a settled setup the long years count as no result.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | as `setup` carries it |
+| `ticker` | TEXT | the stock |
+| `session_date` | TEXT | the setup's session |
+| `edge` | REAL | its edge as ruled, past 20 risks either way |
+| `run_id` | TEXT | the long build that wrote it |
+
+Primary key: `index_code`, `family`, `ticker`, `session_date`.
+
+**Written whole for an index by `ledger-build --long` with its years, in the same transaction, the build before's rows removed** (see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps). From migration 139: each settled setup of the long ledger as ruled, and of the standing ledger from 2019, whose edge lies past 20 risks either way. The marking page lists every row beside the unexplained jumps; no card, hook, rule or night reads it.
 
 ### departed_setup
 Grain: one row per index, family, stock and session of a standing setup left open with no result whose stock's prices stop after it was bought.
@@ -729,7 +747,7 @@ Grain: one row per run, index and family a search over the long history read.
 |---|---|---|
 | `run_id` | TEXT | the run, naming the verb, the index, the family and its start |
 | `index_code` | TEXT | `GSPC`, `MID` or `SML` |
-| `family` | TEXT | `breakout` or `drift` |
+| `family` | TEXT | `breakout`, `drift` or, from the 23.8 correction, `dip` |
 | `through` | TEXT | the newest session the run read |
 | `first_test_year` | INTEGER | the family's first test year on the index |
 | `words` | TEXT | the setting the search run on all finished data would run, in words; null where none met the floors |
@@ -747,6 +765,9 @@ Grain: one row per run, index and family a search over the long history read.
 | `searches` | INTEGER | the test years the search ran at, the rest carrying its setting |
 | `passed` | INTEGER | 1 where all four parts held and the proposal names a setting |
 | `years` | TEXT | JSON: each test year, whether the search ran at it, the setting chosen or carried, whether it is complete, and each side's trades and total edge after costs |
+| `fund_units` | INTEGER | from migration 137, the trades of each test year's chosen setting the fund line reads, ended and with the fund held over their sessions |
+| `fund_edge` | REAL | from migration 137, their mean result less the index's own fund held over each trade's sessions in its risk; null where none is read |
+| `current_fund_edge` | REAL | from migration 137, the same over the rule's provisional setting's trades in the test years |
 
 Primary key: `run_id`, `index_code`, `family`.
 
@@ -778,10 +799,14 @@ Grain: one row per run, index and price family the test of the buy and sell poin
 | `later_fills` | INTEGER | the recommended combination's fills from 2019, years it was not chosen on |
 | `later_edge_per_pick` | REAL | its mean edge a pick offered from 2019 |
 | `traded_later_edge_per_pick` | REAL | the traded plan's mean edge a pick offered from 2019 |
+| `fund_edge_per_pick` | REAL | from migration 137, the recommendation's mean result a pick offered less the index's own fund held over each fill's sessions in the rule's risk |
+| `traded_fund_edge_per_pick` | REAL | from migration 137, the traded plan's over the same years |
+| `later_fund_edge_per_pick` | REAL | from migration 137, the recommendation's from 2019 |
+| `traded_later_fund_edge_per_pick` | REAL | from migration 137, the traded plan's from 2019 |
 
 Primary key: `run_id`, `index_code`, `family`.
 
-**Written once by the test of the buy and sell points with its run, and never updated** (see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index). Every combination's figures by year, era and market regime stand in its report under the data root's loop folder; the store keeps the recommendation the Loop page draws. A recommendation is the best of every combination over 2005 to 2018, so its edge there reads high for having been chosen there, and its edge from 2019, years it was not chosen on, stands beside it. Every figure is a statistic and stored as the double it is. No rule, plan, night or card reads it, and nothing is registered on it.
+**Written once by the test of the buy and sell points with its run, and never updated** (see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index). Every combination's figures by year, era and market regime stand in its report under the data root's loop folder; the store keeps the recommendation the Loop page draws. A recommendation is the best of every combination over 2005 to 2018, so its edge there reads high for having been chosen there, and its edge from 2019, years it was not chosen on, stands beside it. From the 23.8 correction every edge is over the benchmark of its combination, the rule's own plan entered on every member at its own next open and walked under the combination's stop and sale, and each fund column is the second line beside it (see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line). Every figure is a statistic and stored as the double it is. No rule, plan, night or card reads it, and nothing is registered on it.
 
 ### dividend_wait
 Grain: one row per stock and ex-date whose dividend the provider's answer did not carry.
@@ -2551,6 +2576,8 @@ Grain: one row per per-rule test run, index, family and rule.
 | `through` | TEXT | from 23.2, the history's newest session, as `yyyy-MM-dd`; null on a row written before |
 | `judged_from` | INTEGER | from 23.2, the year its verdict was judged from where it reads a release reading; null where every test year counted and on a row written before |
 | `history` | TEXT | from 23.7, from migration 135, `standing` for the month's test over the standing history, every row before it among them, or `long` for the monthly run's last step over the long history |
+| `fund_units` | INTEGER | from migration 138, on a long row the trades from its family's first test year the fund line reads; null on a standing row, a book's months and a walk handing no trade's last session |
+| `fund_edge` | REAL | from migration 138, their mean result less the index's own fund held over each trade's sessions in its risk, the second line beside the verdict against the benchmark; null where `fund_units` is |
 
 Primary key: `run_id`, `index_code`, `family`, `rule`.
 

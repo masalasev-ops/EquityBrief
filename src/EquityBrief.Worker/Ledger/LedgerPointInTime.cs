@@ -159,6 +159,33 @@ public static class LedgerPointInTime
 
     static double[] Closes(SweepSeries series) => [.. series.Bars.Select(held => Statistic.FromPrice(held.Close))];
 
+    // From the 23.6 correction the readings the long build holds none of by design: the analysts' rating actions, which the
+    // long build reads for no setup. Its check reads such a reading only where the long build stored one, and says how many
+    // it left unread.
+    // see: The long ledger's point-in-time check leaves unread a reading the long build holds none of by design, and says so
+    public static IReadOnlyList<string> HeldNoneByTheLongBuild { get; } = ["rating_actions_net"];
+
+    // The differences a long setup's check reads, and how many readings it left unread for the long build storing none of a
+    // reading it holds none of by design.
+    public static (IReadOnlyList<(string Reading, double? Stored, double? Rebuilt)> Read, int Unread) LongDifferences(IReadOnlyList<double?> stored, IReadOnlyList<double?> rebuilt)
+    {
+        var unread = 0;
+        var kept = new double?[stored.Count];
+
+        for (var at = 0; at < stored.Count; at++)
+        {
+            kept[at] = rebuilt[at];
+
+            if (stored[at] is null && HeldNoneByTheLongBuild.Contains(LedgerReadings.All[at].Column, StringComparer.Ordinal))
+            {
+                kept[at] = null;
+                unread++;
+            }
+        }
+
+        return (Differences(stored, kept), unread);
+    }
+
     // The readings that differ between a stored row and its rebuild, each by its column: one none and the other a figure,
     // or two figures apart by more than a millionth of the larger.
     public static IReadOnlyList<(string Reading, double? Stored, double? Rebuilt)> Differences(IReadOnlyList<double?> stored, IReadOnlyList<double?> rebuilt)

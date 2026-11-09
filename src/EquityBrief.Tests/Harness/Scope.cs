@@ -4813,6 +4813,10 @@ internal static class Scope
             Verdict.Pass,
             "the run's counts, the cutover, the lowest coverage and the folds of the codes priced by nothing and the ends no filing settles read back off the page over a constructed store, and a store not written saying so",
             ByReadSurface),
+        [CheckReach.Key("15.25 History", "Marks owed")] = new Scoped(
+            Verdict.Pass,
+            "each unexplained jump and unsettled end read back with its sessions, median volume, filings and proposed mark over a constructed store, and the confirm writing only what was chosen under the page's header, a second word keeping the first",
+            ByReadSurface),
         // 23.5's long facts: its two components, its store and section 17's row.
         [CheckReach.Key(CatalogueTable, "Long fact pull")] = new Scoped(
             Verdict.Pass,
@@ -4864,6 +4868,10 @@ internal static class Scope
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
         [CheckReach.Key(StoresTable, "Long readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long outliers")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
@@ -7658,6 +7666,7 @@ internal static class Scope
         [CheckReach.Key("15.21 Paper trading", "An account's verdict across the indexes")] = "23.2",
         [CheckReach.Key("15.25 History", "Members back to 2005")] = "23.3",
         [CheckReach.Key("15.25 History", "Prices back to 2004")] = "23.4",
+        [CheckReach.Key("15.25 History", "Marks owed")] = "23.4",
         [CheckReach.Key("15.25 History", "Each family by year")] = "23.6",
         [CheckReach.Key("15.25 History", "Labels for the industry news mood")] = "23.9",
         [CheckReach.Key(LoopPage, "The long history")] = "23.8",

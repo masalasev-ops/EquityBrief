@@ -7,6 +7,184 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-08 - CLAUDE.md, docs/RUNBOOK.md, .claude/rules/checks.md - a merge applies its migrations, and a store behind says it needs migrating
+Decision: A merge carrying a migration applies it in the merge step, and every page over a store behind says it needs migrating
+Was:
+> (CLAUDE.md, layout) no line for `merge  merge.ps1`
+> (CLAUDE.md, Commands) no row for merging a pull request
+> (CLAUDE.md, Merge) After the merge the branch is deleted, locally and on the remote, and the checkout is fast-forwarded to `main`. Nothing is merged ...
+> (RUNBOOK) no section on merging a pull request
+> (checks.md, read-surface) ... and its confirm writing only what was chosen, refused without the page's header |
+Now:
+> (CLAUDE.md, layout) merge  merge.ps1   merge a pull request, fast-forward main and apply the migrations it carries in the same step
+> (CLAUDE.md, Commands) | Merge a pull request | `tools/merge.ps1 <number>` | `tools/merge <number>` | ...
+> (CLAUDE.md, Merge) ... fast-forwarded to `main`. A merge is made with `tools/merge`, which does those three and then applies the migrations the merged `main` carries in the same step, and every page over a store behind the checkout says the store needs migrating until they run (see: ...). Nothing is merged ...
+> (RUNBOOK) Merging a pull request, added before Running a remedy
+> (checks.md, read-surface) ... refused without the page's header; and from the 23.7 correction every page over a store behind the checkout opening with a banner saying the store needs migrating, and `tools/merge` merging, fast-forwarding and migrating in that order, refused while the night's lock file stands |
+Why: the operator's order of 2026-11-08, item 9.
+
+### 2026-11-08 - docs/RUNBOOK.md - the long check leaves unread the rating actions the long build holds none of
+Decision: The long ledger's point-in-time check leaves unread a reading the long build holds none of by design, and says so
+Was:
+> `ledger-check --long` rebuilds 25 sampled setups a year from the long history and names every reading that differs, and `long-ledger --measure` ...
+Now:
+> `ledger-check --long` rebuilds 25 sampled setups a year from the long history and names every reading that differs, but for the analysts' rating actions where the long row holds none, which the long build holds none of by design, and its line says on how many setups it left them unread (see: ...), and `long-ledger --measure` ...
+Why: the operator's order of 2026-11-08, item 8.
+
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the marking page
+Decision: The marking page proposes a mark for each unexplained jump and unsettled end from its evidence, and writes none without the operator's confirm
+Was:
+> (catalogue, Read API, writes) run log, research requests, quote requests, analyst requests, watch list, taken trades, loop decisions
+> (catalogue, Read API) from 20.13 a chart page's ask ...
+> (matrix, Read API, Pulled history) R
+> (15.25, Answers) ... and from 23.9 how far each index stands from the industry news mood split.
+> (15.25, Reads) ... and from 23.9 the news articles and labels with the members and the bar store's sessions, and nothing else; it decides nothing and no rule reads what it draws.
+> (15.25) no Marks owed row
+> (SCHEMA, session_mark) ... (see: A departed company's end no filing settles reads its last session with volume and goes to the operator on one list).
+> (SCHEMA, ownership) `session_mark` | SessionMarks | none | none
+> (RUNBOOK) no paragraph on the marks owed
+> (checks.md, read-surface) ... and the line drawn where neither is stored |
+Now:
+> (catalogue, Read API, writes) ... loop decisions, session marks
+> (catalogue, Read API) from the 23.4 correction the marking page's confirm writes the marks the operator chose ... (see: ...); from 20.13 a chart page's ask ...
+> (matrix, Read API, Pulled history) R W
+> (15.25, Answers) ... the industry news mood split; and from the 23.4 correction, on a page of its own reached from the History page, each mark owed with its evidence and a proposed mark for the operator to confirm.
+> (15.25, Reads) ... the bar store's sessions, and from the 23.4 correction the marking page the long bars and the bar store about each mark owed with the long filings beside it, the session marks and the long outliers, and nothing else; ... and the marking page writes only the marks the operator confirms.
+> (15.25, Marks owed) the row, added
+> (SCHEMA, session_mark) ... (see: ...). From the 23.4 correction the read surface writes the marks the operator confirms on the marking page ... (see: ...).
+> (SCHEMA, ownership) `session_mark` | SessionMarks, ReadApi | none | none
+> (RUNBOOK) the marks owed, from the 23.4 correction, added before the long history's facts
+> (checks.md, read-surface) ... where neither is stored, and from the 23.4 correction the marking page read back over a constructed store with its evidence and proposals and its confirm writing only what was chosen, refused without the page's header |
+Why: the operator's order of 2026-11-08, item 7.
+
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - a long setup past 20 risks counted as no result
+Decision: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+Was:
+> (catalogue, Setup ledger, writes) setups, setup nights, ledger summaries, ledger readings, long setups, long readings, departed setups
+> (stores) ... Plan points ... (no row for the long outliers)
+> (15.25, Each family by year) ... the session the long history was read through; and a store the long build has not written saying so (see: ...)
+> (17, The long tables' budget, rationale) ... past 20 risks, carrying its mean
+> (17, The long tables' budget, check) ... and each figure read off the document against its constant
+> (SCHEMA, long_reading) ... Read by the History page and the long ledger's measure, and by no card, hook or night.
+> (SCHEMA, ownership) ... `long_reading` | SetupLedger | none | SetupLedger | ...
+> (RUNBOOK, the long ledger) ... `--measure` prints the measure the entry states and writes nothing (see: ...).
+> (checks.md, fixture-expectations) ... and a session before it reading the floors alone |
+Now:
+> (catalogue, Setup ledger, writes) ... long readings, departed setups, long outliers
+> (stores) Long outliers: from the 23.6 correction per index, family, stock and session, each settled setup ... past 20 risks either way, counted as no result (see: ...); written whole for an index with its years by each long build, the marking page reading every row
+> (15.25, Each family by year) ... read through; from the 23.6 correction each family's fold naming its setups past 20 risks counted as no result (see: ...); and a store ... (see: ...)
+> (17, The long tables' budget, rationale) ... carrying its mean; from the 23.6 correction such a setup is counted as no result in the long years and every long result and listed beside the unexplained jumps (see: ...)
+> (17, The long tables' budget, check) ... each figure read off the document against its constant, and a setup, a pick and a long test's unit past 20 risks read as no result
+> (SCHEMA, long_reading) `outlying` of migration 139, added; ... and by no card, hook or night. From the 23.6 correction a settled setup whose edge lies past 20 risks either way is counted as no result ... listed in `long_outlier` (see: ...).
+> (SCHEMA, long_outlier) the table of migration 139, added
+> (SCHEMA, ownership) `long_outlier` | SetupLedger | none | SetupLedger, added
+> (RUNBOOK, the long ledger) ... writes nothing (see: ...). From the 23.6 correction a settled setup whose edge lies past 20 risks either way is counted as no result ... (see: ...).
+> (checks.md, fixture-expectations) ... reading the floors alone, and from the 23.6 correction a long setup, a pick and a long test's unit past 20 risks either way read as no result worked by hand |
+Why: the operator's order of 2026-11-08, item 6.
+
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/RUNBOOK.md, .claude/rules/checks.md - the long test's own sweep readings and the dip over the long history
+Decision: The long test lays out the dip's and the S&P 400's and 600's own sweep readings over the long history
+Was:
+> (17, The per-rule test over the long history, rationale) ... as a second line where the walk hands each trade's last session (see: ...)
+> (17, The per-rule test over the long history, check) ... and the fund line worked by hand beside a verdict
+> (RUNBOOK, the long test) ... the families its walk reads off the standing history alone, the books, the dip and the rules needing the sweeps' own reads, are written with the reason that they are read on the standing years alone.
+> (checks.md, fixture-expectations) ... a walk handing no trade's last session and a book saying they have none; and from 23.9 ...
+Now:
+> (17, The per-rule test over the long history, rationale) ... (see: ...); and the dip's and the S&amp;P 400's and 600's own sweep readings laid out over the long history (see: ...)
+> (17, The per-rule test over the long history, check) ... the fund line worked by hand beside a verdict, and the long market series read off the long pull then the standing one after it
+> (RUNBOOK, the long test) ... the books and the like setups and the ranking, are written with the reason that they are read on the standing years alone; from the 23.7 correction the dip and the S&P 400's and 600's rules needing the sweeps' own reads are laid out over the long history ... (see: ...).
+> (checks.md, fixture-expectations) ... a book saying they have none, the long market series read off the long pull then the standing pull after it and the dip and the own sweep readings no longer held off a long run; and from 23.9 ...
+Why: the operator's order of 2026-11-08, item 5.
+
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/RUNBOOK.md, .claude/rules/checks.md - the profit check read over the long history from the year the long facts cover the members
+Decision: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+Was:
+> (catalogue, Long history reader, reads) long spans, ... companies, pulled companies
+> (catalogue, Long history reader) ... and from 23.7 the market series from the long pull for the per-rule test over the long history (see: ...)
+> (catalogue, Long search) ... the listings held to the index's floors alone as the long ledger holds them; ...
+> (17, The search over the long history, value) ... each rounded up; the listings held to the index's floors alone (see: ...)
+> (17, The search over the long history, rationale) ... about 45 hours against about 120 for a yearly search; the profit gate's quarters are not held over the long years, so the floors alone are read there as the long ledger reads them; ...
+> (RUNBOOK, the long search) `loop-search --long` walks the breakout's and the drift's grids over the long history once a setting, the listings held to the index's floors alone as the long ledger holds them, ...
+> (checks.md, fixture-expectations) ... with each pullback's block named |
+Now:
+> (catalogue, Long history reader, reads) long spans, ... pulled companies, long facts, filed facts, long filings
+> (catalogue, Long history reader) ... over the long history (see: ...); and from the 23.8 correction each code's quarters of net income, operating income and interest off the long facts and the filed facts as first filed, by its filer, with each year's members reading the profit check off them (see: ...)
+> (catalogue, Long search) ... as the long ledger holds them, and from the 23.8 correction on the S&P 400 and 600 to the profit check too from the first year the SEC's facts cover nine in every ten members; ...
+> (17, The search over the long history, value) ... the listings held to the index's floors alone, and from the correction of that checkpoint on the mid-cap and small-cap indices to the floors and the profit check over the SEC's facts from the first year they cover nine in every ten members, the floors alone before it (see: ...) (see: ...)
+> (17, The search over the long history, rationale) ... for a yearly search; the pulled quarters hold none of the long years, and the operator's order of 2026-11-08 had the check read off 23.5's long facts from the year they cover the members, as 23.5 read the score's, rather than skipped everywhere; ...
+> (RUNBOOK, the long search) ... as the long ledger holds them, and from the 23.8 correction on the S&P 400 and 600 to the profit check too, read off the SEC's facts from the first year they cover 90 in every 100 members and said beside the run, the years before it on the floors alone (see: ...), ...
+> (checks.md, fixture-expectations) ... with each pullback's block named, and the long quarters read as first filed with the fourth from the year worked by hand, the profit check's first year at 90 in every 100 members and a session before it reading the floors alone |
+Why: the operator's order of 2026-11-08, item 4.
+
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the long search over the dip, and each pullback's block named
+Decision: The long search walks the dip's own sweep's grid at its first stage and names what blocks each pullback's search
+Was:
+> (catalogue, Long search) ... the families whose search reads the standing history alone named with that reason; registers nothing (see: ...)
+> (17, The search over the long history, rationale) ... with the index's own fund held over the trade's sessions beside it
+> (17, The search over the long history, check) ... and a walked trade's fund line over its own sessions
+> (SCHEMA, long_search, family) `breakout` or `drift`
+> (RUNBOOK, the long search) ... a family whose search reads the standing history alone is named with that reason.
+> (checks.md, fixture-expectations) ... with the RSI read as the dip's rule reads it |
+Now:
+> (catalogue, Long search) ... named with that reason; from the 23.8 correction the dip's own sweep's grid walked the same way at its first stage against its live rule, and each pullback named with what blocks its search (see: ...); registers nothing (see: ...)
+> (17, The search over the long history, rationale) ... beside it; and the dip's own grid searched the same way at its first stage, the pullback's search on each index named with what blocks it (see: ...)
+> (17, The search over the long history, check) ... a walked trade's fund line over its own sessions, and the dip's own grid searched over a constructed grid of two settings
+> (SCHEMA, long_search, family) `breakout`, `drift` or, from the 23.8 correction, `dip`
+> (RUNBOOK, the long search) ... named with that reason. From the 23.8 correction it searches the dip's own sweep's grid the same way at its first stage ... (see: ...).
+> (checks.md, fixture-expectations) ... with the RSI read as the dip's rule reads it, and the dip's own grid searched over the long history over a constructed grid of two settings with each pullback's block named |
+Why: the operator's order of 2026-11-08, item 3.
+
+### 2026-11-08 - docs/ARCHITECTURE.html, .claude/rules/checks.md - the dip sold on its 2-session RSI in the buy and sell points
+Decision: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+Was:
+> (17, The buy and sell points, rationale) ... with the index's own fund held over the same sessions beside it as a second line (see: ...)
+> (17, The buy and sell points, check) ... and a member's benchmark walked by hand under the combination's stop and sale
+> (checks.md, fixture-expectations) ... and a member's benchmark walked by hand under the combination's stop and sale |
+Now:
+> (17, The buy and sell points, rationale) ... as a second line (see: ...); and the dip's own sale at the next open after its 2-session RSI closes above 65 (see: ...)
+> (17, The buy and sell points, check) ... under the combination's stop and sale, and the dip sold on its RSI worked by hand
+> (checks.md, fixture-expectations) ... under the combination's stop and sale, and the dip sold at the next open after its 2-session RSI closes above 65 worked by hand with the RSI read as the dip's rule reads it |
+Why: the operator's order of 2026-11-08, item 2.
+
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the long test's fund line beside its verdict
+Decision: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+Was:
+> (17, The per-rule test over the long history, rationale) ... with too wide a margin to tell a pass from a miss
+> (17, The per-rule test over the long history, check) ... and the step's failure leaving the month's report standing
+> (RUNBOOK, the long test) ... are written with the reason that they are read on the standing years alone. Its rows sit beside the standing test's, ...
+> (checks.md, fixture-expectations) ... and the long step's failure leaving the month's report standing; and from 23.9 ...
+Now:
+> (17, The per-rule test over the long history, rationale) ... to tell a pass from a miss; from the 23.7 correction each verdict stays against the benchmark as ruled, with the index's own fund held over each trade's sessions beside it as a second line where the walk hands each trade's last session (see: ...)
+> (17, The per-rule test over the long history, check) ... the step's failure leaving the month's report standing, and the fund line worked by hand beside a verdict
+> (RUNBOOK, the long test) ... read on the standing years alone. From the 23.7 correction each verdict prints and stores beside it the rule's trades against the index's own fund held over the same sessions, or says its walk hands no trade's last session (see: ...). Its rows sit beside the standing test's, ...
+> (SCHEMA, loop_rule) the fund columns of migration 138, added
+> (checks.md, fixture-expectations) ... leaving the month's report standing, and from the 23.7 correction of 2026-11-08 the fund line worked by hand beside a long verdict, a walk handing no trade's last session and a book saying they have none; and from 23.9 ...
+Why: the operator's order of 2026-11-08, item 1.
+
+### 2026-11-08 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, .claude/rules/checks.md - the buy and sell points read against the benchmark as ruled, the fund beside it
+Decision: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+Corrects: 23.8 read the buy and sell points' edge against the index's fund alone, where their decision names the benchmark sold the same way.
+Was:
+> (17, The search over the long history, rationale) ... so the floors alone are read there as the long ledger reads them
+> (17, The search over the long history, check) ... and a constructed search's verdict against the tester's over the same trades
+> (17, The buy and sell points, rationale) ... a hundred fills keeps a recommendation off a handful of trades
+> (17, The buy and sell points, check) ... the tally against the figures over a list, and the combinations counted
+> (15.20, The long history) ... over the years it was chosen on and from 2019; no press for any (see: ...)
+> (SCHEMA, plan_point) ... its edge from 2019, years it was not chosen on, stands beside it. Every figure is a statistic ...
+> (RUNBOOK, the long search and the buy and sell points) ... to `plan_point` (see: ...). Each with `--print` writes nothing.
+> (checks.md, fixture-expectations) ... and no source a rule's version pins among those 23.8 writes |
+Now:
+> (17, The search over the long history, rationale) ... as the long ledger reads them; from the 23.8 correction each trade's edge stays over its sweep's benchmark, which sells its members as the trade is, with the index's own fund held over the trade's sessions beside it
+> (17, The search over the long history, check) ... over the same trades, and a walked trade's fund line over its own sessions
+> (17, The buy and sell points, rationale) ... off a handful of trades; from the 23.8 correction each edge is over the rule's plan on every member bought at its own next open and walked under the combination's stop and sale, with the index's own fund held over the same sessions beside it as a second line (see: ...)
+> (17, The buy and sell points, check) ... the combinations counted, a pick's edge read off its benchmark and not the fund, and a member's benchmark walked by hand under the combination's stop and sale
+> (15.20, The long history) ... and from 2019; from the 23.8 correction each edge over the benchmark as ruled with its edge over the index's own fund held the same days beside it (see: ...); no press for any (see: ...)
+> (SCHEMA, plan_point) ... stands beside it. From the 23.8 correction every edge is over the benchmark of its combination ... walked under the combination's stop and sale, and each fund column is the second line beside it (see: ...). Every figure is a statistic ...
+> (SCHEMA, long_search and plan_point) the fund columns of migration 137, added
+> (RUNBOOK, the long search and the buy and sell points) ... to `plan_point` (see: ...). From the 23.8 correction each edge is over the rule's plan on every member of the index that session, bought at its own next open and walked under the combination's stop and sale, and beside it stands the edge over the index's own fund held the same sessions ... (see: ...), and with `--again` searches afresh a family already written through the same session, as a correction's remedy does. Each with `--print` writes nothing.
+> (checks.md, fixture-expectations) ... among those 23.8 writes; and from the 23.8 correction of 2026-11-08 the fund's edge worked by hand ... and a member's benchmark walked by hand under the combination's stop and sale |
+Why: the operator's order of 2026-11-08, item 1.
+
 ### 2026-11-08 - docs/ARCHITECTURE.html, .claude/rules/checks.md - the long search and the buy and sell points
 Decision: A search over the long history re-runs every third test year with its setting carried between
 Decision: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index

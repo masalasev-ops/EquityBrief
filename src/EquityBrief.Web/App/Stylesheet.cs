@@ -349,6 +349,7 @@ svg .gain{fill:var(--up)} svg .loss{fill:var(--down)}
 .btn-2,.export-report{font:600 13px var(--sans);color:var(--ink);background:transparent;border:1px solid var(--hair-2);border-radius:6px;padding:0 12px;min-height:36px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 form[method='post']{display:inline-block;margin:8px 10px 0 0}
 form[method='post'] button:disabled{opacity:.6;cursor:progress}
+form.marking-press{display:block;margin:8px 0 0}
 .export{margin:18px 0 0;display:flex;justify-content:flex-end}
 
 /* tables: every table a region draws reads the same way */
@@ -364,6 +365,7 @@ td ul{margin:0;padding-left:16px}
 
 /* the words a region states in place of a figure it does not have */
 .degraded{color:var(--soft);font-style:italic}
+p.banner{margin:20px 0 0;border:1.5px solid var(--accent);border-radius:8px;background:var(--surface);padding:14px 18px;font-size:15px;color:var(--ink)}
 p.degraded,nav.walk .degraded{font-size:14px}
 p.degraded[data-sessions],p.degraded[data-bands='0'],p.degraded[data-readings='0'],p.degraded[data-rows='0'],p.degraded[data-moves='none']{border:1.3px dashed var(--dash-ink);border-radius:8px;padding:18px 20px;font-style:normal;color:var(--ink-2);background:var(--surface)}
 p[data-last-asked-at],.no-year,p[data-sessions]:not(.degraded){margin:20px 0 0;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);padding:12px 16px;font-size:14px}

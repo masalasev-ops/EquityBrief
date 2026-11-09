@@ -49,13 +49,9 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     public const string ExampleTicker = "CTSH";
     public static DateOnly ExampleSession { get; } = new(2026, 11, 6);
 
-    // Each index's own fund, which a trade's benchmark is held in over the same sessions, and the market the regime reads.
-    public static IReadOnlyDictionary<string, string> Funds { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
-    {
-        ["GSPC"] = "SPY",
-        ["MID"] = "IJH",
-        ["SML"] = "IJR",
-    };
+    // Each index's own fund, held over a pick's own sessions as the second line beside its benchmark, and the market the
+    // regime reads.
+    public static IReadOnlyDictionary<string, string> Funds => FundLine.Funds;
 
     public const string Market = "GSPC";
 
@@ -73,8 +69,8 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         FROM setup WHERE index_code = $index AND ticker = $ticker AND session_date = $session AND family IN ('pullback', 'breakout', 'drift', 'dip');";
 
     const string InsertPlanPoint = @"
-        INSERT INTO plan_point (run_id, index_code, family, through, setups, combination, picks, fills, fill_rate, hit_rate, break_even, result_per_pick, edge_per_pick, edge_per_fill, days_held, worst_drawdown, traded_fills, traded_edge_per_pick, later_fills, later_edge_per_pick, traded_later_edge_per_pick)
-        VALUES ($run_id, $index_code, $family, $through, $setups, $combination, $picks, $fills, $fill_rate, $hit_rate, $break_even, $result_per_pick, $edge_per_pick, $edge_per_fill, $days_held, $worst_drawdown, $traded_fills, $traded_edge_per_pick, $later_fills, $later_edge_per_pick, $traded_later_edge_per_pick);";
+        INSERT INTO plan_point (run_id, index_code, family, through, setups, combination, picks, fills, fill_rate, hit_rate, break_even, result_per_pick, edge_per_pick, edge_per_fill, days_held, worst_drawdown, traded_fills, traded_edge_per_pick, later_fills, later_edge_per_pick, traded_later_edge_per_pick, fund_edge_per_pick, traded_fund_edge_per_pick, later_fund_edge_per_pick, traded_later_fund_edge_per_pick)
+        VALUES ($run_id, $index_code, $family, $through, $setups, $combination, $picks, $fills, $fill_rate, $hit_rate, $break_even, $result_per_pick, $edge_per_pick, $edge_per_fill, $days_held, $worst_drawdown, $traded_fills, $traded_edge_per_pick, $later_fills, $later_edge_per_pick, $traded_later_edge_per_pick, $fund_edge_per_pick, $traded_fund_edge_per_pick, $later_fund_edge_per_pick, $traded_later_fund_edge_per_pick);";
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
@@ -204,7 +200,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         {
             FormattableString.Invariant($"{setups.Count} flagged setup(s) of the pullback, the breakout, the drift and the dip on the {DecisionCards.NameOf(index)}, the long ledger's from 2005 and the standing ledger's from 2019, {unread} whose stock or session the long history does not hold left out; each walked under {PlanPoints.Combinations.Count} combination(s) of an entry, a stop and a sale."),
             "A level's buy fills on the first session after the pick within its window that trades into it, at its open where it opens at or under the level and at the level otherwise; the next open fills on the session after the pick. A pick its entry does not fill, whose levels plan draws no such zone, or whose fill stands at or under its stop, is offered and not taken, and counts as nothing in a figure per pick offered.",
-            "A sale is signalled by a close and sold at the next session's open, as the ledger's fill step sells: a close under the stop, at or over the target or the first band above, at or over each staged level for its equal share, under the trail, or the time limit's last close. A result is in the risk the rule's own plan set at the pick's close, so every combination holds the next-open buy's number of shares, less the published round trip for its company's size at its prices; its edge is that less its index's own fund held over the same sessions in the same risk. A rule naming neither a target nor a trail, the dip, sells at its time limit.",
+            "A sale is signalled by a close and sold at the next session's open, as the ledger's fill step sells: a close under the stop, at or over the target or the first band above, at or over each staged level for its equal share, under the trail, or the time limit's last close. A result is in the risk the rule's own plan set at the pick's close, so every combination holds the next-open buy's number of shares, less the published round trip for its company's size at its prices. Its edge is that less its benchmark: the rule's own plan entered on every member of the index that session in the member's own typical moves, each bought at its own next open and walked under the combination's stop and sale, a zone's stop, the first band above and the staged sales read off the member's own levels plan, a member they cannot be placed on not entered. Beside it, as a second line, the result less its index's own fund held over the pick's own sessions in the same risk. The dip's own sale, which names neither a target nor a trail, sells at the next open after a close whose 2-session RSI stands above 65, or at its time limit, the pick and its benchmark's members alike.",
             FormattableString.Invariant($"The settings were chosen on {LongLedger.StandingFrom.Year} onward, so the years before it are the years no setting was chosen on, and the recommendation reads them alone: the highest edge per pick offered among the combinations resting on {PlanPoints.FewestFills} fills or more there. It is a proposal, and nothing here changes a pick, a plan, a rule or a version."),
         };
 
@@ -215,7 +211,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
             lines.Add(combination is null
                 ? FormattableString.Invariant($"The {family}: {count} setup(s); no combination rests on {PlanPoints.FewestFills} fills over the years no setting was chosen on.")
-                : FormattableString.Invariant($"The {family}: {count} setup(s); recommended {combination.Words}, edge per pick offered {Shown(chosen!.EdgePerPick)} over {chosen.Fills} fill(s) of {chosen.Picks} pick(s), against the traded plan's {Shown(plan?.EdgePerPick)} over {plan?.Fills ?? 0} fill(s); from {LongLedger.StandingFrom.Year}, which it was not chosen on, {Shown(since?.EdgePerPick)} over {since?.Fills ?? 0} fill(s) against the traded plan's {Shown(tradedSince?.EdgePerPick)} over {tradedSince?.Fills ?? 0}."));
+                : FormattableString.Invariant($"The {family}: {count} setup(s); recommended {combination.Words}, edge per pick offered {Shown(chosen!.EdgePerPick)} over {chosen.Fills} fill(s) of {chosen.Picks} pick(s), against the traded plan's {Shown(plan?.EdgePerPick)} over {plan?.Fills ?? 0} fill(s); from {LongLedger.StandingFrom.Year}, which it was not chosen on, {Shown(since?.EdgePerPick)} over {since?.Fills ?? 0} fill(s) against the traded plan's {Shown(tradedSince?.EdgePerPick)} over {tradedSince?.Fills ?? 0}. Against the fund held over the same sessions, {Shown(chosen.FundEdgePerPick)} against {Shown(plan?.FundEdgePerPick)}, and from {LongLedger.StandingFrom.Year} {Shown(since?.FundEdgePerPick)} against {Shown(tradedSince?.FundEdgePerPick)}."));
         }
 
         var example = index == Market ? await ExampleAsync(walker, cancellation) : [];
@@ -247,10 +243,10 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         static IReadOnlyList<string> Row(string family, PlanCombination combination, string group, PlanFigures one) =>
         [
             family, combination.Words, group, CheckReports.Cell(one.Picks), CheckReports.Cell(one.Fills), CheckReports.Cell(one.FillRate), CheckReports.Cell(one.HitRate), CheckReports.Cell(one.BreakEven),
-            CheckReports.Cell(one.ResultPerPick, signed: true), CheckReports.Cell(one.EdgePerPick, signed: true), CheckReports.Cell(one.EdgePerFill, signed: true), CheckReports.Cell(one.DaysHeld), CheckReports.Cell(one.WorstDrawdown),
+            CheckReports.Cell(one.ResultPerPick, signed: true), CheckReports.Cell(one.EdgePerPick, signed: true), CheckReports.Cell(one.EdgePerFill, signed: true), CheckReports.Cell(one.FundEdgePerPick, signed: true), CheckReports.Cell(one.DaysHeld), CheckReports.Cell(one.WorstDrawdown),
         ];
 
-        string[] columns = ["Family", "Combination", "Years", "Picks", "Fills", "Fill rate", "Hit rate", "Break-even rate", "Result per pick", "Edge per pick", "Edge per fill", "Days held", "Worst drawdown"];
+        string[] columns = ["Family", "Combination", "Years", "Picks", "Fills", "Fill rate", "Hit rate", "Break-even rate", "Result per pick", "Edge per pick", "Edge per fill", "Against the fund per pick", "Days held", "Worst drawdown"];
         var groups = new[] { Unseen, Chosen, All }.Concat(LongLedger.Eras.Select(era => era.Era)).Concat([PlanPoints.Above, PlanPoints.Below]).ToArray();
 
         var (report, figuresFile) = CheckReports.Write(
@@ -327,6 +323,10 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     ("$later_fills", Or(combination is null ? null : figures.GetValueOrDefault((family, PlanPoints.Combinations.ToList().IndexOf(combination), Chosen))?.Fills)),
                     ("$later_edge_per_pick", Or(combination is null ? null : figures.GetValueOrDefault((family, PlanPoints.Combinations.ToList().IndexOf(combination), Chosen))?.EdgePerPick)),
                     ("$traded_later_edge_per_pick", Or(figures.GetValueOrDefault((family, traded, Chosen))?.EdgePerPick)),
+                    ("$fund_edge_per_pick", Or(chosen?.FundEdgePerPick)),
+                    ("$traded_fund_edge_per_pick", Or(plan?.FundEdgePerPick)),
+                    ("$later_fund_edge_per_pick", Or(combination is null ? null : figures.GetValueOrDefault((family, PlanPoints.Combinations.ToList().IndexOf(combination), Chosen))?.FundEdgePerPick)),
+                    ("$traded_later_fund_edge_per_pick", Or(figures.GetValueOrDefault((family, traded, Chosen))?.FundEdgePerPick)),
                 ], cancellation);
             }
 
@@ -443,9 +443,97 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
     static string Shown(double? figure) => figure is { } held ? held.ToString("+0.000;-0.000;0.000", CultureInfo.InvariantCulture) : "none";
 
+    // A pick's two edges after costs in the rule's risk: over its benchmark, the members walked under its combination's stop
+    // and sale, none where no member's walk has ended, and over its index's own fund held from the close before its fill to
+    // the close before its sale.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    public static (double? Edge, double? Fund) EdgesOf(double result, double fill, double rulesRisk, double? benchmark, double bought, double sold) =>
+        (benchmark is { } held && double.IsFinite(held) ? result - held : null, FundLine.Edge(result, fill, rulesRisk, bought, sold));
+
     // Walks one setup under every combination over the long reader's series.
     public sealed class Walker(SweepSeries[] series, DateOnly[] calendar, IReadOnlyDictionary<string, List<int>> names, IReadOnlyDictionary<DateOnly, double> fund, IReadOnlyDictionary<DateOnly, string> regime)
     {
+        // From the 23.8 correction every name's closes and opens once, and each session's members with their bar on it,
+        // which the benchmark walks under each combination's stop and sale.
+        // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+        readonly Lazy<(double[] Closes, double[] Opens)>[] prices = [.. series.Select(one => new Lazy<(double[], double[])>(() =>
+            ([.. one.Bars.Select(bar => Statistic.FromPrice(bar.Close))], [.. one.Bars.Select(bar => Statistic.FromPrice(bar.Open))])))];
+
+        // From the 23.8 correction every name's 2-session RSI once, which the dip's own sale reads.
+        // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+        readonly Lazy<double[]>[] rsis = [.. series.Select(one => new Lazy<double[]>(() => PlanPoints.RsiOf([.. one.Bars.Select(bar => Statistic.FromPrice(bar.Close))])))];
+
+        readonly Lazy<List<(int Name, int Bar)>[]> members = new(() =>
+        {
+            var held = new List<(int Name, int Bar)>[calendar.Length];
+
+            for (var at = 0; at < held.Length; at++)
+            {
+                held[at] = [];
+            }
+
+            for (var name = 0; name < series.Length; name++)
+            {
+                for (var bar = 0; bar < series[name].Bars.Length; bar++)
+                {
+                    var at = series[name].SessionAt[bar];
+
+                    if (at >= 0 && at < held.Length && series[name].Name.MemberOn(calendar[at]))
+                    {
+                        held[at].Add((name, bar));
+                    }
+                }
+            }
+
+            return held;
+        });
+
+        readonly System.Collections.Concurrent.ConcurrentDictionary<(int At, double StopMoves, double? Reward, double? Trail, int Cap, int Zone, string Stop, string Sale), double?> benchmarks = new();
+
+        readonly System.Collections.Concurrent.ConcurrentDictionary<(int Name, int Bar), LevelsAsOf> memberLevels = new();
+
+        // The benchmark of a combination on a session: every member that session under the same plan in its own typical
+        // moves, bought at its own next open, its stop and its sale placed as the combination places them on the pick, a
+        // zone's stop, the first band and the staged sales off the member's own levels plan.
+        public double? BenchmarkOf(int at, Core.Ledger.SetupPlan plan, PlanCombination combination)
+        {
+            var zone = combination.Stop == PlanPoints.ZoneStop ? PlanPoints.Zones.ToList().IndexOf(combination.Entry) : -1;
+
+            return benchmarks.GetOrAdd((at, plan.StopMoves, plan.RewardToRisk, plan.TrailMoves, plan.Cap, zone, combination.Stop, combination.Exit), key =>
+                PlanPoints.BenchmarkOf(members.Value[key.At].Select(member =>
+                {
+                    var (closes, opens) = prices[member.Name].Value;
+                    var typical = series[member.Name].Atr[member.Bar];
+
+                    if (!(typical > 0))
+                    {
+                        return null;
+                    }
+
+                    var close = closes[member.Bar];
+                    var risk = plan.StopMoves * typical;
+                    var levels = key.Zone >= 0 || key.Sale is PlanPoints.FirstBand or PlanPoints.StagedSales
+                        ? memberLevels.GetOrAdd((member.Name, member.Bar), place => LevelsAt(series[place.Name], place.Bar))
+                        : null;
+
+                    double? StopAt(double fill) => key.Stop == PlanPoints.RuleStop ? close - risk
+                        : key.Zone >= 0 ? (levels!.Zones.Count > key.Zone ? levels.Zones[key.Zone].Stop : null)
+                        : PlanPoints.StopOf(key.Stop, fill, close - risk, null, typical);
+
+                    PlanSale? SaleAt(double fill) => key.Sale switch
+                    {
+                        PlanPoints.RuleSale => plan.TrailMoves is { } moves ? new PlanSale(null, moves * typical, [])
+                            : plan.RewardToRisk is { } reward ? new PlanSale(close + (reward * risk), null, [])
+                            : PlanPoints.DipSale,
+                        PlanPoints.FirstBand => new PlanSale(levels!.Bands.Where(edge => edge > fill).Order().Cast<double?>().FirstOrDefault(), null, []),
+                        PlanPoints.StagedSales => new PlanSale(null, null, levels!.Staged),
+                        _ => new PlanSale(null, null, []),
+                    };
+
+                    return PlanPoints.MemberResult(closes, opens, member.Bar, risk, StopAt, SaleAt, plan.Cap, rsis[member.Name].Value);
+                })));
+        }
+
         // The setup's stock, its bar and its arrays, none where the long history does not hold it on its session.
         (int Name, int Bar, double[] Opens, double[] Lows, double[] Closes)? Placed(FlaggedSetup setup)
         {
@@ -481,7 +569,11 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             var one = series[name];
             var factor = setup.Entry > 0 ? closes[bar] / setup.Entry : 1;
             var ruleStop = setup.Stop * factor;
-            var ruleSale = new PlanSale(setup.Target * factor, setup.Trail * factor, []);
+            // From the 23.8 correction the dip's own sale on its 2-session RSI, which names no target and no trail.
+            // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
+            var dip = setup.Family == Core.Families.DipRule.Name;
+            var ruleSale = dip ? PlanPoints.DipSale : new PlanSale(setup.Target * factor, setup.Trail * factor, []);
+            var rsi = rsis[name].Value;
 
             // Every combination's result in the risk the rule's own plan set at the pick's close, so each is read on the same
             // number of shares as the next-open buy, a buy far down at a tight stop not reading large for its small risk.
@@ -493,6 +585,12 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             }
             var typical = one.Atr[bar];
             var levels = LevelsAt(one, bar);
+
+            // The rule's own plan in the stock's typical moves on the session, which the benchmark enters on every member.
+            var session = Array.BinarySearch(calendar, setup.Session);
+            var plan = typical > 0
+                ? new Core.Ledger.SetupPlan(rulesRisk / typical, ruleSale.Target is { } aim ? (aim - closes[bar]) / rulesRisk : null, ruleSale.Trail is { } trail ? trail / typical : null, setup.Cap)
+                : null;
             var era = LongLedger.EraOf(setup.Session.Year);
             var side = regime.GetValueOrDefault(setup.Session) ?? PlanPoints.Below;
             var worked = new List<Worked>();
@@ -519,7 +617,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                 {
                     var sale = combination.Exit switch
                     {
-                        PlanPoints.RuleSale => ruleSale.Target is null && ruleSale.Trail is null ? new PlanSale(null, null, []) : ruleSale,
+                        PlanPoints.RuleSale => ruleSale,
                         PlanPoints.FirstBand => new PlanSale(levels.Bands.Where(edge => edge > price).Order().Cast<double?>().FirstOrDefault(), null, []),
                         PlanPoints.StagedSales => new PlanSale(null, null, levels.Staged),
                         _ => new PlanSale(null, null, []),
@@ -528,6 +626,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     return (sale, sale.Target is { } target ? FormattableString.Invariant($"at {target:0.00}")
                         : sale.Trail is { } trail ? FormattableString.Invariant($"trailing {trail:0.00} under the highest close")
                         : sale.Staged.Any(edge => edge > price) ? "at " + string.Join(", ", sale.Staged.Where(edge => edge > price).Order().Select(edge => edge.ToString("0.00", CultureInfo.InvariantCulture)))
+                        : sale.RsiAbove is { } above ? FormattableString.Invariant($"at the next open after its {Core.Families.DipRule.RsiSessions}-session RSI closes above {above:0}, or at session {setup.Cap}")
                         : FormattableString.Invariant($"at the close of session {setup.Cap}"));
                 }
 
@@ -559,7 +658,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
                 var (sale, saleWords) = SaleAt(fill.Price);
 
-                if (PlanPoints.Walk(closes, opens, fill.Bar, fill.Price, stop, sale, setup.Cap) is not { } outcome)
+                if (PlanPoints.Walk(closes, opens, fill.Bar, fill.Price, stop, sale, setup.Cap, rsi) is not { } outcome)
                 {
                     worked.Add(new Worked(combination, level, fill.Price, stop, saleWords, null, "open: the history ends before its sale"));
 
@@ -574,10 +673,23 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                 var ended = Math.Min(fill.Bar + outcome.Sessions, one.Bars.Length - 1);
                 var bought = fund.GetValueOrDefault(one.Bars[Math.Max(0, fill.Bar - 1)].Session);
                 var sold = fund.GetValueOrDefault(one.Bars[Math.Max(0, ended - 1)].Session);
-                double? edge = bought > 0 && sold > 0 ? result - (((sold / bought) - 1) * fill.Price / rulesRisk) : null;
+
+                var benchmark = plan is null || session < 0 ? null : BenchmarkOf(session, plan, combination);
+                var (edge, fundEdge) = EdgesOf(result, fill.Price, rulesRisk, benchmark, bought, sold);
+
+                // From the 23.6 correction a pick past 20 risks is no result, counted as offered and in no figure.
+                // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+                if (PlanPoints.NoResult(result, edge))
+                {
+                    worked.Add(new Worked(combination, level, fill.Price, stop, saleWords, new PlanPick(setup.Session.Year, era, side, true, null, null, 0, null, 0, null), FormattableString.Invariant($"no result: {result:+0.00;-0.00} risks after costs, past {LongLedger.OutlyingRisks} either way")));
+
+                    continue;
+                }
+
                 var pick = new PlanPick(setup.Session.Year, era, side, true, result, edge, outcome.Sessions, outcome.End, one.SessionAt[ended], PlanPoints.BreakEvenOf(fill.Price, stop, sale.Target))
                 {
                     Hit = PlanPoints.HitOf(combination.Exit, outcome.End),
+                    FundEdge = fundEdge,
                 };
 
                 worked.Add(new Worked(combination, level, fill.Price, stop, saleWords, pick, FormattableString.Invariant($"{outcome.End} after {outcome.Sessions} session(s), {result:+0.00;-0.00} risks after costs")));

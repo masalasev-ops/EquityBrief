@@ -138,6 +138,9 @@ public partial class ArchitectureConformance
 
         // From 23.8: the long search and the plan point test, their stores, section 17's two rows and the Loop page's row.
         .. FixtureExpectations.LongSearchRows,
+
+        // From the 23.4 correction: the History page's marks owed.
+        .. Reading.ReadSurface.MarkingPageRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

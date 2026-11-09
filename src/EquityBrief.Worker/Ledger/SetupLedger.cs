@@ -103,6 +103,7 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.LongFact, Touch.Read),
             new StoreTouch(Store.LongSetup, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LongReading, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.LongOutlier, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.DepartedSetup, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.DataCheck, Touch.Read),
             new StoreTouch(Store.LongSpan, Touch.Read),
@@ -304,8 +305,16 @@ public sealed partial class SetupLedger : IComponent
     const string ClearLongReading = "DELETE FROM long_reading WHERE index_code = $index;";
 
     const string InsertLongReading = @"
-        INSERT INTO long_reading (index_code, family, year, reading, setups, settled, targets, edge_mean, edge_after_cost_mean, crossing, edge_after_cost_without, read_through, run_id)
-        VALUES ($index, $family, $year, $reading, $setups, $settled, $targets, $edge_mean, $edge_after_cost_mean, $crossing, $edge_after_cost_without, $read_through, $run_id);";
+        INSERT INTO long_reading (index_code, family, year, reading, setups, settled, targets, edge_mean, edge_after_cost_mean, crossing, edge_after_cost_without, read_through, run_id, outlying)
+        VALUES ($index, $family, $year, $reading, $setups, $settled, $targets, $edge_mean, $edge_after_cost_mean, $crossing, $edge_after_cost_without, $read_through, $run_id, $outlying);";
+
+    // From the 23.6 correction the setups the long years count as no result, written whole for an index with its years.
+    // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+    const string ClearLongOutlier = "DELETE FROM long_outlier WHERE index_code = $index;";
+
+    const string InsertLongOutlier = @"
+        INSERT INTO long_outlier (index_code, family, ticker, session_date, edge, run_id)
+        VALUES ($index, $family, $ticker, $session, $edge, $run_id);";
 
     // A member's readings as stored: the catalogue's in its order as a list in the invariant form, null where none.
     public static string ReadingsText(IReadOnlyList<double?> readings) =>
@@ -2056,6 +2065,7 @@ public sealed partial class SetupLedger : IComponent
         var gics = await GicsAsync(connection, history: true, cancellation);
         var findings = new List<string>();
         var read = 0;
+        var unread = 0;
 
         foreach (var session in sample.GroupBy(row => row.Session).OrderBy(group => group.Key))
         {
@@ -2081,7 +2091,13 @@ public sealed partial class SetupLedger : IComponent
                 }
 
                 read++;
-                findings.AddRange(LedgerPointInTime.Differences(row.Readings, rebuilt).Select(differ =>
+
+                // From the 23.6 correction the long check leaves unread a reading the long build holds none of by design.
+                // see: The long ledger's point-in-time check leaves unread a reading the long build holds none of by design, and says so
+                var (differences, notRead) = longHistory is null ? (LedgerPointInTime.Differences(row.Readings, rebuilt), 0) : LedgerPointInTime.LongDifferences(row.Readings, rebuilt);
+
+                unread += notRead;
+                findings.AddRange(differences.Select(differ =>
                     FormattableString.Invariant($"{row.Family} {row.Ticker} {Stamp(row.Session)}: {differ.Reading} stored {Shown(differ.Stored)}, rebuilt {Shown(differ.Rebuilt)}")));
             }
         }
@@ -2092,7 +2108,8 @@ public sealed partial class SetupLedger : IComponent
         }
 
         var detail = FormattableString.Invariant($"{read} of {sample.Length} sampled history setup(s) on the {DecisionCards.NameOf(index)} rebuilt from the history read through {Stamp(through)} and cut at each one's session, {perYear} a year by seed {seed}; ")
-            + (findings.Count == 0 ? "every reading the same" : FormattableString.Invariant($"{findings.Count} difference(s), each named on the command's output"));
+            + (findings.Count == 0 ? "every reading the same" : FormattableString.Invariant($"{findings.Count} difference(s), each named on the command's output"))
+            + (unread > 0 ? FormattableString.Invariant($"; {string.Join(" and ", LedgerPointInTime.HeldNoneByTheLongBuild)} not read on {unread} setup(s), the long build holding none of it by design") : string.Empty);
 
         await AppendAsync(connection, runId, stage, startedAt, 0, findings.Count == 0 ? Ok : NotComputed, detail, cancellation);
         output.WriteLine("ledger-check: " + detail);

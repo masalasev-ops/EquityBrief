@@ -511,6 +511,10 @@ public sealed partial class SinglePageApp : IComponent
             view = 'history';
             const history = await fetch('/screens/history');
             screen.innerHTML = await history.text();
+          } else if (path === '{{{MarkingRoute}}}') {
+            view = 'marking';
+            const marking = await fetch('/screens/marking');
+            screen.innerHTML = await marking.text();
           } else if (path === '{{{LoopRoute}}}') {
             view = 'loop';
             const loop = await fetch('/screens/loop' + (query ? '?' + query : ''));
@@ -920,6 +924,26 @@ public sealed partial class SinglePageApp : IComponent
           if (!said || said.getAttribute('data-resume') !== 'started') {
             for (const button of form.querySelectorAll('button')) { button.disabled = false; }
           }
+        });
+        // From the 23.4 correction the marking page's confirm: every mark chosen, or the one row pressed, sent with the page's
+        // own header, the page drawn again, and what the read surface said put in its line.
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.classList.contains('marking-press')) { return; }
+          event.preventDefault();
+          const fields = new FormData(form, event.submitter);
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const response = await fetch(form.getAttribute('action'), {
+            method: 'POST',
+            headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+            body: new URLSearchParams(fields),
+          });
+          const said = await response.text();
+          const kept = scrollY;
+          await show();
+          scrollTo(0, kept);
+          const place = screen.querySelector('.marking-said');
+          if (place) { place.innerHTML = said; }
         });
         // The Loop page's presses, approve or decline of a proposal and approve of a restore: the form's fields sent with
         // the page's own header, the page drawn again, and what the read surface said put in the line of what was pressed.
@@ -4681,10 +4705,13 @@ public sealed partial class SinglePageApp : IComponent
     public static string NotANight(string asked) =>
         Invariant($"<p class=\"notice\" role=\"status\" data-not-a-night=\"{Escaped(asked)}\">{Escaped(asked)} is not an evening this reads, so this is tonight.</p>");
 
-    // Every screen over a store behind this checkout, which names both schema numbers
-    // rather than failing on the first column the store lacks.
+    public const string NeedsMigrating = "The store needs migrating.";
+
+    // Every screen over a store behind this checkout, which says so as a banner and names both schema numbers rather than
+    // failing on the first column the store lacks or drawing blank.
+    // see: A merge carrying a migration applies it in the merge step, and every page over a store behind says it needs migrating
     public string StoreBehind(int store, int checkout) =>
-        Invariant($"<p class=\"degraded\" data-schema=\"{store}\" data-needs=\"{checkout}\">the store is at schema {store} and this checkout reads schema {checkout}, so nothing is drawn from it until tools/migrate applies the rest</p>");
+        Invariant($"<p class=\"banner\" role=\"status\" data-schema=\"{store}\" data-needs=\"{checkout}\"><b>{NeedsMigrating}</b> It is at schema {store} and this checkout reads schema {checkout}, so nothing is drawn from it until tools/migrate applies the rest; tools/merge runs it as part of a merge.</p>");
 
     static string Invariant(FormattableString text) =>
         text.ToString(CultureInfo.InvariantCulture);

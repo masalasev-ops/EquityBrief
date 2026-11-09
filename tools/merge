@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Merges a pull request into main and applies the migrations it carries in the
+# same step, so the store reads the schema main reads before any page is opened
+# on it again: until the migrations run, every page says the store needs
+# migrating and draws nothing from it.
+#
+# Runs from the repository root, because a relative data root in appsettings.json
+# resolves against the working directory and the store must be the same one
+# whoever calls this and from wherever.
+#
+#   tools/merge <number>           merge it, fast-forward main, apply the migrations
+#
+# It is refused while the night's lock file exists under the data root, which is
+# `EquityBrief__DataRoot` where that is set and data/ otherwise, and is run only
+# when no night, off-peak run, local run, ledger build or monthly run is writing,
+# as the merge rule says; a merge that carries no migration applies none.
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$root"
+
+number="${1:-}"
+
+case "$number" in
+    ''|*[!0-9]*)
+        echo "usage: tools/merge <pull request number>" >&2
+        exit 2
+        ;;
+esac
+
+data_root="${EquityBrief__DataRoot:-data}"
+lock="$data_root/night.lock"
+
+if [ -e "$lock" ]; then
+    echo "merge: refused, a night holds $lock; merge once the night has finished" >&2
+    exit 3
+fi
+
+gh pr merge "$number" --merge --delete-branch
+git checkout main
+git pull --ff-only
+
+# The migrations the merged main carries, applied at once; none pending applies none.
+exec dotnet run --project src/EquityBrief.Worker -- migrate

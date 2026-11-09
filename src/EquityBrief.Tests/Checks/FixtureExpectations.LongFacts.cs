@@ -252,7 +252,9 @@ public partial class FixtureExpectations
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongFactPull.cs", "src/EquityBrief.Worker/History/LongFirstYearReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs"], readers);
+        // From the 23.8 correction the long history reader reads the long facts for the profit check over the long history,
+        // read by the monthly run's long step and by hand and by no night.
+        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongFactPull.cs", "src/EquityBrief.Worker/History/LongFirstYearReader.cs", "src/EquityBrief.Worker/History/LongHistoryReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs"], readers);
 
         string[] written =
         [

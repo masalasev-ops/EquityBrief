@@ -8,12 +8,12 @@ namespace EquityBrief.Api.Reading;
 public sealed partial class ReadApi
 {
     const string LongSearchesOn = @"
-        SELECT family, through, first_test_year, words, current_words, units, adjusted, better, counted, searches, passed
+        SELECT family, through, first_test_year, words, current_words, units, adjusted, better, counted, searches, passed, fund_edge, current_fund_edge
         FROM long_search WHERE rowid IN (SELECT MAX(rowid) FROM long_search WHERE index_code = $index GROUP BY family)
         ORDER BY family;";
 
     const string PlanPointsOn = @"
-        SELECT family, through, setups, combination, fills, fill_rate, edge_per_pick, traded_fills, traded_edge_per_pick, later_edge_per_pick, traded_later_edge_per_pick
+        SELECT family, through, setups, combination, fills, fill_rate, edge_per_pick, traded_fills, traded_edge_per_pick, later_edge_per_pick, traded_later_edge_per_pick, fund_edge_per_pick, traded_fund_edge_per_pick, later_fund_edge_per_pick, traded_later_fund_edge_per_pick
         FROM plan_point WHERE rowid IN (SELECT MAX(rowid) FROM plan_point WHERE index_code = $index GROUP BY family)
         ORDER BY family;";
 
@@ -43,7 +43,11 @@ public sealed partial class ReadApi
                     reader.GetInt32(7),
                     reader.GetInt32(8),
                     reader.GetInt32(9),
-                    reader.GetInt32(10) == 1));
+                    reader.GetInt32(10) == 1)
+                {
+                    FundEdge = reader.IsDBNull(11) ? null : reader.GetDouble(11),
+                    CurrentFundEdge = reader.IsDBNull(12) ? null : reader.GetDouble(12),
+                });
             }
         }
 
@@ -67,7 +71,13 @@ public sealed partial class ReadApi
                     reader.IsDBNull(7) ? null : reader.GetInt32(7),
                     reader.IsDBNull(8) ? null : reader.GetDouble(8),
                     reader.IsDBNull(9) ? null : reader.GetDouble(9),
-                    reader.IsDBNull(10) ? null : reader.GetDouble(10)));
+                    reader.IsDBNull(10) ? null : reader.GetDouble(10))
+                {
+                    FundEdgePerPick = reader.IsDBNull(11) ? null : reader.GetDouble(11),
+                    TradedFundEdgePerPick = reader.IsDBNull(12) ? null : reader.GetDouble(12),
+                    LaterFundEdgePerPick = reader.IsDBNull(13) ? null : reader.GetDouble(13),
+                    TradedLaterFundEdgePerPick = reader.IsDBNull(14) ? null : reader.GetDouble(14),
+                });
             }
         }
 

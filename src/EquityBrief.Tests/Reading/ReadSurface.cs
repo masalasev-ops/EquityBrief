@@ -229,6 +229,9 @@ public partial class ReadSurface
             // 23.4, the History page's prices back to 2004.
             .. LongPricesPageRows,
 
+            // The 23.4 correction, the History page's marks owed.
+            .. MarkingPageRows,
+
             // 23.6, the History page's families by year.
             .. LongYearsRows,
 

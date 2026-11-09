@@ -138,7 +138,7 @@ public sealed class RuleWalk(
         FamilyListing[] listed =
         [
             .. adapter.Listings(setting).Where(listing => listing.Move > 0
-                && (large || IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? []))),
+                && (large || IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? [], checkedFrom: read.ProfitFrom))),
         ];
 
         RuleListing Unit(FamilyListing listing)
@@ -504,7 +504,7 @@ public sealed class RuleWalk(
 
         var rule = SweepIdeas.BaseRule with { Setting = at, PerNight = SetupFamilies.ListedANight };
 
-        bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? []);
+        bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? [], checkedFrom: read.ProfitFrom);
 
         return OverListings(read, series, replay.Listings(rule, Keeps), rule, RuleReplay.PullbackWords, progress, standing, readings, trees);
     }
@@ -522,7 +522,7 @@ public sealed class RuleWalk(
     {
         var series = candidates.Series;
 
-        bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? []);
+        bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? [], checkedFrom: read.ProfitFrom);
 
         return candidates.Listings(FundamentalsBase, Keeps);
     }

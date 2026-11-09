@@ -73,6 +73,14 @@ public sealed record RuleTested(RuleUnderTest Rule, string Against, LoopEvidence
 
     // From 23.2 the year its verdict was judged from where it reads a release reading, none where every test year counted.
     public int? JudgedFrom { get; init; }
+
+    // From the 23.7 correction over the long history the second line beside its verdict against the benchmark: its trades
+    // less its index's own fund held over each trade's sessions, a trade on average, and how many; none where its walk hands
+    // no trade's last session.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    public int? FundUnits { get; init; }
+
+    public double? FundEdge { get; init; }
 }
 
 // What the per-rule test walks an index's rules over: the history as it stood, the register's rules standing when the
@@ -259,9 +267,17 @@ public static class RuleTests
             var first = LongTest.FirstTestYear(family.Key, read.Index);
             LoopFold[] folds = [.. read.Folds.Where(fold => fold.Year >= first)];
 
+            // From the 23.6 correction a unit whose edge lies past 20 risks either way is no result; the fund line reads the
+            // rule's own walk with those trades left out.
+            // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+            RuleUnderTest[] rules = [.. family];
+            RuleUnderTest[] judged = [.. rules.Select(Counted)];
+
             return folds.Length == 0
-                ? family.Select(rule => new RuleTested(rule, rule.Standing == Variant ? NoHead : Benchmark, null, null, FormattableString.Invariant($"the long history holds no test year from its family's first, {first}")))
-                : Judge(read with { Folds = folds }, [.. family], newest, draws);
+                ? rules.Select(rule => new RuleTested(rule, rule.Standing == Variant ? NoHead : Benchmark, null, null, FormattableString.Invariant($"the long history holds no test year from its family's first, {first}")))
+                : Judge(read with { Folds = folds }, judged, newest, draws).Select(tested => FundLineOf(read, rules[Array.IndexOf(judged, tested.Rule)], first) is { } fund
+                    ? tested with { FundUnits = fund.Units, FundEdge = fund.Edge }
+                    : tested);
         }),
     ];
 
@@ -579,7 +595,35 @@ public static class RuleTests
         }
     }
 
-    static IReadOnlyList<(int Entry, double? Edge)> Units(IEnumerable<ExitProcedures.Walked> walked) => [.. walked.Select(one => (one.Entry, one.Edge))];
+    // From the 23.7 correction a walk's units keep the trades they were read off, each with the session it ended on, which
+    // the long test's fund line reads.
+    static IReadOnlyList<(int Entry, double? Edge)> Units(IEnumerable<ExitProcedures.Walked> walked) => new WalkedUnits(walked);
+
+    // A walk's units with the trades they were read off.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    public sealed class WalkedUnits : List<(int Entry, double? Edge)>
+    {
+        public WalkedUnits(IEnumerable<ExitProcedures.Walked> walked)
+        {
+            Walked = [.. walked];
+            AddRange(Walked.Select(one => (one.Entry, one.Edge)));
+        }
+
+        public IReadOnlyList<ExitProcedures.Walked> Walked { get; }
+    }
+
+    // From the 23.7 correction a rule's second line over the long history: its trades entered from its family's first test
+    // year less its index's own fund held over each trade's sessions in its risk, a trade on average; none for a book's
+    // months or a walk that hands no trade's last session, which say so.
+    public static (int Units, double? Edge)? FundLineOf(LoopRead read, RuleUnderTest rule, int firstYear) =>
+        read.Fund is not null && rule.Trades is WalkedUnits walked
+            ? FundLine.Mean(walked.Walked.Where(one => read.Calendar[one.Entry].Year >= firstYear && !Core.History.LongLedger.Outlying(one.Edge)).Select(one => read.FundEdge(one.Entry, one.Exit, one.Trade)))
+            : null;
+
+    // From the 23.6 correction a rule's units over the long history with each past 20 risks either way read as no result.
+    // see: A long setup whose edge lies past 20 risks either way is counted as no result and listed beside the unexplained jumps
+    public static RuleUnderTest Counted(RuleUnderTest rule) =>
+        rule.Trades is null ? rule : rule with { Trades = [.. rule.Trades.Select(unit => (unit.Entry, Core.History.LongLedger.Outlying(unit.Edge) ? null : unit.Edge))] };
 
     // The sweep's own trades as units, each by the session it was listed on with its edge after costs over the same plan
     // on every member, as the dip's walk is read.

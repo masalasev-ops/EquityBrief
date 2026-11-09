@@ -656,8 +656,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     ";
 
     const string InsertRule = @"
-        INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why, cap, span, through, judged_from, history)
-        VALUES ($run_id, $month, $index_code, $family, $rule, $standing, $words, $against, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $why, $cap, $span, $through, $judged_from, $history);
+        INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why, cap, span, through, judged_from, history, fund_units, fund_edge)
+        VALUES ($run_id, $month, $index_code, $family, $rule, $standing, $words, $against, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $why, $cap, $span, $through, $judged_from, $history, $fund_units, $fund_edge);
     ";
 
     // From 23.2 each unit of a walked rule's evidence over the test years, which the pooled step sums across the indices.
@@ -738,8 +738,19 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         }
 
         var read = longHistory is not null
-            ? await ReadLongAsync(index, history, through, inputs, cancellation)
+            ? await WithFundAsync(await ReadLongAsync(index, history, through, inputs, cancellation), longHistory, through, cancellation)
             : await ReadAsync(index, history, through, inputs, cancellation);
+
+        // From the 23.7 correction a long read of the S&P 400 or 600 carries the long quarters and the first session its profit
+        // check is read from, as the long search's does.
+        // see: The profit check over the long history reads the long facts from the first year they cover 90 in every 100 members, the years before it unchecked
+        if (longHistory is not null)
+        {
+            var (withIncome, income) = await WithIncomeAsync(read, longHistory, cancellation);
+
+            read = withIncome;
+            output.WriteLine($"{RulesVerb}: {ProfitWords(index, income)}");
+        }
 
         if (read.Folds.Count == 0)
         {
@@ -789,13 +800,20 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // The S&P 500 as it stood, read once where the dip's or the sweeps' own readings need it on the S&P 400 or 600.
         SweepHistoryInputs? largeRead = large ? inputs : null;
 
-        async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
+        // From the 23.7 correction a long run reads the S&P 500 over the long history and the market series from the long pull
+        // with the standing pull's closes after it, so the dip's and the sweeps' own readings are laid out over the long years.
+        // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+        async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= longHistory is not null
+            ? await longHistory.ReadAsync(LargeIndex, through, null, cancellation)
+            : await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
 
-        var dipRead = !standingOnly && ReadsDip(standingRules, index)
+        Func<IReadOnlyList<string>, Task<IReadOnlyList<SweepMarketSeries>>>? seriesOf = longHistory is null ? null : named => LongSeriesAsync(longHistory, history, named, through, cancellation);
+
+        var dipRead = ReadsDip(standingRules, index)
             ? IndexSweepRunner.DipRead.Of(
                 read,
                 await LargeReadAsync(),
-                await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation))
+                seriesOf is null ? await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation) : await seriesOf([IndexSweepRunner.DipFund(index), MarketCloses.Vix]))
             : null;
         var tones = await TonesAsync(read, cancellation);
 
@@ -805,7 +823,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
         var own = OwnReads.None;
 
-        if (!large && !standingOnly)
+        if (!large)
         {
             var swingsNeeded = RuleTests.OwnSwingsNeeded(standingRules, index);
             var pullbackNeeded = RuleTests.OwnPullbackNeeded(standingRules, index);
@@ -817,7 +835,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 foreach (var (family, stopFloor) in swingsNeeded)
                 {
                     output.WriteLine(FormattableString.Invariant($"{RulesVerb}: reading the {DecisionCards.NameOf(index)}'s {family} as its own sweep reads it{(stopFloor > 0 ? $", its stop held at least {stopFloor:0.##} typical move under the buy" : string.Empty)}, for the rules stating a level the extended grid's walk does not read"));
-                    swings[(family, stopFloor)] = await IndexSweepRunner.OwnSwingRead.ReadAsync(read, await LargeReadAsync(), family, history, through, stopFloor, cancellation);
+                    swings[(family, stopFloor)] = await IndexSweepRunner.OwnSwingRead.ReadAsync(read, await LargeReadAsync(), family, history, through, stopFloor, cancellation, seriesOf);
                 }
 
                 IndexSweepRunner.OwnPullbackRead? pullback = null;
@@ -825,7 +843,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 if (pullbackNeeded)
                 {
                     output.WriteLine($"{RulesVerb}: reading the {DecisionCards.NameOf(index)}'s pullback as its own search reads it, for the rules stating a level the extended grid's walk does not read");
-                    pullback = await IndexSweepRunner.OwnPullbackRead.ReadAsync(read, await LargeReadAsync(), history, through, output.WriteLine, cancellation);
+                    pullback = await IndexSweepRunner.OwnPullbackRead.ReadAsync(read, await LargeReadAsync(), history, through, output.WriteLine, cancellation, seriesOf);
                     pullback.Charge(1);
                 }
 
@@ -891,7 +909,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         foreach (var one in tested)
         {
-            output.WriteLine(RuleLine(one));
+            output.WriteLine(RuleLine(one, standingOnly));
         }
 
         // From 21.1 each tone variant's figures on each side of the local model's cutoff's year beside its opposite's, which
@@ -1035,10 +1053,18 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.ImprovingCandidate rule && rule.Index == index);
 
     // A rule's line for the console, a rule the history cannot walk naming what judges it instead.
-    public static string RuleLine(RuleTested one) =>
+    public static string RuleLine(RuleTested one, bool longRun = false) =>
         one.Why is { } why
             ? $"{one.Rule.Family}, {one.Rule.Rule}: not testable, {why}; {RuleVerdict.Judged}"
-            : FormattableString.Invariant($"{one.Rule.Family}, {one.Rule.Rule}: {(one.Passed ? "passed" : "did not pass")} against {one.Against}; {(one.Verdict!.Adjusted is { } p ? FormattableString.Invariant($"adjusted p {p:0.####} against {LoopGate.Bar:0.####}") : FormattableString.Invariant($"{one.Verdict.Blocks} block(s), under the floor of {EquityBrief.Core.Returns.Blocks.Floor}"))}; better in {one.Verdict.Better} of {one.Verdict.Counted} counted year(s); {one.Verdict.Units} {one.Rule.Unit} unit(s){(one.Verdict.Counts ? string.Empty : ", short of the count")}");
+            : FormattableString.Invariant($"{one.Rule.Family}, {one.Rule.Rule}: {(one.Passed ? "passed" : "did not pass")} against {one.Against}; {(one.Verdict!.Adjusted is { } p ? FormattableString.Invariant($"adjusted p {p:0.####} against {LoopGate.Bar:0.####}") : FormattableString.Invariant($"{one.Verdict.Blocks} block(s), under the floor of {EquityBrief.Core.Returns.Blocks.Floor}"))}; better in {one.Verdict.Better} of {one.Verdict.Counted} counted year(s); {one.Verdict.Units} {one.Rule.Unit} unit(s){(one.Verdict.Counts ? string.Empty : ", short of the count")}")
+                + (!longRun ? string.Empty : FundLineWords(one));
+
+    // From the 23.7 correction the long test's second line beside a verdict, or that its walk gives none.
+    // see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line
+    public static string FundLineWords(RuleTested one) =>
+        one.FundUnits is { } units
+            ? FormattableString.Invariant($"; against the index's own fund held over the same sessions {(one.FundEdge is { } edge ? edge.ToString("+0.000;-0.000;0.000", CultureInfo.InvariantCulture) : "none")} a trade over {units}")
+            : "; no fund line, its walk handing no trade's last session";
 
     // The register's rows, which the per-rule test reads the rules standing when its run began off.
     static async Task<IReadOnlyList<Core.Candidates.RegisterRow>> RegisterAsync(string databaseFile, CancellationToken cancellation)
@@ -1121,6 +1147,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 ("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
                 ("$judged_from", Or(one.JudgedFrom)),
                 ("$history", history),
+                ("$fund_units", Or(one.FundUnits)),
+                ("$fund_edge", Or(one.FundEdge)),
             ], cancellation);
 
             foreach (var (unit, at) in (one.Evidence?.Units ?? []).Select((unit, at) => (unit, at)))

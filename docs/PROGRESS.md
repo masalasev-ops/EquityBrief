@@ -17549,3 +17549,382 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 136, against `data-ci` and never `data`; the phase report 66 tables, 1616 claims, 1616 passing,
             none out of scope and none unexamined, 1631 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.8 - correction: the buy and sell points read against the benchmark as ruled, and every long result with its index's fund beside it   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its first item, word for word in
+            `prompts/2026-11-08-23.10-operator-before-the-restart.md`. 23.8 read the buy and sell points' edge against SPY's,
+            IJH's or IJR's return held over each pick's sessions, where their decision names the benchmark sold the same way.
+            Two shorter readings were tried over the live store before this one and dropped, each named in the decision below:
+            each setup's benchmark as the ledger stored it read the S&P 500's drift held to its time limit at +0.866 a pick
+            where the same picks read -0.198 against the fund, and the members walked under the rule's sale in place of the
+            first band and the staged sales read the drift's staged sales at +0.616 against -0.241. And with every member read,
+            the S&P 400's drift read +19.830 a pick, a few members' results in a risk near nothing running to hundreds; a member
+            past 20 risks either way is left out of the benchmark.
+Corrected:  each pick's edge is its result less its benchmark: the rule's own plan entered on every member of the index that
+            session in the member's own typical moves, each bought at its own next open and walked under the combination's
+            own stop and sale, a zone's stop, the first band above and the staged sales off the member's own levels plan read
+            as of that session. Beside it, the second line, the result less the index's own fund held over the pick's
+            sessions in the same risk, printed, written to `plan_point` and drawn on the Loop page's card. The long search's
+            and the long test's walks already read the benchmark as ruled, the sweeps selling trade and members alike; the
+            long search adds the fund line beside its verdict, a trade on average over each test year's chosen setting and
+            over the rule today, written to `long_search`, and `--again` searches a family written through the same session
+            afresh. Migration 137. One decision, section 17's two rows, 15.20's row, `SCHEMA.md`, the runbook, the roster's
+            row, the guide and the changelog.
+Measured:   `plan-points --print` over the live store through 2026-11-06, writing nothing. The S&P 500's, each recommendation,
+            its edge a pick offered over 2005 to 2018 against the traded plan's, then from 2019, then its edge over the fund
+            over 2005 to 2018 against the traded plan's, then from 2019:
+            - pullback: the second zone within 20 sessions, 2 typical days under the buy, the first band above; +0.340 over
+              4,478 fills of 7,491 picks against -0.096; from 2019 +0.091 over 2,944 against -0.124; the fund +0.218 against
+              -0.044, from 2019 -0.134 against -0.195.
+            - breakout: the 20-session average within 20 sessions, 2 typical days, the first band above; +0.225 over 954 of
+              3,026 against -0.132; from 2019 +0.134 over 427 against -0.097; the fund +0.132 against -0.088, from 2019 -0.008
+              against -0.231.
+            - drift: the next open, 2 typical days, the time limit alone; +1.074 over 3,220 of 3,220 against -0.117; from 2019
+              +1.195 over 2,286 against -0.288; the fund -0.198 against -0.161, from 2019 -0.650 against -0.384, the two lines
+              apart in sign: its members under the same tight stop are stopped out early while the fund is held to the end.
+            - dip: the second zone within 10 sessions, 2 typical days, the rule's sale; +0.034 over 24,200 of 71,814 against
+              -0.038; from 2019 +0.022 over 13,937 against -0.046; the fund +0.020 against -0.038, from 2019 +0.005 against
+              -0.074.
+            The S&P 400's:
+            - pullback: the second zone within 10 sessions, 0.75 typical days, the time limit alone; +0.394 over 471 of 819
+              against -0.054; from 2019 +0.232 over 606 against -0.099; the fund +0.164 against -0.021, from 2019 +0.132
+              against -0.137.
+            - breakout: the first zone within 20 sessions, 2 typical days, the first band above; +0.180 over 989 of 1,751
+              against -0.137; from 2019 +0.068 over 884 against -0.079; the fund +0.082 against -0.079, from 2019 +0.020
+              against -0.096.
+            - drift: the next open, 1 typical day, the time limit alone; +0.611 over 1,819 of 1,819 against -0.002; from 2019
+              +1.918 over 2,282 against +0.011; the fund -0.172 against -0.080, from 2019 +0.502 against -0.081.
+            - dip: the second zone within 20 sessions, the rule's stop, the rule's sale; +0.036 over 19,676 of 45,389 against
+              -0.030; from 2019 +0.023 over 12,860 against -0.042; the fund +0.027 against -0.034, from 2019 +0.018 against
+              -0.044.
+            The S&P 600's:
+            - pullback: the second zone within 20 sessions, 0.75 typical days, the time limit alone; +0.690 over 510 of 709
+              against -0.147; from 2019 +0.074 over 555 against +0.059; the fund +0.593 against -0.100, from 2019 -0.125
+              against +0.082.
+            - breakout: the 20-session average within 20 sessions, 2 typical days, the staged sales; +0.238 over 724 of 1,773
+              against -0.234; from 2019 +0.186 over 517 against -0.087; the fund +0.142 against -0.202, from 2019 +0.050
+              against -0.118.
+            - drift: the next open, 1 typical day, the time limit alone; +0.652 over 487 of 487 against +0.123; from 2019
+              +1.769 over 1,193 against +0.462; the fund +0.254 against +0.095, from 2019 +0.574 against +0.350.
+            - dip: the first zone within 10 sessions, the rule's stop, the rule's sale; +0.196 over 36,222 of 46,890 against
+              +0.173; from 2019 -0.004 over 27,731 against -0.030; the fund +0.193 against +0.164, from 2019 -0.003 against
+              -0.032.
+            CTSH of 2026-11-06 stays untraded, the store's newest session its own; under the third zone at its own stop and the
+            rule's sale it buys at 56.22 with a stop of 52.49 and sells at 71.26, against the next open's stop of 61.55. The
+            long search's fund line is measured with its rerun under the third item's correction below.
+Provisional: each on the operator's review: a member bought at its next open whatever the combination's entry, as the ruled
+            benchmark buys; a member whose zone its levels plan does not draw left out of a zone stop's benchmark; the fund
+            held from the close before the fill to the close before the sale.
+Tests:      5 new in the fixture's expectations: the fund's edge worked by hand; a pick's edge read off its benchmark and not
+            the fund; the tally keeping the fund line apart; a walked trade's fund line over its own sessions; a member's
+            benchmark walked by hand under a stop, a target, the time limit and staged sales, a member past 20 risks left out.
+            The Loop page's read-back test reads each card's fund line.
+Pins:       none move: every source the correction changes is among those the 23.8 test holds no rule's version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 7 in all, each red: m1 the pick's edge read off the fund; m2 a member walked with no stop; m3 a member held
+            to the time limit whatever the combination's sale; m4 a member whose walk has not ended counted as nothing; m5 a
+            walked trade's fund read to its listing session; m6 the fund line a fill's mean where it is a pick's; m7 a member
+            past 20 risks kept in the benchmark.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the provisional choices above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.7 - correction: the long test's verdict stays against the benchmark as ruled, with its index's fund beside it   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its first item. The long test's walks read the benchmark as ruled already, the
+            S&P 500's sweeps selling trade and members at the close and the S&P 400's and 600's and the monthly test's walks
+            selling both at the next open (see: Every swing trade is judged against a benchmark whose members are sold as the
+            trade is, and no rule's version moves because of it); no line beside a verdict said how a rule did against simply
+            holding its index's fund.
+Corrected:  beside each long verdict the second line: the rule's trades entered from its family's first test year less the
+            index's own fund held over each trade's sessions in its risk, a trade on average, printed and written to
+            `loop_rule`; a walk's units keep the trades they were read off, so the line reads each trade's last session, and a
+            book's months or a walk handing no trade's last session say they have none. Migration 138. Section 17's row,
+            `SCHEMA.md`, the runbook, the roster's row and the changelog, under the decision the correction above wrote.
+Measured:   with the long test's rerun under the fifth item's correction below, over the tree carrying the first five.
+Tests:      1 new in the fixture's expectations: the fund line worked by hand beside a long verdict over a constructed
+            history, a walk handed as a list and a long read holding no fund giving none.
+Pins:       none move: the per-rule test's and the tester's sources are none a rule's version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its test
+            by name, 3 in all, each red: m1 the fund line read over every year rather than from the family's first test year;
+            m2 the fund line read off a walk handing no trade's last session; m3 the long verdict's line without its fund line.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.8 - correction: the buy and sell points sell the dip at the next open after its 2-session RSI closes above 65   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its second item. 23.8 sold a dip pick at its time limit under the rule's own
+            sale, its exit not walked, where the dip's rule sells on its 2-session RSI.
+Corrected:  under the rule's sale a dip pick sells at the next session's open after a close whose 2-session RSI, read off the
+            stored closes as the dip's rule reads it, stands above 65, its stop read first and its time limit last; every
+            member of its benchmark is sold the same way off its own closes; the combinations' other sales read no RSI. The
+            decision, section 17's row, the roster's row and the changelog.
+Measured:   with the buy and sell points' rerun under the sixth item's correction below, over the tree carrying the first six.
+Tests:      2 new in the fixture's expectations: the dip sold on its RSI worked by hand over a constructed path, its stop read
+            first and its time limit last, and a member of its benchmark sold the same way; the RSI read off the closes as the
+            dip's rule reads it.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the RSI's sale never reached; m2 a member walked without its RSI; m3 the RSI read
+            over 14 sessions; m4 the RSI's sale read before the stop.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.8 - correction: the long search walks the dip's own grid, and names what blocks each pullback's search   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its third item. 23.8 searched the breakout and the drift over the long history
+            and named every other family as searched on the standing history alone.
+Corrected:  `loop-search --long` searches the dip as well: its own sweep's reading of the long history, the dip's fund and the
+            VIX from the long pull with the standing pull's closes after it, every setting of its grid's first stage walked
+            once, through the same schedule as the breakout's and the drift's, against its live rule's setting and levels, with
+            the fund line beside its verdict; an index whose live dip rule stands at hooks, or holds none, says so. The
+            pullbacks are named with what blocks them: the S&P 500's is the swing filter, walked over no grid a search chooses
+            from; the S&P 400's and 600's design search keeps eight scored years a stock's year each. Nothing 23.10 brings
+            unblocks either; each wants a checkpoint of its own. The decision, the catalogue's row, section 17's row,
+            `SCHEMA.md`, the runbook, the roster's row, the guide and the changelog.
+Measured:   over 23.3's scratch copy of the store, the S&P 400's long ledger in it and its register empty, `loop-search --long
+            --index MID --print` wrote nothing: the breakout and the drift as before, each with its fund line, the breakout
+            -0.033 a trade over 1,619 against the rule today's -0.055, the drift -0.020 over 1,742 against -0.108; the dip "not
+            searched over the long history: no live dip rule stands on the index", the copy holding no register. The live
+            figures with the long search's rerun under the sixth item's correction below.
+Provisional: each on the operator's review: the dip's first stage alone, its second stage's levels not crossed over the long
+            history; its trades' years read off the calendar.
+Tests:      1 new in the fixture's expectations: the dip's own grid searched over a constructed grid of two settings against
+            its live rule, every third test year with the setting carried between, and each pullback's block named.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its test
+            by name, 4 in all, each red: m1 every setting of the dip's grid walked at the live rule's; m2 the dip's walk keeping
+            no trade's last session; m3 the swing filter's block named on every index; m4 the dip left to the standing history.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the provisional choices above; the pullbacks' searches over the long history, each a checkpoint of its own on the
+            operator's word; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.8 - correction: the profit check over the long history read off the long facts from the year they cover the members   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its fourth item. 23.8 held every listing over the long years to the floors
+            alone, the profit check skipped everywhere since the pulled quarters hold none of the long years.
+Corrected:  the long history reader reads each code's quarters of net income, operating income and interest expense off the
+            SEC's facts as first filed, the long facts before 2015 and the standing ones after, the fourth quarter the year less
+            its first nine months, by the filer the store files the code under, and counts each year's members on its first
+            session reading the profit check off the quarters filed before it. A long read of the S&P 400 or 600 carries those
+            quarters beside the pulled ones and the first session of the first year 90 in every 100 members read the check;
+            the sweep runner's gate reads the floors alone before it and says so. The long search holds the S&P 400's and 600's
+            listings to it, and the S&P 500's, whose rules read no profit gate, to the floors as before. The decision, the
+            catalogue's two rows, section 17's row, the runbook, the roster's row and the changelog.
+Measured:   over 23.3's scratch copy, `loop-search --long --index MID --print` writing nothing: the profit check read off the
+            SEC's facts from 2012, when 367 of 390 members read it, the years before read on the floors alone; the breakout
+            from 2008 over 839 trades against 1,619 on the floors alone, adjusted p 0.7326, better in 4 of 9 counted years;
+            the drift from 2016 over 1,771 trades, adjusted p 0.0554, better in 6 of 10. The live figures with the long
+            search's rerun under the sixth item's correction below.
+Provisional: each on the operator's review: the share at 90 in every 100, as 23.5's score; the first checked year read across
+            every member of the index rather than a family's own listings; a pulled quarter standing where both state a period.
+Tests:      3 new in the fixture's expectations: the long quarters read as first filed with the fourth from the year worked by
+            hand; the profit check's first year at 90 in every 100 members; a session before it reading the floors alone.
+Pins:       none move: the long reader, the sweep runner's gate and the long search are among the sources the 23.8 test holds
+            no rule's version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the fourth quarter not read off the year; m2 the share read as strictly above 90 in
+            every 100; m3 the first checked session ignored; m4 the last covered year read as the first.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the provisional choices above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.7 - correction: the long test lays out the S&P 400's and 600's own sweep readings and the dip's over the long history   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its fifth item. 23.7's long test kept 13 rules on each of the S&P 400 and 600
+            not testable, each "a level its sweep's own reading would walk, which the run laid out no reading for", and walked
+            no dip rule, the own readings and the dip's being read off the standing pull's market series alone.
+Corrected:  a long run reads the breakout's, the drift's and the pullback's own sweep readings over the long reader's history
+            wherever a rule needs them, and the dip's wherever a dip rule stands: the market series from the long pull with the
+            standing pull's closes after its last, the S&P 500 over the long history for the breadth the 400 and 600 read, and
+            the long quarters with the profit check's first session from the fourth item's correction above, which reaches the
+            per-rule walks' gate as well. A sweep's own year buckets read a session before 2019 in their first. A level reading
+            what the standing pull alone holds, a quarter's revenue as first filed or the analysts' counts, keeps no listing
+            before the pull holds it. The decision, section 17's row, the runbook, the roster's row and the changelog.
+Measured:   `loop-rules --long --index MID --print` over the live store through 2026-11-06, writing nothing, in 63 minutes
+            against 23.7's 14: the profit check read from 2012, when 366 of 390 members read it; 19 rules against 14, none
+            passing and none not testable, and 0 of 12 version choices. The live pullback did not pass against its benchmark,
+            adjusted p 0.0369 against the bar of 0.0042, better in 4 of 6 counted years over 732 trades; the live breakout
+            0.2835, 11 of 16 over 2,693; the live drift 0.0667, 7 of 10 over 2,462; the heavyweights 0.0888, 4 of 6 over 93
+            months; the live dip, walked over the long history for the first time, 0.3073, 6 of 12 over 1,110. The breakout's
+            variant with its market check off carries the fund line; every walk through a sweep's own reading hands no trade's
+            last session and says it has none. The S&P 500's and 600's with the long test's rerun under the sixth item's
+            correction below, over the tree carrying the first six. At this pace the long step's three hours hold the three
+            indices with little to spare, which the remedy's run measures.
+Tests:      2 new in the fixture's expectations: the long market series read off the long pull then the standing pull after
+            its last, worked over a constructed store; the dip and the own readings no longer held off a long run.
+Pins:       none move: the sweep runner's own readings, the per-rule walks and the tester are none a rule's version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the long series read off the standing pull alone; m2 the overlap read off the
+            standing pull as well; m3 the dip held off a long run again; m4 the own sweep readings not handed the long series.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the long step's time over the three indices against its three hours, to the remedy's run and the first scheduled
+            month; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.6 - correction: a long setup past 20 risks counted as no result and listed beside the unexplained jumps   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its sixth item. 23.6's measure named the settled setups whose edge lies past
+            20 risks either way, an edge read in a risk near nothing where a member's or the stock's prices stand still, and
+            every figure counted them: the S&P 400's breakout over 2005 to 2009 read +4.489 risks a trade after costs and the
+            S&P 600's +44.252; its pullback -14.277 and its drift -8.493.
+Corrected:  the long years count such a setup apart, in `long_reading`'s new column, read in no other figure, and list each
+            in `long_outlier`, both written whole with the years by `ledger-build --long`, which over an index whose long
+            ledger stands writes no setup and writes its years and that list again; the History page's folds name the count;
+            the measure's era lines say it. The long results read the same way: a long search's or a long test's trade past it
+            is no result, a pick of the buy and sell points whose result or edge lies past it is offered with no result, and a
+            member of its benchmark past it is left out, as the first correction above already left it. Migration 139. The
+            decision, the catalogue's row, the stores' row, 15.25's row, section 17's row, `SCHEMA.md`, the runbook, the
+            roster's row and the changelog.
+Measured:   23.6's live measure, `long-ledger --measure` over the store of 2026-11-08: the S&P 400's breakout over 2005 to 2009,
+            349 of 9,225 settled setups past 20 risks, its mean edge +4.518 with them and -0.093 without; the S&P 600's,
+            1,062 of 10,149, +44.322 with and -0.169 without; the rule read on every family reaches the S&P 600's pullback of
+            those years, 683 of 15,012, -14.249 with and -0.064 without, and its drift, 59 of 1,375, -8.439 with and +0.032
+            without, and the S&P 400's drift, 11 of 1,274, -0.678 with and -0.224 without. The long years written again with
+            the remedy; the long results' reruns over the tree carrying the first six corrections in the restatement entry
+            below.
+Provisional: each on the operator's review: the rule read on every family and not the breakout alone; the bound on the edge;
+            a standing setup of 2019 on past it counted the same way.
+Tests:      3 new in the fixture's expectations: a long year's setups past 20 risks counted apart and in no figure, worked by
+            hand; a pick past 20 risks no result in the buy and sell points; a long test's unit past 20 risks no result.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 a setup past 20 risks counted among the settled; m2 the bound read as at or past
+            20; m3 a pick's result past 20 risks kept; m4 a long test's unit past 20 risks kept.
+Remedy:     the corrections' remedy, written with the last correction's entry below.
+Carried:    the provisional choices above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.4 - correction: the marking page lists each unexplained jump and unsettled end with its evidence and a proposed mark   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its seventh item: a page listing each of the unexplained jumps and the ends no
+            filing settles with its evidence and a proposed mark, confirmed in bulk or changed one at a time, nothing marked
+            without the operator's confirm.
+Corrected:  the marking page under History, `#/marking`: every jump the newest data check classed as unexplained and every end
+            the newest long price pull settled by no filing, each with the five sessions either side by close and volume, its
+            median volume over the 50 before and its filer's filings within three days, and the mark a stated rule proposes
+            from that evidence alone; one press confirms every row as chosen, a row's own press confirms it alone, a row may be
+            changed or left unmarked first. The read surface writes the marks chosen into `session_mark` under the page's own
+            header, the proposal's words or words naming both where another was chosen, a session already marked keeping its
+            first word, and refuses a session the page does not list or a kind the marks do not hold. The long setups counted
+            as no result are listed beneath, marked by no press. The decision, the catalogue's row, the stores' row, 15.25's
+            rows, `SCHEMA.md`'s owners of `session_mark`, the runbook, the roster's row, the guide and the changelog.
+Measured:   read back over a copy of the store of 2026-11-08 migrated to 139, the branch's build on a port of its own: 337
+            unexplained jumps, 96 proposed a bad print and 241 checked and kept, and 285 ends, not the 334 the order named:
+            334 was the rehearsal's count over the capture in 23.4's entry, and the live pull of 2026-11-08 settled 1,343 ends
+            by filings and left 285, the list the History page names; 622 to mark. One row confirmed changed on the copy wrote
+            one mark naming both, a second press on it wrote nothing; a press without the page's header was refused. At a true
+            390 the page first ran 819 wide, the post form drawn inline-block taking the table's width, and holds 390 with the
+            form drawn as a block.
+Also:       the two commits before this one give the sixth correction's store of the long outliers its place in the phase
+            report's scope and in the claims' total, which that correction's own commit left out, so the conformance check
+            failed over its tree; found by this correction's filtered run.
+Provisional: each on the operator's review: the proposal's rule, its three days and its median of 50 sessions.
+Tests:      1 new on the read surface: the page's rows, proposals and evidence over a constructed store, the confirm writing
+            only what was chosen, one row or every row shown, a second word keeping the first, refused without the page's
+            header, for a kind the marks do not hold or a session not listed.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 5 in all, each red: m1 the confirm written without the page's header; m2 a kind the marks do not hold not
+            counted refused; m3 a changed mark written with the proposal's words; m4 the bad print proposed on volume above its
+            median; m5 every row written when one row is pressed. A first m2, the write's own guard on the kind dropped, stayed
+            green: the store's own check refuses the kind beneath it, so it was replaced by the refusal's count.
+Carried:    the operator's marks, confirmed on the page; the provisional choices above; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.6 - correction: the long check leaves unread the rating actions the long build holds none of, and says so   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its eighth item. The long build reads the analysts' rating actions for no
+            setup, while `ledger-check --long` rebuilt each sampled setup reading the store's rating actions through its
+            session, so every setup of a stock the refresh has stored actions for since read as a difference the long build
+            was built not to hold.
+Corrected:  the long check leaves the rating actions unread on a setup whose long row holds none of them, reads them as before
+            where the row holds a figure, holds every other reading to its rebuild as before, and its line says on how many
+            setups it left them unread. The standing check is unchanged. The decision, the runbook and the changelog.
+Measured:   the S&P 400's long check over a copy of the store of 2026-11-08 holding its long ledger was stopped after 82
+            minutes with no line written, its sampled rebuilds reading the S&P 500's long history for the breadth as well; the
+            remedy's S&P 500 check measures it over the live store, in an entry after the remedy.
+Tests:      1 new in the fixture's expectations: a sampled setup's readings worked by hand, the rating actions stored none and
+            rebuilt a count left unread and counted, stored a count and read, and any other reading stored none still a
+            difference.
+Pins:       none move: the point-in-time check is no source a rule's version or the readings' version pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the rating actions read where the long row holds none; m2 left unread where it
+            holds a figure; m3 the setups left unread not counted; m4 every reading left unread. Not mutated: the long check's
+            own call choosing the long reading over the standing one, held by the remedy's run alone.
+Carried:    the remedy's S&P 500 check, to an entry after the remedy; the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.7 - correction: a merge applies the migrations it carries, and every page over a store behind says it needs migrating   2026-11-08
+
+Found:      the operator's order of 2026-11-08, its ninth item. 23.7's merge left its migrations to the remedy, and between
+            the two the read surface, started again from the merged main, drew every page over the store a schema behind as
+            one small italic line, which read as a page drawing blank.
+Corrected:  `tools/merge` and its Windows wrapper: refused while the night's lock file stands, it merges the pull request with
+            its branch deleted, puts the checkout on main, fast-forwards it and applies the migrations the merged main carries,
+            in that order, none where it carries none. Every page over a store behind the checkout opens with a banner, "The
+            store needs migrating.", naming both schema numbers and the commands, and draws nothing from the store, as
+            before. The decision, `CLAUDE.md`'s layout, commands and merge rule, the runbook, the roster's row and the
+            changelog.
+Tests:      1 new on the read surface: five pages over a store at schema 23 each opening with the banner, and the merge
+            script's lock, merge, checkout, fast-forward and migration in that order, its wrapper handing the work to it.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its tests
+            by name, 4 in all, each red: m1 the store behind drawn without the banner's words; m2 the merge step without the
+            migrations; m3 the merge started without reading the night's lock file; m4 the merge step without the
+            fast-forward.
+Carried:    this pull request merged with `tools/merge` itself, read back on the pages after it; the sign-offs of phases 21
+            and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry below,
+            this pull request's last.
+
+### 23.8 - correction: the long results restated after the corrections, and their remedy   2026-11-08
+
+Found:      the operator's order of 2026-11-08 asks every result of 23.7 and 23.8 rerun and restated after its first two
+            items, and 23.10 put to them as one table after them.
+Corrected:  nothing in the code beyond the corrections above: this entry restates the results and writes their remedy.
+Measured:   over the live store through 2026-11-06 with the first six corrections, each run printing alone and writing
+            nothing. `plan-points`, the edge per pick offered against the benchmark as ruled from 2019, the years no
+            setting was chosen on, the recommendation against the traded plan: the S&P 500's pullback +0.038 against -0.124,
+            its breakout +0.119 against -0.097, its drift -0.036 against -0.192, its dip +0.022 against -0.038; the S&P
+            400's +0.530 against -0.099, +0.068 against -0.079, +0.081 against +0.003, +0.023 against -0.037; the S&P 600's
+            +0.188 against +0.059, +0.186 against -0.087, +0.324 against +0.339, +0.027 against -0.029. Against the fund
+            held over the same sessions from 2019 the S&P 500's pullback reads -0.180 against -0.195, its breakout -0.023
+            against -0.231, its drift -0.072 against -0.288, and the S&P 600's drift -0.166 against +0.257. `loop-search
+            --long`, each family's search against the benchmark as ruled, none passed: the S&P 500's breakout adjusted p
+            0.5401 over 1,996 trades, drift 0.3364 over 2,702, dip 0.7805 over 509; the S&P 400's 0.4482 over 1,960, 0.0792
+            over 1,962, 0.6490 over 641; the S&P 600's 0.2210 over 1,359, 0.3489 over 2,151, 0.3239 over 597; each
+            pullback named with what blocks its search; the S&P 400's and 600's profit check read from 2012 and 2013. The
+            long test's rerun on all three indices and the verdict across them, the long years written again with their
+            outliers and the S&P 500's long check are the remedy's, the long test taking about an hour an index.
+Also:       the two commits after this entry's first, from the suite's first runs over this tree: 23.5's list of the sources
+            naming the long facts gains the long history reader the fourth correction made one, and 23.4's list naming the
+            long prices the marking page, neither read by a night; and the marking page's three rows formatting a date hand
+            it to the invariant culture in the call that formats it, as the clock check reads.
+Tests:      none new.
+Pins:       none move: no source a rule's version or the readings' version pins moves in this pull request.
+Mutated:    none: this entry adds no assertion; each correction above mutated its own.
+Remedy:     `tools/remedies/2026-11-08-23.8-the-corrections-before-the-restart.txt`: `migrate`, `plan-points` on each index,
+            `loop-search --long` on each index with `--again`, `ledger-build --long` on each index, `loop-rules --long` on
+            each index for 2026-11, `loop-pooled --long` for 2026-11 and `ledger-check --long` on the S&P 500. It asks
+            nothing of anyone, calls no model, registers nothing and moves no rule.
+Carried:    the remedy's figures, to an entry after it; 23.10 on the operator's word, after the sign-offs of phases 21
+            and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3637 of 3637 tests ran with none failed, migrations 0 to 139 with none
+            pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
+            none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

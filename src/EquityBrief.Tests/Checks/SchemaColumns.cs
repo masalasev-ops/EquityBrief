@@ -55,7 +55,7 @@ public class SchemaColumns
     internal static string[] LongFactStoreRows => [CheckReach.Key(Scope.StoresTable, "Long facts")];
 
     // 23.6's three: the long ledger's setups, its years and the standing setups at their last price.
-    internal static string[] LongLedgerStoreRows => [.. new[] { "Long setups", "Long readings", "Departed setups" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
+    internal static string[] LongLedgerStoreRows => [.. new[] { "Long setups", "Long readings", "Departed setups", "Long outliers" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
     // 22.42's: each name a page splits at its capitals.
     internal static string[] SplitNameStoreRows => [CheckReach.Key(Scope.StoresTable, "Split names")];
