@@ -67,7 +67,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
     // One family's search on an index: its folds, the proposal run on all finished data and its verdict.
     // From the 23.8 correction beside it the second line: each test year's chosen setting's trades and the rule today's
     // against the index's own fund held over each trade's sessions, a trade on average.
-    public sealed record SearchRead(string Family, int FirstTestYear, IReadOnlyList<LongFold<int[]>> Folds, int[]? Proposal, string? Words, string Current, LoopEvidence Evidence, LoopVerdict Verdict, int StableFolds, int FundUnits = 0, double? FundEdge = null, double? CurrentFundEdge = null);
+    public sealed record SearchRead(string Family, int FirstTestYear, IReadOnlyList<LongFold<int[]>> Folds, int[]? Proposal, string? Words, string Current, LoopEvidence Evidence, LoopVerdict Verdict, int StableFolds, Func<int[], string> WordsOf, int FundUnits = 0, double? FundEdge = null, double? CurrentFundEdge = null);
 
     // From the 23.8 correction `again` searches every family afresh where the store holds its search through the same
     // session, a correction's remedy writing a newer row the Loop page reads beside the one it replaces.
@@ -292,6 +292,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
             evidence,
             verdict,
             proposal is null ? 0 : longFolds.Count(one => one.Chosen is { } setting && setting.Zip(proposal).All(pair => Math.Abs(pair.First - pair.Second) <= 1)),
+            words,
             fundUnits,
             fundEdge,
             currentFund);
@@ -347,20 +348,25 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
         return families;
     }
 
-    async Task WriteAsync(string index, DateOnly through, DateTimeOffset started, SearchRead searched, CancellationToken cancellation)
-    {
-        var runId = FormattableString.Invariant($"{Verb}-{index}-{searched.Family}-{started:yyyyMMddTHHmmssZ}");
-        var years = searched.Folds.Zip(searched.Evidence.Years, (fold, year) => new
+    // A search's test years as its row keeps them, each fold's chosen setting in the words the search itself named its
+    // settings in, so the dip's own grid is named as its own and never read through the breakout's or the drift's grid.
+    public static string YearsOf(SearchRead searched) =>
+        JsonSerializer.Serialize(searched.Folds.Zip(searched.Evidence.Years, (fold, year) => new
         {
             year = fold.Year,
             searched = fold.Searched,
-            chosen = fold.Chosen is null ? null : RuleReplay.SwingWords(searched.Family, fold.Chosen),
+            chosen = fold.Chosen is null ? null : searched.WordsOf(fold.Chosen),
             complete = year.Complete,
             current_units = year.CurrentUnits,
             proposed_units = year.ProposedUnits,
             current_total = year.CurrentTotal,
             proposed_total = year.ProposedTotal,
-        });
+        }));
+
+    async Task WriteAsync(string index, DateOnly through, DateTimeOffset started, SearchRead searched, CancellationToken cancellation)
+    {
+        var runId = FormattableString.Invariant($"{Verb}-{index}-{searched.Family}-{started:yyyyMMddTHHmmssZ}");
+        var years = YearsOf(searched);
 
         using var held = await DrainLock.AcquireAsync(dataRoot, () => Task.Delay(SetupLedger.Poll, cancellation), cancellation);
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -409,7 +415,7 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
             ("$stable_folds", searched.StableFolds),
             ("$searches", searched.Folds.Count(one => one.Searched)),
             ("$passed", verdict.Passes && searched.Words is not null ? 1 : 0),
-            ("$years", JsonSerializer.Serialize(years)),
+            ("$years", years),
             ("$fund_units", searched.FundUnits),
             ("$fund_edge", Or(searched.FundEdge)),
             ("$current_fund_edge", Or(searched.CurrentFundEdge)),
