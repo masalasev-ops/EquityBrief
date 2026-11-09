@@ -17963,3 +17963,25 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
             none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.8 - the remedy run from main: the corrections' long results written, and the long check read   2026-11-09
+
+Not a checkpoint entry: it records the corrections' remedy and lands nothing.
+Ran:        `tools/remedies/2026-11-08-23.8-the-corrections-before-the-restart.txt` from main after PR 672's merge, which
+            migrated the store from 136 to 139 in its own step, from 05:31 UTC on 2026-11-09; it stopped at its fifth step on the
+            dip's write, corrected by PR 673, and ran again with `--from 5` from 07:31 to 12:37 UTC, with no night, off-peak run,
+            local run or monthly run writing beside it. No request and no model call.
+Measured:   the buy and sell points written on each index, the same figures the restatement entry printed. The long search
+            written on each index, each search not passed, its adjusted p as printed. The long years written again with 2,342
+            setups past 20 risks counted as no result and listed: the S&P 500's 65, the S&P 400's 425, the S&P 600's 1,852,
+            1,070 of them the S&P 600's breakouts and 691 its pullbacks. The long test: the S&P 500 0 of 36 rules passed, 2
+            not testable, the estimates condition and the order by the setups like each, and 0 of 15 version choices; the
+            S&P 400 0 of 19, none not testable, 0 of 12; the S&P 600 0 of 22, 1 not testable, its breakout ordered by the
+            setups like each, 0 of 15; the S&P 400's and 600's profit check read from 2012 and 2013. The verdict across the
+            three: 0 of 5 families and 0 of 9 kinds of change passed. The S&P 500's long check: 350 of 350 sampled setups
+            rebuilt with every reading the same, the rating actions left unread on 246, in 68 minutes.
+Read back:  on main's build, the marking page: 337 unexplained jumps and 334 ends, 671 to mark; every page drawn at schema
+            139 with no banner.
+Carried:    the operator's marks on the marking page; 23.10 on the operator's word, after the sign-offs of phases 21 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over f3bfa67e, whose tree PR 673 merged, with its entry's
+            figures; records alone change in this entry.
