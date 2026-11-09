@@ -18024,3 +18024,40 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
             none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### Phase 21 sign-off                                                        2026-11-09
+Signed by a session that has committed no code to this repository. Its only commit is this entry, which is a document,
+            so the fresh session rule permits it. Its first review, over 5bc80eb7, signed nothing on two test gaps, F1 and F2 in
+            `prompts/2026-11-09-21.21-phase-21-signoff-findings.md`. PR 675 closed both with assertions alone and no shipped source. On
+            the operator's order of 2026-11-02 this pass read only those fixes, the correction table and the properties the first
+            review left unmutated. It signs over 7680a441, the main its gates ran on with this entry.
+Ruled:      "the corrections are done. Can you do sign off". And during the first review: "THere  has been many correction phases.
+            Do not ignore those. We should not revert to old incorrect code if something has been corrected".
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3637 of 3637 tests ran with none failed, migrations 0 to 139 with none
+            pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
+            none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed. Hosted CI over the 84 pull requests merged from 586 to 675: 77 green under both events; 587, 629,
+            650 and 663 red and answered by 588, 631, 651 and 664; 600 macOS red under one event and green under the other; 628 and
+            653 macOS cancelled under one event and green under the other; PR 675 and main's push of 7680a441 green.
+Mutation:   the rule, stated before each run: the smallest edit undoing the property named, its prediction written first, filtered to
+            the named tests, made in this checkout and restored from the file's own bytes. 39 properties, every one red at the end:
+            32 over 5bc80eb7, 30 red and F1's and F2's surviving; over 7680a441 those two red at the assertions PR 675 added, and the
+            7 the first review left: 21.12's unkept dividends and its statement before the first request, 21.14's tone line, surprises
+            check and flag split, and 21.16's quality sale under the average and a dip's menu stop sold at the next open.
+Read:       live on 5152 and read-only over the store on 2026-11-09: Paper trading, the Loop page and Tonight on each index, Home, the
+            Run page and the Ledger as text, Paper trading's S&P 500 at 1440 by eye, the operator's order of 2026-11-07 standing on each,
+            the averaged account's 26 open and 2 closed equal to its setups' tiles by hand. All 320 stored swing sales reconcile, 319 at
+            the open after the signal at the trade's own scale and one standing-order sale at its target. The Release 5152 serves
+            carries every Web and Api file of 7680a441.
+Table:      the operator's rule of 2026-11-01, to 7680a441, widened on their word above to every correction under any phase's label. 84
+            pull requests merged from 586 to 675: 73 changing a code file a phase 21 commit touched, 11 changing none (589, 600, 628,
+            632, 634, 639, 650, 654, 655, 673, 674). Labelled phase 21, 19 corrections: 498 source lines added, 487 standing, and 11 absent,
+            each restated by a later commit; 14 test methods, all unchanged. Under any label, 486 of 1,008 corrections on main touched
+            those files, 29,980 lines added and 25,241 standing in their file. Since phase 21's plan 661 lines they added were removed,
+            327 by phase 21's commits, 269 of those gone from the tree and the 156 in shipped files read: signatures gaining a
+            parameter, wording moved out of what a version pins, version hashes and the rewrites its rulings ordered. Lines a correction
+            removed that stand again in their file, 58: generic code or a later correction on the operator's word, and two by design, 21.4
+            removing 22.14's hold-back line and 21.5 removing 19.7's chips for the family it took out of the loop. No correction undone.
+Carried:    none of phase 21's own. The operating row The monthly run's time with every family tested is past its trigger, 13 h 03 min
+            read off the run log against about 3 h 40 min planned, and waits on the operator's ruling.
