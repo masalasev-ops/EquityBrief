@@ -18004,3 +18004,23 @@ Mutated:    the rule, stated before the runs: the review's mutation undoing that
             for one run filtered to the method, the second reading about 0.27 for 0.1. Reverted byte for byte.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's
             last.
+
+### 21.8 - correction: the ranking's test holds the score before the expected value where both order   2026-11-09
+
+Found:      phase 21's first sign-off review, F2 in `prompts/2026-11-09-21.21-phase-21-signoff-findings.md`: with the two checks
+            of `RankingChoice.Of` swapped,
+            `TheRankingsOrderIsChosenByHandOverAConstructedAuditOnBothSidesAndNotBuiltWhereNeitherOrders` stayed green, since no
+            case had both orders qualifying. A missing property in the test; the code is right and is unchanged.
+Corrected:  one assertion added to the method, every existing one as it stood: with the score's fifths at -0.1 and 0.2 and the
+            expected value's at 0.0 and 0.05, both ordering, the score is chosen.
+Tests:      none new, 1 assertion added.
+Claims:     none new.
+Pins:       none move: no shipped source changes.
+Mutated:    the rule, stated before the runs: the review's mutation undoing that the score comes first, shown green before the
+            assertion and red after. Green at the method before. After, red in that method alone of the 1,353 in
+            `Checks.FixtureExpectations`, at the new assertion, reading Expected for Score. Reverted byte for byte.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3637 of 3637 tests ran with none failed, migrations 0 to 139 with none
+            pending, schema version 139, against `data-ci` and never `data`; the phase report 66 tables, 1618 claims, 1618 passing,
+            none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
