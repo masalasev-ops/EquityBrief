@@ -109,6 +109,7 @@ public partial class FixtureExpectations
 
         // The choice itself and the groups by hand: the score first, the expected value second, none where neither.
         Assert.Equal(RankingOrder.Score, RankingChoice.Of(new RankingFifths(-0.1, 1, 0.2, 1), RankingFifths.None));
+        Assert.Equal(RankingOrder.Score, RankingChoice.Of(new RankingFifths(-0.1, 1, 0.2, 1), new RankingFifths(0.0, 1, 0.05, 1)));
         Assert.Equal(RankingOrder.Expected, RankingChoice.Of(new RankingFifths(0.1, 1, 0.1, 1), new RankingFifths(0.0, 1, 0.05, 1)));
         Assert.Equal(RankingOrder.None, RankingChoice.Of(new RankingFifths(0.2, 1, 0.1, 1), new RankingFifths(0.1, 1, 0.1, 1)));
         Assert.Equal([3, 0, 1, 2, 4], RankingChoice.GroupsOf([0.3, 0.1, 0.1, 0.2, 0.5]));
