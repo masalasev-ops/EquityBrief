@@ -433,7 +433,7 @@ public sealed partial class MarkRenderer
         row.Append(Invariant, $"<tr data-ticker=\"{Escaped(buy.Ticker)}\" data-family=\"{Escaped(buy.Family)}\" data-place=\"{number}\" data-planless>");
         row.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(buy.Ticker)}\">{Escaped(buy.Ticker)}</a> <a class=\"how-sells\" href=\"{buy.Href}\">How it sells</a>{(buy.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
         row.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(buy.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(buy.Family)}\"></span>{Escaped(buy.Label)}</span></td>");
-        row.Append(Invariant, $"<td class=\"why\">{Escaped(buy.Why)}{EntryCheckLine(buy.EntryCheck, buy.Ticker)}</td>");
+        row.Append(Invariant, $"<td class=\"why\">{Escaped(buy.Why)}{EntryCheckLine(buy.EntryCheck, buy.Ticker)}{SetupRecordBox(buy.LongRecord)}</td>");
         row.Append(Invariant, $"<td class=\"business-cell\">{Escaped(buy.Business)}</td>");
         row.Append(PriceCell("buy", buy.Close, null));
         row.Append(Invariant, $"<td class=\"r plan-sells\" colspan=\"2\" data-sells>{Escaped(buy.Sells)}</td>");

@@ -104,6 +104,10 @@ public sealed record DecisionCardView(
     // The arithmetic the plan's own numbers raise, as information beside it.
     public IReadOnlyList<string>? PlanFlags { get; init; }
 
+    // From the 22.6 correction of 2026-11-09 its setup's record over the long history on its index, drawn beneath its entry
+    // check line.
+    public SetupLongRecord? LongRecord { get; init; }
+
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
 }
 
@@ -227,6 +231,7 @@ public sealed partial class MarkRenderer
         body.Append(WhyItQualified(card));
         body.Append(ThePlan(card, setup, pick, levels is not null));
         body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
+        body.Append(SetupRecordBox(card.LongRecord));
         body.Append(card.Fill is { } fill ? Formatted($"<p class=\"card-fill\" data-fill>{Escaped(fill)}</p>") : string.Empty);
         body.Append(levels ?? string.Empty);
         body.Append(OtherChecks(card));
@@ -260,6 +265,7 @@ public sealed partial class MarkRenderer
         body.Append(TrailLines(card, pick));
         body.Append("</section>");
         body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
+        body.Append(SetupRecordBox(card.LongRecord));
         body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"#/name/{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
 
         return body.Append("</div>").ToString();

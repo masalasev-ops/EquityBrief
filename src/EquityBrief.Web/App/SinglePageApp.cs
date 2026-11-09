@@ -3081,7 +3081,8 @@ public sealed partial class SinglePageApp : IComponent
         EndedTonightView? ended = null,
         IReadOnlyDictionary<string, string>? plans = null,
         QualityCardView? quality = null,
-        ImprovingCardView? improving = null)
+        ImprovingCardView? improving = null,
+        SetupRecords? longRecords = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -3149,7 +3150,8 @@ public sealed partial class SinglePageApp : IComponent
                 ended,
                 plans: plans,
                 quality: quality,
-                improving: improving));
+                improving: improving,
+                longRecords: longRecords));
         }
         else if (families is null)
         {
@@ -3269,7 +3271,8 @@ public sealed partial class SinglePageApp : IComponent
         bool closeOpen = false,
         EndedTonightView? ended = null,
         QualityCardView? quality = null,
-        ImprovingCardView? improving = null)
+        ImprovingCardView? improving = null,
+        SetupRecords? longRecords = null)
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Titled;
@@ -3304,7 +3307,7 @@ public sealed partial class SinglePageApp : IComponent
         // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
         var open = families.SelectMany(card => card.Picks).Any(pick => pick.Row.Ticker == selectedTicker) ? selectedTicker : null;
 
-        region.Append(TonightCards(marks, night, Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}"), null, line, families, heavyweights, closeToBuy, closeOpen, false, universe.Word, open, ended, quality: quality, improving: improving));
+        region.Append(TonightCards(marks, night, Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}"), null, line, families, heavyweights, closeToBuy, closeOpen, false, universe.Word, open, ended, quality: quality, improving: improving, longRecords: longRecords));
         region.Append("</section>");
 
         return region.ToString();

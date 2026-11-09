@@ -141,6 +141,9 @@ public partial class ArchitectureConformance
 
         // From the 23.4 correction: the History page's marks owed.
         .. Reading.ReadSurface.MarkingPageRows,
+
+        // From the 22.6 correction of 2026-11-09: the setup's record over the long history on a pick's card and on Home's idea.
+        .. Reading.ReadSurface.SetupRecordRows,
     ];
 
     // The rows the document loses after phase 22's report: none.

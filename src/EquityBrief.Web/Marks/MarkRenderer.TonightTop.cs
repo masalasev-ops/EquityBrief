@@ -12,7 +12,7 @@ public sealed record BuyPointView(string Family, string Label, FamilyPickCell Pi
 // reader's words, tonight's close it is bought at about, how it sells, the link to its row on its own card, and its entry
 // check's reading.
 // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
-public sealed record PlanlessBuyView(string Family, string Label, string Ticker, string? Company, string Why, string Business, decimal? Close, string Sells, string Href, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null);
+public sealed record PlanlessBuyView(string Family, string Label, string Ticker, string? Company, string Why, string Business, decimal? Close, string Sells, string Href, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, SetupLongRecord? LongRecord = null);
 
 // The parts tomorrow's buys shares with a setup's card: each row's fold and the control opening it, and the reward
 // against the risk as the plan states it.

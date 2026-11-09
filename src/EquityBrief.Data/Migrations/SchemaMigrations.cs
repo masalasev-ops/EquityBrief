@@ -760,7 +760,14 @@ public static class SchemaMigrations
         new Migration(137, "add the fund line to long_search and plan_point", AddFundLine),
         new Migration(138, "add the fund line to loop_rule", AddRuleFundLine),
         new Migration(139, "add long_reading's outlying, and create long_outlier", CreateLongOutlier),
+        new Migration(140, "add the traded plan's picks from 2019 to plan_point", AddTradedLaterPicks),
     ];
+
+    // From the 22.6 correction of 2026-11-09 the traded plan's picks offered from 2019, the count its record on a pick's card
+    // is over.
+    const string AddTradedLaterPicks = @"
+        ALTER TABLE plan_point ADD COLUMN traded_later_picks INTEGER;
+    ";
 
     // From the 23.6 correction each family year's settled setups past 20 risks either way, counted as no result, and each
     // such setup listed beside the unexplained jumps, written whole for an index with its years.

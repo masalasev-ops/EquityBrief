@@ -10,8 +10,9 @@ namespace EquityBrief.Web.App;
 // its plan set tonight, none where the plan sets none, whether its give-up price rises with the stock in place of a
 // target, and what it risks against what it aims for; and from 22.18, for a plan selling on a rising give-up price with no
 // target, the distance it rises behind the highest close at and its rule's winning trades; whether an exit changed on the
-// Loop page moves its give-up price; and for the Fundamentals family the setting its index's rule stands at.
-public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null);
+// Loop page moves its give-up price; for the Fundamentals family the setting its index's rule stands at; and from the 22.6
+// correction of 2026-11-09 its setup's record over the long history.
+public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null, SetupLongRecord? LongRecord = null);
 
 // How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
 // many made money; the live setups' accounts averaged, their return, the day every live rule took effect and the index's
@@ -427,6 +428,7 @@ public sealed partial class SinglePageApp
         card.Append("</div>");
 
         card.Append(MarkRenderer.HomeEntryCheckLine(idea.EntryCheck, idea.Ticker));
+        card.Append(MarkRenderer.SetupRecordBox(idea.LongRecord));
 
         // see: A plan with a rising give-up price on Home draws no fixed target and one line, and no line on Home's cards starts mid-sentence
         card.Append(SellLine(idea, copying) is { } line ? Invariant($"<div class=\"home-odds\" data-sell-line>{Escaped(line)}</div>") : string.Empty);

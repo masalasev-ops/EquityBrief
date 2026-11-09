@@ -18117,3 +18117,31 @@ Labelled:   each item a correction under the checkpoint that built what it chang
 Queue:      done, 22.61; in progress, this order; next, phase 22's sign-off and 23.10, each on the operator's word.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull request, with the
             figures it states.
+
+### 22.6 - correction: each pick's card draws its setup's record over the long history beneath its entry check line   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 1, in `prompts/2026-11-09-card-record-ruling.md`: a pick's card drew nothing of
+            what its setup's plan did over the years the long test reads, though the test of the buy and sell points stores it.
+Corrected:  a box beneath the entry check line on every pick's card, on the stock page, beneath its row on Tonight, on a monthly
+            book's holding and on the read-only copy, on Home's idea and on each buy no plan sells among Tonight's buys, headed
+            with its setup and its index. For the pullback, the breakout, the drift and the dip it reads the newest run of the test
+            of the buy and sell points on the index: the traded plan's mean edge a pick offered against the ruled benchmark from
+            2019, in dollars for each dollar risked, over its picks, made in the gain's colour or lost in the loss's, and under 20
+            picks the count against the minimum alone. Migration 140 adds `plan_point.traded_later_picks`, which the test writes
+            from its next run. The Fundamentals family, the sector heavyweights and Quality at a fair price say there is no long
+            record yet with the year their filings reach back to, three learning years before the first test year 23.5 measured:
+            on the S&P 500 2013, 2020 and 2013. A stock page handed no context, an earlier night's among them, hands its card the
+            records too.
+Remedy:     `tools/remedies/2026-11-09-22.6-the-setup-records.txt`, from main after the merge: the migration, then the test of the
+            buy and sell points on each index, so each family's newest row carries its count; until it runs no price family's
+            card draws a box.
+Tests:      3 new read-surface tests: the read off a constructed store, each state's words and figures worked by hand on the app's
+            card, the copy's card, Home's idea and a buy no plan sells, and the stock page, Tonight's fold and a book's holding
+            read through the host; four counts of the document's rows and claims raised by its two new rows, each with why.
+Claims:     2 new, section 15.18's and 15.24's rows of the record, each reached by the read surface.
+Pins:       none move: no source a rule's version or the readings' version pins changes.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its three tests,
+            restored from the file's own bytes, 5 in all, each predicted red and each red: a lost record read as made; a filing
+            setup's year read as its first test year; the card drawing no box; the oldest run read in place of the newest; and a
+            stock page handed no context drawing no record.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.

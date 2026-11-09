@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-09 - docs/SCHEMA.md - plan_point, the traded plan's picks from 2019 and the pages reading it
+Decision: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's
+Was:
+> Every figure is a statistic and stored as the double it is. No rule, plan, night or card reads it, and nothing is registered on it.
+Now:
+> Every figure is a statistic and stored as the double it is. No rule, plan or night reads it, and nothing is registered on it. From the 22.6 correction of 2026-11-09 the pages drawing a setup's record over the long history read the traded plan's mean edge and picks from 2019 off each family's newest row on the index, and draw no record from a row holding no count
+Why: the operator's order of 2026-11-09, item 1, in `prompts/2026-11-09-card-record-ruling.md`: each pick's card draws its setup's record from the long test with its number of picks, which migration 140's column holds.
+
 ### 2026-11-09 - docs/ARCHITECTURE.html - section 15.20's summary row written a clause at a time
 Corrects: the row 22.61 wrote listed its parts between commas, which the conformance reader takes as parts each owing a verdict of their own.
 Was:
