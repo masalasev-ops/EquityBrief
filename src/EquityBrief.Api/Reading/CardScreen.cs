@@ -10,6 +10,10 @@ namespace EquityBrief.Api.Reading;
 public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable, IReadOnlyList<TakenRecordRow>? Records = null, EquityBrief.Core.Families.DipSetting? Dip = null, CardOpenFloorView? OpenFloor = null, IReadOnlyDictionary<string, DateOnly>? NewestReports = null, IReadOnlyDictionary<string, IReadOnlyList<DateOnly>>? ReportDays = null)
 {
     public static CardContext None { get; } = new(null, [], [], false);
+
+    // From the 22.6 correction of 2026-11-09 each setup's record over the long history, by index and family, which every
+    // page drawing a pick's card hands it, the read-only copy's among them.
+    public SetupRecords LongRecords { get; init; } = SetupRecords.None;
 }
 
 // The projection from the cards the night stored to the cards a page draws in place beneath each pick. It reads back
@@ -116,6 +120,7 @@ public static class CardScreen
             OpenFloor: row.Index == ReadApi.OpenFloorIndex && string.Equals(row.Family, EquityBrief.Core.Families.DriftRule.Name, StringComparison.Ordinal) ? given.OpenFloor : null)
         {
             EntryCheck = row.EntryCheck,
+            LongRecord = given.LongRecords.Of(row.Index, row.Family),
         };
     }
 

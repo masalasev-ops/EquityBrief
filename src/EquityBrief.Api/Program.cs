@@ -695,8 +695,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         memberReading: await read.MemberReadingAsync(ticker, on),
         ratings: await read.RatingsAsync(ticker, on),
         decisionCards: nightCards,
-        // The account and the taken trades on tonight's page alone: an export and an earlier night's page draw neither.
-        cardContext: export ? null : cardContext,
+        // The account and the taken trades on tonight's page alone: an export and an earlier night's page draw neither, and
+        // every page, those handed no context among them, draws the setup's record over the long history.
+        cardContext: export || cardContext is null ? CardContext.None with { LongRecords = cardContext?.LongRecords ?? await read.SetupRecordsAsync() } : cardContext,
         warmed: await read.ChartAveragesAsync(ticker),
         // The regular session of the day the page is opened on and the newest quote stored inside it, which tonight's
         // page draws in its masthead while the session is open; an earlier night's page and the file draw the close.
@@ -1584,8 +1585,8 @@ static IReadOnlyDictionary<string, double?> Growths(IEnumerable<(string Ticker, 
 // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
 static async Task<CardContext> CardContextAsync(ReadApi read, StoreLocation store, bool copying = false) =>
     copying
-        ? CardContext.None with { OpenFloor = await read.OpenFloorAsync() }
-        : new(EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot), await read.OpenTakenTradesAsync(), await read.TakenTradesAsync(), Pressable: true, await read.TakenRecordsAsync(), OpenFloor: await read.OpenFloorAsync());
+        ? CardContext.None with { OpenFloor = await read.OpenFloorAsync(), LongRecords = await read.SetupRecordsAsync() }
+        : new(EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot), await read.OpenTakenTradesAsync(), await read.TakenTradesAsync(), Pressable: true, await read.TakenRecordsAsync(), OpenFloor: await read.OpenFloorAsync()) { LongRecords = await read.SetupRecordsAsync() };
 
 // How a night went, the one view the Run page's headline and tonight's notice are both handed, read off the
 // night's run log rows and the night holding the lock, if one does.
@@ -1977,7 +1978,8 @@ async Task<IResult> TonightScreenAsync(
                 request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
                 ended: TonightScreen.EndedTonight(dated, [], indexTrades),
                 quality: await QualityCardAsync(read, reading.Code, dated, indexCells),
-                improving: await ImprovingCardAsync(read, reading.Code, dated, indexCells)),
+                improving: await ImprovingCardAsync(read, reading.Code, dated, indexCells),
+                longRecords: indexCardContext.LongRecords),
             "text/html; charset=utf-8");
     }
 
@@ -2389,7 +2391,8 @@ async Task<IResult> TonightScreenAsync(
             ended: cards is null ? null : TonightScreen.EndedTonight(dated, PicksScreen.Cells(picks, dated), await read.DipTradesAsync(reading.Code, dated)),
             plans: plans,
             quality: cards is null ? null : await QualityCardAsync(read, reading.Code, dated, cells),
-            improving: cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells)),
+            improving: cards is null ? null : await ImprovingCardAsync(read, reading.Code, dated, cells),
+            longRecords: cardContext.LongRecords),
         "text/html; charset=utf-8");
 }
 
@@ -2838,6 +2841,9 @@ async Task<IResult> HomeAsync(
     var vix = stored.Closes.GetValueOrDefault(EquityBrief.Core.Families.MarketCloses.Vix);
     var median = MarketStripScreen.Median(stored.VixYear);
 
+    // From the 22.6 correction of 2026-11-09 each idea's setup's record over the long history on the index.
+    var longRecords = await read.SetupRecordsAsync();
+
     // The buys in Tonight's order, the Fundamentals family's in its slot after the drift's and before the dip's.
     var shown = families.Where(card => card.Family != EquityBrief.Core.Families.FundamentalsRule.Name).ToArray();
     var (_, points) = SinglePageApp.TopOf(shown, null, line?.Open ?? false, dated, line?.Checks, line?.DipOpen);
@@ -2878,7 +2884,7 @@ async Task<IResult> HomeAsync(
         // its rule's winning trades off its card.
         decimal? trail = pick.Trailing && pick.Target is null && pick.Buy is { } buy && pick.Stop is { } stop && buy > stop ? pick.Card?.Trail ?? buy - stop : null;
 
-        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners, EntryCheck: pick.Card?.EntryCheck, StopMoves: MarkRenderer.ApprovedExitMovesTheStop(pick.Card?.Approved));
+        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners, EntryCheck: pick.Card?.EntryCheck, StopMoves: MarkRenderer.ApprovedExitMovesTheStop(pick.Card?.Approved), LongRecord: longRecords.Of(reading.Code, point.Family));
     }
 
     // A buy no plan sells, the Fundamentals family's or a monthly book's, as Tonight's buys draw it.
@@ -2893,7 +2899,8 @@ async Task<IResult> HomeAsync(
         false,
         null,
         EntryCheck: buy.EntryCheck,
-        Setting: buy.Family == EquityBrief.Core.Families.ImprovingRule.Name && improving?.Setting is { } setting ? setting with { SoldUnderAverage = improving.Rule.Contains(EquityBrief.Core.Families.ImprovingRule.UnderItsAverage, StringComparison.Ordinal) } : null);
+        Setting: buy.Family == EquityBrief.Core.Families.ImprovingRule.Name && improving?.Setting is { } setting ? setting with { SoldUnderAverage = improving.Rule.Contains(EquityBrief.Core.Families.ImprovingRule.UnderItsAverage, StringComparison.Ordinal) } : null,
+        LongRecord: longRecords.Of(reading.Code, buy.Family));
 
     // Every buy in Tonight's order, read by the one function Tonight's buys draw them in.
     // see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
@@ -2902,6 +2909,12 @@ async Task<IResult> HomeAsync(
         .. MarkRenderer.BuysInOrder(points, SinglePageApp.PlanlessBuys(reading.Word, improving, null, null))
             .Select(buy => buy.Point is { } point ? IdeaOf(point) : PlanlessIdeaOf(buy.Planless!)),
     ];
+
+    // From the 22.16 correction of 2026-11-09 a buy is drawn as a card only where its setup's record over the long history made
+    // money or there is none yet, and the rest are named as watched, each in Tonight's order.
+    // see: Home draws a card only for a pick whose setup made money over the long history or has none, and names the rest as watched
+    HomeIdea[] carded = [.. ideas.Where(idea => idea.LongRecord is not { Lost: true })];
+    HomeIdea[] watched = [.. ideas.Where(idea => idea.LongRecord is { Lost: true })];
     var opens = MarkRenderer.OpenDay(dated);
 
     // The system's trades since the rules first went live, and the live setups' accounts averaged since today's rules all
@@ -2944,15 +2957,16 @@ async Task<IResult> HomeAsync(
         [.. Universes.Offered.Where(choice => choice != reading).Select(choice => (choice.Name, Moved(SeriesOf(choice))))],
         Moved(EquityBrief.Core.Families.MarketCloses.Vix),
         vix is not null && median is { } middle ? vix.Close > middle : null,
-        [.. ideas.Take(SinglePageApp.HomeIdeas)],
-        ideas.Length,
+        [.. carded.Take(SinglePageApp.HomeIdeas)],
+        carded.Length,
         opens.EndsWith("'s", StringComparison.Ordinal) ? opens[..^2] : opens,
         (checks is { Count: > 0 } ? checks.All(check => !check.Open) : line is { Open: false }) ? "The market was too weak for the rules to buy tonight." : "No stock met every rule tonight.",
         past,
         checks is { Count: > 0 } ? checks.Count(check => check.Open) : null,
         checks is { Count: > 0 } ? checks.Count : null)
     {
-        LeftOut = [.. ideas.Skip(SinglePageApp.HomeIdeas)],
+        LeftOut = [.. carded.Skip(SinglePageApp.HomeIdeas)],
+        Watching = watched,
 
         // The monthly books' holdings bought at tonight's reshuffle, named apart from the new picks.
         // see: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle

@@ -69,8 +69,8 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         FROM setup WHERE index_code = $index AND ticker = $ticker AND session_date = $session AND family IN ('pullback', 'breakout', 'drift', 'dip');";
 
     const string InsertPlanPoint = @"
-        INSERT INTO plan_point (run_id, index_code, family, through, setups, combination, picks, fills, fill_rate, hit_rate, break_even, result_per_pick, edge_per_pick, edge_per_fill, days_held, worst_drawdown, traded_fills, traded_edge_per_pick, later_fills, later_edge_per_pick, traded_later_edge_per_pick, fund_edge_per_pick, traded_fund_edge_per_pick, later_fund_edge_per_pick, traded_later_fund_edge_per_pick)
-        VALUES ($run_id, $index_code, $family, $through, $setups, $combination, $picks, $fills, $fill_rate, $hit_rate, $break_even, $result_per_pick, $edge_per_pick, $edge_per_fill, $days_held, $worst_drawdown, $traded_fills, $traded_edge_per_pick, $later_fills, $later_edge_per_pick, $traded_later_edge_per_pick, $fund_edge_per_pick, $traded_fund_edge_per_pick, $later_fund_edge_per_pick, $traded_later_fund_edge_per_pick);";
+        INSERT INTO plan_point (run_id, index_code, family, through, setups, combination, picks, fills, fill_rate, hit_rate, break_even, result_per_pick, edge_per_pick, edge_per_fill, days_held, worst_drawdown, traded_fills, traded_edge_per_pick, later_fills, later_edge_per_pick, traded_later_edge_per_pick, fund_edge_per_pick, traded_fund_edge_per_pick, later_fund_edge_per_pick, traded_later_fund_edge_per_pick, traded_later_picks)
+        VALUES ($run_id, $index_code, $family, $through, $setups, $combination, $picks, $fills, $fill_rate, $hit_rate, $break_even, $result_per_pick, $edge_per_pick, $edge_per_fill, $days_held, $worst_drawdown, $traded_fills, $traded_edge_per_pick, $later_fills, $later_edge_per_pick, $traded_later_edge_per_pick, $fund_edge_per_pick, $traded_fund_edge_per_pick, $later_fund_edge_per_pick, $traded_later_fund_edge_per_pick, $traded_later_picks);";
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
@@ -327,6 +327,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     ("$traded_fund_edge_per_pick", Or(plan?.FundEdgePerPick)),
                     ("$later_fund_edge_per_pick", Or(combination is null ? null : figures.GetValueOrDefault((family, PlanPoints.Combinations.ToList().IndexOf(combination), Chosen))?.FundEdgePerPick)),
                     ("$traded_later_fund_edge_per_pick", Or(figures.GetValueOrDefault((family, traded, Chosen))?.FundEdgePerPick)),
+                    ("$traded_later_picks", Or(figures.GetValueOrDefault((family, traded, Chosen))?.Picks)),
                 ], cancellation);
             }
 

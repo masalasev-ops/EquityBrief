@@ -244,6 +244,18 @@ public partial class ReadSurface
             // 23.8, the Loop page's row of the long history.
             .. LongSearchPageRows,
 
+            // The 22.6 correction of 2026-11-09, the setup's record over the long history on a pick's card, Home's idea and a tile.
+            .. SetupRecordRows,
+
+            // The 22.16 correction of 2026-11-09, Home's picks watched and not drawn.
+            .. HomeWatchingRows,
+
+            // The 22.16 correction of 2026-11-09's next, a plan that buys at a zone.
+            .. ZonePlanRows,
+
+            // The 22.17 correction of 2026-11-09, the records and the picks watched on the read-only copy.
+            .. CopyRecordRows,
+
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 

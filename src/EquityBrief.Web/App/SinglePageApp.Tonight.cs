@@ -28,7 +28,8 @@ public sealed partial class SinglePageApp
         IReadOnlyDictionary<string, string>? links = null,
         IReadOnlyDictionary<string, string>? plans = null,
         QualityCardView? quality = null,
-        ImprovingCardView? improving = null)
+        ImprovingCardView? improving = null,
+        SetupRecords? longRecords = null)
     {
         var region = new StringBuilder();
 
@@ -53,7 +54,7 @@ public sealed partial class SinglePageApp
         var opens = MarkRenderer.OpenDay(night);
 
         region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null, night, line.Groups, improving?.Bought)), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
-        region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night, PlanlessBuys(universe, improving, heavyweights, quality)), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
+        region.Append(Cards.Computed(char.ToUpperInvariant(opens[0]) + opens[1..] + " buys", marks.TomorrowsBuys(points, open, links, plans, night, PlanlessBuys(universe, improving, heavyweights, quality, longRecords)), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
         region.Append(marks.Copying ? string.Empty : marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
 
         // The setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or the
@@ -87,6 +88,9 @@ public sealed partial class SinglePageApp
             liveSince[EquityBrief.Core.Families.QualityRule.Name] = quality.LiveSince;
             tonight[EquityBrief.Core.Families.QualityRule.Name] = QualityTileLine(quality, night);
         }
+
+        // From the 22.6 correction of 2026-11-09 each tile ends on its setup's record over the long history on the index.
+        shown = [.. shown.Select(tile => tile with { LongRecord = longRecords?.Of(Universes.Of(universe).Code, tile.Family) })];
 
         region.Append(Cards.Computed(SetupsTitle(shown.Count), marks.SixSetups(shown, liveSince, tonight, line.FirstLive), stamp: Cards.Night(night), id: "setups", region: "setups"));
 
@@ -127,7 +131,12 @@ public sealed partial class SinglePageApp
     // The buys no plan with a stop and a target sells: the Fundamentals family's in its card's order, then the sector
     // heavyweights' and Quality at a fair price's holdings chosen and not yet bought, each linking to its row on its card.
     // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
-    public static IReadOnlyList<PlanlessBuyView> PlanlessBuys(string universe, ImprovingCardView? improving, HeavyweightCardView? heavyweights, QualityCardView? quality) =>
+    public static IReadOnlyList<PlanlessBuyView> PlanlessBuys(string universe, ImprovingCardView? improving, HeavyweightCardView? heavyweights, QualityCardView? quality, SetupRecords? records = null) =>
+    [
+        .. PlanlessOf(universe, improving, heavyweights, quality).Select(buy => buy with { LongRecord = records?.Of(Universes.Of(universe).Code, buy.Family) }),
+    ];
+
+    static IReadOnlyList<PlanlessBuyView> PlanlessOf(string universe, ImprovingCardView? improving, HeavyweightCardView? heavyweights, QualityCardView? quality) =>
     [
         .. (improving?.Improving ?? []).Where(row => row.Status == MarkRenderer.BoughtWords).Select(row => new PlanlessBuyView(
             EquityBrief.Core.Families.ImprovingRule.Name,

@@ -1846,7 +1846,7 @@ public static partial class NameScreen
         // The trade a family holds the name on where the night lists it under none: the newest still open of the nights the
         // live list picked it before, with the card that night stored for its family, drawn as the pick's card is.
         // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
-        var heldTrade = HeldOf(cards, earlier, heldCards, reportedDays, ReportedOn);
+        var heldTrade = HeldOf(cards, earlier, heldCards, reportedDays, ReportedOn, cardContext?.LongRecords);
 
         // The next report estimated from the company's own report of the same quarter a year before, which the page draws
         // beside a next report not on file.
@@ -2037,7 +2037,7 @@ public static partial class NameScreen
     // The trade a family holds the name on: the newest of the earlier picks still open, with its card from the night it was
     // picked, its fill and its estimated report as a pick's card reads them; none where the night lists the name itself,
     // where no earlier pick is open, or where its night stored no card for its family.
-    public static HeldTradeView? HeldOf(DecisionCardView? tonight, IReadOnlyList<PickCell>? earlier, IReadOnlyList<DecisionCardRow>? heldCards, IReadOnlyList<DateOnly> reported, Func<DateOnly, DateOnly?>? reportedOn = null)
+    public static HeldTradeView? HeldOf(DecisionCardView? tonight, IReadOnlyList<PickCell>? earlier, IReadOnlyList<DecisionCardRow>? heldCards, IReadOnlyList<DateOnly> reported, Func<DateOnly, DateOnly?>? reportedOn = null, SetupRecords? records = null)
     {
         if (tonight is not null
             || (earlier ?? []).Where(pick => pick.Status == PickStatus.Open && pick.RepeatOf is null).OrderByDescending(pick => pick.Night).FirstOrDefault() is not { } open
@@ -2046,7 +2046,7 @@ public static partial class NameScreen
             return null;
         }
 
-        var card = WithEstimatedReport(CardScreen.View(row), reported, reportedOn)!;
+        var card = WithEstimatedReport(CardScreen.View(row, CardContext.None with { LongRecords = records ?? SetupRecords.None }), reported, reportedOn)!;
 
         return new HeldTradeView(card, open);
     }

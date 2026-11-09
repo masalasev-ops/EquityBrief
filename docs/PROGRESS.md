@@ -18102,3 +18102,161 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             none out of scope and none unexamined, 1633 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
 Carried:    none. A card's first line is stored naming the Loop page, the night's own words, and is drawn naming the Monthly check-up.
+
+### 22.6 ruling - each pick's record on its card, Home's ideas and the S&P 500 drift's variant
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      word for word in `prompts/2026-11-09-card-record-ruling.md`, committed with this entry, its mockup kept locally beside it:
+            on every pick's card a box with its setup's record over the long history; a line at the foot of each of Tonight's setup
+            tiles; Home drawing a card only for a setup that made money since 2019 or has no long record, the rest named in a
+            watching line; the Fundamentals cards on Home; a zone plan's words on the card; the read-only copy drawing all of it;
+            and the S&P 500 drift with the first-pullback entry added to 23.10's restart.
+Labelled:   each item a correction under the checkpoint that built what it changes, each in its own commit of one pull request:
+            items 1 and 2, the card and Tonight's tiles, under 22.6; items 3 to 5, Home and its cards, under 22.16; item 6, the
+            read-only copy, under 22.17; and item 7 a ruling under 23.10, which builds it.
+Queue:      done, 22.61; in progress, this order; next, phase 22's sign-off and 23.10, each on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull request, with the
+            figures it states.
+
+### 22.6 - correction: each pick's card draws its setup's record over the long history beneath its entry check line   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 1, in `prompts/2026-11-09-card-record-ruling.md`: a pick's card drew nothing of
+            what its setup's plan did over the years the long test reads, though the test of the buy and sell points stores it.
+Corrected:  a box beneath the entry check line on every pick's card, on the stock page, beneath its row on Tonight, on a monthly
+            book's holding and on the read-only copy, on Home's idea and on each buy no plan sells among Tonight's buys, headed
+            with its setup and its index. For the pullback, the breakout, the drift and the dip it reads the newest run of the test
+            of the buy and sell points on the index: the traded plan's mean edge a pick offered against the ruled benchmark from
+            2019, in dollars for each dollar risked, over its picks, made in the gain's colour or lost in the loss's, and under 20
+            picks the count against the minimum alone. Migration 140 adds `plan_point.traded_later_picks`, which the test writes
+            from its next run. The Fundamentals family, the sector heavyweights and Quality at a fair price say there is no long
+            record yet with the year their filings reach back to, three learning years before the first test year 23.5 measured:
+            on the S&P 500 2013, 2020 and 2013. A stock page handed no context, an earlier night's among them, hands its card the
+            records too.
+Remedy:     `tools/remedies/2026-11-09-22.6-the-setup-records.txt`, from main after the merge: the migration, then the test of the
+            buy and sell points on each index, so each family's newest row carries its count; until it runs no price family's
+            card draws a box.
+Tests:      3 new read-surface tests: the read off a constructed store, each state's words and figures worked by hand on the app's
+            card, the copy's card, Home's idea and a buy no plan sells, and the stock page, Tonight's fold and a book's holding
+            read through the host; four counts of the document's rows and claims raised by its two new rows, each with why.
+Claims:     2 new, section 15.18's and 15.24's rows of the record, each reached by the read surface.
+Pins:       none move: no source a rule's version or the readings' version pins changes.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property the correction adds, filtered to its three tests,
+            restored from the file's own bytes, 5 in all, each predicted red and each red: a lost record read as made; a filing
+            setup's year read as its first test year; the card drawing no box; the oldest run read in place of the newest; and a
+            stock page handed no context drawing no record.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.6 - correction: each setup's tile on Tonight ends on its record over the long history   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 2: a reader choosing between Tonight's setups saw nothing on a tile of what
+            its plan did over the long history.
+Corrected:  each tile on every index ends on one line, as the mockup draws it: "2019 to 2026 on the S&P 500, with its plan as it
+            stands: lost $0.12 per $1 risked against the index's stocks bought the same way.", or made, the figure in the loss's or
+            the gain's colour; for the three filing-based setups "No long record yet: the filings it reads reach back only to" the
+            year. It reads the record the card draws, read once for the page, and draws none where the run wrote no count.
+Tests:      1 new read-surface test: each state's words worked by hand and the S&P 400's tiles read through the host, the
+            breakout's made, the heavyweights' year and none on the drift's and the pullback's; three counts of the document's
+            rows and claims raised by its one new row.
+Claims:     1 new, section 15.7's row of a setup's record on its tile, reached by the read surface.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored from the
+            file's own bytes, 3 in all, each predicted red and each red: the tile drawing no line; the tile reading the S&P 500's
+            record on every index; and a lost line saying made.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.16 - correction: Home draws a card only for a setup that made money over the long history or has none, and names the rest as watched   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 3: Home offered a reader new to investing a card for every buy, a setup whose
+            plan lost money on the index since 2019 among them.
+Corrected:  of the night's buys in Tonight's order, Home draws a card only where its setup's record made money or there is none yet,
+            the heading counting those cards and the first six drawn, the rest of them named as before. Beneath them one line names
+            every pick whose setup's record lost, as the mockup draws it: "Watching, not buying: 9 picks tonight." with the tickers
+            and their tags, that their setups have not made money on the index since 2019 with their plans as they stand and are
+            traded on paper only, and "See them on Tonight"; one setup and one pick in the singular. "See all" counts every pick,
+            and with no card the summary says every pick is watched. Tonight, Paper trading and the paper accounts keep every pick.
+Tests:      2 new read-surface tests: the line in both numbers, the heading's count, the order of the lines and the link's count
+            worked by hand, and the S&P 400's Home read through the host before and after a newer run finds its breakout lost; one
+            assertion of the link moved with its words; three counts of the document's rows and claims raised by its one new row.
+Claims:     1 new, section 15.24's row of the picks watched, reached by the read surface; its row of tonight's ideas says the
+            heading counts the cards.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its two tests, restored from the
+            file's own bytes, 4 in all, each predicted red and each red: a losing setup's pick still a card; the heading counting
+            every pick; one setup said as several; and the link counting the cards alone.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.16 - correction: the Fundamentals cards on Home drawn as the mockup draws them   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 4: the Fundamentals cards on Home are to draw the buy price, "Sell when its
+            filings weaken", "Aim to sell at No fixed target", the record box, the line of how its filings sell it and "How it
+            sells", in the mockup's order. Each part but the box stood already; Home drew none of them where six losing picks came
+            first in Tonight's order.
+Corrected:  nothing further in the code: the box is the 22.6 correction's of this day, drawn between the entry check line and the
+            line of how it sells, and the 22.16 correction before this entry draws these cards first where the losing setups'
+            picks are watched. The test holds every part and its order on a card read off the S&P 400's Home.
+Tests:      1 new read-surface test: the ten parts of M1's Fundamentals card in the mockup's order, the year its filings reach back
+            to worked from 23.5's first test year less three, and its rule at the starting setting, 7 in every 9 and 126 days.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored from the file's
+            own bytes, 2 in all, each predicted red and each red: Home's card drawing no box; and the box drawn after the line of
+            how it sells.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.16 - correction: a plan that buys at a zone draws the price it waits for, how long and tonight's close on every card   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 5: from 23.10 a traded plan may buy at a zone, and every card read as if the buy
+            came at the next open.
+Corrected:  a card handed its traded plan's zone, its price, its window, tonight's close and a time limit, draws it: on Home "Buy
+            if it dips to about", "Sell if it closes below", and "Aim to sell at" or "Otherwise sell after" its days, then "Tonight's
+            close was $51.30. The buy waits for the price to dip to about $49.20 within 20 trading days; if it never does, there is
+            no trade.", as the mockup's state after the restart draws it; a pick's card and the copy's its buy tile as the price it
+            waits for and the same line beneath the tiles. No plan buys at a zone before 23.10, which hands each card its zone.
+Tests:      1 new read-surface test over a constructed zone plan: Home's card, a pick's card and the copy's, a plan with no target
+            drawing its time limit, and each card as before with no zone; three counts of the document's rows and claims raised by
+            its one new row.
+Claims:     1 new, section 15.18's row of a plan that buys at a zone, reached by the read surface.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored from the file's
+            own bytes, 3 in all, each predicted red and each red: Home's card drawing a zone plan's prices as the next open's; the
+            line saying the zone's price was tonight's close; and a pick's card drawing no line beneath its tiles.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 22.17 - correction: the read-only copy draws each pick's record and the picks watched as the app does   2026-11-09
+
+Found:      the operator's order of 2026-11-09, item 6: items 1 to 5 are to draw on the copy's Home, Tonight and stock pages exactly
+            as on the app, and the copy's check is to allow the record line and the watching line and still refuse thresholds,
+            version data and test tables. The copy drew the Fundamentals family's line without its setting's figures.
+Corrected:  the copy draws the record box, each tile's line, the picks watched and a zone plan's words through the app's own code,
+            and from this entry the Fundamentals family's line with its index's setting, on the operator's word, which supersedes
+            the sell line decision's clause that the copy leaves it off. The check is unchanged: none of the new lines is a route
+            to the Loop or the Ledger, a register's name or setting, a version's label, a settings line or a threshold's phrase,
+            and it still refuses each of those.
+Tests:      1 new read-surface test: the copy's cards and line of the picks watched read word for word as the app's, the copy's
+            card and a tile drawing the record, and the check passing all of it while finding each kind of leak planted beside it;
+            the test of OGS's card holds the copy to the app's line; three counts of the document's rows and claims raised by its
+            one new row.
+Claims:     1 new, section 15.24's row of the records and the picks watched on the copy, reached by the read surface.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored from the file's
+            own bytes, 4 in all, each predicted red and each red: the copy's Fundamentals line left without its figures; the copy's
+            card drawing no record; the copy's check refusing the record line as a threshold; and the copy's check no longer
+            refusing a threshold.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the next entry, this pull request's last.
+
+### 23.10 ruling - the S&P 500 drift's first-pullback variant, a zone plan's card and the record of the plan traded, added to the restart
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      item 7 of the order of 2026-11-09 in `prompts/2026-11-09-card-record-ruling.md`: the S&P 500 drift with the first-pullback
+            entry the S&P 400's and 600's drift already read, registered as a variant counted in its family's correction, measured
+            read-only over the long history first, from 2019 beside 2005 to 2018, and in 23.10's table.
+Labelled:   23.10, which builds it, its parts and its done condition gaining it; with it what items 1 and 5 leave for the restart:
+            each card handed its traded plan's zone, and the test of the buy and sell points reading the restarted plan as traded,
+            so each pick's record reads the new plan's.
+Queue:      done, 22.61; in progress, this order's pull request; next, its remedy and read-back, then phase 22's sign-off and 23.10,
+            each on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3658 of 3658 tests ran with none failed, migrations 0 to 140 with none
+            pending, schema version 140, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

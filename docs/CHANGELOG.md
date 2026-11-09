@@ -7,6 +7,40 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-09 - docs/BUILD_PLAN.md - 23.10 gains the S&P 500 drift's first-pullback variant, a zone plan's card and the record of the plan traded
+Decision: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+Was:
+> ; and what the operator ruled in from 23.6, 23.8 and 23.9. The entry names every rule that restarts
+> each rule's earlier trades are read back in their group; and one mutation of each property is shown red, the rule stated before the run.
+Now:
+> ; on the operator's order of 2026-11-09 ... the S&P 500 drift with the first-pullback entry the S&P 400's and 600's drift already read, registered as a variant counted in its family's correction and measured read-only over the long history first, from 2019 beside 2005 to 2018, its figures in the restart's table; each card handed the zone its traded plan buys at; the `plan-points` run reading as traded the plan each price family follows after the restart; and what the operator ruled in from 23.6, 23.8 and 23.9. The entry names every rule that restarts
+> each rule's earlier trades are read back in their group; the S&P 500 drift's first-pullback variant is measured read-only ... and registered ...; a card of a plan buying at a zone is handed its zone and draws it ...; the `plan-points` run reads a restarted plan as traded ...; and one mutation of each property is shown red, the rule stated before the run.
+Why: the operator's order of 2026-11-09, item 7, in `prompts/2026-11-09-card-record-ruling.md`, and what items 1 and 5 leave for the restart to hand the cards.
+
+### 2026-11-09 - docs/ARCHITECTURE.html - the read-only copy's card carries its setup's record and a zone plan's line
+Decision: The read-only copy draws each pick's record and the picks watched as the app does, and its check still refuses the method
+Was:
+> with no version, variant or setting of the method: a pick's card is its sentence and its prices;
+Now:
+> with no version, variant or setting of the method: a pick's card is its sentence and its prices, and from the 22.17 correction of 2026-11-09 its setup's record over the long history and a zone plan's line;
+Why: the operator's order of 2026-11-09, item 6, in `prompts/2026-11-09-card-record-ruling.md`: the copy draws items 1 to 5 exactly as the app does; a sentence added after the check's list says so.
+
+### 2026-11-09 - docs/ARCHITECTURE.html - section 15.24, Home's count of tonight's ideas is of the cards it draws
+Decision: Home draws a card only for a pick whose setup made money over the long history or has none, and names the rest as watched
+Was:
+> the count of the night's buys across every swing family and the Fundamentals family with the session they are bought at
+Now:
+> the count of the night's buys across every swing family and the Fundamentals family drawn as cards with the session they are bought at
+Why: the operator's order of 2026-11-09, item 3, in `prompts/2026-11-09-card-record-ruling.md`: the heading counts only the cards, and a new row names the picks watched and not drawn.
+
+### 2026-11-09 - docs/SCHEMA.md - plan_point, the traded plan's picks from 2019 and the pages reading it
+Decision: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's
+Was:
+> Every figure is a statistic and stored as the double it is. No rule, plan, night or card reads it, and nothing is registered on it.
+Now:
+> Every figure is a statistic and stored as the double it is. No rule, plan or night reads it, and nothing is registered on it. From the 22.6 correction of 2026-11-09 the pages drawing a setup's record over the long history read the traded plan's mean edge and picks from 2019 off each family's newest row on the index, and draw no record from a row holding no count
+Why: the operator's order of 2026-11-09, item 1, in `prompts/2026-11-09-card-record-ruling.md`: each pick's card draws its setup's record from the long test with its number of picks, which migration 140's column holds.
+
 ### 2026-11-09 - docs/ARCHITECTURE.html - section 15.20's summary row written a clause at a time
 Corrects: the row 22.61 wrote listed its parts between commas, which the conformance reader takes as parts each owing a verdict of their own.
 Was:

@@ -167,7 +167,7 @@ public partial class ReadSurface
         Assert.Contains("The breakout rule has 3 of the 300 finished trades its record needs.", text, StringComparison.Ordinal);
         Assert.Contains("<div><span>Sell when</span><b class=\"stop\">its filings weaken</b></div>", page, StringComparison.Ordinal);
         Assert.Contains("<a class=\"home-plan\" href=\"#/tonight?name=AAA\">See the plan</a>", page, StringComparison.Ordinal);
-        Assert.Contains("<a href=\"#/tonight\">See all 7 with their full plans</a>", page, StringComparison.Ordinal);
+        Assert.Contains("<a href=\"#/tonight\">See all 7 picks with their full plans</a>", page, StringComparison.Ordinal);
         Assert.Contains(SinglePageApp.IdeasNote, text, StringComparison.Ordinal);
 
         // The past: the account's day, its ideas and those that made money, and the bars at 3.1% and 1.2%, the larger full.

@@ -2,7 +2,11 @@ namespace EquityBrief.Web.Marks;
 
 // One setup's tile at the top of tonight's page: the family's word and label, tonight's count, what that count is of,
 // and its state in words, in the family's tint and edge.
-public sealed record SetupTileView(string Family, string Label, int Count, string Counted, string State, string? Quiet = null);
+public sealed record SetupTileView(string Family, string Label, int Count, string Counted, string State, string? Quiet = null)
+{
+    // From the 22.6 correction of 2026-11-09 its setup's record over the long history on the index, at the tile's foot.
+    public SetupLongRecord? LongRecord { get; init; }
+}
 
 // One of tonight's buy points as the table across every setup draws it: the setup's word and label and its pick.
 public sealed record BuyPointView(string Family, string Label, FamilyPickCell Pick);
@@ -12,7 +16,7 @@ public sealed record BuyPointView(string Family, string Label, FamilyPickCell Pi
 // reader's words, tonight's close it is bought at about, how it sells, the link to its row on its own card, and its entry
 // check's reading.
 // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
-public sealed record PlanlessBuyView(string Family, string Label, string Ticker, string? Company, string Why, string Business, decimal? Close, string Sells, string Href, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null);
+public sealed record PlanlessBuyView(string Family, string Label, string Ticker, string? Company, string Why, string Business, decimal? Close, string Sells, string Href, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, SetupLongRecord? LongRecord = null);
 
 // The parts tomorrow's buys shares with a setup's card: each row's fold and the control opening it, and the reward
 // against the risk as the plan states it.
