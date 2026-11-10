@@ -247,7 +247,12 @@ public sealed class DecisionCards : IComponent
 
     const string NewestCardNight = "SELECT MAX(session_date) FROM decision_card;";
 
-    const string CardsOn = "SELECT index_code, family, ticker, entry, stop, target, trail, cap FROM decision_card WHERE session_date = $night;";
+    const string CardsOn = "SELECT index_code, family, ticker, entry, stop, target, trail, cap, plan FROM decision_card WHERE session_date = $night;";
+
+    const string SetPlan = @"
+        UPDATE decision_card SET plan = $plan
+        WHERE index_code = $index AND session_date = $night AND family = $family AND ticker = $ticker AND plan IS NULL;
+    ";
 
     const string BarsThrough = @"
         SELECT session_date, open, high, low, close, volume FROM bar
@@ -450,7 +455,7 @@ public sealed class DecisionCards : IComponent
 
     async Task<int> PriceAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
     {
-        var cards = new List<(string Index, string Family, string Ticker, decimal? Entry, decimal? Stop, decimal? Target, decimal? Trail, int? Cap)>();
+        var cards = new List<(string Index, string Family, string Ticker, decimal? Entry, decimal? Stop, decimal? Target, decimal? Trail, int? Cap, bool Planned)>();
 
         await using (var command = Command(connection, null, CardsOn, [("$night", Stamp(night))]))
         await using (var reader = await command.ExecuteReaderAsync(cancellation))
@@ -459,7 +464,7 @@ public sealed class DecisionCards : IComponent
             {
                 if (PlanPoints.Families.Contains(reader.GetString(1)))
                 {
-                    cards.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2), MoneyOrNone(reader, 3), MoneyOrNone(reader, 4), MoneyOrNone(reader, 5), MoneyOrNone(reader, 6), reader.IsDBNull(7) ? null : reader.GetInt32(7)));
+                    cards.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2), MoneyOrNone(reader, 3), MoneyOrNone(reader, 4), MoneyOrNone(reader, 5), MoneyOrNone(reader, 6), reader.IsDBNull(7) ? null : reader.GetInt32(7), !reader.IsDBNull(8)));
                 }
             }
         }
@@ -470,9 +475,12 @@ public sealed class DecisionCards : IComponent
         }
 
         var recommendations = new Dictionary<(string Index, string Family), Recommendation?>();
+        var livePlans = new Dictionary<string, IReadOnlyDictionary<string, PlanCombination?>>(StringComparer.Ordinal);
         var priced = 0;
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        var register = await PlanPointTest.RegisterRowsAsync(connection, transaction, cancellation);
 
         foreach (var card in cards)
         {
@@ -481,7 +489,32 @@ public sealed class DecisionCards : IComponent
                 recommendations[(card.Index, card.Family)] = recommendation = await RecommendationAsync(connection, transaction, card.Index, card.Family, cancellation);
             }
 
-            var alternative = recommendation is null
+            if (!livePlans.TryGetValue(card.Index, out var onIndex))
+            {
+                livePlans[card.Index] = onIndex = PlanPointTest.LivePlans(register, clock.UtcNow, card.Index);
+            }
+
+            // From the 23.10 correction of 2026-11-10 the plan the family's live rule trades: a recommendation that is that plan is
+            // no alternative to it, and a card stored before its rule stated the plan is handed the order the plan places on the
+            // card's night, so it draws the plan its rule trades and not the next open.
+            // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+            var traded = onIndex.GetValueOrDefault(card.Family);
+
+            if (!card.Planned && traded is { } plan && card.Stop is { } ruleStop && card.Cap is { } held)
+            {
+                var order = await PlanTrades.OrderAsync(connection, transaction, plan, card.Family, card.Ticker, night, ruleStop, card.Target, card.Trail, held, cancellation);
+
+                await ExecuteAsync(connection, transaction, SetPlan,
+                [
+                    ("$plan", order.Json()),
+                    ("$index", card.Index),
+                    ("$night", Stamp(night)),
+                    ("$family", card.Family),
+                    ("$ticker", card.Ticker),
+                ], cancellation);
+            }
+
+            var alternative = recommendation is null || recommendation.Combination == traded
                 ? null
                 : await AlternativeAsync(connection, transaction, recommendation, card.Family, card.Ticker, night, card.Entry, card.Stop, card.Target, card.Trail, card.Cap, cancellation);
 

@@ -571,12 +571,20 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     // The register as it stands, every row in the order it was written.
     async Task<IReadOnlyList<Core.Candidates.RegisterRow>> RegisterAsync(CancellationToken cancellation)
     {
-        var rows = new List<Core.Candidates.RegisterRow>();
-
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
+
+        return await RegisterRowsAsync(connection, null, cancellation);
+    }
+
+    // The register over a connection a step already holds, as the test reads it.
+    public static async Task<IReadOnlyList<Core.Candidates.RegisterRow>> RegisterRowsAsync(SqliteConnection connection, SqliteTransaction? transaction, CancellationToken cancellation)
+    {
+        var rows = new List<Core.Candidates.RegisterRow>();
+
         await using var command = connection.CreateCommand();
 
+        command.Transaction = transaction;
         command.CommandText = ReadRegister;
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
@@ -609,8 +617,13 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
         foreach (var row in Core.Candidates.CandidateFamily.Standing(rows, at).Where(row => Core.Candidates.FamilyRecords.IsLive(row.Candidate)))
         {
-            var family = Core.Candidates.CandidateEvaluators.Find(row.Evaluator) switch
+            var evaluator = Core.Candidates.CandidateEvaluators.Find(row.Evaluator);
+
+            // The dip's rule is kept by its own step on each index, its family named for its index, so it is read by its index and
+            // the family the test walks before the S&P 500's family rules are; and it reads its hooks beside its own dials.
+            var family = evaluator switch
             {
+                Core.Candidates.DipCandidate dip => dip.Index == index ? PlanPoints.DipName : null,
                 Core.Candidates.IndexRuleCandidate rule => rule.Index == index ? rule.SetupFamily : null,
                 Core.Candidates.FamilyRuleEvaluator rule => index == Market ? rule.Family : null,
                 _ => null,
@@ -618,7 +631,9 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
             if (family is not null && PlanPoints.Families.Contains(family))
             {
-                plans[family] = RuleHooks.Of(Core.Candidates.CandidateEvaluator.Read(row.Parameters)).Plan;
+                var parameters = Core.Candidates.CandidateEvaluator.Read(row.Parameters);
+
+                plans[family] = (evaluator is Core.Candidates.DipCandidate ? Core.Candidates.DipCandidate.HooksOf(parameters) : RuleHooks.Of(parameters)).Plan;
             }
         }
 

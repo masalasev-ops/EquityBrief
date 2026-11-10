@@ -261,6 +261,18 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<div class=\"decision-card plain\" data-index=\"{Escaped(card.Index)}\" data-family=\"{Escaped(card.Family)}\" data-ticker=\"{Escaped(card.Ticker)}\" data-night=\"{DayOf(card.Night)}\">");
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(CardSummary(card, SetupOf(card.Family)))}</p>");
         body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\"><h5>The plan</h5><div class=\"plan-tiles\">");
+        if (card.Zone is { NoBuy: true })
+        {
+            body.Append("</div>");
+            body.Append(Formatted($"<p class=\"zone-wait\" data-no-buy=\"true\">{Escaped(NoBuyTonight)}</p>"));
+            body.Append("</section>");
+            body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
+            body.Append(SetupRecordBox(card.LongRecord));
+            body.Append(linked ? Formatted($"<p class=\"card-full\"><a href=\"#/name/{Uri.EscapeDataString(card.Ticker)}\">The stock's full page</a></p>") : string.Empty);
+
+            return body.Append("</div>").ToString();
+        }
+
         body.Append(card.Zone is { } zone
             ? PlanTile("buy", "Buy if it dips to about", Price(zone.Price), Formatted($"within {zone.Within} trading days"))
             : PlanTile("buy", "Buy at about", card.Entry is { } entry ? Price(entry) : "Not stored", "at the next day's open"));
@@ -624,6 +636,17 @@ public sealed partial class MarkRenderer
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\" data-traded=\"true\"><h5>{Escaped(EquityBrief.Core.Cards.PlanWords.AsTraded)}</h5><div class=\"plan-tiles\">");
+
+        // From the 23.10 correction of 2026-11-10 a plan whose stock's levels set no buy price tonight draws no prices, only why.
+        // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+        if (card.Zone is { NoBuy: true })
+        {
+            body.Append("</div>");
+            body.Append(Formatted($"<p class=\"zone-wait\" data-no-buy=\"true\">{Escaped(NoBuyTonight)}</p>"));
+
+            return body.Append("</section>").ToString();
+        }
+
         body.Append(card.Zone is { } zone
             ? PlanTile("buy", "Buy if it dips to about", Price(zone.Price), Formatted($"within {zone.Within} trading days"))
             : PlanTile("buy", "Buy", "At the next day's open", card.Entry is { } entry ? Formatted($"at about {Price(entry)}") : "no buy price stored"));
@@ -658,7 +681,7 @@ public sealed partial class MarkRenderer
         if (card.Money is { } money)
         {
             body.Append(Invariant, $"<p class=\"card-money\" data-shares=\"{money.Shares}\" data-at-risk=\"{money.AtRisk.ToString("0.00", Invariant)}\"{(money.ToTarget is { } reach ? $" data-to-target=\"{reach.ToString("0.00", Invariant)}\"" : string.Empty)}{(money.Example ? " data-account=\"example\"" : string.Empty)}>");
-            body.Append(Invariant, $"{(money.Example ? "On the example account" : "In your money")}: {money.Shares:N0} shares at {card.Entry?.ToString("0.00", Invariant)}, a position of ${money.Value.ToString("N2", Invariant)}, {money.ShareOfAccount:0.0%} of {(money.Example ? "the" : "your")} account");
+            body.Append(Invariant, $"{(money.Example ? "On the example account" : "In your money")}: {money.Shares:N0} shares at {(card.Zone is { } bought ? bought.Price : card.Entry)?.ToString("0.00", Invariant)}, a position of ${money.Value.ToString("N2", Invariant)}, {money.ShareOfAccount:0.0%} of {(money.Example ? "the" : "your")} account");
             body.Append(money.WholeAtRisk
                 ? ". The whole position is at risk: nothing sells it at a price set in advance."
                 : Formatted($", with ${money.AtRisk.ToString("N2", Invariant)} at risk to the stop at {card.Stop?.ToString("0.00", Invariant)}, the {money.RiskPercent.ToString("0.##", Invariant)}% a trade {(money.Example ? "the example gives" : "your settings give")}{(money.ToTarget is { } toTarget ? Formatted($", and ${toTarget.ToString("N2", Invariant)} to the target at {card.Target?.ToString("0.00", Invariant)}") : string.Empty)}."));

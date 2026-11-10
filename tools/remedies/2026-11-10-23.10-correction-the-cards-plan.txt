@@ -1,0 +1,11 @@
+# The remedy of the 23.10 correction of 2026-11-10, a card drawing the plan its rule trades. The plan point test now reads the dip's
+# live plan on each index, so each index's long test of the buy and sell points runs again, the dip's figures standing against the
+# plan its live rule trades as the other families' do; then the newest night's cards are priced again, which stores no
+# alternative where the recommendation is the plan the family's live rule trades and hands a card stored before its rule stated
+# the plan the order that plan places on the card's night. No migration, no registration, no request to the provider and no
+# model call. Run from main after the merge, when no night, off-peak run, local run, ledger build or monthly run is writing, and
+# read the output for "remedy done".
+plan-points --index GSPC
+plan-points --index MID
+plan-points --index SML
+card-plans

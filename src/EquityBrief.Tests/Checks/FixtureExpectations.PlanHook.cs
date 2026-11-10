@@ -123,23 +123,129 @@ public partial class FixtureExpectations
             planned[name] = value;
         }
 
+        // From the 23.10 correction of 2026-11-10 the dip's rules, kept by their own step and named for their index, are read on
+        // their own index under the family the test walks, the S&P 400's stating a plan beside its dials and the S&P 500's none.
+        var dials = new Dictionary<string, double>(StringComparer.Ordinal)
+        {
+            [DipCandidate.DropParameter] = 3, [DipCandidate.TrendParameter] = 1, [DipCandidate.SellParameter] = 0, [DipCandidate.LimitParameter] = 5,
+            [DipCandidate.StopParameter] = 3, [DipCandidate.MarketParameter] = 0, [DipCandidate.VolumeParameter] = 0,
+        };
+        var dipPlanned = new Dictionary<string, double>(dials, StringComparer.Ordinal);
+
+        foreach (var (name, value) in PlanHook.ParametersOf(SecondZoneWide))
+        {
+            dipPlanned[name] = value;
+        }
+
         RegisterRow[] rows =
         [
             Row(1, PlanLive, "breakout", planned),
             Row(2, "the breakout rule at 1.6 times the volume", "breakout", PlanHook.ParametersOf(PullbackTimed)),
             Row(3, "the live S&P 400 drift rule within 10 sessions", "drift-400", new Dictionary<string, double> { ["windowSessions"] = 10 }),
+            Row(4, "the live S&P 400 dip rule at a fall of 3 moves", "dip-400", dipPlanned),
+            Row(5, "the live S&P 500 dip rule at a fall of 3 moves", "dip-500", dials),
         ];
 
         var large = PlanPointTest.LivePlans(rows, at, "GSPC");
 
         Assert.Equal(SecondZoneWide, large["breakout"]);
         Assert.False(large.ContainsKey("drift"));
+        Assert.True(large.ContainsKey(PlanPoints.DipName));
+        Assert.Null(large[PlanPoints.DipName]);
 
         var mid = PlanPointTest.LivePlans(rows, at, "MID");
 
         Assert.True(mid.ContainsKey("drift"));
         Assert.Null(mid["drift"]);
         Assert.False(mid.ContainsKey("breakout"));
+        Assert.Equal(SecondZoneWide, mid[PlanPoints.DipName]);
+        Assert.False(PlanPointTest.LivePlans(rows, at, "SML").ContainsKey(PlanPoints.DipName));
+    }
+
+    // From the 23.10 correction of 2026-11-10 an order the stock's levels placed no price for, holding no typical move, reads as no
+    // buy tonight on every card, with no stop and no target and nothing sized; a placed next open's draws its own prices.
+    // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+    [Fact]
+    public void AnOrderItsLevelsPlacedNoPriceForReadsAsNoBuyTonight()
+    {
+        var unplaced = PlanTrades.Unplaced(SecondZoneWide, 95, 10);
+        var (zone, stop, target) = Api.Reading.CardScreen.ZoneOf(unplaced.Json(), 100m)!.Value;
+
+        Assert.True(zone.NoBuy);
+        Assert.Equal(((decimal?)null, (decimal?)null), (stop, target));
+
+        var drawn = Api.Reading.CardScreen.View(new Api.Reading.DecisionCardRow("MID", new DateOnly(2026, 11, 10), "dip", "AAA", 1, 100m, 95m, null, "The dip on the S&P 400", "{}", "[]", null) { Plan = unplaced.Json() }, new Api.Reading.CardContext(null, [], [], true));
+
+        Assert.True(drawn.Zone!.NoBuy);
+        Assert.Equal(((decimal?)null, (decimal?)null), (drawn.Stop, drawn.Target));
+        Assert.Null(drawn.Money);
+    }
+
+    // From the 23.10 correction of 2026-11-10 the card step reads the plan each family's live rule trades: a card stored before
+    // its rule stated the plan is handed the order the plan places on its night from the stock's own bars, a card already holding
+    // one keeps it, and a recommendation that is the traded plan is no alternative to it, so none is stored.
+    // see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded
+    [Fact]
+    public async Task ACardStoredBeforeItsRuleStatedThePlanIsHandedItsOrderAndTheTradedPlanIsNoAlternative()
+    {
+        var traded = new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.TypicalStop(1), PlanPoints.TimeLimit);
+        var (store, at) = await PlanRegisterAsync(0);
+
+        using (store)
+        {
+            Assert.Equal(CandidateRegistrar.Registered, (await new CandidateRegistrar(FixedClock.At(at, SessionZones.UnitedStates), store.DatabaseFile).RegisterPlannedAsync(PlanLive, traded, true, "23.10's table", "plan-card")).Outcome);
+
+            // 260 sessions rising 5 cents a day with a range of a dollar, so the typical daily move is a dollar.
+            var sessions = new List<DateOnly>();
+
+            for (var day = new DateOnly(2025, 10, 1); sessions.Count < 260; day = day.AddDays(1))
+            {
+                if (day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
+                {
+                    sessions.Add(day);
+                }
+            }
+
+            var night = sessions[^1].ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+            store.Execute("INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at) VALUES " + string.Join(", ", sessions.Select((session, index) =>
+            {
+                var close = 50m + (0.05m * index);
+
+                return FormattableString.Invariant($"('TST', '{session:yyyy-MM-dd}', '{close}', '{close + 0.5m}', '{close - 0.5m}', '{close}', 1000000, 'test', '2026-11-10T00:00:00Z')");
+            })) + ";");
+            store.Execute($@"
+                INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, cap, plan) VALUES
+                    ('GSPC', '{night}', 'breakout', 'TST', 1, '62.95', '61', '70', 'r', '{{}}', '[]', 60, NULL),
+                    ('MID', '{night}', 'breakout', 'TST', 1, '62.95', '61', '70', 'r', '{{}}', '[]', 60, NULL),
+                    ('GSPC', '{night}', 'drift', 'TST', 2, '62.95', '61', '70', 'r', '{{}}', '[]', 60, 'kept');
+                INSERT INTO plan_point (run_id, index_code, family, through, setups, combination, later_fills, later_edge_per_pick, traded_later_edge_per_pick) VALUES
+                    ('p1', 'GSPC', 'breakout', '{night}', 10, '{traded.Words}', 500, 0.05, 0.05);");
+
+            await new EquityBrief.Worker.Cards.DecisionCards(FixedClock.At(at.AddHours(2), SessionZones.UnitedStates), store.DatabaseFile).PriceAsync(null);
+
+            string? Column(string column, string index, string family)
+            {
+                using var connection = store.Open();
+                using var command = connection.CreateCommand();
+                command.CommandText = $"SELECT {column} FROM decision_card WHERE index_code = '{index}' AND family = '{family}';";
+
+                return command.ExecuteScalar() as string;
+            }
+
+            // The S&P 500 breakout's card: the order of the next open a typical move of a dollar under the buy, sold at its time
+            // limit, set at the close of 62.95, and no alternative, its recommendation being the plan it trades.
+            var order = PlanOrder.FromJson(Column("plan", "GSPC", "breakout"))!;
+
+            Assert.Equal((traded.Words, (double?)null, 60), (order.Words, order.Level, order.Cap));
+            Assert.Equal(1.0, order.TypicalDay, 6);
+            Assert.Null(Column("alternative", "GSPC", "breakout"));
+            Assert.Null(Api.Reading.CardScreen.ZoneOf(order.Json(), 62.95m));
+
+            // The S&P 400 holds no live breakout rule stating a plan, and a card already holding one keeps it.
+            Assert.Null(Column("plan", "MID", "breakout"));
+            Assert.Equal("kept", Column("plan", "GSPC", "drift"));
+        }
     }
 
     // A card whose family's live rule trades a plan buying at a level draws the level, the days it waits, tonight's close and

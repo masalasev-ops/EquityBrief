@@ -511,7 +511,12 @@ public sealed partial class SinglePageApp
         // From the 22.16 correction of 2026-11-09 a plan that buys at a zone: the price it waits for, the close that sells it,
         // its target or its time limit, and beneath them how long the buy waits from tonight's close.
         // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
-        if (idea.Zone is { } zone)
+        // From the 23.10 correction of 2026-11-10 a plan whose stock's levels set no buy price tonight draws no prices, only why.
+        if (idea.Zone is { NoBuy: true })
+        {
+            card.Append(Invariant($"<p class=\"home-cond\" data-no-buy=\"true\">{Escaped(MarkRenderer.NoBuyTonight)}</p>"));
+        }
+        else if (idea.Zone is { } zone)
         {
             card.Append("<div class=\"home-prices\">");
             card.Append(Invariant($"<div><span>{buying} if it dips to about</span><b>{Dollars(zone.Price)}</b></div>"));
