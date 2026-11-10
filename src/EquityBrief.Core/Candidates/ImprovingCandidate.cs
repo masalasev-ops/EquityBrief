@@ -18,7 +18,7 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
     public const string HoldParameter = "hold";
     public const string LimitParameter = "limit";
 
-    public override string Version => "aa7a8ef7d80f";
+    public override string Version => "30c9f4ec67c8";
 
     public override string SetupFamily => ImprovingRule.Name;
 

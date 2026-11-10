@@ -94,10 +94,6 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     // A flagged setup as the ledger stored it.
     public sealed record FlaggedSetup(string Family, string Ticker, DateOnly Session, double Entry, double Stop, double? Target, double? Trail, int Cap, double? CompanyValue);
 
-    // The levels plan as of a setup's session: each zone's top and its own stop, the staged sales' levels and the low edges
-    // of the resistance bands with real touches.
-    public sealed record LevelsAsOf(IReadOnlyList<(double Top, double? Stop)> Zones, IReadOnlyList<double> Staged, IReadOnlyList<double> Bands, string? Why);
-
     // Why a session draws no levels plan, which the report prints beside a combination it could not place.
     public const string NoTypicalMove = "no typical daily move is read on the session";
 

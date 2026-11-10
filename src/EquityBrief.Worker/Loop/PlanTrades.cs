@@ -38,6 +38,10 @@ public sealed record PlanEnd(DateOnly On, double? Result, DateOnly? FilledOn, do
 // never filled, and its end once it has one.
 public sealed record PlanWhere(DateOnly? FilledOn, double? Fill, PlanEnd? End);
 
+// The levels plan as of a setup's session: each zone's top and its own stop, the staged sales' levels and the low edges
+// of the resistance bands with real touches.
+public sealed record LevelsAsOf(IReadOnlyList<(double Top, double? Stop)> Zones, IReadOnlyList<double> Staged, IReadOnlyList<double> Bands, string? Why);
+
 // From 23.10 a rule's trades under the plan its registration states: the order placed on its night from the stock's own bars,
 // as the test of the buy and sell points and a watched card place it; each walked over the bars since, filled where the test
 // fills and sold where it sells; and benchmarked on every member that night under the same plan, each bought at its own next
@@ -138,7 +142,7 @@ public static class PlanTrades
     // The levels plan as of a bar, from the bands and the trend the night's own functions read over the year it held: each
     // zone's top with its own stop, the staged sales and the bands above with real touches. A plan trade's order is placed
     // from it, so a rule stating a plan pins this file.
-    public static PlanPointTest.LevelsAsOf LevelsAt(SweepSeries series, int bar)
+    public static LevelsAsOf LevelsAt(SweepSeries series, int bar)
     {
         var from = Math.Max(0, bar - VolumeProfileSeries.Window + 1);
         var bars = series.Bars[from..(bar + 1)].Select(one => new ReplayBar(one.Session, one.High, one.Low, one.Close, one.Volume)).ToArray();
@@ -159,7 +163,7 @@ public static class PlanTrades
 
         if (!indicators.TryGetValue(IndicatorSeries.Atr14, out var atr))
         {
-            return new PlanPointTest.LevelsAsOf([], [], [], PlanPointTest.NoTypicalMove);
+            return new LevelsAsOf([], [], [], PlanPointTest.NoTypicalMove);
         }
 
         var confirmed = series.Swings.Take(series.Confirmed[bar]).ToArray();
@@ -175,7 +179,7 @@ public static class PlanTrades
             .Select(band => Statistic.FromPrice(band.LowEdge))
             .ToArray();
 
-        return new PlanPointTest.LevelsAsOf(
+        return new LevelsAsOf(
             [.. ladder.Tranches.Take(LadderSeries.MostTranches).Select(tranche => (Statistic.FromPrice(tranche.HighEdge), tranche.Stop is { } stop ? Statistic.FromPrice(stop) : default(double?)))],
             [.. ladder.Exits.Where(exit => exit.Traded && !exit.Trailing).Select(exit => Statistic.FromPrice(exit.LowEdge))],
             touched,

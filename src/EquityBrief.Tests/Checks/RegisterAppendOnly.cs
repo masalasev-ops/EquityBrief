@@ -611,6 +611,9 @@ public class RegisterAppendOnly
             ])
             .Where(path => path is not "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs" && !path.EndsWith($"/{nameof(QualityCandidate)}.cs", StringComparison.Ordinal))
             .Concat(["src/EquityBrief.Core/Indicators/IndicatorSeries.cs", "src/EquityBrief.Worker/Indicators/IndicatorEngine.cs"])
+            // From 23.10 the marks' file, pinned with the hooks' sources, whose reads of the pull are constants the compiled
+            // code holds inlined, so no call reaches it.
+            .Concat(["src/EquityBrief.Core/Chart/SessionMarking.cs"])
             .Distinct(StringComparer.Ordinal);
 
         Assert.Equal(["GSPC", "MID", "SML"], qualities.Select(quality => quality.Index).Order(StringComparer.Ordinal));
@@ -632,6 +635,9 @@ public class RegisterAppendOnly
                 typeof(DipCandidate).GetMethod(nameof(DipCandidate.SettingOf))!,
             ])
             .Where(path => path is not "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs" && !path.EndsWith($"/{nameof(DipCandidate)}.cs", StringComparison.Ordinal))
+            // From 23.10 the marks' file, pinned with the hooks' sources, whose reads of the pull are constants the compiled
+            // code holds inlined, so no call reaches it.
+            .Concat(["src/EquityBrief.Core/Chart/SessionMarking.cs"])
             .Distinct(StringComparer.Ordinal);
 
         Assert.Equal(["GSPC", "MID", "SML"], dips.Select(dip => dip.Index).Order(StringComparer.Ordinal));

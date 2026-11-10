@@ -1,7 +1,6 @@
-namespace EquityBrief.Core.EntryCheck;
+using EquityBrief.Core.Loop;
 
-// A wait entry's fill: the bar it traded into its level on, and the price it paid.
-public readonly record struct WaitFill(int Bar, double Price);
+namespace EquityBrief.Core.EntryCheck;
 
 // One trade as the measurement reads it: its result in the risk the rule's own plan set, its edge after costs, how it ended, and what two
 // entries with different stops can be compared by: the sale over the fill in per cent and the result in the risk its own plan put up.
@@ -110,36 +109,9 @@ public static class EntryMeasure
             : NoShare;
     }
 
-    // The first session after the pick, within the window, that trades into the level: one opening at or under it fills at that open, and
-    // one reaching it after opening above fills at the level. None where no session does in the window, the series ends first, or the fill
-    // would stand at or under the stop, since the plan is already broken there: each of those a pick not taken.
-    public static WaitFill? FillOf(ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, int pick, double level, double stop, int within)
-    {
-        if (!(level > stop))
-        {
-            return null;
-        }
-
-        for (var bar = pick + 1; bar <= pick + within && bar < opens.Length && bar < lows.Length; bar++)
-        {
-            if (opens[bar] <= 0)
-            {
-                continue;
-            }
-
-            if (opens[bar] <= level)
-            {
-                return opens[bar] > stop ? new WaitFill(bar, opens[bar]) : null;
-            }
-
-            if (lows[bar] <= level)
-            {
-                return new WaitFill(bar, level);
-            }
-        }
-
-        return null;
-    }
+    // A wait entry fills where a planned rule's level buy does, through the one function both read.
+    public static WaitFill? FillOf(ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, int pick, double level, double stop, int within) =>
+        PlanPoints.LevelFillOf(opens, lows, pick, level, stop, within);
 
     // A result in a plan's own risk restated in the risk the rule's plan set, so two plans are compared on the same number of shares; as it
     // stands where the rule's plan sets no risk.

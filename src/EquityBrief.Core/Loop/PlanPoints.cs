@@ -1,6 +1,7 @@
-using EquityBrief.Core.EntryCheck;
-
 namespace EquityBrief.Core.Loop;
+
+// A level buy's fill: the bar it traded into its level on, and the price it paid.
+public readonly record struct WaitFill(int Bar, double Price);
 
 // One way to trade a flagged setup: where it buys and within how many sessions, where its stop stands and how it sells.
 public sealed record PlanCombination(string Entry, int Window, string Stop, string Exit)
@@ -332,7 +333,38 @@ public static class PlanPoints
             return pick + 1 < opens.Length && opens[pick + 1] > 0 ? new WaitFill(pick + 1, opens[pick + 1]) : null;
         }
 
-        return level is { } held && held > 0 ? EntryMeasure.FillOf(opens, lows, pick, held, 0, window) : null;
+        return level is { } held && held > 0 ? LevelFillOf(opens, lows, pick, held, 0, window) : null;
+    }
+
+    // The first session after the pick, within the window, that trades into the level: one opening at or under it fills at that open, and
+    // one reaching it after opening above fills at the level. None where no session does in the window, the series ends first, or the fill
+    // would stand at or under the stop, since the plan is already broken there: each of those a pick not taken.
+    public static WaitFill? LevelFillOf(ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, int pick, double level, double stop, int within)
+    {
+        if (!(level > stop))
+        {
+            return null;
+        }
+
+        for (var bar = pick + 1; bar <= pick + within && bar < opens.Length && bar < lows.Length; bar++)
+        {
+            if (opens[bar] <= 0)
+            {
+                continue;
+            }
+
+            if (opens[bar] <= level)
+            {
+                return opens[bar] > stop ? new WaitFill(bar, opens[bar]) : null;
+            }
+
+            if (lows[bar] <= level)
+            {
+                return new WaitFill(bar, level);
+            }
+        }
+
+        return null;
     }
 
     // One filled pick walked over its closes from the fill's session, as the ledger walks a setup and its fill step sells

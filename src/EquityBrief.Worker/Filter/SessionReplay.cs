@@ -48,12 +48,12 @@ public static class SessionReplay
 
         if (bands.Count == 0)
         {
-            return new AsOf(bands, trend, new Ladder([], [], null, "no bands are stored for this name", []));
+            return new AsOf(bands, trend, new Ladder([], [], null, Core.Families.RuleWording.Ladder.NoBands, []));
         }
 
         if (!indicators.TryGetValue(IndicatorSeries.Atr14, out var atr))
         {
-            return new AsOf(bands, trend, new Ladder([], [], null, "no typical daily move is stored for this name", []));
+            return new AsOf(bands, trend, new Ladder([], [], null, Core.Families.RuleWording.Ladder.NoTypicalMove, []));
         }
 
         var recent = series

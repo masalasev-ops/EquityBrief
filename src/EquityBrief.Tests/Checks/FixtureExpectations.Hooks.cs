@@ -272,7 +272,16 @@ public partial class FixtureExpectations
             "improving-400", "improving-500", "improving-600", "pullback-400", "pullback-600", "quality-400", "quality-500", "quality-600",
         ];
 
-        Assert.Equal(hooked, CandidateEvaluators.All.Where(evaluator => RuleHooks.Sources.All(evaluator.OwnSources.Contains)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
+        // From 23.10 the plan's walk and the levels it places an order at are among them, and a quality book states no plan,
+        // so its rules pin every other.
+        var read = RuleHooks.Sources.Except(RuleHooks.PlanWalkSources, StringComparer.Ordinal).ToArray();
+
+        Assert.Equal(6, RuleHooks.PlanWalkSources.Count);
+        Assert.Subset(RuleHooks.Sources.ToHashSet(StringComparer.Ordinal), RuleHooks.PlanWalkSources.ToHashSet(StringComparer.Ordinal));
+        Assert.Equal(hooked, CandidateEvaluators.All.Where(evaluator => read.All(evaluator.OwnSources.Contains)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
+        Assert.Equal(
+            hooked.Where(name => !name.StartsWith("quality-", StringComparison.Ordinal)),
+            CandidateEvaluators.All.Where(evaluator => RuleHooks.PlanWalkSources.All(evaluator.OwnSources.Contains)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
         Assert.DoesNotContain(CandidateEvaluators.All, evaluator => !hooked.Contains(evaluator.Name) && RuleHooks.Sources.Any(evaluator.OwnSources.Contains));
         Assert.Empty(RuleHooks.Sources.Intersect(CandidateEvaluator.EvaluationSources));
     }

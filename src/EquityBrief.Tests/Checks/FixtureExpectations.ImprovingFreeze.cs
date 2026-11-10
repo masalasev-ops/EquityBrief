@@ -430,8 +430,9 @@ public partial class FixtureExpectations
         // From 21.4 every version the register named but the S&P 500 heavyweights' moves, in the one checkpoint that
         // registers every rule reading the moved sources again, the swing filter's among them on the operator's ruling of
         // 2026-10-30, since the version leaving off a deteriorating business reads the SEC's facts through the filter's
-        // reader of a member's gate inputs; the heavyweights' stands as the register named it and every other differs.
-        string[] standingThroughTheMove = ["heavyweight"];
+        // reader of a member's gate inputs; the heavyweights' stood as the register named it until 23.10, whose restart moves
+        // it with every other, its book reading the pull under the marks, so every version the register named differs.
+        string[] standingThroughTheMove = [];
 
         Assert.All(OperatorsStandingBeforeTheImprovingFreeze.Where(row => standingThroughTheMove.Contains(row.Evaluator, StringComparer.Ordinal)), row => Assert.Equal(row.Version, CandidateEvaluators.Find(row.Evaluator)!.Version));
         Assert.All(OperatorsStandingBeforeTheImprovingFreeze.Where(row => !standingThroughTheMove.Contains(row.Evaluator, StringComparer.Ordinal)), row => Assert.NotEqual(row.Version, CandidateEvaluators.Find(row.Evaluator)!.Version));
