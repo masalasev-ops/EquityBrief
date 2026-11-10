@@ -523,6 +523,9 @@ public class ObligationReconciles
         ["21"] = 1,
         // None: phase 22 opened no carried obligation of either form.
         ["22"] = 0,
+        // Two, both opened by the 23.0 planning pass: the monthly run's time over the longer history, read on the first
+        // scheduled monthly run after 23.7, and the industry news mood split read once every member holds its labels.
+        ["23"] = 2,
     };
 
     // The first phase whose report is read for the operating rows it opened.

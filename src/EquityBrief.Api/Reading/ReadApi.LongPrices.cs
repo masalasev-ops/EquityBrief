@@ -10,9 +10,23 @@ public sealed partial class ReadApi
 {
     const string LongPricesRun = "SELECT run_id, ended_at, detail FROM run_log WHERE stage = 'long-prices' ORDER BY ended_at DESC, run_id DESC LIMIT 1;";
 
+    // The ends marked where the provider's prices run on past them, as the marks stand: a write finding a mark already
+    // standing writes none, so the newest run's own count says nothing of what stands.
+    const string LongEndsMarked = "SELECT COUNT(*) FROM session_mark WHERE kind = $kind;";
+
     public async Task<LongPricesView> LongPricesAsync()
     {
         await using var connection = Open();
+
+        int marked;
+
+        await using (var count = connection.CreateCommand())
+        {
+            count.CommandText = LongEndsMarked;
+            count.Parameters.AddWithValue("$kind", EquityBrief.Core.Chart.SessionMarking.HistoryEnds);
+            marked = Convert.ToInt32(await count.ExecuteScalarAsync(), System.Globalization.CultureInfo.InvariantCulture);
+        }
+
         await using var command = connection.CreateCommand();
 
         command.CommandText = LongPricesRun;
@@ -39,7 +53,7 @@ public sealed partial class ReadApi
             Count("priced"),
             root.TryGetProperty("bars", out var bars) && bars.ValueKind == JsonValueKind.Number ? bars.GetInt64() : 0,
             Count("ends"),
-            Count("marked"),
+            marked,
             root.TryGetProperty("cutover", out var cutover) ? cutover.GetString() : null,
             Count("apartAtMost"),
             Lines("lowest"),
