@@ -253,8 +253,9 @@ public partial class FixtureExpectations
             .ToArray();
 
         // From the 23.8 correction the long history reader reads the long facts for the profit check over the long history,
-        // read by the monthly run's long step and by hand and by no night.
-        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongFactPull.cs", "src/EquityBrief.Worker/History/LongFirstYearReader.cs", "src/EquityBrief.Worker/History/LongHistoryReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs"], readers);
+        // read by the monthly run's long step and by hand and by no night; and the plan point test reads them for the drift's
+        // sales check, by hand, writing nothing.
+        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/History/LongFactPull.cs", "src/EquityBrief.Worker/History/LongFirstYearReader.cs", "src/EquityBrief.Worker/History/LongHistoryReader.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.Long.cs", "src/EquityBrief.Worker/Loop/PlanPointTest.cs"], readers);
 
         string[] written =
         [
