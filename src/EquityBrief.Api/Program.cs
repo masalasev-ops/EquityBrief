@@ -2912,6 +2912,15 @@ async Task<IResult> HomeAsync(
     ];
 
     var (carded, watched) = SinglePageApp.Split(ideas);
+
+    // Each watched pick handed the plan its kind's test recommends, as the night priced it on its card.
+    // see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded
+    if (watched.Length > 0)
+    {
+        var alternatives = await read.CardAlternativesAsync(reading.Code, dated);
+
+        watched = [.. watched.Select(idea => idea with { Alternative = alternatives.GetValueOrDefault((idea.Family, idea.Ticker)) })];
+    }
     var opens = MarkRenderer.OpenDay(dated);
 
     // The system's trades since the rules first went live, and the live setups' accounts averaged since today's rules all

@@ -12,7 +12,7 @@ namespace EquityBrief.Web.App;
 // target, the distance it rises behind the highest close at and its rule's winning trades; whether an exit changed on the
 // Loop page moves its give-up price; for the Fundamentals family the setting its index's rule stands at; and from the 22.6
 // correction of 2026-11-09 its setup's record over the long history.
-public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null, SetupLongRecord? LongRecord = null, ZoneBuy? Zone = null);
+public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null, SetupLongRecord? LongRecord = null, ZoneBuy? Zone = null, AlternativePlan? Alternative = null);
 
 // How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
 // many made money; the live setups' accounts averaged, their return, the day every live rule took effect and the index's
@@ -198,14 +198,7 @@ public sealed partial class SinglePageApp
             : Invariant($"This kind of pick did worse than simply buying other {reading.Name} stocks on the same days with the same sell rules, so we follow it on paper instead of suggesting it.");
 
     // How far a kind of pick fell short for each dollar put at risk, in cents below a dollar.
-    public static string Worse(double edge) =>
-        (int)Math.Round(Math.Abs(edge) * 100, MidpointRounding.AwayFromZero) switch
-        {
-            0 => "less than 1 cent worse",
-            1 => "about 1 cent worse",
-            < 100 and var cents => Invariant($"about {cents} cents worse"),
-            _ => Invariant($"about ${Math.Abs(edge):0.00} worse"),
-        };
+    public static string Worse(double edge) => Cents(edge, "worse");
 
     // The line opening a pick's card, saying whether it is an idea to buy or watched, and for an idea why, from its setup's
     // record over the long history: one that lost is watched, its reasons in the lines beneath; one that made money, holds too
@@ -510,6 +503,10 @@ public sealed partial class SinglePageApp
         card.Append(watched
             ? Invariant($"<p class=\"home-why\"><b>{PickedLabel}</b> {Escaped(idea.Why)}</p><p class=\"home-why-not\"><b>{Escaped(NotBuyingLabel)}</b> {Escaped(NotBuyingLine(idea, reading))}</p>")
             : Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
+
+        // A watched card's plan that its kind's test recommends, priced on its own levels and not traded.
+        // see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded
+        card.Append(watched && idea.Alternative is { } alternative ? AlternativeBlock(alternative, reading) : string.Empty);
 
         // From the 22.16 correction of 2026-11-09 a plan that buys at a zone: the price it waits for, the close that sells it,
         // its target or its time limit, and beneath them how long the buy waits from tonight's close.

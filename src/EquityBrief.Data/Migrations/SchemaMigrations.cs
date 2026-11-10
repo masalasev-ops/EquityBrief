@@ -761,7 +761,14 @@ public static class SchemaMigrations
         new Migration(138, "add the fund line to loop_rule", AddRuleFundLine),
         new Migration(139, "add long_reading's outlying, and create long_outlier", CreateLongOutlier),
         new Migration(140, "add the traded plan's picks from 2019 to plan_point", AddTradedLaterPicks),
+        new Migration(141, "add the recommended plan priced on each price pick to decision_card", AddCardAlternative),
     ];
+
+    // From the 22.16 correction of 2026-11-10 each price family's pick priced at the plan its index's test of the buy and sell
+    // points recommends, which Home draws on a watched pick's card.
+    const string AddCardAlternative = @"
+        ALTER TABLE decision_card ADD COLUMN alternative TEXT;
+    ";
 
     // From the 22.6 correction of 2026-11-09 the traded plan's picks offered from 2019, the count its record on a pick's card
     // is over.

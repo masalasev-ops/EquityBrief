@@ -84,7 +84,8 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.LoopProposal, Touch.Read),
             new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
-            new StoreTouch(Store.DecisionCard, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PlanPoint, Touch.Read),
+            new StoreTouch(Store.DecisionCard, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -234,6 +235,28 @@ public sealed class DecisionCards : IComponent
         FROM rule_record WHERE index_code = $index AND family = $family;
     ";
 
+    // A price family's newest recommendation on an index, the cards of a night it prices, a card's stock's bars through the
+    // night, and the plan priced on its card.
+    const string NewestRecommendation = @"
+        SELECT run_id, through, combination, later_fills, later_edge_per_pick, traded_later_edge_per_pick FROM plan_point
+        WHERE rowid = (SELECT MAX(rowid) FROM plan_point WHERE index_code = $index AND family = $family);
+    ";
+
+    const string NewestCardNight = "SELECT MAX(session_date) FROM decision_card;";
+
+    const string CardsOn = "SELECT index_code, family, ticker, entry, stop, target, trail, cap FROM decision_card WHERE session_date = $night;";
+
+    const string BarsThrough = @"
+        SELECT session_date, open, high, low, close, volume FROM bar
+        WHERE ticker = $ticker AND session_date <= $night
+        ORDER BY session_date;
+    ";
+
+    const string SetAlternative = @"
+        UPDATE decision_card SET alternative = $alternative
+        WHERE index_code = $index AND session_date = $night AND family = $family AND ticker = $ticker;
+    ";
+
     const string InsertCard = @"
         INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved)
         VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits, $score_rank, $similar, $approved);
@@ -343,7 +366,21 @@ public sealed class DecisionCards : IComponent
                 }
             }
 
-            await AppendAsync(connection, runId, startedAt, written.Sum(index => index.Cards), written.Any(index => index.Fault is not null) ? NotComputed : Ok, Detail(written), cancellation);
+            // Each price family's pick priced at its family's recommended plan, a failure naming itself and leaving every card
+            // as written.
+            var priced = 0;
+            string? unpriced = null;
+
+            try
+            {
+                priced = await PriceAsync(connection, night, cancellation);
+            }
+            catch (Exception failure) when (!cancellation.IsCancellationRequested)
+            {
+                unpriced = IndexFamilies.Cause(failure);
+            }
+
+            await AppendAsync(connection, runId, startedAt, written.Sum(index => index.Cards), written.Any(index => index.Fault is not null) ? NotComputed : Ok, Detail(written) + PricedDetail(priced, unpriced), cancellation);
 
             return new DecisionCardsOutcome(night, written);
         }
@@ -359,6 +396,197 @@ public sealed class DecisionCards : IComponent
 
             return new DecisionCardsOutcome(null, all);
         }
+    }
+
+    static string PricedDetail(int priced, string? unpriced) =>
+        unpriced is not null ? "; no card priced at its family's recommended plan: " + unpriced
+        : priced > 0 ? FormattableString.Invariant($"; {priced} card(s) priced at their family's recommended plan")
+        : string.Empty;
+
+    // A price family's newest recommendation on an index: the run, the newest session it read, the combination, and its
+    // fills and mean edge a pick offered from 2019 beside the traded plan's.
+    sealed record Recommendation(string Run, DateOnly Through, PlanCombination Combination, int? Fills, double? Edge, double? Traded);
+
+    // Each price family's pick on a night priced at the plan its index's newest test of the buy and sell points recommends,
+    // on the stock's own levels on the night as that test reads them, and stored on its card beside the plan the rule
+    // trades: none where no recommendation stands, it is the traded plan itself, or the stock's levels place none of it. The
+    // night's cards are priced after they are written; a session given prices its cards again.
+    // see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded
+    public async Task<(DateOnly? Night, int Priced)> PriceAsync(DateOnly? session, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        if (session is not { } night)
+        {
+            if (await ScalarAsync(connection, NewestCardNight, [], cancellation) is not string newest)
+            {
+                return (null, 0);
+            }
+
+            night = Date(newest);
+        }
+
+        return (night, await PriceAsync(connection, night, cancellation));
+    }
+
+    async Task<int> PriceAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    {
+        var cards = new List<(string Index, string Family, string Ticker, decimal? Entry, decimal? Stop, decimal? Target, decimal? Trail, int? Cap)>();
+
+        await using (var command = Command(connection, null, CardsOn, [("$night", Stamp(night))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (PlanPoints.Families.Contains(reader.GetString(1)))
+                {
+                    cards.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2), MoneyOrNone(reader, 3), MoneyOrNone(reader, 4), MoneyOrNone(reader, 5), MoneyOrNone(reader, 6), reader.IsDBNull(7) ? null : reader.GetInt32(7)));
+                }
+            }
+        }
+
+        if (cards.Count == 0)
+        {
+            return 0;
+        }
+
+        var recommendations = new Dictionary<(string Index, string Family), Recommendation?>();
+        var priced = 0;
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var card in cards)
+        {
+            if (!recommendations.TryGetValue((card.Index, card.Family), out var recommendation))
+            {
+                recommendations[(card.Index, card.Family)] = recommendation = await RecommendationAsync(connection, transaction, card.Index, card.Family, cancellation);
+            }
+
+            var alternative = recommendation is null
+                ? null
+                : await AlternativeAsync(connection, transaction, recommendation, card.Family, card.Ticker, night, card.Entry, card.Stop, card.Target, card.Trail, card.Cap, cancellation);
+
+            await ExecuteAsync(connection, transaction, SetAlternative,
+            [
+                ("$alternative", (object?)alternative ?? DBNull.Value),
+                ("$index", card.Index),
+                ("$night", Stamp(night)),
+                ("$family", card.Family),
+                ("$ticker", card.Ticker),
+            ], cancellation);
+
+            priced += alternative is null ? 0 : 1;
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return priced;
+    }
+
+    static async Task<Recommendation?> RecommendationAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, CancellationToken cancellation)
+    {
+        await using var command = Command(connection, transaction, NewestRecommendation, [("$index", index), ("$family", family)]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        if (!await reader.ReadAsync(cancellation) || reader.IsDBNull(2) || PlanPrices.Named(reader.GetString(2)) is not { } combination || PlanPrices.Traded(combination))
+        {
+            return null;
+        }
+
+        return new Recommendation(
+            reader.GetString(0),
+            Date(reader.GetString(1)),
+            combination,
+            reader.IsDBNull(3) ? null : reader.GetInt32(3),
+            reader.IsDBNull(4) ? null : reader.GetDouble(4),
+            reader.IsDBNull(5) ? null : reader.GetDouble(5));
+    }
+
+    // One pick priced at its family's recommendation on its stock's own bars through the night, in JSON, prices as text;
+    // none where the stock holds no bar on the night, no typical daily move, or a plan the recommendation cannot place.
+    static async Task<string?> AlternativeAsync(SqliteConnection connection, SqliteTransaction transaction, Recommendation recommendation, string family, string ticker, DateOnly night, decimal? entry, decimal? ruleStop, decimal? target, decimal? trail, int? cap, CancellationToken cancellation)
+    {
+        if (ruleStop is not { } stop || cap is not { } held)
+        {
+            return null;
+        }
+
+        var bars = new List<EquityBrief.Core.Sweep.SweepBar>();
+
+        await using (var command = Command(connection, transaction, BarsThrough, [("$ticker", ticker), ("$night", Stamp(night))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                bars.Add(new EquityBrief.Core.Sweep.SweepBar(Date(reader.GetString(0)), Money(reader.GetString(2)), Money(reader.GetString(3)), Money(reader.GetString(4)), reader.GetInt64(5), Money(reader.GetString(1))));
+            }
+        }
+
+        if (bars.Count == 0 || bars[^1].Session != night)
+        {
+            return null;
+        }
+
+        var sessionAt = bars.Select((bar, at) => (bar.Session, at)).ToDictionary(pair => pair.Session, pair => pair.at);
+        var series = EquityBrief.Worker.Sweep.SweepColumns.Series(new EquityBrief.Worker.Sweep.SweepName(ticker, [.. bars], [(null, null)], []), sessionAt);
+        var last = series.Bars.Length - 1;
+
+        if (last < 0 || series.Bars[last].Session != night || !(series.Atr[last] is var typical && typical > 0))
+        {
+            return null;
+        }
+
+        var levels = PlanPointTest.Walker.LevelsAt(series, last);
+        var close = Statistic.FromPrice(series.Bars[last].Close);
+        var factor = entry is { } bought && bought > 0m ? close / Statistic.FromPrice(bought) : 1;
+        var ruleSale = family == DipRule.Name
+            ? PlanPoints.DipSale
+            : new PlanSale(target is { } aim ? Statistic.FromPrice(aim) * factor : null, trail is { } distance ? Statistic.FromPrice(distance) * factor : null, []);
+        var average = series.Sma20[last];
+
+        static string? Text(double? value) => value is { } stated ? Statistic.ToPrice(stated).ToString(CultureInfo.InvariantCulture) : null;
+
+        // A recommendation the stock's levels cannot place tonight is stored with why, so its card can say so: a zone the
+        // levels plan does not draw, and otherwise a plan whose prices do not stand.
+        if (PlanPrices.Of(recommendation.Combination, close, new PlanLevels(levels.Zones, levels.Staged, levels.Bands), double.IsNaN(average) ? null : average, typical, Statistic.FromPrice(stop) * factor, ruleSale, held) is not { } price)
+        {
+            var zone = PlanPoints.Zones.ToList().IndexOf(recommendation.Combination.Entry);
+
+            return JsonSerializer.Serialize(new
+            {
+                combination = recommendation.Combination.Words,
+                unplaced = zone >= 0 && zone >= levels.Zones.Count ? "zone" : "plan",
+                close = Text(close),
+                cap = held,
+                from = EquityBrief.Core.History.LongLedger.StandingFrom.Year,
+                through = recommendation.Through.Year,
+                fills = recommendation.Fills,
+                edge = recommendation.Edge,
+                traded = recommendation.Traded,
+                run = recommendation.Run,
+            });
+        }
+
+        return JsonSerializer.Serialize(new
+        {
+            combination = price.Combination,
+            close = Text(close),
+            buy = Text(price.Buy),
+            window = price.Window,
+            stop = Text(price.Stop),
+            target = Text(price.Target),
+            staged = price.Staged.Select(level => Text(level)).ToArray(),
+            trail = Text(price.Trail),
+            bounce = price.RsiAbove is not null,
+            cap = price.Cap,
+            from = EquityBrief.Core.History.LongLedger.StandingFrom.Year,
+            through = recommendation.Through.Year,
+            fills = recommendation.Fills,
+            edge = recommendation.Edge,
+            traded = recommendation.Traded,
+            run = recommendation.Run,
+        });
     }
 
     static string Detail(IReadOnlyList<IndexCards> indices) =>

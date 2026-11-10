@@ -106,6 +106,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sector-splits" => await SectorSplitsRun(args),
     "loop-search" => await LongSearchRun(args),
     "plan-points" => await PlanPointsRun(args),
+    "card-plans" => await CardPlansRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     _ => NoVerb(),
 };
@@ -313,6 +314,45 @@ static async Task<int> PlanPointsRun(string[] args)
 
     return await new EquityBrief.Worker.Loop.PlanPointTest(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
         .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal));
+}
+
+// Each price family's pick on the newest night's cards, or on a session named, priced again at its family's recommended plan
+// on its index, as the night prices them after writing its cards; refused while a night holds the store.
+// see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded
+static async Task<int> CardPlansRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var at = Array.IndexOf(args, "--session");
+    DateOnly? session = null;
+
+    if (at >= 0)
+    {
+        if (at + 1 >= args.Length || !DateOnly.TryParseExact(args[at + 1], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var named))
+        {
+            Console.Error.WriteLine("card-plans: give '--session <yyyy-MM-dd>', or nothing for the newest night's cards.");
+
+            return 1;
+        }
+
+        session = named;
+    }
+
+    if (NightLock.Holder(store.DataRoot) is { } holder)
+    {
+        Console.Error.WriteLine($"card-plans: the night holds the store ({holder}); run it once the night has finished");
+
+        return 2;
+    }
+
+    var (night, priced) = await new EquityBrief.Worker.Cards.DecisionCards(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
+        .PriceAsync(session);
+
+    Console.WriteLine(night is { } read
+        ? FormattableString.Invariant($"card-plans: {priced} card(s) of {read:yyyy-MM-dd} priced at their family's recommended plan")
+        : "card-plans: the store holds no card");
+
+    return 0;
 }
 
 // The long ledger's measure, read-only: the jumps' comparison at its top, each family on each index by era under the two
@@ -808,7 +848,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 78 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 79 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -911,6 +951,8 @@ static int NoVerb()
         "family written through the same session afresh, and " +
         "'plan-points --index <GSPC, MID or SML>' walks every flagged setup of the four price families under every entry, " +
         "stop and sale, each with '--print' writing nothing, " +
+        "'card-plans' prices each price family's pick on the newest night's cards at its family's recommended plan again, " +
+        "'--session <yyyy-MM-dd>' a night named, " +
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
         "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +
         "family and year with how often the next open fell under the stop or over the target, writing nothing, " +

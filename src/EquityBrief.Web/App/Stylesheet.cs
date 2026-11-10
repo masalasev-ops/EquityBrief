@@ -1569,6 +1569,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .home-split{margin:6px 0 10px;font-size:14px;line-height:1.5;color:var(--ink-2)}
 .home-verdict{margin:0;padding:7px 10px;border-radius:6px;font-size:13.5px;line-height:1.45;color:var(--ink)} .home-verdict[data-verdict=buy]{background:var(--up-fill)} .home-verdict[data-verdict=buy] b{color:var(--up)} .home-verdict[data-verdict=watch]{background:var(--down-fill)} .home-verdict[data-verdict=watch] b{color:var(--down)}
 .home-idea.watched{border-style:dashed}
+.home-alt{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px dashed var(--hair-2);border-radius:6px} .home-alt-h{margin:0;font-size:14px;line-height:1.5;color:var(--ink-2)} .home-alt-h b{color:var(--ink)} .home-alt-note,.home-alt-none{margin:0;font-size:13px;line-height:1.45;color:var(--soft)}
 .home-why-not{margin:0;font-size:14px;line-height:1.5;color:var(--ink-2)} .home-why-not b,.home-idea.watched .home-why b{color:var(--ink)}
 .home-note{margin:14px 0 0;padding:10px 14px;border-radius:8px;background:var(--warn-fill);font-size:14px;color:var(--ink)}
 .home-results{display:flex;flex-wrap:wrap;gap:24px}
