@@ -18318,3 +18318,33 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 140, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 22.16 - correction: Home says in plain words why a pick is an idea to buy or watched and how it was tested   2026-11-10
+
+Found:      the operator's word of 2026-11-10 on a watched card: "THis is ridiculously cryptic message.", and on the plain wording put
+            to them: "What is really annoying to a user is "What would make it a buy: a change to how this kind of pick is bought
+            and sold that beats those other stocks over the same years." We are presenting a buy and sell plan... if we are saying
+            we need to change how to buy then  give an  alternate  buy sell plan. This is weird. Rest alll we can do now". The
+            lines read as the test's terms, "picks like this did worse than the index's other stocks bought the same way".
+Corrected:  the line above the cards says each kind of pick is tested against simply buying the index's other stocks on the same
+            days, the kinds that beat it or are too new to test being ideas to buy and the kinds that lost to it watched; the
+            heading of the picks watched says the rules picked them but their kind has done worse than simply buying the index's
+            other stocks since 2019; a watched card opens on "Watching, not buying." alone, then "Why the rule picked it:" and "Why
+            we're not buying it:" with the test's years and so many cents worse for every $1 put at risk; an idea's card says the
+            test it beat, or that too few picks, too little history or no test yet leaves nothing against it. The line of what
+            would make a watched pick a buy is gone; a plan to buy it differently, on the operator's word, is shown as a plan, which
+            no card has yet. The new decision supersedes the one of the correction before this entry and the words the decision
+            of 2026-11-09 quotes, whose split, order and counts stand.
+Tests:      the three read-surface tests of the picks watched hold every new line on the S&P 500 and through the host on the S&P 400,
+            the line above the cards with and without picks watched, and the cents under one, at one, at several and past a dollar;
+            the count of tests is unchanged.
+Claims:     none new; section 15.24's row of the picks watched says what the lines say.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to the three tests of the picks
+            watched, restored to the file's own text, 2 in all, each predicted red in the two tests holding it and each red: the
+            line of why it is not bought left off, 2 red; and the cents worked from a tenth of the figure, 2 red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3659 of 3659 tests ran with none failed, migrations 0 to 140 with none
+            pending, schema version 140, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
