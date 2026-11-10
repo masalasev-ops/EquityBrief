@@ -18294,3 +18294,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 140, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 22.16 - correction: a watched card on Home names why its rule picked it and when it would become an idea to buy   2026-11-10
+
+Found:      the operator's word of 2026-11-10 on the watched cards: "WHile i dont disagree with this presentation, this is a strange
+            card. Why are we just watchin not  buying ? WHat qualified them then.. the  user would need to know why are we
+            suggesting these ideas  to watch then.. at  what point does it become a buy", and on the two changes put to them: "Make
+            the 2 card  changes first  quickly." A watched card said why it was watched and not what qualified it or what would
+            make it an idea to buy.
+Corrected:  beneath a watched card's opening line, "It becomes an idea to buy when picks like this, traded the way they are now,
+            beat the <index>'s other stocks bought the same way since 2019."; its sentence of what qualified it headed "Why the rule
+            picked it:". A card of an idea to buy is unchanged. A new decision says so, beside the one of the 22.16 correction
+            before this entry, which stands.
+Tests:      the two read-surface tests holding watched cards gain both lines in their order on the S&P 500 and through the host on
+            the S&P 400, and an idea's card holding neither; the count of tests is unchanged.
+Claims:     none new; section 15.24's row of the picks watched names both lines.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to the three tests of the picks
+            watched, restored to the file's own text, 2 in all, each predicted red in the two tests holding it and each red: the
+            line of when it would become an idea to buy left off, 2 red; and its sentence drawn without its heading, 2 red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3659 of 3659 tests ran with none failed, migrations 0 to 140 with none
+            pending, schema version 140, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

@@ -64,6 +64,13 @@ public partial class ReadSurface
         Assert.Equal(3, Regex.Matches(region, "<span>Paper buy at about</span>").Count);
         Assert.Equal(2, Regex.Matches(region, "<span>Buy at about</span>").Count);
 
+        // A watched card says when it would become an idea to buy, beneath its opening line, and names its sentence as why its
+        // rule picked it; an idea's card does neither.
+        Assert.Equal(3, Regex.Matches(region, "<p class=\"home-verdict\" data-verdict=\"watch\"><b>Watching, not buying\\.</b>[^<]*</p>" + Regex.Escape("<p class=\"home-when\">It becomes an idea to buy when picks like this, traded the way they are now, beat the S&P 500's other stocks bought the same way since 2019.</p><p class=\"home-why\"><b>Why the rule picked it:</b> Why.</p>")).Count);
+        Assert.Equal(3, Regex.Matches(region, "<p class=\"home-when\">").Count);
+        Assert.Contains("<p class=\"home-why\">Dipped.</p>", region, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"home-why\">Bought.</p>", region, StringComparison.Ordinal);
+
         // Nine picks, two of them from a setup that lost: all seven others are ideas to buy and both watched, none left out,
         // each group in the order given.
         var nine = new[] { "A1", "A2", "W1", "A3", "A4", "A5", "W2", "A6", "A7" }
@@ -132,6 +139,7 @@ public partial class ReadSurface
         Assert.Contains("Tonight's ideas: 1 stock to buy", text, StringComparison.Ordinal);
         Assert.Contains("Watching, not buying: 1 pick tonight. Picks like it did worse than the S&P 400's other stocks bought the same way since 2019, with its plan as it stands, so it is traded on paper only, not offered as an idea to buy.", text, StringComparison.Ordinal);
         Assert.Contains("Watching, not buying. Since 2019, picks like this did worse than the S&P 400's other stocks bought the same way, so this one is traded on paper only.", text, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"home-when\">It becomes an idea to buy when picks like this, traded the way they are now, beat the S&P 400's other stocks bought the same way since 2019.</p><p class=\"home-why\"><b>Why the rule picked it:</b> ", lost, StringComparison.Ordinal);
         Assert.Contains("See all 2 picks with their full plans", text, StringComparison.Ordinal);
     }
 }

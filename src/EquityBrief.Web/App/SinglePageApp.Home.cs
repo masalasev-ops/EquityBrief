@@ -185,6 +185,14 @@ public sealed partial class SinglePageApp
         return Invariant($"<p class=\"home-watch\" data-watching=\"{watching.Count}\"><b>Watching, not buying: {watching.Count} {(watching.Count == 1 ? "pick" : "picks")} tonight.</b> {Escaped(why)}</p>");
     }
 
+    // The label of a watched card's sentence saying what qualified it.
+    public const string PickedLabel = "Why the rule picked it:";
+
+    // The line beneath a watched card's opening line: what would make it an idea to buy.
+    // see: A watched card on Home names why its rule picked it and when it would become an idea to buy
+    public static string WhenLine(UniverseChoice reading) =>
+        Invariant($"It becomes an idea to buy when picks like this, traded the way they are now, beat the {reading.Name}'s other stocks bought the same way since {EquityBrief.Core.History.LongLedger.StandingFrom.Year}.");
+
     // The line opening a pick's card, saying whether it is an idea to buy or watched and why, from its setup's record over the
     // long history: one that lost is watched; one that made money, holds too few picks, reaches back too few years or is unread
     // is an idea to buy.
@@ -483,7 +491,13 @@ public sealed partial class SinglePageApp
         card.Append(Invariant($"<article class=\"home-idea fam-edge{(watched ? " watched" : string.Empty)}\" data-family=\"{family}\" data-ticker=\"{Escaped(idea.Ticker)}\">"));
         card.Append(Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(idea.Ticker)}</div>{(idea.Company is { } company ? Invariant($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(idea.Family))}</span></div>"));
         card.Append(VerdictLine(idea, reading));
-        card.Append(Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
+
+        // A watched card says when it would become an idea to buy, and names its sentence as why its rule picked it.
+        // see: A watched card on Home names why its rule picked it and when it would become an idea to buy
+        card.Append(watched ? Invariant($"<p class=\"home-when\">{Escaped(WhenLine(reading))}</p>") : string.Empty);
+        card.Append(watched
+            ? Invariant($"<p class=\"home-why\"><b>{PickedLabel}</b> {Escaped(idea.Why)}</p>")
+            : Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
 
         // From the 22.16 correction of 2026-11-09 a plan that buys at a zone: the price it waits for, the close that sells it,
         // its target or its time limit, and beneath them how long the buy waits from tonight's close.
