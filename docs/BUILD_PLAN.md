@@ -2473,7 +2473,7 @@ Their order's third item. Tonight's card of buys counts and draws every buy, a F
 **Done when** the S&P 600's night of 2026-11-05 counts its three buys and draws three rows, the Fundamentals' after the drift's and before the dip's, each saying it sells when its filings weaken, with no sentence pointing to their own card; one buy alone is counted as one; the Fundamentals card names its buys first and a buy ranked past its tenth row is drawn open and marked; and one mutation of each property is shown red, the rule stated before the run.
 
 ### 22.48 On the operator's order of 2026-11-06: Home's ideas follow Tonight's order and name the rest
-Their order's fourth item. Home's ideas are read from the function Tonight's buys are drawn in, and the buys past its six cards are named beneath them with their families (see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families).
+Their order's fourth item. Home's ideas are read from the function Tonight's buys are drawn in, and the buys past its six cards are named beneath them with their families, which from the 22.16 correction of 2026-11-09 draws every buy as a card (see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why).
 
 **Done when** the S&P 500's buys of 2026-11-05 run in Tonight's order, the Fundamentals' after the drift's and before the dip's, Home draws the first six and its line names CVS and ODFL under their tag and NUE under its own; no line stands where nothing is left out; and one mutation of each property is shown red, the rule stated before the run.
 

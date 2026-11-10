@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-09 - docs/ARCHITECTURE.html - section 15.24, Home draws every pick as a card, the picks watched after the ideas to buy, each saying why
+Decision: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
+Was:
+> up to six cards in Tonight's order the Fundamentals family's after the drift's; from 22.48 that order read by the one function Tonight's buys are drawn in; the buys left out named beneath the cards with their families' tags (see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families);
+> <tr><td>Watching, not buying</td><td>from the 22.16 correction of 2026-11-09 a buy drawn as a card only where its setup's record over the long history made money or there is none yet; beneath the cards and the line of those left out one line naming the rest in Tonight's order with their families' tags and saying their setups have not made money on the index since 2019 with their plans as they stand and are traded on paper only; its link to Tonight; and the link to every pick's full plan counting every pick (see: Home draws a card only for a pick whose setup made money over the long history or has none, and names the rest as watched)</td></tr>
+Now:
+> every buy a card in Tonight's order the Fundamentals family's after the drift's; from 22.48 that order read by the one function Tonight's buys are drawn in; from the 22.16 correction of 2026-11-09 no buy left out and none named as left to Tonight (see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why);
+> <tr><td>Watching, not buying</td><td>from the 22.16 correction of 2026-11-09 a buy drawn as an idea to buy where its setup's record over the long history made money or there is none yet and as watched where it lost with every card opening on which it is and why; above the cards one line saying a pick is an idea to buy unless ...; after the ideas to buy a heading counting the picks watched and saying picks like these did worse than the index's other stocks bought the same way since 2019 ...; and the link to every pick's full plan counting every pick (see: ...)</td></tr>
+Why: the operator's word of 2026-11-09: "ok but i want them on the home page as well with clear message why they are being watched", and "All the stock ideas should be on home page with complete distinction why some are being watched and why some being watched as i said. I dont  want to have to go to tonight page everytime to see all teh stocks". The record is measured against the index's other stocks bought the same way, so the line no longer says a watched setup made no money.
+
+### 2026-11-09 - docs/BUILD_PLAN.md - 22.48's citation names the decision that supersedes its own
+Decision: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
+Was:
+> and the buys past its six cards are named beneath them with their families (see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families).
+Now:
+> and the buys past its six cards are named beneath them with their families, which from the 22.16 correction of 2026-11-09 draws every buy as a card (see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why).
+Why: a spec may not cite a decision under "Previously decided"; the checkpoint's text keeps what 22.48 built and names what replaced it.
+
 ### 2026-11-09 - docs/BUILD_PLAN.md - 23.10 gains the S&P 500 drift's first-pullback variant, a zone plan's card and the record of the plan traded
 Decision: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
 Was:

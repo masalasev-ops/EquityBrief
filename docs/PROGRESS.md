@@ -18260,3 +18260,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 140, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 22.16 - correction: Home draws every pick as a card, the ideas to buy first and the watched after them, each saying why   2026-11-09
+
+Found:      the operator's word of 2026-11-09, once the remedy of the setups' records had run on the S&P 500: "ok but i want them on
+            the home page as well with clear message why they are being watched", and then: "All the stock ideas should be on home
+            page with complete distinction why some are being watched and why some being watched as i said. I dont  want to have
+            to go to tonight page everytime to see all teh stocks". Home drew six cards and named the rest on a line, named the
+            picks watched on one line with no card, and said their setups had not made money, where the record measures them
+            against the index's other stocks bought the same way.
+Corrected:  Home draws every pick as a card, with no cap and no line of picks left to Tonight: the ideas to buy, then the picks
+            whose setup's record lost under the heading "Watching, not buying: <n> picks tonight." saying picks like these did worse
+            than the index's other stocks bought the same way since 2019 with their plans as they stand, so they are traded on paper
+            only. A line above the cards says what splits them; each card opens on "An idea to buy." or "Watching, not buying." with
+            why from its record, made, short, none or unread; a watched card's buy reads "Paper buy at about" on a dashed edge. One
+            function splits the picks for the page. Tonight, Paper trading and the paper accounts are unchanged. The new decision
+            supersedes 22.48's and this day's earlier 22.16 decision, both moved below with their reasoning; section 15.24's two rows,
+            22.48's citation in the plan and the guide's Home paragraph say what Home now draws.
+Tests:      the read-surface tests of the picks watched rewritten and one added: every pick a card in its group and order, nine picks
+            split by hand, the line above the cards, each verdict over its five records, the heading in both numbers, a night whose
+            every pick is watched, and the S&P 400's Home read through the host; 22.48's test holds nine ideas drawn as cards in
+            Tonight's order with none named left out. Read back over a scratch copy of the store holding tonight's records, on the
+            S&P 500 and 400 at 1440 and 390 in both palettes: 13 cards on the S&P 500, 4 to buy and 9 watched, none wider than the page.
+Claims:     none new; section 15.24's rows of tonight's ideas and the picks watched say what Home now draws.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to the three tests of the picks
+            watched, restored to the file's own text, 4 in all, each predicted red and each red: the picks watched drawn with no card,
+            3 red; a watched card opening as an idea to buy, 2 red; a watched card's buy read as a buy, 1 red; and the split keeping
+            the first six ideas to buy, 1 red. The third first ran with the second's edit still in place, its restore having missed on
+            a dropped space; it was run again alone after both were restored.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3659 of 3659 tests ran with none failed, migrations 0 to 140 with none
+            pending, schema version 140, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

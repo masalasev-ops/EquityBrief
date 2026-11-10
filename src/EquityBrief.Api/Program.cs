@@ -2902,19 +2902,16 @@ async Task<IResult> HomeAsync(
         Setting: buy.Family == EquityBrief.Core.Families.ImprovingRule.Name && improving?.Setting is { } setting ? setting with { SoldUnderAverage = improving.Rule.Contains(EquityBrief.Core.Families.ImprovingRule.UnderItsAverage, StringComparison.Ordinal) } : null,
         LongRecord: longRecords.Of(reading.Code, buy.Family));
 
-    // Every buy in Tonight's order, read by the one function Tonight's buys draw them in.
-    // see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
+    // Every buy in Tonight's order, read by the one function Tonight's buys draw them in; each is an idea to buy unless its
+    // setup's record over the long history lost, and then it is watched.
+    // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
     HomeIdea[] ideas =
     [
         .. MarkRenderer.BuysInOrder(points, SinglePageApp.PlanlessBuys(reading.Word, improving, null, null))
             .Select(buy => buy.Point is { } point ? IdeaOf(point) : PlanlessIdeaOf(buy.Planless!)),
     ];
 
-    // From the 22.16 correction of 2026-11-09 a buy is drawn as a card only where its setup's record over the long history made
-    // money or there is none yet, and the rest are named as watched, each in Tonight's order.
-    // see: Home draws a card only for a pick whose setup made money over the long history or has none, and names the rest as watched
-    HomeIdea[] carded = [.. ideas.Where(idea => idea.LongRecord is not { Lost: true })];
-    HomeIdea[] watched = [.. ideas.Where(idea => idea.LongRecord is { Lost: true })];
+    var (carded, watched) = SinglePageApp.Split(ideas);
     var opens = MarkRenderer.OpenDay(dated);
 
     // The system's trades since the rules first went live, and the live setups' accounts averaged since today's rules all
@@ -2957,7 +2954,7 @@ async Task<IResult> HomeAsync(
         [.. Universes.Offered.Where(choice => choice != reading).Select(choice => (choice.Name, Moved(SeriesOf(choice))))],
         Moved(EquityBrief.Core.Families.MarketCloses.Vix),
         vix is not null && median is { } middle ? vix.Close > middle : null,
-        [.. carded.Take(SinglePageApp.HomeIdeas)],
+        carded,
         carded.Length,
         opens.EndsWith("'s", StringComparison.Ordinal) ? opens[..^2] : opens,
         (checks is { Count: > 0 } ? checks.All(check => !check.Open) : line is { Open: false }) ? "The market was too weak for the rules to buy tonight." : "No stock met every rule tonight.",
@@ -2965,7 +2962,6 @@ async Task<IResult> HomeAsync(
         checks is { Count: > 0 } ? checks.Count(check => check.Open) : null,
         checks is { Count: > 0 } ? checks.Count : null)
     {
-        LeftOut = [.. carded.Skip(SinglePageApp.HomeIdeas)],
         Watching = watched,
 
         // The monthly books' holdings bought at tonight's reshuffle, named apart from the new picks.

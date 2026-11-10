@@ -44,11 +44,7 @@ public sealed record HomeView(
     int? RulesOpen = null,
     int? Rules = null)
 {
-    // The buys Tonight draws after the ideas Home draws, in Tonight's order.
-    public IReadOnlyList<HomeIdea> LeftOut { get; init; } = [];
-
-    // From the 22.16 correction of 2026-11-09 the buys whose setup lost over the long history, in Tonight's order, named and
-    // not drawn as cards.
+    // The buys whose setup lost over the long history, in Tonight's order, drawn as watched cards after the ideas to buy.
     public IReadOnlyList<HomeIdea> Watching { get; init; } = [];
 
     // The monthly books' holdings bought at tonight's reshuffle, each with its book's family, in Tonight's order.
@@ -61,9 +57,6 @@ public sealed record HomeView(
 // see: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
 public sealed partial class SinglePageApp
 {
-    // The ideas Home draws before the link to the rest.
-    public const int HomeIdeas = 6;
-
     // A day the index fell by at least this much, in percent, is a shaky one.
     public const double ShakyFall = 1.0;
 
@@ -76,8 +69,8 @@ public sealed partial class SinglePageApp
 
     public const string RisesLine = "The give-up price rises as the stock climbs, so a winner can keep running.";
 
-    // Why there is no card on a night every pick is watched.
-    public static string WatchedOnly => Invariant($"Every pick tonight is from a setup that has not made money on this index since {EquityBrief.Core.History.LongLedger.StandingFrom.Year}, so none is drawn as an idea.");
+    // Why there is no idea to buy on a night every pick is watched.
+    public const string WatchedOnly = "Every pick tonight is watched, not offered as an idea to buy: each card below says why.";
 
     // What the Fundamentals family's card says in a give-up price's place: it sets none and sells on its filings; and a
     // monthly book's, which sells at a reshuffle.
@@ -139,19 +132,6 @@ public sealed partial class SinglePageApp
         _ => "Idea",
     };
 
-    // The buys Home leaves out, named in Tonight's order with their families' tags: "3 more on Tonight: CVS and ODFL (Getting
-    // stronger as a business), NUE (Quick rebound), not drawn here to keep this page short."
-    // see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
-    public static string? LeftOutLine(IReadOnlyList<HomeIdea> left)
-    {
-        if (left.Count == 0)
-        {
-            return null;
-        }
-
-        return Invariant($"{left.Count} more on Tonight: {Grouped(left.Select(idea => (idea.Family, idea.Ticker)))}, not drawn here to keep this page short.");
-    }
-
     // Tickers in their order, the stocks of one family together with its tag after them: "CVS and ODFL (Getting stronger as a
     // business), NUE (Quick rebound)".
     static string Grouped(IEnumerable<(string Family, string Ticker)> named)
@@ -176,24 +156,53 @@ public sealed partial class SinglePageApp
         return string.Join(", ", groups.Select(group => Listed(group.Tickers) + " (" + group.Tag + ")"));
     }
 
-    // The buys whose setup lost over the long history, named in Tonight's order with their families' tags: "Watching, not buying: 2
-    // picks tonight. ABNB and MCD (Strong earnings). This setup has not made money on the S&P 500 since 2019 with its plan as it
-    // stands, so it is traded on paper only. See them on Tonight."; none on a night no pick is watched.
-    // see: Home draws a card only for a pick whose setup made money over the long history or has none, and names the rest as watched
-    public static string? WatchingLine(IReadOnlyList<HomeIdea> watching, UniverseChoice reading, string tonight)
+    // Every one of tonight's picks, split into the ideas to buy and the picks whose setup's record over the long history lost,
+    // each group in the order given; none is left out.
+    // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
+    public static (HomeIdea[] Buy, HomeIdea[] Watch) Split(IReadOnlyList<HomeIdea> picks) =>
+        ([.. picks.Where(pick => pick.LongRecord is not { Lost: true })], [.. picks.Where(pick => pick.LongRecord is { Lost: true })]);
+
+    // The rule splitting tonight's picks into the ideas to buy and the picks watched, above every card.
+    // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
+    public static string SplitLine(UniverseChoice reading) =>
+        Invariant($"A pick is an idea to buy unless picks like it did worse than the {reading.Name}'s other stocks bought the same way since {EquityBrief.Core.History.LongLedger.StandingFrom.Year}; then it is watched and traded on paper only. Each card says which, and why.");
+
+    // The heading of the picks watched, above their cards: how many, and why none of them is offered as an idea to buy; none on
+    // a night no pick is watched.
+    // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
+    public static string? WatchingLine(IReadOnlyList<HomeIdea> watching, UniverseChoice reading)
     {
         if (watching.Count == 0)
         {
             return null;
         }
 
-        var setups = watching.Select(idea => idea.Family).Distinct(StringComparer.Ordinal).Count();
         var since = watching[0].LongRecord?.From ?? EquityBrief.Core.History.LongLedger.StandingFrom.Year;
-        var why = setups == 1
-            ? Invariant($"This setup has not made money on the {reading.Name} since {since} with its plan as it stands, so it is traded on paper only.")
-            : Invariant($"These setups have not made money on the {reading.Name} since {since} with their plans as they stand, so they are traded on paper only.");
+        var why = watching.Count == 1
+            ? Invariant($"Picks like it did worse than the {reading.Name}'s other stocks bought the same way since {since}, with its plan as it stands, so it is traded on paper only, not offered as an idea to buy.")
+            : Invariant($"Picks like these did worse than the {reading.Name}'s other stocks bought the same way since {since}, with their plans as they stand, so they are traded on paper only, not offered as ideas to buy.");
 
-        return Invariant($"<p class=\"home-watch\" data-watching=\"{watching.Count}\"><b>Watching, not buying: {watching.Count} {(watching.Count == 1 ? "pick" : "picks")} tonight.</b> {Escaped(Grouped(watching.Select(idea => (idea.Family, idea.Ticker))))}. {Escaped(why)} <a href=\"{tonight}\">{(watching.Count == 1 ? "See it on Tonight" : "See them on Tonight")}</a>.</p>");
+        return Invariant($"<p class=\"home-watch\" data-watching=\"{watching.Count}\"><b>Watching, not buying: {watching.Count} {(watching.Count == 1 ? "pick" : "picks")} tonight.</b> {Escaped(why)}</p>");
+    }
+
+    // The line opening a pick's card, saying whether it is an idea to buy or watched and why, from its setup's record over the
+    // long history: one that lost is watched; one that made money, holds too few picks, reaches back too few years or is unread
+    // is an idea to buy.
+    // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
+    public static string VerdictLine(HomeIdea idea, UniverseChoice reading)
+    {
+        var record = idea.LongRecord;
+        var since = record?.From ?? EquityBrief.Core.History.LongLedger.StandingFrom.Year;
+        var (verdict, head, why) = record switch
+        {
+            { Lost: true } => ("watch", "Watching, not buying.", Invariant($"Since {since}, picks like this did worse than the {reading.Name}'s other stocks bought the same way, so this one is traded on paper only.")),
+            { Made: true } => ("buy", "An idea to buy.", Invariant($"Since {since}, picks like this did better than the {reading.Name}'s other stocks bought the same way.")),
+            { Short: true } => ("buy", "An idea to buy.", Invariant($"Too few picks like this since {since} for a record to hold it back.")),
+            { ReachesBack: not null } => ("buy", "An idea to buy.", "Picks like this have no long record yet to hold it back."),
+            _ => ("buy", "An idea to buy.", "No long record of picks like this has been read yet to hold it back."),
+        };
+
+        return Invariant($"<p class=\"home-verdict\" data-verdict=\"{verdict}\"><b>{Escaped(head)}</b> {Escaped(why)}</p>");
     }
 
     // The monthly books' buys at tonight's reshuffle, named apart from the new picks: "The monthly books reshuffled tonight
@@ -363,8 +372,9 @@ public sealed partial class SinglePageApp
 
         region.Append(Invariant($"<section class=\"card\" id=\"ideas\" data-ideas=\"{view.IdeasCount}\"><div class=\"card-h\"><div><div class=\"lbl\">Tonight's ideas</div><h2>{Escaped(title)}</h2></div><div>{stamp}</div></div><div class=\"card-b\">"));
 
-        // From the 22.16 correction of 2026-11-09 the cards are the picks whose setup made money over the long history or has none,
-        // the heading counting them; the rest are named beneath them as watched, and the link to Tonight counts every pick.
+        // Every pick is a card, the ideas to buy first and the picks watched after them, each in Tonight's order; the heading
+        // counts the ideas to buy, and the line above the cards says what splits them.
+        // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
         if (view.IdeasCount == 0)
         {
             region.Append(Invariant($"<p class=\"card-summary\" data-ideas=\"none\">No new ideas tonight. {Escaped(view.Watching.Count > 0 ? WatchedOnly : view.NoIdeas ?? "Nothing qualified tonight.")}</p>"));
@@ -372,18 +382,37 @@ public sealed partial class SinglePageApp
         else
         {
             region.Append("<p class=\"card-summary\">Each idea comes with three prices decided tonight: what to pay, where to give up if it goes wrong, and where to take the profit.</p>");
-            region.Append("<div class=\"home-ideas\">");
+        }
+
+        if (view.IdeasCount + view.Watching.Count > 0)
+        {
+            region.Append(Invariant($"<p class=\"home-split\">{Escaped(SplitLine(view.Reading))}</p>"));
+        }
+
+        if (view.IdeasCount > 0)
+        {
+            region.Append("<div class=\"home-ideas\" data-group=\"buy\">");
 
             foreach (var idea in view.Ideas)
             {
-                region.Append(Idea(idea, marks.Copying, view.Reading));
+                region.Append(Idea(idea, marks.Copying, view.Reading, watched: false));
             }
 
             region.Append("</div>");
-            region.Append(LeftOutLine(view.LeftOut) is { } more ? Invariant($"<p class=\"home-more\" data-more=\"{view.LeftOut.Count}\">{Escaped(more)}</p>") : string.Empty);
         }
 
-        region.Append(WatchingLine(view.Watching, view.Reading, TonightHref(view.Reading)) ?? string.Empty);
+        if (WatchingLine(view.Watching, view.Reading) is { } watchingLine)
+        {
+            region.Append(watchingLine);
+            region.Append("<div class=\"home-ideas\" data-group=\"watch\">");
+
+            foreach (var idea in view.Watching)
+            {
+                region.Append(Idea(idea, marks.Copying, view.Reading, watched: true));
+            }
+
+            region.Append("</div>");
+        }
 
         if (view.IdeasCount + view.Watching.Count > 0)
         {
@@ -444,13 +473,16 @@ public sealed partial class SinglePageApp
     static string Signal(string key, string label, string tone, string word, string meaning, bool plainWord = false) =>
         Invariant($"<div class=\"home-signal\" data-signal=\"{key}\" data-tone=\"{tone}\"><span class=\"st-label\"><span class=\"home-dot {tone}\" aria-hidden=\"true\"></span>{Escaped(label)}</span><span class=\"home-word{(plainWord ? string.Empty : " " + tone)}\">{Escaped(word)}</span><span class=\"home-meaning\">{Escaped(meaning)}</span></div>");
 
-    static string Idea(HomeIdea idea, bool copying, UniverseChoice reading)
+    // A pick's card: an idea to buy, or a pick watched, whose buy price reads as bought on paper.
+    static string Idea(HomeIdea idea, bool copying, UniverseChoice reading, bool watched)
     {
         var card = new StringBuilder();
         var family = Escaped(idea.Family);
+        var buying = watched ? "Paper buy" : "Buy";
 
-        card.Append(Invariant($"<article class=\"home-idea fam-edge\" data-family=\"{family}\" data-ticker=\"{Escaped(idea.Ticker)}\">"));
+        card.Append(Invariant($"<article class=\"home-idea fam-edge{(watched ? " watched" : string.Empty)}\" data-family=\"{family}\" data-ticker=\"{Escaped(idea.Ticker)}\">"));
         card.Append(Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(idea.Ticker)}</div>{(idea.Company is { } company ? Invariant($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(idea.Family))}</span></div>"));
+        card.Append(VerdictLine(idea, reading));
         card.Append(Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
 
         // From the 22.16 correction of 2026-11-09 a plan that buys at a zone: the price it waits for, the close that sells it,
@@ -459,7 +491,7 @@ public sealed partial class SinglePageApp
         if (idea.Zone is { } zone)
         {
             card.Append("<div class=\"home-prices\">");
-            card.Append(Invariant($"<div><span>Buy if it dips to about</span><b>{Dollars(zone.Price)}</b></div>"));
+            card.Append(Invariant($"<div><span>{buying} if it dips to about</span><b>{Dollars(zone.Price)}</b></div>"));
             card.Append(Invariant($"<div><span>Sell if it closes below</span><b class=\"stop\">{(idea.Stop is { } below ? Dollars(below) : NoFigure)}</b></div>"));
             card.Append(idea.Target is { } aimed
                 ? Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{Dollars(aimed)}</b></div>")
@@ -469,7 +501,7 @@ public sealed partial class SinglePageApp
         }
         else
         {
-            card.Append(PricesOf(idea));
+            card.Append(PricesOf(idea, buying));
         }
 
         card.Append(MarkRenderer.HomeEntryCheckLine(idea.EntryCheck, idea.Ticker));
@@ -478,13 +510,13 @@ public sealed partial class SinglePageApp
         return Rest(idea, card, copying, reading);
     }
 
-    // An idea's three prices bought at the next open.
-    static string PricesOf(HomeIdea idea)
+    // An idea's three prices bought at the next open, its buy named as a paper buy on a watched pick's card.
+    static string PricesOf(HomeIdea idea, string buying)
     {
         var card = new StringBuilder();
 
         card.Append("<div class=\"home-prices\">");
-        card.Append(Invariant($"<div><span>Buy at about</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
+        card.Append(Invariant($"<div><span>{buying} at about</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
         card.Append(idea.Family == ImprovingRule.Name
             ? Invariant($"<div><span>Sell when</span><b class=\"stop\">{FilingsWeaken}</b></div>")
             : Planless(idea.Family)
