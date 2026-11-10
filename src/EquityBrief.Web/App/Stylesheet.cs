@@ -1565,7 +1565,10 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .setup-record .rec-h{font:600 11.5px var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)} .setup-record .rec-sub{color:var(--soft);font-size:12.5px}
 .setup-record b.made{color:var(--up)} .setup-record b.lost{color:var(--down)} .setup-record b.none{color:var(--soft)}
 .home-cond{font-size:13.5px;color:var(--ink-2);line-height:1.45} .zone-wait{margin:6px 0;font-size:13.5px;color:var(--ink-2);line-height:1.45}
-.home-watch{margin:14px 0 0;padding:10px 14px;border:1px solid var(--hair-2);border-radius:8px;font-size:14.5px;line-height:1.5;color:var(--ink-2)} .home-watch b{color:var(--ink)}
+.home-watch{margin:18px 0 10px;padding:10px 14px;border:1px solid var(--hair-2);border-radius:8px;font-size:14.5px;line-height:1.5;color:var(--ink-2)} .home-watch b{color:var(--ink)}
+.home-split{margin:6px 0 10px;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.home-verdict{margin:0;padding:7px 10px;border-radius:6px;font-size:13.5px;line-height:1.45;color:var(--ink)} .home-verdict[data-verdict=buy]{background:var(--up-fill)} .home-verdict[data-verdict=buy] b{color:var(--up)} .home-verdict[data-verdict=watch]{background:var(--down-fill)} .home-verdict[data-verdict=watch] b{color:var(--down)}
+.home-idea.watched{border-style:dashed}
 .home-note{margin:14px 0 0;padding:10px 14px;border-radius:8px;background:var(--warn-fill);font-size:14px;color:var(--ink)}
 .home-results{display:flex;flex-wrap:wrap;gap:24px}
 .home-results .home-system{flex:1 1 100%;margin:0;padding-top:12px;border-top:1px solid var(--hair);color:var(--ink-2);font-size:14px}

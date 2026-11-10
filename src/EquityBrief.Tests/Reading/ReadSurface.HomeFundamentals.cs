@@ -6,7 +6,7 @@ namespace EquityBrief.Tests.Reading;
 // The 22.16 correction of 2026-11-09's next: the Fundamentals family's card on Home draws the mockup's parts in its order, its
 // buy price, how it sells and that it aims at no fixed target, the record box with the year its filings reach back to, the
 // line of its filings' rule at its index's setting and the link to how it sells.
-// see: Home draws a card only for a pick whose setup made money over the long history or has none, and names the rest as watched
+// see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
 public partial class ReadSurface
 {
     [Fact]

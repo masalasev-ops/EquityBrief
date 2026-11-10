@@ -53,10 +53,11 @@ public partial class ReadSurface
     }
 
     // The S&P 500's buys of the night: five drifts, the Fundamentals family's AIG, CVS and ODFL and the dip's NUE. Home drew
-    // six and named none of the three it left out; it draws Tonight's first six and names the rest with their families.
-    // see: Home's ideas are Tonight's buys in Tonight's order, those left out named with their families
+    // six and named none of the three it left out; it draws every one of them as a card in Tonight's order, and names none as
+    // left out.
+    // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
     [Fact]
-    public void HomesIdeasAreTonightsBuysInTonightsOrderAndTheRestAreNamed()
+    public void HomesIdeasAreTonightsBuysInTonightsOrderEveryOneACard()
     {
         BuyPointView[] points =
         [
@@ -72,12 +73,15 @@ public partial class ReadSurface
 
         HomeIdea Idea(string family, string ticker) => new(family, ticker, null, "Why.", 10m, null, null, false, null);
 
-        var left = new[] { Idea("improving", "CVS"), Idea("improving", "ODFL"), Idea("dip", "NUE") };
-        var home = WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [Idea("drift", "EVRG")], IdeasCount = 9, LeftOut = left }, string.Empty));
+        var nine = new[] { "drift:EVRG", "drift:STE", "drift:EW", "drift:APP", "drift:GWW", "improving:AIG", "improving:CVS", "improving:ODFL", "dip:NUE" }
+            .Select(one => Idea(one.Split(':')[0], one.Split(':')[1]))
+            .ToArray();
+        var home = WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = nine, IdeasCount = 9 }, string.Empty));
 
-        Assert.Contains("<p class=\"home-more\" data-more=\"3\">3 more on Tonight: CVS and ODFL (Getting stronger as a business), NUE (Quick rebound), not drawn here to keep this page short.</p>", home, StringComparison.Ordinal);
-        Assert.Null(SinglePageApp.LeftOutLine([]));
-        Assert.Equal("1 more on Tonight: NUE (Quick rebound), not drawn here to keep this page short.", SinglePageApp.LeftOutLine([Idea("dip", "NUE")]));
+        Assert.Equal(order, Regex.Matches(home, "<article class=\"home-idea fam-edge\" data-family=\"[a-z]+\" data-ticker=\"([A-Z]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains("Tonight's ideas: 9 stocks to buy", home, StringComparison.Ordinal);
+        Assert.DoesNotContain("more on Tonight", home, StringComparison.Ordinal);
+        Assert.DoesNotContain("not drawn here", home, StringComparison.Ordinal);
     }
 
     // Home's See the plan opened the stock's chart page; it opens Tonight at the stock's row, and an idea no plan sells opens
