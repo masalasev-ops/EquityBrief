@@ -18604,8 +18604,8 @@ Tests:      9 new: a plan's parameters read and stated back and each malformed o
 Claims:     none new; section 13's paragraph on the hooks and the catalogue rows of the components that read the marks, the
             register and the trades say it.
 Pins:       every family rule's version moves: the hooks' sources pin the plan's files, the bands, the ladder and the volume
-            profile a plan's order is placed at, and the marks, the quality rules, whose books state no plan, pinning all but the
-            walk and its levels, and the heavyweights' book reads the marks; the fill at a level, which the entry check's
+            profile a plan's order is placed at, and the marks, the Quality and Fundamentals rules, whose books state no plan,
+            pinning all but the walk and its levels, and the heavyweights' book reads the marks; the fill at a level, which the entry check's
             measurement reads as well, moves into the plan's file so no rule pins the entry check's words, and the replay's two
             reasons for no ladder read the wording file's; the swing filter and the ladder rules' windows do not move.
 Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored to the file's
