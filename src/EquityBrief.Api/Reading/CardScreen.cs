@@ -68,11 +68,17 @@ public static class CardScreen
         var heavyweights = string.Equals(row.Family, EquityBrief.Core.Families.HeavyweightRule.Name, StringComparison.Ordinal);
         var dip = string.Equals(row.Family, EquityBrief.Core.Families.DipRule.Name, StringComparison.Ordinal);
 
+        // From 23.10 a card whose family's live rule trades a plan buying at a level draws that level, how long it waits, the
+        // plan's stop placed from it and its target, and is sized on them.
+        // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+        var zone = ZoneOf(row.Plan, row.Entry);
+        var (sizedEntry, stopDrawn, targetDrawn) = zone is { } planned ? (planned.Zone.Price, planned.Stop, planned.Target) : (row.Entry, row.Stop, row.Target);
+
         // A page the operator reads sizes on the example until they save their own; an export and the read-only copy size on nothing.
         // see: A pick's plan is sized on the example account until the operator saves their own
         var sizedOn = given.Account ?? (given.Pressable ? EquityBrief.Core.Cards.AccountSettings.Example : null);
         var money = sizedOn is { } account
-            ? EquityBrief.Core.Cards.PositionSize.Of(account, row.Entry, row.Stop, heavyweights ? row.BookHoldings : null, row.RoundTrip)
+            ? EquityBrief.Core.Cards.PositionSize.Of(account, sizedEntry, stopDrawn, heavyweights ? row.BookHoldings : null, row.RoundTrip)
             : null;
 
         return new DecisionCardView(
@@ -82,13 +88,13 @@ public static class CardScreen
             row.Ticker,
             row.Rule,
             row.Entry,
-            row.Stop,
-            row.Target,
+            stopDrawn,
+            targetDrawn,
             drawn,
             row.Record is { } stored ? Record(stored) : null,
             dip
-                ? EquityBrief.Core.Cards.Management.ForDip(row.Stop, (given.Dip ?? EquityBrief.Core.Families.DipRule.Provisional).ExitLevel, row.Cap)
-                : EquityBrief.Core.Cards.Management.For(row.Stop, row.Target, row.Trail, row.Cap, heavyweights),
+                ? EquityBrief.Core.Cards.Management.ForDip(stopDrawn, (given.Dip ?? EquityBrief.Core.Families.DipRule.Provisional).ExitLevel, row.Cap)
+                : EquityBrief.Core.Cards.Management.For(stopDrawn, targetDrawn, row.Trail, row.Cap, heavyweights),
             money is { } plan && sizedOn is { } held
                 ? new CardMoneyView(
                     plan.Shares,
@@ -99,7 +105,7 @@ public static class CardScreen
                     plan.Capped,
                     plan.WholeAtRisk,
                     held.RiskPercent,
-                    row.Target is { } target && row.Entry is { } bought && target > bought ? plan.Shares * (target - bought) : null,
+                    targetDrawn is { } target && sizedEntry is { } bought && target > bought ? plan.Shares * (target - bought) : null,
                     given.Account is null)
                 : null,
             [
@@ -121,7 +127,27 @@ public static class CardScreen
         {
             EntryCheck = row.EntryCheck,
             LongRecord = given.LongRecords.Of(row.Index, row.Family),
+            Zone = zone?.Zone,
         };
+    }
+
+    // From 23.10 the zone a card's traded plan buys at: the price its level waits for, the trading days it waits, tonight's
+    // close and, where its sale names no target, the trading days after which it sells; with its stop placed from that price
+    // and its target. None where the card holds no plan, its plan buys at the next open or no close is stored.
+    // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+    public static (ZoneBuy Zone, decimal? Stop, decimal? Target)? ZoneOf(string? plan, decimal? close)
+    {
+        if (EquityBrief.Core.Loop.PlanOrder.FromJson(plan) is not { Level: { } level } order || close is not { } tonight)
+        {
+            return null;
+        }
+
+        var stop = EquityBrief.Core.Loop.PlanPoints.StopOf(order.Stop, level, order.RuleStop, order.ZoneStop, order.TypicalDay);
+
+        return (
+            new ZoneBuy(EquityBrief.Core.Prices.Statistic.ToPrice(level), order.Window, tonight, order.Target is null ? order.Cap : null),
+            stop is { } placed ? EquityBrief.Core.Prices.Statistic.ToPrice(placed) : null,
+            order.Target is { } aimed ? EquityBrief.Core.Prices.Statistic.ToPrice(aimed) : null);
     }
 
     // What could hit the trade, as the night stored it on the card.

@@ -557,7 +557,11 @@ public sealed record DecisionCardRow(
     int? ScoreRank = null,
     string? Similar = null,
     string? Approved = null,
-    EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null);
+    EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null)
+{
+    // From 23.10 the order the plan its family's live rule states placed on the pick's trade, none before it.
+    public string? Plan { get; init; }
+}
 
 // The operator's own record of one family on one index as the night's follower wrote it: the unit its results are read
 // in, the trades won at the target and lost at the stop where the rule sets a target, every trade ended, those open, and
@@ -3944,7 +3948,7 @@ public sealed partial class ReadApi : IComponent
     // ---- the decision cards ----
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 
-    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved";
+    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved, plan";
 
     const string DecisionCardsOn = "SELECT " + CardColumns + @" FROM decision_card
         WHERE index_code = $index AND session_date = $on
@@ -4013,7 +4017,10 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(17) ? null : reader.GetString(17),
                 reader.IsDBNull(18) ? null : reader.GetInt32(18),
                 reader.IsDBNull(19) ? null : reader.GetString(19),
-                reader.IsDBNull(20) ? null : reader.GetString(20)));
+                reader.IsDBNull(20) ? null : reader.GetString(20))
+            {
+                Plan = reader.IsDBNull(21) ? null : reader.GetString(21),
+            });
         }
 
         var nights = rows.Select(row => row.Night).Distinct().ToArray();

@@ -2911,6 +2911,13 @@ async Task<IResult> HomeAsync(
             .Select(buy => buy.Point is { } point ? IdeaOf(point) : PlanlessIdeaOf(buy.Planless!)),
     ];
 
+    // From 23.10 each idea whose family's live rule trades a plan buying at a level draws that level, how long it waits and the
+    // plan's stop and target, as its card does.
+    // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+    var zones = await read.CardZonesAsync(reading.Code, dated);
+
+    ideas = [.. ideas.Select(idea => zones.TryGetValue((idea.Family, idea.Ticker), out var zoned) ? idea with { Zone = zoned.Zone, Stop = zoned.Stop ?? idea.Stop, Target = zoned.Target } : idea)];
+
     var (carded, watched) = SinglePageApp.Split(ideas);
 
     // Each watched pick handed the plan its kind's test recommends, as the night priced it on its card.

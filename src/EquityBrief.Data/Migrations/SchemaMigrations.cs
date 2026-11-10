@@ -762,15 +762,17 @@ public static class SchemaMigrations
         new Migration(139, "add long_reading's outlying, and create long_outlier", CreateLongOutlier),
         new Migration(140, "add the traded plan's picks from 2019 to plan_point", AddTradedLaterPicks),
         new Migration(141, "add the recommended plan priced on each price pick to decision_card", AddCardAlternative),
-        new Migration(142, "add the plan a trade is bought and sold by to the rules' trade tables", AddTradePlan),
+        new Migration(142, "add the plan a trade is bought and sold by to the rules' trade tables and the pick's card", AddTradePlan),
     ];
 
-    // From 23.10 the order a rule stating a plan placed on its trade at its night's close, which the trade is walked under.
+    // From 23.10 the order a rule stating a plan placed on its trade at its night's close, which the trade is walked under, and
+    // the live rule's order on its pick's card, which draws the zone it buys at.
     const string AddTradePlan = @"
         ALTER TABLE family_trade ADD COLUMN plan TEXT;
         ALTER TABLE index_rule_trade ADD COLUMN plan TEXT;
         ALTER TABLE dip_trade ADD COLUMN plan TEXT;
         ALTER TABLE rule_pick ADD COLUMN plan TEXT;
+        ALTER TABLE decision_card ADD COLUMN plan TEXT;
     ";
 
     // From the 22.16 correction of 2026-11-10 each price family's pick priced at the plan its index's test of the buy and sell
