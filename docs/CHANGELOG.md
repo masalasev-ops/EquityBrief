@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - .claude/rules/checks.md - architecture-conformance states phase 23's pair
+Decision: none; 23.11's done condition, the pair checked against the actual
+Was:
+> architecture-conformance: ... each named with what it landed, the four by which the plan's counts exceed its pair named beside them |
+Now:
+> architecture-conformance: ... the four by which the plan's counts exceed its pair named beside them; and from 23.11 phase 23's pair is read off the plan and checked the same way, each row the phase added reached once and passing, its actual inside the range and past the pair by the net of what each checkpoint landed more or fewer than its count, each named with what it landed, and the rows corrections of phase 22's work landed while it was built named beside it and counted in none of it |
+Why: each roster row says what its check asserts, and 23.11's test extends architecture-conformance.
+
 ### 2026-11-10 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - a card draws the plan its rule trades, and a plan placing no buy draws none
 Corrects: after 23.10's restart the cards of 2026-11-09, stored before the rules stated their plans, drew the next open's paper buy beside a box recommending the plan the rules now trade, and the box would have said that plan did no better than itself; a dip card whose zone plan placed no buy drew a paper buy; and the plan point test read the dip's live plan on no index, so its figures stood against the next open, found reading Home back on 2026-11-10.
 Was:
