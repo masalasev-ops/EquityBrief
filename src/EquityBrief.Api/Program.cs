@@ -2916,7 +2916,16 @@ async Task<IResult> HomeAsync(
     // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
     var zones = await read.CardZonesAsync(reading.Code, dated);
 
-    ideas = [.. ideas.Select(idea => zones.TryGetValue((idea.Family, idea.Ticker), out var zoned) ? idea with { Zone = zoned.Zone, Stop = zoned.Stop ?? idea.Stop, Target = zoned.Target } : idea)];
+    // From the 23.10 correction of 2026-11-10 its buy is the price the zone waits for, so what it risks for what it aims at reads
+    // from that price, and one whose plan sets no buy price tonight draws no prices.
+    ideas =
+    [
+        .. ideas.Select(idea => !zones.TryGetValue((idea.Family, idea.Ticker), out var zoned)
+            ? idea
+            : zoned.Zone.NoBuy
+                ? idea with { Zone = zoned.Zone, Buy = null, Stop = null, Target = null, Trail = null, RewardPerRisk = null }
+                : idea with { Zone = zoned.Zone, Buy = zoned.Zone.Price, Stop = zoned.Stop ?? idea.Stop, Target = zoned.Target, RewardPerRisk = null }),
+    ];
 
     var (carded, watched) = SinglePageApp.Split(ideas);
 

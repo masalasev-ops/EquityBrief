@@ -50,4 +50,34 @@ public partial class ReadSurface
         Assert.DoesNotContain("Buy if it dips", Read(new MarkRenderer().DecisionCard(CardScreen.View(row, CardContext.None))), StringComparison.Ordinal);
         Assert.Contains("Buy at about", Read(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(SetupFamilies.Pullback, "BMY", null, "A dip.", 49.20m, 47.50m, 58m, false, null)], IdeasCount = 1 }, string.Empty)), StringComparison.Ordinal);
     }
+
+    // The 23.10 correction of 2026-11-10: a plan the stock's levels set no buy price for tonight draws no buy, no give-up price
+    // and no target on Home's card, a watched one's paper buy among them, or on a pick's card, only why there is no trade.
+    // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+    [Fact]
+    public void APlanWhoseLevelsSetNoBuyPriceTonightDrawsNoPricesOnAnyCard()
+    {
+        var none = new ZoneBuy(0m, 10, 259.16m, null, NoBuy: true);
+
+        var region = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(DipRule.Name, "IFF", null, "A fall.", null, null, null, false, null, Zone: none)], IdeasCount = 1 }, string.Empty);
+        var card = Read(Regex.Match(region, "<article class=\"home-idea.*?</article>", RegexOptions.Singleline).Value);
+
+        Assert.Contains(MarkRenderer.NoBuyTonight, card, StringComparison.Ordinal);
+        Assert.DoesNotContain("Buy at about", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("Buy if it dips", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sell if it", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("Aim to sell", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("Risks $1", card, StringComparison.Ordinal);
+
+        var row = new DecisionCardRow("GSPC", EntryNight, DipRule.Name, "IFF", 1, 259.16m, 210.55m, null, "the rule", "{}", "[]", null, Cap: 10);
+        var view = CardScreen.View(row, CardContext.None) with { Zone = none, Stop = null };
+
+        foreach (var drawn in new[] { new MarkRenderer().DecisionCard(view), new MarkRenderer { Copying = true }.DecisionCard(view) })
+        {
+            Assert.Contains(MarkRenderer.NoBuyTonight, Read(drawn), StringComparison.Ordinal);
+            Assert.DoesNotContain("Buy at about", Read(drawn), StringComparison.Ordinal);
+            Assert.DoesNotContain("Buy if it dips", Read(drawn), StringComparison.Ordinal);
+            Assert.DoesNotContain("Sell if it closes below", Read(drawn), StringComparison.Ordinal);
+        }
+    }
 }

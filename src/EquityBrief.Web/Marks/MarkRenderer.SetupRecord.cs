@@ -51,12 +51,16 @@ public sealed record SetupRecords(IReadOnlyList<SetupLongRecord> Records)
 }
 
 // From the 22.16 correction of 2026-11-09 a traded plan that buys at a zone: the price it waits for, the trading days it waits,
-// tonight's close and, where it sets no target, the trading days after which it sells. No plan buys at a zone before 23.10.
+// tonight's close and, where it sets no target, the trading days after which it sells. No plan buys at a zone before 23.10. From
+// the 23.10 correction of 2026-11-10 one whose stock's levels set no price tonight places no buy, its price and stop drawn as none.
 // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
-public sealed record ZoneBuy(decimal Price, int Within, decimal Close, int? Sessions = null);
+public sealed record ZoneBuy(decimal Price, int Within, decimal Close, int? Sessions = null, bool NoBuy = false);
 
 public sealed partial class MarkRenderer
 {
+    // What a card says in its plan's place where the plan its rule trades sets no buy price tonight.
+    public const string NoBuyTonight = "No buy tonight: the plan its rule trades buys only at a lower price set from the stock's own levels, and tonight those levels set none, so there is no trade.";
+
     // The line beneath a zone plan's prices: tonight's close, the price the buy waits for and for how long, and that no dip is no
     // trade.
     // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card

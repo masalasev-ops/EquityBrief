@@ -72,7 +72,9 @@ public static class CardScreen
         // plan's stop placed from it and its target, and is sized on them.
         // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
         var zone = ZoneOf(row.Plan, row.Entry);
-        var (sizedEntry, stopDrawn, targetDrawn) = zone is { } planned ? (planned.Zone.Price, planned.Stop, planned.Target) : (row.Entry, row.Stop, row.Target);
+        var (sizedEntry, stopDrawn, targetDrawn) = zone is { } planned
+            ? (planned.Zone.NoBuy ? default(decimal?) : planned.Zone.Price, planned.Stop, planned.Target)
+            : (row.Entry, row.Stop, row.Target);
 
         // A page the operator reads sizes on the example until they save their own; an export and the read-only copy size on nothing.
         // see: A pick's plan is sized on the example account until the operator saves their own
@@ -137,9 +139,16 @@ public static class CardScreen
     // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
     public static (ZoneBuy Zone, decimal? Stop, decimal? Target)? ZoneOf(string? plan, decimal? close)
     {
-        if (EquityBrief.Core.Loop.PlanOrder.FromJson(plan) is not { Level: { } level } order || close is not { } tonight)
+        if (EquityBrief.Core.Loop.PlanOrder.FromJson(plan) is not { } order || close is not { } tonight)
         {
             return null;
+        }
+
+        // From the 23.10 correction of 2026-11-10 an order the stock's levels placed no price for, read by the typical move it holds
+        // none of, places no buy, and its card draws none of the next open's prices in the plan's place.
+        if (order.Level is not { } level)
+        {
+            return order.TypicalDay > 0 ? null : (new ZoneBuy(0m, order.Window, tonight, null, NoBuy: true), null, null);
         }
 
         var stop = EquityBrief.Core.Loop.PlanPoints.StopOf(order.Stop, level, order.RuleStop, order.ZoneStop, order.TypicalDay);

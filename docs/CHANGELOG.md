@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - a card draws the plan its rule trades, and a plan placing no buy draws none
+Corrects: after 23.10's restart the cards of 2026-11-09, stored before the rules stated their plans, drew the next open's paper buy beside a box recommending the plan the rules now trade, and the box would have said that plan did no better than itself; a dip card whose zone plan placed no buy drew a paper buy; and the plan point test read the dip's live plan on no index, so its figures stood against the next open, found reading Home back on 2026-11-10.
+Was:
+> (section 15.18's row of a plan that buys at a zone) ending "and no plan buying at a zone before 23.10"
+> (SCHEMA, `decision_card.plan`) ending "null where the live rule states no plan or kept no trade on the stock"
+> (SCHEMA, the decision cards' paragraph) "and `card-plans` sets it again on a night named, touching no other column"
+> (RUNBOOK, `card-plans`) ending "and is refused while a night holds the store."
+Now:
+> the row adds a plan whose stock's levels set no buy price that night drawing no buy, no give-up price and no target, only the line that there is no trade, and Home's idea reading what it risks for what it aims at from the zone's price
+> the column adds the no buy where the levels set no price, and the pricing setting it on a price card holding none from the plan its family's live rule states
+> the paragraph adds the pricing's one other column, a price card's `plan` where it holds none and its family's live rule states one
+> the runbook adds that a recommendation that is the traded plan is stored as none and a card stored before its rule stated the plan is handed the order the plan places
+Why: one plan on a card, the one its rule trades, so a reader never sees a paper buy at one price beside a recommendation the rules already follow.
+
 ### 2026-11-10 - docs/BUILD_PLAN.md - the obligation on phase 22's sign-off discharged at 23.10
 Decision: none; the operator's ruling of 2026-11-10, item 8 of their overnight order
 Was:

@@ -2131,7 +2131,7 @@ dotnet run --project src/EquityBrief.Worker -- card-plans
 dotnet run --project src/EquityBrief.Worker -- card-plans --session 2026-11-09
 ```
 
-It prints how many cards it priced, asks nothing of anyone, calls no model, changes no pick, plan or rule, and is refused while a night holds the store.
+It prints how many cards it priced, asks nothing of anyone, calls no model, changes no pick, plan or rule, and is refused while a night holds the store. From the 23.10 correction of 2026-11-10 it reads the plan each family's live rule trades: a recommendation that is that plan is stored as none, since it is no alternative to it, and a card stored before its rule stated the plan is handed the order the plan places on the card's night from the stock's own bars, so it draws the plan its rule trades and not the next open's prices.
 
 ## Store maintenance
 

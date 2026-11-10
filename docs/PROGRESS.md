@@ -18628,3 +18628,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 142, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.10 - correction: a card draws the plan its rule trades, a plan placing no buy draws none, and the plan point test reads the dip's live plan   2026-11-10
+
+Corrects:   23.10, found reading Home back after its remedy on 2026-11-10. The cards of 2026-11-09, stored before the rules stated
+            their plans, drew the next open's paper buy beside a box recommending the plan the rules now trade, and once the long
+            test ran again the box would have said that plan did no better than itself. A dip card whose zone plan placed no buy
+            drew a paper buy at the close. Home's zone idea read what it risks for what it aims at from the close rather than the
+            zone's price. And the plan point test read the dip's live plan on no index, since the dip's evaluator is a family rule
+            evaluator named for its index and the general arm took it first, so the remedy's run stood the dip against the next
+            open on all three: -0.038, -0.037 and -0.029 a pick from 2019 where its plan's own read +0.024, +0.023 and +0.051.
+Built:      the plan point test reads the dip's rule on its own index under the family it walks; the cards' pricing reads the
+            plan each family's live rule trades, stores no alternative where the recommendation is that plan, and hands a price
+            card holding no plan the order that plan places on the card's night; an order the stock's levels placed no price for
+            reads as no buy tonight on every card and on Home, drawing no buy, no give-up price, no target and nothing sized; and
+            Home's zone idea is bought at the zone's price.
+Remedy:     `tools/remedies/2026-11-10-23.10-correction-the-cards-plan.txt`, from main after the merge while nothing else writes:
+            each index's long test of the buy and sell points again and the newest night's cards priced again.
+Tests:      3 new: an order its levels placed no price for reading as no buy, a card stored before its rule stated the plan
+            handed its order with no alternative, and a plan placing no buy drawing no prices on Home or on a pick's card; the
+            live plan test extended to the dip on each index.
+Claims:     none new; section 15.18's row of a plan that buys at a zone says it.
+Pins:       none move: the plan point test, the cards and the pages are pinned by no rule.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered to its
+            own test and restored with the editor. M1 the dip's arm taken out of the live plans, red at the live plan test; M2
+            the traded plan priced as an alternative, red at the card test; M3 the order handed to cards already holding one, red
+            at the card test; M4 an unplaced order read as no zone, red at the no buy test; M5 Home's no buy branch taken out,
+            red at the page test. Each red as predicted.
+Owed:       phase 22's sign-off, its correction table running to this correction's pull request; phase 23's sign-off; the
+            operator's review of every provisional choice and of the marks; the parts tabled for phase 24.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3678 of 3678 tests ran with none failed, migrations 0 to 142 with none
+            pending, schema version 142, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
