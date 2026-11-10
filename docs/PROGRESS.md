@@ -18682,3 +18682,65 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             check's test; M2 the marked count read off the newest write's row, red at the prices card's test. Each red as
             predicted.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.11 - the phase 23 report: every screen read back against the store, each checkpoint's figures and each ruling's outcome, the counts each checkpoint stated, the pair checked against the actual, and the two operating rows phase 23 opened   2026-11-10
+
+Queue:      done, 23.0 to 23.10 with their corrections, rulings and remedies, the three standing ledgers built again and
+            checked after 23.10's; in progress, this report and the 23.4 correction above its read-back found; next, 23.12,
+            written in `prompts/` alone and waiting on the operator's word, and the sign-offs of phases 22 and 23 by fresh
+            sessions.
+Screens:    captured on 2026-11-10 between 18:51Z and 19:03Z over a copy of the store taken at 18:42Z after 23.10's remedy and its
+            correction's, from main's Release build at 57174145, and the History page from this pull request's build, at 1,440
+            pixels and a true 390 in both palettes, 11 screens and 44 captures, laid out with what each was read back against at
+            https://claude.ai/artifact/VkZxpCqDSQWfQwkf8FbxaN. The pages draw the night of 2026-11-09. Home's cards, each its
+            stored row's: on the S&P 500 BDX bought at a dip to 204.78 within 20 sessions, VRSK to 183.41, PM to 184.26 within
+            10, EXPE no buy tonight, AMCR watched with the plan that did better waiting for 43.58; on the S&P 600 ATRC at a dip
+            to 55.40 within 5, and VCEL, TMDX, PTON, WRBY and TRUP at the next open; on the S&P 400 four Improving picks with no
+            price plan. Paper trading's earlier versions' trades listed apart on each index, 78, 54 and 33, of them 30, 43 and
+            31 still open and running to their own exits. The History page's long check of 2026-11-08, 225,523 findings by
+            class and era as 23.4 states them, and 586 ends marked. Every page at its screen's width.
+Answers:    each in its checkpoint's entry: 23.1's data check over the pull's years against the audit's counts; 23.2's verdict
+            across the three indexes; 23.3's membership back to 2005 at the coverage each quarter end reached; 23.4's prices
+            from 2004 and the long check's counts by class and era, the S&P 500 reading IVV's schedules to their last; 23.5's
+            first test years measured, the drift's 2016 on each index; 23.6's long ledger, departed stocks kept at their last
+            price; 23.7's long test, none passing; 23.8's long search, none passing, and one recommended plan a family an
+            index; 23.9's sector splits, the variant not holding. The rulings: 23.1's, the phase built before the sign-offs of
+            21 and 22; 23.8's, the traded plan's buy and sell points tested; 23.10's of 2026-11-10, the drift's first pullback,
+            a zone plan's card and the record of the plan traded added, the restart not waiting on phase 22's sign-off, the
+            order's reads and the restart's table, applied as the 23.10 entry states and, after its correction's remedy, the
+            plan each family's live rule trades reading from 2019 +0.246, +0.151 and +0.024 on the S&P 500's breakout, drift
+            and dip, +0.551, +0.117, +0.122 and +0.023 on the S&P 400's four and +0.473, +0.205 and +0.051 on the S&P 600's
+            pullback, breakout and dip, the S&P 500 pullback keeping today's plan at -0.124 and the S&P 600 drift today's at
+            +0.338.
+Counts:     as each entry stated, tests in all and claims in all: 23.1 3508, 1546; 23.2 3522, 1555; 23.3 3532, 1570; 23.4
+            3573, 1582; 23.5 3585, 1590; 23.6 3594, 1600; 23.7 3599, 1602; 23.9 3606, 1607; 23.8 3617, 1616; 23.10 3675, 1624;
+            its correction 3678, 1624; the 23.4 correction above 3679, 1624; and this report 3680, 1624, the corrections
+            between adding the rest.
+Pair:       before phase 23, 1534 claims on main at f0f98fb9; the plan's pair after 23.11 about 1602, within 1580 to 1625; the
+            actual 1618, inside the range and 16 past the pair by the net of what each checkpoint landed more or fewer than its
+            count: 23.1 five more, 23.2 three, 23.3 six, 23.4 one and its correction one, 23.6 two, 23.8 six and 23.9 two, each
+            component's catalogue and matrix rows, each store and each of section 17's settings landing as a row of its own
+            where the plan counted them together; 23.7 two fewer, its step and its store landing as words in rows that stood;
+            23.10 seven fewer, its hooks, profit check and conditions tabled for phase 24 and its plans, marks and zones
+            landing as words in rows that stood; 23.11 one fewer; 23.0, 23.5 and 23.10's correction none, as counted. Beside
+            it, 6 rows corrections of phase 22's work landed while phase 23 was built, counted in none of it: 1624 in all. Each
+            checkpoint's rows named with what it landed in `ArchitectureConformance.PhaseTwentyThreeLanded`.
+Operating:  phase 23 opened two operating rows, both at its planning pass: **The monthly run's time over the longer history**
+            and **The industry news mood split read once every member holds its labels**; `obligation-reconciles` states phase
+            23 at two.
+Tests:      one new, the pair; 3680 in all, with the 23.4 correction's above.
+Claims:     1624, none new; 1639 placements.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the report adds, each filtered to the test it was
+            predicted red at, made in this checkout and reverted with the editor. M1 23.8's count of more at five, at the pair
+            test; M2 23.9's rows left out of what it landed, at the pair test; M3 phase 23 stated as opening one operating row,
+            at the operating rows test. Each red as predicted. Not mutated: the screens, read back by hand.
+Owed:       phase 22's sign-off, reading the code as 23.10 rewrote it, its correction table running to this pull request
+            (owes: The sign-off of phase 22 reviews the code as 23.10 rewrote it); phase 23's sign-off; the operator's review of
+            every provisional choice and of the marks; the operator's word on 23.12; the parts tabled for phase 24; the hosted
+            runners swept once at the phase's end.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's last,
+            the figures below stated before that run: all six steps, 0 warnings, 0 errors, 3680 of 3680 tests ran with none
+            failed, migrations 0 to 142 with none pending, schema version 142, against `data-ci` and never `data`; the phase
+            report 66 tables, 1624 claims, 1624 passing, none out of scope and none unexamined, 1639 placements and verdicts
+            reconciled against a floor of 34, 57 checks on the roster run and passed.
