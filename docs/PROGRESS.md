@@ -18615,6 +18615,9 @@ Provisional: on the operator's review, beside the table's: the waiting parts tab
             the S&P 600 pullback traded under the rule of 2026-11-10 where the operator's note of 2026-11-08 kept it as it was; the
             long ledger written again at phase 24's restart; and Quality's three learned scores one fitted score, the monthly run
             having fitted one over every index.
+Owed:       phase 22's sign-off, outstanding, reading the code as 23.10 left it, its correction table running to 23.10's pull
+            request, PR 685 (owes: The sign-off of phase 22 reviews the code as 23.10 rewrote it); phase 23's sign-off; the
+            operator's review of every provisional choice and of the marks; the parts tabled for phase 24.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
             that run: all six steps, 0 warnings, 0 errors, 3675 of 3675 tests ran with none failed, migrations 0 to 142 with none
             pending, schema version 142, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,

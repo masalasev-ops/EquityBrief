@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/BUILD_PLAN.md - the obligation on phase 22's sign-off discharged at 23.10
+Decision: none; the operator's ruling of 2026-11-10, item 8 of their overnight order
+Was:
+> | **The sign-off of phase 22 reviews the code as 23.10 rewrote it** | 23.10 ruling of 2026-11-10 | 23.10 | 23.10 rewrites code phase 22 built, the rules' wording, the swing filter's hooks, the plans the price families follow and the cards that draw them, before phase 22's sign-off is written, ...
+Now:
+> its due point "23.10, discharged", naming what 23.10 rewrote, the wording and the swing filter's hooks having been tabled for phase 24.
+Why: 23.10 lands, its entry naming the sign-off outstanding and reading the code as 23.10 left it.
+
 ### 2026-11-10 - docs/BUILD_PLAN.md - 23.10 lands the parts ready that day and the rest are tabled for phase 24
 Decision: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
 Was:
