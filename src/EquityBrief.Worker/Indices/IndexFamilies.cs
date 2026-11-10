@@ -67,6 +67,7 @@ public sealed class IndexFamilies : IComponent
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
@@ -124,10 +125,12 @@ public sealed class IndexFamilies : IComponent
     // The newest pull holding a member's first stored session, and its close there, which the store's scale is read from.
     const string PullHoldingFirst = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
 
-    // That pull's newest sessions before the first stored one, as many as a reading falls short by.
+    // That pull's newest sessions before the first stored one, as many as a reading falls short by, from 23.10 read from the
+    // session the stock's history starts on and past each bad print.
+    // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
     const string PulledBefore = @"
         SELECT session_date, high, low, close, volume, open, raw_close FROM pulled_bar
-        WHERE ticker = $ticker AND pull = $pull AND session_date < $first
+        WHERE ticker = $ticker AND pull = $pull AND session_date < $first AND " + Core.Chart.SessionMarking.AsMarked + @"
         ORDER BY session_date DESC LIMIT $count;
     ";
 

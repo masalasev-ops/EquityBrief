@@ -122,6 +122,7 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read),
         ],
         Feeds: []);
 
@@ -278,11 +279,16 @@ public sealed class SweepHistory : IComponent
         var fingerprint = new System.Text.StringBuilder();
         var read = 0;
 
+        // From 23.10 each stock's series under the operator's marks, as the long reader reads it: from the session its history
+        // starts on, past each bad print and to the session its history ends on.
+        // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
+        var marks = await MarksAsync(connection, cancellation);
+
         foreach (var (ticker, held) in spans.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
             var pulled = await BarsAsync(connection, "pulled_bar", ticker, stamp, cancellation);
             var stored = await BarsAsync(connection, "bar", ticker, stamp, cancellation);
-            var series = Merged(pulled, stored);
+            var series = UnderMarks(pulled, stored, marks.GetValueOrDefault(ticker));
 
             fingerprint.Append(ticker).Append(':').Append(series.Length.ToString(CultureInfo.InvariantCulture)).Append(':')
                 .Append(series.Sum(bar => bar.Close).ToString(CultureInfo.InvariantCulture)).Append(';');
@@ -798,6 +804,36 @@ public sealed class SweepHistory : IComponent
         }
 
         return (nights, without, namesWithout, namesMissing);
+    }
+
+    // A stock's series from its pulled and stored bars under its marks, as the long reader reads it; as merged where it holds none.
+    // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
+    public static SweepBar[] UnderMarks(IReadOnlyList<SweepBar> pulled, IReadOnlyList<SweepBar> stored, IReadOnlyList<Core.Chart.SessionMark>? marks) =>
+        marks is null || marks.Count == 0 ? Merged(pulled, stored) : [.. Core.History.LongLedger.Marked(Merged(pulled, stored), marks)];
+
+    // Every stock's marks, none where the store was migrated before the table existed.
+    public static async Task<IReadOnlyDictionary<string, IReadOnlyList<Core.Chart.SessionMark>>> MarksAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var marks = new Dictionary<string, List<Core.Chart.SessionMark>>(StringComparer.Ordinal);
+
+        if (!await TableHeldAsync(connection, "session_mark", cancellation))
+        {
+            return new Dictionary<string, IReadOnlyList<Core.Chart.SessionMark>>(StringComparer.Ordinal);
+        }
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, session_date, kind, says FROM session_mark ORDER BY ticker, session_date;", [], cancellation))
+        {
+            var ticker = row.GetString(0);
+
+            if (!marks.TryGetValue(ticker, out var held))
+            {
+                marks[ticker] = held = [];
+            }
+
+            held.Add(new Core.Chart.SessionMark(Date(row.GetString(1)), row.GetString(2), row.GetString(3)));
+        }
+
+        return marks.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<Core.Chart.SessionMark>)pair.Value, StringComparer.Ordinal);
     }
 
     // A stock's bars to the history's end; from the pulled history each session from the newest pull holding it, since

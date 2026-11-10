@@ -73,6 +73,7 @@ public sealed class HeavyweightBook : IComponent
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
@@ -110,10 +111,12 @@ public sealed class HeavyweightBook : IComponent
     const string PullHoldingFirst = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
 
     // That pull's newest sessions before the first stored one, a few past the count a reading falls short by, so a day the
-    // exchange's table holds no session on, which the read passes over, does not leave it short.
+    // exchange's table holds no session on, which the read passes over, does not leave it short. From 23.10 read from the
+    // session the stock's history starts on and past each bad print.
+    // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
     const string PulledBefore = @"
         SELECT session_date, close, raw_close, volume FROM pulled_bar
-        WHERE ticker = $ticker AND pull = $pull AND session_date < $first
+        WHERE ticker = $ticker AND pull = $pull AND session_date < $first AND " + Core.Chart.SessionMarking.AsMarked + @"
         ORDER BY session_date DESC LIMIT $count;
     ";
 

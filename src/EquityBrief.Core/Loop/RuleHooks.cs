@@ -88,8 +88,9 @@ public sealed record RuleHooks(
     public static RuleHooks Off { get; } = new(0, [], new Dictionary<int, double>(), null);
 
     // The files a hooked rule's list and trades are read through, which every family rule's version pins beside its own.
-    // From 23.10 the plan's reading and its walk, which a hooked rule's trades are bought and sold through.
-    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs", "src/EquityBrief.Core/Loop/PlanHook.cs", "src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Worker/Loop/PlanTrades.cs"];
+    // From 23.10 the plan's reading and its walk, which a hooked rule's trades are bought and sold through, and the marks every
+    // rule's read of the pull reads under.
+    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs", "src/EquityBrief.Core/Loop/PlanHook.cs", "src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Worker/Loop/PlanTrades.cs", "src/EquityBrief.Core/Chart/SessionMarking.cs"];
 
     public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null && Exposure is null && Ranking == 0 && !ByExpected && Plan is null;
 

@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md and docs/SCHEMA.md - the sweep's history and the rules' reads of the pull read the marks
+Decision: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
+Was:
+> (ARCHITECTURE, the catalogue rows of the sweep history, the index families, the heavyweight book and the setup ledger) each read cell without session marks
+> (ARCHITECTURE, two rows; BUILD_PLAN, three paragraphs; SCHEMA, the session marks' paragraph) (see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart)
+Now:
+> each of the four read cells naming session marks beside the pulled bars
+> (see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print)
+Why: 23.10, the restart the operator's ruling of 2026-11-04 named for the marks to reach the sweep's series and the rules' reads.
+
 ### 2026-11-10 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - a long build states the store's size and stops on no size
 Decision: A long build states the store's size before and after it with its expected growth and time, and stops on no size
 Was:

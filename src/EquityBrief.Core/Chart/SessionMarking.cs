@@ -7,7 +7,7 @@ public sealed record SessionMark(DateOnly Session, string Kind, string Says);
 // A pulled row stands whatever its mark says. A session a stock's history starts on leaves the sessions before it out of every
 // page's read of the pull, a bad print is skipped by the moves the check reads and a small mark on the chart, and a move checked
 // and kept is a line and no flag.
-// see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart
+// see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
 public static class SessionMarking
 {
     public const string StartsHere = "starts here";
@@ -23,4 +23,12 @@ public static class SessionMarking
 
     // A read of a stock's pulled rows from the session its history starts on, $ticker bound.
     public const string FromItsStart = "session_date >= COALESCE((SELECT MAX(mark.session_date) FROM session_mark AS mark WHERE mark.ticker = $ticker AND mark.kind = 'starts here'), '')";
+
+    // From 23.10 a read of a stock's pulled rows past each session marked a bad print, $ticker bound, which the rules' reads
+    // of the pull leave out as the sweep's history does.
+    // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
+    public const string PastBadPrints = "session_date NOT IN (SELECT mark.session_date FROM session_mark AS mark WHERE mark.ticker = $ticker AND mark.kind = 'bad print')";
+
+    // Both, for a rule's read of the pull.
+    public const string AsMarked = FromItsStart + " AND " + PastBadPrints;
 }

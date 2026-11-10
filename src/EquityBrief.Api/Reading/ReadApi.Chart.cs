@@ -34,7 +34,7 @@ public sealed partial class ReadApi
 
     // The newest night's notes of one stock, each a real event the chart check confirmed, and the operator's word on its sessions.
     // see: A real event the chart check confirms is a line beneath the chart saying what happened on that date
-    // see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart
+    // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
     const string NotesOfStock = @"
         SELECT session_date, kind, says FROM chart_check
         WHERE ticker = $ticker AND flag = 'note' AND night = (SELECT MAX(night) FROM chart_check)

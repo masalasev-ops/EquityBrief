@@ -224,7 +224,7 @@ static async Task<int> TickerJoinRun(string[] args)
 }
 
 // The operator's word on a session of a stock's pulled history.
-// see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart
+// see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
 static async Task<int> SessionMarkRun(string[] args)
 {
     if (VerbArguments.Value(args, "--ticker") is not { } ticker
