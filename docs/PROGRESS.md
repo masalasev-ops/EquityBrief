@@ -18593,7 +18593,9 @@ Remedy:     `tools/remedies/2026-11-10-23.10-the-restart.txt`, from main after t
             moved rule registered again, ten live rules given their plans with today's plan beside each where its family has room,
             the S&P 600 drift's recommendation, the three wait entries and Quality's learned score on each index as variants, the
             long test of the buy and sell points on each index again and the watched cards priced again; then each index's ledger
-            history built again with `--again` and checked, only where it ends before the next night starts.
+            history built again with `--again` and checked, only where it ends before the next night starts. Before it the store
+            is copied whole to `equitybrief-before-23.10-restart.db` in the operator's copies' folder, the copy a failed remedy
+            restores from.
 Tests:      9 new: a plan's parameters read and stated back and each malformed one refused; a plan trade filled, sold, read in its
             rule's risk, left waiting, held and ended unfilled, by hand, and at a moved scale; a live rule given its plan with
             today's plan beside it, a variant beside one keeping today's, and a family holding nine walking today's plan
