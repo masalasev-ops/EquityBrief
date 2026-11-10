@@ -15,7 +15,7 @@ Was:
 > (SCHEMA, the decision cards' paragraph) "and `card-plans` sets it again on a night named, touching no other column"
 > (RUNBOOK, `card-plans`) ending "and is refused while a night holds the store."
 Now:
-> the row adds a plan whose stock's levels set no buy price that night drawing no buy, no give-up price and no target, only the line that there is no trade, and Home's idea reading what it risks for what it aims at from the zone's price
+> the row's last part adds "and none drawing a buy where its stock's levels set no price that night"
 > the column adds the no buy where the levels set no price, and the pricing setting it on a price card holding none from the plan its family's live rule states
 > the paragraph adds the pricing's one other column, a price card's `plan` where it holds none and its family's live rule states one
 > the runbook adds that a recommendation that is the traded plan is stored as none and a card stored before its rule stated the plan is handed the order the plan places

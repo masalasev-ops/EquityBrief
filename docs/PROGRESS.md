@@ -18648,7 +18648,7 @@ Remedy:     `tools/remedies/2026-11-10-23.10-correction-the-cards-plan.txt`, fro
 Tests:      3 new: an order its levels placed no price for reading as no buy, a card stored before its rule stated the plan
             handed its order with no alternative, and a plan placing no buy drawing no prices on Home or on a pick's card; the
             live plan test extended to the dip on each index.
-Claims:     none new; section 15.18's row of a plan that buys at a zone says it.
+Claims:     none new; section 15.18's row of a plan that buys at a zone says it in its last part.
 Pins:       none move: the plan point test, the cards and the pages are pinned by no rule.
 Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered to its
             own test and restored with the editor. M1 the dip's arm taken out of the live plans, red at the live plan test; M2
