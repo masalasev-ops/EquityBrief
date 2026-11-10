@@ -7,6 +7,15 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the buy and sell points' recommendation refined wider and at a plain distance
+Decision: A recommendation stopping 2 typical days under its buy is walked again wider and buying at a level beside the same distance under the close, each kept where it does better from 2019
+Was:
+> (ARCHITECTURE, the plan point test's catalogue row) ... and writes each family's recommended combination over the years no setting was chosen on beside the traded plan's; registers nothing (see: ...)</td></tr>
+> (RUNBOOK) ... and a recommendation reaches the restart only on the operator's word.
+Now:
+> each closing on the refinement walked after the grid: a stop of 2 typical days again at 2.5, 3 and 4, and a level beside the median distance under the close, each standing where it does better from 2019, the distance by more than 0.02.
+Why: the operator's order of 2026-11-10, items 1 and 2, in `prompts/2026-11-10-overnight-order.md`.
+
 ### 2026-11-10 - docs/ARCHITECTURE.html and docs/SCHEMA.md - a watched pick's recommended plan priced on its card
 Decision: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded
 Was:

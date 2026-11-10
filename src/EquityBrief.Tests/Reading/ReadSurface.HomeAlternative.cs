@@ -50,6 +50,34 @@ public partial class ReadSurface
         Assert.Null(PlanPrices.Named("no such combination"));
     }
 
+    // see: A recommendation stopping 2 typical days under its buy is walked again wider and buying at a level beside the same distance under the close, each kept where it does better from 2019
+    [Fact]
+    public void ARecommendationsWiderStopAndPlainDistanceStandOnlyWhereTheyDoBetterFrom2019()
+    {
+        var zone = new PlanCombination(PlanPoints.SecondZone, 20, PlanPoints.TypicalStop(2), PlanPoints.FirstBand);
+        PlanCombination At(double days) => zone with { Stop = PlanPoints.TypicalStop(days) };
+
+        // The best wider stop stands where it beats the recommendation's own from 2019, and none where none does.
+        Assert.Equal(At(3), PlanPoints.Wider(0.037, [(At(2.5), 0.04), (At(3), 0.06), (At(4), null)]));
+        Assert.Null(PlanPoints.Wider(0.037, [(At(2.5), 0.03), (At(3), 0.037), (At(4), -0.1)]));
+        Assert.Equal(At(4), PlanPoints.Wider(null, [(At(4), -0.5)]));
+
+        // A plain distance replaces the zone only past 0.02 risks a pick from 2019.
+        Assert.True(PlanPoints.DistanceReplaces(0.037, 0.058));
+        Assert.False(PlanPoints.DistanceReplaces(0.037, 0.056));
+        Assert.False(PlanPoints.DistanceReplaces(0.037, null));
+
+        // Their words read back, and a distance entry is priced off the close in typical moves: 110 less 1.37 of 2.
+        var plain = zone with { Entry = PlanPoints.DistanceEntry(1.37) };
+
+        Assert.Equal("1.37 typical days under the close within 20 sessions, 2 typical days under the buy, the first band above", plain.Words);
+        Assert.Equal(plain, PlanPrices.Named(plain.Words));
+        Assert.Equal(At(2.5), PlanPrices.Named(At(2.5).Words));
+        Assert.Null(PlanPrices.Named("1.37 typical days under the close within 20 sessions, 9 typical days under the buy, the first band above"));
+        Assert.Equal(107.26, PlanPrices.Of(plain, 110, HandLevels, 98, 2, 104, new PlanSale(125, null, []), 63)!.Buy!.Value, 6);
+        Assert.Equal(102.26, PlanPoints.StopOf(PlanPoints.TypicalStop(2.5), 107.26, 104, null, 2)!.Value, 6);
+    }
+
     [Fact]
     public async Task TheNightPricesEachPriceCardAtItsFamilysRecommendationFromTheStocksOwnBars()
     {

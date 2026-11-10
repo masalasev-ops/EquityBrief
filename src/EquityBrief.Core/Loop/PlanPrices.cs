@@ -21,6 +21,7 @@ public static class PlanPrices
         (double Top, double? Stop)? zoneRead = zone >= 0 && zone < levels.Zones.Count ? levels.Zones[zone] : null;
         double? level = combination.Entry == PlanPoints.NextOpen ? null
             : combination.Entry == PlanPoints.Average ? (average20 is { } average && average > 0 ? average : null)
+            : PlanPoints.DistanceOf(combination.Entry) is { } days ? (typicalDay > 0 ? close - (days * typicalDay) : null)
             : zoneRead?.Top;
 
         if (combination.Entry != PlanPoints.NextOpen && level is null)
@@ -46,9 +47,42 @@ public static class PlanPrices
         return new PlanPrice(combination.Words, level, combination.Window, stop, sale.Target, [.. sale.Staged.Where(edge => edge > price).Order()], sale.Trail, sale.RsiAbove, cap);
     }
 
-    // The combination a recommendation names by its words; none where none does.
-    public static PlanCombination? Named(string? words) =>
-        words is null ? null : PlanPoints.Combinations.FirstOrDefault(one => one.Words == words);
+    // The combination a recommendation names by its words, one of the grid's or one its refinement walked, a wider stop or a
+    // plain distance; none where none reads so.
+    public static PlanCombination? Named(string? words)
+    {
+        if (words is null)
+        {
+            return null;
+        }
+
+        if (PlanPoints.Combinations.FirstOrDefault(one => one.Words == words) is { } listed)
+        {
+            return listed;
+        }
+
+        var parts = words.Split(", ");
+
+        if (parts.Length != 3)
+        {
+            return null;
+        }
+
+        var (entry, window) = (parts[0], 0);
+        var within = entry.LastIndexOf(" within ", StringComparison.Ordinal);
+
+        if (within > 0 && entry.EndsWith(" sessions", StringComparison.Ordinal)
+            && int.TryParse(entry[(within + " within ".Length)..^" sessions".Length], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var sessions))
+        {
+            (entry, window) = (entry[..within], sessions);
+        }
+
+        var read = new PlanCombination(entry, window, parts[1], parts[2]);
+        var entered = entry == PlanPoints.NextOpen || entry == PlanPoints.Average || PlanPoints.Zones.Contains(entry) || PlanPoints.DistanceOf(entry) is not null;
+        var stopped = parts[1] is PlanPoints.RuleStop or PlanPoints.ZoneStop || PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).Any(days => PlanPoints.TypicalStop(days) == parts[1]);
+
+        return entered && stopped && PlanPoints.Sales.Contains(parts[2]) && read.Words == words ? read : null;
+    }
 
     // Whether a combination is the traded plan itself, the next open at the rule's stop and sale.
     public static bool Traded(PlanCombination combination) => PlanPoints.Changes(combination) == 0;
