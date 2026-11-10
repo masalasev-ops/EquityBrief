@@ -500,13 +500,13 @@ public partial class FixtureExpectations
         Assert.Equal(["history ends"], Query(store, "SELECT kind FROM session_mark WHERE ticker = 'MER';"));
     }
 
-    // Every source 23.1 writes or changes.
+    // Every source 23.1 writes or changes. From 23.10 the marks' kinds and their reads are pinned by every family rule, whose
+    // reads of the pull read them, so that file has left this list (see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print).
     internal static readonly string[] DataCheckSources =
     [
         "src/EquityBrief.Core/History/DataCheck.cs",
         "src/EquityBrief.Core/History/FilerFilings.cs",
         "src/EquityBrief.Core/History/HistoryEnd.cs",
-        "src/EquityBrief.Core/Chart/SessionMarking.cs",
         "src/EquityBrief.Worker/History/DataChecker.cs",
         "src/EquityBrief.Worker/History/HistoryEndFilings.cs",
         "src/EquityBrief.Worker/Program.cs",

@@ -78,7 +78,7 @@ public static class PlanPrices
         }
 
         var read = new PlanCombination(entry, window, parts[1], parts[2]);
-        var entered = entry == PlanPoints.NextOpen || entry == PlanPoints.Average || PlanPoints.Zones.Contains(entry) || PlanPoints.DistanceOf(entry) is not null;
+        var entered = entry == PlanPoints.NextOpen || entry == PlanPoints.Average || entry == PlanPoints.FirstPullback || PlanPoints.Zones.Contains(entry) || PlanPoints.DistanceOf(entry) is not null;
         var stopped = parts[1] is PlanPoints.RuleStop or PlanPoints.ZoneStop || PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).Any(days => PlanPoints.TypicalStop(days) == parts[1]);
 
         return entered && stopped && PlanPoints.Sales.Contains(parts[2]) && read.Words == words ? read : null;

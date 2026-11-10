@@ -85,6 +85,9 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.PlanPoint, Touch.Read),
+            new StoreTouch(Store.FamilyTrade, Touch.Read),
+            new StoreTouch(Store.IndexRuleTrade, Touch.Read),
+            new StoreTouch(Store.DipTrade, Touch.Read),
             new StoreTouch(Store.DecisionCard, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -258,8 +261,23 @@ public sealed class DecisionCards : IComponent
     ";
 
     const string InsertCard = @"
-        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved)
-        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits, $score_rank, $similar, $approved);
+        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved, plan)
+        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits, $score_rank, $similar, $approved, $plan);
+    ";
+
+    // From 23.10 the order the plan its family's live rule states placed on the pick's trade that night, none where the live
+    // rule states no plan or kept no trade on the stock.
+    // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+    const string TradedPlanOn = @"
+        SELECT plan FROM family_trade
+        WHERE $index = 'GSPC' AND family = $family AND ticker = $ticker AND session_date = $night AND candidate LIKE 'the live %' AND plan IS NOT NULL
+        UNION ALL
+        SELECT plan FROM index_rule_trade
+        WHERE index_code = $index AND family = $family AND ticker = $ticker AND session_date = $night AND candidate LIKE 'the live %' AND plan IS NOT NULL
+        UNION ALL
+        SELECT plan FROM dip_trade
+        WHERE index_code = $index AND $family = 'dip' AND ticker = $ticker AND session_date = $night AND rule LIKE 'the live %' AND plan IS NOT NULL
+        LIMIT 1;
     ";
 
     // The newest tester run on an index; of it, a family's score fitted on all finished data, the one cut after the run's
@@ -778,9 +796,17 @@ public sealed class DecisionCards : IComponent
             ("$score_rank", score?.Rank is { } rank ? (object)rank : DBNull.Value),
             ("$similar", score?.Similar is { } similar ? similar.Json() : DBNull.Value),
             ("$approved", (object?)approved ?? DBNull.Value),
+            ("$plan", await TradedPlanAsync(connection, transaction, index, family, ticker, night, cancellation) is { } traded ? traded : DBNull.Value),
         ], cancellation);
 
         return 1;
+    }
+
+    static async Task<string?> TradedPlanAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, string ticker, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = Command(connection, transaction, TradedPlanOn, [("$index", index), ("$family", family), ("$ticker", ticker), ("$night", Stamp(night))]);
+
+        return await command.ExecuteScalarAsync(cancellation) as string;
     }
 
     // The words of the change an approval set for a family on an S&P 400 or 600 night, as the night's settings state them.

@@ -6,6 +6,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
@@ -13,6 +14,7 @@ using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Families;
 using EquityBrief.Worker.Indices;
+using EquityBrief.Worker.Loop;
 using EquityBrief.Worker.Sweep;
 using Microsoft.Data.Sqlite;
 
@@ -125,12 +127,12 @@ public sealed class DipFamily : IComponent
     ";
 
     const string InsertTrade = @"
-        INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, end_reason, exit)
-        VALUES ($rule, $index, $ticker, $night, $place, $entry, $stop, $time_limit, $exit_average, $risk_moves, 'open', $exit);
+        INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, end_reason, exit, plan)
+        VALUES ($rule, $index, $ticker, $night, $place, $entry, $stop, $time_limit, $exit_average, $risk_moves, 'open', $exit, $plan);
     ";
 
     const string OpenTradesOf = @"
-        SELECT rule, ticker, session_date, entry, stop, time_limit, exit_average, risk_moves, exit FROM dip_trade
+        SELECT rule, ticker, session_date, entry, stop, time_limit, exit_average, risk_moves, exit, plan FROM dip_trade
         WHERE index_code = $index AND end_reason = 'open' AND session_date < $night
         ORDER BY session_date, ticker;
     ";
@@ -388,7 +390,7 @@ public sealed class DipFamily : IComponent
                     ? [.. hooks.Order(setups?.Invoke(DipRule.Name) ?? [], setup => setup.Readings).Select(setup => new DipAnswer(setup.Ticker, [], setup.Entry, setup.Stop, setup.Cap, null, null))]
                     : hooks.Order(DipRule.Ranked(answers), answer => readings?.Invoke(answer.Ticker));
 
-                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: ranked, Exit: hooks.Exit);
+                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: ranked, Exit: hooks.Exit, Plan: hooks.Plan);
             })
             .ToArray();
         var tickers = read.SelectMany(rule => rule.Ranked).Select(answer => answer.Ticker).Distinct(StringComparer.Ordinal).ToArray();
@@ -423,7 +425,7 @@ public sealed class DipFamily : IComponent
         DipIndexOutcome? card = null;
         var written = ended;
 
-        foreach (var (rule, setting, fault, gate, answers, ranked, exit) in read)
+        foreach (var (rule, setting, fault, gate, answers, ranked, exit, plan) in read)
         {
             var first = card is null;
 
@@ -494,9 +496,15 @@ public sealed class DipFamily : IComponent
             {
                 if (byTicker[pick.Ticker] is { Entry: { } entry, Stop: { } stop, TimeLimit: { } limit })
                 {
+                    // From 23.10 a rule stating a plan keeps the order the plan places on the pick from its stock's bars.
+                    var order = plan is { } combination
+                        ? await PlanTrades.OrderAsync(connection, transaction, combination, DipRule.Name, pick.Ticker, night, stop, null, null, limit, cancellation)
+                        : null;
+
                     kept++;
                     await ExecuteAsync(connection, transaction, InsertTrade,
                     [
+                        ("$plan", order is null ? DBNull.Value : order.Json()),
                         ("$rule", rule), ("$index", index), ("$ticker", pick.Ticker), ("$night", Stamp(night)), ("$place", pick.Place!.Value),
                         ("$entry", Money.ToStorage(entry)), ("$stop", Money.ToStorage(stop)), ("$time_limit", limit), ("$exit_average", setting.ExitLevel),
                         ("$risk_moves", setting.StopMoves), ("$exit", exit == 0 ? DBNull.Value : exit),
@@ -805,6 +813,15 @@ public sealed class DipFamily : IComponent
         return picks;
     }
 
+    // A plan trade's end as the dip's trades store it: its stop's, its sale's or its trail's as an exit, and the time limit's,
+    // or a window passed unfilled, as the limit.
+    static string DipEndOf(PlanEnd end) => end.End switch
+    {
+        PlanPoints.Stopped => DipEnd.Stop,
+        PlanPoints.Reached or PlanPoints.Trailed => DipEnd.Exit,
+        _ => DipEnd.Limit,
+    };
+
     // Each of the index's dip trades not yet ended, every rule's, walked over its stock's bars since its listing at the
     // scale the series has now: bought at the next session's open through the core's one pricing function, and sold at
     // the next open after its exit's close or its stop's, its exit read by the level its rule stored, or at its last
@@ -812,19 +829,58 @@ public sealed class DipFamily : IComponent
     // holds none yet; the count ended.
     async Task<int> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<DateOnly> calendar, CancellationToken cancellation)
     {
-        var trades = new List<(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, int Limit, int Exit, double? RiskMoves, int Menu)>();
+        var trades = new List<(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, int Limit, int Exit, double? RiskMoves, int Menu, PlanOrder? Plan)>();
 
         await foreach (var row in RowsAsync(connection, transaction, OpenTradesOf, [("$index", index), ("$night", Stamp(night))], cancellation))
         {
             trades.Add((
                 row.GetString(0), row.GetString(1), Date(row.GetString(2)), Money.FromStorage(row.GetString(3)), Money.FromStorage(row.GetString(4)), row.GetInt32(5), row.GetInt32(6),
-                row.IsDBNull(7) ? null : row.GetDouble(7), row.IsDBNull(8) ? 0 : row.GetInt32(8)));
+                row.IsDBNull(7) ? null : row.GetDouble(7), row.IsDBNull(8) ? 0 : row.GetInt32(8), row.IsDBNull(9) ? null : PlanOrder.FromJson(row.GetString(9))));
         }
 
         var ended = 0;
 
         foreach (var trade in trades)
         {
+            // From 23.10 a trade kept under a plan is bought, held and sold as its plan does: its fill where its level trades
+            // within its window, its sale where the plan sells, and its result in the risk its listing close set; one never
+            // filled ends at its window's last session with no fill and no result.
+            if (trade.Plan is { } order)
+            {
+                var planBars = PlanBars.Of(await PlanTrades.BarsAsync(connection, transaction, trade.Ticker, night, cancellation));
+
+                if (PlanTrades.Ended(order, trade.Entry, trade.Stop, trade.Session, planBars) is not { } end)
+                {
+                    continue;
+                }
+
+                double? planCost = null;
+
+                if (end is { Fill: { } bought, Sold: { } soldAt } && trade.Entry > trade.Stop)
+                {
+                    decimal? value = await ScalarAsync(connection, transaction, ValueOn, [("$index", index), ("$session", Stamp(trade.Session)), ("$ticker", trade.Ticker)], cancellation) is string stored ? Money.FromStorage(stored) : null;
+
+                    planCost = Statistic.FromRatio(TradeCost.RoundTrip(value, Statistic.ToPrice(bought), Statistic.ToPrice(soldAt)) / (trade.Entry - trade.Stop));
+                }
+
+                await ExecuteAsync(connection, transaction, WalkTrade,
+                [
+                    ("$rule", trade.Rule), ("$index", index), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)),
+                    ("$bought_on", end.FilledOn is { } filledOn ? Stamp(filledOn) : DBNull.Value),
+                    ("$fill", end.Fill is { } price ? Money.ToStorage(Statistic.ToPrice(price)) : DBNull.Value),
+                    ("$past", DBNull.Value),
+                    ("$ended_on", Stamp(end.SoldOn ?? end.On)),
+                    ("$sale", end.Sold is { } planSale ? Money.ToStorage(Statistic.ToPrice(planSale)) : DBNull.Value),
+                    ("$end", DipEndOf(end)),
+                    ("$sessions", end.FilledOn is { } from ? Math.Max(0, planBars.IndexOf(end.On) - planBars.IndexOf(from) + 1) : 0),
+                    ("$result", (object?)end.Result ?? DBNull.Value),
+                    ("$cost", (object?)planCost ?? DBNull.Value),
+                ], cancellation);
+                ended++;
+
+                continue;
+            }
+
             var bars = new List<(DateOnly Session, double Open, double Close, decimal Raw)>();
 
             await foreach (var row in RowsAsync(connection, transaction, BarsOf, [("$ticker", trade.Ticker), ("$night", Stamp(night))], cancellation))

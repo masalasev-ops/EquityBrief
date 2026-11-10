@@ -14,7 +14,7 @@ namespace EquityBrief.Tests.Checks;
 // constructed closes: an answer holding another stock's prices, the operator's word on a pulled session, and a dividend an answer
 // does not carry.
 // see: A refetch answer whose day's move the stored closes do not show is refused, and the stock keeps its year and is asked again
-// see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart
+// see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
 // see: A dividend the provider's answer does not yet carry is asked for again on the five nights after and weekly, and the stock's pages and the run page say so while it waits
 public partial class FixtureExpectations
 {

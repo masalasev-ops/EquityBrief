@@ -1,6 +1,7 @@
-using EquityBrief.Core.EntryCheck;
-
 namespace EquityBrief.Core.Loop;
+
+// A level buy's fill: the bar it traded into its level on, and the price it paid.
+public readonly record struct WaitFill(int Bar, double Price);
 
 // One way to trade a flagged setup: where it buys and within how many sessions, where its stop stands and how it sells.
 public sealed record PlanCombination(string Entry, int Window, string Stop, string Exit)
@@ -332,7 +333,38 @@ public static class PlanPoints
             return pick + 1 < opens.Length && opens[pick + 1] > 0 ? new WaitFill(pick + 1, opens[pick + 1]) : null;
         }
 
-        return level is { } held && held > 0 ? EntryMeasure.FillOf(opens, lows, pick, held, 0, window) : null;
+        return level is { } held && held > 0 ? LevelFillOf(opens, lows, pick, held, 0, window) : null;
+    }
+
+    // The first session after the pick, within the window, that trades into the level: one opening at or under it fills at that open, and
+    // one reaching it after opening above fills at the level. None where no session does in the window, the series ends first, or the fill
+    // would stand at or under the stop, since the plan is already broken there: each of those a pick not taken.
+    public static WaitFill? LevelFillOf(ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, int pick, double level, double stop, int within)
+    {
+        if (!(level > stop))
+        {
+            return null;
+        }
+
+        for (var bar = pick + 1; bar <= pick + within && bar < opens.Length && bar < lows.Length; bar++)
+        {
+            if (opens[bar] <= 0)
+            {
+                continue;
+            }
+
+            if (opens[bar] <= level)
+            {
+                return opens[bar] > stop ? new WaitFill(bar, opens[bar]) : null;
+            }
+
+            if (lows[bar] <= level)
+            {
+                return new WaitFill(bar, level);
+            }
+        }
+
+        return null;
     }
 
     // One filled pick walked over its closes from the fill's session, as the ledger walks a setup and its fill step sells
@@ -455,13 +487,18 @@ public static class PlanPoints
     public static bool NoResult(double result, double? edge) =>
         Math.Abs(result) > History.LongLedger.OutlyingRisks || History.LongLedger.Outlying(edge);
 
-    // The dip's own sale: no target and no trail, sold at the next open after a close whose 2-session RSI stands above 65.
+    // The dip's own sale: no target and no trail, sold at the next open after a close whose 2-session RSI stands above 65. From
+    // 23.10 the level and the family's word are stated here, held to the dip's own by a test, since every family rule pins
+    // this file and the dip's own code is pinned by the dip's rules alone.
     // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
-    public static PlanSale DipSale { get; } = new(null, null, []) { RsiAbove = global::EquityBrief.Core.Families.DipRule.RsiExit };
+    public const double DipRsiAbove = 65;
+
+    public const string DipName = "dip";
+
+    public static PlanSale DipSale { get; } = new(null, null, []) { RsiAbove = DipRsiAbove };
 
     // A series' 2-session RSI as the dip reads it, NaN where it reads none.
-    public static double[] RsiOf(IReadOnlyList<double> closes) =>
-        [.. global::EquityBrief.Core.Families.DipRule.Rsi(closes, global::EquityBrief.Core.Families.DipRule.RsiSessions).Select(one => one ?? double.NaN)];
+    public static double[] RsiOf(IReadOnlyList<double> closes) => PlanRsi.Of(closes);
 
     // Whether an outcome reached its sale, the time limit alone reaching it at its last session.
     public static bool HitOf(string sale, string end) =>

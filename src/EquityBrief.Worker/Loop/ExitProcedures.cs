@@ -261,6 +261,37 @@ public static class ExitProcedures
         ];
     }
 
+    // From 23.10 a rule's trades over the listings it is handed under the plan it states, five a night with one open trade a
+    // stock as its own walk keeps them: each listing's order placed from its stock's series on its session as the night places
+    // it, filled where its level trades within its window and sold where the plan sells, its result in the rule's own risk at
+    // its close after its round trip; one never filled holding its stock through its window with no result; each against the
+    // same plan on every member that session, each bought at its own next open. A listing a skip names is not bought.
+    // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+    public static IReadOnlyList<Walked> WalkPlanned(LoopRead read, PlannedListings planned, IReadOnlyList<FamilyListing> listings, Func<FamilyListing, bool>? skip = null)
+    {
+        var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
+
+        int YearOf(int session) => read.YearOf(session);
+
+        var trades = skip is null
+            ? FamilySweep.Walk(listings, tickers, YearOf, planned.Exit, planned.Benchmark)
+            : RuleReplay.WalkSkippingAtTheOpen(listings, tickers, YearOf, planned.Exit, planned.Benchmark, skip);
+
+        return
+        [
+            .. trades.Select(trade =>
+            {
+                var listing = trade.Listing;
+                var (_, sessions, end) = planned.Of(listing);
+                var costed = trade.Result is { } result
+                    ? trade with { Result = result - IndexSweepRunner.CostInRisk(read.Series[listing.Name], listing, result, read.Companies, 1) }
+                    : trade;
+
+                return new Walked(listing.Session, trade.Result is null ? null : listing.Session + sessions, costed, end);
+            }),
+        ];
+    }
+
     // A listing's trade replayed under an exit of the menu from its plan's own prices, from 21.18 each session's open and
     // high beside its close for the standing target.
     public static SetupOutcome Replayed(IReadOnlyList<SweepSeries> series, double[][] closes, FamilyListing listing, ExitChoice exit) =>

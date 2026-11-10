@@ -65,8 +65,14 @@ public class RuleWordingOutOfThePins
         "src/EquityBrief.Worker/Sweep/HeavyweightSweep.cs",
     ];
 
-    // A literal that reads as words and is compared as a value: the release reader's answer, which the rule's code tests.
-    static readonly IReadOnlyList<string> Keys = ["lowered or withdrawn"];
+    // A literal that reads as words and is compared as a value: the release reader's answer, which the rule's code tests, and
+    // from 23.10 a mark's kind as `session_mark` stores it, which every rule's read of the pull compares.
+    static readonly IReadOnlyList<string> Keys = ["lowered or withdrawn", "checked and kept"];
+
+    // From 23.10 a file whose sentences are each a key: the test of the buy and sell points' words for each entry, stop and
+    // sale, which `plan_point` stores, a plan's registration is read back by and a plan trade's order carries, so a change to
+    // one is a change to what a plan names and moves the rule pinning it as it should.
+    static readonly IReadOnlyList<string> KeyFiles = ["src/EquityBrief.Core/Loop/PlanPoints.cs"];
 
     const string FilterVersions = "the swing filter's versions";
 
@@ -118,7 +124,7 @@ public class RuleWordingOutOfThePins
         var pinned = Pins().Select(pin => pin.Source).Distinct(StringComparer.Ordinal).ToArray();
 
         var unlisted = pinned
-            .Where(source => !StillHolding.Contains(source) && !NoPageDraws.Contains(source))
+            .Where(source => !StillHolding.Contains(source) && !NoPageDraws.Contains(source) && !KeyFiles.Contains(source))
             .Where(source => File.Exists(Path.Combine(root, source)))
             .SelectMany(source => Sentences(File.ReadAllText(Path.Combine(root, source))).Except(Keys).Select(sentence => $"{source}: {sentence}"))
             .ToArray();

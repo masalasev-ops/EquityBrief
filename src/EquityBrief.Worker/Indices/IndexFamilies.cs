@@ -11,6 +11,7 @@ using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Families;
+using EquityBrief.Worker.Loop;
 using EquityBrief.Worker.Sweep;
 using Microsoft.Data.Sqlite;
 
@@ -66,6 +67,7 @@ public sealed class IndexFamilies : IComponent
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
@@ -123,10 +125,12 @@ public sealed class IndexFamilies : IComponent
     // The newest pull holding a member's first stored session, and its close there, which the store's scale is read from.
     const string PullHoldingFirst = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
 
-    // That pull's newest sessions before the first stored one, as many as a reading falls short by.
+    // That pull's newest sessions before the first stored one, as many as a reading falls short by, from 23.10 read from the
+    // session the stock's history starts on and past each bad print.
+    // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
     const string PulledBefore = @"
         SELECT session_date, high, low, close, volume, open, raw_close FROM pulled_bar
-        WHERE ticker = $ticker AND pull = $pull AND session_date < $first
+        WHERE ticker = $ticker AND pull = $pull AND session_date < $first AND " + Core.Chart.SessionMarking.AsMarked + @"
         ORDER BY session_date DESC LIMIT $count;
     ";
 
@@ -2306,7 +2310,7 @@ public static class IndexRuleTrades
 
     // Every trade from before the night not yet ended or not yet benchmarked.
     const string Pending = @"
-        SELECT candidate, ticker, session_date, entry, stop, target, trail, cap, risk_moves, reward_to_risk, ended_on, exit
+        SELECT candidate, ticker, session_date, entry, stop, target, trail, cap, risk_moves, reward_to_risk, ended_on, exit, plan
         FROM index_rule_trade
         WHERE index_code = $index AND session_date < $night AND (ended_on IS NULL OR members IS NULL)
         ORDER BY session_date, candidate, ticker;
@@ -2325,8 +2329,8 @@ public static class IndexRuleTrades
     const string Holding = "SELECT ticker FROM index_rule_trade WHERE candidate = $candidate AND (ended_on IS NULL OR ended_on >= $night);";
 
     const string Keep = @"
-        INSERT INTO index_rule_trade (candidate, index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, risk_moves, reward_to_risk, exit)
-        VALUES ($candidate, $index, $family, $ticker, $night, $place, $entry, $stop, $target, $trail, $cap, $risk_moves, $reward_to_risk, $exit);
+        INSERT INTO index_rule_trade (candidate, index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, risk_moves, reward_to_risk, exit, plan)
+        VALUES ($candidate, $index, $family, $ticker, $night, $place, $entry, $stop, $target, $trail, $cap, $risk_moves, $reward_to_risk, $exit, $plan);
     ";
 
     public static async Task<Kept> KeepAsync(
@@ -2414,8 +2418,15 @@ public static class IndexRuleTrades
                 var (entry, stop) = (answer.Entry!.Value, answer.Stop!.Value);
                 var risk = Statistic.FromPrice(entry - stop);
 
+                // From 23.10 a rule stating a plan keeps the order the plan places on the pick from its series tonight.
+                var order = hooks.Plan is { } combination
+                    ? PlanTrades.Place(combination, rule.Family, inputs.Series[name], IndexNightRead.BarOf(inputs.Series[name], inputs.At), Statistic.FromPrice(stop), answer.Target is { } aim ? Statistic.FromPrice(aim) : null, answer.Trail is { } distance ? Statistic.FromPrice(distance) : null, answer.Cap!.Value)
+                        ?? PlanTrades.Unplaced(combination, Statistic.FromPrice(stop), answer.Cap!.Value)
+                    : null;
+
                 await ExecuteAsync(connection, transaction, Keep,
                 [
+                    ("$plan", order is null ? DBNull.Value : order.Json()),
                     ("$candidate", rule.Candidate), ("$index", index), ("$family", rule.Family), ("$ticker", answer.Ticker), ("$night", Stamp(night)),
                     ("$place", ++place), ("$entry", Money.ToStorage(entry)), ("$stop", Money.ToStorage(stop)), ("$target", Stored(answer.Target)), ("$trail", Stored(answer.Trail)),
                     ("$cap", answer.Cap!.Value), ("$risk_moves", move > 0 && risk > 0 ? risk / move : DBNull.Value),
@@ -2448,7 +2459,7 @@ public static class IndexRuleTrades
 
     static async Task<(int Ended, int Benchmarked)> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, IndexNightInputs inputs, CancellationToken cancellation)
     {
-        var pending = new List<(string Candidate, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, double? RiskMoves, double? RewardToRisk, bool Ended, int Exit)>();
+        var pending = new List<(string Candidate, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, double? RiskMoves, double? RewardToRisk, bool Ended, int Exit, PlanOrder? Plan)>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -2473,7 +2484,8 @@ public static class IndexRuleTrades
                     reader.IsDBNull(8) ? null : reader.GetDouble(8),
                     reader.IsDBNull(9) ? null : reader.GetDouble(9),
                     !reader.IsDBNull(10),
-                    reader.IsDBNull(11) ? 0 : reader.GetInt32(11)));
+                    reader.IsDBNull(11) ? 0 : reader.GetInt32(11),
+                    reader.IsDBNull(12) ? null : PlanOrder.FromJson(reader.GetString(12))));
             }
         }
 
@@ -2482,6 +2494,39 @@ public static class IndexRuleTrades
 
         foreach (var trade in pending)
         {
+            // From 23.10 a trade kept under a plan is walked and benchmarked under it.
+            if (trade.Plan is { } order)
+            {
+                if (!trade.Ended && await EndPlannedAsync(connection, transaction, inputs, trade.Candidate, trade.Ticker, trade.Session, trade.Entry, trade.Stop, order, cancellation))
+                {
+                    ended++;
+                }
+
+                var listedAt = Array.IndexOf(inputs.Calendar, trade.Session);
+
+                if (listedAt < 0 || inputs.At - listedAt < trade.Cap + order.Window + 1 || trade.RiskMoves is not { } stopMoves || PlanPrices.Named(order.Words) is not { } combination)
+                {
+                    continue;
+                }
+
+                var (planned, counted) = PlanTrades.Benchmark(
+                    combination,
+                    stopMoves,
+                    trade.RewardToRisk,
+                    trade.Trail is null ? null : stopMoves,
+                    trade.Cap,
+                    inputs.Members.Names[listedAt].Select((name, at) => (inputs.Series[name], inputs.Members.Bars[listedAt][at])));
+
+                await ExecuteAsync(connection, transaction, Benchmarked,
+                [
+                    ("$candidate", trade.Candidate), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)),
+                    ("$benchmark", planned is { } mean ? mean : DBNull.Value), ("$members", counted),
+                ], cancellation);
+                benchmarked++;
+
+                continue;
+            }
+
             if (!trade.Ended && await EndAsync(connection, transaction, inputs, trade.Candidate, trade.Ticker, trade.Session, trade.Entry, trade.Stop, trade.Target, trade.Trail, trade.Cap, cancellation, trade.Exit, trade.RiskMoves))
             {
                 ended++;
@@ -2596,6 +2641,39 @@ public static class IndexRuleTrades
         [
             ("$candidate", candidate), ("$ticker", ticker), ("$session", Stamp(listed)),
             ("$ended_on", Stamp(sale.Session)), ("$result", multiple), ("$cost", double.IsFinite(cost) ? cost : DBNull.Value),
+        ], cancellation);
+
+        return true;
+    }
+
+    // A plan trade walked over its stock's bars through tonight, ended where its plan ends it with its result in the risk its
+    // rule's own plan set at its night's close and its round trip at its fill and its sale, its company valued as the member
+    // readings read it on the trade's night; ended with no result once its window has passed unfilled; nothing while it waits
+    // or is held.
+    static async Task<bool> EndPlannedAsync(SqliteConnection connection, SqliteTransaction transaction, IndexNightInputs inputs, string candidate, string ticker, DateOnly listed, decimal storedEntry, decimal storedStop, PlanOrder order, CancellationToken cancellation)
+    {
+        var bars = PlanBars.Of(await PlanTrades.BarsAsync(connection, transaction, ticker, inputs.Night, cancellation));
+
+        if (PlanTrades.Ended(order, storedEntry, storedStop, listed, bars) is not { } end)
+        {
+            return false;
+        }
+
+        object cost = DBNull.Value;
+
+        if (end is { Fill: { } fill, Sold: { } sold } && Statistic.FromPrice(storedEntry - storedStop) is var risk && risk > 0)
+        {
+            decimal? value = await ScalarAsync(connection, transaction, ValueOn, [("$index", inputs.Index), ("$session", Stamp(listed)), ("$ticker", ticker)], cancellation) is string stored ? Money.FromStorage(stored) : null;
+            var percent = TradeCost.InPercent(value, Statistic.ToPrice(fill), Statistic.ToPrice(sold)) / 100.0;
+            var inRisk = percent * fill / risk;
+
+            cost = double.IsFinite(inRisk) ? inRisk : DBNull.Value;
+        }
+
+        await ExecuteAsync(connection, transaction, End,
+        [
+            ("$candidate", candidate), ("$ticker", ticker), ("$session", Stamp(listed)),
+            ("$ended_on", Stamp(end.On)), ("$result", end.Result is { } made ? made : DBNull.Value), ("$cost", cost),
         ], cancellation);
 
         return true;

@@ -9,7 +9,7 @@ namespace EquityBrief.Worker.Charts;
 
 // The marks the operator has ruled on sessions of the pulled history: written by a verb a person runs, one session a row, and no
 // pulled row moves.
-// see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart
+// see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
 public sealed class SessionMarks(IClock clock, string databaseFile) : IComponent
 {
     public static ComponentAccess Access => new(

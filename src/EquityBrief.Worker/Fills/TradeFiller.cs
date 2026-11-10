@@ -3,10 +3,12 @@ using System.Text.Json;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Loop;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Fills;
@@ -120,6 +122,9 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
         public int Exit { get; init; }
 
         public string? Outcome { get; init; }
+
+        // From 23.10 the plan a trade was kept under, which its own fill and sale stand in the next open's place for.
+        public PlanOrder? Plan { get; init; }
     }
 
     // From 21.14 where a swing trade was sold: the session and the price at the trade's own scale, at the next session's
@@ -127,19 +132,22 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
     // exit, and its result sold there; none while that open is not stored yet.
     public sealed record TradeSale(DateOnly? On, double? Price, double? Result);
 
+    // From 23.10 why a plan trade holds no fill: its plan's price was not reached within its window.
+    public const string NotFilled = "its plan's price was not reached within its window";
+
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
 
     const string Sessions = "SELECT session_date FROM bar UNION SELECT session_date FROM kept_bar ORDER BY 1;";
 
     const string StandingFills = "SELECT source, index_code, owner, ticker, session_date, result, benchmark, reason FROM trade_fill;";
 
-    const string FamilyTrades = "SELECT candidate, ticker, session_date, entry, stop, target, risk_moves, result, benchmark, ended_on, cap, exit FROM family_trade;";
+    const string FamilyTrades = "SELECT candidate, ticker, session_date, entry, stop, target, risk_moves, result, benchmark, ended_on, cap, exit, plan FROM family_trade;";
 
     const string IndexFamilyTrades = "SELECT index_code, family, ticker, session_date, entry, stop, target, risk_moves, result, benchmark, ended_on, cap, exit, trail FROM index_family_trade;";
 
-    const string IndexRuleTrades = "SELECT index_code, candidate, ticker, session_date, entry, stop, target, risk_moves, result, benchmark, ended_on, cap, exit, trail FROM index_rule_trade;";
+    const string IndexRuleTrades = "SELECT index_code, candidate, ticker, session_date, entry, stop, target, risk_moves, result, benchmark, ended_on, cap, exit, trail, plan FROM index_rule_trade;";
 
-    const string RulePicks = "SELECT index_code, rule, ticker, session_date, entry, stop, target, result, ended_on, cap FROM rule_pick;";
+    const string RulePicks = "SELECT index_code, rule, ticker, session_date, entry, stop, target, result, ended_on, cap, plan FROM rule_pick;";
 
     const string LargeBook = "SELECT ticker, entered_on, entry_close, result, cut_return, cut FROM heavyweight_holding;";
 
@@ -222,6 +230,46 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
         foreach (var trade in due)
         {
+            // From 23.10 a trade kept under a plan is priced at its plan's own fill and sale rather than the next open: no row
+            // while it waits for its level, a row saying so where its window passed unfilled, and its result in the risk its
+            // rule's own plan set at its close, its benchmark the same plan's on every member, as its writer stored them.
+            if (trade.Plan is { } order && calendar.Count > 0)
+            {
+                var bars = PlanBars.Of(await PlanTrades.BarsAsync(connection, transaction, trade.Ticker, calendar[^1], cancellation));
+
+                if (PlanTrades.Where(order, Statistic.ToPrice(trade.Entry), Statistic.ToPrice(trade.Stop ?? 0), trade.Session, bars) is not { } where)
+                {
+                    counts[trade.Source][3]++;
+
+                    continue;
+                }
+
+                var planResult = where.End?.Result;
+                double? planEdge = planResult is { } made && trade.Benchmark is { } against ? made - against : null;
+
+                counts[trade.Source][where.FilledOn is null ? 1 : 0]++;
+
+                await ExecuteAsync(connection, transaction, UpsertFill,
+                [
+                    ("$source", trade.Source), ("$index", trade.Index), ("$owner", trade.Owner), ("$ticker", trade.Ticker),
+                    ("$session", Stamp(trade.Session)), ("$filled_on", where.FilledOn is { } planFilledOn ? Stamp(planFilledOn) : DBNull.Value),
+                    ("$fill", where.Fill is { } planFill ? Money.ToStorage(Statistic.ToPrice(planFill)) : DBNull.Value),
+                    ("$past", DBNull.Value),
+                    ("$result", planResult is { } planMade ? planMade : DBNull.Value),
+                    ("$benchmark", planResult is not null && trade.Benchmark is { } planBenchmark ? planBenchmark : DBNull.Value),
+                    ("$members", DBNull.Value),
+                    ("$edge", planEdge is { } planEdgeHeld ? planEdgeHeld : DBNull.Value),
+                    ("$reason", where.FilledOn is null ? NotFilled : DBNull.Value),
+                    ("$sold_on", where.End?.SoldOn is { } planSoldOn && planResult is not null ? Stamp(planSoldOn) : DBNull.Value),
+                    ("$sale", where.End?.Sold is { } planSold && planResult is not null ? Money.ToStorage(Statistic.ToPrice(planSold)) : DBNull.Value),
+                    ("$filled_at", filledAt),
+                ], cancellation);
+
+                written++;
+
+                continue;
+            }
+
             if (next[trade.Session] is not { } on)
             {
                 counts[trade.Source][3]++;
@@ -506,6 +554,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
         {
             EndedOn = DateOf(reader, 9), Cap = Whole(reader, 10), Exit = Whole(reader, 11) ?? 0,
             Trail = reader.IsDBNull(5) && Price(reader, 4) is { } stop ? Price(reader, 3)!.Value - stop : null,
+            Plan = reader.IsDBNull(12) ? null : PlanOrder.FromJson(reader.GetString(12)),
         });
         await ReadAsync(IndexFamilyTrades, reader => new StoredTrade("index_family_trade", reader.GetString(0), reader.GetString(1), reader.GetString(2), Date(reader.GetString(3)),
             Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), Real(reader, 7), Real(reader, 8), Real(reader, 9), null)
@@ -516,11 +565,13 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), Real(reader, 7), Real(reader, 8), Real(reader, 9), null)
         {
             EndedOn = DateOf(reader, 10), Cap = Whole(reader, 11), Exit = Whole(reader, 12) ?? 0, Trail = Price(reader, 13),
+            Plan = reader.IsDBNull(14) ? null : PlanOrder.FromJson(reader.GetString(14)),
         });
         await ReadAsync(RulePicks, reader => new StoredTrade("rule_pick", reader.GetString(0), reader.GetString(1), reader.GetString(2), Date(reader.GetString(3)),
             Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), null, Real(reader, 7), null, null)
         {
             EndedOn = DateOf(reader, 8), Cap = Whole(reader, 9),
+            Plan = reader.IsDBNull(10) ? null : PlanOrder.FromJson(reader.GetString(10)),
         });
         await ReadAsync(LargeBook, reader => new StoredTrade("heavyweight_holding", LargeIndex, string.Empty, reader.GetString(0), Date(reader.GetString(1)),
             Price(reader, 2)!.Value, null, null, null, Real(reader, 3), Real(reader, 4), CutOf(reader, 5)));

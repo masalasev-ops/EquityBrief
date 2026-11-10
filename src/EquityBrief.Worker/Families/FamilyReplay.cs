@@ -54,6 +54,10 @@ public sealed class FamilyReplay : IComponent
     // trade: the ledger has moved since each night read it, so nothing can reproduce what the night's order was.
     public const string NotReplayedOnItsReadings = "it reads the ledger's readings or the expected value of the setups like each, which have moved since each night read them, so its trades cannot be replayed";
 
+    // From 23.10 a rule stating a plan buys at levels each night's levels plan placed, which a replay over the verdicts alone
+    // does not place, so its record restarts with the plan.
+    public const string NotReplayedOnItsPlan = "it buys and sells by a plan whose prices each night's levels placed, so its trades cannot be replayed from its verdicts";
+
     // A stop's or a target's distance from the buy is the same where the two agree to a millionth: a split or a
     // dividend since the night rescales the store's closes, and a distance does not move with the scale.
     const decimal Distance = 0.000001m;
@@ -250,7 +254,7 @@ public sealed class FamilyReplay : IComponent
                 // none, which keeps none of its trades.
                 var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters));
 
-                foreach (var (ticker, place, plan) in hooks.ReadsReadings || hooks.ReadsExpected ? [] : FamilyRecorder.Keep(verdicts.Where(verdict => verdict.Outcome.Candidate == rule.Candidate), held, hooks))
+                foreach (var (ticker, place, plan) in hooks.ReadsReadings || hooks.ReadsExpected || hooks.Plan is not null ? [] : FamilyRecorder.Keep(verdicts.Where(verdict => verdict.Outcome.Candidate == rule.Candidate), held, hooks))
                 {
                     var ended = FamilyRecorder.Walk(night, plan.Entry, plan.Stop, plan.Target, cap, closes.GetValueOrDefault(ticker), calendar, at, hooks.Exit, plan.RiskMoves);
 
@@ -267,7 +271,9 @@ public sealed class FamilyReplay : IComponent
                 var record = stored[rule.Candidate].Where(trade => trade.Session >= from).ToArray();
                 var replayed = kept[rule.Candidate];
                 var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters));
-                var differs = record.Length > 0 && (hooks.ReadsReadings || hooks.ReadsExpected) ? NotReplayedOnItsReadings : FirstDifference(record, replayed);
+                var differs = record.Length > 0 && hooks.Plan is not null ? NotReplayedOnItsPlan
+                    : record.Length > 0 && (hooks.ReadsReadings || hooks.ReadsExpected) ? NotReplayedOnItsReadings
+                    : FirstDifference(record, replayed);
 
                 return new FamilyReplayed(
                     rule.Candidate,

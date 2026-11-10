@@ -63,6 +63,7 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.PulledEarnings, Touch.Read),
             new StoreTouch(Store.PulledSurprise, Touch.Read),
             new StoreTouch(Store.PulledMarketBar, Touch.Read),
@@ -237,11 +238,14 @@ public sealed partial class SetupLedger : IComponent
     // The newest pull holding a member's first stored session, and its close there, which the scale is read from.
     const string PullHoldingFirst = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
 
-    // That pull's sessions before the first stored session, from the newest on or before the oldest day the reading reaches.
+    // That pull's sessions before the first stored session, from the newest on or before the oldest day the reading reaches,
+    // from 23.10 read from the session the stock's history starts on and past each bad print.
+    // see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
     const string PulledBeforeTheYear = @"
         SELECT session_date, close, raw_close FROM pulled_bar
         WHERE ticker = $ticker AND pull = $pull AND session_date < $first
             AND session_date >= COALESCE((SELECT MAX(session_date) FROM pulled_bar WHERE ticker = $ticker AND pull = $pull AND session_date <= $oldest), $oldest)
+            AND " + Core.Chart.SessionMarking.AsMarked + @"
         ORDER BY session_date;";
 
     // The round trip a member's trade pays, in per cent of its close, as the member reader stored it for the night.

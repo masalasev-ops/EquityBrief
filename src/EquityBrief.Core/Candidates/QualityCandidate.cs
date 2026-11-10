@@ -16,7 +16,7 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
     public const string BookParameter = "book";
     public const string SaleParameter = "sale";
 
-    public override string Version => "52007a83a3f1";
+    public override string Version => "84474c2c44f7";
 
     public override string SetupFamily => QualityRule.Name;
 
@@ -46,7 +46,7 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Data/Money.cs",
         "src/EquityBrief.Core/Prices/Statistic.cs",
         "src/EquityBrief.Data/StoreConnection.cs",
-        .. EquityBrief.Core.Loop.RuleHooks.Sources,
+        .. EquityBrief.Core.Loop.RuleHooks.Sources.Except(EquityBrief.Core.Loop.RuleHooks.PlanWalkSources, StringComparer.Ordinal),
     ];
 
     // The parameters a registration states for settings, and the settings a registration's parameters state.

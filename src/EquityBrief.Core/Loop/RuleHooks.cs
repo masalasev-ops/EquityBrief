@@ -38,7 +38,8 @@ public sealed record RuleHooks(
     double? Exposure = null,
     int Ranking = 0,
     bool ByExpected = false,
-    IScoreModel? Ranker = null)
+    IScoreModel? Ranker = null,
+    PlanCombination? Plan = null)
 {
     public const string ExitParameter = "exit";
 
@@ -87,9 +88,22 @@ public sealed record RuleHooks(
     public static RuleHooks Off { get; } = new(0, [], new Dictionary<int, double>(), null);
 
     // The files a hooked rule's list and trades are read through, which every family rule's version pins beside its own.
-    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs"];
+    // From 23.10 the plan's reading and its walk, which a hooked rule's trades are bought and sold through, and the marks every
+    // rule's read of the pull reads under. A book states no plan, so its rules pin the reading and not the walk, nor the
+    // bands, the ladder and the volume profile a plan's order is placed at, read as the night reads them.
+    public static IReadOnlyList<string> PlanWalkSources { get; } =
+    [
+        "src/EquityBrief.Worker/Loop/PlanTrades.cs",
+        "src/EquityBrief.Core/Ladders/LadderSeries.cs",
+        "src/EquityBrief.Core/Levels/LevelSeries.cs",
+        "src/EquityBrief.Core/Volume/VolumeProfileSeries.cs",
+        "src/EquityBrief.Worker/Filter/SessionReplay.cs",
+        "src/EquityBrief.Worker/Levels/LevelBuilder.cs",
+    ];
 
-    public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null && Exposure is null && Ranking == 0 && !ByExpected;
+    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs", "src/EquityBrief.Core/Loop/PlanHook.cs", "src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Core/Loop/PlanPrices.cs", .. PlanWalkSources, "src/EquityBrief.Core/Chart/SessionMarking.cs"];
+
+    public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null && Exposure is null && Ranking == 0 && !ByExpected && Plan is null;
 
     // Whether a member's readings are needed: a condition, a score, the exposure's two switches or a ranking by the
     // learned score.
@@ -103,7 +117,7 @@ public sealed record RuleHooks(
 
     // Whether the hooks stated are the ones a book's rule reads: its conditions and its score, and none of the exit, the
     // exposure, the ranking or the expected-value order, which pick a night's trades.
-    public bool AreABooks => Exit == 0 && Exposure is null && Ranking == 0 && !ByExpected;
+    public bool AreABooks => Exit == 0 && Exposure is null && Ranking == 0 && !ByExpected && Plan is null;
 
     public const string NotABooks = "a book reads conditions on the catalogue's readings and an order by a score alone";
 
@@ -117,6 +131,7 @@ public sealed record RuleHooks(
         || name == ExposureParameter
         || name == RankingParameter
         || name == ExpectedOrderParameter
+        || PlanHook.Parameters.Contains(name)
         || (name.StartsWith(ScorePrefix, StringComparison.Ordinal) && Column(name[ScorePrefix.Length..]) >= 0)
         || (name.StartsWith(AlsoPrefix, StringComparison.Ordinal) && name.EndsWith(AboveSuffix, StringComparison.Ordinal) && Column(name[AlsoPrefix.Length..^AboveSuffix.Length]) >= 0)
         || (name.StartsWith(AlsoPrefix, StringComparison.Ordinal) && name.EndsWith(BelowSuffix, StringComparison.Ordinal) && Column(name[AlsoPrefix.Length..^BelowSuffix.Length]) >= 0);
@@ -210,7 +225,14 @@ public sealed record RuleHooks(
             throw new ArgumentException("A rule states one order: a score over the catalogue's readings or the learned trees, a ranking, or the expected-value order.", nameof(parameters));
         }
 
-        return new RuleHooks(exit, also, score, floor, trees, null, exposure, ranking, byExpected);
+        var plan = PlanHook.Of(parameters);
+
+        if (plan is not null && exit != 0)
+        {
+            throw new ArgumentException("A rule states its sale once: an exit of the menu or a plan's sale.", nameof(parameters));
+        }
+
+        return new RuleHooks(exit, also, score, floor, trees, null, exposure, ranking, byExpected, null, plan);
     }
 
     // The hooks with the tree model they name found by the reader given, none where they name none.
@@ -344,6 +366,11 @@ public sealed record RuleHooks(
         if (ExitChoice is { } exit)
         {
             parts.Add("exit: " + exit.Words);
+        }
+
+        if (Plan is { } plan)
+        {
+            parts.Add("plan: " + plan.Words);
         }
 
         parts.AddRange(Also.Select(condition => FormattableString.Invariant($"also requires {condition.Column} {(condition.Above ? "at or above" : "at or under")} {condition.Level.ToString("0.####", CultureInfo.InvariantCulture)}")));

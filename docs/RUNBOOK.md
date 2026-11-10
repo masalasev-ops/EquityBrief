@@ -1802,6 +1802,14 @@ powershell -File tools/remedy.ps1 tools/remedies/2026-11-01-21.18-the-standing-t
 
 It registers again every rule reading the hooks, the S&P 500's breakout and drift replayed first, and then the four variants.
 
+**A family's live rule given the plan its long test recommends** is registered by one command a family and index, from 23.10: the live rule retired and registered again under its own name at its own parameters with the plan's, and today's plan beside it as a variant where the family keeps fewer than nine, walked unregistered where it keeps nine. With `--variant-only` the plan is registered beside the live rule as a variant, where the family has room, and nothing is retired (see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant).
+
+```
+dotnet run --project src/EquityBrief.Worker -- register --plan "<the live rule's name>" --combination "<the plan's words, as plan-points prints them>" --evidence "the table it is given on"
+```
+
+It is refused for a rule that is not a family's live rule, for one whose trades its step does not keep one at a time, for words the test of the buy and sell points does not walk, and for the rule's own plan, writing nothing. A rule given a plan restarts its record at the registration, since the replay cannot place its plan's prices from its verdicts.
+
 **The Fundamentals family's live rule without its flag** is registered on one index by one command, from 21.17 on the operator's ruling of 2026-10-31: the live rule and the version standing at its setting without the flag are retired and registered again as each other at one instant, the unflagged setting the live rule and the flagged one a version, the family keeping its nine rules (see: The Fundamentals family's live rule on the S&P 400 and 600 asks no flag, the flagged rule standing beside it as a version).
 
 ```

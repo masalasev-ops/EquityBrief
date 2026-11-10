@@ -18515,3 +18515,116 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 141, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.10 ruling - the restart's table, written before the restart: the twelve pairs, item 4, the room and the carried items   2026-11-10
+
+Not a checkpoint entry: it records the table the operator's order of 2026-11-10 asked written first, and lands nothing.
+Ruled:      the order's 23.10 paragraph, word for word in `prompts/2026-11-10-overnight-order.md`: "Write the table first into
+            PROGRESS and prompts/ ... Apply my rule mechanically to that table". The table whole, with its item 4 and carried items,
+            stands in `prompts/2026-11-10-23.10-table.md`. Each figure a mean edge a pick offered per $1 risked against the ruled
+            benchmark, 2005 to 2018 / from 2019, from `plan-points` as the 23.8 correction's remedy left it.
+Pairs:      today's plan, then the recommendation after items 1 and 2, then what the rule makes of it.
+            S&P 500 pullback -0.104 / -0.124; 1.13 typical days under the close within 20, 4 under the buy, the first band above,
+            +0.242 / +0.083; traded, today's plan a variant.
+            S&P 500 breakout -0.132 / -0.097; 2.87 under the close within 20, 4 under the buy, the first band above, +0.269 / +0.246;
+            traded, today's plan a variant.
+            S&P 500 drift -0.028 / -0.192; 2.22 under the close within 20, 4 under the buy, the rule's sale, +0.380 / +0.151;
+            traded, today's plan a variant: above nought from 2019 once items 1 and 2 stand, where the order named it below.
+            S&P 500 dip -0.029 / -0.038; the second zone within 10, 4 under the buy, the time limit alone, +0.037 / +0.024; traded.
+            S&P 400 pullback -0.060 / -0.099; the third zone within 20, 4 under the buy, the rule's sale, +0.320 / +0.545; traded.
+            S&P 400 breakout -0.137 / -0.081; 1.6 under the close within 20, 2 under the buy, the first band above, +0.236 / +0.117;
+            traded.
+            S&P 400 drift -0.035 / +0.003; 2.11 under the close within 20, 2 under the buy, the staged sales, +0.323 / +0.119; traded.
+            S&P 400 dip -0.029 / -0.037; the second zone within 20, the rule's stop, the time limit alone, +0.036 / +0.023; traded.
+            S&P 600 pullback -0.147 / +0.059; 0.84 under the close within 5, 4 under the buy, the rule's sale, +0.587 / +0.466;
+            traded.
+            S&P 600 breakout -0.234 / -0.085; the 20-session average within 20, 2.5 under the buy, the staged sales, +0.235 / +0.205;
+            traded.
+            S&P 600 drift +0.123 / +0.338; the next open, 1 typical day under the buy, the time limit alone, +0.481 / +0.323; today's
+            plan stays above nought and unbeaten, the recommendation a variant.
+            S&P 600 dip -0.017 / -0.029; 1.51 under the close within 10, 4 under the buy, the time limit alone, +0.050 / +0.051;
+            traded.
+Item 4:     the drift as traded, the first pullback alone, the sales check alone and the two together: S&P 500 -0.028 / -0.192,
+            -0.062 / -0.204, -0.115 / -0.152, -0.117 / -0.186; S&P 400 -0.035 / +0.003 as traded and -0.078 / +0.038 for the sales
+            check. Both drifts hold nine once today's plan is kept, so neither registers.
+Room:       of the nine a family: the S&P 500 pullback, breakout and drift hold nine and walk today's plan and every carried item
+            unregistered; the S&P 500 dip 5 to 6; the S&P 400 pullback 5 to 7 with its wait entry, breakout 4 to 5, drift 8 to 9,
+            dip 5 to 6; the S&P 600 pullback 5 to 6, breakout 6 to 9 with its two wait entries, drift 5 to 6 with the
+            recommendation, dip 6 to 7; Quality 8 to 9 on each index with its learned score. Nothing retired.
+Provisional: on the operator's review, the S&P 500 drift made traded by the rule as the table stands; each S&P 600 breakout wait
+            entry read as the first zone within 5 sessions; and Quality's learned score as the 2026-11 run's "the learned score,
+            ordering the list" on each index.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - the restart: the plans the long test recommends traded, the marks read, and the parts ready that day   2026-11-10
+
+Built:      a family rule's registration may state the plan it is bought and sold by in five parameters, one way of the test of
+            the buy and sell points, the four at nought reading as the rule's own plan; a rule stating one stores on each trade the
+            order its plan placed at the night's close from the stock's own bars, is filled where its level trades within its
+            window, sold where the test sells, read in its rule's risk and benchmarked on every member under the same plan, one never
+            filled ending at its window's last session with no result; the S&P 500 recorder, the S&P 400's and 600's rule trades,
+            the dip, the fill step, the replay, which keeps none of a planned rule's trades, and the monthly test's walks each read
+            it. `register --plan` gives a live rule its plan with today's plan beside it as a variant where its family has room,
+            and `--variant-only` stands a plan beside it. The sweep's history reads each stock from its start, past each bad print
+            and to its end, and the S&P 400's and 600's step, the heavyweights' book and the setup ledger read the pull before the
+            year the same way. A setup's benchmark leaves out a member past 20 risks either way. Each card and Home idea is handed
+            the zone its traded plan buys at with its stop and target. The plan point test reads as traded the plan each family's
+            live rule states. Migration 142 adds the `plan` column to the four trade tables and the card.
+Amended:    this checkpoint amends its own done condition: on the operator's order of 2026-11-10, read as a fork taken provisional
+            on their review, its parts are those ready that day, and the wording's move, the swing filter's and the book's hooks
+            with the S&P 500 pullback's plan, the profit check's quarter, the entry readings with the tight stop's skip and the six
+            conditions, the provider's quarters and the long ledger written once more are tabled for phase 24, whose own restart
+            takes them up. The plan's text and its new section say so; the prior text stands in the changelog.
+Restarts:   128 rules, every standing family rule whose evaluator moved, before the remedy, each with its trades and how many ended:
+            S&P 500 breakout 9 from 2026-11-03, the live rule's 3 of 3 and the variants' 7/6, 3/3, 2/2, 3/1, 25/15, 2/2, 1/1, 18/9;
+            S&P 500 drift 9 from 2026-11-03, the live rule's 70/28 and 82/35, 71/31, 43/17, 12/5, 70/26, 70/27, 63/26, 77/33;
+            S&P 500 dip 5 from 2026-11-01, 9/1 and 10/1, 11/1, 9/1, 9/1; S&P 500 heavyweights 4 from 2026-10-21, holdings 10/8 and
+            18/8, 10/9, 10/8; S&P 500 Quality 8 from 2026-11-01, 11/1 and 11/1, 12/2, 11/1, 22/2, 11/1, 10/0, 12/2; S&P 500
+            Fundamentals 9 from 2026-11-01, 19/0 and 38/0, 6/0, 19/0, 19/0, 19/0, 35/0, 35/0, 12/0; S&P 400 pullback 5 from
+            2026-11-03, 3/2 and 1/0, 1/0, 3/2, 9/5; S&P 400 breakout 4, 12/1 and 8/0, 12/1, 2/0; S&P 400 drift 8, 41/8 and 11/3,
+            34/5, 0/0, 18/5, 41/8, 51/18, 28/6; S&P 400 dip 5 from 2026-11-01, 4/2 and 4/2, 3/1, 4/2, 4/2; S&P 400 heavyweights 2,
+            9/3 and 8/2; S&P 400 Quality 8, 10/0 and 10/0, 13/3, 10/1, 21/1, 10/0, 10/0, 10/0; S&P 400 Fundamentals 9, 32/0 and 8/0,
+            19/0, 19/0, 19/0, 13/0, 49/0, 9/0, 4/0; S&P 600 pullback 5, 1/0 and 1/0, 1/0, 1/0, 8/3; S&P 600 breakout 6, 3/0 and 3/0,
+            3/0, 0/0, 3/0, 1/0; S&P 600 drift 5, 30/1 and 30/1, 24/1, 19/0, 51/13; S&P 600 dip 6, 1/0 and 2/1, 1/0, 1/0, 1/0, 1/0;
+            S&P 600 heavyweights 4, 6/1 and 10/6, 10/6, 9/5; S&P 600 Quality 8, 10/0 and 10/0, 10/0, 10/1, 20/0, 10/0, 10/0, 12/2;
+            S&P 600 Fundamentals 9, 8/0 and 12/0, 6/0, 5/0, 5/0, 5/0, 5/0, 7/0, 8/0. The S&P 500's breakout and drift are replayed
+            first; a rule given a plan restarts its record at its plan's registration. The swing filter's nine stand as they are.
+Remedy:     `tools/remedies/2026-11-10-23.10-the-restart.txt`, from main after the merge while nothing else writes: migrate, every
+            moved rule registered again, ten live rules given their plans with today's plan beside each where its family has room,
+            the S&P 600 drift's recommendation, the three wait entries and Quality's learned score on each index as variants, the
+            long test of the buy and sell points on each index again and the watched cards priced again; then each index's ledger
+            history built again with `--again` and checked, only where it ends before the next night starts. Before it the store
+            is copied whole to `equitybrief-before-23.10-restart.db` in the operator's copies' folder, the copy a failed remedy
+            restores from.
+Tests:      9 new: a plan's parameters read and stated back and each malformed one refused; a plan trade filled, sold, read in its
+            rule's risk, left waiting, held and ended unfilled, by hand, and at a moved scale; a live rule given its plan with
+            today's plan beside it, a variant beside one keeping today's, and a family holding nine walking today's plan
+            unregistered; the plan point test reading each family's live plan by index; a card handed its zone and one with no plan
+            drawing as before; the loop's walk of a planned listing by hand; the benchmark's guard by hand; the sweep's series and a
+            rule's read of the pull under the marks with no pulled row moved. The guards of 22.1, 23.1 and 23.8 on the pinned
+            sources and the plan point test's stores say what 23.10 pins and reads on purpose.
+Claims:     none new; section 13's paragraph on the hooks and the catalogue rows of the components that read the marks, the
+            register and the trades say it.
+Pins:       every family rule's version moves: the hooks' sources pin the plan's files, the bands, the ladder and the volume
+            profile a plan's order is placed at, and the marks, the Quality and Fundamentals rules, whose books state no plan,
+            pinning all but the walk and its levels, and the heavyweights' book reads the marks; the fill at a level, which the entry check's
+            measurement reads as well, moves into the plan's file so no rule pins the entry check's words, and the replay's two
+            reasons for no ladder read the wording file's; the swing filter and the ladder rules' windows do not move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored to the file's
+            own text, 8 in all, each predicted red and each red: the plan stated off read as a plan; a plan trade read in its own
+            risk; today's plan registered where the family holds nine; the loop's unit read in its fill's risk; no member left out
+            of the benchmark; the card's stop placed from the close; a live plan read without its index; and a rule's read of the
+            pull past no bad print.
+Provisional: on the operator's review, beside the table's: the waiting parts tabled for phase 24 rather than built before the
+            merge; a plan trade's result read in its rule's risk; a dip trade never filled stored ended at its limit with no fill;
+            the S&P 600 pullback traded under the rule of 2026-11-10 where the operator's note of 2026-11-08 kept it as it was; the
+            long ledger written again at phase 24's restart; and Quality's three learned scores one fitted score, the monthly run
+            having fitted one over every index.
+Owed:       phase 22's sign-off, outstanding, reading the code as 23.10 left it, its correction table running to 23.10's pull
+            request, PR 685 (owes: The sign-off of phase 22 reviews the code as 23.10 rewrote it); phase 23's sign-off; the
+            operator's review of every provisional choice and of the marks; the parts tabled for phase 24.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3675 of 3675 tests ran with none failed, migrations 0 to 142 with none
+            pending, schema version 142, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

@@ -7,6 +7,53 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/BUILD_PLAN.md - the obligation on phase 22's sign-off discharged at 23.10
+Decision: none; the operator's ruling of 2026-11-10, item 8 of their overnight order
+Was:
+> | **The sign-off of phase 22 reviews the code as 23.10 rewrote it** | 23.10 ruling of 2026-11-10 | 23.10 | 23.10 rewrites code phase 22 built, the rules' wording, the swing filter's hooks, the plans the price families follow and the cards that draw them, before phase 22's sign-off is written, ...
+Now:
+> its due point "23.10, discharged", naming what 23.10 rewrote, the wording and the swing filter's hooks having been tabled for phase 24.
+Why: 23.10 lands, its entry naming the sign-off outstanding and reading the code as 23.10 left it.
+
+### 2026-11-10 - docs/BUILD_PLAN.md - 23.10 lands the parts ready that day and the rest are tabled for phase 24
+Decision: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+Was:
+> (23.10's parts) Parts: every file the check names has its words moved to the file no version pins; `SweepHistory` skips each bad print and starts each stock at its mark, PRG 2021-04-06, CHRD, INSW, SNDK and TALO among them, and the rules' reads of the pull read the marks; the S&P 500's swing filter and its book of sector heavyweights taught the hooks, the three code paths staying on the operator's answer, so its pullback reads graded exposure and the standing target; the S&P 400's and 600's profit check reading the quarter stored that night where it reads quarters stored before the night's quarters fetch, the history's read of a quarter's day following it so the night and its history read one thing; the entry check's readings, stretch, hot run, gap and stop, one-off items in the release, highest close since and older resistance, registered in the ledger's catalogue, appended after every reading before them and none where a source holds nothing for the session; the three wait-entry variants the operator named from the entry check's measurement of 2026-11-05: the S&P 400 pullback bought at the 20-session average within 5 sessions, changing the entry alone; the S&P 600 breakout bought in the wait zone within 5 sessions with the breakout's own rising stop and no target, changing the entry alone; and the S&P 600 breakout bought in the zone with the wait plan's stop and first exit, changing the entry and the exit together; the S&P 400 pullback standing at 6 of 9 rules and the S&P 600 breakout at 8 of 9; six ledger conditions from the same measurement, each tested alone once the readings stand; any rule or plan reading support or resistance levels older than the stored year, read from the history pulled before the store's year; the member reader's, the fundamentals reader's and the S&P 400's and 600's family steps' reads of the provider's quarters reading each quarter's lines from its filing as first filed, then its results release's own rows, then nothing; a pick whose give-up price sits within the stock's typical daily move of its buy skipped, registered as a variant on the S&P 500's drift and pullback and the S&P 600's pullback; the S&P 500 drift with the first-pullback entry registered as a variant counted in its family's correction and measured read-only over the long history first; each card handed the zone its traded plan buys at; the `plan-points` run reading as traded the plan each price family follows after the restart; and what the operator ruled in from 23.6, 23.8 and 23.9. ... Writes section 13.10's catalogue count and rows, section 17's rows, the runbook's remedy, the check's list emptied, the decisions on the wording and the marks moved under Previously decided with their citations repointed, the roster's rows, the guide and the changelog.
+> (23.10's done condition) the check's list is empty and a sentence planted in any pinned file fails it; the sweep's series reads past PRG's bad print and starts each of the four at its mark; a rule's read of the pull reads the marks; the S&P 500's pullback stating graded exposure and the standing target and its book of sector heavyweights stating a hook are each worked over a constructed night; the profit check is worked by hand over a constructed night on both sides; each entry reading is worked by hand at a constructed session; each of the three wait-entry variants is bought and left unfilled over a constructed path and registered; each of the six conditions is worked by hand on both sides of its level; none of the nine is adopted; the member reader, the fundamentals reader and the S&P 400's and 600's family steps each read a constructed member's quarter from its filing, from its release and as nothing, and the picks the change moves on each index are stated; the skip is worked by hand on each of the three families; no rule or plan reads an older level before this checkpoint; the remedy's lines register again exactly the rules whose versions moved; each rule's earlier trades are read back in their group; the S&P 500 drift's first-pullback variant is measured read-only and its line registers it; a card of a plan buying at a zone is handed its zone and draws it; the `plan-points` run reads a restarted plan as traded; and one mutation of each property is shown red.
+> (phase 23's paragraph on the restart) ending "and the tight stop's skip as a variant on the S&P 500's drift and pullback and the S&P 600's pullback."
+Now:
+> 23.10's parts and done condition are what landed that day: the marks, the plans and today's plans beside them, the wait entries as plans, Quality's learned score, the drift's two checks measured and walked unregistered, the benchmark's guard, the cards' zones, the plan point test reading each live plan and the monthly test walking it, the three standing ledgers written again; the rest, the long ledger written once more with the readings among it, is written under "Tabled for phase 24"; the restart's paragraph says so.
+> (23.10's ledgers, before) "The three standing ledgers are written again with their checks, and the long ledger once more, so the loop walks the new readings over the long years, none of these writes running across a night."
+Why: the operator's order of 2026-11-10, its 23.10 paragraph, read as a fork taken provisional on their review: the parts not ready that day each needed hours more of building, and the plans the operator asked traded were ready.
+
+### 2026-11-10 - docs/ARCHITECTURE.html - each card handed the zone its traded plan buys at
+Decision: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
+Was:
+> (the catalogue row of the decision cards) its reads ending "provisional settings, plan points, decision cards"
+Now:
+> its reads ending "provisional settings, plan points, family trades, index rule trades, dip trades, decision cards"
+Why: 23.10's part handing each card the zone its traded plan buys at, read off its family's live rule's trade that night.
+
+### 2026-11-10 - docs/ARCHITECTURE.html - the plan point test reads the traded plan from each family's live rule
+Decision: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+Was:
+> (the catalogue row of the plan point test) its reads ending "pulled revenue"; its description ending "each kept where it does better from 2019)"
+> (the read and write matrix) the plan point test's Candidate register cell blank
+Now:
+> its reads ending "pulled revenue, candidate register"; its description adding that from 23.10 each family's figures stand against the plan its live rule states
+> its Candidate register cell R
+Why: 23.10's part reading the restarted plan as traded, so each pick's record reads the plan its family trades.
+
+### 2026-11-10 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md and docs/SCHEMA.md - the sweep's history and the rules' reads of the pull read the marks
+Decision: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
+Was:
+> (ARCHITECTURE, the catalogue rows of the sweep history, the index families, the heavyweight book and the setup ledger) each read cell without session marks
+> (ARCHITECTURE, two rows; BUILD_PLAN, three paragraphs; SCHEMA, the session marks' paragraph) (see: The operator's word on a session of the pull is a mark beside it and no pulled row moves, and only the chart's reads and the chart check read it until phase 23's restart)
+Now:
+> each of the four read cells naming session marks beside the pulled bars
+> (see: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print)
+Why: 23.10, the restart the operator's ruling of 2026-11-04 named for the marks to reach the sweep's series and the rules' reads.
+
 ### 2026-11-10 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - a long build states the store's size and stops on no size
 Decision: A long build states the store's size before and after it with its expected growth and time, and stops on no size
 Was:

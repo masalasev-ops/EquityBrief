@@ -1,5 +1,6 @@
 using EquityBrief.Core.EntryCheck;
 using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Loop;
 using Xunit;
 
 namespace EquityBrief.Tests.Reading;

@@ -45,6 +45,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             new StoreTouch(Store.LongFact, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.PulledRevenue, Touch.Read),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -93,9 +94,8 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     // A flagged setup as the ledger stored it.
     public sealed record FlaggedSetup(string Family, string Ticker, DateOnly Session, double Entry, double Stop, double? Target, double? Trail, int Cap, double? CompanyValue);
 
-    // The levels plan as of a setup's session: each zone's top and its own stop, the staged sales' levels and the low edges
-    // of the resistance bands with real touches.
-    public sealed record LevelsAsOf(IReadOnlyList<(double Top, double? Stop)> Zones, IReadOnlyList<double> Staged, IReadOnlyList<double> Bands, string? Why);
+    // Why a session draws no levels plan, which the report prints beside a combination it could not place.
+    public const string NoTypicalMove = "no typical daily move is read on the session";
 
     // One combination's outcome on one setup, as the example prints it.
     public sealed record Worked(PlanCombination Combination, double? Level, double? Fill, double? Stop, string Sale, PlanPick? Pick, string Words);
@@ -285,6 +285,34 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             picked[at] = (family, final, finalUnseen, plan, count);
         }
 
+        // From 23.10 the traded plan a family is read against is the plan its live rule on the index states, the next open at
+        // its own stop and sale where it states none: one off the grid walked as a refinement is, so each pick's record and
+        // each recommendation read against what the family trades after the restart.
+        // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+        var livePlans = LivePlans(await RegisterAsync(cancellation), clock.UtcNow, index);
+        var tradedSince = new Dictionary<string, PlanFigures?>(StringComparer.Ordinal);
+
+        for (var at = 0; at < picked.Count; at++)
+        {
+            var (family, combination, chosen, plan, count) = picked[at];
+
+            tradedSince[family] = figures.GetValueOrDefault((family, traded, Chosen));
+
+            if (livePlans.GetValueOrDefault(family) is not { } live)
+            {
+                continue;
+            }
+
+            var inGrid = PlanPoints.Combinations.ToList().IndexOf(live);
+            var (liveUnseen, liveSince) = inGrid >= 0
+                ? (figures.GetValueOrDefault((family, inGrid, Unseen)), figures.GetValueOrDefault((family, inGrid, Chosen)))
+                : Tallied(walker, [.. setups.Where(one => one.Family == family)], [live], cancellation)[live.Words] is var walkedLive ? (walkedLive.Unseen, walkedLive.Since) : default;
+
+            tradedSince[family] = liveSince;
+            picked[at] = (family, combination, chosen, liveUnseen, count);
+            refinements.Add($"The {family} trades {live.Words} from its live rule's registration, which its figures here are read against.");
+        }
+
         var lines = new List<string>
         {
             FormattableString.Invariant($"{setups.Count} flagged setup(s) of the pullback, the breakout, the drift and the dip on the {DecisionCards.NameOf(index)}, the long ledger's from 2005 and the standing ledger's from 2019, {unread} whose stock or session the long history does not hold left out; each walked under {PlanPoints.Combinations.Count} combination(s) of an entry, a stop and a sale."),
@@ -298,11 +326,11 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         foreach (var (family, combination, chosen, plan, count) in picked)
         {
             var since = SinceOf(family, combination);
-            var tradedSince = figures.GetValueOrDefault((family, traded, Chosen));
+            var tradedLater = tradedSince.GetValueOrDefault(family);
 
             lines.Add(combination is null
                 ? FormattableString.Invariant($"The {family}: {count} setup(s); no combination rests on {PlanPoints.FewestFills} fills over the years no setting was chosen on.")
-                : FormattableString.Invariant($"The {family}: {count} setup(s); recommended {combination.Words}, edge per pick offered {Shown(chosen!.EdgePerPick)} over {chosen.Fills} fill(s) of {chosen.Picks} pick(s), against the traded plan's {Shown(plan?.EdgePerPick)} over {plan?.Fills ?? 0} fill(s); from {LongLedger.StandingFrom.Year}, which it was not chosen on, {Shown(since?.EdgePerPick)} over {since?.Fills ?? 0} fill(s) against the traded plan's {Shown(tradedSince?.EdgePerPick)} over {tradedSince?.Fills ?? 0}. Against the fund held over the same sessions, {Shown(chosen.FundEdgePerPick)} against {Shown(plan?.FundEdgePerPick)}, and from {LongLedger.StandingFrom.Year} {Shown(since?.FundEdgePerPick)} against {Shown(tradedSince?.FundEdgePerPick)}."));
+                : FormattableString.Invariant($"The {family}: {count} setup(s); recommended {combination.Words}, edge per pick offered {Shown(chosen!.EdgePerPick)} over {chosen.Fills} fill(s) of {chosen.Picks} pick(s), against the traded plan's {Shown(plan?.EdgePerPick)} over {plan?.Fills ?? 0} fill(s); from {LongLedger.StandingFrom.Year}, which it was not chosen on, {Shown(since?.EdgePerPick)} over {since?.Fills ?? 0} fill(s) against the traded plan's {Shown(tradedLater?.EdgePerPick)} over {tradedLater?.Fills ?? 0}. Against the fund held over the same sessions, {Shown(chosen.FundEdgePerPick)} against {Shown(plan?.FundEdgePerPick)}, and from {LongLedger.StandingFrom.Year} {Shown(since?.FundEdgePerPick)} against {Shown(tradedLater?.FundEdgePerPick)}."));
         }
 
         var example = index == Market ? await ExampleAsync(walker, cancellation) : [];
@@ -413,12 +441,12 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     ("$traded_edge_per_pick", Or(plan?.EdgePerPick)),
                     ("$later_fills", Or(SinceOf(family, combination)?.Fills)),
                     ("$later_edge_per_pick", Or(SinceOf(family, combination)?.EdgePerPick)),
-                    ("$traded_later_edge_per_pick", Or(figures.GetValueOrDefault((family, traded, Chosen))?.EdgePerPick)),
+                    ("$traded_later_edge_per_pick", Or(tradedSince.GetValueOrDefault(family)?.EdgePerPick)),
                     ("$fund_edge_per_pick", Or(chosen?.FundEdgePerPick)),
                     ("$traded_fund_edge_per_pick", Or(plan?.FundEdgePerPick)),
                     ("$later_fund_edge_per_pick", Or(SinceOf(family, combination)?.FundEdgePerPick)),
-                    ("$traded_later_fund_edge_per_pick", Or(figures.GetValueOrDefault((family, traded, Chosen))?.FundEdgePerPick)),
-                    ("$traded_later_picks", Or(figures.GetValueOrDefault((family, traded, Chosen))?.Picks)),
+                    ("$traded_later_fund_edge_per_pick", Or(tradedSince.GetValueOrDefault(family)?.FundEdgePerPick)),
+                    ("$traded_later_picks", Or(tradedSince.GetValueOrDefault(family)?.Picks)),
                 ], cancellation);
             }
 
@@ -538,6 +566,65 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     }
 
     // Combinations outside the grid walked over a family's setups, each one's figures before 2019 and from it.
+    const string ReadRegister = "SELECT id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence FROM candidate_register ORDER BY id;";
+
+    // The register as it stands, every row in the order it was written.
+    async Task<IReadOnlyList<Core.Candidates.RegisterRow>> RegisterAsync(CancellationToken cancellation)
+    {
+        var rows = new List<Core.Candidates.RegisterRow>();
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReadRegister;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            rows.Add(new Core.Candidates.RegisterRow(
+                reader.GetInt64(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5),
+                reader.GetString(6),
+                reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8),
+                DateTimeOffset.ParseExact(reader.GetString(9), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                reader.IsDBNull(10) ? null : reader.GetString(10)));
+        }
+
+        return rows;
+    }
+
+    // From 23.10 the plan each price family's live rule on an index states, by family, none where its live rule states none
+    // and no entry where no live rule of the family stands on the index.
+    // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+    public static IReadOnlyDictionary<string, PlanCombination?> LivePlans(IReadOnlyList<Core.Candidates.RegisterRow> rows, DateTimeOffset at, string index)
+    {
+        var plans = new Dictionary<string, PlanCombination?>(StringComparer.Ordinal);
+
+        foreach (var row in Core.Candidates.CandidateFamily.Standing(rows, at).Where(row => Core.Candidates.FamilyRecords.IsLive(row.Candidate)))
+        {
+            var family = Core.Candidates.CandidateEvaluators.Find(row.Evaluator) switch
+            {
+                Core.Candidates.IndexRuleCandidate rule => rule.Index == index ? rule.SetupFamily : null,
+                Core.Candidates.FamilyRuleEvaluator rule => index == Market ? rule.Family : null,
+                _ => null,
+            };
+
+            if (family is not null && PlanPoints.Families.Contains(family))
+            {
+                plans[family] = RuleHooks.Of(Core.Candidates.CandidateEvaluator.Read(row.Parameters)).Plan;
+            }
+        }
+
+        return plans;
+    }
+
     static Dictionary<string, (PlanFigures Unseen, PlanFigures Since)> Tallied(Walker walker, IReadOnlyList<FlaggedSetup> setups, IReadOnlyList<PlanCombination> combinations, CancellationToken cancellation)
     {
         var walked = new PlanPick?[setups.Count][];
@@ -970,48 +1057,6 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         }
 
         // The levels plan as of a bar, from the bands and the trend the night's own functions read over the year it held.
-        public static LevelsAsOf LevelsAt(SweepSeries series, int bar)
-        {
-            var from = Math.Max(0, bar - VolumeProfileSeries.Window + 1);
-            var bars = series.Bars[from..(bar + 1)].Select(one => new ReplayBar(one.Session, one.High, one.Low, one.Close, one.Volume)).ToArray();
-            var indicators = new Dictionary<string, double>(StringComparer.Ordinal);
-
-            void Hold(string key, double value)
-            {
-                if (double.IsFinite(value) && value > 0)
-                {
-                    indicators[key] = value;
-                }
-            }
-
-            Hold(IndicatorSeries.Atr14, series.Atr[bar]);
-            Hold(IndicatorSeries.Sma20, series.Sma20[bar]);
-            Hold(IndicatorSeries.Sma50, series.Sma50[bar]);
-            Hold(IndicatorSeries.Sma200, series.Sma200[bar]);
-
-            if (!indicators.TryGetValue(IndicatorSeries.Atr14, out var atr))
-            {
-                return new LevelsAsOf([], [], [], "no typical daily move is read on the session");
-            }
-
-            var confirmed = series.Swings.Take(series.Confirmed[bar]).ToArray();
-            var close = series.Bars[bar].Close;
-            decimal? Average(string key) => indicators.TryGetValue(key, out var value) ? Statistic.ToPrice(value) : null;
-            var trend = TrendSeries.For(close, Average(IndicatorSeries.Sma50), Average(IndicatorSeries.Sma200), confirmed);
-            var bands = SessionReplay.BandsOver(bars, indicators, confirmed);
-            var recent = bars.Skip(Math.Max(0, bars.Length - LadderSeries.ConditionLookback)).Select(one => new LadderBar(one.SessionDate, one.High, one.Low, one.Close)).ToArray();
-            var lows = confirmed.Where(swing => swing.Direction == SwingSeries.Low).OrderBy(swing => swing.SessionDate).Select(swing => swing.Price).ToArray();
-            var ladder = LadderSeries.For(bands, close, Statistic.ToPrice(atr), recent, trend.State, lows);
-            var touched = bands
-                .Where(band => band.Role == LevelSeries.Resistance && band.HasNonAverageAnchor && band.Members.Any(member => member.Source == MemberSource.Touch))
-                .Select(band => Statistic.FromPrice(band.LowEdge))
-                .ToArray();
-
-            return new LevelsAsOf(
-                [.. ladder.Tranches.Take(LadderSeries.MostTranches).Select(tranche => (Statistic.FromPrice(tranche.HighEdge), tranche.Stop is { } stop ? Statistic.FromPrice(stop) : default(double?)))],
-                [.. ladder.Exits.Where(exit => exit.Traded && !exit.Trailing).Select(exit => Statistic.FromPrice(exit.LowEdge))],
-                touched,
-                ladder.Reason);
-        }
+        public static LevelsAsOf LevelsAt(SweepSeries series, int bar) => PlanTrades.LevelsAt(series, bar);
     }
 }
