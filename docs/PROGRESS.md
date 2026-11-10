@@ -18515,3 +18515,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 141, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.10 ruling - the restart's table, written before the restart: the twelve pairs, item 4, the room and the carried items   2026-11-10
+
+Not a checkpoint entry: it records the table the operator's order of 2026-11-10 asked written first, and lands nothing.
+Ruled:      the order's 23.10 paragraph, word for word in `prompts/2026-11-10-overnight-order.md`: "Write the table first into
+            PROGRESS and prompts/ ... Apply my rule mechanically to that table". The table whole, with its item 4 and carried items,
+            stands in `prompts/2026-11-10-23.10-table.md`. Each figure a mean edge a pick offered per $1 risked against the ruled
+            benchmark, 2005 to 2018 / from 2019, from `plan-points` as the 23.8 correction's remedy left it.
+Pairs:      today's plan, then the recommendation after items 1 and 2, then what the rule makes of it.
+            S&P 500 pullback -0.104 / -0.124; 1.13 typical days under the close within 20, 4 under the buy, the first band above,
+            +0.242 / +0.083; traded, today's plan a variant.
+            S&P 500 breakout -0.132 / -0.097; 2.87 under the close within 20, 4 under the buy, the first band above, +0.269 / +0.246;
+            traded, today's plan a variant.
+            S&P 500 drift -0.028 / -0.192; 2.22 under the close within 20, 4 under the buy, the rule's sale, +0.380 / +0.151;
+            traded, today's plan a variant: above nought from 2019 once items 1 and 2 stand, where the order named it below.
+            S&P 500 dip -0.029 / -0.038; the second zone within 10, 4 under the buy, the time limit alone, +0.037 / +0.024; traded.
+            S&P 400 pullback -0.060 / -0.099; the third zone within 20, 4 under the buy, the rule's sale, +0.320 / +0.545; traded.
+            S&P 400 breakout -0.137 / -0.081; 1.6 under the close within 20, 2 under the buy, the first band above, +0.236 / +0.117;
+            traded.
+            S&P 400 drift -0.035 / +0.003; 2.11 under the close within 20, 2 under the buy, the staged sales, +0.323 / +0.119; traded.
+            S&P 400 dip -0.029 / -0.037; the second zone within 20, the rule's stop, the time limit alone, +0.036 / +0.023; traded.
+            S&P 600 pullback -0.147 / +0.059; 0.84 under the close within 5, 4 under the buy, the rule's sale, +0.587 / +0.466;
+            traded.
+            S&P 600 breakout -0.234 / -0.085; the 20-session average within 20, 2.5 under the buy, the staged sales, +0.235 / +0.205;
+            traded.
+            S&P 600 drift +0.123 / +0.338; the next open, 1 typical day under the buy, the time limit alone, +0.481 / +0.323; today's
+            plan stays above nought and unbeaten, the recommendation a variant.
+            S&P 600 dip -0.017 / -0.029; 1.51 under the close within 10, 4 under the buy, the time limit alone, +0.050 / +0.051;
+            traded.
+Item 4:     the drift as traded, the first pullback alone, the sales check alone and the two together: S&P 500 -0.028 / -0.192,
+            -0.062 / -0.204, -0.115 / -0.152, -0.117 / -0.186; S&P 400 -0.035 / +0.003 as traded and -0.078 / +0.038 for the sales
+            check. Both drifts hold nine once today's plan is kept, so neither registers.
+Room:       of the nine a family: the S&P 500 pullback, breakout and drift hold nine and walk today's plan and every carried item
+            unregistered; the S&P 500 dip 5 to 6; the S&P 400 pullback 5 to 7 with its wait entry, breakout 4 to 5, drift 8 to 9,
+            dip 5 to 6; the S&P 600 pullback 5 to 6, breakout 6 to 9 with its two wait entries, drift 5 to 6 with the
+            recommendation, dip 6 to 7; Quality 8 to 9 on each index with its learned score. Nothing retired.
+Provisional: on the operator's review, the S&P 500 drift made traded by the rule as the table stands; each S&P 600 breakout wait
+            entry read as the first zone within 5 sessions; and Quality's learned score as the 2026-11 run's "the learned score,
+            ordering the list" on each index.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.

@@ -292,7 +292,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         // From 23.10 the traded plan a family is read against is the plan its live rule on the index states, the next open at
         // its own stop and sale where it states none: one off the grid walked as a refinement is, so each pick's record and
         // each recommendation read against what the family trades after the restart.
-        // see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+        // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
         var livePlans = LivePlans(await RegisterAsync(cancellation), clock.UtcNow, index);
         var tradedSince = new Dictionary<string, PlanFigures?>(StringComparer.Ordinal);
 
@@ -606,7 +606,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
     // From 23.10 the plan each price family's live rule on an index states, by family, none where its live rule states none
     // and no entry where no live rule of the family stands on the index.
-    // see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+    // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
     public static IReadOnlyDictionary<string, PlanCombination?> LivePlans(IReadOnlyList<Core.Candidates.RegisterRow> rows, DateTimeOffset at, string index)
     {
         var plans = new Dictionary<string, PlanCombination?>(StringComparer.Ordinal);

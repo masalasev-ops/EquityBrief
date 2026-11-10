@@ -670,7 +670,7 @@ public sealed class CandidateRegistrar : IComponent
     // today's plan is registered beside it as a variant, its own parameters with the plan stated off, where the family keeps
     // fewer than nine; where today's plan stays traded the plan is registered as a variant beside it where the family has
     // room. A variant the family has no room for is named in the outcome as walked unregistered, and nothing is retired.
-    // see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+    // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
     public async Task<RegistrationOutcome> RegisterPlannedAsync(string live, PlanCombination combination, bool traded, string evidence, string runId, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;

@@ -42,7 +42,7 @@ public sealed record PlanWhere(DateOnly? FilledOn, double? Fill, PlanEnd? End);
 // as the test of the buy and sell points and a watched card place it; each walked over the bars since, filled where the test
 // fills and sold where it sells; and benchmarked on every member that night under the same plan, each bought at its own next
 // open, as the test's benchmark is.
-// see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+// see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
 public static class PlanTrades
 {
     const string BarsOf = @"

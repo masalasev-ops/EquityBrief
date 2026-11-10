@@ -1802,7 +1802,7 @@ powershell -File tools/remedy.ps1 tools/remedies/2026-11-01-21.18-the-standing-t
 
 It registers again every rule reading the hooks, the S&P 500's breakout and drift replayed first, and then the four variants.
 
-**A family's live rule given the plan its long test recommends** is registered by one command a family and index, from 23.10: the live rule retired and registered again under its own name at its own parameters with the plan's, and today's plan beside it as a variant where the family keeps fewer than nine, walked unregistered where it keeps nine. With `--variant-only` the plan is registered beside the live rule as a variant, where the family has room, and nothing is retired (see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant).
+**A family's live rule given the plan its long test recommends** is registered by one command a family and index, from 23.10: the live rule retired and registered again under its own name at its own parameters with the plan's, and today's plan beside it as a variant where the family keeps fewer than nine, walked unregistered where it keeps nine. With `--variant-only` the plan is registered beside the live rule as a variant, where the family has room, and nothing is retired (see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant).
 
 ```
 dotnet run --project src/EquityBrief.Worker -- register --plan "<the live rule's name>" --combination "<the plan's words, as plan-points prints them>" --evidence "the table it is given on"

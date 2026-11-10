@@ -60,7 +60,7 @@ public sealed record PlanTradeState(bool Waiting, int? FillBar, double? Fill, do
 // first band above, the staged sales or the time limit alone. Five parameters a registration states, all off where none is
 // stated, and stated off where the four name the next open at the rule's own stop and sale, the rule then buying at the next
 // open at its own stop and sale as before.
-// see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+// see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
 public static class PlanHook
 {
     public const string EntryParameter = "plan_entry";

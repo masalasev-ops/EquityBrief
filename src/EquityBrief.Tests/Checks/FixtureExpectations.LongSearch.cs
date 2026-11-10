@@ -208,24 +208,27 @@ public partial class FixtureExpectations
                 Core.Components.Store.LongSetup, Core.Components.Store.Setup, Core.Components.Store.PlanPoint,
                 Core.Components.Store.LongFiling, Core.Components.Store.Company, Core.Components.Store.PulledCompany,
                 Core.Components.Store.LongFact, Core.Components.Store.FiledFact, Core.Components.Store.PulledRevenue,
-                Core.Components.Store.RunLog,
+                Core.Components.Store.CandidateRegister, Core.Components.Store.RunLog,
             ],
             PlanPointTest.Access.Stores.Select(touch => touch.Store));
         Assert.All(PlanPointTest.Access.Stores.Where(touch => touch.Store != Core.Components.Store.PlanPoint && touch.Store != Core.Components.Store.RunLog), touch => Assert.Equal(Core.Components.Touch.Read, touch.Touch));
         Assert.Empty(LongSearch.Access.Feeds);
         Assert.Empty(PlanPointTest.Access.Feeds);
 
-        foreach (var file in new[] { "LongSearch.cs", "PlanPointTest.cs" })
-        {
-            var source = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Loop", file));
+        // From 23.10 the plan point test reads the register for each family's live plan, which it reads as traded, and writes
+        // to it nothing, as the long search names it nowhere.
+        var search = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Loop", "LongSearch.cs"));
+        var points = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Loop", "PlanPointTest.cs"));
 
-            Assert.DoesNotMatch(@"\b(candidate_register|rule_version|loop_applied|loop_decision)\b", source);
-        }
+        Assert.DoesNotMatch(@"\b(candidate_register|rule_version|loop_applied|loop_decision)\b", search);
+        Assert.DoesNotMatch(@"\b(rule_version|loop_applied|loop_decision)\b", points);
+        Assert.DoesNotMatch(@"(?i)\b(insert\s+into|update|delete\s+from)\s+candidate_register\b", points);
+        Assert.Matches(@"FROM candidate_register", points);
     }
 
     // Every shipped source 23.8 writes or changes, none of them one a rule's version pins, so no rule's code version moves.
     // From 23.10 the test's own words and walk are pinned by every family rule, which trades its plan through them, so that
-    // file has left this list (see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant).
+    // file has left this list (see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant).
     internal static readonly string[] LongSearchSources =
     [
         "src/EquityBrief.Api/Program.cs",

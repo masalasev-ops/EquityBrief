@@ -111,6 +111,24 @@ public sealed class RuleWalk(
     static double[][] ClosesOf(IReadOnlyList<SweepSeries> series) =>
         [.. series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray())];
 
+    // From 23.10 a rule standing at a plan is walked under it, its listings placed and walked once; none for a rule stating none.
+    // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+    static PlannedListings? Planned(LoopRead read, IReadOnlyDictionary<string, double> hooks, string family) =>
+        RuleHooks.Of(hooks).Plan is { } plan ? new PlannedListings(read, plan, family) : null;
+
+    // A listing's unit under its rule's plan: its result after its round trip less the same plan on every member, and the
+    // session its trade ended on, none while it is open or where its plan never filled.
+    static RuleListing PlannedUnit(LoopRead read, PlannedListings planned, FamilyListing listing)
+    {
+        var (result, sessions, _) = planned.Of(listing);
+        var benchmark = result is null ? double.NaN : planned.Benchmark(listing);
+        double? edge = result is { } made && !double.IsNaN(benchmark)
+            ? made - IndexSweepRunner.CostInRisk(read.Series[listing.Name], listing, made, read.Companies, 1) - benchmark
+            : null;
+
+        return new RuleListing(listing.Name, listing.Bar, listing.Session, result is null ? null : listing.Session + sessions, edge);
+    }
+
     // The setting a family stands at in words: its own words with the hooks an approval set, where it set any.
     static string WordsOf(string words, IReadOnlyDictionary<string, double> hooks) =>
         RuleHooks.Of(hooks).Words() is { } hooked ? words + "; " + hooked : words;
@@ -133,6 +151,7 @@ public sealed class RuleWalk(
         int[] setting = standing?.Places is { } places ? [.. places] : family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen];
         var hooks = standing?.Hooks ?? LoopChange.NoHooks;
         var exit = RuleHooks.Of(hooks).ExitChoice;
+        var planned = Planned(read, hooks, family);
         var closes = ClosesOf(read.Series);
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         FamilyListing[] listed =
@@ -143,6 +162,11 @@ public sealed class RuleWalk(
 
         RuleListing Unit(FamilyListing listing)
         {
+            if (planned is not null)
+            {
+                return PlannedUnit(read, planned, listing);
+            }
+
             var (result, sessions) = exit is null ? adapter.Exit(listing) : Menu(listing);
             var benchmark = result is null ? double.NaN : exit is null ? adapter.Benchmark(listing) : ExitProcedures.MenuBenchmark(read, closes, listing, exit);
             double? edge = result is { } made && !double.IsNaN(benchmark)
@@ -165,7 +189,9 @@ public sealed class RuleWalk(
         {
             if (arrange is null)
             {
-                return ExitProcedures.Walk(read, adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], under);
+                return planned is not null
+                    ? ExitProcedures.WalkPlanned(read, planned, keep is null ? listed : [.. listed.Where((_, at) => keep(at))])
+                    : ExitProcedures.Walk(read, adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], under);
             }
 
             var ordered = new List<FamilyListing>();
@@ -181,12 +207,14 @@ public sealed class RuleWalk(
                 }
             }
 
-            return ExitProcedures.Walk(read, adapter, closes, ordered, under);
+            return planned is not null ? ExitProcedures.WalkPlanned(read, planned, ordered) : ExitProcedures.Walk(read, adapter, closes, ordered, under);
         }
 
         // From 21.3 the same walk at the rule's own exit with a skip, the listings in the family's own order.
         IReadOnlyList<ExitProcedures.Walked> WalkSkipping(Func<int, bool>? keep, Func<FamilyListing, bool> skip) =>
-            ExitProcedures.Walk(read, adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], exit, skip);
+            planned is not null
+                ? ExitProcedures.WalkPlanned(read, planned, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], skip)
+                : ExitProcedures.Walk(read, adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], exit, skip);
 
         var floorWords = floor > 0 ? FormattableString.Invariant($", its stop held at least {floor:0.##} typical move under the buy") : string.Empty;
 
@@ -214,9 +242,15 @@ public sealed class RuleWalk(
         var closes = ClosesOf(read.Series);
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var exit = RuleHooks.Of(hooks).ExitChoice;
+        var planned = Planned(read, hooks, own.Family);
 
         RuleListing Unit(FamilyListing listing)
         {
+            if (planned is not null)
+            {
+                return PlannedUnit(read, planned, listing);
+            }
+
             var (result, sessions) = exit is null ? own.Adapter.Exit(listing) : Menu(listing);
             var benchmark = result is null ? double.NaN : exit is null ? own.Adapter.Benchmark(listing) : ExitProcedures.MenuBenchmark(read, closes, listing, exit);
             double? edge = result is { } made && !double.IsNaN(benchmark)
@@ -237,7 +271,9 @@ public sealed class RuleWalk(
         {
             if (arrange is null)
             {
-                return ExitProcedures.Walk(read, own.Adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], under);
+                return planned is not null
+                    ? ExitProcedures.WalkPlanned(read, planned, keep is null ? listed : [.. listed.Where((_, at) => keep(at))])
+                    : ExitProcedures.Walk(read, own.Adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], under);
             }
 
             var ordered = new List<FamilyListing>();
@@ -253,7 +289,7 @@ public sealed class RuleWalk(
                 }
             }
 
-            return ExitProcedures.Walk(read, own.Adapter, closes, ordered, under);
+            return planned is not null ? ExitProcedures.WalkPlanned(read, planned, ordered) : ExitProcedures.Walk(read, own.Adapter, closes, ordered, under);
         }
 
         return new RuleWalk(
@@ -361,9 +397,15 @@ public sealed class RuleWalk(
         }
 
         var standingExit = RuleHooks.Of(hooks).ExitChoice;
+        var planned = Planned(read, hooks, SetupFamilies.Pullback);
 
         RuleListing Unit(FamilyListing listing)
         {
+            if (planned is not null)
+            {
+                return PlannedUnit(read, planned, listing);
+            }
+
             if (standingExit is null)
             {
                 var (result, benchmark, sessions) = Own(listing);
@@ -397,7 +439,9 @@ public sealed class RuleWalk(
                 chosen = ordered;
             }
 
-            return under is null ? OwnWalk(chosen) : ExitProcedures.Walk(read, Unwalked, closes, chosen, under);
+            return planned is not null ? ExitProcedures.WalkPlanned(read, planned, chosen)
+                : under is null ? OwnWalk(chosen)
+                : ExitProcedures.Walk(read, Unwalked, closes, chosen, under);
         }
 
         return new RuleWalk(
@@ -429,10 +473,17 @@ public sealed class RuleWalk(
         FamilyListing[] listed = dip.ListingsUnder(setting, levels);
         var closes = ClosesOf(read.Series);
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
+        var planned = Planned(read, hooks, DipRule.Name);
 
-        // One walk of the listings handed in, its trades after their round trips with the session each was sold on.
+        // One walk of the listings handed in, its trades after their round trips with the session each was sold on; from 23.10
+        // under the plan the rule states, where it states one.
         IReadOnlyList<ExitProcedures.Walked> Walked(IEnumerable<FamilyListing> chosen, ExitChoice? under)
         {
+            if (planned is not null)
+            {
+                return ExitProcedures.WalkPlanned(read, planned, [.. chosen]);
+            }
+
             var held = new System.Collections.Concurrent.ConcurrentDictionary<(int Name, int Session), int>();
             var trades = dip.Costed(under is null ? dip.AtOpen(chosen, setting, held) : dip.AtOpenUnder(chosen, setting, under, held), 1);
 

@@ -63,12 +63,12 @@ public static class SetupBenchmark
 
             var outcome = SetupReplay.Replay(closes, bar, anchor);
 
-            if (outcome.Result is { } result)
+            if (outcome.Result is { } result && !Outlying(result))
             {
                 sum += result;
                 ended++;
             }
-            else if (pricesStopped)
+            else if (pricesStopped || outcome.Result is not null)
             {
                 stopped++;
             }
@@ -76,6 +76,11 @@ public static class SetupBenchmark
 
         return new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered, stopped);
     }
+
+    // From 23.10 a member whose result lies past 20 risks either way, its risk near nought on prices that stand still, is
+    // left out of the mean as a member whose prices stop is, as the test of the buy and sell points leaves one out.
+    // see: At phase 23's restart a setup's benchmark leaves out a member past 20 risks either way, as the long test's does
+    public static bool Outlying(double result) => Math.Abs(result) > History.LongLedger.OutlyingRisks;
 
     // The same benchmark with each member entered beside it as the pricing at the next open reads it: whether its path
     // ended, its close, the risk its plan put up there and the open of its next session, none where the store holds
@@ -110,17 +115,17 @@ public static class SetupBenchmark
                 outcome = sale is { } moved ? outcome with { Result = outcome.Result + moved } : new SetupOutcome(null, outcome.Sessions, SetupEnds.Open);
             }
 
-            if (outcome.Result is { } result)
+            if (outcome.Result is { } result && !Outlying(result))
             {
                 sum += result;
                 ended++;
             }
-            else if (pricesStopped)
+            else if (pricesStopped || outcome.Result is not null)
             {
                 stopped++;
             }
 
-            listed.Add(new FillMember(outcome.Result is not null, closes[bar], anchor.Risk, bar + 1 < opens.Length && bar + 1 < closes.Length ? opens[bar + 1] : null));
+            listed.Add(new FillMember(outcome.Result is { } kept && !Outlying(kept), closes[bar], anchor.Risk, bar + 1 < opens.Length && bar + 1 < closes.Length ? opens[bar + 1] : null));
         }
 
         return (new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered, stopped), listed);

@@ -99,7 +99,7 @@ public static class RegisterVerb
     // From 23.10 the flag that gives a family's live rule the plan its long test recommends: the live rule registered again
     // with the plan and today's plan beside it as a variant where the family has room, or, with the switch below, the plan
     // registered as a variant beside the live rule, which keeps today's plan.
-    // see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+    // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
     public const string Planned = "--plan";
 
     public const string VariantOnly = "--variant-only";

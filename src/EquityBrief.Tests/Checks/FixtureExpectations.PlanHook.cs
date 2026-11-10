@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Checks;
 // within its window, its stop placed from its fill, sold where the test sells and read in the risk its rule's own plan set; one
 // never filled ended at its window's last session with no result, and one still waiting left open; and a live rule given its
 // plan by the register, today's plan kept beside it as a variant where its family has room and walked unregistered where not.
-// see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+// see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
 public partial class FixtureExpectations
 {
     static readonly PlanCombination SecondZoneWide = new(PlanPoints.SecondZone, 20, PlanPoints.TypicalStop(4), PlanPoints.FirstBand);
@@ -171,6 +171,57 @@ public partial class FixtureExpectations
         var plain = Api.Reading.CardScreen.View(Card(null));
 
         Assert.Equal(((Web.Marks.ZoneBuy?)null, 95m, 110m), (plain.Zone, plain.Stop!.Value, plain.Target!.Value));
+    }
+
+    // The loop walks a rule standing at a plan under it, worked by hand over one constructed series: a listing at session 20
+    // closing at 100 with its rule's stop at 95, bought at the next open of 101 under the next open at the rule's stop and the
+    // time limit alone of 3 sessions, held through the closes of sessions 21 to 23 and sold at session 24's open of 104, which
+    // is (104 - 101) / (100 - 95) = 0.6 risks over 4 sessions; and a plan buying at a zone the flat series draws none of ends
+    // unfilled after its window with no result.
+    [Fact]
+    public void TheLoopWalksARuleStandingAtAPlanUnderItWorkedByHand()
+    {
+        var bars = Enumerable.Range(0, 30)
+            .Select(day => new Core.Sweep.SweepBar(new DateOnly(2025, 1, 1).AddDays(day), 101m, 99m, 100m, 1_000, day switch { 21 => 101m, 24 => 104m, _ => 100m }))
+            .ToArray();
+        var sessionAt = bars.Select((bar, at) => (bar.Session, at)).ToDictionary(pair => pair.Session, pair => pair.at);
+        var series = Worker.Sweep.SweepColumns.Series(new Worker.Sweep.SweepName("AAA", bars, [(null, null)], []), sessionAt);
+        var read = new LoopRead("MID", null!, [series], [], null!, null!, new Dictionary<string, IReadOnlyList<Core.Readings.FiledIncome>>(), [.. bars.Select(bar => bar.Session)], 0, []);
+        var listing = new Worker.Sweep.FamilyListing(0, 20, 20, 0, 0, 100, 95, 110, double.NaN, 3, 2);
+
+        var timed = new PlannedListings(read, new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.TimeLimit), "breakout");
+        var (result, sessions, end) = timed.Of(listing);
+
+        Assert.Equal((4, PlanPoints.Timed), (sessions, end));
+        Assert.Equal(0.6, result!.Value, 9);
+
+        var zoned = new PlannedListings(read, new PlanCombination(PlanPoints.FirstZone, 5, PlanPoints.RuleStop, PlanPoints.RuleSale), "breakout");
+
+        Assert.Equal(((double?)null, 5, PlanEnd.Unfilled), zoned.Of(listing));
+    }
+
+    // A setup's benchmark leaves out a member past 20 risks either way, worked by hand: at a stop of one typical move and a
+    // target of twice the risk, one member closes at 98 under its stop of 99 for -2 risks, one at 102.5 over its target of 102
+    // for +2.5, and one whose prices barely move, its typical move 0.001, reaches its target at 100.03 for +30 risks; the mean
+    // is (-2 + 2.5) / 2 = 0.25 over two ended, three entered, the third left out and the reading settled.
+    // see: At phase 23's restart a setup's benchmark leaves out a member past 20 risks either way, as the long test's does
+    [Fact]
+    public void ASetupsBenchmarkLeavesOutAMemberPastTwentyRisksWorkedByHand()
+    {
+        var plan = new Core.Ledger.SetupPlan(1, 2, null, 3);
+        (double[] Closes, int Bar, double Move, bool Stopped)[] members =
+        [
+            ([100, 98, 98, 98], 0, 1, false),
+            ([100, 102.5, 102.5, 102.5], 0, 1, false),
+            ([100, 100.03, 100.03, 100.03], 0, 0.001, false),
+        ];
+
+        var reading = Core.Ledger.SetupBenchmark.Of(members, new DateOnly(2026, 11, 10), plan);
+
+        Assert.Equal((2, 3, 1, true), (reading.Ended, reading.Entered, reading.Stopped, reading.Settled));
+        Assert.Equal(0.25, reading.Mean!.Value, 9);
+        Assert.True(Core.Ledger.SetupBenchmark.Outlying(20.01));
+        Assert.False(Core.Ledger.SetupBenchmark.Outlying(-20));
     }
 
     static readonly Dictionary<string, double> BreakoutLive = new(StringComparer.Ordinal)
