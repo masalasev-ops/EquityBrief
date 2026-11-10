@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/ARCHITECTURE.html - section 15.24, a watched card names why its rule picked it and when it would become an idea to buy
+Decision: A watched card on Home names why its rule picked it and when it would become an idea to buy
+Was:
+> and as watched where it lost with every card opening on which it is and why; above the cards
+Now:
+> and as watched where it lost with every card opening on which it is and why and a watched card saying beneath that when it would become an idea to buy with its sentence headed as why its rule picked it (see: A watched card on Home names why its rule picked it and when it would become an idea to buy); above the cards
+Why: the operator's word of 2026-11-10 on the watched cards: "WHat qualified them then.. at  what point does it become a buy", and "Make the 2 card  changes first  quickly."
+
 ### 2026-11-09 - docs/ARCHITECTURE.html - section 15.24, Home draws every pick as a card, the picks watched after the ideas to buy, each saying why
 Decision: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
 Was:
