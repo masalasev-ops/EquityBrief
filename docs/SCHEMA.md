@@ -1686,6 +1686,7 @@ Grain: one row per registered family rule, stock and session the rule's own list
 | `members` | INTEGER | how many members the benchmark averaged, null until it is written |
 | `cost` | REAL | from 15.2, the round trip the trade paid in multiples of its risk at the published table, its company valued as the night's member readings read it on the listing session and read in the $1 to 2 billion band where they hold none, the sale where its result puts it; null while the trade is open or ended with no result. The result is the one the record stored and is never read after it |
 | `exit` | INTEGER | from 17.5, the exit of the menu the trade and its benchmark are walked under, by its number, where the rule's registration names one; null for the rule's own exit |
+| `plan` | TEXT | from 23.10, JSON: the order the plan its rule's registration states placed at the night's close, its words, its level, its window, its stop's parts and its sale, prices at the night's scale, which the trade and its benchmark are walked under; null for a rule stating no plan |
 
 Primary key: `candidate`, `ticker`, `session_date`.
 
@@ -1921,6 +1922,7 @@ Grain: one row per registered rule of an S&P 400's or 600's swing family, stock 
 | `benchmark` | REAL | the average result of the same plan entered at the close on every member of the index that night, null until the trade's cap has passed |
 | `members` | INTEGER | how many members the benchmark averaged, null until it is written |
 | `exit` | INTEGER | from 17.5, the exit of the menu the trade and its benchmark are walked under, by its number, where the rule's registration names one; null for the rule's own exit |
+| `plan` | TEXT | from 23.10, JSON: the order the plan its rule's registration states placed at the night's close, as `family_trade` stores it; null for a rule stating no plan |
 
 Primary key: `candidate`, `ticker`, `session_date`.
 
@@ -2051,6 +2053,7 @@ Grain: one row per rule, index, stock and session a dip list kept a trade on, fr
 | `result` | REAL | what it came to bought at the open in multiples of the risk its listing close set, before its cost, null while held |
 | `cost` | REAL | its round trip in multiples of that risk at the published table, its company valued as the member readings read it on its night, null while held |
 | `exit` | INTEGER | from 21.16, the exit of the menu its rule's approved change names in its sell dial's place, which the trade is walked under, sold at the next open after the menu's trigger and at its own close where the menu's time or the time limit ends it; null under the rule's own sell dial (see: Every change the engines propose is one its family's night reads, so each is put to the operator) |
+| `plan` | TEXT | from 23.10, JSON: the order the plan its rule's registration states placed at the night's close, as `family_trade` stores it, the trade bought at its plan's fill and sold at its plan's sale, and one never filled stored ended at its limit with no fill and no result; null for a rule stating no plan |
 
 Primary key: `rule`, `index_code`, `ticker`, `session_date`.
 
@@ -2155,6 +2158,7 @@ Grain: one row per index, rule, stock and night a rule whose list no other table
 | `why` | TEXT | JSON: the figures the swing filter stored for the member on the night, each gate's values by name |
 | `ended_on` | TEXT | the session the walk ended it on, at a close through its stop, at its target or at its cap; null while it is open |
 | `result` | REAL | what it came to in multiples of its risk; null while open and where the closes ran out before its cap |
+| `plan` | TEXT | from 23.10, JSON: the order the plan its variant's registration states placed at the night's close, as `family_trade` stores it; null for a variant stating no plan, as every one does until the swing filter reads the hooks |
 
 Primary key: `index_code`, `rule`, `ticker`, `session_date`.
 

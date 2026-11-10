@@ -97,6 +97,9 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     // of the resistance bands with real touches.
     public sealed record LevelsAsOf(IReadOnlyList<(double Top, double? Stop)> Zones, IReadOnlyList<double> Staged, IReadOnlyList<double> Bands, string? Why);
 
+    // Why a session draws no levels plan, which the report prints beside a combination it could not place.
+    public const string NoTypicalMove = "no typical daily move is read on the session";
+
     // One combination's outcome on one setup, as the example prints it.
     public sealed record Worked(PlanCombination Combination, double? Level, double? Fill, double? Stop, string Sale, PlanPick? Pick, string Words);
 
@@ -970,48 +973,6 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         }
 
         // The levels plan as of a bar, from the bands and the trend the night's own functions read over the year it held.
-        public static LevelsAsOf LevelsAt(SweepSeries series, int bar)
-        {
-            var from = Math.Max(0, bar - VolumeProfileSeries.Window + 1);
-            var bars = series.Bars[from..(bar + 1)].Select(one => new ReplayBar(one.Session, one.High, one.Low, one.Close, one.Volume)).ToArray();
-            var indicators = new Dictionary<string, double>(StringComparer.Ordinal);
-
-            void Hold(string key, double value)
-            {
-                if (double.IsFinite(value) && value > 0)
-                {
-                    indicators[key] = value;
-                }
-            }
-
-            Hold(IndicatorSeries.Atr14, series.Atr[bar]);
-            Hold(IndicatorSeries.Sma20, series.Sma20[bar]);
-            Hold(IndicatorSeries.Sma50, series.Sma50[bar]);
-            Hold(IndicatorSeries.Sma200, series.Sma200[bar]);
-
-            if (!indicators.TryGetValue(IndicatorSeries.Atr14, out var atr))
-            {
-                return new LevelsAsOf([], [], [], "no typical daily move is read on the session");
-            }
-
-            var confirmed = series.Swings.Take(series.Confirmed[bar]).ToArray();
-            var close = series.Bars[bar].Close;
-            decimal? Average(string key) => indicators.TryGetValue(key, out var value) ? Statistic.ToPrice(value) : null;
-            var trend = TrendSeries.For(close, Average(IndicatorSeries.Sma50), Average(IndicatorSeries.Sma200), confirmed);
-            var bands = SessionReplay.BandsOver(bars, indicators, confirmed);
-            var recent = bars.Skip(Math.Max(0, bars.Length - LadderSeries.ConditionLookback)).Select(one => new LadderBar(one.SessionDate, one.High, one.Low, one.Close)).ToArray();
-            var lows = confirmed.Where(swing => swing.Direction == SwingSeries.Low).OrderBy(swing => swing.SessionDate).Select(swing => swing.Price).ToArray();
-            var ladder = LadderSeries.For(bands, close, Statistic.ToPrice(atr), recent, trend.State, lows);
-            var touched = bands
-                .Where(band => band.Role == LevelSeries.Resistance && band.HasNonAverageAnchor && band.Members.Any(member => member.Source == MemberSource.Touch))
-                .Select(band => Statistic.FromPrice(band.LowEdge))
-                .ToArray();
-
-            return new LevelsAsOf(
-                [.. ladder.Tranches.Take(LadderSeries.MostTranches).Select(tranche => (Statistic.FromPrice(tranche.HighEdge), tranche.Stop is { } stop ? Statistic.FromPrice(stop) : default(double?)))],
-                [.. ladder.Exits.Where(exit => exit.Traded && !exit.Trailing).Select(exit => Statistic.FromPrice(exit.LowEdge))],
-                touched,
-                ladder.Reason);
-        }
+        public static LevelsAsOf LevelsAt(SweepSeries series, int bar) => PlanTrades.LevelsAt(series, bar);
     }
 }

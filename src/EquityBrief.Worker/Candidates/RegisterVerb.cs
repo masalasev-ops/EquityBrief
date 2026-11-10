@@ -96,6 +96,14 @@ public static class RegisterVerb
     // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
     public const string Standing = "--standing";
 
+    // From 23.10 the flag that gives a family's live rule the plan its long test recommends: the live rule registered again
+    // with the plan and today's plan beside it as a variant where the family has room, or, with the switch below, the plan
+    // registered as a variant beside the live rule, which keeps today's plan.
+    // see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+    public const string Planned = "--plan";
+
+    public const string VariantOnly = "--variant-only";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -113,6 +121,7 @@ public static class RegisterVerb
         new(Ordered, [Ordered, "--index"], [], []),
         new(WithoutFlag, [WithoutFlag, "--evidence"], [], []),
         new(Standing, [Standing, "--index"], [], []),
+        new(Planned, [Planned, "--combination", "--evidence"], [], [VariantOnly]),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -175,6 +184,13 @@ public static class RegisterVerb
         if (form.Flag == TheFamily)
         {
             return await Said(await registrar.RegisterTheFamilyAsync(runId), output, error);
+        }
+
+        if (form.Flag == Planned)
+        {
+            return EquityBrief.Core.Loop.PlanPrices.Named(Given("--combination")) is { } combination
+                ? await Said(await registrar.RegisterPlannedAsync(Given(Planned), combination, !args.Contains(VariantOnly, StringComparer.Ordinal), Given("--evidence"), runId), output, error)
+                : await RefusedAsync(registrar, runId, $"'{Given("--combination")}' names no plan the test of the buy and sell points walks, so nothing was written.", error);
         }
 
         // A family rule registered again is replayed first, so its record carries on where every trade is reproduced.

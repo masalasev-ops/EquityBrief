@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Releases;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
@@ -648,6 +649,148 @@ public sealed class CandidateRegistrar : IComponent
         var detail = FormattableString.Invariant($"retired and registered again {moved.Length} at one instant, each unchanged: ")
             + string.Join("; ", moved.Select(row => $"'{row.Candidate}' on {row.Evaluator} from {row.EvaluatorVersion} to {CandidateEvaluators.Find(row.Evaluator)!.Version}"))
             + $", on the evidence: {evidence}";
+
+        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Registered, null, detail);
+    }
+
+    // From 23.10 the words a variant of a live rule is named with: the live rule's own name, its opening words "the live" read
+    // as "the", with what the variant buys and sells by.
+    public static string VariantOf(string live, string buysBy) =>
+        "the " + live[FamilyRecords.LivePrefix.Length..] + ", " + buysBy;
+
+    public const string TodaysPlan = "bought at the next open at its own stop and sale as before the restart";
+
+    public static string PlannedBy(PlanCombination combination) => "bought and sold by " + combination.Words;
+
+    // From 23.10 a family's live rule given the plan its long test recommends, at one instant or not at all. Where the plan
+    // is traded the live rule is retired and registered again under its own name at its own parameters with the plan's, and
+    // today's plan is registered beside it as a variant, its own parameters with the plan stated off, where the family keeps
+    // fewer than nine; where today's plan stays traded the plan is registered as a variant beside it where the family has
+    // room. A variant the family has no room for is named in the outcome as walked unregistered, and nothing is retired.
+    // see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+    public async Task<RegistrationOutcome> RegisterPlannedAsync(string live, PlanCombination combination, bool traded, string evidence, string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        async Task<RegistrationOutcome> RefuseAsync(string said)
+        {
+            await transaction.RollbackAsync(cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        var rows = await RowsAsync(connection, cancellation);
+        var standing = CandidateFamily.Standing(rows, startedAt);
+
+        if (!FamilyRecords.IsLive(live) || standing.LastOrDefault(row => row.Candidate == live) is not { } row)
+        {
+            return await RefuseAsync($"'{live}' is no live rule standing registered, so no plan was given to it and nothing was written.");
+        }
+
+        if (CandidateEvaluators.Find(row.Evaluator) is not FamilyRuleEvaluator carried)
+        {
+            return await RefuseAsync($"'{live}' runs on '{row.Evaluator}', which keeps no family rule's trades one at a time, so it states no plan and nothing was written.");
+        }
+
+        if (PlanHook.Of(PlanHook.ParametersOf(combination)) is null)
+        {
+            return await RefuseAsync($"the plan '{combination.Words}' is the rule's own, bought at the next open at its own stop and sale, so nothing was written.");
+        }
+
+        var own = CandidateEvaluator.Read(row.Parameters).Where(pair => !PlanHook.Parameters.Contains(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        var planned = new Dictionary<string, double>(own, StringComparer.Ordinal);
+        var today = new Dictionary<string, double>(own, StringComparer.Ordinal)
+        {
+            [PlanHook.EntryParameter] = PlanHook.NextOpen,
+            [PlanHook.WindowParameter] = 0,
+            [PlanHook.StopParameter] = PlanHook.RuleStop,
+            [PlanHook.SaleParameter] = 0,
+        };
+
+        foreach (var (name, value) in PlanHook.ParametersOf(combination))
+        {
+            planned[name] = value;
+        }
+
+        var family = CandidateFamily.SetupFamilyOf(row.Evaluator);
+        var room = CandidateFamily.Maximum - CandidateFamily.In(standing, family).Count;
+        var taken = rows.ToList();
+        var said = new List<string>();
+        var version = carried.Version;
+
+        RegisterRow Next(string candidate, IReadOnlyDictionary<string, double> parameters) => row with
+        {
+            Id = taken.Max(one => one.Id) + 1,
+            Candidate = candidate,
+            Parameters = CandidateEvaluator.Write(parameters),
+            EvaluatorVersion = version,
+            Event = Registered,
+            Retires = null,
+            RegisteredAt = startedAt,
+            Evidence = null,
+        };
+
+        var (variantName, variantParameters) = traded ? (VariantOf(live, TodaysPlan), today) : (VariantOf(live, PlannedBy(combination)), planned);
+
+        if (traded)
+        {
+            if (RetirementRefusal(taken, live, evidence, startedAt, ShortlistSeries.Reasons) is { } retiring)
+            {
+                return await RefuseAsync($"'{live}' was refused, so nothing was written: {retiring}");
+            }
+
+            taken.Add(row with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = live, RegisteredAt = startedAt, Evidence = evidence });
+
+            if (Refusal(taken, live, row.Evaluator, planned, startedAt) is { } refusal)
+            {
+                return await RefuseAsync($"'{live}' with its plan was refused, so nothing was written: {refusal}");
+            }
+
+            taken.Add(Next(live, planned));
+            said.Add($"'{live}' registered again bought and sold by {combination.Words}");
+        }
+
+        if (room > 0)
+        {
+            if (Refusal(taken, variantName, row.Evaluator, variantParameters, startedAt) is { } refusal)
+            {
+                return await RefuseAsync($"'{variantName}' was refused, so nothing was written: {refusal}");
+            }
+
+            taken.Add(Next(variantName, variantParameters));
+            said.Add($"'{variantName}' registered as a variant");
+        }
+        else
+        {
+            said.Add(FormattableString.Invariant($"'{variantName}' walked unregistered, the family keeping {CandidateFamily.Maximum}"));
+        }
+
+        if (taken.Count == rows.Count)
+        {
+            return await RefuseAsync(said[0] + ", so nothing was written.");
+        }
+
+        var appended = rows;
+
+        foreach (var added in taken.Skip(rows.Count))
+        {
+            var id = await AppendAsync(
+                connection, appended, added.Candidate, added.Rule, added.Test, added.Evaluator, added.Parameters,
+                added.EvaluatorVersion, added.Event, added.Retires, startedAt, added.Evidence, cancellation);
+
+            appended = [.. appended, added with { Id = id }];
+        }
+
+        var detail = string.Join("; ", said) + $", on the evidence: {evidence}";
 
         await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
         await transaction.CommitAsync(cancellation);

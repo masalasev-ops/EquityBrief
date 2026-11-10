@@ -11,6 +11,7 @@ using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Cards;
+using EquityBrief.Worker.Loop;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Families;
@@ -58,7 +59,7 @@ public sealed class FamilyRecorder : IComponent
 
     // Every trade a rule kept that has not ended, or whose benchmark is not written yet.
     const string Pending = @"
-        SELECT candidate, ticker, session_date, entry, stop, target, risk_moves, reward_to_risk, cap, ended_on, result, members IS NOT NULL, exit
+        SELECT candidate, ticker, session_date, entry, stop, target, risk_moves, reward_to_risk, cap, ended_on, result, members IS NOT NULL, exit, plan
         FROM family_trade
         WHERE (ended_on IS NULL OR (benchmark IS NULL AND members IS NULL)) AND session_date < $night
         ORDER BY session_date, candidate, ticker;
@@ -124,9 +125,9 @@ public sealed class FamilyRecorder : IComponent
 
     const string Insert = @"
         INSERT INTO family_trade (
-            candidate, ticker, session_date, family, place, entry, stop, target, risk_moves, reward_to_risk, cap, exit)
+            candidate, ticker, session_date, family, place, entry, stop, target, risk_moves, reward_to_risk, cap, exit, plan)
         VALUES (
-            $candidate, $ticker, $night, $family, $place, $entry, $stop, $target, $risk_moves, $reward_to_risk, $cap, $exit);
+            $candidate, $ticker, $night, $family, $place, $entry, $stop, $target, $risk_moves, $reward_to_risk, $cap, $exit, $plan);
     ";
 
     const string AppendRun = @"
@@ -161,7 +162,11 @@ public sealed class FamilyRecorder : IComponent
         DateOnly? EndedOn,
         double? Result,
         bool Benchmarked,
-        int Exit);
+        int Exit,
+        string? Plan = null)
+    {
+        public PlanOrder? Order => PlanOrder.FromJson(Plan);
+    }
 
     // The S&P 500's family rules the recorder keeps: an S&P 400's or 600's rule keeps its list in the index families' step,
     // and a rule its own family's step keeps, its holdings there, its parameters naming dials of its own and no hook.
@@ -212,6 +217,23 @@ public sealed class FamilyRecorder : IComponent
 
         foreach (var trade in pending)
         {
+            // From 23.10 a trade kept under a plan is walked under it: filled where its level trades within its window, or
+            // never, and sold as the plan sells, its result in the risk its rule's own plan set at the night's close.
+            if (trade.EndedOn is null && trade.Order is { } order)
+            {
+                var bars = PlanBars.Of(await PlanTrades.BarsAsync(connection, transaction, trade.Ticker, night, cancellation));
+
+                if (PlanTrades.Ended(order, trade.Entry, trade.Stop, trade.Session, bars) is { } planned)
+                {
+                    await ExecuteAsync(connection, transaction, Ended, cancellation,
+                        ("$ended_on", Stamp(planned.On)), ("$result", planned.Result is { } made ? made : DBNull.Value),
+                        ("$candidate", trade.Candidate), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)));
+                    ended++;
+                }
+
+                continue;
+            }
+
             if (trade.EndedOn is null && Walk(trade, closes.GetValueOrDefault(trade.Ticker), calendar, at) is { } end)
             {
                 await ExecuteAsync(connection, transaction, Ended, cancellation,
@@ -236,14 +258,18 @@ public sealed class FamilyRecorder : IComponent
         }
 
         // A benchmark is written once every member's trade of the same plan has had its cap's sessions.
-        foreach (var listedOn in pending.Where(trade => !trade.Benchmarked && SessionsAfter(trade.Session, at, calendar) >= trade.Cap).GroupBy(trade => trade.Session))
+        // A plan trade's waits its window and then its cap, as its fill may stand at the window's last session.
+        foreach (var listedOn in pending.Where(trade => !trade.Benchmarked && SessionsAfter(trade.Session, at, calendar) >= (trade.Order is { } waits ? trade.Cap + waits.Window + 1 : trade.Cap)).GroupBy(trade => trade.Session))
         {
             var members = await MembersOnAsync(connection, indexCode, listedOn.Key, cancellation);
             var moves = await TypicalMovesAsync(connection, listedOn.Key, cancellation);
+            IReadOnlyList<(string Ticker, IReadOnlyList<SweepBar> Bars)>? membersBars = null;
 
             foreach (var trade in listedOn)
             {
-                var (benchmark, count) = Benchmark(trade, members, moves, closes);
+                var (benchmark, count) = trade.Order is { } order && PlanPrices.Named(order.Words) is { } combination && trade.RiskMoves is { } stopMoves
+                    ? PlanTrades.Benchmark(combination, stopMoves, trade.RewardToRisk, trade.Target is null ? stopMoves : null, trade.Cap, membersBars ??= await PlanTrades.MembersBarsAsync(connection, transaction, members, night, cancellation), trade.Session)
+                    : Benchmark(trade, members, moves, closes);
 
                 await ExecuteAsync(connection, transaction, Benchmarked, cancellation,
                     ("$benchmark", benchmark is { } value ? value : DBNull.Value), ("$members", count),
@@ -310,7 +336,12 @@ public sealed class FamilyRecorder : IComponent
 
             foreach (var (ticker, place, plan) in listed)
             {
+                var order = hooks.Plan is { } combination
+                    ? await PlanTrades.OrderAsync(connection, transaction, combination, family, ticker, night, plan.Stop, plan.Target, plan.Target is null ? plan.Entry - plan.Stop : null, cap, cancellation)
+                    : null;
+
                 await ExecuteAsync(connection, transaction, Insert, cancellation,
+                    ("$plan", order is null ? DBNull.Value : order.Json()),
                     ("$candidate", rule.Candidate), ("$ticker", ticker), ("$night", Stamp(night)), ("$family", family), ("$place", place),
                     ("$entry", Money.ToStorage(plan.Entry)), ("$stop", Money.ToStorage(plan.Stop)),
                     ("$target", plan.Target is { } target ? Money.ToStorage(target) : DBNull.Value),
@@ -648,7 +679,8 @@ public sealed class FamilyRecorder : IComponent
                 reader.IsDBNull(9) ? null : Date(reader.GetString(9)),
                 reader.IsDBNull(10) ? null : reader.GetDouble(10),
                 reader.GetInt64(11) == 1,
-                reader.IsDBNull(12) ? 0 : reader.GetInt32(12)));
+                reader.IsDBNull(12) ? 0 : reader.GetInt32(12),
+                reader.IsDBNull(13) ? null : reader.GetString(13)));
         }
 
         return trades;

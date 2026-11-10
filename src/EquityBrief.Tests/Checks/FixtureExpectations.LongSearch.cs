@@ -224,6 +224,8 @@ public partial class FixtureExpectations
     }
 
     // Every shipped source 23.8 writes or changes, none of them one a rule's version pins, so no rule's code version moves.
+    // From 23.10 the test's own words and walk are pinned by every family rule, which trades its plan through them, so that
+    // file has left this list (see: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant).
     internal static readonly string[] LongSearchSources =
     [
         "src/EquityBrief.Api/Program.cs",
@@ -232,7 +234,6 @@ public partial class FixtureExpectations
         "src/EquityBrief.Core/History/LongProfit.cs",
         "src/EquityBrief.Core/Loop/FundLine.cs",
         "src/EquityBrief.Core/Loop/LongSearchRules.cs",
-        "src/EquityBrief.Core/Loop/PlanPoints.cs",
         "src/EquityBrief.Data/Migrations/SchemaMigrations.cs",
         "src/EquityBrief.Web/App/SinglePageApp.cs",
         "src/EquityBrief.Web/App/SinglePageApp.LongSearch.cs",

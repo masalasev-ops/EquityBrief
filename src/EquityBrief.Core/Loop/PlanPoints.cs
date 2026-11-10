@@ -455,13 +455,18 @@ public static class PlanPoints
     public static bool NoResult(double result, double? edge) =>
         Math.Abs(result) > History.LongLedger.OutlyingRisks || History.LongLedger.Outlying(edge);
 
-    // The dip's own sale: no target and no trail, sold at the next open after a close whose 2-session RSI stands above 65.
+    // The dip's own sale: no target and no trail, sold at the next open after a close whose 2-session RSI stands above 65. From
+    // 23.10 the level and the family's word are stated here, held to the dip's own by a test, since every family rule pins
+    // this file and the dip's own code is pinned by the dip's rules alone.
     // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
-    public static PlanSale DipSale { get; } = new(null, null, []) { RsiAbove = global::EquityBrief.Core.Families.DipRule.RsiExit };
+    public const double DipRsiAbove = 65;
+
+    public const string DipName = "dip";
+
+    public static PlanSale DipSale { get; } = new(null, null, []) { RsiAbove = DipRsiAbove };
 
     // A series' 2-session RSI as the dip reads it, NaN where it reads none.
-    public static double[] RsiOf(IReadOnlyList<double> closes) =>
-        [.. global::EquityBrief.Core.Families.DipRule.Rsi(closes, global::EquityBrief.Core.Families.DipRule.RsiSessions).Select(one => one ?? double.NaN)];
+    public static double[] RsiOf(IReadOnlyList<double> closes) => PlanRsi.Of(closes);
 
     // Whether an outcome reached its sale, the time limit alone reaching it at its last session.
     public static bool HitOf(string sale, string end) =>
