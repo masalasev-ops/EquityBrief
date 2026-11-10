@@ -7,6 +7,36 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - a long build states the store's size and stops on no size
+Decision: A long build states the store's size before and after it with its expected growth and time, and stops on no size
+Was:
+> (ARCHITECTURE, section 17's row of the long tables' budget) the long history's tables grow the store by at most 4.5 gigabytes over the 5.82 it held before the first of them, and a long ledger chunk that would start with the store past the two together stops the build;
+> (its reason) the operator's answer of 2026-11-07 accepted the budget over the store's size when asked, with the store's backup copy taking about twice as long;
+> (RUNBOOK) ... says how many sessions it reads and how many bytes the store holds of the ceiling its size before the long history and the long tables' budget come to, and writes a chunk ...
+> (RUNBOOK) ... so a build stopped part way, or one stopped before a chunk that would start past the budget or whose sessions it cannot read, goes on from where it stopped when it is run again, and its row on the run log names why it stopped.
+Now:
+> the budget stands as accepted and stops nothing; a long build states the store's size before and after, its expected growth and time before running and the size at each chunk, its original reason kept beside the row with the operator's word of 2026-11-10.
+Why: the operator's overnight order of 2026-11-10, item 6, in `prompts/2026-11-10-overnight-order.md`: "dont worry about DB size".
+
+### 2026-11-10 - docs/ARCHITECTURE.html - the plan point test reads the SEC's revenue for the drift's sales check
+Decision: The S&P 500 drift's first-pullback entry and the drift's sales check are measured read-only over the long history
+Was:
+> <tr><td><b>Plan point test</b></td><td>...</td><td>by hand, on the operator's command</td><td>long setups, setups</td>
+> (the read and write matrix) <tr><td>Plan point test</td> ... with Pulled history and Fundamentals blank
+Now:
+> ... <td>long setups, setups, long filings, companies, pulled companies, long facts, filed facts, pulled revenue</td>
+> (the read and write matrix) Pulled history and Fundamentals each R
+Why: the operator's overnight order of 2026-11-10, item 4, in `prompts/2026-11-10-overnight-order.md`.
+
+### 2026-11-10 - docs/BUILD_PLAN.md - 23.10 does not wait for phase 22's sign-off
+Decision: none; the operator's ruling of 2026-11-10, item 8 of their overnight order, recorded in `PROGRESS.md` and as a carried obligation
+Was:
+> ### 23.10 The one restart, on the operator's word
+> Nothing here starts without it. One pull request
+Now:
+> Nothing here starts without it. On the operator's order of 2026-11-10 it does not wait for phase 22's sign-off, which stays owed and reviews the code as this checkpoint rewrote it (owes: The sign-off of phase 22 reviews the code as 23.10 rewrote it). One pull request
+Why: the operator's overnight order of 2026-11-10, item 8, in `prompts/2026-11-10-overnight-order.md`.
+
 ### 2026-11-10 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the buy and sell points' recommendation refined wider and at a plain distance
 Decision: A recommendation stopping 2 typical days under its buy is walked again wider and buying at a level beside the same distance under the close, each kept where it does better from 2019
 Was:

@@ -1,0 +1,8 @@
+# The remedy of the 23.8 correction of 2026-11-10, a recommendation walked wider and beside a plain distance. Each index's
+# buy and sell points run again, each writing the recommendation that stands after the refinement; then the newest night's
+# cards are priced at it. It asks nothing of anyone, calls no model and registers nothing. Run from main after the merge,
+# when no night, off-peak run, local run, ledger build or monthly run is writing.
+plan-points --index GSPC
+plan-points --index MID
+plan-points --index SML
+card-plans

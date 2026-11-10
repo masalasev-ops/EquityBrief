@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using EquityBrief.Core.History;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
@@ -61,14 +63,27 @@ public sealed partial class SetupLedger
 
     const string LongSpansOf = "SELECT ticker, joined, \"left\" FROM long_span WHERE index_code = $index;";
 
+    const string LongSetupsOnIndex = "SELECT COUNT(*), COUNT(DISTINCT session_date) FROM long_setup WHERE index_code = $index;";
+
+    const string LongSetupsEverywhere = "SELECT COUNT(*), COUNT(DISTINCT index_code || session_date) FROM long_setup;";
+
+    const string LongBuildDetails = "SELECT detail FROM run_log WHERE stage = $stage AND outcome = 'ok' ORDER BY rowid DESC;";
+
     // The long ledger by hand, from a clean copy of main's commit: every session of 2005 to 2018 on one index the long
     // ledger holds no setup of, over the long history read through the newest session it holds, each setup replayed to its
     // end under both readings, written a chunk of sessions at a time under the night's wait and the drain's lock as the
     // standing build writes; then the standing setups whose prices stopped and each family's years.
-    public async Task<int> LongBuildAsync(string dataRoot, string index, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default)
+    //
+    // On the operator's word of 2026-11-10, "dont worry about DB size", a build states the store's size before it and after
+    // it, its expected growth and time before its first chunk, read off the newest earlier build that stated them, and the
+    // store's size at each chunk, and stops on no size: the long tables' budget stands as what the operator accepted on
+    // 2026-11-07 and no longer stops a build.
+    // see: A long build states the store's size before and after it with its expected growth and time, and stops on no size
+    public async Task<int> LongBuildAsync(string dataRoot, string index, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default, Func<long>? storeSize = null)
     {
         var startedAt = clock.UtcNow;
         var pause = wait ?? Task.Delay;
+        long SizeNow() => storeSize?.Invoke() ?? new FileInfo(databaseFile).Length;
 
         await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
 
@@ -96,9 +111,18 @@ public sealed partial class SetupLedger
         var written = 0;
         var passes = 0;
 
+        var sizeBefore = SizeNow();
+        var timed = Stopwatch.StartNew();
+
         if (sessionsToWrite.Length > 0)
         {
-            output.WriteLine(FormattableString.Invariant($"ledger-build: the store holds {new FileInfo(databaseFile).Length:N0} bytes of the {LongLedger.CeilingBytes:N0} its size before the long history and the long tables' budget come to"));
+            var (setupsASession, bytesASetup, secondsASession) = await LongEstimatesAsync(connection, index, cancellation);
+            double? setups = setupsASession is { } rate ? rate * sessionsToWrite.Length : null;
+
+            output.WriteLine(FormattableString.Invariant($"ledger-build: the store holds {sizeBefore:N0} bytes before the build{(sizeBefore > LongLedger.CeilingBytes ? FormattableString.Invariant($", past the {LongLedger.CeilingBytes:N0} the long tables' budget came to, which stops no build") : string.Empty)}; {sessionsToWrite.Length} session(s) to read, ")
+                + (setups is { } expected ? FormattableString.Invariant($"about {expected:N0} setup(s) at the long ledger's {setupsASession:0.0} a session, ") : "no setup a session read yet, ")
+                + (setups is { } many && bytesASetup is { } bytes ? FormattableString.Invariant($"about {many * bytes:N0} bytes of growth at {bytes:N0} a setup, ") : "no growth a setup stated by an earlier build, ")
+                + (secondsASession is { } seconds ? FormattableString.Invariant($"about {seconds * sessionsToWrite.Length / 60:N0} minute(s) at {seconds:0.0} s a session") : "no time a session stated by an earlier build"));
         }
 
         output.WriteLine(sessionsToWrite.Length == 0
@@ -112,10 +136,11 @@ public sealed partial class SetupLedger
             await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
 
             var watch = Stopwatch.StartNew();
+            var (stops, sizeWords) = ChunkSize(SizeNow());
 
-            if (new FileInfo(databaseFile).Length is var storeBytes && storeBytes > LongLedger.CeilingBytes)
+            if (stops)
             {
-                return await LongStopAsync(connection, runId, startedAt, written, FormattableString.Invariant($"the store holds {storeBytes:N0} bytes, past the {LongLedger.CeilingBytes:N0} its size before the long history and the long tables' budget come to, before {Stamp(prepared.Calendar[chunkSessions[0]])}"), output, cancellation);
+                return await LongStopAsync(connection, runId, startedAt, written, sizeWords, output, cancellation);
             }
 
             (int At, BuiltSession AsRuled, BuiltSession Last)[] built;
@@ -163,7 +188,7 @@ public sealed partial class SetupLedger
             await transaction.CommitAsync(cancellation);
 
             written += chunk;
-            output.WriteLine(FormattableString.Invariant($"ledger-build: {Stamp(prepared.Calendar[chunkSessions[0]])} to {Stamp(prepared.Calendar[chunkSessions[^1]])}, {chunkSessions.Length} session(s), {chunk} setup(s) in {watch.Elapsed.TotalSeconds:0} s, {written} so far"));
+            output.WriteLine(FormattableString.Invariant($"ledger-build: {Stamp(prepared.Calendar[chunkSessions[0]])} to {Stamp(prepared.Calendar[chunkSessions[^1]])}, {chunkSessions.Length} session(s), {chunk} setup(s) in {watch.Elapsed.TotalSeconds:0} s, {written} so far; {sizeWords}"));
         }
 
         int departed;
@@ -178,11 +203,69 @@ public sealed partial class SetupLedger
         await AppendAsync(connection, runId, LongBuildStage, startedAt, written, Ok,
             FormattableString.Invariant($"{written} setup(s) of the long ledger on the {DecisionCards.NameOf(index)} over {Stamp(prepared.Calendar[first])} to {Stamp(prepared.Calendar[last])}, each under both readings, {passes} passing the live rule")
                 + (prepared.LiveWords is { } words ? ", " + words : string.Empty)
-                + FormattableString.Invariant($", {sessionsToWrite.Length} session(s) read of the {last - first + 1}, the long history read through {Stamp(through)}; {departed} standing setup(s) whose prices stopped while open at their last price; {years} family year(s) under the two readings"), cancellation);
+                + FormattableString.Invariant($", {sessionsToWrite.Length} session(s) read of the {last - first + 1}, the long history read through {Stamp(through)}; {departed} standing setup(s) whose prices stopped while open at their last price; {years} family year(s) under the two readings")
+                + SizeDetail(sizeBefore, SizeNow(), written, sessionsToWrite.Length, timed.Elapsed), cancellation);
 
-        output.WriteLine(FormattableString.Invariant($"ledger-build: {written} setup(s) of the long ledger written for the {DecisionCards.NameOf(index)}, {passes} passing the live rule; {departed} standing setup(s) at their last price; {years} family year(s)"));
+        output.WriteLine(FormattableString.Invariant($"ledger-build: {written} setup(s) of the long ledger written for the {DecisionCards.NameOf(index)}, {passes} passing the live rule; {departed} standing setup(s) at their last price; {years} family year(s)") + SizeDetail(sizeBefore, SizeNow(), written, sessionsToWrite.Length, timed.Elapsed));
 
         return 0;
+    }
+
+    // A chunk's size: whether it stops, which no size does, and the words its line states the store's size in.
+    // see: A long build states the store's size before and after it with its expected growth and time, and stops on no size
+    public static (bool Stops, string Words) ChunkSize(long storeBytes) =>
+        (false, FormattableString.Invariant($"the store held {storeBytes:N0} bytes as the chunk started{(storeBytes > LongLedger.CeilingBytes ? ", past the long tables' old budget, which stops no build" : string.Empty)}"));
+
+    // The store's size before a build and after it, its growth a setup and its time a session, stated where it wrote any.
+    // see: A long build states the store's size before and after it with its expected growth and time, and stops on no size
+    public static string SizeDetail(long before, long after, int setups, int sessions, TimeSpan took) =>
+        FormattableString.Invariant($"; the store held {before:N0} bytes before and {after:N0} after")
+        + (setups > 0 ? FormattableString.Invariant($", {Math.Max(0, after - before) / setups} bytes a setup") : string.Empty)
+        + (sessions > 0 ? FormattableString.Invariant($", {took.TotalSeconds / sessions:0.0} s a session") : string.Empty);
+
+    // What a build expects before its first chunk: the long ledger's setups a session on the index, or on every index where
+    // the index holds none, and the growth a setup and the time a session the newest earlier build stated; none where none is
+    // read.
+    async Task<(double? SetupsASession, long? BytesASetup, double? SecondsASession)> LongEstimatesAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    {
+        double? setupsASession = null;
+
+        foreach (var (sql, parameters) in new[] { (LongSetupsOnIndex, new (string, object)[] { ("$index", index) }), (LongSetupsEverywhere, []) })
+        {
+            await using var command = Command(connection, null, sql, parameters);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            if (await reader.ReadAsync(cancellation) && reader.GetInt64(1) > 0)
+            {
+                setupsASession = 1.0 * reader.GetInt64(0) / reader.GetInt64(1);
+
+                break;
+            }
+        }
+
+        long? bytes = null;
+        double? seconds = null;
+
+        await using (var command = Command(connection, null, LongBuildDetails, [("$stage", LongBuildStage)]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation) && (bytes is null || seconds is null))
+            {
+                var detail = reader.GetString(0);
+
+                if (bytes is null && Regex.Match(detail, @", (\d+) bytes a setup") is { Success: true } grew)
+                {
+                    bytes = long.Parse(grew.Groups[1].Value, CultureInfo.InvariantCulture);
+                }
+
+                if (seconds is null && Regex.Match(detail, @", (\d+(?:\.\d+)?) s a session") is { Success: true } took)
+                {
+                    seconds = double.Parse(took.Groups[1].Value, CultureInfo.InvariantCulture);
+                }
+            }
+        }
+
+        return (setupsASession, bytes, seconds);
     }
 
     // A build that stops: its row on the run log naming the session it stopped before and why, the chunks it wrote standing

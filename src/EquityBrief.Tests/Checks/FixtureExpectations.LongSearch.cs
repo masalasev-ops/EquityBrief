@@ -203,7 +203,15 @@ public partial class FixtureExpectations
     public void TheLongSearchAndThePlanPointsRegisterNothing()
     {
         Assert.Equal([Core.Components.Store.LongSearch, Core.Components.Store.RunLog], LongSearch.Access.Stores.Select(touch => touch.Store));
-        Assert.Equal([Core.Components.Store.LongSetup, Core.Components.Store.Setup, Core.Components.Store.PlanPoint, Core.Components.Store.RunLog], PlanPointTest.Access.Stores.Select(touch => touch.Store));
+        Assert.Equal(
+            [
+                Core.Components.Store.LongSetup, Core.Components.Store.Setup, Core.Components.Store.PlanPoint,
+                Core.Components.Store.LongFiling, Core.Components.Store.Company, Core.Components.Store.PulledCompany,
+                Core.Components.Store.LongFact, Core.Components.Store.FiledFact, Core.Components.Store.PulledRevenue,
+                Core.Components.Store.RunLog,
+            ],
+            PlanPointTest.Access.Stores.Select(touch => touch.Store));
+        Assert.All(PlanPointTest.Access.Stores.Where(touch => touch.Store != Core.Components.Store.PlanPoint && touch.Store != Core.Components.Store.RunLog), touch => Assert.Equal(Core.Components.Touch.Read, touch.Touch));
         Assert.Empty(LongSearch.Access.Feeds);
         Assert.Empty(PlanPointTest.Access.Feeds);
 

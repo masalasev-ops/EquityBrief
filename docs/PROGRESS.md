@@ -18410,3 +18410,108 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 141, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.10 ruling - 23.10 does not wait for phase 22's sign-off, which reviews the code as 23.10 rewrote it   2026-11-10
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      item 8 of the operator's overnight order of 2026-11-10, word for word in `prompts/2026-11-10-overnight-order.md`: "Record as a
+            ruling, with a named obligation in BUILD_PLAN.md's carried obligations cited in 23.10's text: 23.10 does not wait for
+            phase 22's sign-off, which stays owed and reviews the code as 23.10 rewrote it". Their note of 2026-11-08 asking both
+            sign-offs in before 23.10 stood in `prompts/` alone and no document held it; phase 21's was signed on 2026-11-09.
+Labelled:   23.10, its text citing (owes: The sign-off of phase 22 reviews the code as 23.10 rewrote it), the row's due point;
+            phase 22's sign-off stays outstanding to a fresh session and no checkpoint of phase 23 discharges it.
+Remedy:     the 23.8 correction before this entry ran as `tools/remedies/2026-11-10-23.8-the-refined-recommendations.txt`, committed
+            with this pull request.
+Queue:      done, the alternative plan on watched cards and the refined recommendations; in progress, the overnight order's items 1
+            to 9; next, 23.10's table and restart, 23.11, and 23.12 written for the operator's review.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 ruling - the overnight order's reads of 2026-11-10: the refined recommendations, the setups past 20 risks and the labeller's hours   2026-11-10
+
+Not a checkpoint entry: it reads the store and changes nothing.
+Items 1, 2: the 23.8 correction's remedy ran from main and ended at 08:23 UTC, `card-plans` pricing 11 cards of 2026-11-09.
+            Each figure is a mean edge a pick offered per $1 risked from 2019, the years no setting was chosen on, over the
+            family's setups on its index. The wider stop stands on eight of the ten at 2 typical days: the S&P 500's pullback
+            +0.037 to +0.056 at 4, breakout +0.119 to +0.207 at 4, drift -0.036 to +0.046 at 4 and dip +0.022 to +0.024 at 4;
+            the S&P 400 pullback +0.530 to +0.545 at 4; the S&P 600 pullback +0.188 to +0.318 at 4, breakout +0.184 to +0.205
+            at 2.5 and dip +0.027 to +0.029 at 4. It stays on the S&P 400 breakout, +0.067 against +0.062, +0.051 and +0.030,
+            and drift, +0.081 against +0.059, +0.064 and +0.045. The plain distance stands on seven of the eleven at a level:
+            the S&P 500 pullback at 1.13 typical days under the close, +0.056 to +0.083, breakout at 2.87, +0.207 to +0.246,
+            and drift at 2.22, +0.046 to +0.151; the S&P 400 breakout at 1.6, +0.067 to +0.117, and drift at 2.11, +0.081 to
+            +0.119; the S&P 600 pullback at 0.84, +0.318 to +0.466, and dip at 1.51, +0.029 to +0.051. The zone stays within
+            0.02 on the S&P 500 dip, +0.024 against +0.041, the S&P 400 pullback, +0.545 against +0.553, and dip, +0.023
+            against +0.042; the average stays on the S&P 600 breakout, +0.205 against +0.147. The twelve recommendations
+            now beat the traded plan from 2019 on all but the S&P 600 drift, +0.323 against +0.338, unchanged. Against the fund
+            held over the same sessions from 2019, two do worse than the traded plan: the S&P 500 pullback, -0.310 against
+            -0.195, and the S&P 600 drift, -0.165 against +0.256. Figures in `data/loop/checks/plan-points-*.json`.
+Item 3:     of the 2,342 setups the long ledger counts as no result past 20 risks, 2,259 are long setups and 83 standing ones the
+            read did not reach. Classed in order: 12 cross an unexplained jump in their hold and stay no result until marked; 57
+            stop within a quarter of a typical day of the buy, all drift, real and read in percent on equal shares, the S&P 500's
+            25 at +0.01%, the S&P 400's 17 at -7.87% and the S&P 600's 15 at -14.02% a setup; 2,140 hold their own result within
+            20 risks while their benchmark lies past 20, the S&P 600 breakout's 1,048 and pullback's 676 and the S&P 400
+            breakout's 355 among them, a fault of the long ledger's benchmark, which keeps a member whose prices stand still
+            and whose risk is near nought where the buy and sell points' benchmark leaves it out; 50 hold their own result past
+            20. The 2005 to 2009 breakouts restated, in percent on equal shares with the tight-stop setups kept and the benchmark
+            faults out, against the long test's mean edge in risks without them: the S&P 500's 13,917 at -0.415% against -0.068
+            risks, the S&P 400's 9,225 at -0.259% against -0.093, and the S&P 600's 10,149 at -0.902% against -0.169.
+            Read by `prompts/2026-11-10-item-3-outliers.py`, its output beside it.
+Provisional: on the operator's review, "a small share of a typical day" read as a quarter; and the long ledger's benchmark at
+            23.10's rewrite leaving out a member past 20 risks as the buy and sell points' does, so the 2,140 read as the trades
+            they are.
+Item 9:     the labeller is capped by its time limit, 20 minutes a run as configured and as each run's row states, run only
+            inside the off-peak runs at 04:05 and 10:05 UTC; by the local run's next slot; by the local model's lock; and by its
+            month's limit of 5 dollars, which the local model never spends. At about 55 stories a minute, 1,000 to 1,270 a run,
+            the backlog of stories in each name's 30 days cleared on the run of 2026-11-09 at 10:05, which reached every name and
+            labelled 86, 34,910 already labelled. Labelling in every idle hour outside the local run's slots and the night would
+            move no clear date, the backlog standing clear; it would label each night's stories hours sooner. Changed nothing.
+            The off-peak run's scheduled task was disabled by the operator on 2026-11-10 while the records' remedy ran, so no
+            story is labelled until it runs again.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.8 - correction: the S&P 500 drift's first-pullback entry and the drift's sales check walked read-only   2026-11-10
+
+Found:      item 4 of the operator's overnight order of 2026-11-10, word for word in `prompts/2026-11-10-overnight-order.md`: the S&P 500
+            drift's first-pullback entry and the drift's sales check on the S&P 500 and 400, measured over the long history from
+            2019 beside the earlier years, per $1 risked against the ruled benchmark, each alone and the two together. Nothing
+            walked either over the long history.
+Corrected:  `plan-points --drift-checks` walks the drift's flagged setups at the traded plan and prints beside it, on the S&P 500,
+            the next open after the first close under the close before within ten sessions at the listing's stop and sale, and on
+            the S&P 500 and 400 the sales check, the newest quarter first filed by the session over the same quarter a year before
+            from the SEC's facts alone, alone and with the first pullback; each a mean edge a pick offered per $1 risked against the
+            ruled benchmark over 2005 to 2018 and from 2019. It writes nothing; its figures stand in the entry that reports item 4.
+Provisional: on the operator's review, the long history's sales check reads the filings alone, the stored releases standing in
+            the standing years alone; a setup whose quarters the facts do not read fails the check, its count printed.
+Tests:      1 new: the first pullback's fill and the sales check worked by hand on both sides; the plan point test's declared
+            stores held, the six it reads read only.
+Claims:     none new; the plan point test's catalogue row names what it reads.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored to the file's
+            own text, 2 in all, each predicted red and each red: the pullback bought at the pullback's own close rather than the
+            next open; and the year before's quarter read without its filing day, its case, a year before first filed after the
+            session, added to the test before the run when reading it showed no case reached the property.
+Also:       the refinement's lines read "the pullback's entry at the second zone" where the remedy printed "the pullback's the
+            second zone".
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.6 - correction: a long build states the store's size before and after it and stops on no size   2026-11-10
+
+Found:      item 6 of the operator's overnight order of 2026-11-10: "The long tables' budget, on my word "dont worry about DB size":
+            amend the limits row so a long build states the store's size before and after, and its expected growth and runtime
+            before running, and does not stop on size". A chunk that would start past 10.32 gigabytes stopped the build.
+Corrected:  the build prints before its first chunk the store's size, the sessions it reads, the setups it expects at the long
+            ledger's setups a session and the growth and time at the newest earlier build's bytes a setup and seconds a session,
+            each said as not read where none stands; each chunk's line states the store's size and where it stands past the old
+            budget; its row on the run log states the size before and after with both rates. No size stops it. Section 17's
+            row keeps 4.5 over 5.82 gigabytes beside the reason accepted on 2026-11-07 and the operator's word.
+Tests:      1 new: a chunk past the old ceiling going on with its size line, one under it, and a build's size line before and
+            after with its rates, worked by hand.
+Claims:     none new; section 17's row of the long tables' budget says it.
+Pins:       none move; the budget's two figures stand pinned.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the new test, restored to the
+            file's own text: the old stop past the ceiling put back, predicted red and red, the chunk past the ceiling read as
+            stopping.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3666 of 3666 tests ran with none failed, migrations 0 to 141 with none
+            pending, schema version 141, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.
