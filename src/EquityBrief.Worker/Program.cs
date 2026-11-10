@@ -313,7 +313,7 @@ static async Task<int> PlanPointsRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Loop.PlanPointTest(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
-        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal));
+        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal), driftChecks: args.Contains("--drift-checks", StringComparer.Ordinal));
 }
 
 // Each price family's pick on the newest night's cards, or on a session named, priced again at its family's recommended plan
@@ -950,7 +950,8 @@ static int NoVerb()
         "long history, every third test year with the setting carried between, a family at a time, '--again' searching a " +
         "family written through the same session afresh, and " +
         "'plan-points --index <GSPC, MID or SML>' walks every flagged setup of the four price families under every entry, " +
-        "stop and sale, each with '--print' writing nothing, " +
+        "stop and sale, each with '--print' writing nothing, and with '--drift-checks' walking the drift as traded beside its " +
+        "first-pullback entry and its sales check alone and together, writing nothing, " +
         "'card-plans' prices each price family's pick on the newest night's cards at its family's recommended plan again, " +
         "'--session <yyyy-MM-dd>' a night named, " +
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +

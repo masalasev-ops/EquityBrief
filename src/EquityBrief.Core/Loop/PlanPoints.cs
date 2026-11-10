@@ -220,6 +220,44 @@ public static class PlanPoints
 
     public const double ZoneKeptWithin = 0.02;
 
+    // On the same order, item 4, the drift's entry on its first pullback as the S&P 400's and 600's drift read it: the next open
+    // after the first close under the close before it, within ten sessions of the listing, its stop and sale where the listing
+    // set them.
+    // see: The S&P 500 drift's first-pullback entry and the drift's sales check are measured read-only over the long history
+    public const string FirstPullback = "the first close under the close before";
+
+    public const int FirstPullbackSessions = 10;
+
+    public static WaitFill? PullbackFillOf(ReadOnlySpan<double> closes, ReadOnlySpan<double> opens, int pick, int window)
+    {
+        for (var bar = pick + 1; bar <= pick + window && bar < closes.Length; bar++)
+        {
+            if (closes[bar] < closes[bar - 1])
+            {
+                return bar + 1 < opens.Length && opens[bar + 1] > 0 ? new WaitFill(bar + 1, opens[bar + 1]) : null;
+            }
+        }
+
+        return null;
+    }
+
+    // The sales check: the newest quarter first filed by the session sold more than the same quarter a year before, its end
+    // within 15 days of a year earlier and first filed by the session too; none where either quarter is not read.
+    public static bool? SalesGrew(IReadOnlyList<global::EquityBrief.Core.Families.QuarterRevenue>? quarters, DateOnly session)
+    {
+        if (quarters is null || quarters.Where(one => one.Filed <= session).OrderBy(one => one.End).LastOrDefault() is not { } newest)
+        {
+            return null;
+        }
+
+        var yearBefore = quarters
+            .Where(one => one.Filed <= session && Math.Abs(one.End.DayNumber - newest.End.AddYears(-1).DayNumber) <= 15)
+            .OrderBy(one => Math.Abs(one.End.DayNumber - newest.End.AddYears(-1).DayNumber))
+            .FirstOrDefault();
+
+        return yearBefore is null ? null : newest.Value > yearBefore.Value;
+    }
+
     public static string DistanceEntry(double days) => FormattableString.Invariant($"{days:0.##} {UnderTheClose}");
 
     public static double? DistanceOf(string entry) =>

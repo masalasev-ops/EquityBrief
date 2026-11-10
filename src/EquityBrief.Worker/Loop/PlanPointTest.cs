@@ -39,6 +39,12 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             new StoreTouch(Store.LongSetup, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
             new StoreTouch(Store.PlanPoint, Touch.Insert),
+            new StoreTouch(Store.LongFiling, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.PulledCompany, Touch.Read),
+            new StoreTouch(Store.LongFact, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.PulledRevenue, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -94,7 +100,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     // One combination's outcome on one setup, as the example prints it.
     public sealed record Worked(PlanCombination Combination, double? Level, double? Fill, double? Stop, string Sale, PlanPick? Pick, string Words);
 
-    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default)
+    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default, bool driftChecks = false)
     {
         if (!Funds.TryGetValue(index, out var fund))
         {
@@ -135,6 +141,12 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         output.WriteLine(FormattableString.Invariant($"{Verb}: {setups.Count} flagged setup(s) of the four families on the {DecisionCards.NameOf(index)} through {Text(through)}, each walked under {PlanPoints.Combinations.Count} combination(s)"));
 
         var walker = new Walker(series, calendar, names, held, regime);
+
+        if (driftChecks)
+        {
+            return await DriftChecksAsync(index, setups, walker, cancellation);
+        }
+
         var tallies = new Dictionary<(string Family, int Combination, string Group), PlanTally>();
         var unread = 0;
         var done = 0;
@@ -246,7 +258,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             {
                 if (final.Stop == PlanPoints.ZoneStop)
                 {
-                    refinements.Add($"The {family}'s {final.Entry} keeps its zone: a plain distance under the close draws no zone's stop.");
+                    refinements.Add($"The {family}'s entry at {final.Entry} keeps its zone: a plain distance under the close draws no zone's stop.");
                 }
                 else if (Median([.. ofFamily.Where(one => one.Session.Year < LongLedger.StandingFrom.Year).Select(one => walker.DistanceOf(one, final.Entry)).OfType<double>()]) is { } distance)
                 {
@@ -257,7 +269,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
                     var replaces = PlanPoints.DistanceReplaces(SinceOf(family, final)?.EdgePerPick, walkedPlain[plain.Words].Since?.EdgePerPick);
 
-                    refinements.Add(FormattableString.Invariant($"The {family}'s {final.Entry} beside {plain.Entry}, the median distance before {LongLedger.StandingFrom.Year}: from {LongLedger.StandingFrom.Year} {Shown(SinceOf(family, final)?.EdgePerPick)} against {Shown(walkedPlain[plain.Words].Since?.EdgePerPick)} over {walkedPlain[plain.Words].Since?.Fills ?? 0} fill(s); ") + (replaces ? "the plain distance stands." : FormattableString.Invariant($"the {final.Entry} stays, within {PlanPoints.ZoneKeptWithin} or better.")));
+                    refinements.Add(FormattableString.Invariant($"The {family}'s entry at {final.Entry} beside {plain.Entry}, the median distance before {LongLedger.StandingFrom.Year}: from {LongLedger.StandingFrom.Year} {Shown(SinceOf(family, final)?.EdgePerPick)} against {Shown(walkedPlain[plain.Words].Since?.EdgePerPick)} over {walkedPlain[plain.Words].Since?.Fills ?? 0} fill(s); ") + (replaces ? "the plain distance stands." : FormattableString.Invariant($"the entry at {final.Entry} stays, within {PlanPoints.ZoneKeptWithin} or better.")));
 
                     if (replaces)
                     {
@@ -428,6 +440,103 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         return 0;
     }
 
+    // On the operator's order of 2026-11-10, item 4, read-only: the drift as traded, on the S&P 500 beside its entry on the first
+    // pullback, and on the S&P 500 and 400 with the sales check, the reported quarter's revenue over the same quarter a year
+    // before, each as first filed in the SEC's facts by the setup's session, a setup whose quarters the facts do not read
+    // failing it; each alone and the two together, a mean edge a pick offered per $1 risked against the ruled benchmark over
+    // 2005 to 2018 and from 2019. Prints and writes nothing.
+    // see: The S&P 500 drift's first-pullback entry and the drift's sales check are measured read-only over the long history
+    async Task<int> DriftChecksAsync(string index, IReadOnlyList<FlaggedSetup> setups, Walker walker, CancellationToken cancellation)
+    {
+        var drift = setups.Where(one => one.Family == Core.Families.DriftRule.Name).ToArray();
+        var quarters = await QuarterRevenuesAsync([.. drift.Select(one => one.Ticker).Distinct(StringComparer.Ordinal)], cancellation);
+        var read = drift.Select(one => (Setup: one, Grew: PlanPoints.SalesGrew(quarters.GetValueOrDefault(one.Ticker), one.Session))).ToArray();
+        var traded = PlanPoints.Combinations.First(PlanPrices.Traded);
+        var pullback = traded with { Entry = PlanPoints.FirstPullback, Window = PlanPoints.FirstPullbackSessions };
+        FlaggedSetup[] passing = [.. read.Where(one => one.Grew == true).Select(one => one.Setup)];
+        var large = index == Market;
+
+        output.WriteLine(FormattableString.Invariant($"{Verb}: the drift's checks on the {DecisionCards.NameOf(index)}: {drift.Length} flagged setup(s); the sales check passes {passing.Length}, fails {read.Count(one => one.Grew == false)} and reads no quarter for {read.Count(one => one.Grew is null)}, which fail it"));
+
+        var rows = new List<(string Name, IReadOnlyList<FlaggedSetup> Setups, PlanCombination Plan)> { ("the drift as traded", drift, traded) };
+
+        if (large)
+        {
+            rows.Add(("the first pullback alone", drift, pullback));
+        }
+
+        rows.Add(("the sales check alone", passing, traded));
+
+        if (large)
+        {
+            rows.Add(("the two together", passing, pullback));
+        }
+
+        foreach (var (name, chosen, plan) in rows)
+        {
+            var (before, since) = Tallied(walker, chosen, [plan], cancellation)[plan.Words];
+
+            output.WriteLine(FormattableString.Invariant($"{Verb}: {name}, {plan.Words}: 2005 to 2018 {Shown(before.EdgePerPick)} per $1 risked over {before.Fills} fill(s) of {before.Picks} pick(s); from {LongLedger.StandingFrom.Year} {Shown(since.EdgePerPick)} over {since.Fills} fill(s) of {since.Picks} pick(s)"));
+        }
+
+        output.WriteLine($"{Verb}: printed alone, nothing written");
+
+        return 0;
+    }
+
+    // Each stock's quarters of revenue as first filed in the SEC's facts the store holds, the long facts, the standing facts
+    // and the pulled revenue, found through the filer the long filings, the companies and the pulled companies name for it.
+    async Task<IReadOnlyDictionary<string, IReadOnlyList<Core.Families.QuarterRevenue>>> QuarterRevenuesAsync(IReadOnlyList<string> tickers, CancellationToken cancellation)
+    {
+        var wanted = tickers.ToHashSet(StringComparer.Ordinal);
+        var filers = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+
+        await using var connection = new SqliteConnection(SweepHistory.ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        foreach (var sql in new[] { TickerFilersLong, TickerFilersCompany, TickerFilersPulled })
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = sql;
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (wanted.Contains(reader.GetString(0)))
+                {
+                    (filers.TryGetValue(reader.GetString(0), out var held) ? held : filers[reader.GetString(0)] = []).Add(reader.GetString(1));
+                }
+            }
+        }
+
+        var needed = filers.Values.SelectMany(one => one).ToHashSet(StringComparer.Ordinal);
+        var facts = new Dictionary<string, List<Core.Families.FiledRevenue>>(StringComparer.Ordinal);
+        var concepts = Core.Families.FirstFiledRevenue.Concepts.ToHashSet(StringComparer.Ordinal);
+
+        foreach (var sql in new[] { LongFactsRevenue, FiledFactsRevenue, PulledRevenue })
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = sql;
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (needed.Contains(reader.GetString(0)) && concepts.Contains(reader.GetString(1)))
+                {
+                    (facts.TryGetValue(reader.GetString(0), out var held) ? held : facts[reader.GetString(0)] = []).Add(new Core.Families.FiledRevenue(
+                        reader.GetString(1), Day(reader.GetString(2)), Day(reader.GetString(3)), Money.FromStorage(reader.GetString(4)), Day(reader.GetString(5)), reader.GetString(6), reader.GetString(7)));
+                }
+            }
+        }
+
+        return filers.ToDictionary(
+            pair => pair.Key,
+            pair => Core.Families.FirstFiledRevenue.Quarters(pair.Value.SelectMany(cik => facts.GetValueOrDefault(cik) ?? [])),
+            StringComparer.Ordinal);
+    }
+
     // Combinations outside the grid walked over a family's setups, each one's figures before 2019 and from it.
     static Dictionary<string, (PlanFigures Unseen, PlanFigures Since)> Tallied(Walker walker, IReadOnlyList<FlaggedSetup> setups, IReadOnlyList<PlanCombination> combinations, CancellationToken cancellation)
     {
@@ -559,6 +668,23 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     }
 
     static string Text(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    static DateOnly Day(string stamp) => DateOnly.ParseExact(stamp, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    // The filers the long filings, the companies and the pulled companies name for a stock, and the revenue facts of each.
+    const string TickerFilersLong = "SELECT DISTINCT ticker, cik FROM long_filing;";
+
+    const string TickerFilersCompany = "SELECT DISTINCT ticker, cik FROM company WHERE cik IS NOT NULL;";
+
+    const string TickerFilersPulled = "SELECT DISTINCT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;";
+
+    static readonly string RevenueConcepts = string.Join(", ", Core.Families.FirstFiledRevenue.Concepts.Select(concept => "'" + concept + "'"));
+
+    static readonly string LongFactsRevenue = "SELECT cik, concept, period_start, period_end, dollars, filed, form, accession FROM long_fact WHERE concept IN (" + RevenueConcepts + ");";
+
+    static readonly string FiledFactsRevenue = "SELECT cik, concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE concept IN (" + RevenueConcepts + ");";
+
+    static readonly string PulledRevenue = "SELECT cik, concept, period_start, period_end, dollars, filed, form, accession FROM pulled_revenue WHERE concept IN (" + RevenueConcepts + ");";
 
     static string Instant(DateTimeOffset at) => at.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
 
@@ -746,11 +872,12 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     : combination.Entry == PlanPoints.Average ? (one.Sma20[bar] > 0 ? one.Sma20[bar] : null)
                     : PlanPoints.DistanceOf(combination.Entry) is { } days ? (typical > 0 ? closes[bar] - (days * typical) : null)
                     : zoneRead?.Top;
+                var pullback = combination.Entry == PlanPoints.FirstPullback;
 
                 Worked NotTaken(string why, double? fill = null, double? stop = null) =>
                     new(combination, level, fill, stop, combination.Exit, new PlanPick(setup.Session.Year, era, side, false, null, null, 0, null, 0, null), why);
 
-                if (combination.Entry != PlanPoints.NextOpen && level is null)
+                if (combination.Entry != PlanPoints.NextOpen && !pullback && level is null)
                 {
                     worked.Add(NotTaken(zone >= 0 ? "no such zone: " + (levels.Why ?? "the levels plan draws fewer zones") : "no 20-session average"));
 
@@ -774,7 +901,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                         : FormattableString.Invariant($"at the close of session {setup.Cap}"));
                 }
 
-                if (PlanPoints.FillOf(opens, lows, bar, level, combination.Window) is not { } fill)
+                if ((pullback ? PlanPoints.PullbackFillOf(closes, opens, bar, combination.Window) : PlanPoints.FillOf(opens, lows, bar, level, combination.Window)) is not { } fill)
                 {
                     if (bar + 1 >= closes.Length)
                     {

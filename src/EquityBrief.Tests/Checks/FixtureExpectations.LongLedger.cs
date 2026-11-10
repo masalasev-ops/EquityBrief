@@ -27,6 +27,21 @@ public partial class FixtureExpectations
 
     internal static string[] LongLedgerRows => [.. ComponentAccess.LongLedgerRows, .. SchemaColumns.LongLedgerStoreRows, .. LongLedgerClaims, .. Reading.ReadSurface.LongYearsRows];
 
+    // On the operator's word of 2026-11-10 a chunk past the long tables' old budget runs, its line stating the store's size and
+    // that the budget stops no build; a build's size before and after it, its growth a setup and its time a session.
+    // see: A long build states the store's size before and after it with its expected growth and time, and stops on no size
+    [Fact]
+    public void ALongChunkPastTheOldBudgetRunsAndStatesTheStoresSize()
+    {
+        var past = SetupLedger.ChunkSize(LongLedger.CeilingBytes + 1);
+
+        Assert.False(past.Stops);
+        Assert.Equal(FormattableString.Invariant($"the store held {LongLedger.CeilingBytes + 1:N0} bytes as the chunk started, past the long tables' old budget, which stops no build"), past.Words);
+        Assert.Equal((false, "the store held 1,000 bytes as the chunk started"), SetupLedger.ChunkSize(1_000));
+        Assert.Equal("; the store held 10,000 bytes before and 13,000 after, 1500 bytes a setup, 2.5 s a session", SetupLedger.SizeDetail(10_000, 13_000, 2, 4, TimeSpan.FromSeconds(10)));
+        Assert.Equal("; the store held 10,000 bytes before and 10,000 after", SetupLedger.SizeDetail(10_000, 10_000, 0, 0, TimeSpan.Zero));
+    }
+
     // A long price row, its open, high and low at its close.
     static string LongBarRow(string ticker, string day, decimal close) =>
         FormattableString.Invariant($"('{ticker}', '{day}', '{close}', '{close}', '{close}', '{close}', '{close}', 1000, 'r')");

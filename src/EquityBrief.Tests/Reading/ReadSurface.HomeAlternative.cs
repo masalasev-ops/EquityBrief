@@ -78,6 +78,36 @@ public partial class ReadSurface
         Assert.Equal(102.26, PlanPoints.StopOf(PlanPoints.TypicalStop(2.5), 107.26, 104, null, 2)!.Value, 6);
     }
 
+    // see: The S&P 500 drift's first-pullback entry and the drift's sales check are measured read-only over the long history
+    [Fact]
+    public void TheDriftsFirstPullbackAndItsSalesCheckAreWorkedByHand()
+    {
+        // The first close under the close before within ten sessions, bought at the next open: the close of 11 at bar 3 after
+        // 12 at bar 2, so the open of bar 4.
+        double[] closes = [10, 11, 12, 11, 13, 9];
+        double[] opens = [10, 10.5, 11.5, 11.2, 11.4, 12];
+
+        Assert.Equal((4, 11.4), PlanPoints.PullbackFillOf(closes, opens, 0, 10) is { } fill ? (fill.Bar, fill.Price) : (-1, 0.0));
+        Assert.Null(PlanPoints.PullbackFillOf(closes, opens, 0, 2));
+        Assert.Null(PlanPoints.PullbackFillOf([10, 11, 12], [10, 10, 10], 0, 10));
+
+        // The newest quarter first filed by the session against the same quarter a year before, both first filed by then.
+        Core.Families.QuarterRevenue Quarter(int year, int month, decimal value, int filedMonth) =>
+            new(new DateOnly(year, month, 1).AddMonths(-3), new DateOnly(year, month, 30), value, new DateOnly(year, filedMonth, 1), "Revenues", false);
+        Core.Families.QuarterRevenue[] quarters = [Quarter(2024, 6, 100m, 8), Quarter(2025, 6, 110m, 8), Quarter(2025, 9, 90m, 11)];
+
+        Assert.True(PlanPoints.SalesGrew(quarters, new DateOnly(2025, 9, 1)));
+        Assert.Null(PlanPoints.SalesGrew(quarters, new DateOnly(2025, 12, 1)));
+        Assert.False(PlanPoints.SalesGrew([Quarter(2024, 6, 100m, 8), Quarter(2025, 6, 95m, 8)], new DateOnly(2025, 9, 1)));
+        Assert.Null(PlanPoints.SalesGrew(quarters, new DateOnly(2024, 9, 1)));
+        Assert.Null(PlanPoints.SalesGrew(null, new DateOnly(2025, 9, 1)));
+
+        // A year before's quarter first filed after the session is not read by it: the check waits rather than reading ahead.
+        Core.Families.QuarterRevenue lateYearBefore = new(new DateOnly(2024, 4, 1), new DateOnly(2024, 6, 30), 100m, new DateOnly(2025, 10, 1), "Revenues", false);
+
+        Assert.Null(PlanPoints.SalesGrew([lateYearBefore, Quarter(2025, 6, 110m, 8)], new DateOnly(2025, 9, 1)));
+    }
+
     [Fact]
     public async Task TheNightPricesEachPriceCardAtItsFamilysRecommendationFromTheStocksOwnBars()
     {
