@@ -283,7 +283,12 @@ public partial class FixtureExpectations
             hooked.Where(name => !name.StartsWith("quality-", StringComparison.Ordinal) && !name.StartsWith("improving-", StringComparison.Ordinal)),
             CandidateEvaluators.All.Where(evaluator => RuleHooks.PlanWalkSources.All(evaluator.OwnSources.Contains)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
         Assert.DoesNotContain(CandidateEvaluators.All, evaluator => !hooked.Contains(evaluator.Name) && RuleHooks.Sources.Any(evaluator.OwnSources.Contains));
-        Assert.Empty(RuleHooks.Sources.Intersect(CandidateEvaluator.EvaluationSources));
+        // The levels a plan places its order at are read through the night's own ladder and bands, three of whose files every
+        // listing's evaluation already shares; no other hooks source is one.
+        Assert.Equal(
+            ["src/EquityBrief.Core/Ladders/LadderSeries.cs", "src/EquityBrief.Core/Levels/LevelSeries.cs", "src/EquityBrief.Worker/Levels/LevelBuilder.cs"],
+            RuleHooks.Sources.Intersect(CandidateEvaluator.EvaluationSources).Order(StringComparer.Ordinal));
+        Assert.Subset(RuleHooks.PlanWalkSources.ToHashSet(StringComparer.Ordinal), RuleHooks.Sources.Intersect(CandidateEvaluator.EvaluationSources).ToHashSet(StringComparer.Ordinal));
     }
 
     [Fact]
