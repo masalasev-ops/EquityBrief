@@ -18348,3 +18348,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 140, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 22.16 - correction: a watched pick on Home draws the plan its kind's long test recommends, priced on its own levels and not traded   2026-11-10
+
+Found:      the operator's word of 2026-11-10: "if we are saying we need to change how to buy then  give an  alternate  buy sell plan",
+            and then: "Yes but this  cannot be just valid for AMCR. AMCR just  came up today. I need  it applicable for all stocks
+            that come up under watching not buying", built to completion on their order of that night, word for word in
+            `prompts/2026-11-10-overnight-order.md`. A watched card said why it is not bought and showed no other way to trade it.
+Corrected:  after writing a night's cards the decision cards price each price family's pick at the combination its index's newest
+            `plan-points` run recommends, on the stock's own bars through the night read as that run reads a setup's levels on its
+            newest session, and store it in `decision_card.alternative`, migration 141, with the run's fills and mean edge from
+            2019 beside the traded plan's, or the combination and why where the levels place none of it; a recommendation that is
+            the traded plan prices nothing. A watched card draws it beneath why it is not bought: "A plan that did better:" above
+            nought from 2019, "A plan that lost less:" below nought but above the traded plan's, its wait and latest sale, its three
+            prices, what the test found and that the rules do not trade it; where the stock has no such zone tonight, why; where it
+            did no better than the traded plan, that there is none to show. An idea's card draws none. `card-plans` prices a
+            night's cards again. The long test's own reading of a setup's levels is opened to the cards unchanged; no pin moves.
+Tests:      4 new: the pricing worked by hand over constructed levels, each entry, stop and sale and a zone the levels do not draw;
+            the night pricing a constructed card from 260 constructed bars, a typical daily move of a dollar under a close of 62.95,
+            and refusing the traded plan and a card of no price family; the block in each of its forms with the cents both ways;
+            and Home drawing it on a watched card alone. Read back over a scratch copy of the store migrated to 141 with its
+            newest night priced by `card-plans`, 19 cards, on the S&P 500's Home at 1440 and 390 in both palettes, none wider than
+            the page.
+Claims:     none new; section 15.24's row of the picks watched, the decision cards' catalogue row and two stores' rows say it.
+Pins:       none move.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to the four new tests, restored to
+            the file's own text, 4 in all, each predicted red and each red: the first band above read as the highest, 1 red; the
+            traded plan priced as a recommendation, 1 red; the block drawn on an idea's card, 1 red; and a recommendation doing no
+            better than the traded plan drawn as a plan, 1 red.
+Remedy:     `tools/remedies/2026-11-10-22.16-the-watched-plans.txt`: migrate, then `card-plans`, from main after the merge.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3663 of 3663 tests ran with none failed, migrations 0 to 141 with none
+            pending, schema version 141, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

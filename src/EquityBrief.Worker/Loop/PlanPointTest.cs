@@ -700,7 +700,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         }
 
         // The levels plan as of a bar, from the bands and the trend the night's own functions read over the year it held.
-        static LevelsAsOf LevelsAt(SweepSeries series, int bar)
+        public static LevelsAsOf LevelsAt(SweepSeries series, int bar)
         {
             var from = Math.Max(0, bar - VolumeProfileSeries.Window + 1);
             var bars = series.Bars[from..(bar + 1)].Select(one => new ReplayBar(one.Session, one.High, one.Low, one.Close, one.Volume)).ToArray();

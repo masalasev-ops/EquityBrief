@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/ARCHITECTURE.html and docs/SCHEMA.md - a watched pick's recommended plan priced on its card
+Decision: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded
+Was:
+> (ARCHITECTURE, the decision cards' catalogue row) ... loop models, provisional settings</td><td>decision cards</td> ... only once its history is built under that rule)</td></tr>
+> (ARCHITECTURE, the decision cards' store row) ... its part of setups like the pick or why none were matched</td><td>forever, each night's cards as they were read; ...
+> (ARCHITECTURE, the plan points' store row) ... beside the traded plan's</td><td>forever, a row a run and family, the Loop page reading each family's newest</td></tr>
+> (ARCHITECTURE, 15.24's row of the picks watched) ... the cents it did worse by for each dollar at risk (see: Home says in plain words why a pick is an idea to buy or watched and how it was tested);
+> (SCHEMA, ownership) | `decision_card` | DecisionCards | none | DecisionCards |
+> (SCHEMA, decision_card) ... nothing else deletes a row, so an earlier night's cards stand as they were read, with the values they were read with.
+> (SCHEMA, plan_point) Every figure is a statistic and stored as the double it is. No rule, plan or night reads it, and nothing is registered on it.
+Now:
+> the catalogue row reads plan points and prices each price family's pick at its recommendation once every index's cards are written; the store row names a price card's recommended plan; the plan points' row names the decision cards reading it; 15.24's row draws the plan beneath why a watched pick is not bought; `decision_card` gains `alternative` (migration 141) and the cards are its only updater; `plan_point` is read by the night's decision cards to price a card, no rule or plan reading it.
+Why: the operator's word of 2026-11-10: "give an  alternate  buy sell plan", and "I need  it applicable for all stocks  that come up under watching not buying".
+
 ### 2026-11-10 - docs/ARCHITECTURE.html - section 15.24, Home's lines on picks bought and watched in plain words
 Decision: Home says in plain words why a pick is an idea to buy or watched and how it was tested
 Was:
