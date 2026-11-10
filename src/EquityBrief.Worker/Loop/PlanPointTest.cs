@@ -196,6 +196,83 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             picked.Add((family, recommended, at < 0 ? null : figures[(family, at, Unseen)], figures.GetValueOrDefault((family, traded, Unseen)), setups.Count(one => one.Family == family)));
         }
 
+        // On the operator's order of 2026-11-10, items 1 and 2: a recommendation stopping 2 typical days under its buy walked
+        // again at each wider stop, the one doing best from 2019 standing where it beats it there; then one buying at a zone or
+        // the average walked beside the same distance under the close, the median of the level's distance in typical days over
+        // the family's picks before 2019, at the same stop and sale, the distance standing only where it does better from 2019
+        // by more than 0.02 risks a pick.
+        // see: A recommendation stopping 2 typical days under its buy is walked again wider and buying at a level beside the same distance under the close, each kept where it does better from 2019
+        var refinedSince = new Dictionary<(string Family, string Words), PlanFigures?>();
+        var refinements = new List<string>();
+
+        PlanFigures? SinceOf(string family, PlanCombination? combination) =>
+            combination is null ? null
+            : refinedSince.TryGetValue((family, combination.Words), out var refined) ? refined
+            : figures.GetValueOrDefault((family, PlanPoints.Combinations.ToList().IndexOf(combination), Chosen));
+
+        for (var at = 0; at < picked.Count; at++)
+        {
+            var (family, combination, chosen, plan, count) = picked[at];
+
+            if (combination is null)
+            {
+                continue;
+            }
+
+            var ofFamily = setups.Where(one => one.Family == family).ToArray();
+            var (final, finalUnseen) = (combination, chosen);
+
+            if (combination.Stop == PlanPoints.TypicalStop(PlanPoints.WidestOfTheGrid))
+            {
+                PlanCombination[] wider = [.. PlanPoints.WiderDays.Select(days => combination with { Stop = PlanPoints.TypicalStop(days) })];
+                var walkedWider = Tallied(walker, ofFamily, wider, cancellation);
+
+                foreach (var one in wider)
+                {
+                    refinedSince[(family, one.Words)] = walkedWider[one.Words].Since;
+                }
+
+                var widest = PlanPoints.Wider(SinceOf(family, combination)?.EdgePerPick, [.. wider.Select(one => (one, walkedWider[one.Words].Since?.EdgePerPick))]);
+
+                refinements.Add(FormattableString.Invariant($"The {family}'s stop of {PlanPoints.WidestOfTheGrid} typical days walked wider: from {LongLedger.StandingFrom.Year} {Shown(SinceOf(family, combination)?.EdgePerPick)} at {PlanPoints.WidestOfTheGrid}, ") + string.Join(", ", wider.Select(one => FormattableString.Invariant($"{Shown(walkedWider[one.Words].Since?.EdgePerPick)} over {walkedWider[one.Words].Since?.Fills ?? 0} fill(s) at {one.Stop}"))) + (widest is null ? "; the stop stays." : $"; {widest.Stop} stands."));
+
+                if (widest is not null)
+                {
+                    (final, finalUnseen) = (widest, walkedWider[widest.Words].Unseen);
+                }
+            }
+
+            if (final.Entry == PlanPoints.Average || PlanPoints.Zones.Contains(final.Entry))
+            {
+                if (final.Stop == PlanPoints.ZoneStop)
+                {
+                    refinements.Add($"The {family}'s {final.Entry} keeps its zone: a plain distance under the close draws no zone's stop.");
+                }
+                else if (Median([.. ofFamily.Where(one => one.Session.Year < LongLedger.StandingFrom.Year).Select(one => walker.DistanceOf(one, final.Entry)).OfType<double>()]) is { } distance)
+                {
+                    var plain = final with { Entry = PlanPoints.DistanceEntry(Math.Round(distance, 2)) };
+                    var walkedPlain = Tallied(walker, ofFamily, [plain], cancellation);
+
+                    refinedSince[(family, plain.Words)] = walkedPlain[plain.Words].Since;
+
+                    var replaces = PlanPoints.DistanceReplaces(SinceOf(family, final)?.EdgePerPick, walkedPlain[plain.Words].Since?.EdgePerPick);
+
+                    refinements.Add(FormattableString.Invariant($"The {family}'s {final.Entry} beside {plain.Entry}, the median distance before {LongLedger.StandingFrom.Year}: from {LongLedger.StandingFrom.Year} {Shown(SinceOf(family, final)?.EdgePerPick)} against {Shown(walkedPlain[plain.Words].Since?.EdgePerPick)} over {walkedPlain[plain.Words].Since?.Fills ?? 0} fill(s); ") + (replaces ? "the plain distance stands." : FormattableString.Invariant($"the {final.Entry} stays, within {PlanPoints.ZoneKeptWithin} or better.")));
+
+                    if (replaces)
+                    {
+                        (final, finalUnseen) = (plain, walkedPlain[plain.Words].Unseen);
+                    }
+                }
+                else
+                {
+                    refinements.Add($"The {family}'s {final.Entry} keeps its level: no pick before {LongLedger.StandingFrom.Year} drew one under its close.");
+                }
+            }
+
+            picked[at] = (family, final, finalUnseen, plan, count);
+        }
+
         var lines = new List<string>
         {
             FormattableString.Invariant($"{setups.Count} flagged setup(s) of the pullback, the breakout, the drift and the dip on the {DecisionCards.NameOf(index)}, the long ledger's from 2005 and the standing ledger's from 2019, {unread} whose stock or session the long history does not hold left out; each walked under {PlanPoints.Combinations.Count} combination(s) of an entry, a stop and a sale."),
@@ -204,9 +281,11 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             FormattableString.Invariant($"The settings were chosen on {LongLedger.StandingFrom.Year} onward, so the years before it are the years no setting was chosen on, and the recommendation reads them alone: the highest edge per pick offered among the combinations resting on {PlanPoints.FewestFills} fills or more there. It is a proposal, and nothing here changes a pick, a plan, a rule or a version."),
         };
 
+        lines.AddRange(refinements);
+
         foreach (var (family, combination, chosen, plan, count) in picked)
         {
-            var since = combination is null ? null : figures.GetValueOrDefault((family, PlanPoints.Combinations.ToList().IndexOf(combination), Chosen));
+            var since = SinceOf(family, combination);
             var tradedSince = figures.GetValueOrDefault((family, traded, Chosen));
 
             lines.Add(combination is null
@@ -320,12 +399,12 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     ("$worst_drawdown", Or(chosen?.WorstDrawdown)),
                     ("$traded_fills", Or(plan?.Fills)),
                     ("$traded_edge_per_pick", Or(plan?.EdgePerPick)),
-                    ("$later_fills", Or(combination is null ? null : figures.GetValueOrDefault((family, PlanPoints.Combinations.ToList().IndexOf(combination), Chosen))?.Fills)),
-                    ("$later_edge_per_pick", Or(combination is null ? null : figures.GetValueOrDefault((family, PlanPoints.Combinations.ToList().IndexOf(combination), Chosen))?.EdgePerPick)),
+                    ("$later_fills", Or(SinceOf(family, combination)?.Fills)),
+                    ("$later_edge_per_pick", Or(SinceOf(family, combination)?.EdgePerPick)),
                     ("$traded_later_edge_per_pick", Or(figures.GetValueOrDefault((family, traded, Chosen))?.EdgePerPick)),
                     ("$fund_edge_per_pick", Or(chosen?.FundEdgePerPick)),
                     ("$traded_fund_edge_per_pick", Or(plan?.FundEdgePerPick)),
-                    ("$later_fund_edge_per_pick", Or(combination is null ? null : figures.GetValueOrDefault((family, PlanPoints.Combinations.ToList().IndexOf(combination), Chosen))?.FundEdgePerPick)),
+                    ("$later_fund_edge_per_pick", Or(SinceOf(family, combination)?.FundEdgePerPick)),
                     ("$traded_later_fund_edge_per_pick", Or(figures.GetValueOrDefault((family, traded, Chosen))?.FundEdgePerPick)),
                     ("$traded_later_picks", Or(figures.GetValueOrDefault((family, traded, Chosen))?.Picks)),
                 ], cancellation);
@@ -347,6 +426,47 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         output.WriteLine($"{Verb}: written to {report} with its figures at {figuresFile}, and each family's recommendation to the store; registered nothing");
 
         return 0;
+    }
+
+    // Combinations outside the grid walked over a family's setups, each one's figures before 2019 and from it.
+    static Dictionary<string, (PlanFigures Unseen, PlanFigures Since)> Tallied(Walker walker, IReadOnlyList<FlaggedSetup> setups, IReadOnlyList<PlanCombination> combinations, CancellationToken cancellation)
+    {
+        var walked = new PlanPick?[setups.Count][];
+
+        Parallel.For(0, setups.Count, new ParallelOptions { CancellationToken = cancellation }, at => walked[at] = walker.PicksUnder(setups[at], combinations));
+
+        var tallied = new Dictionary<string, (PlanFigures Unseen, PlanFigures Since)>(StringComparer.Ordinal);
+
+        for (var at = 0; at < combinations.Count; at++)
+        {
+            var (unseen, since) = (new PlanTally(false), new PlanTally(false));
+
+            foreach (var picks in walked)
+            {
+                if (picks.Length > at && picks[at] is { } pick)
+                {
+                    (pick.Year < LongLedger.StandingFrom.Year ? unseen : since).Add(pick);
+                }
+            }
+
+            tallied[combinations[at].Words] = (unseen.Figures(), since.Figures());
+        }
+
+        return tallied;
+    }
+
+    // The median of a list, none where it holds nothing.
+    static double? Median(IReadOnlyList<double> values)
+    {
+        if (values.Count == 0)
+        {
+            return null;
+        }
+
+        var ordered = values.Order().ToArray();
+        var middle = ordered.Length / 2;
+
+        return ordered.Length % 2 == 1 ? ordered[middle] : (ordered[middle - 1] + ordered[middle]) / 2;
     }
 
     async Task<IReadOnlyList<Worked>> ExampleAsync(Walker walker, CancellationToken cancellation)
@@ -561,10 +681,32 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         public PlanPick?[] Picks(FlaggedSetup setup) =>
             Placed(setup) is { } placed ? [.. Walk(setup, placed).Select(one => one.Pick)] : [];
 
+        // A setup walked under combinations outside the grid, a recommendation's refinements.
+        public PlanPick?[] PicksUnder(FlaggedSetup setup, IReadOnlyList<PlanCombination> combinations) =>
+            Placed(setup) is { } placed ? [.. Walk(setup, placed, combinations).Select(one => one.Pick)] : [];
+
         public IReadOnlyList<Worked> Worked(FlaggedSetup setup) =>
             Placed(setup) is { } placed ? Walk(setup, placed) : [];
 
-        IReadOnlyList<Worked> Walk(FlaggedSetup setup, (int Name, int Bar, double[] Opens, double[] Lows, double[] Closes) placed)
+        // How far under the pick's close an entry's level stands, in the stock's typical daily moves on the session; none where
+        // the entry draws no level there.
+        public double? DistanceOf(FlaggedSetup setup, string entry)
+        {
+            if (Placed(setup) is not { } placed || !(series[placed.Name].Atr[placed.Bar] is var typical && typical > 0))
+            {
+                return null;
+            }
+
+            var close = placed.Closes[placed.Bar];
+            var zone = PlanPoints.Zones.ToList().IndexOf(entry);
+            double? level = entry == PlanPoints.Average ? (series[placed.Name].Sma20[placed.Bar] is var average && average > 0 ? average : null)
+                : zone >= 0 && LevelsAt(series[placed.Name], placed.Bar) is { } levels && zone < levels.Zones.Count ? levels.Zones[zone].Top
+                : null;
+
+            return level is { } held && held < close ? (close - held) / typical : null;
+        }
+
+        IReadOnlyList<Worked> Walk(FlaggedSetup setup, (int Name, int Bar, double[] Opens, double[] Lows, double[] Closes) placed, IReadOnlyList<PlanCombination>? combinations = null)
         {
             var (name, bar, opens, lows, closes) = placed;
             var one = series[name];
@@ -596,12 +738,13 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             var side = regime.GetValueOrDefault(setup.Session) ?? PlanPoints.Below;
             var worked = new List<Worked>();
 
-            foreach (var combination in PlanPoints.Combinations)
+            foreach (var combination in combinations ?? PlanPoints.Combinations)
             {
                 var zone = PlanPoints.Zones.ToList().IndexOf(combination.Entry);
                 (double Top, double? Stop)? zoneRead = zone >= 0 && zone < levels.Zones.Count ? levels.Zones[zone] : null;
                 double? level = combination.Entry == PlanPoints.NextOpen ? null
                     : combination.Entry == PlanPoints.Average ? (one.Sma20[bar] > 0 ? one.Sma20[bar] : null)
+                    : PlanPoints.DistanceOf(combination.Entry) is { } days ? (typical > 0 ? closes[bar] - (days * typical) : null)
                     : zoneRead?.Top;
 
                 Worked NotTaken(string why, double? fill = null, double? stop = null) =>

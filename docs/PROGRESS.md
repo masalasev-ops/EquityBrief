@@ -18382,3 +18382,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 141, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.8 - correction: a recommendation at 2 typical days walked wider, and one at a level beside the same distance under the close   2026-11-10
+
+Found:      the operator's order of 2026-11-10, items 1 and 2, word for word in `prompts/2026-11-10-overnight-order.md`. Of the twelve
+            newest recommendations ten stop at 2 typical days, the grid's widest, all but the S&P 400 dip's and the S&P 600
+            drift's, and eleven buy at a zone or the 20-session average, all but the S&P 600 drift's, none measured against the
+            same distance under the close.
+Corrected:  each `plan-points` run walks a recommendation at 2 typical days again at 2.5, 3 and 4, its best from 2019 standing where it
+            beats it there, then one at a zone or the 20-session average beside the median distance under the close before 2019 at
+            the same stop, sale and window, standing only past 0.02 risks a pick from 2019; it prints each beside what it would
+            replace and writes the recommendation that stands. `card-plans` prices either kind.
+Provisional: on the operator's review, the same distance is read as one figure a family an index, the median of the
+            recommended level's distance under the close in typical moves over the family's picks before 2019, since the same
+            distance on each pick would buy at the same price; a zone's own stop keeps its zone.
+Tests:      1 new: the wider stop chosen only over the recommendation's own from 2019, the distance only past 0.02, both refinements'
+            words read back and a distance entry priced off the close, worked by hand.
+Claims:     none new; the plan point test's catalogue row says it.
+Pins:       none move; the grid's 296 combinations stand.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to the new test, restored to the file's
+            own text, 2 in all, each predicted red and each red: a wider stop chosen even where it does no better, and the distance
+            standing within 0.02.
+Remedy:     after the merge, from main, `plan-points --index GSPC`, `MID` and `SML`, whose refined recommendations and figures stand
+            in the entry that reports items 1 and 2; then `card-plans`.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3664 of 3664 tests ran with none failed, migrations 0 to 141 with none
+            pending, schema version 141, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed.

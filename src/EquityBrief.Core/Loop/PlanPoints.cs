@@ -206,6 +206,42 @@ public static class PlanPoints
 
     public static string TypicalStop(double days) => FormattableString.Invariant($"{days:0.##} typical days under the buy");
 
+    // On the operator's order of 2026-11-10, item 1, the wider stops a recommendation stopping 2 typical days under the buy
+    // is walked again at, the one doing best from 2019 standing where it beats it there.
+    // see: A recommendation stopping 2 typical days under its buy is walked again wider and buying at a level beside the same distance under the close, each kept where it does better from 2019
+    public static IReadOnlyList<double> WiderDays { get; } = [2.5, 3, 4];
+
+    public const double WidestOfTheGrid = 2;
+
+    // On the same order, item 2, an entry at a plain distance under the pick's close in its typical daily moves, walked beside
+    // a recommendation buying at a zone or the average; the zone is kept unless the distance does better from 2019 by more
+    // than this many risks a pick.
+    public const string UnderTheClose = "typical days under the close";
+
+    public const double ZoneKeptWithin = 0.02;
+
+    public static string DistanceEntry(double days) => FormattableString.Invariant($"{days:0.##} {UnderTheClose}");
+
+    public static double? DistanceOf(string entry) =>
+        entry.EndsWith(" " + UnderTheClose, StringComparison.Ordinal)
+        && double.TryParse(entry[..^(UnderTheClose.Length + 1)], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var days)
+        && days > 0
+            ? days
+            : null;
+
+    // The wider stop to use, of those walked, where its mean edge a pick offered from 2019 beats the recommendation's own;
+    // none where none does.
+    public static PlanCombination? Wider(double? since, IReadOnlyList<(PlanCombination Combination, double? Since)> wider) =>
+        wider
+            .Where(one => one.Since is { } edge && (since is not { } held || edge > held))
+            .OrderByDescending(one => one.Since)
+            .Select(one => one.Combination)
+            .FirstOrDefault();
+
+    // Whether a plain distance replaces a zone or the average: only where it does better from 2019 by more than the margin.
+    public static bool DistanceReplaces(double? zone, double? distance) =>
+        distance is { } plain && (zone is not { } level || plain > level + ZoneKeptWithin);
+
     // Every combination: the next open, then each zone and the average within each window; for each the rule's stop, a
     // zone's own stop where the entry is a zone, and each typical-days stop; and each sale.
     public static IReadOnlyList<PlanCombination> Combinations { get; } = Every();
@@ -244,7 +280,7 @@ public static class PlanPoints
             return zoneStop;
         }
 
-        var days = TypicalDays.FirstOrDefault(one => TypicalStop(one) == stop);
+        var days = TypicalDays.Concat(WiderDays).FirstOrDefault(one => TypicalStop(one) == stop);
 
         return days > 0 && typicalDay > 0 ? fill - (days * typicalDay) : null;
     }
