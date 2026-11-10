@@ -18662,3 +18662,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 142, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
             none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
             roster run and passed.
+
+### 23.4 - correction: the History page draws the long check's counts under its own run and the ends marked as they stand   2026-11-10
+
+Corrects:   23.1 and 23.4, found reading the History page back against a copy of the store for 23.11. The page drew "The data
+            check has not run" over the 225,523 findings the long check wrote on 2026-11-08, since it read a run logged as the
+            check over the pull's years alone and the long check logs its own; and its prices card drew "0 marked where the
+            provider's prices run on past them" where 586 such marks stand, since it read the newest write's own count, and 23.5's
+            remedy wrote the prices again over ends already marked.
+Built:      the History page reads the run whose rows the check's table holds, the check over the pull's years or over the long
+            prices from 2005, and its prices card counts the ends marked as the marks stand.
+Remedy:     none: no migration and no store row; the page reads it from the restart of the read surface after the merge.
+Tests:      1 new: the long check's counts drawn under its own run over a store holding both runs; the prices card's test now
+            holds a write whose own count is nought over a store holding one end mark and a bad print.
+Claims:     none new; 15.25's rows of the counts by class and era and of the prices back to 2004 read it.
+Pins:       none move: the read surface is pinned by no rule.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered to its
+            own test and restored with the editor. M1 the run read from the check over the pull's years alone, red at the long
+            check's test; M2 the marked count read off the newest write's row, red at the prices card's test. Each red as
+            predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.

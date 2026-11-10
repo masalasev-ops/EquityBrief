@@ -8,7 +8,8 @@ namespace EquityBrief.Api.Reading;
 // see: The data check classifies every stock's pulled sessions by stated rules into a table of its own, and moves no price row
 public sealed partial class ReadApi
 {
-    const string DataCheckRun = "SELECT run_id, ended_at, detail FROM run_log WHERE stage = 'data-check' AND run_id IN (SELECT DISTINCT run_id FROM data_check) ORDER BY rowid DESC LIMIT 1;";
+    // The run whose rows the table holds, the check over the years the pull holds or over the long prices from 2005.
+    const string DataCheckRun = "SELECT run_id, ended_at, detail FROM run_log WHERE stage IN ('data-check', 'data-check-long') AND run_id IN (SELECT DISTINCT run_id FROM data_check) ORDER BY rowid DESC LIMIT 1;";
 
     const string DataCheckCounts = @"
         SELECT class, kind, era, COUNT(*), COUNT(DISTINCT ticker) FROM data_check GROUP BY class, kind, era

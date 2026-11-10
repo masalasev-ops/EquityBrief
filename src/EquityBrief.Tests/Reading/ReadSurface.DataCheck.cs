@@ -84,4 +84,30 @@ public partial class ReadSurface
             Assert.Contains("fetch('/screens/history')", shell, StringComparison.Ordinal);
         }
     }
+
+    // The check over the long prices from 2005 logs its run under a stage of its own and its rows stand in the table in the pull's
+    // place, so the page draws them under that run rather than saying the check has not run.
+    [Fact]
+    public async Task TheHistoryPageDrawsTheLongChecksCountsUnderItsOwnRun()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(@"
+            INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES
+                ('data-check-1', 'data-check', '2026-11-06T21:11:37Z', '2026-11-06T21:13:29Z', 'ok', 1, 0, 0, '0', '1 stock(s) and 8 session(s) read from 2019-12-26 to 2020-01-02, 1 finding(s)'),
+                ('data-check-long-1', 'data-check-long', '2026-11-08T05:29:04Z', '2026-11-08T05:30:04Z', 'ok', 2, 0, 0, '0', '2 stock(s) and 40 session(s) read from 2004-01-02 to 2026-11-06, 2 finding(s)');
+            INSERT INTO data_check (ticker, session_date, class, kind, era, says, run_id) VALUES
+                ('OLD', '2008-10-10', 'jump', 'unexplained', '2005 to 2009', 'a jump of 40% nothing stored explains', 'data-check-long-1'),
+                ('NEW', '2021-03-04', 'no volume', 'thin', '2020 on', 'no volume on a thin day', 'data-check-long-1');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/history"));
+
+        Assert.DoesNotContain("The data check has not run.", page, StringComparison.Ordinal);
+        Assert.Contains("Data check of 2026-11-08", page, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"run\">data-check-long-1</span>", page, StringComparison.Ordinal);
+        Assert.Contains("2 stock(s) and 40 session(s) read from 2004-01-02 to 2026-11-06, 2 finding(s)", page, StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"cls\" data-class=\"jump\"><td>Jump</td><td class=\"n\">1 <span class=\"on\">on 1</span></td>", page, StringComparison.Ordinal);
+    }
 }
