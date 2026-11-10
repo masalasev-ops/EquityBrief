@@ -162,14 +162,14 @@ public sealed partial class SinglePageApp
     public static (HomeIdea[] Buy, HomeIdea[] Watch) Split(IReadOnlyList<HomeIdea> picks) =>
         ([.. picks.Where(pick => pick.LongRecord is not { Lost: true })], [.. picks.Where(pick => pick.LongRecord is { Lost: true })]);
 
-    // The rule splitting tonight's picks into the ideas to buy and the picks watched, above every card.
-    // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
-    public static string SplitLine(UniverseChoice reading) =>
-        Invariant($"A pick is an idea to buy unless picks like it did worse than the {reading.Name}'s other stocks bought the same way since {EquityBrief.Core.History.LongLedger.StandingFrom.Year}; then it is watched and traded on paper only. Each card says which, and why.");
+    // The line above every card: how each kind of pick is tested, and which kinds are ideas to buy and which are watched.
+    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
+    public static string SplitLine(UniverseChoice reading, bool watching) =>
+        Invariant($"We test every kind of pick against simply buying other {reading.Name} stocks on the same days. Kinds that beat it, or are too new to test, are ideas to buy. Kinds that lost to it are {(watching ? "shown below as watched, followed" : "watched and followed")} on paper only.");
 
-    // The heading of the picks watched, above their cards: how many, and why none of them is offered as an idea to buy; none on
-    // a night no pick is watched.
-    // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
+    // The heading of the picks watched, above their cards: how many, and that the rules picked them but their kind of pick
+    // lost the test; none on a night no pick is watched.
+    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
     public static string? WatchingLine(IReadOnlyList<HomeIdea> watching, UniverseChoice reading)
     {
         if (watching.Count == 0)
@@ -177,40 +177,53 @@ public sealed partial class SinglePageApp
             return null;
         }
 
+        var kinds = watching.Select(idea => idea.Family).Distinct(StringComparer.Ordinal).Count();
         var since = watching[0].LongRecord?.From ?? EquityBrief.Core.History.LongLedger.StandingFrom.Year;
-        var why = watching.Count == 1
-            ? Invariant($"Picks like it did worse than the {reading.Name}'s other stocks bought the same way since {since}, with its plan as it stands, so it is traded on paper only, not offered as an idea to buy.")
-            : Invariant($"Picks like these did worse than the {reading.Name}'s other stocks bought the same way since {since}, with their plans as they stand, so they are traded on paper only, not offered as ideas to buy.");
+        var why = Invariant($"The rules picked {(watching.Count == 1 ? "it" : "these")}, but {(kinds == 1 ? "this kind of pick has" : "these kinds of pick have")} done worse than simply buying other {reading.Name} stocks since {since}.");
 
         return Invariant($"<p class=\"home-watch\" data-watching=\"{watching.Count}\"><b>Watching, not buying: {watching.Count} {(watching.Count == 1 ? "pick" : "picks")} tonight.</b> {Escaped(why)}</p>");
     }
 
-    // The label of a watched card's sentence saying what qualified it.
+    // The labels of a watched card's two sentences: what qualified it, and why it is not bought.
     public const string PickedLabel = "Why the rule picked it:";
 
-    // The line beneath a watched card's opening line: what would make it an idea to buy.
-    // see: A watched card on Home names why its rule picked it and when it would become an idea to buy
-    public static string WhenLine(UniverseChoice reading) =>
-        Invariant($"It becomes an idea to buy when picks like this, traded the way they are now, beat the {reading.Name}'s other stocks bought the same way since {EquityBrief.Core.History.LongLedger.StandingFrom.Year}.");
+    public const string NotBuyingLabel = "Why we're not buying it:";
 
-    // The line opening a pick's card, saying whether it is an idea to buy or watched and why, from its setup's record over the
-    // long history: one that lost is watched; one that made money, holds too few picks, reaches back too few years or is unread
-    // is an idea to buy.
-    // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
+    // Why a watched pick is not bought: the years its kind of pick was tested over, that it did worse than buying the index's
+    // other stocks on the same days with the same sell rules and by how much for each dollar put at risk.
+    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
+    public static string NotBuyingLine(HomeIdea idea, UniverseChoice reading) =>
+        idea.LongRecord is { Lost: true, EdgePerPick: { } edge } record
+            ? Invariant($"We tested this kind of pick on {reading.Name} stocks from {record.From} to {record.Through}. It did worse than simply buying other {reading.Name} stocks on the same days with the same sell rules: {Worse(edge)} for every $1 put at risk. So we follow it on paper instead of suggesting it.")
+            : Invariant($"This kind of pick did worse than simply buying other {reading.Name} stocks on the same days with the same sell rules, so we follow it on paper instead of suggesting it.");
+
+    // How far a kind of pick fell short for each dollar put at risk, in cents below a dollar.
+    public static string Worse(double edge) =>
+        (int)Math.Round(Math.Abs(edge) * 100, MidpointRounding.AwayFromZero) switch
+        {
+            0 => "less than 1 cent worse",
+            1 => "about 1 cent worse",
+            < 100 and var cents => Invariant($"about {cents} cents worse"),
+            _ => Invariant($"about ${Math.Abs(edge):0.00} worse"),
+        };
+
+    // The line opening a pick's card, saying whether it is an idea to buy or watched, and for an idea why, from its setup's
+    // record over the long history: one that lost is watched, its reasons in the lines beneath; one that made money, holds too
+    // few picks, reaches back too few years or is unread is an idea to buy.
+    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
     public static string VerdictLine(HomeIdea idea, UniverseChoice reading)
     {
         var record = idea.LongRecord;
-        var since = record?.From ?? EquityBrief.Core.History.LongLedger.StandingFrom.Year;
         var (verdict, head, why) = record switch
         {
-            { Lost: true } => ("watch", "Watching, not buying.", Invariant($"Since {since}, picks like this did worse than the {reading.Name}'s other stocks bought the same way, so this one is traded on paper only.")),
-            { Made: true } => ("buy", "An idea to buy.", Invariant($"Since {since}, picks like this did better than the {reading.Name}'s other stocks bought the same way.")),
-            { Short: true } => ("buy", "An idea to buy.", Invariant($"Too few picks like this since {since} for a record to hold it back.")),
-            { ReachesBack: not null } => ("buy", "An idea to buy.", "Picks like this have no long record yet to hold it back."),
-            _ => ("buy", "An idea to buy.", "No long record of picks like this has been read yet to hold it back."),
+            { Lost: true } => ("watch", "Watching, not buying.", (string?)null),
+            { Made: true } => ("buy", "An idea to buy.", Invariant($"We tested this kind of pick on {reading.Name} stocks from {record.From} to {record.Through}, and it did better than buying other {reading.Name} stocks on the same days with the same sell rules.")),
+            { Short: true } => ("buy", "An idea to buy.", Invariant($"There are too few picks of this kind since {record.From} to test it yet, so nothing counts against it.")),
+            { ReachesBack: not null } => ("buy", "An idea to buy.", "There isn't enough history to test this kind of pick yet, so nothing counts against it."),
+            _ => ("buy", "An idea to buy.", "This kind of pick hasn't been tested yet, so nothing counts against it."),
         };
 
-        return Invariant($"<p class=\"home-verdict\" data-verdict=\"{verdict}\"><b>{Escaped(head)}</b> {Escaped(why)}</p>");
+        return Invariant($"<p class=\"home-verdict\" data-verdict=\"{verdict}\"><b>{Escaped(head)}</b>{(why is null ? string.Empty : " " + Escaped(why))}</p>");
     }
 
     // The monthly books' buys at tonight's reshuffle, named apart from the new picks: "The monthly books reshuffled tonight
@@ -394,7 +407,7 @@ public sealed partial class SinglePageApp
 
         if (view.IdeasCount + view.Watching.Count > 0)
         {
-            region.Append(Invariant($"<p class=\"home-split\">{Escaped(SplitLine(view.Reading))}</p>"));
+            region.Append(Invariant($"<p class=\"home-split\">{Escaped(SplitLine(view.Reading, view.Watching.Count > 0))}</p>"));
         }
 
         if (view.IdeasCount > 0)
@@ -492,11 +505,10 @@ public sealed partial class SinglePageApp
         card.Append(Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(idea.Ticker)}</div>{(idea.Company is { } company ? Invariant($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(idea.Family))}</span></div>"));
         card.Append(VerdictLine(idea, reading));
 
-        // A watched card says when it would become an idea to buy, and names its sentence as why its rule picked it.
-        // see: A watched card on Home names why its rule picked it and when it would become an idea to buy
-        card.Append(watched ? Invariant($"<p class=\"home-when\">{Escaped(WhenLine(reading))}</p>") : string.Empty);
+        // A watched card says why its rule picked it and why it is not bought.
+        // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
         card.Append(watched
-            ? Invariant($"<p class=\"home-why\"><b>{PickedLabel}</b> {Escaped(idea.Why)}</p>")
+            ? Invariant($"<p class=\"home-why\"><b>{PickedLabel}</b> {Escaped(idea.Why)}</p><p class=\"home-why-not\"><b>{Escaped(NotBuyingLabel)}</b> {Escaped(NotBuyingLine(idea, reading))}</p>")
             : Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
 
         // From the 22.16 correction of 2026-11-09 a plan that buys at a zone: the price it waits for, the close that sells it,

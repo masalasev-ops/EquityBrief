@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/ARCHITECTURE.html - section 15.24, Home's lines on picks bought and watched in plain words
+Decision: Home says in plain words why a pick is an idea to buy or watched and how it was tested
+Was:
+> and as watched where it lost with every card opening on which it is and why and a watched card saying beneath that when it would become an idea to buy with its sentence headed as why its rule picked it (see: A watched card on Home names why its rule picked it and when it would become an idea to buy); above the cards one line saying a pick is an idea to buy unless picks like it did worse than the index's other stocks bought the same way since 2019 and is then watched and traded on paper only; after the ideas to buy a heading counting the picks watched and saying picks like these did worse than the index's other stocks bought the same way since 2019 with their plans as they stand so they are traded on paper only with their cards beneath it
+Now:
+> and as watched where it lost with every card opening on which it is and a watched card saying beneath that why its rule picked it and why it is not bought with the years its kind of pick was tested over and the cents it did worse by for each dollar at risk (see: Home says in plain words why a pick is an idea to buy or watched and how it was tested); above the cards one line saying each kind of pick is tested against simply buying the index's other stocks on the same days and those that beat it or are too new to test are ideas to buy and those that lost to it watched and followed on paper only; after the ideas to buy a heading counting the picks watched and saying the rules picked them but their kind of pick has done worse than simply buying the index's other stocks since 2019 with their cards beneath it
+Why: the operator's word of 2026-11-10: "THis is ridiculously cryptic message.", and on the wording put to them, that the line of what would make a watched pick a buy is to go and "Rest alll we can do now".
+
 ### 2026-11-10 - docs/ARCHITECTURE.html - section 15.24, a watched card names why its rule picked it and when it would become an idea to buy
 Decision: A watched card on Home names why its rule picked it and when it would become an idea to buy
 Was:
