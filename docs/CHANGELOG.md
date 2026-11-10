@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/ARCHITECTURE.html - the plan point test reads the traded plan from each family's live rule
+Decision: At phase 23's restart each price family trades the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
+Was:
+> (the catalogue row of the plan point test) its reads ending "pulled revenue"; its description ending "each kept where it does better from 2019)"
+> (the read and write matrix) the plan point test's Candidate register cell blank
+Now:
+> its reads ending "pulled revenue, candidate register"; its description adding that from 23.10 each family's figures stand against the plan its live rule states
+> its Candidate register cell R
+Why: 23.10's part reading the restarted plan as traded, so each pick's record reads the plan its family trades.
+
 ### 2026-11-10 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md and docs/SCHEMA.md - the sweep's history and the rules' reads of the pull read the marks
 Decision: From phase 23's restart the sweep's history and every rule's read of the pull read the marks, each stock from its start and past each bad print
 Was:

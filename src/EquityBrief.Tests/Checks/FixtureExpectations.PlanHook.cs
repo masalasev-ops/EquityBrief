@@ -105,6 +105,43 @@ public partial class FixtureExpectations
         Assert.Equal(1.04, scaled.Result!.Value, 9);
     }
 
+    // The test of the buy and sell points reads as traded the plan each family's live rule on the index states: the S&P 500
+    // breakout's plan on the S&P 500 alone, none for the S&P 400 drift standing at its own plan, and nothing for a family with
+    // no live rule on the index or for a variant.
+    [Fact]
+    public void ThePlanPointTestReadsAsTradedThePlanEachFamilysLiveRuleStates()
+    {
+        var at = new DateTimeOffset(2026, 11, 10, 15, 0, 0, TimeSpan.Zero);
+
+        RegisterRow Row(long id, string candidate, string evaluator, IReadOnlyDictionary<string, double> parameters) =>
+            new(id, candidate, "a rule", "a test", evaluator, CandidateEvaluator.Write(parameters), "v", CandidateFamily.Registered, null, at.AddHours(-1), null);
+
+        var planned = new Dictionary<string, double>(BreakoutLive, StringComparer.Ordinal);
+
+        foreach (var (name, value) in PlanHook.ParametersOf(SecondZoneWide))
+        {
+            planned[name] = value;
+        }
+
+        RegisterRow[] rows =
+        [
+            Row(1, PlanLive, "breakout", planned),
+            Row(2, "the breakout rule at 1.6 times the volume", "breakout", PlanHook.ParametersOf(PullbackTimed)),
+            Row(3, "the live S&P 400 drift rule within 10 sessions", "drift-400", new Dictionary<string, double> { ["windowSessions"] = 10 }),
+        ];
+
+        var large = PlanPointTest.LivePlans(rows, at, "GSPC");
+
+        Assert.Equal(SecondZoneWide, large["breakout"]);
+        Assert.False(large.ContainsKey("drift"));
+
+        var mid = PlanPointTest.LivePlans(rows, at, "MID");
+
+        Assert.True(mid.ContainsKey("drift"));
+        Assert.Null(mid["drift"]);
+        Assert.False(mid.ContainsKey("breakout"));
+    }
+
     static readonly Dictionary<string, double> BreakoutLive = new(StringComparer.Ordinal)
     {
         ["highSessions"] = 126, ["indexAverageSessions"] = 0, ["rangeCeiling"] = 0.85, ["stopMoves"] = 1.5, ["vixLookbackSessions"] = 0, ["volumeMultiple"] = 1.5,
