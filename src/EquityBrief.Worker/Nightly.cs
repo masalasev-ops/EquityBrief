@@ -528,7 +528,7 @@ public static class Nightly
 
                 try
                 {
-                    var applying = await new EquityBrief.Worker.Loop.LoopApply(clock, store.DatabaseFile, adopt).NightAsync(runId, night.Token);
+                    var applying = await new EquityBrief.Worker.Loop.LoopApply(clock, store.DatabaseFile, adopt, answers: askForTheFirstName).NightAsync(runId, night.Token);
 
                     applied = (applying.Applications.Count == 0 ? "no approved change waiting" : $"{applying.Applied} approved change(s) applied and {applying.Refused} refused")
                         + (applying.Waiting == 0 ? string.Empty : $", {applying.Waiting} S&P 500 change(s) left for the next night")

@@ -43,7 +43,7 @@ public sealed record LoopApplyOutcome(IReadOnlyList<LoopApplication> Application
 // see: An approved change is applied by the night's own build on the index it was approved on alone
 // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
 // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
-public sealed class LoopApply(IClock clock, string databaseFile, string? adopt = null) : IComponent
+public sealed class LoopApply(IClock clock, string databaseFile, string? adopt = null, bool answers = true) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -180,12 +180,20 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         // registered the same way, on a night whose session is the first a registration made now counts from, so the rule
         // is evaluated from the night its record counts from; left waiting by hand and on any other night.
         // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+        // From the 21.5 correction of 2026-11-11 a night whose registration counts from the session after its own registers
+        // too, as every night started after midnight UTC does, and reads the register as it stood when it started, so each
+        // family first runs the change on the session its record counts from; and a night run again for an earlier session,
+        // whose clock replays that evening, answers nothing, its approvals and retirements left for a night run on the clock.
+        // see: An approved change answered after midnight UTC registers that night and is first read the night after, and a night run again for an earlier session answers none
         var standingRows = CandidateFamily.Standing(await registrar.RowsAsync(cancellation), clock.UtcNow);
         var largeOnes = waiting.Where(one => IsLarge(one.Index, one.Family)).ToList();
         var registeringOnes = waiting.Where(one => !IsLarge(one.Index, one.Family) && !IsShapeMove(one) && LoopDecisions.RegistersOn(one.Index, one.Family, standingRows)).ToList();
         var shapeOnes = waiting.Where(IsShapeMove).ToList();
-        var registersTonight = large && night is { } session && FamilyRecords.FirstSession(clock.UtcNow) == session;
-        var left = registersTonight ? 0 : largeOnes.Count + registeringOnes.Count + shapeOnes.Count;
+        var settingOnes = waiting.Where(one => !IsLarge(one.Index, one.Family) && !IsShapeMove(one) && !LoopDecisions.RegistersOn(one.Index, one.Family, standingRows)).ToList();
+        var counts = FamilyRecords.FirstSession(clock.UtcNow);
+        var countsFromNext = night is { } before && counts == NextSession(before);
+        var registersTonight = large && answers && night is { } session && (counts == session || countsFromNext);
+        var left = (registersTonight ? 0 : largeOnes.Count + registeringOnes.Count + shapeOnes.Count) + (answers ? 0 : settingOnes.Count);
 
         // A shape move of the S&P 500's swing filter, opening the next filter version with the move made and registering
         // the swing family again under it, on the same nights a registration is made, the move's row written in the
@@ -341,7 +349,7 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         // record counts from, so it ran beside the change for one whole block and not the night after it.
         var retired = new List<string>();
 
-        if (large && night is { } tonight)
+        if (large && answers && night is { } tonight)
         {
             // From 21.5 every family's on every index, since a change to any family whose live rule stands registered is
             // registered the same way.
@@ -429,7 +437,7 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         // 500 pullback's hooks, each written as a stored setting; from 21.5 a family that keeps no stored setting and holds no
         // registered live rule on the index, the dip, the books and the S&P 400's and 600's heavyweights before their freeze,
         // refused with why.
-        foreach (var one in waiting.Where(one => !IsLarge(one.Index, one.Family) && !IsShapeMove(one) && !LoopDecisions.RegistersOn(one.Index, one.Family, standingRows)))
+        foreach (var one in answers ? settingOnes : [])
         {
             var standing = await StandingAsync(connection, transaction, one.Index, one.Family, cancellation);
             var (applied, words, written) = LoopDecisions.Refusal(one.Index, one.Family, registered: false) is { } refused
@@ -456,12 +464,15 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         var wrote = retired.Count > 0
             || applications.Any(one => one.Applied && one.Index == MarketCloses.Index && (IsLarge(one.Index, one.Family) || one.Words.StartsWith(ShapeOpened, StringComparison.Ordinal)))
             || applications.Any(one => one.Applied && registeringOnes.Any(registering => registering.Run == one.Run && registering.Index == one.Index && registering.Family == one.Family && registering.Proposal == one.Proposal));
-        var outcome = new LoopApplyOutcome(applications, left, retired, wrote ? started : null);
+        var outcome = new LoopApplyOutcome(applications, left, retired, wrote && !countsFromNext ? started : null);
         var detail = (applications.Count == 0
                 ? $"no approved change waiting, the adopt setting reading {mode}"
                 : FormattableString.Invariant($"{outcome.Applied} applied and {outcome.Refused} refused, the adopt setting reading {mode}: ")
                     + string.Join("; ", applications.Select(one => $"{one.Index} {one.Family}, {one.Proposal}, {(one.Applied ? "applied" : "refused")}: {one.Words}")))
-            + (left == 0 ? string.Empty : FormattableString.Invariant($"; {left} change(s) registering a rule left for a night whose session a registration made then counts from"))
+            + (left == 0 ? string.Empty : answers
+                ? FormattableString.Invariant($"; {left} change(s) registering a rule left for a night whose session or the session after it a registration made then counts from")
+                : FormattableString.Invariant($"; {left} change(s) left, since a night run again for an earlier session answers none"))
+            + (wrote && countsFromNext ? FormattableString.Invariant($"; its registrations and retirements counted from {counts:yyyy-MM-dd}, the session after the night's, and read from the next night") : string.Empty)
             + (retired.Count == 0 ? string.Empty : "; retired " + string.Join(", ", retired.Select(name => $"'{name}'")));
 
         await ExecuteAsync(connection, transaction, AppendRun,
@@ -492,6 +503,10 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
     }
 
     static DateTimeOffset Second(DateTimeOffset at) => new(at.UtcTicks - (at.UtcTicks % TimeSpan.TicksPerSecond), TimeSpan.Zero);
+
+    // The exchange session after a night's own, which a registration made after midnight UTC counts from.
+    static DateOnly NextSession(DateOnly session) =>
+        FamilyRecords.FirstSession(new DateTimeOffset(session.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero));
 
     // Whether a change is one the S&P 500's breakout or drift registers.
     static bool IsLarge(string index, string family) =>

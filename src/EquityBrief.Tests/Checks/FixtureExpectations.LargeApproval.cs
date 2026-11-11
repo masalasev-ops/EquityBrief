@@ -70,15 +70,6 @@ public partial class FixtureExpectations
         Assert.Equal(1, byHand.Waiting);
         Assert.Null(byHand.WroteFrom);
 
-        // A night run after midnight UTC, whose registration would count from Monday's session and not the night's
-        // Friday, leaves it waiting again and writes nothing for it.
-        var late = await new LoopApply(At(2026, 10, 10, 0, 10), store.DatabaseFile, "on approval").NightAsync("night-late");
-
-        Assert.Empty(late.Applications);
-        Assert.Equal(1, late.Waiting);
-        Assert.Equal(["0"], FamilyRows(store, "SELECT COUNT(*) FROM provisional_setting WHERE index_code = 'GSPC';"));
-        Assert.Equal(8, (await LargeFamilyAsync(store, BreakoutRule.Name, At(2026, 10, 10, 0, 10))).Count);
-
         // The night of Friday 2026-10-09 applies it: its setting stored on the S&P 500 alone, the S&P 600's as it was, and
         // the change registered as the family's live rule, the family's own setting with the exit, the rule it replaced
         // standing beside it as a variant.
@@ -120,6 +111,74 @@ public partial class FixtureExpectations
         // A night run again answers nothing again.
         Assert.Empty((await new LoopApply(At(2026, 10, 9, 23, 50), store.DatabaseFile, "on approval").NightAsync("night-again")).Applications);
         Assert.Equal(["1"], FamilyRows(store, "SELECT COUNT(*) FROM loop_applied WHERE index_code = 'GSPC';"));
+    }
+
+    // The 21.5 correction of 2026-11-11, on the operator's answer of that day, "Register, count from next": since the clocks
+    // went back on 2026-11-01 every night starts at 00:00Z, the next day in UTC, so the apply step refused every approval and
+    // the S&P 500's approved Quality change waited from 2026-11-09. A night of Friday 2026-10-09 started after midnight UTC
+    // registers the change, its record counting from Monday 2026-10-12, the session after the night's, and reads the register
+    // as it stood when it started, so the change is first run on Monday's night.
+    [Fact]
+    public async Task ANightAfterMidnightUtcRegistersAnApprovalCountingFromTheNextSessionAndReadsItFromTheNextNight()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        await LargeBreakoutsAsync(store);
+        LargeSession(store, "2026-10-09");
+        LoopRun(store, LargeRun, "GSPC", "2026-10");
+        LoopProposed(store, LargeRun, "GSPC", "breakout", "the autopsy's exit, ranked 1", true, ExitChange(14));
+        LoopDecided(store, LargeRun, "GSPC", "breakout", "the autopsy's exit, ranked 1", LoopDecisions.Approved);
+
+        var nightStarted = new DateTimeOffset(2026, 10, 10, 0, 0, 0, TimeSpan.Zero);
+        var late = await new LoopApply(At(2026, 10, 10, 0, 40), store.DatabaseFile, "on approval").NightAsync("night-late");
+
+        Assert.Equal(["GSPC|breakout|applied"], [.. late.Applications.Select(one => $"{one.Index}|{one.Family}|{(one.Applied ? "applied" : "refused")}")]);
+        Assert.Equal(0, late.Waiting);
+        Assert.Null(late.WroteFrom);
+
+        var live = FamilyRecords.LiveOf(await LargeFamilyAsync(store, BreakoutRule.Name, At(2026, 10, 10, 0, 41)))!;
+
+        Assert.Equal(TheSetupFamilies.Breakouts[0].Candidate + "; exit: a target at 1.5 risks", live.Candidate);
+        Assert.Equal(new DateOnly(2026, 10, 12), FamilyRecords.FirstSession(live.RegisteredAt));
+
+        // Tonight's steps read the register as it stood at the night's start, without the change; Monday's night reads it.
+        var register = await new CandidateRegistrar(At(2026, 10, 10, 0, 41), store.DatabaseFile).RowsAsync();
+        var readFrom = LoopApply.ReadFrom(register, nightStarted, late.WroteFrom);
+
+        Assert.Equal(nightStarted, readFrom);
+        Assert.DoesNotContain(live.Candidate, FamilyRuleShadow.For(register, readFrom).Standing.Select(row => row.Candidate));
+        Assert.Contains(live.Candidate, FamilyRuleShadow.For(register, new DateTimeOffset(2026, 10, 13, 0, 0, 0, TimeSpan.Zero)).Standing.Select(row => row.Candidate));
+    }
+
+    // The 21.5 correction of 2026-11-11: a night run again for an earlier session runs on a clock replaying that evening, and
+    // on 2026-11-11 such a night registered the approved S&P 500 Quality change stamped 2026-11-10T21:43:50Z, about twelve
+    // hours before it was written. It answers no approval and retires nothing, each left for a night run on the clock.
+    [Fact]
+    public async Task ANightRunAgainForAnEarlierSessionAnswersNoApprovalAndRetiresNothing()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        await LargeBreakoutsAsync(store);
+        LargeSession(store, "2026-10-09");
+        LoopRun(store, LargeRun, "GSPC", "2026-10");
+        LoopProposed(store, LargeRun, "GSPC", "breakout", "the autopsy's exit, ranked 1", true, ExitChange(14));
+        LoopDecided(store, LargeRun, "GSPC", "breakout", "the autopsy's exit, ranked 1", LoopDecisions.Approved);
+        LoopRun(store, "loop-test-SML-20261009T120000Z", "SML", "2026-10");
+        LoopProposed(store, "loop-test-SML-20261009T120000Z", "SML", "breakout", "the autopsy's exit, ranked 1", true, ExitChange(7));
+        LoopDecided(store, "loop-test-SML-20261009T120000Z", "SML", "breakout", "the autopsy's exit, ranked 1", LoopDecisions.Approved);
+
+        var again = await new LoopApply(At(2026, 10, 9, 23, 35), store.DatabaseFile, "on approval", answers: false).NightAsync("night-again");
+
+        Assert.Empty(again.Applications);
+        Assert.Equal(2, again.Waiting);
+        Assert.Empty(again.Retired ?? []);
+        Assert.Null(again.WroteFrom);
+        Assert.Equal(["0"], FamilyRows(store, "SELECT COUNT(*) FROM loop_applied;"));
+        Assert.Equal(["0"], FamilyRows(store, "SELECT COUNT(*) FROM provisional_setting;"));
+        Assert.Equal(8, (await LargeFamilyAsync(store, BreakoutRule.Name, At(2026, 10, 9, 23, 36))).Count);
+
+        // The night run on the clock answers both.
+        Assert.Equal(2, (await new LoopApply(At(2026, 10, 9, 23, 40), store.DatabaseFile, "on approval").NightAsync("night")).Applied);
     }
 
     [Fact]
