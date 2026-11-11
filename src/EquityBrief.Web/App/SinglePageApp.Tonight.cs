@@ -201,7 +201,7 @@ public sealed partial class SinglePageApp
     }
 
     // A book's holdings in words: those bought, and those chosen and to buy at tomorrow's open, which are held by nothing yet.
-    // see: Every count of trades names its group and one function works the three groups
+    // see: Every count of trades names its group and one function works the four groups
     static string HoldingsWords(int chosen, int toBuy)
     {
         var bought = chosen - toBuy;

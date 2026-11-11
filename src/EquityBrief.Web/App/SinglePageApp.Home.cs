@@ -17,7 +17,7 @@ public sealed record HomeIdea(string Family, string Ticker, string? Company, str
 // How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
 // many made money; the live setups' accounts averaged, their return, the day every live rule took effect and the index's
 // fund over the same days; and whether a live rule still holds fewer finished trades than a verdict needs.
-// see: Every count of trades names its group and one function works the three groups
+// see: Every count of trades names its group and one function works the four groups
 public sealed record HomePast(DateOnly Since, int Closed, int Won, double? Ours, double? Index, bool Early, string Fund = "", DateOnly? AccountSince = null);
 
 // Home as code draws it from the newest night: the index, the night drawn and whether a later night is still running; the

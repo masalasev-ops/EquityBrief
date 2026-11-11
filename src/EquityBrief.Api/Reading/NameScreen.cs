@@ -1713,6 +1713,9 @@ public static partial class NameScreen
         string? aloneDetail = null,
         // The cards the night of the trade a family holds the name on stored, where the page's night lists it under none.
         IReadOnlyList<DecisionCardRow>? heldCards = null,
+        // From the 22.1 correction of 2026-11-11 the short-term dip's open trade the name is held on, on any index, which is
+        // the held trade where it is the newest open.
+        PickCell? heldDip = null,
         // The newest results release's whole text, which a quarter it reports before its filing is stored reads its
         // segments from.
         string? newestReleaseText = null,
@@ -1846,7 +1849,7 @@ public static partial class NameScreen
         // The trade a family holds the name on where the night lists it under none: the newest still open of the nights the
         // live list picked it before, with the card that night stored for its family, drawn as the pick's card is.
         // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
-        var heldTrade = HeldOf(cards, earlier, heldCards, reportedDays, ReportedOn, cardContext?.LongRecords);
+        var heldTrade = HeldOf(cards, heldDip is { } dip ? [.. earlier ?? [], dip] : earlier, heldCards, reportedDays, ReportedOn, cardContext?.LongRecords);
 
         // The next report estimated from the company's own report of the same quarter a year before, which the page draws
         // beside a next report not on file.

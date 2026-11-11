@@ -9,7 +9,7 @@ namespace EquityBrief.Api.Reading;
 // The proof that every page's count is the one function's for the group it names: each count read back off the words its
 // page draws and held to `TradeGroups`, an index at a time, as a restart leaves them or any other night does. A page that
 // draws no such count is unexamined rather than passed.
-// see: Every count of trades names its group and one function works the three groups
+// see: Every count of trades names its group and one function works the four groups
 public static partial class CountsProof
 {
     public const string Route = "/proof/counts";
@@ -26,7 +26,7 @@ public static partial class CountsProof
         [
             Same("Home's ideas bought and sold are the system's closed", Read(onHome, @"All versions since [^:]+: (\d+) ideas? bought and sold"), groups.System.Closed),
             Same("Home's ideas that made money are the system's", Read(onHome, @"bought and sold on paper, (\d+) made money"), groups.System.MadeMoney),
-            Same("Home's stocks to buy are the new picks", Read(onHome, @"Tonight's ideas: (\d+) stocks?"), groups.NewPicks),
+            Same("Home's ideas to buy and picks watched are the new picks", Read(onHome, @"Tonight's ideas: (\d+) stocks?") is { } ideas && Read(onHome, @"Watching, not buying: (\d+) picks?", "Tonight's ideas:") is { } watched ? ideas + watched : null, groups.NewPicks),
             Same("Tonight's open trades are the system's", Read(onTonight, @"Of the system's trades, (\d+)"), groups.System.Open),
             Same("Tonight's open trades of this version are this version's", Read(onTonight, @"(\d+) of them this version's"), groups.ThisVersion.Open),
             Same("Tonight's open trades selling at tomorrow's open are the system's", Read(onTonight, @"(\d+) of them sells? at tomorrow's open", "Of the system's trades"), groups.System.Selling),
@@ -37,18 +37,21 @@ public static partial class CountsProof
             Same("Paper trading's open are the system's", Read(onPaper, @"The system has bought [^:]*: (\d+) open"), groups.System.Open),
             Same("Paper trading's reached target are the system's", Read(onPaper, @"(\d+) reached their target"), groups.System.AtTarget),
             Same("Paper trading's hit their stop are the system's", Read(onPaper, @"(\d+) hit their stop"), groups.System.AtStop),
-            Same("Paper trading's open of this version are this version's", Read(onPaper, @"This version's trades: (\d+) trades? (?:is|are) open", "No live setup has bought a trade under its current version"), groups.ThisVersion.Open),
+            Same("Paper trading's open of this version are this version's", Read(onPaper, @"This version's trades: (\d+) open", "No live setup has bought a trade under its current version"), groups.ThisVersion.Open),
             Same("Paper trading's fold counts the earlier versions'", Read(onPaper, @"Earlier versions: (\d+) trades?"), groups.EarlierVersions.Bought),
-            new("The system's trades are this version's and the earlier versions'", groups.System.Bought == groups.ThisVersion.Bought + groups.EarlierVersions.Bought && groups.System.Open == groups.ThisVersion.Open + groups.EarlierVersions.Open ? Pass : Fail),
+            Same("Tonight's open trades of the same before this version are that group's", Read(onTonight, @"(\d+) the same trades? before this version", "Of the system's trades"), groups.SameTrades.Open),
+            Same("Paper trading's same trades before this version are that group's", Read(onPaper, @"(\d+) of them (?:is|are) the same trades? before this version", "The system has bought"), groups.SameTrades.Bought),
+            new("The system's trades are this version's, the same before it and the earlier versions'", groups.System.Bought == groups.ThisVersion.Bought + groups.SameTrades.Bought + groups.EarlierVersions.Bought && groups.System.Open == groups.ThisVersion.Open + groups.SameTrades.Open + groups.EarlierVersions.Open ? Pass : Fail),
         ];
     }
 
-    // Past picks' first table held to the system's trades of the setups it lists; an index's table draws no count of targets
-    // and stops, its rows stating each trade's result.
+    // Past picks' first table held to the system's trades of the setups it lists, with from the 22.25 correction of
+    // 2026-11-11 those of its setups the line names as drawing no row; an index's table draws no count of targets and stops,
+    // its rows stating each trade's result.
     public static IReadOnlyList<ProofVerdict> CheckPicks(TradeCountView listed, int toBuy, string picks)
     {
         var text = Text(picks);
-        var open = Read(text, @"(\d+) in this table") ?? Read(text, @"Still open (\d+)");
+        var open = Read(text, @"(\d+) in this table") is { } here ? here + (Read(text, @"(\d+) more of its setups' bought by their rules' own lists") ?? 0) : Read(text, @"Still open (\d+)");
         var buying = Read(text, @"To buy at tomorrow's open (\d+)") ?? Read(text, @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?, (\d+) to buy at tomorrow's open", @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?\.");
 
         return

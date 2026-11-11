@@ -75,13 +75,42 @@ public sealed partial class MarkRenderer
                 ? "No live setup's account has a day to count from yet, so the averaged account holds none."
                 : Formatted($"The live setups' accounts, averaged: {(all.Walk.Return is { } made ? Moved(made).ToLowerInvariant() : "no return yet")} since {Short(all.Since)}, the day every one of the {all.Accounts} counts, with {Counted(all.Open, "position", "positions")} open across them.");
 
+    // From the 22.25 correction of 2026-11-11 this version's whole count as the one function works it, with how many of them
+    // the accounts did not buy and why, the open and the closed each.
+    // see: Every count of trades names its group and one function works the four groups
     public static string PaperBoughtSaid(PaperPageView page)
     {
         var newest = page.Open.Concat(page.Closed).Select(trade => (DateOnly?)trade.Bought).Max();
+        string[] skippedOpen = [.. page.Skipped.Where(one => one.Open).Select(one => one.Why)];
+        string[] skippedClosed = [.. page.Skipped.Where(one => !one.Open).Select(one => one.Why)];
+        var open = page.Groups?.ThisVersion.Open ?? page.Open.Count + skippedOpen.Length;
+        var closed = page.Groups?.ThisVersion.Closed ?? page.Closed.Count + skippedClosed.Length;
+        var selling = page.Groups?.ThisVersion.Selling ?? page.Open.Count(trade => trade.Selling is not null);
+        var after = (selling > 0 ? ", " + TradeGroupsView.Selling(selling) : string.Empty) + NotBoughtWords(skippedOpen);
 
-        return page.Open.Count + page.Closed.Count == 0
+        return open + closed == 0
             ? "No live setup has bought a trade under its current version yet."
-            : Formatted($"This version's trades: {Counted(page.Open.Count, "trade is", "trades are")} open{(page.Open.Count(trade => trade.Selling is not null) is > 0 and var selling ? ", " + TradeGroupsView.Selling(selling) + "," : string.Empty)} and {Counted(page.Closed.Count, "has", "have")} closed, the newest bought on {Short(newest!.Value)}.");
+            : Formatted($"This version's trades: {open} open{after}{(after.Length > 0 ? "," : string.Empty)} and {Counted(closed, "has", "have")} closed{NotBoughtWords(skippedClosed)}{(newest is { } day ? ", the newest bought on " + Short(day) : string.Empty)}.");
+    }
+
+    // How many of a count of this version's trades the accounts did not buy, each reason the walk gave in the reader's words.
+    static string NotBoughtWords(IReadOnlyList<string> whys)
+    {
+        static string Why(string why) => why switch
+        {
+            Core.Cards.PaperAccount.UnderTheCash => "for want of free cash",
+            Core.Cards.PaperAccount.NotSized => "as its plan sized no shares",
+            _ => "as " + why,
+        };
+
+        var reasons = whys.GroupBy(why => why, StringComparer.Ordinal).OrderByDescending(group => group.Count()).ThenBy(group => group.Key, StringComparer.Ordinal).ToArray();
+
+        return reasons.Length switch
+        {
+            0 => string.Empty,
+            1 => Formatted($", {whys.Count} of them not bought by the account {Why(reasons[0].Key)}"),
+            _ => Formatted($", {whys.Count} of them not bought by the account, ") + string.Join(" and ", reasons.Select(group => Formatted($"{group.Count()} {Why(group.Key)}"))),
+        };
     }
 
     public static string PaperVariantsSaid(PaperPageView page, string family)

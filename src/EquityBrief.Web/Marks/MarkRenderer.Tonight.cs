@@ -191,9 +191,9 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>{Escaped(picks)}</b></p><p class=\"minute-said\">{Escaped(qualified + quiet)}</p></div>");
 
         // The system's trades still open, and those that ended tonight.
-        // see: Every count of trades names its group and one function works the three groups
+        // see: Every count of trades names its group and one function works the four groups
         var open = (view.Groups ?? line.Groups) is { } groups
-            ? Formatted($"Of {TradeGroupsView.SystemWords}, {groups.System.Open} {(groups.System.Open == 1 ? "is" : "are")} open, {groups.ThisVersion.Open} of them this version's")
+            ? groups.OpenWords
             : line.OpenTrades == 0
                 ? "No trade from an earlier night is still open"
                 : Counted(line.OpenTrades, "trade from an earlier night is still open", "trades from earlier nights are still open");
@@ -356,7 +356,7 @@ public sealed partial class MarkRenderer
         var rows = BuysInOrder(points, planless ?? []);
 
         // One count across the pages, the new picks, every buy a row of the table and the monthly books' reshuffle said apart.
-        // see: Every count of trades names its group and one function works the three groups
+        // see: Every count of trades names its group and one function works the four groups
         var reshuffled = rows.Count(row => row.Planless is { } buy && buy.Family != EquityBrief.Core.Families.ImprovingRule.Name);
         var picked = rows.Count - reshuffled;
         var summary = (picked == 0

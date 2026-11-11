@@ -197,6 +197,50 @@ public partial class ReadSurface
             "('provisional', 'GSPC', 'AAA', '2026-09-29', 1, '49', '45', 10, 5, 4.0, '2026-09-30', '49.2', NULL, NULL, NULL, 'open', 2, NULL, NULL);");
     }
 
+    // The 22.1 correction of 2026-11-11, on the operator's answer that a stock held on an open dip trade on any index is drawn
+    // with that trade first: on 2026-11-10 IFF, bought on the S&P 500's dip at 83.04, read "on no list tonight" on its stock
+    // page and "Short-term dip: not close" on its chart, naming no trade, stop or exit. Here AAA, listed by the S&P 500's dip
+    // on 2026-09-29 and bought at 49.20, is read three nights later with the card its listing night stored.
+    // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+    [Fact]
+    public async Task AStockHeldOnAnOpenDipTradeIsDrawnWithThatTradeItsCardAndItsExitsOnItsStockAndChartPages()
+    {
+        using var store = UniversesStore();
+
+        DipNightOn(store);
+        DipTradesOn(store);
+        store.Execute(
+            "INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, cap) VALUES " +
+            "('GSPC', '2026-09-29', 'dip', 'AAA', 1, '49', '45', NULL, 'The short-term dip on the S&P 500', '{}', '[]', NULL, 10);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        // The stock page: the held trade's short card in the decision card's place, its setup and night, its fill, its stop,
+        // its exit above its 5-session average in its target's place, and the plan opening on the trade's own exits.
+        var name = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/AAA/{IndexNight}"));
+        var held = Assert.Single(Blocks(name, "<section class=\"held-card\".*?</section>"));
+
+        Assert.Contains("data-family=\"dip\" data-night=\"2026-09-29\"", held, StringComparison.Ordinal);
+        Assert.Contains("<dt>Fill</dt><dd>49.20</dd>", held, StringComparison.Ordinal);
+        Assert.Contains("<dt>Stop</dt><dd>a close below 45.00</dd>", held, StringComparison.Ordinal);
+        Assert.Contains("<dt>Target</dt><dd>none, it sells at the next trading day's open after a day that closes above its 5-day average close</dd>", held, StringComparison.Ordinal);
+        Assert.Matches("<p class=\"picks-exit\" data-family=\"dip\" data-held=\"2026-09-29\">[^<]*after a day that closes above its 5-day average close", name);
+
+        // The chart page: the dip's chip says it is held on its open trade, and the brief opens on the trade, its stop and its
+        // exits as its card states them.
+        var (summary, lines, chips) = BriefOfPage(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/AAA")));
+
+        Assert.Contains(chips, chip => chip.StartsWith("dip|held-trade|", StringComparison.Ordinal) && chip.EndsWith(": held on its open trade", StringComparison.Ordinal));
+        Assert.Contains("held on the open trade", summary, StringComparison.Ordinal);
+        Assert.Contains("picked it for on 29 Sep 2026, bought at the next open at 49.20.", lines["buy"], StringComparison.Ordinal);
+        Assert.Equal("Sell at the next trading day's open after a day that closes below 45.00.", lines["stop"]);
+        Assert.StartsWith("Sell at the next trading day's open after a day that closes above its 5-day average close.", lines["exit"], StringComparison.Ordinal);
+
+        // A stock the dip holds nothing of keeps its chip as it read.
+        Assert.DoesNotContain("held-trade", string.Join(" ", BriefOfPage(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/M2"))).Chips), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TheDipsTradesStandOnPastPicksUnderItsLabelAndFilterItsRunRowAndItsNamePageLineReadBackOffThePages()
     {

@@ -18769,3 +18769,85 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 22.25 - correction: four groups of trades, paper trading's whole count, Home's watched picks and Past picks' trades no row draws, so the counts proof reads green   2026-11-11
+
+Corrects:   22.25, found by phase 22's first sign-off review (F1): `/proof/counts` over the night of 2026-11-09 read 19 of 22
+            on the S&P 500 and 17 of 18 on the S&P 400 and 600. (a) Paper trading's "This version's trades" counted the
+            accounts' bought trades alone, 33 open on the S&P 500 and 39 on the 400 against the function's 41 and 50, since 19.4's
+            cap at a tenth of 2026-11-07 the accounts skipping picks for want of free cash. (b) The 21 same trades 19.4's
+            correction set apart on the S&P 500 were counted in the system's 135 and named by no page, the proof's rule adding
+            only this version's 36 and the earlier versions' 78. (c) The proof read Home's heading of ideas to buy as every new
+            pick, 7 against 8, though the 22.16 correction of 2026-11-09 names the watched pick apart. (d) Past picks on the S&P
+            600 said 26 in its table against the function's 28: SMP and SIG, bought by their rules' own lists while the index's
+            page list held the stock, have no row.
+Ruled:      the operator's answers of 2026-11-11, each the recommended option: (a) "Whole count, name skipped"; (b) "A fourth
+            named group", "System = this version's + the same trades + earlier versions'. Tonight and Paper trading name the same
+            group's count where it holds any. 19.4's order stays whole: they stay out of every account figure"; (d) "Name the 2 in
+            the line". The new decision **Every count of trades names its group and one function works the four groups**
+            supersedes the three groups', moved to Previously decided.
+Built:      `TradeGroups` counts the same trades before a version as their own group, the proof's system rule adding the
+            three; Tonight's open line and paper trading's line beneath what the system bought name its count where it holds
+            any. Paper trading's line states this version's whole count and how many the accounts did not buy, by the walk's
+            reason. The proof holds Home's ideas and watched picks together to the new picks. Past picks names the open trades
+            of its setups its table draws no row of, matched by stock, setup and listing night, and the proof adds them to the
+            table's. On the live store the match finds SIG and SMP on the S&P 600 and FCN on the S&P 400.
+Remedy:     none: no migration and no store row; the pages read it once the read surface restarts on the merge.
+Tests:      6 new: the four groups worked by hand over a constructed restart with two same trades; paper trading's line of
+            what the system bought naming them; the proof holding them and failing a split that leaves them out; paper
+            trading's line of this version over a walked account skipping four trades for two reasons; Home's ideas and
+            watched picks; the trades no row draws, the line and the proof. Three tests' page text restated.
+Claims:     none new.
+Pins:       none move: the read surface is pinned by no rule, and the one core source touched, `PaperAccount.Figures.cs`, a
+            citation in a comment, is pinned by none.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered to its
+            own tests and restored from the file's own bytes. M1 the proof's system rule leaving the same out, red at the proof's
+            test; M2 the function counting no same trades, red at all three of its tests; M3 Tonight's line naming none, red at
+            two; M4 paper trading's line counting the bought alone and M5 the page keeping no skipped trade, each red at the line's
+            test; M6 the proof reading Home's ideas alone, red; M7 every open trade counted as rowless and M8 the proof holding
+            the table alone, each red. Each red as predicted.
+Not mutated: the picks route handing the rowless count to the page, read by no test over a store: no constructed store holds a
+            live index rule's own-list trade; the counts proof read back on the live store after the merge holds it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 22.57 - correction: Home's hand-off of the books' buys held by a test reading Home off the read surface   2026-11-11
+
+Corrects:   22.57, found by phase 22's first sign-off review (F2): mutation x1, the hand-off emptied, survived, the one test
+            handing the reshuffle line its buys itself.
+Built:      a test alone: Home read off the read surface over the S&P 400's night Quality at a fair price chose M3 to buy at the
+            next open names M3 apart from the new picks.
+Remedy:     none.
+Tests:      1 new.
+Claims:     none new.
+Pins:       none move.
+Mutated:    x1 rerun as the review made it, red at the new test, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 22.1 - correction: a stock held on an open dip trade, on any index, is drawn with that trade, its card and its exits on its stock and chart pages   2026-11-11
+
+Corrects:   22.1, found by phase 22's first sign-off review (F3): IFF, bought on the S&P 500's dip on 2026-11-09 at 83.04, and
+            NUE read "on no list tonight" on their stock pages and "Short-term dip: not close" on their charts, naming no trade,
+            stop or exit, since the stock page found a held trade among the S&P 500's swing listings alone.
+Ruled:      the operator's answer of 2026-11-11, "Dip on every index (Recommended)": "A 22.1 correction: a stock held on an open
+            dip trade, on any index, is drawn with that trade first, its stored card and its exits on its stock and chart pages.
+            The S&P 400's and 600's other families (SIRI) wait." It is inside **A stock held on a family's open trade is drawn
+            with that trade first, its short card and its own exits on the plan and the chart**.
+Built:      the stock page reads the dip's newest trade bought and not ended by the night on the stock's own index and draws it
+            as the held trade where it is the newest open, with the card its listing night stored; the chart's brief chips the
+            dip "held on its open trade" and opens its way in on the trade, its stop and its exits. A dip card's exit above its
+            average now stands in its held card's target and in its own exit line, which named only its stop and its limit.
+Remedy:     none.
+Tests:      1 new: AAA, bought on the S&P 500's dip, read three nights on off its stock and chart pages, and M2 holding none.
+Claims:     none new.
+Pins:       none move: the read surface is pinned by no rule.
+Mutated:    the rule as above. M11 the stock page drawing no held dip, M12 the brief told none is held and M13 the dip's exit
+            left out of its card, each red at the new test, as predicted.
+Not mutated: the held trade's fill and end guards, which the fixture's one held trade does not reach.
+Owed:       phase 22's sign-off: a fresh session reviews these corrections and the correction table to this pull request, reruns
+            x1, which must go red, and reads `/proof/counts` green on all three indexes; the S&P 400's and 600's other families'
+            held trades, on the operator's answer.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3691 of 3691 tests ran with none failed, migrations 0 to 143
+            with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.

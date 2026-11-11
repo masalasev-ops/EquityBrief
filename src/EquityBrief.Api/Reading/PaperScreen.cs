@@ -901,7 +901,13 @@ public static class PaperScreen
             combined)
         {
             Same = same,
-            FundCloses = [.. sessions.Where(session => session <= night).Select(session => (Session: session, Close: fund(session))).Where(one => one.Close is not null).Select(one => (one.Session, one.Close!.Value))],
+            Skipped =
+            [
+                .. heads.SelectMany(head => (head.Walk?.Trades ?? [])
+                    .Where(one => one.Skipped is not null && one.Trade.Bought <= night)
+                    .Select(one => (one.Skipped!, one.Trade.Ended is null || one.Trade.Ended > night))),
+            ],
+            FundCloses =[.. sessions.Where(session => session <= night).Select(session => (Session: session, Close: fund(session))).Where(one => one.Close is not null).Select(one => (one.Session, one.Close!.Value))],
             Unbought =
             [
                 .. heads.OrderBy(head => SetupFamilies.OrderOf(head.Family)).Select(head => PaperAccount.UnboughtBy(

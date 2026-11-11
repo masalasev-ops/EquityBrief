@@ -3,6 +3,7 @@ using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Returns;
+using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
@@ -75,6 +76,64 @@ public static class PicksScreen
     // An index's trades the setup the hash names keeps, and every trade where it names none or one no trade was kept under.
     public static IReadOnlyList<IndexTradeCell> OfIndexSetup(IReadOnlyList<IndexTradeCell> trades, string? setup) =>
         setup is { } asked && trades.Any(trade => trade.Family == asked) ? [.. trades.Where(trade => trade.Family == asked)] : trades;
+
+    // From the 22.1 correction of 2026-11-11 the short-term dip's trade a stock is held on as of a night: the newest it bought
+    // by the night that has not ended by it, none where it holds none.
+    // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+    public static IndexTradeRow? HeldDip(IReadOnlyList<IndexTradeRow> dips, string ticker, DateOnly night) =>
+        dips
+            .Where(trade => string.Equals(trade.Ticker, ticker, StringComparison.Ordinal) && trade.Fill is not null && trade.Listed < night && (trade.EndedOn is null || trade.EndedOn > night))
+            .OrderByDescending(trade => trade.Listed)
+            .FirstOrDefault();
+
+    // The held dip trade as the stock page draws a held trade: the night that listed it, its fill, its stop and its time
+    // limit, open on the night.
+    public static PickCell HeldDipCell(IndexTradeRow trade, string? company) =>
+        new(
+            trade.Ticker,
+            company,
+            trade.Listed,
+            DipRule.Name,
+            trade.Fill,
+            trade.Stop,
+            trade.Target,
+            PickStatus.Open,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            Family: DipRule.Name,
+            Setup: SetupFamilies.Dips.Label,
+            Planned: trade.Entry,
+            Cap: trade.Cap);
+
+    // The setups Past picks' first table holds the trades of: the S&P 500's three swing setups, its short-term dip kept in a
+    // table of its own, and an S&P 400's or 600's swing setups with the dip among them.
+    public static IReadOnlyList<string> Tabled(UniverseChoice universe) =>
+        universe == Universes.Large
+            ? [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name]
+            : [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, DipRule.Name];
+
+    // From the 22.25 correction of 2026-11-11 how many of the system's trades of the given setups are open on the night and
+    // drawn by no row of an index's table: each a live rule's own list bought while the index's page list held the stock,
+    // matched by its stock, its setup and the night that listed it.
+    // see: Every count of trades names its group and one function works the four groups
+    public static int Unrowed(IReadOnlyList<PaperAccountSource> sources, IReadOnlyList<IndexTradeCell> table, IReadOnlyList<string> families, DateOnly night)
+    {
+        var rows = table.Select(row => (row.Ticker, row.Family, row.Listed)).ToHashSet();
+
+        return sources
+            .Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional && families.Contains(account.Family, StringComparer.Ordinal))
+            .SelectMany(account => account.Trades.Select(one => one.Trade)
+                .Concat((account.Earlier ?? []).Select(one => one.Trade))
+                .Concat(account.Same.Select(one => one.Trade))
+                .Select(trade => (account.Family, Trade: trade)))
+            .Count(one => one.Trade.Bought <= night && (one.Trade.Ended is null || one.Trade.Ended > night) && !rows.Contains((one.Trade.Ticker, one.Family, one.Trade.ListedOn)));
+    }
 
     // The sector heavyweights' holdings as of a night, newest buy first and its sectors in order, each ended one with
     // its result, its size cut's return and the edge between them as the rule reads it, an open one with none.
@@ -232,7 +291,7 @@ public static class PicksScreen
         var finishedBy = row.ResolvedOn is { } resolved && resolved <= asOf;
 
         // A trade is open only once bought: a listing whose next session's open has not filled it yet is still to buy.
-        // see: Every count of trades names its group and one function works the three groups
+        // see: Every count of trades names its group and one function works the four groups
         var ending = row.Outcome switch
         {
             ForwardReturnSeries.Win => PickStatus.Target,
@@ -245,7 +304,7 @@ public static class PicksScreen
 
         // A trade whose exit fired on a close is held until the next open sells it: open, saying why it sells, and ended on the
         // night after the sale with the sale's price. One no fill bought has no sale to wait on.
-        // see: Every count of trades names its group and one function works the three groups
+        // see: Every count of trades names its group and one function works the four groups
         var sold = row.SoldOn is { } soldOn ? soldOn <= asOf : row.Fill is null || row.FillResult is not null;
         var selling = row.OutcomeStored && finishedBy && !sold && ending != PickStatus.Missing;
 

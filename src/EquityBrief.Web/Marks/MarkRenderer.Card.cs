@@ -393,7 +393,7 @@ public sealed partial class MarkRenderer
             ("Setup", Capitalised(SetupOf(card.Family)) + FormattableString.Invariant($", picked on {pick.Night:d MMM yyyy}")),
             ("Fill", pick.Buy is { } fill ? Price(fill) + (pick.FilledOn is { } on ? FormattableString.Invariant($", the open of {on:d MMM yyyy}") : string.Empty) : "it buys at the next open"),
             ("Stop", card.Stop is { } stop ? "a close below " + Price(stop) : "none"),
-            ("Target", card.Target is { } target ? Price(target) : "none, its stop trails the price"),
+            ("Target", card.Target is { } target ? Price(target) : DipExit(card) is { } exit ? "none, it sells " + exit : "none, its stop trails the price"),
             ("Last day", card.Cap is { } cap ? Formatted($"after {cap} trading days") + (card.Hits is { } hits ? FormattableString.Invariant($", about {hits.Through:d MMM yyyy}") : string.Empty) : "its setup states no limit"),
             ("Status", PickStatus.Words(pick.Status) + (pick.Sessions is { } sessions ? Formatted($", {sessions} {(sessions == 1 ? "session" : "sessions")} held") : string.Empty)),
             ("Reward to risk planned at the close", held.PlannedRewardToRisk is { } planned ? planned.ToString("0.00", Invariant) + (card.Entry is { } close ? ", struck at the close of " + Price(close) : string.Empty) : "not stated, its plan names no target"),
@@ -440,6 +440,11 @@ public sealed partial class MarkRenderer
             exits.Add(Formatted($"at the next open after a close below {Price(stop)}"));
         }
 
+        if (DipExit(card) is { } exit)
+        {
+            exits.Add(exit);
+        }
+
         if (card.Cap is { } cap)
         {
             exits.Add(Formatted($"after {cap} trading days"));
@@ -447,6 +452,15 @@ public sealed partial class MarkRenderer
 
         return exits.Count == 0 ? "by its own exits" : exits.Count == 1 ? exits[0] : string.Join(", ", exits.Take(exits.Count - 1)) + " or " + exits[^1];
     }
+
+    // From the 22.1 correction of 2026-11-11 a short-term dip's exit as its own card's management states it, which sells it
+    // at the next open after a close its dial reads above its exit's level and sets no target; none for any other setup.
+    // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+    static string? DipExit(DecisionCardView card) =>
+        card.Family == EquityBrief.Core.Families.DipRule.Name
+        && card.Management?.FirstOrDefault(line => line.StartsWith("Sell ", StringComparison.Ordinal) && line.Contains(" closes above ", StringComparison.Ordinal)) is { } sell
+            ? sell[5..].TrimEnd('.')
+            : null;
 
     // Where the levels' plan places no exit, the line saying so names the exits of the pick or the held trade the page opens
     // on, so the plan never reads as selling nowhere.

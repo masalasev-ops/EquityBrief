@@ -149,6 +149,10 @@ public sealed record PaperPageView(
     // Each live account's same trades before its version, drawn apart under the account.
     public IReadOnlyList<PaperSameView> Same { get; init; } = [];
 
+    // From the 22.25 correction of 2026-11-11 this version's trades the accounts' walks did not buy by the night, each with
+    // the walk's reason and whether it is open on the night, which the line of this version's trades counts.
+    public IReadOnlyList<(string Why, bool Open)> Skipped { get; init; } = [];
+
     // From the 19.4 correction of 2026-11-07 each live account's stocks not bought, named by its family, in the family order,
     // which the lines beneath what the system bought draw in the merged line's place.
     public IReadOnlyList<PaperAccountUnbought> Unbought { get; init; } = [];
@@ -603,7 +607,7 @@ public sealed partial class MarkRenderer
 
         if (page.Groups is { } groups)
         {
-            html.Append(Invariant, $"<p class=\"card-note paper-system\" data-system=\"{groups.System.Bought}\" data-system-open=\"{groups.System.Open}\" data-version=\"{groups.ThisVersion.Bought}\" data-earlier-trades=\"{groups.EarlierVersions.Bought}\">{Escaped(groups.SystemLine)} <a href=\"{App.SinglePageApp.PicksRoute}\">See every trade on Past picks</a></p>");
+            html.Append(Invariant, $"<p class=\"card-note paper-system\" data-system=\"{groups.System.Bought}\" data-system-open=\"{groups.System.Open}\" data-version=\"{groups.ThisVersion.Bought}\" data-earlier-trades=\"{groups.EarlierVersions.Bought}\" data-same-trades=\"{groups.SameTrades.Bought}\">{Escaped(groups.SystemLine)} {(groups.SameLine.Length == 0 ? string.Empty : Escaped(groups.SameLine) + " ")}<a href=\"{App.SinglePageApp.PicksRoute}\">See every trade on Past picks</a></p>");
         }
 
         // Each live account's same trades before its version under one press of its own, named by its setup and the day the
