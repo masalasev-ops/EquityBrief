@@ -299,7 +299,11 @@ public partial class NightlyRun
     {
         var launcher = new NightLauncherForTheSuite();
 
-        using var store = new TemporaryStore();
+        using var store = new TemporaryStore().Migrated();
+
+        // From the 21.5 correction of 2026-11-11 an approval waiting for the night: a night run again for an earlier session
+        // runs on a clock replaying that evening, so it answers none and leaves it for a night run on the clock.
+        store.Execute("INSERT INTO loop_decision (run_id, index_code, family, proposal, decision, reason, decided_at) VALUES ('loop-test-SML-20260901T120000Z', 'SML', 'breakout', 'the autopsy''s exit, ranked 1', 'approved', NULL, '2026-09-01T15:00:00Z');");
 
         var output = new StringWriter();
         var error = new StringWriter();
@@ -316,6 +320,7 @@ public partial class NightlyRun
             askForTheFirstName: false);
 
         Assert.True(code == 0, error.ToString());
+        Assert.Empty(StoreRows(store, "SELECT run_id FROM loop_applied;"));
         Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
         Assert.Equal(0, launcher.Started);
         Assert.Equal("no report was asked for, since this night was run again for an earlier session", RunLog(store, "night-again")[^3].Detail);

@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-11 - docs/RUNBOOK.md - an approved change registers whatever the hour, and a night run again for an earlier session answers none
+Decision: An approved change answered after midnight UTC registers that night and is first read the night after, and a night run again for an earlier session answers none
+Was:
+> "The night registers a change only on a night whose session a registration made then counts from, so a night run after midnight UTC leaves it for the next night (see: An approved change registers the family's live rule again ...)."
+Now:
+> "The night registers a change whatever the hour: started before midnight UTC its registration counts from the night's session and the night reads it, and from the 21.5 correction of 2026-11-11 started after midnight UTC ... it counts from the session after the night's and the night reads the register as it stood when it started, so the change is first run the next night. A night run again for an earlier session answers no approval and retires nothing (see: ...) (see: An approved change answered after midnight UTC registers that night ...)."
+Why: since 2026-11-01 every night starts at 00:00Z and the step refused every approval; the operator's answer of 2026-11-11, "Register, count from next".
+
 ### 2026-11-11 - docs/ARCHITECTURE.html - Past picks names its table's trades in none of the system's trades
 Corrects: after PR 689 the counts proof read the S&P 400's Past picks at 47 against the function's 46: on 5 Nov its page list skipped FCN, held by the breakout, and took TOST as its fifth, while the live drift rule's own list bought FCN and stopped before TOST, so the table held a trade in none of the system's trades.
 Was:

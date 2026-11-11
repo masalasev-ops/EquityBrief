@@ -18921,3 +18921,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 21.5 - correction: an approved change registers whatever the hour, read from the session its record counts from, and a night run again for an earlier session answers none   2026-11-11
+
+Corrects:   21.5 and the path 17.13 gave the S&P 500's breakout and drift, found on 2026-11-11 reading why the S&P 500's
+            approved Quality change had not taken effect. The apply step registered a change only on a night whose session is
+            the first a registration made then counts from, which a night started before midnight UTC met. Since the clocks went
+            back on 2026-11-01 every night starts at 00:00Z, so the step refused every approval. The change waited from
+            2026-11-09 until the night run again for 2026-11-10 at 09:24Z on 2026-11-11, on a clock replaying that evening,
+            registered it: rows 1967 to 1969 of the register, the earlier live rule retired, its background rule and the new live
+            rule, stamped 2026-11-10T21:43:50Z, about twelve hours before they were written. The register is append-only and
+            they stand as written; the account counts from 2026-11-11, the session either instant gives.
+Ruled:      the operator's answer of 2026-11-11, "Register, count from next (Recommended)", kept in the new decision **An
+            approved change answered after midnight UTC registers that night and is first read the night after, and a night run
+            again for an earlier session answers none**, which narrows 21.5's.
+Built:      a night whose registration counts from the session after its own registers the change, and that night's every step
+            reads the register as it stood when the night started, so the change and any rule retired that night are read from
+            the next night; a night started before midnight UTC registers and reads it as before. A night run again for an
+            earlier session answers no approval, writes no setting and retires nothing, each left for the next night run on the
+            clock. RUNBOOK's sentence on when the night registers restated, its prior text in CHANGELOG.
+Remedy:     none: tonight's night, at 00:00Z, answers the approvals waiting.
+Tests:      2 new: a night of Friday 2026-10-09 run at 00:40Z on Saturday registers the S&P 500 breakout's approval counting
+            from Monday 2026-10-12 and reads the register as it stood at its start; a night run again for an earlier session
+            answers neither of two approvals and writes nothing. The S&P 500 breakout's approval test no longer asserts the
+            refusal after midnight, and the night test for a session run again holds a waiting approval unanswered.
+Claims:     none new.
+Pins:       none move: the apply step and the night's sequence are pinned by no rule.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to its own tests and restored
+            from the file's own bytes. a1 the gate back to the night's own session, a2 the late night reading after its writes,
+            each red at the after-midnight test; a3 a night run again registering and a4 it writing settings, each red at the
+            run-again test; a5 the night handing the step its answers on a night run again, red at the night test. Each red as
+            predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3696 of 3696 tests ran with none failed, migrations 0 to 143
+            with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
