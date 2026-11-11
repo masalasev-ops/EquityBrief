@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-11 - docs/ARCHITECTURE.html - Past picks names its table's trades in none of the system's trades
+Corrects: after PR 689 the counts proof read the S&P 400's Past picks at 47 against the function's 46: on 5 Nov its page list skipped FCN, held by the breakout, and took TOST as its fifth, while the live drift rule's own list bought FCN and stopped before TOST, so the table held a trade in none of the system's trades.
+Was:
+> "Past picks says how many such trades its table draws no row of."
+Now:
+> "Past picks says how many such trades its table draws no row of, and how many of its table's open trades the page list bought in that stock's place, which are in none of the system's trades."
+Why: the operator's answer of 2026-11-11, "Yes, build it now", after the split was traced; each count the line states then adds up to the function's.
+
 ### 2026-11-11 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md and docs/RUNBOOK.md - four groups of trades, and a group's count the function's whole count
 Decision: Every count of trades names its group and one function works the four groups
 Was:

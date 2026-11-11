@@ -3578,6 +3578,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
             ? PicksScreen.IndexTrades([.. (await read.IndexTradesAsync(reading.Code, through)).Where(trade => trade.Family != EquityBrief.Core.Families.FundamentalsRule.Name), .. await read.DipTradesAsync(reading.Code, through)], companies)
             : [];
         var keptUnder = request.Query["setup"].FirstOrDefault();
+        var firstLive = TradeGroups.FirstLiveByFamily(await read.RegisteredCandidatesAsync(), reading.Code);
 
         return Results.Content(
             page.IndexPicksRegion(
@@ -3591,8 +3592,9 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
                 keptUnder,
                 PicksScreen.IndexSetups(keptTrades),
                 paper?.Groups,
-                TradeGroups.FirstLiveByFamily(await read.RegisteredCandidatesAsync(), reading.Code),
-                night is { } rowedOn && paper is { } walked ? PicksScreen.Unrowed(walked.Sources, keptTrades, PicksScreen.Tabled(reading), rowedOn) : 0) +
+                firstLive,
+                night is { } rowedOn && paper is { } walked ? PicksScreen.Unrowed(walked.Sources, keptTrades, PicksScreen.Tabled(reading), rowedOn) : 0,
+                paper is { } listedBy ? PicksScreen.ListOwn(listedBy.Sources, keptTrades, PicksScreen.Tabled(reading), firstLive) : 0) +
             page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(copying ? [] : await read.TakenTradesAsync(), reading.Code)),
             "text/html; charset=utf-8");
     }

@@ -111,6 +111,28 @@ public static class PicksScreen
             Planned: trade.Entry,
             Cap: trade.Cap);
 
+    // From the 22.25 correction of 2026-11-11 how many open trades of an index's table, of the given setups and listed once
+    // their setup went live, are in none of the system's trades: each the index's page list bought in the place of a stock
+    // another setup's trade held, which its live rule's own list bought instead, matched by its stock, its setup and the
+    // night that listed it.
+    // see: Every count of trades names its group and one function works the four groups
+    public static int ListOwn(IReadOnlyList<PaperAccountSource> sources, IReadOnlyList<IndexTradeCell> table, IReadOnlyList<string> families, IReadOnlyDictionary<string, DateOnly?> firstLive)
+    {
+        var held = sources
+            .Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional)
+            .SelectMany(account => account.Trades.Select(one => one.Trade)
+                .Concat((account.Earlier ?? []).Select(one => one.Trade))
+                .Concat(account.Same.Select(one => one.Trade))
+                .Select(trade => (trade.Ticker, account.Family, trade.ListedOn)))
+            .ToHashSet();
+
+        return table.Count(row =>
+            row.Open
+            && families.Contains(row.Family, StringComparer.Ordinal)
+            && !(firstLive.GetValueOrDefault(row.Family) is { } live && row.Listed < live)
+            && !held.Contains((row.Ticker, row.Family, row.Listed)));
+    }
+
     // The setups Past picks' first table holds the trades of: the S&P 500's three swing setups, its short-term dip kept in a
     // table of its own, and an S&P 400's or 600's swing setups with the dip among them.
     public static IReadOnlyList<string> Tabled(UniverseChoice universe) =>
