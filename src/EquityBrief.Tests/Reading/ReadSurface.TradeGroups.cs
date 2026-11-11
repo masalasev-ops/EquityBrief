@@ -509,6 +509,39 @@ public partial class ReadSurface
         Assert.Contains(CountsProof.CheckPicks(count, 0, $"<p>{groups.OpenHere(26, "this table")}</p>"), verdict => verdict.Rule == "Past picks' open are the system's of its setups" && verdict.Verdict == "fail");
     }
 
+    // The 22.25 correction of 2026-11-11, the mirror of the trades no row draws: on the S&P 400 on 5 Nov the page list skipped
+    // FCN, held by the breakout since 2 Nov, and took TOST as its fifth, while the live drift rule's own list bought FCN and
+    // stopped before TOST, so the table held a trade in none of the system's trades and the proof read 47 against 46.
+    [Fact]
+    public void PastPicksNamesTheTradesItsIndexsListBoughtInPlaceOfAStockAnotherSetupHeld()
+    {
+        var night = new DateOnly(2026, 11, 6);
+        var listed = new DateOnly(2026, 11, 5);
+        IndexTradeCell Row(string ticker, string family, DateOnly on) => new(ticker, null, family, family, on, 100m, 95m, 110m, false, null, null, null, null);
+        PaperTrade Held(string ticker, DateOnly on) => new(ticker, on.AddDays(1), 100m, 95m, null, null, null, 1, Listed: on);
+
+        var table = new[] { Row("HL", DriftRule.Name, listed), Row("TOST", DriftRule.Name, listed), Row("FCN", BreakoutRule.Name, new DateOnly(2026, 11, 2)), Row("OLD", DriftRule.Name, new DateOnly(2026, 9, 1)) };
+        var sources = new[]
+        {
+            new PaperAccountSource("list-drift", DriftRule.Name, PaperAccountView.Live, "Live", "the live drift rule", null, false, [(Held("HL", listed), null), (Held("FCN", listed), null)], new DateOnly(2026, 10, 1)),
+            new PaperAccountSource("list-breakout", BreakoutRule.Name, PaperAccountView.Live, "Live", "the live breakout rule", null, false, [(Held("FCN", new DateOnly(2026, 11, 2)), null)], new DateOnly(2026, 10, 1)),
+        };
+        var firstLive = new Dictionary<string, DateOnly?>(StringComparer.Ordinal) { [DriftRule.Name] = new DateOnly(2026, 10, 1), [BreakoutRule.Name] = new DateOnly(2026, 10, 1) };
+
+        // Worked by hand: TOST alone is the list's own. HL and the breakout's FCN are the accounts', OLD came before the drift
+        // went live, and the drift's FCN is the one trade drawn by no row.
+        Assert.Equal(1, PicksScreen.ListOwn(sources, table, PicksScreen.Tabled(Universes.Mid), firstLive));
+        Assert.Equal(1, PicksScreen.Unrowed(sources, table, PicksScreen.Tabled(Universes.Mid), night));
+
+        // The page's line: of its four open rows OLD before the drift went live and TOST the list's own, so 2 in this table and
+        // the drift's FCN more, the function's 3, which the proof holds.
+        var groups = RestartGroups() with { System = new TradeCountView(5, 5, 0, 0, 0, 0, null) };
+        var page = System.Net.WebUtility.HtmlDecode(new SinglePageApp().IndexPicksRegion(new MarkRenderer(), night, Universes.Mid, string.Empty, table, [], null, null, null, groups, firstLive, 1, 1));
+
+        Assert.Contains("Of the system's trades, 5 are open: 2 in this table, 1 more of its setups' bought by their rules' own lists while this table's list held the stock, and 2 under the other setups. The table's other 1 open came before their setups went live. The table's other 1 open was bought by the index's list in place of a stock another setup's trade held, which the setup's live rule bought instead, and is in none of the system's trades.", page, StringComparison.Ordinal);
+        Assert.Equal("pass", CountsProof.CheckPicks(new TradeCountView(3, 3, 0, 0, 0, 0, null), 0, page).Single(verdict => verdict.Rule == "Past picks' open are the system's of its setups").Verdict);
+    }
+
     [Fact]
     public void TheProofHoldsPastPicksAndTheRunPageToTheFunctionsCount()
     {
