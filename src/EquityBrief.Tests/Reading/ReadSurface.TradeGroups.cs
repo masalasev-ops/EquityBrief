@@ -2,6 +2,7 @@ using EquityBrief.Api.Reading;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Returns;
+using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using Xunit;
 
@@ -150,7 +151,7 @@ public partial class ReadSurface
     [Theory]
     [InlineData("2 ideas bought", "0 ideas bought", "home", "Home's ideas bought and sold are the system's closed")]
     [InlineData(", 1 made money", ", 0 made money", "home", "Home's ideas that made money are the system's")]
-    [InlineData("ideas: 1 stock", "ideas: 3 stock", "home", "Home's stocks to buy are the new picks")]
+    [InlineData("ideas: 1 stock", "ideas: 3 stock", "home", "Home's ideas to buy and picks watched are the new picks")]
     [InlineData("trades, 2 are open", "trades, 1 are open", "tonight", "Tonight's open trades are the system's")]
     [InlineData("1 of them this", "2 of them this", "tonight", "Tonight's open trades of this version are this version's")]
     [InlineData("1 new pick to", "3 new picks to", "tonight", "Tonight's new picks are those to buy less the reshuffle")]
@@ -441,6 +442,24 @@ public partial class ReadSurface
         Assert.Equal(
             "pass",
             CountsProof.Check(groups, string.Empty, string.Empty, $"<p>{MarkRenderer.PaperBoughtSaid(built)}</p>").Single(verdict => verdict.Rule == "Paper trading's open of this version are this version's").Verdict);
+    }
+
+    // The 22.25 correction of 2026-11-11: since the 22.16 correction of 2026-11-09 Home's heading counts the ideas to buy and
+    // names the picks watched apart, as ruled, and the proof read the heading alone as every new pick, so a night of seven
+    // ideas and one watched pick read failing against the function's eight. The page is drawn by Home's own heading and its
+    // own line of the picks watched.
+    [Fact]
+    public void TheProofHoldsHomesIdeasAndWatchedPicksTogetherToTheNewPicks()
+    {
+        var watched = new HomeIdea(DriftRule.Name, "WTCH", "Watched Co", "A drift.", 100m, 95m, 110m, false, null);
+        var home = $"<h2>Tonight's ideas: 0 stocks to buy Thursday morning</h2>{SinglePageApp.WatchingLine([watched], Universes.Of("500"))}<p>All versions since 2 Oct: 2 ideas bought and sold on paper, 1 made money.</p>";
+        var rule = "Home's ideas to buy and picks watched are the new picks";
+
+        Assert.Equal("pass", CountsProof.Check(RestartGroups(), home, TonightAfterTheRestart, PaperAfterTheRestart).Single(verdict => verdict.Rule == rule).Verdict);
+        Assert.Equal("pass", CountsProof.Check(RestartGroups(), HomeAfterTheRestart, TonightAfterTheRestart, PaperAfterTheRestart).Single(verdict => verdict.Rule == rule).Verdict);
+
+        // An idea and the watched pick on a night of one new pick is one too many.
+        Assert.Equal("fail", CountsProof.Check(RestartGroups(), home.Replace("ideas: 0 stocks", "ideas: 1 stock", StringComparison.Ordinal), TonightAfterTheRestart, PaperAfterTheRestart).Single(verdict => verdict.Rule == rule).Verdict);
     }
 
     [Fact]

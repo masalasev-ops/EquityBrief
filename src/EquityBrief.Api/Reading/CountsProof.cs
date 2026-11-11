@@ -26,7 +26,7 @@ public static partial class CountsProof
         [
             Same("Home's ideas bought and sold are the system's closed", Read(onHome, @"All versions since [^:]+: (\d+) ideas? bought and sold"), groups.System.Closed),
             Same("Home's ideas that made money are the system's", Read(onHome, @"bought and sold on paper, (\d+) made money"), groups.System.MadeMoney),
-            Same("Home's stocks to buy are the new picks", Read(onHome, @"Tonight's ideas: (\d+) stocks?"), groups.NewPicks),
+            Same("Home's ideas to buy and picks watched are the new picks", Read(onHome, @"Tonight's ideas: (\d+) stocks?") is { } ideas && Read(onHome, @"Watching, not buying: (\d+) picks?", "Tonight's ideas:") is { } watched ? ideas + watched : null, groups.NewPicks),
             Same("Tonight's open trades are the system's", Read(onTonight, @"Of the system's trades, (\d+)"), groups.System.Open),
             Same("Tonight's open trades of this version are this version's", Read(onTonight, @"(\d+) of them this version's"), groups.ThisVersion.Open),
             Same("Tonight's open trades selling at tomorrow's open are the system's", Read(onTonight, @"(\d+) of them sells? at tomorrow's open", "Of the system's trades"), groups.System.Selling),
