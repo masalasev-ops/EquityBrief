@@ -144,6 +144,32 @@ public partial class ReadSurface
         Assert.Equal($"quality|bought|{QualityRule.Label}: bought at the next trading day's open", (await Chips("M3"))[^1]);
     }
 
+    // The 22.57 correction of 2026-11-11: Home's line of the monthly books' buys was held only by a test handing the line its
+    // buys, and the review of phase 22's sign-off emptied the hand-off from the books to Home with nothing going red. Home is
+    // read here off the read surface over the night Quality at a fair price chose M3 to buy at the next open, and names it
+    // apart from the new picks.
+    // see: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle
+    [Fact]
+    public async Task HomeOverANightTheBooksBuyIsHandedTheBooksBuysAndNamesThemApartFromTheNewPicks()
+    {
+        using var store = UniversesStore();
+
+        QualityNightsOn(store);
+        store.Execute(
+            "INSERT INTO quality_holding (rule, index_code, ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, ended_on, sale, end_reason, result, benchmark, cost, edge) VALUES " +
+            $"('{QualityFamily.ProvisionalRule}', 'MID', 'M3', '{IndexNight}', '30', NULL, NULL, NULL, NULL, 3, 1.0, '{IndexNight}', NULL, NULL, 'open', NULL, NULL, NULL, NULL);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var home = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/home?universe=400"));
+        var line = Assert.Single(Blocks(home, "<p class=\"home-more home-reshuffle\".*?</p>"));
+
+        Assert.Contains("M3 (Strong business at a fair price)", line, StringComparison.Ordinal);
+        Assert.Contains("not from tonight's new picks.", line, StringComparison.Ordinal);
+        Assert.DoesNotContain("M1", line, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task QualityAtAFairPricesCardSaysItsPartFailedAndBeforeItsFirstNightThatItHasReadNone()
     {
