@@ -18876,3 +18876,48 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 22.25 - correction: a live rule reworded by an approved change keeps its earlier words' trades among the earlier versions'   2026-11-11
+
+Corrects:   22.25, found by phase 22's second sign-off review (G1): the approved change to the S&P 500's Quality rule,
+            registered at 21:43:50Z on 2026-11-10 under new words, took its earlier live rule's 11 holdings, 10 open, out of
+            every group, Paper trading's system reading 132 where it read 135. Paper trading's accounts read a registered rule's
+            trades by its live words alone. Labelled 22.25 rather than 22.11, since the property it restores is the counts
+            decision's, that a restart hides no trade.
+Ruled:      the operator's answers of 2026-11-11: "Fix first, other session (Recommended)", and for the 10 holdings chosen on
+            23 Oct, before Quality first went live, "Earlier versions' (Recommended)", named "before its first registration".
+Built:      each registered rule's account reading its own words, the dip's, Quality's, the Fundamentals family's and the S&P
+            400's and 600's swing families', adds the trades its family's earlier live registrations kept under other words
+            among the earlier versions', whatever night listed them, each named by the version that listed it, a stock its own
+            words kept at the same listing night counted once. They stand in no account figure, as 19.4's order has it. The
+            S&P 500's swing heads read the page list and are unchanged.
+Remedy:     none: the pages read it once the read surface restarts on the merge.
+Tests:      1 new: a book reworded on 10 Nov, the four groups and the system worked by hand, each earlier trade's version and the
+            stock's page line.
+Claims:     none new.
+Pins:       none move: the read surface is pinned by no rule.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, filtered to its own test and restored
+            from the file's own bytes. m1 the head reading its live words alone, m2 the earlier words' trades read as this
+            version's, each red at the new test, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 22.1 - correction: a dip trade ended by the night or never filled is drawn as held on neither page, held by a test   2026-11-11
+
+Corrects:   22.1, found by phase 22's second sign-off review (G2): the held dip's fill and end guards, named not mutated in
+            22.1's correction of this day, each survived the whole suite, 3692 of 3692. Without the end's every dip trade that
+            has ended would be drawn as still held. A test alone.
+Built:      a test: BBB's S&P 500 dip trade sold under its stop and S1's S&P 600 trade never filled, each with the card its
+            listing night stored, drawn as held on neither the stock page nor the chart page three nights on.
+Remedy:     none.
+Tests:      1 new.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule as above. m3 the fill guard and m4 the end guard taken out, each red at the new test, as predicted.
+Owed:       phase 22's sign-off by equitybrief-e8, reviewing these corrections and the correction table to this pull request,
+            rerunning g2, which must go red, and reading `/proof/counts` green with the S&P 500's system holding the earlier
+            Quality book; the S&P 400's and 600's other families' held trades, on the operator's answer.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3694 of 3694 tests ran with none failed, migrations 0 to 143
+            with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
