@@ -37,7 +37,7 @@ public static partial class CountsProof
             Same("Paper trading's open are the system's", Read(onPaper, @"The system has bought [^:]*: (\d+) open"), groups.System.Open),
             Same("Paper trading's reached target are the system's", Read(onPaper, @"(\d+) reached their target"), groups.System.AtTarget),
             Same("Paper trading's hit their stop are the system's", Read(onPaper, @"(\d+) hit their stop"), groups.System.AtStop),
-            Same("Paper trading's open of this version are this version's", Read(onPaper, @"This version's trades: (\d+) trades? (?:is|are) open", "No live setup has bought a trade under its current version"), groups.ThisVersion.Open),
+            Same("Paper trading's open of this version are this version's", Read(onPaper, @"This version's trades: (\d+) open", "No live setup has bought a trade under its current version"), groups.ThisVersion.Open),
             Same("Paper trading's fold counts the earlier versions'", Read(onPaper, @"Earlier versions: (\d+) trades?"), groups.EarlierVersions.Bought),
             Same("Tonight's open trades of the same before this version are that group's", Read(onTonight, @"(\d+) the same trades? before this version", "Of the system's trades"), groups.SameTrades.Open),
             Same("Paper trading's same trades before this version are that group's", Read(onPaper, @"(\d+) of them (?:is|are) the same trades? before this version", "The system has bought"), groups.SameTrades.Bought),

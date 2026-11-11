@@ -135,7 +135,7 @@ public partial class ReadSurface
 
     const string HomeAfterTheRestart = "<h2>Tonight's ideas: 1 stock to buy Thursday morning</h2><p>All versions since 2 Oct: 2 ideas bought and sold on paper, 1 made money.</p>";
     const string TonightAfterTheRestart = "<p>1 new pick to buy at tomorrow's open, all from the earnings drift.</p><p>Of the system's trades, 2 are open, 1 of them this version's.</p><p>1 stock to buy at tomorrow's open, at about tonight's close.</p>";
-    const string PaperAfterTheRestart = "<p>This version's trades: 1 trade is open and 0 have closed, the newest bought on 4 Nov.</p><p>The system has bought 4 trades since 2 Oct: 2 open, 1 reached their target, 1 hit their stop, +8.8% overall.</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";
+    const string PaperAfterTheRestart = "<p>This version's trades: 1 open and 0 have closed, the newest bought on 4 Nov.</p><p>The system has bought 4 trades since 2 Oct: 2 open, 1 reached their target, 1 hit their stop, +8.8% overall.</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";
 
     [Fact]
     public void TheProofPassesEachPageDrawingItsGroupsCountAfterARestart()
@@ -159,7 +159,7 @@ public partial class ReadSurface
     [InlineData(": 2 open,", ": 1 open,", "paper", "Paper trading's open are the system's")]
     [InlineData("1 reached", "0 reached", "paper", "Paper trading's reached target are the system's")]
     [InlineData("1 hit their", "0 hit their", "paper", "Paper trading's hit their stop are the system's")]
-    [InlineData("1 trade is open", "2 trades are open", "paper", "Paper trading's open of this version are this version's")]
+    [InlineData("trades: 1 open", "trades: 2 open", "paper", "Paper trading's open of this version are this version's")]
     [InlineData("versions: 3 trades", "versions: 0 trades", "paper", "Paper trading's fold counts the earlier versions'")]
     public void TheProofFailsAPageCountingAnotherGroupAfterARestart(string right, string wrong, string which, string rule)
     {
@@ -349,7 +349,7 @@ public partial class ReadSurface
         $"<p>1 new pick to buy at tomorrow's open, all from the earnings drift.</p><p>{groups.OpenWords}.</p><p>1 stock to buy at tomorrow's open, at about tonight's close.</p>";
 
     static string PaperWithTheSame(TradeGroupsView groups) =>
-        $"<p>This version's trades: 1 trade is open and 0 have closed, the newest bought on 4 Nov.</p><p>{groups.SystemLine} {groups.SameLine}</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";
+        $"<p>This version's trades: 1 open and 0 have closed, the newest bought on 4 Nov.</p><p>{groups.SystemLine} {groups.SameLine}</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";
 
     [Fact]
     public void TheSameTradesBeforeAVersionAreAGroupOfTheirOwnAndTheSystemsAreTheOtherThreeAdded()
@@ -404,6 +404,43 @@ public partial class ReadSurface
         var left = groups with { SameTrades = new TradeCountView(0, 0, 0, 0, 0, 0, null) };
 
         Assert.Contains(CountsProof.Check(left, HomeWithTheSame, TonightWithTheSame(left), PaperWithTheSame(left)), verdict => verdict.Rule.StartsWith("The system's trades are", StringComparison.Ordinal) && verdict.Verdict == "fail");
+    }
+
+    // The 22.25 correction of 2026-11-11, on the operator's answer: on 9 November paper trading said 33 of this version's
+    // trades were open on the S&P 500 where the function and Tonight said 41, the line counting only what each account could
+    // afford. A drift account walked over five trades buys HELD alone: CASH1 and CASH2 open and SHUT closed want free cash,
+    // and NOSIZE's plan sizes no shares.
+    [Fact]
+    public void PaperTradingsLineOfThisVersionCountsTheWholeGroupAndSaysHowManyTheAccountsDidNotBuyAndWhy()
+    {
+        var night = new DateOnly(2026, 11, 6);
+        PaperTrade Trade(string ticker, DateOnly bought, DateOnly? ended = null) => new(ticker, bought, 100m, 95m, ended, ended is null ? null : 104m, 0m, 1, Listed: bought.AddDays(-1), Target: 110m, Cap: 60);
+
+        var held = Trade("HELD", new DateOnly(2026, 11, 4));
+        var cash1 = Trade("CASH1", new DateOnly(2026, 11, 5));
+        var cash2 = Trade("CASH2", night);
+        var unsized = Trade("NOSIZE", night);
+        var shut = Trade("SHUT", new DateOnly(2026, 11, 3), new DateOnly(2026, 11, 5));
+        var drift = new PaperAccountSource("list-drift", DriftRule.Name, PaperAccountView.Live, "Live", "the live drift rule", null, false, [(shut, 0.8), (held, null), (cash1, null), (cash2, null), (unsized, null)], new DateOnly(2026, 11, 3));
+        var walk = new PaperWalk([(night, 100_000m)], [new PaperTaken(shut, 0, PaperAccount.UnderTheCash), new PaperTaken(held, 10, null), new PaperTaken(cash1, 0, PaperAccount.UnderTheCash), new PaperTaken(cash2, 0, PaperAccount.UnderTheCash), new PaperTaken(unsized, 0, PaperAccount.NotSized)], 1, 4, 1, 0.0, 0.0, null, null, night, [(night, 0.0)]);
+        var view = new PaperAccountView("list-drift", DriftRule.Name, PaperAccountView.Live, "Live", "the live drift rule", "within luck", null, "risks", [], walk, 5, 1, null, new DateOnly(2026, 11, 3));
+        var groups = TradeGroups.Of([drift], night, (_, _) => 100m, [], "GSPC");
+        var built = PaperScreen.Page([drift], [view], night, [night], (_, _) => 100m, new Dictionary<string, PaperStockRow>(StringComparer.Ordinal), _ => null, null, DriftRule.Name, "SPY", _ => null) with { Groups = groups };
+
+        // Worked by hand: this version's four open, HELD, CASH1, CASH2 and NOSIZE, and SHUT closed; the account bought HELD.
+        Assert.Equal((4, 1), (groups.ThisVersion.Open, groups.ThisVersion.Closed));
+        Assert.Single(built.Open);
+        Assert.Equal(
+            "This version's trades: 4 open, 3 of them not bought by the account, 2 for want of free cash and 1 as its plan sized no shares, and 1 has closed, 1 of them not bought by the account for want of free cash, the newest bought on 4 Nov.",
+            MarkRenderer.PaperBoughtSaid(built));
+
+        // The operator's own wording, an account short of cash alone, and the proof reading the line's whole count.
+        var short8 = built with { Skipped = [.. Enumerable.Repeat((PaperAccount.UnderTheCash, true), 8)], Groups = groups with { ThisVersion = groups.ThisVersion with { Open = 41, Closed = 3 } } };
+
+        Assert.Equal("This version's trades: 41 open, 8 of them not bought by the account for want of free cash, and 3 have closed, the newest bought on 4 Nov.", MarkRenderer.PaperBoughtSaid(short8));
+        Assert.Equal(
+            "pass",
+            CountsProof.Check(groups, string.Empty, string.Empty, $"<p>{MarkRenderer.PaperBoughtSaid(built)}</p>").Single(verdict => verdict.Rule == "Paper trading's open of this version are this version's").Verdict);
     }
 
     [Fact]
