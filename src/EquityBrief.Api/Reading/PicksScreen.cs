@@ -77,6 +77,40 @@ public static class PicksScreen
     public static IReadOnlyList<IndexTradeCell> OfIndexSetup(IReadOnlyList<IndexTradeCell> trades, string? setup) =>
         setup is { } asked && trades.Any(trade => trade.Family == asked) ? [.. trades.Where(trade => trade.Family == asked)] : trades;
 
+    // From the 22.1 correction of 2026-11-11 the short-term dip's trade a stock is held on as of a night: the newest it bought
+    // by the night that has not ended by it, none where it holds none.
+    // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+    public static IndexTradeRow? HeldDip(IReadOnlyList<IndexTradeRow> dips, string ticker, DateOnly night) =>
+        dips
+            .Where(trade => string.Equals(trade.Ticker, ticker, StringComparison.Ordinal) && trade.Fill is not null && trade.Listed < night && (trade.EndedOn is null || trade.EndedOn > night))
+            .OrderByDescending(trade => trade.Listed)
+            .FirstOrDefault();
+
+    // The held dip trade as the stock page draws a held trade: the night that listed it, its fill, its stop and its time
+    // limit, open on the night.
+    public static PickCell HeldDipCell(IndexTradeRow trade, string? company) =>
+        new(
+            trade.Ticker,
+            company,
+            trade.Listed,
+            DipRule.Name,
+            trade.Fill,
+            trade.Stop,
+            trade.Target,
+            PickStatus.Open,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            Family: DipRule.Name,
+            Setup: SetupFamilies.Dips.Label,
+            Planned: trade.Entry,
+            Cap: trade.Cap);
+
     // The setups Past picks' first table holds the trades of: the S&P 500's three swing setups, its short-term dip kept in a
     // table of its own, and an S&P 400's or 600's swing setups with the dip among them.
     public static IReadOnlyList<string> Tabled(UniverseChoice universe) =>

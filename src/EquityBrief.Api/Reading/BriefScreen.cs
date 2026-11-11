@@ -26,6 +26,7 @@ public static class BriefStates
     public const string NotClose = "not-close";
     public const string NoReport = "no-report";
     public const string Held = "held";
+    public const string HeldTrade = "held-trade";
     public const string NotHeld = "not-held";
     public const string Bought = "bought";
     public const string Flagged = "flagged";
@@ -35,6 +36,11 @@ public static class BriefStates
 // The rule listing the stock tonight: its family, the decision card the night stored for the pick, none where it stored
 // none, and for the dip the sessions its exit's average of closes reads.
 public sealed record BriefListed(string Family, DecisionCardRow? Card, int? DipExitLevel = null);
+
+// From the 22.1 correction of 2026-11-11 the short-term dip's open trade a stock is held on, on any index: the card its
+// listing night stored, the exit its dial read that night, the night that listed it and its fill.
+// see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+public sealed record BriefHeld(string Family, DecisionCardRow Card, int? DipExitLevel, DateOnly Listed, decimal? Fill);
 
 // The answers the night stored that a stock's standing under each setup is read from: on the S&P 500 the swing filter's
 // row and the family evaluator's results with the night's picks; on the S&P 400 and 600 the index families' results and
@@ -54,7 +60,8 @@ public sealed record BriefAnswers(
     bool? Held,
     IReadOnlyList<ImprovingResultRow>? ImprovingResults = null,
     IReadOnlyList<ImprovingTradeRow>? ImprovingTrades = null,
-    IReadOnlyList<QualityHoldingRow>? QualityHoldings = null);
+    IReadOnlyList<QualityHoldingRow>? QualityHoldings = null,
+    bool DipHeld = false);
 
 // What a stock's brief read is written from, each read as the full page or the decision card reads it: the stock's
 // membership row with its trend and nearest bands, the newest value of each indicator series, its reported quarters'
@@ -84,7 +91,8 @@ public sealed record BriefInputs(
     DateOnly? FundamentalsHeldThrough = null,
     bool SizedOnExample = false,
     string? ShortHistoryWhy = null,
-    DateOnly? NewestReport = null);
+    DateOnly? NewestReport = null,
+    BriefHeld? Held = null);
 
 // A stock's brief read, written by code from templates over the figures the full page and the decision card already
 // work: each through the same core function, none worked out a second way, and a figure not stored said so in its line.
@@ -174,8 +182,9 @@ public static class BriefScreen
         var dip = answers.DipResults.FirstOrDefault(one => one.Ticker == ticker);
 
         standing.Add(dip is null
-            ? new BriefStanding(DipRule.Name, BriefStates.NotRead)
+            ? new BriefStanding(DipRule.Name, answers.DipHeld ? BriefStates.HeldTrade : BriefStates.NotRead)
             : answers.DipPicks.Any(pick => pick.Ticker == ticker && pick.State == FamilyList.Listed) ? new BriefStanding(DipRule.Name, BriefStates.Listed)
+            : answers.DipHeld ? new BriefStanding(DipRule.Name, BriefStates.HeldTrade)
             : dip.Passed ? new BriefStanding(DipRule.Name, BriefStates.Passed)
             : TonightScreen.DipCloseAcross([dip], []).FirstOrDefault() is { } near ? new BriefStanding(DipRule.Name, BriefStates.Short, near.Gate, 1)
             : new BriefStanding(DipRule.Name, BriefStates.NotClose));
@@ -258,6 +267,11 @@ public static class BriefScreen
         if (standing.FirstOrDefault(one => one.State is BriefStates.Listed or BriefStates.Bought) is { } listed)
         {
             return $"Tonight {Label(listed.Family)} picked it";
+        }
+
+        if (standing.FirstOrDefault(one => one.State is BriefStates.HeldTrade) is { } trade)
+        {
+            return $"Tonight it is held on the open trade {Label(trade.Family)} picked it for";
         }
 
         if (standing.FirstOrDefault(one => one.State is BriefStates.Held) is { } held)
@@ -482,6 +496,23 @@ public static class BriefScreen
             ];
         }
 
+        // From the 22.1 correction of 2026-11-11 a stock held on the short-term dip's open trade: the trade first, its fill, and
+        // its stop and its exits as the card its listing night stored states them.
+        // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+        if (inputs.Held is { } held)
+        {
+            var steps = held.Family == DipRule.Name
+                ? Management.ForDip(held.Card.Stop, held.DipExitLevel ?? DipRule.Provisional.ExitLevel, held.Card.Cap)
+                : Management.For(held.Card.Stop, held.Card.Target, held.Card.Trail, held.Card.Cap, held.Family == HeavyweightRule.Name);
+
+            return
+            [
+                new BriefLine("buy", Invariant($"Held on the trade {Label(held.Family)} picked it for on {held.Listed:d MMM yyyy}, bought at the next open{(held.Fill is { } fill ? " at " + Price(fill) : string.Empty)}."), held.Fill?.ToString(CultureInfo.InvariantCulture)),
+                new BriefLine("stop", steps.Count > 0 ? steps[0] : "No stop is stored."),
+                new BriefLine("exit", steps.Count > 1 ? string.Join(" ", steps.Skip(1)) : "No target or exit is stored."),
+            ];
+        }
+
         // From 22.13 a stock the Fundamentals family bought tonight: its buy at the next open, and its sale by its score, its
         // time or its leaving the index, since it sets no stop.
         // see: A Fundamentals trade is held while its score stays at seven in nine, and judged against an equal-weighted hold of its index's members after its round trip
@@ -583,6 +614,7 @@ public static class BriefScreen
             BriefStates.NotClose => "not close",
             BriefStates.NoReport => "no recent report",
             BriefStates.Held => "in its holdings",
+            BriefStates.HeldTrade => "held on its open trade",
             BriefStates.NotHeld => "not in its holdings",
             BriefStates.Bought => "bought at the next trading day's open",
             BriefStates.Flagged => "flagged, waiting for its filing",

@@ -624,7 +624,15 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
     var before = night is { } picked ? PicksScreen.Before(await read.PicksAsync(picked, ticker), picked) : null;
     var nightCards = night is { } cardsOn ? await CardsOfTheName(read, ticker, cardsOn) : null;
-    var heldOpen = nightCards is { Count: > 0 } ? null : before?.Where(pick => pick.Status == PickStatus.Open && pick.RepeatOf is null).OrderByDescending(pick => pick.Night).FirstOrDefault();
+
+    // From the 22.1 correction of 2026-11-11 the short-term dip's open trade on the stock's own index, on any index, drawn as
+    // a held trade where it is the newest open.
+    var heldDip = nightCards is { Count: > 0 } || night is not { } dipOn || await read.IndexOfAsync(ticker, dipOn) is not { } dipIndex
+        ? null
+        : PicksScreen.HeldDip(await read.DipTradesAsync(dipIndex, dipOn), ticker, dipOn) is { } dipTrade
+            ? PicksScreen.HeldDipCell(dipTrade, members.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal))?.Name)
+            : null;
+    var heldOpen = nightCards is { Count: > 0 } ? null : (before ?? []).Where(pick => pick.Status == PickStatus.Open && pick.RepeatOf is null).Concat(heldDip is { } dip ? [dip] : []).OrderByDescending(pick => pick.Night).FirstOrDefault();
     var heldCards = heldOpen is { } openTrade ? await CardsOfTheName(read, ticker, openTrade.Night) : null;
 
     // The newest results release accepted by the night: its opening line, which the management box quotes, and its text,
@@ -757,6 +765,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // The newest pass that wrote one section asked for alone, which the research region says what came of.
         aloneDetail: await read.NewestAloneAsync(ticker),
         heldCards: heldCards,
+        heldDip: heldDip,
         // Whether the segment commentary drawn was written from the release's own segment table, which one written before
         // the table was read for its facts was not.
         commentaryFromRelease: written.FirstOrDefault(section => string.Equals(section.Section, EquityBrief.Core.Research.Evidence.Segments, StringComparison.Ordinal)) is { } commentary
@@ -1455,10 +1464,25 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
     IReadOnlyList<BriefStanding> standing = [];
     IReadOnlyDictionary<string, IReadOnlyList<double?>>? readings = null;
     DateOnly? fundamentalsHeldThrough = null;
+    BriefHeld? heldDip = null;
 
     if (indexCode is { } index)
     {
         bool held;
+
+        // From the 22.1 correction of 2026-11-11 the short-term dip's open trade the stock is held on, on any index, with the
+        // card its listing night stored and the exit its dial read that night.
+        // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+        if (PicksScreen.HeldDip(await read.DipTradesAsync(index, night), ticker, night) is { } dipTrade
+            && (await CardsOfTheName(read, ticker, dipTrade.Listed)).FirstOrDefault(card => card.Family == EquityBrief.Core.Families.DipRule.Name && card.Index == index) is { } dipCard)
+        {
+            heldDip = new BriefHeld(
+                EquityBrief.Core.Families.DipRule.Name,
+                dipCard,
+                await read.DipNightAsync(index, dipTrade.Listed) is { } dipListedNight ? TonightScreen.SettingOf(dipListedNight).Setting.ExitLevel : null,
+                dipTrade.Listed,
+                dipTrade.Fill);
+        }
 
         if (large)
         {
@@ -1501,7 +1525,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
             held,
             await read.ImprovingResultsAsync(index, night, improvingRule),
             improvingTrades,
-            await read.QualityNightAsync(index, night, qualityRule) is null ? null : await read.QualityHoldingsAsync(index, night, night, qualityRule)));
+            await read.QualityNightAsync(index, night, qualityRule) is null ? null : await read.QualityHoldingsAsync(index, night, night, qualityRule),
+            heldDip is not null));
         readings = await read.LedgerReadingsAsync(index, night);
     }
 
@@ -1544,7 +1569,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         fundamentalsHeldThrough,
         sized && saved is null,
         planned?.ShortWhy,
-        await read.NewestReportAsync(ticker, night)));
+        await read.NewestReportAsync(ticker, night),
+        listed is null ? heldDip : null));
 }
 
 // A heavyweights card with its standing tonight, read off tonight's closes once: each holding's and each sector fund's
