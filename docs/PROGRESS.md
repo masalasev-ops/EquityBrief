@@ -18744,3 +18744,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             failed, migrations 0 to 142 with none pending, schema version 142, against `data-ci` and never `data`; the phase
             report 66 tables, 1624 claims, 1624 passing, none out of scope and none unexamined, 1639 placements and verdicts
             reconciled against a floor of 34, 57 checks on the roster run and passed.
+
+### 22.8 - correction: setup indexed on its session and ticker, so the filings refresh's second read finds the night's rows   2026-11-10
+
+Corrects:   22.8, with the second read 17.3 and 19.13 built and 22.8 widened, found watching the night of 2026-11-10 run.
+            After the filings refresh the ledger reads the night's setups again: one update a refreshed stock for the business
+            and scorecard readings and one a stock for the insider readings, each by ticker, session and source, and the
+            night's tickers listed by session and source. Setup was indexed by neither, so each update read the whole of its
+            1,046,648 rows, about 85 seconds a stock on this disk. The step took about 14 minutes a night to 2026-11-04, 51 to
+            62 from 2026-11-06, and on 2026-11-10 69 minutes for 49 stocks' business readings before the insider readings began.
+Built:      migration 143 creates `setup_session` on setup's `session_date` and `ticker`, and the three statements find the
+            night's rows through it.
+Remedy:     none: `tools/merge` applies migration 143 in the merge step, and the next night, or one resumed, reads through it.
+Tests:      1 new, a theory of three cases over the statements read from the ledger itself: each searches setup through
+            `setup_session` over a migrated store, and none reads the whole table.
+Claims:     none new.
+Pins:       none move: the migrations are pinned by no rule, and no other shipped source changed.
+Mutated:    the rule, stated before the runs: the smallest edit undoing the property the correction adds, filtered to its own
+            test and restored from the file's own bytes. M1 the migration creating no index, red at all three cases; M2 the
+            index on ticker before session date, red at all three. Each red as predicted.
+Owed:       phase 22's sign-off, its correction table running to this correction's pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3683 of 3683 tests ran with none failed, migrations 0 to 143
+            with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
