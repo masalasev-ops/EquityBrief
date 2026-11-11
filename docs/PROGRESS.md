@@ -18987,3 +18987,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### Phase 22 sign-off                                                        2026-11-11
+Signed by a session that has committed no code to this repository. Its only commit is this entry, which is a document,
+            so the fresh session rule permits it. Phase 22's first review, over 3080fe1a by another session, signed nothing on F1
+            to F3 in `prompts/2026-11-10-22.61-phase-22-signoff-findings.md`, and PRs 688 to 690 corrected them. This session's
+            review, over 1e2d0a9d and then 0192e47a, signed nothing on G1 to G3 in
+            `prompts/2026-11-11-22.61-phase-22-signoff-second-review.md`, and PRs 691 and 693 corrected them. On the operator's
+            order of 2026-11-02 each pass read only the fixes since the one before and the correction table. It signs over
+            59c28e6a, the main its gates ran on with this entry.
+Ruled:      "Can you do the sign off since you didn't write any code", and "The corrections have been already done". On G1 and
+            G2, "Fix first, other session (Recommended)", and for the earlier Quality rule's holdings listed before its first
+            registration, "Earlier versions' (Recommended)"; on G3, "Fix first (Recommended)". During the first review: "Please
+            consider every correction and code fixes that have been done. Corrections should not be overridden".
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3697 of 3697 tests ran with none failed, migrations 0 to 143 with none
+            pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624 passing,
+            none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57 checks on the
+            roster run and passed. Hosted CI over the 6 pull requests merged from 688 to 693: each green under push and
+            pull_request, and main's push of each merge green on macos and case-sensitivity.
+Mutation:   the rule, stated before each run: the smallest edit undoing the property named, its prediction written first, filtered to
+            the named tests, made in this checkout and restored from the file's own bytes with a fresh timestamp. Over 1e2d0a9d: x1,
+            Home's hand-off of the books' buys emptied, red at 22.57's new test; g1 and g2, the held dip's fill and end guards taken
+            out, each surviving the whole suite, 3692 of 3692, which was G2. Over 59c28e6a, each red as predicted: g2 and g1 at the
+            held dip's test PR 691 added; k1, the earlier words' trades counted again where the new words kept the same stock at the
+            same listing night, at the reworded book's test alone of 19 paper and group tests; and x1 again, at 22.57's test, 31
+            other Home tests passing.
+Read:       live on 5152, the Release built at 21:45Z on 59c28e6a, over the night of 2026-11-10, and read-only over the store.
+            `/proof/counts` at 21:46Z: S&P 500 24 of 24, S&P 400 20 of 20, S&P 600 20 of 20. Paper trading's S&P 500 reads 143
+            bought, the earlier Quality rule's 11 holdings among the earlier versions', the 10 listed on 23 Oct named before its
+            first registration and MGM under the version registered 2026-11-01; its S&P 400 and 600 read 111 and 59, as before PR
+            691. ESNT's page reads "An earlier version of Fundamentals still holds this stock" and FSLR's "bought on 26 Oct 2026,
+            before the rule was first registered".
+Table:      the operator's rule of 2026-11-01, widened on 2026-11-09 to every correction under any phase's label, from the first
+            review's end at 3080fe1a to 59c28e6a: 6 pull requests, 688 to 693, 692 a phase 21 correction changing two files phase 22
+            built. 86 source lines removed across 26 files, each reworded in place; 8 came from earlier corrections, 18.4's held
+            trade and Target line, 22.9's quality holdings twice, 22.6's held trade's call, 22.25's earlier holding's line, and
+            19.4's fund closes and the S&P 500's swing start, each standing with a parameter or the ruled wording added. None of the
+            394 code lines added restores a line a correction removed. Test methods 3437 to 3451, none removed. No correction undone.
+Carried:    none of phase 22's own. The S&P 400's and 600's other families' held trades, SIRI's among them, wait on the operator's
+            answer of 2026-11-11: "The S&P 400's and 600's other families (SIRI) wait."
