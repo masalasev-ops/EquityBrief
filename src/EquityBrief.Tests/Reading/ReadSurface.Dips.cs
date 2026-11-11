@@ -241,6 +241,36 @@ public partial class ReadSurface
         Assert.DoesNotContain("held-trade", string.Join(" ", BriefOfPage(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/M2"))).Chips), StringComparison.Ordinal);
     }
 
+    // The 22.1 correction of 2026-11-11, from phase 22's second sign-off review (G2): neither guard of the held dip was held by
+    // a test, and without the end's every dip trade that has ended would be drawn as still held. BBB's S&P 500 dip trade was
+    // bought on 26 Sep and sold under its stop on 30 Sep, and S1's on the S&P 600, listed on 30 Sep, was never filled; each
+    // with the card its listing night stored, and neither is held three nights on.
+    // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+    [Fact]
+    public async Task ADipTradeThatEndedOrWasNeverFilledIsDrawnAsHeldOnNeitherItsStockNorItsChartPage()
+    {
+        using var store = UniversesStore();
+
+        DipNightOn(store);
+        store.Execute(
+            "INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, bought_on, fill, past, ended_on, sale, end_reason, sessions, result, cost) VALUES " +
+            "('provisional', 'GSPC', 'BBB', '2026-09-25', 1, '50', '45', 10, 5, 4.0, '2026-09-26', '50', NULL, '2026-09-30', '44', 'stop', 3, -1.2, 0.02), " +
+            "('provisional', 'SML', 'S1', '2026-09-30', 1, '50', '45', 10, 5, 4.0, NULL, NULL, NULL, NULL, NULL, 'open', NULL, NULL, NULL);");
+        store.Execute(
+            "INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, cap) VALUES " +
+            "('GSPC', '2026-09-25', 'dip', 'BBB', 1, '50', '45', NULL, 'The short-term dip on the S&P 500', '{}', '[]', NULL, 10), " +
+            "('SML', '2026-09-30', 'dip', 'S1', 1, '50', '45', NULL, 'The short-term dip on the S&P 600', '{}', '[]', NULL, 10);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        foreach (var ticker in new[] { "BBB", "S1" })
+        {
+            Assert.DoesNotContain("held-card", WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}/{IndexNight}")), StringComparison.Ordinal);
+            Assert.DoesNotContain(BriefOfPage(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/chart/{ticker}"))).Chips, chip => chip.StartsWith("dip|held-trade|", StringComparison.Ordinal));
+        }
+    }
+
     [Fact]
     public async Task TheDipsTradesStandOnPastPicksUnderItsLabelAndFilterItsRunRowAndItsNamePageLineReadBackOffThePages()
     {
