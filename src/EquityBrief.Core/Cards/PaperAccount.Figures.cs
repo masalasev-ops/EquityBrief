@@ -86,7 +86,7 @@ public static partial class PaperAccount
     public const string TimeRanOut = "time ran out";
 
     // Why a trade's exit fired, read off the close it fired on as `Ending` reads a sale, for a trade the next open has yet to sell.
-    // see: Every count of trades names its group and one function works the three groups
+    // see: Every count of trades names its group and one function works the four groups
     public static string WhyFired(decimal? close, decimal? target, decimal? stop, decimal? trail, int? held, int? cap) =>
         trail is null && target is { } goal && close >= goal ? TargetReached
             : close is { } read && stop is { } floor && read < floor ? UnderStop

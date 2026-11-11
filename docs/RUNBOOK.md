@@ -640,7 +640,7 @@ curl -s "http://localhost:5152/proof/report-pages?format=json" > artifacts/repor
 
 ### Reading every count of trades against the one function
 
-The read surface draws Home, Tonight, paper trading and Past picks for each index, and the Run page for the S&P 500, and reads each count of trades back off the words at `/proof/counts`, holding it to the one function for the group it names. Each rule answers pass, fail with the two figures, or unexamined where the page draws no such count, which is never a pass. It writes nothing and asks no provider and no model, and takes under a minute (see: Every count of trades names its group and one function works the three groups):
+The read surface draws Home, Tonight, paper trading and Past picks for each index, and the Run page for the S&P 500, and reads each count of trades back off the words at `/proof/counts`, holding it to the one function for the group it names. Each rule answers pass, fail with the two figures, or unexamined where the page draws no such count, which is never a pass. It writes nothing and asks no provider and no model, and takes under a minute (see: Every count of trades names its group and one function works the four groups):
 
 ```
 curl -s http://localhost:5152/proof/counts > artifacts/counts-proof.html

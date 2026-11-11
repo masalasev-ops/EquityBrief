@@ -603,7 +603,7 @@ public sealed partial class MarkRenderer
 
         if (page.Groups is { } groups)
         {
-            html.Append(Invariant, $"<p class=\"card-note paper-system\" data-system=\"{groups.System.Bought}\" data-system-open=\"{groups.System.Open}\" data-version=\"{groups.ThisVersion.Bought}\" data-earlier-trades=\"{groups.EarlierVersions.Bought}\">{Escaped(groups.SystemLine)} <a href=\"{App.SinglePageApp.PicksRoute}\">See every trade on Past picks</a></p>");
+            html.Append(Invariant, $"<p class=\"card-note paper-system\" data-system=\"{groups.System.Bought}\" data-system-open=\"{groups.System.Open}\" data-version=\"{groups.ThisVersion.Bought}\" data-earlier-trades=\"{groups.EarlierVersions.Bought}\" data-same-trades=\"{groups.SameTrades.Bought}\">{Escaped(groups.SystemLine)} {(groups.SameLine.Length == 0 ? string.Empty : Escaped(groups.SameLine) + " ")}<a href=\"{App.SinglePageApp.PicksRoute}\">See every trade on Past picks</a></p>");
         }
 
         // Each live account's same trades before its version under one press of its own, named by its setup and the day the

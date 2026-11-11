@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-11 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md and docs/RUNBOOK.md - four groups of trades, and a group's count the function's whole count
+Decision: Every count of trades names its group and one function works the four groups
+Was:
+> (ARCHITECTURE, every count of trades names its group) "From 22.25 one function works three groups over the accounts paper trading reads: ... and earlier versions' trades, the rest."
+> (ARCHITECTURE, BUILD_PLAN's restart and RUNBOOK's counts proof) "(see: Every count of trades names its group and one function works the three groups)"
+Now:
+> "From 22.25 one function works the groups over the accounts paper trading reads, and from the 22.25 correction of 2026-11-11 four of them: ... the same trades before this version, those a replay under the version reproduced from before its first session, kept apart under each account and in none of its figures; and earlier versions' trades, the rest. The system's trades are the other three added, and Tonight and paper trading name the same trades' count where the group holds any. A count of a group is the function's whole count: ..."
+> each citation names the decision that supersedes it
+Why: the phase 22 sign-off's first review read the counts proof failing on the live store, the system's 135 trades on the S&P 500 counted as 36 this version's and 78 earlier versions' with 21 named by no page.
+
 ### 2026-11-10 - docs/SCHEMA.md - setup is indexed on its session and ticker
 Corrects: the filings refresh's second read of the night's rows updated each stock's setups by its ticker, session and source, and listed the night's tickers by session and source, over a table indexed by neither, so each update read the whole of setup's million rows; the step took about 14 minutes a night to 2026-11-04, 51 to 62 from 2026-11-06, and past two hours on 2026-11-10, found watching that night run.
 Was:

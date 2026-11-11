@@ -9,7 +9,7 @@ namespace EquityBrief.Api.Reading;
 // The proof that every page's count is the one function's for the group it names: each count read back off the words its
 // page draws and held to `TradeGroups`, an index at a time, as a restart leaves them or any other night does. A page that
 // draws no such count is unexamined rather than passed.
-// see: Every count of trades names its group and one function works the three groups
+// see: Every count of trades names its group and one function works the four groups
 public static partial class CountsProof
 {
     public const string Route = "/proof/counts";
@@ -39,7 +39,9 @@ public static partial class CountsProof
             Same("Paper trading's hit their stop are the system's", Read(onPaper, @"(\d+) hit their stop"), groups.System.AtStop),
             Same("Paper trading's open of this version are this version's", Read(onPaper, @"This version's trades: (\d+) trades? (?:is|are) open", "No live setup has bought a trade under its current version"), groups.ThisVersion.Open),
             Same("Paper trading's fold counts the earlier versions'", Read(onPaper, @"Earlier versions: (\d+) trades?"), groups.EarlierVersions.Bought),
-            new("The system's trades are this version's and the earlier versions'", groups.System.Bought == groups.ThisVersion.Bought + groups.EarlierVersions.Bought && groups.System.Open == groups.ThisVersion.Open + groups.EarlierVersions.Open ? Pass : Fail),
+            Same("Tonight's open trades of the same before this version are that group's", Read(onTonight, @"(\d+) the same trades? before this version", "Of the system's trades"), groups.SameTrades.Open),
+            Same("Paper trading's same trades before this version are that group's", Read(onPaper, @"(\d+) of them (?:is|are) the same trades? before this version", "The system has bought"), groups.SameTrades.Bought),
+            new("The system's trades are this version's, the same before it and the earlier versions'", groups.System.Bought == groups.ThisVersion.Bought + groups.SameTrades.Bought + groups.EarlierVersions.Bought && groups.System.Open == groups.ThisVersion.Open + groups.SameTrades.Open + groups.EarlierVersions.Open ? Pass : Fail),
         ];
     }
 

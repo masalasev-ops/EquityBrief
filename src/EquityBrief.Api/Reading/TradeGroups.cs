@@ -6,9 +6,10 @@ using EquityBrief.Web.Marks;
 namespace EquityBrief.Api.Reading;
 
 // The one place a page's count of trades comes from: over every family's live or provisional account on an index, or one
-// family's, the system's trades, this version's trades and the earlier versions', and what waits to be bought. A trade is
-// open only once bought, so a listing waiting on the next open is in no group and counts as to buy.
-// see: Every count of trades names its group and one function works the three groups
+// family's, the system's trades, this version's trades, the same trades before this version and the earlier versions', and
+// what waits to be bought. A trade is open only once bought, so a listing waiting on the next open is in no group and counts
+// as to buy.
+// see: Every count of trades names its group and one function works the four groups
 public static class TradeGroups
 {
     public static TradeGroupsView Of(
@@ -41,7 +42,10 @@ public static class TradeGroups
             Count(version, night, close, sessions),
             Count(earlier, night, close, sessions),
             ToBuy(heads),
-            ToBuy(heads.Where(head => head.Book && head.Family != Core.Families.ImprovingRule.Name)));
+            ToBuy(heads.Where(head => head.Book && head.Family != Core.Families.ImprovingRule.Name)))
+        {
+            SameTrades = Count(same, night, close, sessions),
+        };
     }
 
     // The day each family first went live on an index, as a setup's tile draws it.

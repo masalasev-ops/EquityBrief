@@ -232,7 +232,7 @@ public static class PicksScreen
         var finishedBy = row.ResolvedOn is { } resolved && resolved <= asOf;
 
         // A trade is open only once bought: a listing whose next session's open has not filled it yet is still to buy.
-        // see: Every count of trades names its group and one function works the three groups
+        // see: Every count of trades names its group and one function works the four groups
         var ending = row.Outcome switch
         {
             ForwardReturnSeries.Win => PickStatus.Target,
@@ -245,7 +245,7 @@ public static class PicksScreen
 
         // A trade whose exit fired on a close is held until the next open sells it: open, saying why it sells, and ended on the
         // night after the sale with the sale's price. One no fill bought has no sale to wait on.
-        // see: Every count of trades names its group and one function works the three groups
+        // see: Every count of trades names its group and one function works the four groups
         var sold = row.SoldOn is { } soldOn ? soldOn <= asOf : row.Fill is null || row.FillResult is not null;
         var selling = row.OutcomeStored && finishedBy && !sold && ending != PickStatus.Missing;
 

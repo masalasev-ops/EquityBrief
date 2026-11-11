@@ -2404,7 +2404,7 @@ async Task<IResult> TonightScreenAsync(
 app.MapGet(ChartProof.Route, async (ReadApi read) => Results.Content(ChartProof.Page(await read.ChartChecksAsync()), "text/html; charset=utf-8"));
 
 // Each page's count of trades read back off its rendered markup against the one function, an index at a time.
-// see: Every count of trades names its group and one function works the three groups
+// see: Every count of trades names its group and one function works the four groups
 app.MapGet(CountsProof.Route, async (HttpRequest request, ReadApi read, EndpointDataSource routes) =>
 {
     var indexes = new List<(string, IReadOnlyList<ProofVerdict>)>();
@@ -2774,7 +2774,7 @@ async Task<ImprovingCardView> ImprovingCardAsync(ReadApi read, string index, Dat
         await read.EntryReadingsOnAsync(night));
 
     // How many of the family's holdings its current version bought, the rest being an earlier version's.
-    // see: Every count of trades names its group and one function works the three groups
+    // see: Every count of trades names its group and one function works the four groups
     var accounts = await PaperAccountsAsync(read, Universes.ByCode(index) ?? Universes.Large, night, null);
 
     return improvingCard with
@@ -2785,7 +2785,7 @@ async Task<ImprovingCardView> ImprovingCardAsync(ReadApi read, string index, Dat
 
 // The line a stock's chart and name pages draw where an earlier version of a live rule still holds it, read off the paper
 // rows first so a stock nothing holds costs one read. The read-only copy names no version.
-// see: Every count of trades names its group and one function works the three groups
+// see: Every count of trades names its group and one function works the four groups
 async Task<string> EarlierHoldingNoteAsync(ReadApi read, string ticker, string? indexCode, DateOnly? night)
 {
     if (copying || indexCode is null || night is not { } on || Universes.ByCode(indexCode) is not { } reading)
@@ -2941,7 +2941,7 @@ async Task<IResult> HomeAsync(
 
     // The system's trades since the rules first went live, and the live setups' accounts averaged since today's rules all
     // took effect against the index's fund over the same days.
-    // see: Every count of trades names its group and one function works the three groups
+    // see: Every count of trades names its group and one function works the four groups
     // see: Home's paper account counts since today's rules all took effect, and the system's every version stands apart and labelled
     var held = copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
     var paper = await PaperAccountsAsync(read, reading, dated, held ?? EquityBrief.Core.Cards.AccountSettings.Example);

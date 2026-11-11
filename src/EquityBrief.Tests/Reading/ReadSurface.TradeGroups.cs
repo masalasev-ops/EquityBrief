@@ -10,7 +10,7 @@ namespace EquityBrief.Tests.Reading;
 // 22.25: every count of trades names its group and comes from one function. The night after a constructed restart: a rule
 // that first went live on 2 October and was registered again on 3 November, holding trades of both versions and one stock
 // waiting on the open, beside a monthly book and a variant, whose trades are nobody's count.
-// see: Every count of trades names its group and one function works the three groups
+// see: Every count of trades names its group and one function works the four groups
 public partial class ReadSurface
 {
     static readonly DateOnly RestartNight = new(2026, 11, 4);
@@ -142,7 +142,7 @@ public partial class ReadSurface
     {
         var verdicts = CountsProof.Check(RestartGroups(), HomeAfterTheRestart, TonightAfterTheRestart, PaperAfterTheRestart);
 
-        Assert.Equal(16, verdicts.Count);
+        Assert.Equal(18, verdicts.Count);
         Assert.All(verdicts, verdict => Assert.Equal("pass", verdict.Verdict));
     }
 
@@ -313,6 +313,97 @@ public partial class ReadSurface
 
         Assert.Empty(EquityBrief.Web.Cloudflare.SiteCopy.Leaks("screens/paper.html", copy, needles));
         Assert.NotEmpty(EquityBrief.Web.Cloudflare.SiteCopy.Leaks("screens/paper.html", read, needles));
+    }
+
+    // The 22.25 correction of 2026-11-11, on the operator's answer that the same trades before a version are a group of their
+    // own: the drift registered again on 3 November, its replay reproducing its trades from 30 October, SAME1 open and SAME2
+    // sold at its stop listed in between.
+    static IReadOnlyList<PaperAccountSource> SameSources() =>
+    [
+        RestartSources()[0] with
+        {
+            Same =
+            [
+                (BoughtTrade("SAME1", new DateOnly(2026, 10, 31)), null),
+                (BoughtTrade("SAME2", new DateOnly(2026, 10, 31), new DateOnly(2026, 11, 3), 95m, 120m, 95m), -1.0),
+            ],
+            SameSince = new DateOnly(2026, 10, 30),
+        },
+        .. RestartSources().Skip(1),
+    ];
+
+    static TradeGroupsView SameGroups() =>
+        TradeGroups.Of(
+            SameSources(),
+            RestartNight,
+            (_, _) => 110m,
+            [
+                LiveRow(1, DriftRule.Name, "drift", new DateTimeOffset(2026, 10, 2, 11, 0, 0, TimeSpan.Zero)),
+                LiveRow(2, DriftRule.Name, "drift", new DateTimeOffset(2026, 11, 3, 5, 0, 0, TimeSpan.Zero)),
+            ],
+            "GSPC");
+
+    const string HomeWithTheSame = "<h2>Tonight's ideas: 1 stock to buy Thursday morning</h2><p>All versions since 2 Oct: 3 ideas bought and sold on paper, 1 made money.</p>";
+
+    static string TonightWithTheSame(TradeGroupsView groups) =>
+        $"<p>1 new pick to buy at tomorrow's open, all from the earnings drift.</p><p>{groups.OpenWords}.</p><p>1 stock to buy at tomorrow's open, at about tonight's close.</p>";
+
+    static string PaperWithTheSame(TradeGroupsView groups) =>
+        $"<p>This version's trades: 1 trade is open and 0 have closed, the newest bought on 4 Nov.</p><p>{groups.SystemLine} {groups.SameLine}</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";
+
+    [Fact]
+    public void TheSameTradesBeforeAVersionAreAGroupOfTheirOwnAndTheSystemsAreTheOtherThreeAdded()
+    {
+        var groups = SameGroups();
+
+        // Worked by hand: this version's NEW1; the same trades SAME1, open, and SAME2, at its stop; the earlier versions' WIN at
+        // its target, LOSS at its stop and HELD, open. The system's are the six: three open, three closed, WIN alone making
+        // money, one at its target and two at their stops, the mean of +20%, -5%, -5% and three open at +10% being +6.67%.
+        Assert.Equal((1, 1, 0), (groups.ThisVersion.Bought, groups.ThisVersion.Open, groups.ThisVersion.Closed));
+        Assert.Equal((2, 1, 1, 1), (groups.SameTrades.Bought, groups.SameTrades.Open, groups.SameTrades.Closed, groups.SameTrades.AtStop));
+        Assert.Equal((3, 1, 2), (groups.EarlierVersions.Bought, groups.EarlierVersions.Open, groups.EarlierVersions.Closed));
+        Assert.Equal((6, 3, 3), (groups.System.Bought, groups.System.Open, groups.System.Closed));
+        Assert.Equal((1, 1, 2), (groups.System.MadeMoney, groups.System.AtTarget, groups.System.AtStop));
+        Assert.Equal(0.066667, groups.System.MeanReturn!.Value, 6);
+
+        Assert.Equal("Of the system's trades, 3 are open, 1 of them this version's, 1 the same trades before this version", groups.OpenWords);
+        Assert.Equal("2 of them are the same trades before this version, kept apart under each account below and in none of its figures.", groups.SameLine);
+
+        // A night with no such trade draws neither.
+        Assert.Equal("Of the system's trades, 2 are open, 1 of them this version's", RestartGroups().OpenWords);
+        Assert.Empty(RestartGroups().SameLine);
+    }
+
+    [Fact]
+    public void PaperTradingNamesTheSameTradesBeneathWhatTheSystemBought()
+    {
+        var groups = SameGroups();
+        var page = new PaperPageView([], [], [], [], new PaperNotBought([]), [], null, Groups: groups);
+        var drawn = new MarkRenderer().PaperBought(page, new PaperLink("500", null, false, null, null, null)).Replace("&#39;", "'", StringComparison.Ordinal);
+
+        Assert.Contains("data-same-trades=\"2\">The system has bought 6 trades since 2 Oct: 3 open, 1 reached their target, 2 hit their stop, +6.7% overall. 2 of them are the same trades before this version, kept apart under each account below and in none of its figures. <a href=", drawn, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheProofHoldsTheSameTradesToTheirGroupAndTheSystemsToTheFourAdded()
+    {
+        var groups = SameGroups();
+        var verdicts = CountsProof.Check(groups, HomeWithTheSame, TonightWithTheSame(groups), PaperWithTheSame(groups));
+
+        Assert.All(verdicts, verdict => Assert.Equal("pass", verdict.Verdict));
+
+        // A page naming another count for the group, or none where the group holds some.
+        Assert.Equal(
+            "Tonight's open trades of the same before this version are that group's",
+            Assert.Single(CountsProof.Check(groups, HomeWithTheSame, TonightWithTheSame(groups).Replace("1 the same", "2 the same", StringComparison.Ordinal), PaperWithTheSame(groups)), verdict => verdict.Verdict != "pass").Rule);
+        Assert.Equal(
+            "Paper trading's same trades before this version are that group's",
+            Assert.Single(CountsProof.Check(groups, HomeWithTheSame, TonightWithTheSame(groups), PaperWithTheSame(groups).Replace(groups.SameLine, string.Empty, StringComparison.Ordinal)), verdict => verdict.Verdict != "pass").Rule);
+
+        // The system's six are this version's one, the same two and the earlier three: a split leaving the same out fails.
+        var left = groups with { SameTrades = new TradeCountView(0, 0, 0, 0, 0, 0, null) };
+
+        Assert.Contains(CountsProof.Check(left, HomeWithTheSame, TonightWithTheSame(left), PaperWithTheSame(left)), verdict => verdict.Rule.StartsWith("The system's trades are", StringComparison.Ordinal) && verdict.Verdict == "fail");
     }
 
     [Fact]

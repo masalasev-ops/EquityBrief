@@ -228,7 +228,7 @@ public sealed record PickCell(
     int? Cap = null,
     // From 22.26 a trade whose exit fired and whose sale the next open has not made is open: the status it fired as and when;
     // and once sold, the session and the price of its sale.
-    // see: Every count of trades names its group and one function works the three groups
+    // see: Every count of trades names its group and one function works the four groups
     string? FiredAs = null,
     DateOnly? FiredOn = null,
     DateOnly? SoldOn = null,
@@ -259,7 +259,7 @@ public static class PickStatus
     public const string Missing = "missing";
 
     // A stock listed and not yet bought, which no group of trades counts until its next session's open fills it.
-    // see: Every count of trades names its group and one function works the three groups
+    // see: Every count of trades names its group and one function works the four groups
     public const string ToBuy = "to-buy";
 
     public static IReadOnlyList<string> Filters { get; } = [Open, ToBuy, Target, Stopped, Time];
