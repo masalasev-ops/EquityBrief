@@ -3,6 +3,7 @@ using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Returns;
+using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
@@ -75,6 +76,30 @@ public static class PicksScreen
     // An index's trades the setup the hash names keeps, and every trade where it names none or one no trade was kept under.
     public static IReadOnlyList<IndexTradeCell> OfIndexSetup(IReadOnlyList<IndexTradeCell> trades, string? setup) =>
         setup is { } asked && trades.Any(trade => trade.Family == asked) ? [.. trades.Where(trade => trade.Family == asked)] : trades;
+
+    // The setups Past picks' first table holds the trades of: the S&P 500's three swing setups, its short-term dip kept in a
+    // table of its own, and an S&P 400's or 600's swing setups with the dip among them.
+    public static IReadOnlyList<string> Tabled(UniverseChoice universe) =>
+        universe == Universes.Large
+            ? [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name]
+            : [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, DipRule.Name];
+
+    // From the 22.25 correction of 2026-11-11 how many of the system's trades of the given setups are open on the night and
+    // drawn by no row of an index's table: each a live rule's own list bought while the index's page list held the stock,
+    // matched by its stock, its setup and the night that listed it.
+    // see: Every count of trades names its group and one function works the four groups
+    public static int Unrowed(IReadOnlyList<PaperAccountSource> sources, IReadOnlyList<IndexTradeCell> table, IReadOnlyList<string> families, DateOnly night)
+    {
+        var rows = table.Select(row => (row.Ticker, row.Family, row.Listed)).ToHashSet();
+
+        return sources
+            .Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional && families.Contains(account.Family, StringComparer.Ordinal))
+            .SelectMany(account => account.Trades.Select(one => one.Trade)
+                .Concat((account.Earlier ?? []).Select(one => one.Trade))
+                .Concat(account.Same.Select(one => one.Trade))
+                .Select(trade => (account.Family, Trade: trade)))
+            .Count(one => one.Trade.Bought <= night && (one.Trade.Ended is null || one.Trade.Ended > night) && !rows.Contains((one.Trade.Ticker, one.Family, one.Trade.ListedOn)));
+    }
 
     // The sector heavyweights' holdings as of a night, newest buy first and its sectors in order, each ended one with
     // its result, its size cut's return and the edge between them as the rule reads it, an open one with none.

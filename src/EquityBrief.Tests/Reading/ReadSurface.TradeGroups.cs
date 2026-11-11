@@ -468,6 +468,47 @@ public partial class ReadSurface
         Assert.Equal("Of the system's trades, 2 are open: 1 in this table and 1 under the other setups.", RestartGroups().OpenHere(1, "this table"));
     }
 
+    // The 22.25 correction of 2026-11-11, on the operator's answer: on the S&P 600 Past picks said 26 in this table where the
+    // function counted 28, each live rule's account holding the trades its own list bought where the table draws the index's
+    // page list, which skips a stock another trade holds: SMP, bought by the drift's list on 3 Nov while the breakout's SMP from
+    // 30 Oct held it on the page's list. The line names those trades and the proof holds the table and them to the function.
+    [Fact]
+    public void PastPicksNamesTheTradesARulesOwnListBoughtWhileTheTablesListHeldTheStock()
+    {
+        var night = new DateOnly(2026, 11, 6);
+        IndexTradeCell Row(string ticker, string family, DateOnly listed) => new(ticker, null, family, family, listed, 100m, 95m, 110m, false, null, null, null, null);
+        PaperTrade Held(string ticker, DateOnly listed, DateOnly? ended = null) => new(ticker, listed.AddDays(1), 100m, 95m, ended, ended is null ? null : 104m, null, 1, Listed: listed);
+
+        PaperAccountSource Account(string family, params PaperTrade[] trades) =>
+            new($"list-{family}", family, PaperAccountView.Live, "Live", $"the live {family} rule", null, false, [.. trades.Select(trade => (trade, (double?)null))], new DateOnly(2026, 10, 1));
+
+        var table = new[] { Row("SMP", BreakoutRule.Name, new DateOnly(2026, 10, 29)), Row("ROW", DriftRule.Name, new DateOnly(2026, 11, 2)) };
+        var sources = new[]
+        {
+            Account(BreakoutRule.Name, Held("SMP", new DateOnly(2026, 10, 29))),
+            Account(DriftRule.Name, Held("SMP", new DateOnly(2026, 11, 2)), Held("ROW", new DateOnly(2026, 11, 2)), Held("SHUT", new DateOnly(2026, 10, 20), new DateOnly(2026, 11, 4)), Held("LATER", night)),
+            Account(QualityRule.Name, Held("BOOK", new DateOnly(2026, 11, 2))),
+        };
+
+        // Worked by hand: the drift's SMP alone, open and drawn by no row. ROW and the breakout's SMP have rows, SHUT ended,
+        // LATER is bought after the night and the quality book's holding is not of the table's setups.
+        Assert.Equal(1, PicksScreen.Unrowed(sources, table, PicksScreen.Tabled(Universes.Small), night));
+        Assert.Equal(0, PicksScreen.Unrowed(sources, [.. table, Row("SMP", DriftRule.Name, new DateOnly(2026, 11, 2))], PicksScreen.Tabled(Universes.Small), night));
+
+        var groups = RestartGroups() with { System = RestartGroups().System with { Open = 49 } };
+
+        Assert.Equal(
+            "Of the system's trades, 49 are open: 26 in this table, 2 more of its setups' bought by their rules' own lists while this table's list held the stock, and 21 under the other setups.",
+            groups.OpenHere(26, "this table", 2));
+        Assert.Equal("Of the system's trades, 49 are open: 26 in this table and 23 under the other setups.", groups.OpenHere(26, "this table"));
+
+        // The proof holds the table's 26 and the 2 together to the function's 28, and the table alone fails.
+        var count = new TradeCountView(40, 28, 12, 0, 0, 0, null);
+
+        Assert.Equal("pass", CountsProof.CheckPicks(count, 0, $"<p>{groups.OpenHere(26, "this table", 2)}</p>").Single(verdict => verdict.Rule == "Past picks' open are the system's of its setups").Verdict);
+        Assert.Contains(CountsProof.CheckPicks(count, 0, $"<p>{groups.OpenHere(26, "this table")}</p>"), verdict => verdict.Rule == "Past picks' open are the system's of its setups" && verdict.Verdict == "fail");
+    }
+
     [Fact]
     public void TheProofHoldsPastPicksAndTheRunPageToTheFunctionsCount()
     {

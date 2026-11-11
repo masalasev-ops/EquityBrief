@@ -2438,10 +2438,7 @@ app.MapGet(CountsProof.Route, async (HttpRequest request, ReadApi read, Endpoint
 
             // Past picks' first table: the S&P 500's three swing setups, its short-term dip's kept apart, and an index's swing setups with the dip among them.
             var register = await read.RegisteredCandidatesAsync();
-            string[] tabled = universe == Universes.Large
-                ? [EquityBrief.Core.Families.SetupFamilies.Pullback, EquityBrief.Core.Families.BreakoutRule.Name, EquityBrief.Core.Families.DriftRule.Name]
-                : [EquityBrief.Core.Families.SetupFamilies.Pullback, EquityBrief.Core.Families.BreakoutRule.Name, EquityBrief.Core.Families.DriftRule.Name, EquityBrief.Core.Families.DipRule.Name];
-            var listed = tabled.Select(family => TradeGroups.Of(accounts.Sources, newest, accounts.Close, register, universe.Code, family, accounts.Sessions)).ToArray();
+            var listed = PicksScreen.Tabled(universe).Select(family => TradeGroups.Of(accounts.Sources, newest, accounts.Close, register, universe.Code, family, accounts.Sessions)).ToArray();
 
             verdicts.AddRange(CountsProof.CheckPicks(
                 new TradeCountView(listed.Sum(one => one.System.Bought), listed.Sum(one => one.System.Open), listed.Sum(one => one.System.Closed), 0, listed.Sum(one => one.System.AtTarget), listed.Sum(one => one.System.AtStop), null),
@@ -3568,7 +3565,8 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
                 keptUnder,
                 PicksScreen.IndexSetups(keptTrades),
                 paper?.Groups,
-                TradeGroups.FirstLiveByFamily(await read.RegisteredCandidatesAsync(), reading.Code)) +
+                TradeGroups.FirstLiveByFamily(await read.RegisteredCandidatesAsync(), reading.Code),
+                night is { } rowedOn && paper is { } walked ? PicksScreen.Unrowed(walked.Sources, keptTrades, PicksScreen.Tabled(reading), rowedOn) : 0) +
             page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(copying ? [] : await read.TakenTradesAsync(), reading.Code)),
             "text/html; charset=utf-8");
     }

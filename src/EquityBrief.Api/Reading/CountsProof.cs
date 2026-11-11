@@ -45,12 +45,13 @@ public static partial class CountsProof
         ];
     }
 
-    // Past picks' first table held to the system's trades of the setups it lists; an index's table draws no count of targets
-    // and stops, its rows stating each trade's result.
+    // Past picks' first table held to the system's trades of the setups it lists, with from the 22.25 correction of
+    // 2026-11-11 those of its setups the line names as drawing no row; an index's table draws no count of targets and stops,
+    // its rows stating each trade's result.
     public static IReadOnlyList<ProofVerdict> CheckPicks(TradeCountView listed, int toBuy, string picks)
     {
         var text = Text(picks);
-        var open = Read(text, @"(\d+) in this table") ?? Read(text, @"Still open (\d+)");
+        var open = Read(text, @"(\d+) in this table") is { } here ? here + (Read(text, @"(\d+) more of its setups' bought by their rules' own lists") ?? 0) : Read(text, @"Still open (\d+)");
         var buying = Read(text, @"To buy at tomorrow's open (\d+)") ?? Read(text, @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?, (\d+) to buy at tomorrow's open", @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?\.");
 
         return

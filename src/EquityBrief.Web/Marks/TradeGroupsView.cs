@@ -43,9 +43,11 @@ public sealed record TradeGroupsView(DateOnly? FirstLive, DateOnly? VersionSince
     public static string Selling(int selling) =>
         selling <= 0 ? string.Empty : FormattableString.Invariant($"{selling} of them {(selling == 1 ? "sells" : "sell")} at tomorrow's open");
 
-    // Past picks' tables hold some of the system's trades: how many of its open trades a table holds, and where the rest are.
-    public string OpenHere(int here, string table) =>
-        FormattableString.Invariant($"Of {SystemWords}, {System.Open} {(System.Open == 1 ? "is" : "are")} open{(System.Selling > 0 ? ", " + Selling(System.Selling) : string.Empty)}: {here} in {table} and {System.Open - here} under the other setups.");
+    // Past picks' tables hold some of the system's trades: how many of its open trades a table holds, from the 22.25
+    // correction of 2026-11-11 how many more of its setups' open trades it draws no row of, a live rule's own list having
+    // bought a stock the table's list held, and where the rest are.
+    public string OpenHere(int here, string table, int more = 0) =>
+        FormattableString.Invariant($"Of {SystemWords}, {System.Open} {(System.Open == 1 ? "is" : "are")} open{(System.Selling > 0 ? ", " + Selling(System.Selling) : string.Empty)}: {here} in {table}{(more > 0 ? FormattableString.Invariant($", {more} more of its setups' bought by their rules' own lists while {table}'s list held the stock, and") : " and")} {System.Open - here - more} under the other setups.");
 
     static string Day(DateOnly day) => day.ToString("d MMM", CultureInfo.InvariantCulture);
 
