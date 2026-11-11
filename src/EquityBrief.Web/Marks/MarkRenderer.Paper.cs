@@ -1441,8 +1441,14 @@ public sealed partial class MarkRenderer
         return Formatted($"<figure class=\"paper-running\" data-total=\"{sum.ToString("R", Invariant)}\" data-ended=\"{ended.Count}\"><svg viewBox=\"0 0 {width} {height}\" role=\"img\" aria-label=\"The running total of the ended trades\"><line class=\"paper-zero\" x1=\"4\" x2=\"{width - 4}\" y1=\"{Y(0):0.#}\" y2=\"{Y(0):0.#}\"/><path class=\"paper-line\" d=\"{path}\"/></svg><figcaption>Running total of {ended.Count} ended trades: {(percent ? SignedFigure(sum, 1, Formatted($"{Unsigned(sum, 1):+0.0;-0.0;0.0}%")) : SignedTwo(sum) + " risks")}{(tooFew ? ", not evidence yet" : string.Empty)}</figcaption></figure>");
     }
 
+    // The line a stock's chart and name pages draw where an earlier version of a live rule still holds it, from the 22.25
+    // correction of 2026-11-11 naming its setup as paper trading's tag does.
+    // see: Every count of trades names its group and one function works the four groups
+    public static string EarlierHoldingLine(EarlierHoldingView holding) =>
+        $"<p class=\"card-note earlier-holding\" data-family=\"{System.Net.WebUtility.HtmlEncode(holding.Family)}\" data-bought=\"{holding.Bought.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(holding.Words(FamilyName(holding.Family)))}</p>";
+
     // A family's name as its tag reads it.
-    static string FamilyName(string family) =>
+    public static string FamilyName(string family) =>
         family == HeavyweightRule.Name
             ? SetupFamilies.SectorHeavyweights.Heading
             : family == QualityRule.Name

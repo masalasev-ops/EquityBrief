@@ -590,8 +590,36 @@ public partial class ReadSurface
             [("AFTER", "the version registered 2026-10-25"), ("BEFORE", PaperScreen.BeforeRegistration), ("SHUT", PaperScreen.BeforeRegistration)],
             (head.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Version)).OrderBy(one => one.Ticker, StringComparer.Ordinal));
         Assert.Equal(PaperScreen.BeforeRegistration, Assert.Single(TradeGroups.EarlierHoldings(sources, "BEFORE", night)).Version);
+        Assert.True(Assert.Single(TradeGroups.EarlierHoldings(sources, "BEFORE", night)).BeforeFirstRegistration);
+        Assert.False(Assert.Single(TradeGroups.EarlierHoldings(sources, "AFTER", night)).BeforeFirstRegistration);
         Assert.Contains("An earlier version of", Assert.Single(TradeGroups.EarlierHoldings(sources, "AFTER", night)).Words("Quality at a fair price"), StringComparison.Ordinal);
         Assert.Empty(TradeGroups.EarlierHoldings(sources, "SHUT", night));
+    }
+
+    // The 22.25 correction of 2026-11-11, from phase 22's second sign-off review (G3): the line a stock's chart and name pages
+    // draw where an earlier version holds it named the books by their internal keys, "An earlier version of improving still
+    // holds this stock" on ESNT's page, and read a trade listed before its rule's first registration in after "under",
+    // "bought on 26 Oct 2026 under before its first registration" on FSLR's. On the operator's answer of that day each setup
+    // is named by its label and that case is worded as a sentence. The line is the one the pages draw.
+    [Fact]
+    public void TheLineOfAnEarlierVersionsHoldingNamesItsSetupByItsLabelAndSaysWhenItCameBeforeTheRulesFirstRegistration()
+    {
+        string Line(string family, string version, bool before = false) =>
+            System.Net.WebUtility.HtmlDecode(MarkRenderer.EarlierHoldingLine(new EarlierHoldingView(family, version, new DateOnly(2026, 10, 26), before)));
+
+        foreach (var (family, label) in new[] { (ImprovingRule.Name, ImprovingRule.Label), (QualityRule.Name, QualityRule.Label), (HeavyweightRule.Name, SetupFamilies.SectorHeavyweights.Heading), (DriftRule.Name, SetupFamilies.Named(DriftRule.Name)!.Label) })
+        {
+            var line = Line(family, "the version registered 2026-10-25");
+
+            Assert.Contains($">An earlier version of {label} still holds this stock, bought on 26 Oct 2026 under the version registered 2026-10-25. It counts among the system's trades and not toward this version's verdict.</p>", line, StringComparison.Ordinal);
+            Assert.DoesNotContain($" of {family} still", line, StringComparison.Ordinal);
+        }
+
+        Assert.Contains(
+            ">An earlier version of Quality at a fair price still holds this stock, bought on 26 Oct 2026, before the rule was first registered. It counts among the system's trades and not toward this version's verdict.</p>",
+            Line(QualityRule.Name, PaperScreen.BeforeRegistration, before: true),
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("under before", Line(QualityRule.Name, PaperScreen.BeforeRegistration, before: true), StringComparison.Ordinal);
     }
 
     [Fact]

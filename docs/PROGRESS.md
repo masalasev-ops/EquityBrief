@@ -18957,3 +18957,33 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 22.25 - correction: a stock's line of an earlier version's holding names its setup by its label and says when it came before the rule's first registration   2026-11-11
+
+Corrects:   22.25, found by phase 22's second sign-off review after PR 691 (G3): the line a stock's chart and name pages draw
+            where an earlier version holds it named the setup through the swing setups' names alone, so the sector
+            heavyweights, Quality at a fair price and the Fundamentals family fell back to their internal keys, ESNT's page
+            reading "An earlier version of improving still holds this stock"; and it read a trade listed before its rule's first
+            registration in after "under", FSLR's reading "bought on 26 Oct 2026 under before its first registration". On the
+            night of 2026-11-10 102 open holdings across the three indexes drew a key, 29 of them listed before their rule's
+            first registration.
+Ruled:      the operator's answer of 2026-11-11, "Fix first (Recommended)": each setup named by its label and the
+            pre-registration case worded as a sentence.
+Built:      the line is one function the pages draw, naming the setup as paper trading's tag does, "Fundamentals", "Quality at
+            a fair price", "Sector heavyweights" and each swing setup's label; a holding listed before its rule's first
+            registration reads "bought on 26 Oct 2026, before the rule was first registered", the version's name in paper
+            trading's fold and log unchanged. No section 15 row and no passage of the guide quotes the line, so no spec moves.
+Remedy:     none: the pages read it once the read surface restarts on the merge.
+Tests:      1 new: the line for each of the three books and a swing setup, and the case before the first registration; G1's
+            test holds the flag the holdings read sets.
+Claims:     none new.
+Pins:       none move: the read surface is pinned by no rule.
+Mutated:    the rule as 22.25's corrections of this day state it. m1 the label falling back to the key and m2 the case read
+            in after "under", each red at the new test; m3 the flag never set, red at G1's test. Each red as predicted.
+Owed:       phase 22's sign-off by equitybrief-e8, reviewing this fix and the correction table to this pull request and
+            rerunning g2, which must go red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3697 of 3697 tests ran with none failed, migrations 0 to 143
+            with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.

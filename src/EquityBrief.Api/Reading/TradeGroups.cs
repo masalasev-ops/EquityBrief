@@ -60,7 +60,7 @@ public static class TradeGroups
             .Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional)
             .SelectMany(account => (account.Earlier ?? [])
                 .Where(one => one.Trade.Ticker == ticker && (one.Trade.Ended is null || one.Trade.Ended > night))
-                .Select(one => new EarlierHoldingView(account.Family, one.Version, one.Trade.Bought))),
+                .Select(one => new EarlierHoldingView(account.Family, one.Version, one.Trade.Bought, one.Version == PaperScreen.BeforeRegistration))),
     ];
 
     public static TradeCountView Count(IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly night, Func<string, DateOnly, decimal?> close, IReadOnlyList<DateOnly>? sessions = null)

@@ -2823,8 +2823,7 @@ async Task<string> EarlierHoldingNoteAsync(ReadApi read, string ticker, string? 
 
     var accounts = await PaperAccountsAsync(read, reading, on, null);
 
-    return string.Concat(TradeGroups.EarlierHoldings(accounts.Sources, ticker, on).Select(holding =>
-        $"<p class=\"card-note earlier-holding\" data-family=\"{System.Net.WebUtility.HtmlEncode(holding.Family)}\" data-bought=\"{holding.Bought.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(holding.Words(EquityBrief.Core.Families.SetupFamilies.Named(holding.Family)?.Label ?? holding.Family))}</p>"));
+    return string.Concat(TradeGroups.EarlierHoldings(accounts.Sources, ticker, on).Select(MarkRenderer.EarlierHoldingLine));
 }
 
 // Home on an index as of the newest night, from 22.16: the figures Tonight's own reads produced, the line, the cards and

@@ -6,11 +6,12 @@ namespace EquityBrief.Web.Marks;
 // and the mean return on the buy over all of them, an open one's at tonight's close.
 public sealed record TradeCountView(int Bought, int Open, int Closed, int MadeMoney, int AtTarget, int AtStop, double? MeanReturn, int Selling = 0);
 
-// A trade an earlier version of a family's live rule still holds of a stock: the family, the version that bought it, the day.
-public sealed record EarlierHoldingView(string Family, string Version, DateOnly Bought)
+// A trade an earlier version of a family's live rule still holds of a stock: the family, the version that bought it, the day,
+// and from the 22.25 correction of 2026-11-11 whether it was listed before the rule was first registered.
+public sealed record EarlierHoldingView(string Family, string Version, DateOnly Bought, bool BeforeFirstRegistration = false)
 {
     public string Words(string setup) =>
-        FormattableString.Invariant($"An earlier version of {setup} still holds this stock, bought on {Bought.ToString("d MMM yyyy", CultureInfo.InvariantCulture)} under {Version}. It counts among {TradeGroupsView.SystemWords} and not toward this version's verdict.");
+        FormattableString.Invariant($"An earlier version of {setup} still holds this stock, bought on {Bought.ToString("d MMM yyyy", CultureInfo.InvariantCulture)}{(BeforeFirstRegistration ? ", before the rule was first registered" : " under " + Version)}. It counts among {TradeGroupsView.SystemWords} and not toward this version's verdict.");
 }
 
 // The named groups, once: the system's trades, every trade the live rules bought under any version since each family first
