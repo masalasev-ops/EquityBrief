@@ -246,6 +246,37 @@ public static class PaperScreen
         };
     }
 
+    // From the 22.25 correction of 2026-11-11 a registered rule's account with the trades its family's earlier live
+    // registrations kept under other words, which an approved change rewording the live rule left in no group: each among
+    // the earlier versions' whatever night listed it, never this version's or the same, named by the version that listed it,
+    // and a stock its own words kept at the same listing night counted once.
+    // see: Every count of trades names its group and one function works the four groups
+    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    static PaperAccountSource WithEarlierWords(PaperAccountSource account, IReadOnlyList<PaperRow> rows, CandidateRow live, IReadOnlyList<CandidateRow> lineage)
+    {
+        string[] words = [.. lineage.Select(row => row.Candidate).Where(candidate => !string.Equals(candidate, live.Candidate, StringComparison.Ordinal)).Distinct(StringComparer.Ordinal)];
+
+        if (words.Length == 0)
+        {
+            return account;
+        }
+
+        var counted = account.Trades.Select(one => one.Trade)
+            .Concat(account.Same.Select(one => one.Trade))
+            .Concat((account.Earlier ?? []).Select(one => one.Trade))
+            .Select(trade => (trade.Ticker, trade.ListedOn))
+            .ToHashSet();
+        (PaperTrade Trade, double? Result, string Version)[] earlier =
+        [
+            .. words
+                .SelectMany(name => Of(rows.Where(row => row.Account == name || row.Account.StartsWith(name + ", from version ", StringComparison.Ordinal))))
+                .Where(one => counted.Add((one.Item1.Ticker, one.Item1.ListedOn)))
+                .Select(one => (one.Item1, one.Item2, VersionAt(lineage, one.Item1.ListedOn))),
+        ];
+
+        return earlier.Length == 0 ? account : account with { Earlier = [.. account.Earlier ?? [], .. earlier] };
+    }
+
     static PaperAccountSource Split(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly start, string version, IReadOnlyList<CandidateRow> lineage) =>
         account with
         {
@@ -320,8 +351,10 @@ public static class PaperScreen
                 var dipRegistrations = RuleScreen.Registrations(family, large, indexName, register);
 
                 dipHead = dipHead with { Unfilled = Unfilled(rows.Where(dipHead.Keeps)) };
+                IReadOnlyList<CandidateRow> dipLineage = [.. dipRegistrations.Where(row => FamilyRecords.IsLive(row.Candidate))];
+
                 accounts.Add(liveDip is not null
-                    ? Started(dipHead, Of(rows.Where(dipHead.Keeps)), liveDip, [], [.. dipRegistrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
+                    ? WithEarlierWords(Started(dipHead, Of(rows.Where(dipHead.Keeps)), liveDip, [], dipLineage), rows, liveDip, dipLineage)
                     : dipHead with { Trades = Of(rows.Where(dipHead.Keeps)), Since = rows.Where(dipHead.Keeps).Select(row => (DateOnly?)row.Bought).Min(), Version = ProvisionalVersion, Earlier = [] });
 
                 foreach (var (row, tab) in versions)
@@ -369,8 +402,13 @@ public static class PaperScreen
                 ? cells.Where(cell => cell.RepeatOf is null && cell.Status != PickStatus.Missing && cell.Buy is not null).Select(cell => (DateOnly?)cell.Night).Min()
                 : rows.Where(head.Keeps).Select(row => (DateOnly?)row.Bought).Min();
 
+            IReadOnlyList<CandidateRow> lineage = [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))];
+
+            // The S&P 500's swing heads read the page list, which every version of the family keeps, and no earlier words.
             accounts.Add(live is not null
-                ? Started(head, trades, live, replayed, [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
+                ? pageList
+                    ? Started(head, trades, live, replayed, lineage)
+                    : WithEarlierWords(Started(head, trades, live, replayed, lineage), rows, live, lineage)
                 : head with { Trades = trades, Since = first, Version = ProvisionalVersion, Earlier = [] });
 
             foreach (var (row, tab) in variants)
@@ -417,9 +455,10 @@ public static class PaperScreen
             head = head with { Unfilled = Unfilled(rows.Where(head.Keeps)) };
 
             var registrations = RuleScreen.Registrations(family, large, indexName, register);
+            IReadOnlyList<CandidateRow> lineage = [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))];
 
             accounts.Add(live is not null
-                ? Started(head, Of(rows.Where(head.Keeps)), live, [], [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
+                ? WithEarlierWords(Started(head, Of(rows.Where(head.Keeps)), live, [], lineage), rows, live, lineage)
                 : head with { Trades = Of(rows.Where(head.Keeps)), Since = rows.Where(head.Keeps).Select(row => (DateOnly?)row.Bought).Min(), Version = ProvisionalVersion, Earlier = [] });
 
             foreach (var (row, tab) in versions)
@@ -454,9 +493,10 @@ public static class PaperScreen
             head = head with { Unfilled = Unfilled(rows.Where(head.Keeps)) };
 
             var registrations = RuleScreen.Registrations(family, large, indexName, register);
+            IReadOnlyList<CandidateRow> lineage = [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))];
 
             accounts.Add(live is not null
-                ? Started(head, Of(rows.Where(head.Keeps)), live, [], [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
+                ? WithEarlierWords(Started(head, Of(rows.Where(head.Keeps)), live, [], lineage), rows, live, lineage)
                 : head with { Trades = Of(rows.Where(head.Keeps)), Since = rows.Where(head.Keeps).Select(row => (DateOnly?)row.Bought).Min(), Version = ProvisionalVersion, Earlier = [] });
 
             foreach (var (row, tab) in versions)
