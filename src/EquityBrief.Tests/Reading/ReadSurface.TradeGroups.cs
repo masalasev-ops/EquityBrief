@@ -542,6 +542,58 @@ public partial class ReadSurface
         Assert.Equal("pass", CountsProof.CheckPicks(new TradeCountView(3, 3, 0, 0, 0, 0, null), 0, page).Single(verdict => verdict.Rule == "Past picks' open are the system's of its setups").Verdict);
     }
 
+    // The 22.25 correction of 2026-11-11, from phase 22's second sign-off review (G1): the approved change to the S&P 500's
+    // Quality rule reworded its live rule at 21:43Z on 2026-11-10, and its earlier live rule's eleven trades fell out of every
+    // group, the system's 135 reading 132. Here the book is reworded the same way: the earlier words, first registered on
+    // 25 Oct, hold BEFORE, chosen on 23 Oct before the family went live, AFTER, chosen on 2 Nov, and SHUT, sold, and DUP,
+    // chosen on 10 Nov by both words; the new words, registered on 10 Nov, hold DUP and NEW.
+    [Fact]
+    public void ABookRewordedByAnApprovedChangeKeepsItsEarlierWordsTradesAmongTheEarlierVersions()
+    {
+        const string Before = "the live S&P 500 quality rule at a score of 7 in 9";
+        const string After = "the live S&P 500 quality rule at a score of 7 in 9, its list ordered by the learned score";
+        var night = new DateOnly(2026, 11, 12);
+        CandidateRow[] register =
+        [
+            new(1, Before, "quality-500", "registered", null, new DateTimeOffset(2026, 10, 25, 12, 0, 0, TimeSpan.Zero)),
+            new(2, Before, "quality-500", "retired", Before, new DateTimeOffset(2026, 11, 10, 21, 43, 50, TimeSpan.Zero)),
+            new(3, After, "quality-500", "registered", null, new DateTimeOffset(2026, 11, 10, 21, 43, 50, TimeSpan.Zero)),
+        ];
+        PaperRow Held(string words, string ticker, DateOnly chosen, DateOnly? ended = null, double? result = null) =>
+            new(words, QualityRule.Name, ticker, chosen, 1, 100m, null, ended, result, true, null, null, Fill: 100m, FilledOn: chosen.AddDays(1));
+        PaperRow[] rows =
+        [
+            Held(Before, "BEFORE", new DateOnly(2026, 10, 23)),
+            Held(Before, "AFTER", new DateOnly(2026, 11, 2)),
+            Held(Before, "SHUT", new DateOnly(2026, 10, 23), new DateOnly(2026, 11, 5), 0.04),
+            Held(Before, "DUP", new DateOnly(2026, 11, 10)),
+            Held(After, "DUP", new DateOnly(2026, 11, 10)),
+            Held(After, "NEW", new DateOnly(2026, 11, 11)),
+        ];
+
+        var sources = PaperScreen.Accounts(true, "S&P 500", night, register, null, rows, [], []);
+        var head = sources.Single(account => account.Family == QualityRule.Name && account.Standing == PaperAccountView.Live);
+        var groups = TradeGroups.Of(sources, night, (_, _) => 110m, register, "GSPC", QualityRule.Name);
+
+        // Worked by hand: this version's DUP and NEW, listed from 10 Nov under the new words, both open; the same none, no
+        // replay carrying the record back; the earlier versions' BEFORE and AFTER open and SHUT sold, the earlier words' DUP
+        // counted once under the new words. The system's five, four open and one closed.
+        Assert.Equal(["DUP", "NEW"], head.Trades.Select(one => one.Trade.Ticker).Order(StringComparer.Ordinal));
+        Assert.Equal((2, 2), (groups.ThisVersion.Bought, groups.ThisVersion.Open));
+        Assert.Equal(0, groups.SameTrades.Bought);
+        Assert.Equal((3, 2, 1), (groups.EarlierVersions.Bought, groups.EarlierVersions.Open, groups.EarlierVersions.Closed));
+        Assert.Equal((5, 4, 1), (groups.System.Bought, groups.System.Open, groups.System.Closed));
+
+        // Each named by the version that listed it: BEFORE and SHUT before the family's first registration, AFTER by the
+        // earlier words' registration of 25 Oct; and the stock's page naming the earlier version that holds it.
+        Assert.Equal(
+            [("AFTER", "the version registered 2026-10-25"), ("BEFORE", PaperScreen.BeforeRegistration), ("SHUT", PaperScreen.BeforeRegistration)],
+            (head.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Version)).OrderBy(one => one.Ticker, StringComparer.Ordinal));
+        Assert.Equal(PaperScreen.BeforeRegistration, Assert.Single(TradeGroups.EarlierHoldings(sources, "BEFORE", night)).Version);
+        Assert.Contains("An earlier version of", Assert.Single(TradeGroups.EarlierHoldings(sources, "AFTER", night)).Words("Quality at a fair price"), StringComparison.Ordinal);
+        Assert.Empty(TradeGroups.EarlierHoldings(sources, "SHUT", night));
+    }
+
     [Fact]
     public void TheProofHoldsPastPicksAndTheRunPageToTheFunctionsCount()
     {
