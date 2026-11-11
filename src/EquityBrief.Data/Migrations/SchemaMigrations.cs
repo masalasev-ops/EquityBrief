@@ -763,7 +763,14 @@ public static class SchemaMigrations
         new Migration(140, "add the traded plan's picks from 2019 to plan_point", AddTradedLaterPicks),
         new Migration(141, "add the recommended plan priced on each price pick to decision_card", AddCardAlternative),
         new Migration(142, "add the plan a trade is bought and sold by to the rules' trade tables and the pick's card", AddTradePlan),
+        new Migration(143, "create setup_session on setup's session_date and ticker", CreateSetupSession),
     ];
+
+    // The night's setups found by their session and ticker, which the filings refresh's second read of the night's rows updates
+    // and lists them by, where with no such index each update read the whole table.
+    const string CreateSetupSession = @"
+        CREATE INDEX setup_session ON setup (session_date, ticker);
+    ";
 
     // From 23.10 the order a rule stating a plan placed on its trade at its night's close, which the trade is walked under, and
     // the live rule's order on its pick's card, which draws the zone it buys at.

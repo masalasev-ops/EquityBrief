@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-10 - docs/SCHEMA.md - setup is indexed on its session and ticker
+Corrects: the filings refresh's second read of the night's rows updated each stock's setups by its ticker, session and source, and listed the night's tickers by session and source, over a table indexed by neither, so each update read the whole of setup's million rows; the step took about 14 minutes a night to 2026-11-04, 51 to 62 from 2026-11-06, and past two hours on 2026-11-10, found watching that night run.
+Was:
+> Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
+Now:
+> the same, adding "and from migration 143 on `session_date` and `ticker`, which the filings refresh's second read of the night's rows updates and lists them by."
+Why: an update the night runs once a stock finds its rows through the index rather than reading the table.
+
 ### 2026-11-10 - .claude/rules/checks.md - architecture-conformance states phase 23's pair
 Decision: none; 23.11's done condition, the pair checked against the actual
 Was:
