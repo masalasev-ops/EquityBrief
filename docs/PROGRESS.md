@@ -18851,3 +18851,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 22.25 - correction: Past picks names the open trades its index's list bought in place of a stock another setup held, in none of the system's trades   2026-11-11
+
+Corrects:   22.25, found reading `/proof/counts` back after PR 689's merge: S&P 500 24 of 24, S&P 600 20 of 20, S&P 400 19 of
+            20, its Past picks drawing 47 open against the function's 46. Traced read-only: on 5 Nov the S&P 400's page list
+            skipped FCN, held by the breakout since 2 Nov, and took TOST as its fifth, where the live drift rule's own list bought
+            HL, FCN, NBIX, KD and ALSN and stopped before TOST. The table held TOST, in none of the system's trades, the mirror
+            of the S&P 600's SMP and SIG, which their page list's three-stock night did not produce. Before PR 689 the two
+            cancelled, 46 against 46.
+Ruled:      the operator's answers of 2026-11-11: trace the split first, then "Yes, build it now (Recommended)".
+Built:      Past picks counts its table's open trades of the tabled setups, listed once their setup went live, that no live or
+            provisional account holds, takes them off "in this table" and says how many in a sentence of their own, as it does
+            the trades from before a setup went live.
+Remedy:     none: the page reads it once the read surface restarts on the merge.
+Tests:      1 new: the S&P 400's night of 5 Nov worked by hand, the line read off the page's own region and the proof holding it.
+Claims:     none new.
+Pins:       none move: the read surface is pinned by no rule.
+Mutated:    the rule as 22.25's correction of this day states it. L1 every open row counted as the list's own and L2 the page
+            taking none off its table's count, each red at the new test, as predicted.
+Owed:       phase 22's sign-off as the entry above states it, its correction table running to this correction's pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3692 of 3692 tests ran with none failed, migrations 0 to 143
+            with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
