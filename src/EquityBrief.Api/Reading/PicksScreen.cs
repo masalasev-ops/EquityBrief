@@ -109,7 +109,11 @@ public static class PicksScreen
             Family: DipRule.Name,
             Setup: SetupFamilies.Dips.Label,
             Planned: trade.Entry,
-            Cap: trade.Cap);
+            Cap: trade.Cap,
+            FilledOn: trade.FilledOn)
+        {
+            UnderPlan = trade.UnderPlan,
+        };
 
     // The trade an S&P 400's or 600's own pullback, breakout or drift holds a stock on as of a night: the newest listed before
     // the night that is open on it as Past picks reads it, bought and not ended or with its exit fired and not yet sold; none
@@ -150,7 +154,11 @@ public static class PicksScreen
             Setup: SetupFamilies.Named(trade.Family)?.Label ?? trade.Family,
             Trailing: trade.Trail is not null,
             Planned: trade.Entry,
-            Cap: trade.Cap);
+            Cap: trade.Cap,
+            FilledOn: trade.FilledOn)
+        {
+            UnderPlan = trade.UnderPlan,
+        };
 
     // From the 22.25 correction of 2026-11-11 how many open trades of an index's table, of the given setups and listed once
     // their setup went live, are in none of the system's trades: each the index's page list bought in the place of a stock
@@ -303,8 +311,10 @@ public static class PicksScreen
     // never in a reason's, and it counts in the average result, which is what each trade earned. A share
     // over fewer is not drawn because it is not computed.
     // see: An unresolved setup is never a win
-    public static PicksSummary Summary(IReadOnlyList<PickCell> cells)
+    public static PicksSummary Summary(IReadOnlyList<PickCell> cells, DateOnly? night = null)
     {
+        var drawn = night ?? cells.Select(cell => (DateOnly?)cell.Night).Max() ?? DateOnly.MinValue;
+
         // A listing that repeated a trade still open is one move counted already, so it is in no count.
         // see: A repeat listing made before the rule reached the filter is marked and counted once
         var counted = cells.Where(cell => cell.RepeatOf is null).ToArray();
@@ -337,7 +347,10 @@ public static class PicksScreen
             cells.Count - counted.Length,
             counted.Count(cell => cell.Provisional),
             counted.Count(cell => cell.Status == PickStatus.ToBuy),
-            counted.Count(cell => cell.FiredAs is not null));
+            counted.Count(cell => cell.FiredAs is not null),
+            counted.Count(cell => cell.Status == PickStatus.Waiting && cell.Night >= drawn),
+            counted.Count(cell => cell.Status == PickStatus.Waiting && cell.Night < drawn),
+            counted.Count(cell => cell.Status == PickStatus.NotFilled));
     }
 
     // The stored outcome a status stands for, which the run page's own test of a scored setup reads.

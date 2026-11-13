@@ -10,7 +10,7 @@ namespace EquityBrief.Api.Reading;
 public sealed partial class ReadApi
 {
     const string TradedRecords = @"
-        SELECT index_code, family, through, traded_later_edge_per_pick, traded_later_picks
+        SELECT index_code, family, through, traded_later_edge_per_pick, traded_later_picks, live_later_move, live_later_up, live_later_fills
         FROM plan_point WHERE rowid IN (SELECT MAX(rowid) FROM plan_point GROUP BY index_code, family)
         ORDER BY index_code, family;";
 
@@ -33,7 +33,14 @@ public sealed partial class ReadApi
                     reader.IsDBNull(3) ? null : reader.GetDouble(3),
                     reader.IsDBNull(4) ? null : reader.GetInt32(4),
                     EquityBrief.Core.History.LongLedger.StandingFrom.Year,
-                    int.Parse(reader.GetString(2).AsSpan(0, 4), System.Globalization.CultureInfo.InvariantCulture)));
+                    int.Parse(reader.GetString(2).AsSpan(0, 4), System.Globalization.CultureInfo.InvariantCulture))
+                {
+                    // From the 23.10 correction of 2026-11-13 the live plan's moves from 2019, none before a run writes them.
+                    // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+                    LiveMove = reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                    LiveUp = reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                    LiveFills = reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                });
             }
         }
 

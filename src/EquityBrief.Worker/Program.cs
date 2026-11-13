@@ -307,13 +307,13 @@ static async Task<int> PlanPointsRun(string[] args)
 
     if (at < 0 || at + 1 >= args.Length)
     {
-        Console.Error.WriteLine("plan-points: give '--index <GSPC, MID or SML>', and '--print' to write nothing.");
+        Console.Error.WriteLine("plan-points: give '--index <GSPC, MID or SML>', '--family <pullback, breakout, drift or dip>' to walk and write one family alone, and '--print' to write nothing.");
 
         return 1;
     }
 
     return await new EquityBrief.Worker.Loop.PlanPointTest(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
-        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal), driftChecks: args.Contains("--drift-checks", StringComparer.Ordinal));
+        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal), driftChecks: args.Contains("--drift-checks", StringComparer.Ordinal), only: VerbArguments.Value(args, "--family"));
 }
 
 // Each price family's pick on the newest night's cards, or on a session named, priced again at its family's recommended plan
@@ -950,7 +950,7 @@ static int NoVerb()
         "long history, every third test year with the setting carried between, a family at a time, '--again' searching a " +
         "family written through the same session afresh, and " +
         "'plan-points --index <GSPC, MID or SML>' walks every flagged setup of the four price families under every entry, " +
-        "stop and sale, each with '--print' writing nothing, and with '--drift-checks' walking the drift as traded beside its " +
+        "stop and sale, '--family <pullback, breakout, drift or dip>' walking and writing that family alone, each with '--print' writing nothing, and with '--drift-checks' walking the drift as traded beside its " +
         "first-pullback entry and its sales check alone and together, writing nothing, " +
         "'card-plans' prices each price family's pick on the newest night's cards at its family's recommended plan again, " +
         "'--session <yyyy-MM-dd>' a night named, " +

@@ -259,8 +259,11 @@ public partial class FixtureExpectations
         var zoned = OrderAt(98) with { Target = null };
         var (zone, stop, target) = Api.Reading.CardScreen.ZoneOf(zoned.Json(), 100m)!.Value;
 
-        Assert.Equal(new Web.Marks.ZoneBuy(98m, 5, 100m, 10), zone);
+        Assert.Equal(new Web.Marks.ZoneBuy(98m, 5, 100m, 10), zone with { Sale = null });
         Assert.Equal((96m, (decimal?)null), (stop!.Value, target));
+
+        // From the 23.10 correction of 2026-11-13 the zone carries the sale its plan names, worked from the price it waits for.
+        Assert.Equal((Web.Marks.PlanSaleView.KindOf(zoned.Words), 98m, (decimal?)96m, 10), (zone.Sale!.Kind, zone.Sale.Buy, zone.Sale.Stop, zone.Sale.Cap));
 
         var nextOpen = new PlanOrder(new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.TypicalStop(4), PlanPoints.FirstBand).Words, PlanPoints.NextOpen, null, 0, PlanPoints.TypicalStop(4), 95, null, 1, 104, [], null, null, 10);
 
@@ -272,7 +275,7 @@ public partial class FixtureExpectations
 
         var drawn = Api.Reading.CardScreen.View(Card(zoned.Json()));
 
-        Assert.Equal((zone, 96m, (decimal?)null), (drawn.Zone!, drawn.Stop!.Value, drawn.Target));
+        Assert.Equal((zone with { Sale = null }, 96m, (decimal?)null), (drawn.Zone! with { Sale = null }, drawn.Stop!.Value, drawn.Target));
 
         var plain = Api.Reading.CardScreen.View(Card(null));
 

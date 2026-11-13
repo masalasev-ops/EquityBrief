@@ -28,6 +28,16 @@ public sealed record TradeGroupsView(DateOnly? FirstLive, DateOnly? VersionSince
 
     public TradeCountView SameTrades { get; init; } = new(0, 0, 0, 0, 0, 0, null);
 
+    // From the 23.10 correction of 2026-11-13 the orders a plan placed on an earlier night still waiting for their price, in
+    // none of the groups above and not among tonight's to buy.
+    public int StillWaiting { get; init; }
+
+    // Those orders, each with its price and its last session, which Tonight names as a group of their own.
+    public IReadOnlyList<WaitingOrderView> StillWaitingOrders { get; init; } = [];
+
+    // A page's words for them, none where none waits.
+    public string StillWaitingWords => StillWaiting <= 0 ? string.Empty : FormattableString.Invariant($"{StillWaiting} {(StillWaiting == 1 ? "order from an earlier night is" : "orders from earlier nights are")} {PlanOrderWords.StillWaiting.Replace("their", StillWaiting == 1 ? "its" : "their", StringComparison.Ordinal)}");
+
     public const string SystemWords = "the system's trades";
 
     public const string VersionWords = "this version's trades";

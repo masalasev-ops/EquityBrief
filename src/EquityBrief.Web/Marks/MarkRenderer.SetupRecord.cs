@@ -10,6 +10,16 @@ namespace EquityBrief.Web.Marks;
 // see: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's
 public sealed record SetupLongRecord(string Index, string Family, double? EdgePerPick, int? Picks, int From, int Through, int? ReachesBack = null)
 {
+    // From the 23.10 correction of 2026-11-13 the plan its live rule states, walked over its setups from 2019: its fills' mean
+    // move from the fill to the sale as a fraction of the fill, the share that sold above the fill and over how many fills; none
+    // before the test has written them.
+    // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+    public double? LiveMove { get; init; }
+
+    public double? LiveUp { get; init; }
+
+    public int? LiveFills { get; init; }
+
     // A record of a figure: an edge over at least the picks a record needs.
     public bool Measured => ReachesBack is null && EdgePerPick is not null && Picks >= EquityBrief.Core.Cards.TakenWalk.RecordMinimum;
 
@@ -54,7 +64,12 @@ public sealed record SetupRecords(IReadOnlyList<SetupLongRecord> Records)
 // tonight's close and, where it sets no target, the trading days after which it sells. No plan buys at a zone before 23.10. From
 // the 23.10 correction of 2026-11-10 one whose stock's levels set no price tonight places no buy, its price and stop drawn as none.
 // see: A plan that buys at a zone draws the price it waits for and how long it waits beside tonight's close on every card
-public sealed record ZoneBuy(decimal Price, int Within, decimal Close, int? Sessions = null, bool NoBuy = false);
+public sealed record ZoneBuy(decimal Price, int Within, decimal Close, int? Sessions = null, bool NoBuy = false)
+{
+    // From the 23.10 correction of 2026-11-13 the sale the plan was registered with, worked from the price it waits for.
+    // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+    public PlanSaleView? Sale { get; init; }
+}
 
 public sealed partial class MarkRenderer
 {

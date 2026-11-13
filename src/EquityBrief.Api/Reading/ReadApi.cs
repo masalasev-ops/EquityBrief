@@ -627,7 +627,15 @@ public sealed record IndexResultRow(string Ticker, string Family, bool Passed, i
 
 // One trade an index's list kept: where it ended by the night, its result before its cost and its cost, each in
 // multiples of its risk, none while open on the night.
-public sealed record IndexTradeRow(string Index, string Family, string Ticker, DateOnly Listed, int Place, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, DateOnly? EndedOn, double? Result, double? Cost, decimal? Fill = null, string? Unfilled = null, decimal? FiredClose = null, decimal? Sale = null);
+public sealed record IndexTradeRow(string Index, string Family, string Ticker, DateOnly Listed, int Place, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, DateOnly? EndedOn, double? Result, double? Cost, decimal? Fill = null, string? Unfilled = null, decimal? FiredClose = null, decimal? Sale = null)
+{
+    // From the 23.10 correction of 2026-11-13 a live rule's trade under a plan buying at a price, and the session its price
+    // filled it on.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    public bool UnderPlan { get; init; }
+
+    public DateOnly? FilledOn { get; init; }
+}
 
 // One holding an index's sector heavyweights kept, as of a night: where it ended by the night, why, its result, its
 // size cut's and its cost, each a fraction of its buy and none while it is held on the night, and the lead it was bought

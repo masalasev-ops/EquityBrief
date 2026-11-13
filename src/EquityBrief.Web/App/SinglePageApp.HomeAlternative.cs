@@ -128,12 +128,18 @@ public sealed partial class SinglePageApp
         }
 
         var block = new StringBuilder();
-        var (saleLabel, saleValue) =
-            plan.Target is { } target ? ("Aim to sell at", Dollars(target))
-            : plan.Parts.Count > 0 ? ("Sell in parts at", Listed([.. plan.Parts.Select(Dollars)]))
-            : plan.Trail is not null ? ("Aim to sell at", "No fixed target")
-            : plan.Bounce ? ("Aim to sell", "When it bounces back")
-            : ("Sell after", Invariant($"{plan.Cap} trading days"));
+
+        // From the 23.10 correction of 2026-11-13 the plan's sale as every card draws it, worked from the price it buys at.
+        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+        var sale = new EquityBrief.Web.Marks.PlanSaleView(
+            EquityBrief.Web.Marks.PlanSaleView.KindOf(plan.Combination),
+            plan.Buy ?? plan.Close,
+            plan.GiveUp,
+            plan.Target,
+            [.. plan.Parts.Where(part => part > (plan.Buy ?? plan.Close)).Order()],
+            plan.Trail,
+            plan.Bounce ? EquityBrief.Core.Families.DipRule.RsiExit : null,
+            plan.Cap);
 
         block.Append(Invariant($"<div class=\"home-alt\" data-alt=\"{(better ? "better" : "less")}\" data-combination=\"{Escaped(plan.Combination)}\">"));
         block.Append(Invariant($"<p class=\"home-alt-h\"><b>{heading}</b> {Escaped(AlternativeLead(plan))}</p>"));
@@ -142,7 +148,12 @@ public sealed partial class SinglePageApp
             ? Invariant($"<div><span>Buy if it dips to about</span><b>{Dollars(level)}</b></div>")
             : Invariant($"<div><span>Buy at about</span><b>{Dollars(plan.Close)}</b></div>"));
         block.Append(Invariant($"<div><span>Sell if it falls to</span><b class=\"stop\">{Dollars(plan.GiveUp)}</b></div>"));
-        block.Append(Invariant($"<div><span>{saleLabel}</span><b class=\"aim\">{Escaped(saleValue)}</b></div>"));
+
+        foreach (var line in EquityBrief.Web.Marks.MarkRenderer.PlanSaleLines(sale, "this plan"))
+        {
+            block.Append(Invariant($"<div data-sale=\"{line.Key}\"><span>{Escaped(line.Label)}</span><b class=\"aim\">{Escaped(line.Value)}</b>{(line.Note is { } note ? Invariant($"<span class=\"sale-note\">{Escaped(note)}</span>") : string.Empty)}</div>"));
+        }
+
         block.Append("</div>");
         block.Append(Invariant($"<p class=\"home-alt-note\">{Escaped(AlternativeNote(plan, reading))}</p>"));
         block.Append("</div>");

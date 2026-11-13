@@ -40,7 +40,17 @@ public sealed record BriefListed(string Family, DecisionCardRow? Card, int? DipE
 // From the 22.1 correction of 2026-11-11 the short-term dip's open trade a stock is held on, on any index: the card its
 // listing night stored, the exit its dial read that night, the night that listed it and its fill.
 // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
-public sealed record BriefHeld(string Family, DecisionCardRow Card, int? DipExitLevel, DateOnly Listed, decimal? Fill);
+public sealed record BriefHeld(string Family, DecisionCardRow Card, int? DipExitLevel, DateOnly Listed, decimal? Fill)
+{
+    // From the 23.10 correction of 2026-11-13 a trade a live rule's plan bought once its price traded, with the stop that plan
+    // placed from its fill and its target, none for a trade bought at the next open.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    public bool Planned { get; init; }
+
+    public decimal? PlanStop { get; init; }
+
+    public decimal? PlanTarget { get; init; }
+}
 
 // The answers the night stored that a stock's standing under each setup is read from: on the S&P 500 the swing filter's
 // row and the family evaluator's results with the night's picks; on the S&P 400 and 600 the index families' results and
@@ -485,6 +495,34 @@ public static class BriefScreen
             ];
         }
 
+        // From the 23.10 correction of 2026-11-13 a pick its live rule's plan buys at a price: the price it waits for and how long,
+        // and the stop and the sale that plan was registered with; none where its levels set no price tonight.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+        if (inputs.Listed is { Card: { Entry: { } close } planned } listedOnAPlan && CardScreen.ZoneOf(planned.Plan, close) is { } zoned)
+        {
+            if (zoned.Zone is not { NoBuy: false, Sale: { } plannedSale } zone)
+            {
+                return
+                [
+                    new BriefLine("buy", $"Picked tonight by {Label(listedOnAPlan.Family)}. {MarkRenderer.NoBuyTonight}"),
+                    new BriefLine("stop", "No stop is placed, since no buy is."),
+                    new BriefLine("exit", "No sale either."),
+                    new BriefLine("size", "No plan is stored to size."),
+                ];
+            }
+
+            var planSteps = plannedSale.Steps();
+
+            return
+            [
+                new BriefLine("buy", Invariant($"Picked tonight by {Label(listedOnAPlan.Family)}: buy only if it dips to about {Price(zone.Price)} within {zone.Within} trading days; if it never does, there is no trade."), zone.Price.ToString(CultureInfo.InvariantCulture)),
+                new BriefLine("stop", planSteps[0]),
+                new BriefLine("exit", string.Join(" ", planSteps.Skip(1))),
+                .. Size(inputs, plan),
+            ];
+        }
+
         if (inputs.Listed is { Card: { Entry: { } entry } card } listed)
         {
             var steps = listed.Family == DipRule.Name
@@ -505,13 +543,15 @@ public static class BriefScreen
         // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
         if (inputs.Held is { } held)
         {
+            var heldStop = held.Planned ? held.PlanStop ?? held.Card.Stop : held.Card.Stop;
             var steps = held.Family == DipRule.Name
-                ? Management.ForDip(held.Card.Stop, held.DipExitLevel ?? DipRule.Provisional.ExitLevel, held.Card.Cap)
-                : Management.For(held.Card.Stop, held.Card.Target, held.Card.Trail, held.Card.Cap, held.Family == HeavyweightRule.Name);
+                ? Management.ForDip(heldStop, held.DipExitLevel ?? DipRule.Provisional.ExitLevel, held.Card.Cap)
+                : Management.For(heldStop, held.Planned ? held.PlanTarget ?? held.Card.Target : held.Card.Target, held.Card.Trail, held.Card.Cap, held.Family == HeavyweightRule.Name);
+            var boughtAt = held.Planned ? ", bought when its plan's price traded" : ", bought at the next open";
 
             return
             [
-                new BriefLine("buy", Invariant($"Held on the trade {Label(held.Family)} picked it for on {held.Listed:d MMM yyyy}, bought at the next open{(held.Fill is { } fill ? " at " + Price(fill) : string.Empty)}."), held.Fill?.ToString(CultureInfo.InvariantCulture)),
+                new BriefLine("buy", Invariant($"Held on the trade {Label(held.Family)} picked it for on {held.Listed:d MMM yyyy}{boughtAt}{(held.Fill is { } fill ? " at " + Price(fill) : string.Empty)}."), held.Fill?.ToString(CultureInfo.InvariantCulture)),
                 new BriefLine("stop", steps.Count > 0 ? steps[0] : "No stop is stored."),
                 new BriefLine("exit", steps.Count > 1 ? string.Join(" ", steps.Skip(1)) : "No target or exit is stored."),
             ];

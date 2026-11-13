@@ -802,7 +802,28 @@ public sealed partial class MarkRenderer
     // The listed stocks not bought, in one line beneath an account's trades, a reason at a time: "Not bought: n picks,
     // <reason>: tickers", each stock linking to its chart, never a row of a trade table.
     // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
-    static string NotBought(PaperNotBought unbought, int reshuffled = 0, string? family = null) =>
+    // From the 23.10 correction of 2026-11-13 an order a plan placed still waiting for its price is not a stock not bought: it
+    // stands on a line of its own above them, each stock with its price and its last session.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    static string NotBought(PaperNotBought unbought, int reshuffled = 0, string? family = null)
+    {
+        var waiting = unbought.Reasons.Where(reason => PlanOrderWords.IsWaiting(reason.Why)).ToArray();
+
+        if (waiting.Length == 0)
+        {
+            return NotBoughtLine(unbought, reshuffled, family);
+        }
+
+        var rest = new PaperNotBought([.. unbought.Reasons.Where(reason => !PlanOrderWords.IsWaiting(reason.Why))]);
+        var orders = waiting.SelectMany(reason => reason.Stocks.Select(stock => (stock.Ticker, stock.Listed, reason.Why))).OrderByDescending(one => one.Listed).ThenBy(one => one.Ticker, StringComparer.Ordinal).ToArray();
+
+        return Formatted($"<p class=\"paper-waiting\" data-waiting=\"{orders.Length}\"{(family is null ? string.Empty : Formatted($" data-family=\"{Escaped(family)}\""))}>{(family is null ? string.Empty : Formatted($"<b>{Escaped(OwnAccount(family))}.</b> "))}{(orders.Length == 1 ? "An order placed and waiting, in no trade until it fills: " : "Orders placed and waiting, in no trade until they fill: ")}")
+            + string.Join("; ", orders.Select(order => Formatted($"<a href=\"#/chart/{Uri.EscapeDataString(order.Ticker)}\" title=\"listed {DayOf(order.Listed)}\">{Escaped(order.Ticker)}</a> {Escaped(order.Why)}")))
+            + ".</p>"
+            + (rest.Count == 0 ? string.Empty : NotBoughtLine(rest, reshuffled, family));
+    }
+
+    static string NotBoughtLine(PaperNotBought unbought, int reshuffled = 0, string? family = null) =>
         unbought.Count == 0
             ? "<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>"
             : Formatted($"<p class=\"paper-unbought\" data-unbought=\"{unbought.Count}\"{(family is null ? string.Empty : Formatted($" data-family=\"{Escaped(family)}\""))}>{(family is null ? string.Empty : Formatted($"<b>{Escaped(OwnAccount(family))}.</b> "))}Not bought: ")

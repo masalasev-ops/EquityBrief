@@ -28,8 +28,11 @@ public static class TradeGroups
         (PaperTrade Trade, double? Result)[] earlier = [.. heads.SelectMany(head => (head.Earlier ?? []).Select(one => (one.Trade, one.Result))).Where(one => one.Trade.Bought <= night)];
         (PaperTrade Trade, double? Result)[] same = [.. heads.SelectMany(head => head.Same).Where(one => one.Trade.Bought <= night)];
 
+        // From the 23.10 correction of 2026-11-13 an order a plan placed tonight waits for its price as tonight's pick, and one
+        // placed on an earlier night still waiting is in a group of its own.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
         int ToBuy(IEnumerable<PaperAccountSource> accounts) =>
-            accounts.Sum(head => (head.Unfilled ?? []).Count(one => one.Why == PaperAccount.Waiting)
+            accounts.Sum(head => (head.Unfilled ?? []).Count(one => one.Why == PaperAccount.Waiting || (PlanOrderWords.IsWaiting(one.Why) && one.Listed >= night))
                 + head.Trades.Count(one => one.Trade.Bought > night)
                 + (head.Earlier ?? []).Count(one => one.Trade.Bought > night));
 
@@ -45,6 +48,7 @@ public static class TradeGroups
             ToBuy(heads.Where(head => head.Book && head.Family != Core.Families.ImprovingRule.Name)))
         {
             SameTrades = Count(same, night, close, sessions),
+            StillWaiting = heads.Sum(head => (head.Unfilled ?? []).Count(one => PlanOrderWords.IsWaiting(one.Why) && one.Listed < night)),
         };
     }
 

@@ -49,6 +49,10 @@ public sealed record HomeView(
 
     // The monthly books' holdings bought at tonight's reshuffle, each with its book's family, in Tonight's order.
     public IReadOnlyList<(string Family, string Ticker)> Reshuffled { get; init; } = [];
+
+    // From the 23.10 correction of 2026-11-13 the orders a plan placed on an earlier night still waiting for their price, which
+    // the heading does not count and a line beneath it names.
+    public IReadOnlyList<WaitingOrderView> StillWaiting { get; init; } = [];
 }
 
 // Home, from 22.16: the landing page for a reader new to investing, the day, tonight's ideas, how past ideas have done and
@@ -386,6 +390,11 @@ public sealed partial class SinglePageApp
 
         region.Append(Invariant($"<section class=\"card\" id=\"ideas\" data-ideas=\"{view.IdeasCount}\"><div class=\"card-h\"><div><div class=\"lbl\">Tonight's ideas</div><h2>{Escaped(title)}</h2></div><div>{stamp}</div></div><div class=\"card-b\">"));
 
+        // The heading counts tonight's new picks alone; the orders earlier nights placed still waiting for their price are a
+        // group of their own beneath it.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        region.Append(MarkRenderer.StillWaitingOrders(view.StillWaiting, view.Reading.Name));
+
         // Every pick is a card, the ideas to buy first and the picks watched after them, each in Tonight's order; the heading
         // counts the ideas to buy, and the line above the cards says what splits them.
         // see: Home draws every pick as a card in Tonight's order, the ideas to buy first and the watched after them with each card saying why
@@ -395,7 +404,8 @@ public sealed partial class SinglePageApp
         }
         else
         {
-            region.Append("<p class=\"card-summary\">Each idea comes with three prices decided tonight: what to pay, where to give up if it goes wrong, and where to take the profit.</p>");
+            // From the 23.10 correction of 2026-11-13, in the operator's words, since a plan may sell in parts or on its time limit.
+            region.Append("<p class=\"card-summary\">Each idea comes with what to pay, where to give up if it goes wrong, and how it sells.</p>");
         }
 
         if (view.IdeasCount + view.Watching.Count > 0)
@@ -521,10 +531,25 @@ public sealed partial class SinglePageApp
             card.Append("<div class=\"home-prices\">");
             card.Append(Invariant($"<div><span>{buying} if it dips to about</span><b>{Dollars(zone.Price)}</b></div>"));
             card.Append(Invariant($"<div><span>Sell if it closes below</span><b class=\"stop\">{(idea.Stop is { } below ? Dollars(below) : NoFigure)}</b></div>"));
-            card.Append(idea.Target is { } aimed
-                ? Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{Dollars(aimed)}</b></div>")
-                : Invariant($"<div><span>Otherwise sell after</span><b class=\"aim\">{(zone.Sessions is { } sessions ? Invariant($"{sessions} trading days") : NoFigure)}</b></div>"));
+
+            // From the 23.10 correction of 2026-11-13 the sale the plan was registered with, worked from the price it waits for.
+            // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+            if (zone.Sale is { } sale)
+            {
+                foreach (var line in MarkRenderer.PlanSaleLines(sale))
+                {
+                    card.Append(Invariant($"<div data-sale=\"{line.Key}\"><span>{Escaped(line.Label)}</span><b class=\"aim\">{Escaped(line.Value)}</b>{(line.Note is { } note ? Invariant($"<span class=\"sale-note\">{Escaped(note)}</span>") : string.Empty)}</div>"));
+                }
+            }
+            else
+            {
+                card.Append(idea.Target is { } aimed
+                    ? Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{Dollars(aimed)}</b></div>")
+                    : Invariant($"<div><span>Otherwise sell after</span><b class=\"aim\">{(zone.Sessions is { } sessions ? Invariant($"{sessions} trading days") : NoFigure)}</b></div>"));
+            }
+
             card.Append("</div>");
+            card.Append(zone.Sale is { OnTimeAlone: true } ? Invariant($"<p class=\"home-cond\" data-time-record>{Escaped(MarkRenderer.TimeLimitRecordWords(idea.LongRecord))}</p>") : string.Empty);
             card.Append(Invariant($"<p class=\"home-cond\">{Escaped(MarkRenderer.ZoneWaitLine(zone))}</p>"));
         }
         else
@@ -569,7 +594,10 @@ public sealed partial class SinglePageApp
             card.Append(Invariant($"<div class=\"home-odds home-noloss\" data-no-loss=\"{EquityBrief.Core.Families.TrailingExit.NoLossAt(entered, trail).ToString(CultureInfo.InvariantCulture)}\">{Escaped(MarkRenderer.NoLossLine(entered, trail))}</div>"));
             card.Append(idea.Record is { } record ? Invariant($"<div class=\"home-odds home-winners\" data-finished=\"{record.Finished}\">{Escaped(MarkRenderer.WinnersLine(idea.Family, record))}</div>") : string.Empty);
         }
-        else if (!idea.Rises && idea.Buy is { } bought && idea.Stop is { } give && idea.Target is { } aim && bought > give && aim > bought)
+        // From the 23.10 correction of 2026-11-13 a plan buying at a price aims at the sale it was registered with, its staged
+        // levels' mean for staged sales, and names no aim on its time limit alone.
+        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+        else if (!idea.Rises && idea.Buy is { } bought && idea.Stop is { } give && (idea.Zone?.Sale is { } sale ? sale.Aim : idea.Target) is { } aim && bought > give && aim > bought)
         {
             var said = Invariant($"Risks $1 to make about ${(idea.RewardPerRisk ?? (aim - bought) / (bought - give)):0.00}");
 

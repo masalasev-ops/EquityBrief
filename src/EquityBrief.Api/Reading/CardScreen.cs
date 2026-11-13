@@ -94,7 +94,10 @@ public static class CardScreen
             targetDrawn,
             drawn,
             row.Record is { } stored ? Record(stored) : null,
-            dip
+            // From the 23.10 correction of 2026-11-13 a plan buying at a price is managed by the sale it was registered with.
+            // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+            zone?.Zone.Sale is { } planSale ? planSale.Steps()
+            : dip
                 ? EquityBrief.Core.Cards.Management.ForDip(stopDrawn, (given.Dip ?? EquityBrief.Core.Families.DipRule.Provisional).ExitLevel, row.Cap)
                 : EquityBrief.Core.Cards.Management.For(stopDrawn, targetDrawn, row.Trail, row.Cap, heavyweights),
             money is { } plan && sizedOn is { } held
@@ -152,11 +155,26 @@ public static class CardScreen
         }
 
         var stop = EquityBrief.Core.Loop.PlanPoints.StopOf(order.Stop, level, order.RuleStop, order.ZoneStop, order.TypicalDay);
+        decimal? stopAt = stop is { } placed ? EquityBrief.Core.Prices.Statistic.ToPrice(placed) : null;
+        decimal? targetAt = order.Target is { } aimed ? EquityBrief.Core.Prices.Statistic.ToPrice(aimed) : null;
+
+        // From the 23.10 correction of 2026-11-13 the sale the plan was registered with, worked from the price it waits for: its
+        // staged levels above that price, each selling an equal share.
+        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+        var sale = new PlanSaleView(
+            PlanSaleView.KindOf(order.Words),
+            EquityBrief.Core.Prices.Statistic.ToPrice(level),
+            stopAt,
+            targetAt,
+            [.. order.Staged.Where(staged => staged > level).Order().Select(staged => EquityBrief.Core.Prices.Statistic.ToPrice(staged))],
+            order.Trail is { } trail ? EquityBrief.Core.Prices.Statistic.ToPrice(trail) : null,
+            order.RsiAbove,
+            order.Cap);
 
         return (
-            new ZoneBuy(EquityBrief.Core.Prices.Statistic.ToPrice(level), order.Window, tonight, order.Target is null ? order.Cap : null),
-            stop is { } placed ? EquityBrief.Core.Prices.Statistic.ToPrice(placed) : null,
-            order.Target is { } aimed ? EquityBrief.Core.Prices.Statistic.ToPrice(aimed) : null);
+            new ZoneBuy(EquityBrief.Core.Prices.Statistic.ToPrice(level), order.Window, tonight, order.Target is null ? order.Cap : null) { Sale = sale },
+            stopAt,
+            targetAt);
     }
 
     // What could hit the trade, as the night stored it on the card.

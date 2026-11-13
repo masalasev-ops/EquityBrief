@@ -234,6 +234,11 @@ public sealed record PickCell(
     DateOnly? SoldOn = null,
     decimal? Sale = null)
 {
+    // From the 23.10 correction of 2026-11-13 a live rule's trade under a plan buying at a price, its buy and its stop the
+    // plan's.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    public bool UnderPlan { get; init; }
+
     public string? FiredWords => FiredAs switch
     {
         null => null,
@@ -262,12 +267,20 @@ public static class PickStatus
     // see: Every count of trades names its group and one function works the four groups
     public const string ToBuy = "to-buy";
 
+    // From the 23.10 correction of 2026-11-13 a live rule's order under a plan buying at a price: waiting for its price, or
+    // ended at its window's last session unfilled, which no group, rate, account or record counts.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    public const string Waiting = "waiting";
+    public const string NotFilled = "not-filled";
+
     public static IReadOnlyList<string> Filters { get; } = [Open, ToBuy, Target, Stopped, Time];
 
     public static string Words(string status) => status switch
     {
         Open => "Open",
         ToBuy => "To buy at tomorrow's open",
+        Waiting => "Waiting for its price",
+        NotFilled => "Not filled, no trade",
         Target => "Reached target",
         Stopped => "Stopped out",
         Time => "Ran out of time",
@@ -305,7 +318,13 @@ public sealed record PicksSummary(
     // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     int Provisional = 0,
     int ToBuy = 0,
-    int Selling = 0)
+    int Selling = 0,
+    // From the 23.10 correction of 2026-11-13 a plan's orders placed on the night drawn and waiting for their price, beside
+    // those to buy at the open, and the orders from earlier nights still waiting, a group of their own.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    int PlacedTonight = 0,
+    int StillWaiting = 0,
+    int NotFilled = 0)
 {
     public int Finished => Target + Stopped + Time;
 
@@ -7461,10 +7480,20 @@ public sealed partial class MarkRenderer : IComponent
         var counts = new StringBuilder();
 
         counts.Append(Invariant, $"<dl class=\"counts\" data-listed=\"{summary.Listed}\" data-nights=\"{summary.Nights}\" data-open=\"{summary.Open}\" data-to-buy=\"{summary.ToBuy}\" data-finished=\"{summary.Finished}\" ");
-        counts.Append(Invariant, $"data-target=\"{summary.Target}\" data-stopped=\"{summary.Stopped}\" data-time=\"{summary.Time}\" data-missing=\"{summary.Missing}\">");
+        counts.Append(Invariant, $"data-target=\"{summary.Target}\" data-stopped=\"{summary.Stopped}\" data-time=\"{summary.Time}\" data-missing=\"{summary.Missing}\"{(summary.PlacedTonight + summary.StillWaiting + summary.NotFilled == 0 ? string.Empty : Formatted($" data-new-waiting=\"{summary.PlacedTonight}\" data-still-waiting=\"{summary.StillWaiting}\" data-not-filled=\"{summary.NotFilled}\""))}>");
         counts.Append(Invariant, $"<div><dt>Trades listed</dt><dd>{summary.Listed}<span class=\"grp\">over {summary.Nights} night{(summary.Nights == 1 ? string.Empty : "s")}</span></dd></div>");
 
-        foreach (var (words, count) in new[] { ("To buy at tomorrow's open", summary.ToBuy), ("Still open", summary.Open), ("Finished", summary.Finished), ("Reached target", summary.Target), ("Stopped out", summary.Stopped), ("Ran out of time", summary.Time) })
+        // From the 23.10 correction of 2026-11-13 the orders a plan placed waiting for their price, tonight's new and earlier
+        // nights' each a group of its own, and those whose window passed unfilled, which are no trade.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        (string, int)[] waiting =
+        [
+            .. summary.PlacedTonight > 0 ? [(PlanOrderWords.NewTonightHeading, summary.PlacedTonight)] : Array.Empty<(string, int)>(),
+            .. summary.StillWaiting > 0 ? [(PlanOrderWords.StillWaitingHeading, summary.StillWaiting)] : Array.Empty<(string, int)>(),
+            .. summary.NotFilled > 0 ? [(PlanOrderWords.NotFilledHeading, summary.NotFilled)] : Array.Empty<(string, int)>(),
+        ];
+
+        foreach (var (words, count) in new[] { ("To buy at tomorrow's open", summary.ToBuy) }.Concat(waiting).Concat([("Still open", summary.Open), ("Finished", summary.Finished), ("Reached target", summary.Target), ("Stopped out", summary.Stopped), ("Ran out of time", summary.Time)]))
         {
             counts.Append(Invariant, $"<div><dt>{words}</dt><dd>{count}{(words == "Still open" && summary.Selling > 0 ? Formatted($"<span class=\"grp\">{Escaped(TradeGroupsView.Selling(summary.Selling))}</span>") : string.Empty)}</dd></div>");
         }

@@ -18,6 +18,9 @@ public static partial class CountsProof
     const string Fail = "fail";
     const string Unexamined = "unexamined";
 
+    // The count the group of orders still waiting is headed with.
+    const string StillWaitingCount = @"(\d+) orders? from earlier nights (?:is|are) still waiting";
+
     public static IReadOnlyList<ProofVerdict> Check(TradeGroupsView groups, string home, string tonight, string paper)
     {
         var (onHome, onTonight, onPaper) = (Text(home), Text(tonight), Text(paper));
@@ -42,22 +45,35 @@ public static partial class CountsProof
             Same("Tonight's open trades of the same before this version are that group's", Read(onTonight, @"(\d+) the same trades? before this version", "Of the system's trades"), groups.SameTrades.Open),
             Same("Paper trading's same trades before this version are that group's", Read(onPaper, @"(\d+) of them (?:is|are) the same trades? before this version", "The system has bought"), groups.SameTrades.Bought),
             new("The system's trades are this version's, the same before it and the earlier versions'", groups.System.Bought == groups.ThisVersion.Bought + groups.SameTrades.Bought + groups.EarlierVersions.Bought && groups.System.Open == groups.ThisVersion.Open + groups.SameTrades.Open + groups.EarlierVersions.Open ? Pass : Fail),
+
+            // From the 23.10 correction of 2026-11-13 the orders earlier nights placed still waiting for their price, a group
+            // of their own on Home beneath its heading and on Tonight beneath the open trades.
+            // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+            Same("Home's orders still waiting are those earlier nights placed", Read(onHome, StillWaitingCount, "Tonight's ideas:"), groups.StillWaiting),
+            Same("Tonight's orders still waiting are those earlier nights placed", Read(onTonight, StillWaitingCount, "Of the system's trades"), groups.StillWaiting),
         ];
     }
 
     // Past picks' first table held to the system's trades of the setups it lists, with from the 22.25 correction of
     // 2026-11-11 those of its setups the line names as drawing no row; an index's table draws no count of targets and stops,
     // its rows stating each trade's result.
-    public static IReadOnlyList<ProofVerdict> CheckPicks(TradeCountView listed, int toBuy, string picks)
+    public static IReadOnlyList<ProofVerdict> CheckPicks(TradeCountView listed, int toBuy, string picks, int stillWaiting = 0)
     {
         var text = Text(picks);
         var open = Read(text, @"(\d+) in this table") is { } here ? here + (Read(text, @"(\d+) more of its setups' bought by their rules' own lists") ?? 0) : Read(text, @"Still open (\d+)");
-        var buying = Read(text, @"To buy at tomorrow's open (\d+)") ?? Read(text, @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?, (\d+) to buy at tomorrow's open", @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?\.");
+        var buying = Read(text, @"To buy at tomorrow's open (\d+)") ?? Read(text, @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?, (\d+) to buy at tomorrow's open", @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?(?:\.|, \d+ new tonight|, \d+ from earlier nights)");
+
+        // From the 23.10 correction of 2026-11-13 an order a plan placed tonight is among the picks to buy, named as its own
+        // group, and the orders from earlier nights still waiting are a group of their own, none drawn where none waits.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        var newWaiting = Read(text, Regex.Escape(PlanOrderWords.NewTonightHeading) + @" (\d+)") ?? Read(text, @"(\d+) new tonight waiting for (?:its|their) price") ?? 0;
+        var stillDrawn = Read(text, Regex.Escape(PlanOrderWords.StillWaitingHeading) + @" (\d+)") ?? Read(text, @"(\d+) from earlier nights still waiting for their price") ?? (buying is null ? null : 0);
 
         return
         [
             Same("Past picks' open are the system's of its setups", open, listed.Open),
-            Same("Past picks' stocks to buy are those waiting on the open", buying, toBuy),
+            Same("Past picks' stocks to buy are those waiting on the open", buying is { } drawn ? drawn + newWaiting : null, toBuy),
+            Same("Past picks' orders still waiting are those earlier nights placed", stillDrawn, stillWaiting),
             .. Read(text, @"Reached target (\d+)") is { } target ? [Same("Past picks' reached target are the system's of its setups", target, listed.AtTarget)] : Array.Empty<ProofVerdict>(),
             .. Read(text, @"Stopped out (\d+)") is { } stopped ? [Same("Past picks' stopped out are the system's of its setups", stopped, listed.AtStop)] : Array.Empty<ProofVerdict>(),
         ];
