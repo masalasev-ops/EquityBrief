@@ -61,7 +61,8 @@ public sealed record BriefAnswers(
     IReadOnlyList<ImprovingResultRow>? ImprovingResults = null,
     IReadOnlyList<ImprovingTradeRow>? ImprovingTrades = null,
     IReadOnlyList<QualityHoldingRow>? QualityHoldings = null,
-    bool DipHeld = false);
+    bool DipHeld = false,
+    string? IndexHeld = null);
 
 // What a stock's brief read is written from, each read as the full page or the decision card reads it: the stock's
 // membership row with its trend and nearest bands, the newest value of each indicator series, its reported quarters'
@@ -161,9 +162,12 @@ public static class BriefScreen
         {
             var result = answers.IndexResults.FirstOrDefault(one => one.Ticker == ticker && one.Family == family);
 
+            var heldOn = family == answers.IndexHeld;
+
             standing.Add(result is null
-                ? new BriefStanding(family, BriefStates.NotRead)
+                ? new BriefStanding(family, heldOn ? BriefStates.HeldTrade : BriefStates.NotRead)
                 : OnTheList(answers.IndexPicks, family) ? new BriefStanding(family, BriefStates.Listed)
+                : heldOn ? new BriefStanding(family, BriefStates.HeldTrade)
                 : result.Passed ? new BriefStanding(family, BriefStates.Passed)
                 : TonightScreen.IndexCloseAcross([result], [])?.FirstOrDefault() is { } close ? new BriefStanding(family, BriefStates.Short, close.Gate, 1)
                 : new BriefStanding(family, BriefStates.NotClose));

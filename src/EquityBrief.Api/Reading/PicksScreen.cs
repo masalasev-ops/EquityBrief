@@ -111,6 +111,47 @@ public static class PicksScreen
             Planned: trade.Entry,
             Cap: trade.Cap);
 
+    // The trade an S&P 400's or 600's own pullback, breakout or drift holds a stock on as of a night: the newest listed before
+    // the night that is open on it as Past picks reads it, bought and not ended or with its exit fired and not yet sold; none
+    // where it holds none.
+    // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+    public static IndexTradeRow? HeldIndexTrade(IReadOnlyList<IndexTradeRow> trades, string ticker, DateOnly night) =>
+        trades
+            .Where(trade => string.Equals(trade.Ticker, ticker, StringComparison.Ordinal)
+                && SetupFamilies.InPageOrder.Any(family => family.Name == trade.Family)
+                && trade.Listed < night
+                && IndexTrades([trade], NoCompanies)[0].Open)
+            .OrderByDescending(trade => trade.Listed)
+            .FirstOrDefault();
+
+    static readonly IReadOnlyDictionary<string, string?> NoCompanies = new Dictionary<string, string?>(StringComparer.Ordinal);
+
+    // The held index trade as the stock page draws a held trade: the night that listed it, its fill, its stop, its target or
+    // its trailing stop, and its time limit, open on the night.
+    public static PickCell HeldIndexCell(IndexTradeRow trade, string? company) =>
+        new(
+            trade.Ticker,
+            company,
+            trade.Listed,
+            trade.Family,
+            trade.Fill,
+            trade.Stop,
+            trade.Target,
+            PickStatus.Open,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            Family: trade.Family,
+            Setup: SetupFamilies.Named(trade.Family)?.Label ?? trade.Family,
+            Trailing: trade.Trail is not null,
+            Planned: trade.Entry,
+            Cap: trade.Cap);
+
     // From the 22.25 correction of 2026-11-11 how many open trades of an index's table, of the given setups and listed once
     // their setup went live, are in none of the system's trades: each the index's page list bought in the place of a stock
     // another setup's trade held, which its live rule's own list bought instead, matched by its stock, its setup and the

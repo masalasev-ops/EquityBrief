@@ -632,7 +632,15 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         : PicksScreen.HeldDip(await read.DipTradesAsync(dipIndex, dipOn), ticker, dipOn) is { } dipTrade
             ? PicksScreen.HeldDipCell(dipTrade, members.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal))?.Name)
             : null;
-    var heldOpen = nightCards is { Count: > 0 } ? null : (before ?? []).Where(pick => pick.Status == PickStatus.Open && pick.RepeatOf is null).Concat(heldDip is { } dip ? [dip] : []).OrderByDescending(pick => pick.Night).FirstOrDefault();
+
+    // The open trade of the S&P 400's or 600's own pullback, breakout or drift the stock is held on, drawn as a held trade
+    // where it is the newest open.
+    var heldIndex = nightCards is { Count: > 0 } || night is not { } indexOn || await read.IndexOfAsync(ticker, indexOn) is not { } heldIndexCode || heldIndexCode == Universes.Large.Code
+        ? null
+        : PicksScreen.HeldIndexTrade(await read.IndexTradesAsync(heldIndexCode, indexOn), ticker, indexOn) is { } indexTrade
+            ? PicksScreen.HeldIndexCell(indexTrade, members.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal))?.Name)
+            : null;
+    var heldOpen = nightCards is { Count: > 0 } ? null : (before ?? []).Where(pick => pick.Status == PickStatus.Open && pick.RepeatOf is null).Concat(heldDip is { } dip ? [dip] : []).Concat(heldIndex is { } indexHeld ? [indexHeld] : []).OrderByDescending(pick => pick.Night).FirstOrDefault();
     var heldCards = heldOpen is { } openTrade ? await CardsOfTheName(read, ticker, openTrade.Night) : null;
 
     // The newest results release accepted by the night: its opening line, which the management box quotes, and its text,
@@ -766,6 +774,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         aloneDetail: await read.NewestAloneAsync(ticker),
         heldCards: heldCards,
         heldDip: heldDip,
+        heldIndex: heldIndex,
         // Whether the segment commentary drawn was written from the release's own segment table, which one written before
         // the table was read for its facts was not.
         commentaryFromRelease: written.FirstOrDefault(section => string.Equals(section.Section, EquityBrief.Core.Research.Evidence.Segments, StringComparison.Ordinal)) is { } commentary
@@ -1465,6 +1474,7 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
     IReadOnlyDictionary<string, IReadOnlyList<double?>>? readings = null;
     DateOnly? fundamentalsHeldThrough = null;
     BriefHeld? heldDip = null;
+    BriefHeld? heldIndex = null;
 
     if (indexCode is { } index)
     {
@@ -1482,6 +1492,15 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
                 await read.DipNightAsync(index, dipTrade.Listed) is { } dipListedNight ? TonightScreen.SettingOf(dipListedNight).Setting.ExitLevel : null,
                 dipTrade.Listed,
                 dipTrade.Fill);
+        }
+
+        // The open trade of the S&P 400's or 600's own pullback, breakout or drift the stock is held on, with the card its
+        // listing night stored.
+        if (!large
+            && PicksScreen.HeldIndexTrade(await read.IndexTradesAsync(index, night), ticker, night) is { } indexTrade
+            && (await CardsOfTheName(read, ticker, indexTrade.Listed)).FirstOrDefault(card => card.Family == indexTrade.Family && card.Index == index) is { } indexCard)
+        {
+            heldIndex = new BriefHeld(indexTrade.Family, indexCard, null, indexTrade.Listed, indexTrade.Fill);
         }
 
         if (large)
@@ -1526,7 +1545,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
             await read.ImprovingResultsAsync(index, night, improvingRule),
             improvingTrades,
             await read.QualityNightAsync(index, night, qualityRule) is null ? null : await read.QualityHoldingsAsync(index, night, night, qualityRule),
-            heldDip is not null));
+            heldDip is not null,
+            heldIndex?.Family));
         readings = await read.LedgerReadingsAsync(index, night);
     }
 
@@ -1570,7 +1590,7 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         sized && saved is null,
         planned?.ShortWhy,
         await read.NewestReportAsync(ticker, night),
-        listed is null ? heldDip : null));
+        listed is null ? new[] { heldDip, heldIndex }.OfType<BriefHeld>().MaxBy(held => held.Listed) : null));
 }
 
 // A heavyweights card with its standing tonight, read off tonight's closes once: each holding's and each sector fund's
