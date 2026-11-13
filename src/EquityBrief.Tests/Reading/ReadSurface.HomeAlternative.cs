@@ -184,21 +184,22 @@ public partial class ReadSurface
 
         Assert.Equal(
             "A plan that did better: Wait for a lower price: buy only if it dips to the price below within 20 trading days; if it never does, there is no trade. It is sold after 63 trading days at the latest."
-            + "Buy if it dips to about$60.00Sell if it falls to$56.42Aim to sell at$64.62"
+            + "Buy if it dips to about$60.00Sell if it falls to$56.42Aim to sell at$64.62the first price above the buy where it has turned down beforeOtherwise sell after63 trading days"
             + "We tested this plan on S&P 500 stocks from 2019 to 2026 the same way: picks like this did about 4 cents better for every $1 put at risk than simply buying other S&P 500 stocks on the same days, against about 12 cents worse with the plan the rules use. The rules do not trade it yet.",
             better);
 
-        // One that lost less, sold in parts.
+        // One that lost less, sold in parts: from the 23.10 correction of 2026-11-13 a third at each level above the buy, the last
+        // kept, and its time limit, as a pick's card draws a staged sale.
         var less = Block(AlternativeJson("the second zone within 20 sessions, 2 typical days under the buy, the staged sales", "175.91", "162.31", staged: "[\"190.5\",\"204.77\"]", edge: -0.036, traded: -0.192));
 
         Assert.StartsWith("A plan that lost less:", less, StringComparison.Ordinal);
-        Assert.Contains("Sell in parts at$190.50 and $204.77", less, StringComparison.Ordinal);
+        Assert.Contains("Sell a third at$190.50Sell a third at$204.77Keep the last thirduntil a close below the stopOtherwise sell after63 trading days", less, StringComparison.Ordinal);
         Assert.Contains("it also did worse than simply buying other S&P 500 stocks on the same days, about 4 cents worse for every $1 put at risk, against about 19 cents worse with the plan the rules use. The rules do not trade it.", less, StringComparison.Ordinal);
 
         // A next-open plan rising behind its highest close, and a dip's bounce.
         Assert.Contains("Buy at the next open, as the rules do, and sell it differently. The give-up price rises behind its highest close by $1.20, and it is sold after 63 trading days at the latest.", Block(AlternativeJson("the next open, 1 typical days under the buy, the rule's sale", null, "61", trail: "1.2")), StringComparison.Ordinal);
         Assert.Contains("Aim to sellWhen it bounces back", Block(AlternativeJson("the next open, 1 typical days under the buy, the rule's sale", null, "61", bounce: true)), StringComparison.Ordinal);
-        Assert.Contains("Sell after63 trading days", Block(AlternativeJson("the next open, 1 typical days under the buy, the time limit alone", null, "61")), StringComparison.Ordinal);
+        Assert.Contains("No price target:this plan sells after 63 trading days", Block(AlternativeJson("the next open, 1 typical days under the buy, the time limit alone", null, "61")), StringComparison.Ordinal);
 
         // One the stock's levels place none of tonight says why; one that did no better than the traded plan says so.
         Assert.StartsWith("A plan that did better: " + SinglePageApp.UnplacedZone, Block(AlternativeJson("the second zone within 10 sessions, 2 typical days under the buy, the time limit alone", null, "0", unplaced: "zone", edge: 0.022, traded: -0.038)), StringComparison.Ordinal);

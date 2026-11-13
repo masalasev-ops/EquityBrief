@@ -19138,3 +19138,61 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 23.10 - correction: a pick's card draws the sale its traded plan was registered with, worked from the price it buys at, with the dip's record from 2019   2026-11-13
+
+Corrects:   23.10's restart and its correction of 2026-11-10 drawing the plan a card's rule trades, and 22.16's correction of
+            2026-11-09 for a zone plan's card: a card under a plan registered at 23.10 drew its buy, its stop and "Otherwise sell
+            after" its time limit, and the sale the plan was tested and registered with was missing, the S&P 400 drift's BHF,
+            MAT, AMG, PCTY and NXST and the S&P 500 pullback's watched V and ALL among them on 2026-11-12. Found by the operator.
+Label:      23.10, the checkpoint whose plans the cards draw; the operator asked it filed so.
+Ruled:      the operator's addendum of 2026-11-13, its words in **A pick's card draws the sale its traded plan was registered
+            with, worked from the price the plan buys at**, written: "Nothing a page draws now is hidden, folded or moved: add
+            the sale, keep everything else", with the line above Home's cards reworded. On the staged sale, told the walk sells an
+            equal share at each level and keeps the last to the stop or the time limit with no give-up price rising: "Word what
+            the plan does (Recommended)". On the dip's record over 2019 to 2026, which no table held: "Build the figure in this
+            PR ... Until it runs, the line says "The record for this is being worked out" rather than drawing blank."
+Checked:    item 1 first, read-only on the live store: the fill step walks each plan trade under the sale its stored order
+            carries, the target, the trail or the staged levels, as the test walked it. Of the 28 orders kept under a plan
+            through 2026-11-12, the S&P 500 drift's 3 and the S&P 400 pullback's 2 carry their rule's target, the S&P 400 dip's
+            1 and the S&P 600 drift variant's 8 the time limit alone, and the S&P 400 drift's 13 the staged sales, CNH's,
+            KTOS's and MAT's holding levels above their buy and BILL's, CTRE's, VNT's, AHR's, PRI's, RBA's, AMG's, BHF's, NXST's
+            and PCTY's none, which sell at the time limit as the test sold such a pick. None sold otherwise; the fill step does
+            not move and no account is restated.
+Built:      every card whose plan buys at a price draws the sale it was registered with, worked from the price it waits for,
+            on Home, Tonight's row and its folded card and the stock page on all three indexes, in the app and on the read-only
+            copy, and the watched card's better plan likewise: the rule's target or the first band above with "Otherwise sell
+            after" its days; each staged level above the buy selling its equal share, a third each for two, the last kept until
+            a close below the stop, the backstop after, and where the levels place none above the buy, that said; and the time
+            limit alone with its rule's record beneath, the live plan's fills from 2019, how far they moved by their sale and
+            how many were up, or "The record for this is being worked out." What a card risks for what it aims at, Home's bar
+            and Tonight's column read from that sale, the staged levels' mean for staged sales, none for the time limit alone.
+            Its stop line and its steps follow the plan's sale, a stop rising only where the sale trails, and the chart page's
+            brief of a pick listed under such a plan draws its buy, its stop and its sale. The plan point test writes the live
+            plan's moves from 2019 beside each family's recommendation from migration 144 and walks one family alone on
+            `--family`; Home's line reads "Each idea comes with what to pay, where to give up if it goes wrong, and how it
+            sells." The architecture, the schema, the runbook and the guide say so.
+Remedy:     `tools/remedies/2026-11-13-23.10-correction-the-dips-record.txt`, from main after the merge while nothing else
+            writes: `migrate`, then `plan-points --family dip` on each index, about an hour an index.
+Tests:      6 new: every card's sale worked by hand from a stored order for the rule's target, the first band above with a
+            band and with none, the staged sales with levels and with none and the time limit alone, on the stock page's card,
+            the copy's, Home's and Tonight's row; the time limit's record up, down and being worked out; the watched plan's
+            staged sale; Home's line on each index; the plan's management and stop with its rule trailing; the record read off
+            the newest run with the moves worked by hand; and the brief of a pick listed under a plan. Two tests' expected
+            words move with the drawing, the watched plan's sale and a zone holding its sale.
+Claims:     none new.
+Pins:       none move: the read surface and the plan point test are pinned by no rule, a test holding the latter so.
+Mutated:    the rule as the corrections before it. s1 the staged sales drawing their first level alone, s2 the first band
+            drawn without saying where it turned down, s3 the target drawn with no backstop, s4 a staged sale aiming at its first
+            level, s6 Home drawing the old target and s7 Tonight's row reading the listing, each red at the card test, s1 and s2
+            at the watched plan tests too; s5 the time limit's record never read, red at its test; s8 the card managed by the
+            rule's own exit and s9 its stop read as rising, each red at the management test; s10 the moves summed, red at the
+            record test; s11 Home's line as before, red at its test; s12 the brief reading a buy at the next open, red at the
+            brief test. Each red as predicted.
+Owed:       the remedy's three runs; then every family's card read back on all three indexes against its registered plan,
+            each card that changed listed, and the dip's record read once its runs have written it; equitybrief-59 told after.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3715 of 3715 tests ran with none failed, migrations 0 to 144
+            with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.

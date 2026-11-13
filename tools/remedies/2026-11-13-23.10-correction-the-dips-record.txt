@@ -1,0 +1,10 @@
+# The remedy of the 23.10 correction of 2026-11-13, a pick's card drawing the sale its traded plan was registered with.
+# Migration 144 adds to the buy and sell points' table the live plan's fills from 2019, their mean move from the fill to the
+# sale and the share that sold above the fill; then the dip's buy and sell points on each index again, its family alone, the
+# other families' rows standing, so each dip card selling on its time limit alone draws its rule's record in place of "The
+# record for this is being worked out". It asks nothing of anyone, calls no model, registers nothing and moves no pin. Run from
+# main after the merge, when no night, off-peak run, local run, ledger build or monthly run is writing, about an hour an index.
+migrate
+plan-points --index GSPC --family dip
+plan-points --index MID --family dip
+plan-points --index SML --family dip

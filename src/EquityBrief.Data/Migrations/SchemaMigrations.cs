@@ -764,7 +764,16 @@ public static class SchemaMigrations
         new Migration(141, "add the recommended plan priced on each price pick to decision_card", AddCardAlternative),
         new Migration(142, "add the plan a trade is bought and sold by to the rules' trade tables and the pick's card", AddTradePlan),
         new Migration(143, "create setup_session on setup's session_date and ticker", CreateSetupSession),
+        new Migration(144, "add the live plan's move by its sale and its share up from 2019 to plan_point", AddLiveLaterMove),
     ];
+
+    // From the 23.10 correction of 2026-11-13 the live plan's fills from 2019: their mean move from the fill to the sale, as a
+    // fraction of the fill, and the share of them up at their sale, which a card whose plan sells on its time limit alone draws.
+    const string AddLiveLaterMove = @"
+        ALTER TABLE plan_point ADD COLUMN live_later_move REAL;
+        ALTER TABLE plan_point ADD COLUMN live_later_up REAL;
+        ALTER TABLE plan_point ADD COLUMN live_later_fills INTEGER;
+    ";
 
     // The night's setups found by their session and ticker, which the filings refresh's second read of the night's rows updates
     // and lists them by, where with no such index each update read the whole table.

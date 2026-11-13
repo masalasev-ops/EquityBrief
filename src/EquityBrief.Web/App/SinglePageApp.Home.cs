@@ -404,7 +404,8 @@ public sealed partial class SinglePageApp
         }
         else
         {
-            region.Append("<p class=\"card-summary\">Each idea comes with three prices decided tonight: what to pay, where to give up if it goes wrong, and where to take the profit.</p>");
+            // From the 23.10 correction of 2026-11-13, in the operator's words, since a plan may sell in parts or on its time limit.
+            region.Append("<p class=\"card-summary\">Each idea comes with what to pay, where to give up if it goes wrong, and how it sells.</p>");
         }
 
         if (view.IdeasCount + view.Watching.Count > 0)
@@ -530,10 +531,25 @@ public sealed partial class SinglePageApp
             card.Append("<div class=\"home-prices\">");
             card.Append(Invariant($"<div><span>{buying} if it dips to about</span><b>{Dollars(zone.Price)}</b></div>"));
             card.Append(Invariant($"<div><span>Sell if it closes below</span><b class=\"stop\">{(idea.Stop is { } below ? Dollars(below) : NoFigure)}</b></div>"));
-            card.Append(idea.Target is { } aimed
-                ? Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{Dollars(aimed)}</b></div>")
-                : Invariant($"<div><span>Otherwise sell after</span><b class=\"aim\">{(zone.Sessions is { } sessions ? Invariant($"{sessions} trading days") : NoFigure)}</b></div>"));
+
+            // From the 23.10 correction of 2026-11-13 the sale the plan was registered with, worked from the price it waits for.
+            // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+            if (zone.Sale is { } sale)
+            {
+                foreach (var line in MarkRenderer.PlanSaleLines(sale))
+                {
+                    card.Append(Invariant($"<div data-sale=\"{line.Key}\"><span>{Escaped(line.Label)}</span><b class=\"aim\">{Escaped(line.Value)}</b>{(line.Note is { } note ? Invariant($"<span class=\"sale-note\">{Escaped(note)}</span>") : string.Empty)}</div>"));
+                }
+            }
+            else
+            {
+                card.Append(idea.Target is { } aimed
+                    ? Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{Dollars(aimed)}</b></div>")
+                    : Invariant($"<div><span>Otherwise sell after</span><b class=\"aim\">{(zone.Sessions is { } sessions ? Invariant($"{sessions} trading days") : NoFigure)}</b></div>"));
+            }
+
             card.Append("</div>");
+            card.Append(zone.Sale is { OnTimeAlone: true } ? Invariant($"<p class=\"home-cond\" data-time-record>{Escaped(MarkRenderer.TimeLimitRecordWords(idea.LongRecord))}</p>") : string.Empty);
             card.Append(Invariant($"<p class=\"home-cond\">{Escaped(MarkRenderer.ZoneWaitLine(zone))}</p>"));
         }
         else
@@ -578,7 +594,10 @@ public sealed partial class SinglePageApp
             card.Append(Invariant($"<div class=\"home-odds home-noloss\" data-no-loss=\"{EquityBrief.Core.Families.TrailingExit.NoLossAt(entered, trail).ToString(CultureInfo.InvariantCulture)}\">{Escaped(MarkRenderer.NoLossLine(entered, trail))}</div>"));
             card.Append(idea.Record is { } record ? Invariant($"<div class=\"home-odds home-winners\" data-finished=\"{record.Finished}\">{Escaped(MarkRenderer.WinnersLine(idea.Family, record))}</div>") : string.Empty);
         }
-        else if (!idea.Rises && idea.Buy is { } bought && idea.Stop is { } give && idea.Target is { } aim && bought > give && aim > bought)
+        // From the 23.10 correction of 2026-11-13 a plan buying at a price aims at the sale it was registered with, its staged
+        // levels' mean for staged sales, and names no aim on its time limit alone.
+        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+        else if (!idea.Rises && idea.Buy is { } bought && idea.Stop is { } give && (idea.Zone?.Sale is { } sale ? sale.Aim : idea.Target) is { } aim && bought > give && aim > bought)
         {
             var said = Invariant($"Risks $1 to make about ${(idea.RewardPerRisk ?? (aim - bought) / (bought - give)):0.00}");
 

@@ -407,10 +407,27 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span></td>");
             body.Append(Invariant, $"<td class=\"why\">{Escaped(WhyWords(point.Family, pick.Why))}</td>");
             body.Append(PickBusinessCell(pick));
-            body.Append(PriceCell("buy", pick.Buy, null));
-            body.Append(PriceCell("stop", pick.Stop, null));
-            body.Append(PriceCell("target", pick.Target, pick.Trailing ? "rising stop, no target" : pick.Exit is { } exit ? ReaderWords.Plain(exit) : null));
-            body.Append(RewardCell(pick));
+
+            // From the 23.10 correction of 2026-11-13 a pick its live rule's plan buys at a price draws the price it waits for, the
+            // stop and the sale that plan was registered with, and what it risks for what that sale aims at.
+            // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+            if (pick.Card?.Zone is { NoBuy: false, Sale: { } sale } zone)
+            {
+                body.Append(PriceCell("buy", zone.Price, null));
+                body.Append(PriceCell("stop", pick.Card.Stop, null));
+                body.Append(SaleCell(sale));
+                body.Append(sale.RewardPerRisk is { } ratio
+                    ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">${Figures.Ratio(ratio)}</td>")
+                    : Formatted($"<td class=\"r num\" data-reward-to-risk=\"none\">{(sale.OnTimeAlone ? "No target: it sells on its time limit" : "<span class=\"degraded\">none above the buy</span>")}</td>"));
+            }
+            else
+            {
+                body.Append(PriceCell("buy", pick.Buy, null));
+                body.Append(PriceCell("stop", pick.Stop, null));
+                body.Append(PriceCell("target", pick.Target, pick.Trailing ? "rising stop, no target" : pick.Exit is { } exit ? ReaderWords.Plain(exit) : null));
+                body.Append(RewardCell(pick));
+            }
+
             body.Append(PickNewsCell(pick));
             body.Append("</tr>");
 
@@ -428,6 +445,19 @@ public sealed partial class MarkRenderer
             : " open, with its stop and target where tonight's close set them.</p>");
 
         return body.ToString();
+    }
+
+    // The target's column of a row whose plan buys at a price: the sale it was registered with in a few words, its target, its
+    // staged levels, or what sells it where it names no price above the buy.
+    static string SaleCell(PlanSaleView sale)
+    {
+        var after = Formatted($"{sale.Cap} trading days");
+
+        return sale.Kind == EquityBrief.Core.Loop.PlanPoints.StagedSales && sale.Stages.Count > 0
+            ? Formatted($"<td class=\"r num plan-target\" data-target=\"staged\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(PlanSaleView.SharesOf(sale.Stages.Count).Each)} at each of {Escaped(string.Join(", ", sale.Stages.Select(Figures.Price)))}</td>")
+            : sale.Target is { } target && !sale.OnTimeAlone
+                ? Formatted($"<td class=\"r num plan-target\" data-target=\"{target.ToString(Invariant)}\" data-sale=\"{Escaped(sale.Kind)}\">{Figures.Price(target)}</td>")
+                : Formatted($"<td class=\"r num plan-target\" data-target=\"none\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(sale.OnTimeAlone ? "none: sells after " + after : sale.Trail is not null ? "rising stop, no target" : sale.RsiAbove is not null ? "sells on a bounce" : "none above the buy: sells after " + after)}</td>");
     }
 
     // A buy no plan sells, as a row of tomorrow's buys: its stock with the link to its row on its own card, its setup, why

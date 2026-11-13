@@ -495,6 +495,34 @@ public static class BriefScreen
             ];
         }
 
+        // From the 23.10 correction of 2026-11-13 a pick its live rule's plan buys at a price: the price it waits for and how long,
+        // and the stop and the sale that plan was registered with; none where its levels set no price tonight.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+        if (inputs.Listed is { Card: { Entry: { } close } planned } listedOnAPlan && CardScreen.ZoneOf(planned.Plan, close) is { } zoned)
+        {
+            if (zoned.Zone is not { NoBuy: false, Sale: { } plannedSale } zone)
+            {
+                return
+                [
+                    new BriefLine("buy", $"Picked tonight by {Label(listedOnAPlan.Family)}. {MarkRenderer.NoBuyTonight}"),
+                    new BriefLine("stop", "No stop is placed, since no buy is."),
+                    new BriefLine("exit", "No sale either."),
+                    new BriefLine("size", "No plan is stored to size."),
+                ];
+            }
+
+            var planSteps = plannedSale.Steps();
+
+            return
+            [
+                new BriefLine("buy", Invariant($"Picked tonight by {Label(listedOnAPlan.Family)}: buy only if it dips to about {Price(zone.Price)} within {zone.Within} trading days; if it never does, there is no trade."), zone.Price.ToString(CultureInfo.InvariantCulture)),
+                new BriefLine("stop", planSteps[0]),
+                new BriefLine("exit", string.Join(" ", planSteps.Skip(1))),
+                .. Size(inputs, plan),
+            ];
+        }
+
         if (inputs.Listed is { Card: { Entry: { } entry } card } listed)
         {
             var steps = listed.Family == DipRule.Name

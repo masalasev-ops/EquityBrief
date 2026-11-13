@@ -76,8 +76,8 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         FROM setup WHERE index_code = $index AND ticker = $ticker AND session_date = $session AND family IN ('pullback', 'breakout', 'drift', 'dip');";
 
     const string InsertPlanPoint = @"
-        INSERT INTO plan_point (run_id, index_code, family, through, setups, combination, picks, fills, fill_rate, hit_rate, break_even, result_per_pick, edge_per_pick, edge_per_fill, days_held, worst_drawdown, traded_fills, traded_edge_per_pick, later_fills, later_edge_per_pick, traded_later_edge_per_pick, fund_edge_per_pick, traded_fund_edge_per_pick, later_fund_edge_per_pick, traded_later_fund_edge_per_pick, traded_later_picks)
-        VALUES ($run_id, $index_code, $family, $through, $setups, $combination, $picks, $fills, $fill_rate, $hit_rate, $break_even, $result_per_pick, $edge_per_pick, $edge_per_fill, $days_held, $worst_drawdown, $traded_fills, $traded_edge_per_pick, $later_fills, $later_edge_per_pick, $traded_later_edge_per_pick, $fund_edge_per_pick, $traded_fund_edge_per_pick, $later_fund_edge_per_pick, $traded_later_fund_edge_per_pick, $traded_later_picks);";
+        INSERT INTO plan_point (run_id, index_code, family, through, setups, combination, picks, fills, fill_rate, hit_rate, break_even, result_per_pick, edge_per_pick, edge_per_fill, days_held, worst_drawdown, traded_fills, traded_edge_per_pick, later_fills, later_edge_per_pick, traded_later_edge_per_pick, fund_edge_per_pick, traded_fund_edge_per_pick, later_fund_edge_per_pick, traded_later_fund_edge_per_pick, traded_later_picks, live_later_move, live_later_up, live_later_fills)
+        VALUES ($run_id, $index_code, $family, $through, $setups, $combination, $picks, $fills, $fill_rate, $hit_rate, $break_even, $result_per_pick, $edge_per_pick, $edge_per_fill, $days_held, $worst_drawdown, $traded_fills, $traded_edge_per_pick, $later_fills, $later_edge_per_pick, $traded_later_edge_per_pick, $fund_edge_per_pick, $traded_fund_edge_per_pick, $later_fund_edge_per_pick, $traded_later_fund_edge_per_pick, $traded_later_picks, $live_later_move, $live_later_up, $live_later_fills);";
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
@@ -97,14 +97,30 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     // Why a session draws no levels plan, which the report prints beside a combination it could not place.
     public const string NoTypicalMove = "no typical daily move is read on the session";
 
-    // One combination's outcome on one setup, as the example prints it.
-    public sealed record Worked(PlanCombination Combination, double? Level, double? Fill, double? Stop, string Sale, PlanPick? Pick, string Words);
+    // One combination's outcome on one setup, as the example prints it, and from the 23.10 correction of 2026-11-13 its move
+    // from the fill to the sale as a fraction of the fill, before costs, where it ended with a result.
+    public sealed record Worked(PlanCombination Combination, double? Level, double? Fill, double? Stop, string Sale, PlanPick? Pick, string Words)
+    {
+        public double? Move { get; init; }
+    }
 
-    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default, bool driftChecks = false)
+    // From the 23.10 correction of 2026-11-13 a plan's fills over a group of setups: their mean move from the fill to the sale as
+    // a fraction of the fill, the share of them that sold above their fill, and how many.
+    // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+    public sealed record PlanMoves(double Move, double Up, int Fills);
+
+    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default, bool driftChecks = false, string? only = null)
     {
         if (!Funds.TryGetValue(index, out var fund))
         {
             output.WriteLine($"{Verb}: name '--index GSPC', 'MID' or 'SML'");
+
+            return 2;
+        }
+
+        if (only is not null && !PlanPoints.Families.Contains(only, StringComparer.Ordinal))
+        {
+            output.WriteLine($"{Verb}: name '--family pullback', 'breakout', 'drift' or 'dip'");
 
             return 2;
         }
@@ -131,6 +147,13 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         var regime = RegimeOf(market.FirstOrDefault(one => one.Series == Market));
         var held = market.FirstOrDefault(one => one.Series == fund)?.Closes.ToDictionary(one => one.Session, one => one.Close) ?? [];
         var setups = await SetupsAsync(Setups, [("$index", index), ("$standing", Text(LongLedger.StandingFrom))], cancellation);
+
+        // A run given one family walks and writes that family's setups alone.
+        if (only is not null)
+        {
+            setups = [.. setups.Where(one => one.Family == only)];
+        }
+
         var names = new Dictionary<string, List<int>>(StringComparer.Ordinal);
 
         for (var name = 0; name < series.Length; name++)
@@ -195,7 +218,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         var picked = new List<(string Family, PlanCombination? Combination, PlanFigures? Figures, PlanFigures? Traded, int Setups)>();
         var traded = Array.FindIndex(PlanPoints.Combinations.ToArray(), one => one.Entry == PlanPoints.NextOpen && one.Stop == PlanPoints.RuleStop && one.Exit == PlanPoints.RuleSale);
 
-        foreach (var family in PlanPoints.Families)
+        foreach (var family in PlanPoints.Families.Where(one => only is null || one == only))
         {
             var unseen = PlanPoints.Combinations
                 .Select((combination, at) => (combination, figures.GetValueOrDefault((family, at, Unseen))))
@@ -313,6 +336,23 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             refinements.Add($"The {family} trades {live.Words} from its live rule's registration, which its figures here are read against.");
         }
 
+        // From the 23.10 correction of 2026-11-13 the live plan's fills from 2019, their mean move from the fill to the sale and
+        // the share that sold above the fill, which a card whose plan sells on its time limit alone draws as the rule's record.
+        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+        var liveMoves = new Dictionary<string, PlanMoves?>(StringComparer.Ordinal);
+
+        foreach (var (family, _, _, _, _) in picked)
+        {
+            liveMoves[family] = livePlans.GetValueOrDefault(family) is { } live
+                ? MovesOf(walker, [.. setups.Where(one => one.Family == family && one.Session.Year >= LongLedger.StandingFrom.Year)], live, cancellation)
+                : null;
+
+            if (liveMoves[family] is { } moved)
+            {
+                refinements.Add(FormattableString.Invariant($"The {family}'s live plan from {LongLedger.StandingFrom.Year}: {moved.Fills} fill(s) moved {moved.Move * 100:+0.0;-0.0;0.0}% on average from the fill to the sale, before costs, {moved.Up * 100:0}% of them up."));
+            }
+        }
+
         var lines = new List<string>
         {
             FormattableString.Invariant($"{setups.Count} flagged setup(s) of the pullback, the breakout, the drift and the dip on the {DecisionCards.NameOf(index)}, the long ledger's from 2005 and the standing ledger's from 2019, {unread} whose stock or session the long history does not hold left out; each walked under {PlanPoints.Combinations.Count} combination(s) of an entry, a stop and a sale."),
@@ -370,7 +410,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
         var (report, figuresFile) = CheckReports.Write(
             dataRoot,
-            FormattableString.Invariant($"plan-points-{index}"),
+            only is null ? FormattableString.Invariant($"plan-points-{index}") : FormattableString.Invariant($"plan-points-{index}-{only}"),
             $"The traded plan's buy and sell points on the {DecisionCards.NameOf(index)}",
             lines,
             [
@@ -447,6 +487,9 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     ("$later_fund_edge_per_pick", Or(SinceOf(family, combination)?.FundEdgePerPick)),
                     ("$traded_later_fund_edge_per_pick", Or(tradedSince.GetValueOrDefault(family)?.FundEdgePerPick)),
                     ("$traded_later_picks", Or(tradedSince.GetValueOrDefault(family)?.Picks)),
+                    ("$live_later_move", Or(liveMoves.GetValueOrDefault(family)?.Move)),
+                    ("$live_later_up", Or(liveMoves.GetValueOrDefault(family)?.Up)),
+                    ("$live_later_fills", Or(liveMoves.GetValueOrDefault(family)?.Fills)),
                 ], cancellation);
             }
 
@@ -665,6 +708,22 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
         return tallied;
     }
+
+    // A plan's fills over setups, each walked as the plan point test walks it: their mean move from the fill to the sale and
+    // the share that sold above the fill; none where no fill ended with a result.
+    public static PlanMoves? MovesOf(Walker walker, IReadOnlyList<FlaggedSetup> setups, PlanCombination combination, CancellationToken cancellation)
+    {
+        var moves = new double?[setups.Count];
+
+        Parallel.For(0, setups.Count, new ParallelOptions { CancellationToken = cancellation }, at =>
+            moves[at] = walker.WorkedUnder(setups[at], [combination]) is [{ Pick: { Filled: true, Result: not null }, Move: { } move }] ? move : null);
+
+        return Moves([.. moves.OfType<double>()]);
+    }
+
+    // The mean of moves and the share above nought, none over no move.
+    public static PlanMoves? Moves(IReadOnlyList<double> moves) =>
+        moves.Count == 0 ? null : new PlanMoves(moves.Average(), 1.0 * moves.Count(move => move > 0) / moves.Count, moves.Count);
 
     // The median of a list, none where it holds nothing.
     static double? Median(IReadOnlyList<double> values)
@@ -913,6 +972,10 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         public PlanPick?[] PicksUnder(FlaggedSetup setup, IReadOnlyList<PlanCombination> combinations) =>
             Placed(setup) is { } placed ? [.. Walk(setup, placed, combinations).Select(one => one.Pick)] : [];
 
+        // The same with each combination's outcome as worked, its move from the fill to the sale among it.
+        public IReadOnlyList<Worked> WorkedUnder(FlaggedSetup setup, IReadOnlyList<PlanCombination> combinations) =>
+            Placed(setup) is { } placed ? Walk(setup, placed, combinations) : [];
+
         public IReadOnlyList<Worked> Worked(FlaggedSetup setup) =>
             Placed(setup) is { } placed ? Walk(setup, placed) : [];
 
@@ -1065,7 +1128,10 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                     FundEdge = fundEdge,
                 };
 
-                worked.Add(new Worked(combination, level, fill.Price, stop, saleWords, pick, FormattableString.Invariant($"{outcome.End} after {outcome.Sessions} session(s), {result:+0.00;-0.00} risks after costs")));
+                worked.Add(new Worked(combination, level, fill.Price, stop, saleWords, pick, FormattableString.Invariant($"{outcome.End} after {outcome.Sessions} session(s), {result:+0.00;-0.00} risks after costs"))
+                {
+                    Move = (outcome.Sold - fill.Price) / fill.Price,
+                });
             }
 
             return worked;

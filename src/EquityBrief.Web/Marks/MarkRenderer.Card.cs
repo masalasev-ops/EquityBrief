@@ -276,11 +276,17 @@ public sealed partial class MarkRenderer
         body.Append(card.Zone is { } zone
             ? PlanTile("buy", "Buy if it dips to about", Price(zone.Price), Formatted($"within {zone.Within} trading days"))
             : PlanTile("buy", "Buy at about", card.Entry is { } entry ? Price(entry) : "Not stored", "at the next day's open"));
-        body.Append(card.Stop is { } stop && TrailOf(card, pick) is null ? PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is null ? StaysUnlessChanged(card) : null, "loss") : StopTile(card, pick));
-        body.Append(card.Target is { } target ? PlanTile("target", "Sell if it reaches", Price(target), null, "gain") : TargetTile(card, pick));
+        body.Append(card.Stop is { } stop && TrailOf(card, pick) is null ? PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is null || card.Zone?.Sale is not null ? StaysUnlessChanged(card) : null, "loss") : StopTile(card, pick));
+
+        // From the 23.10 correction of 2026-11-13 a plan buying at a price draws the sale it was registered with, as the app does.
+        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+        body.Append(card.Zone?.Sale is { } sale ? SaleTiles(sale, card)
+            : card.Target is { } target ? PlanTile("target", "Sell if it reaches", Price(target), null, "gain")
+            : TargetTile(card, pick));
         body.Append("</div>");
         body.Append(TrailLines(card, pick));
         body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
+        body.Append(card.Zone?.Sale is { OnTimeAlone: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
         body.Append("</section>");
         body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
         body.Append(SetupRecordBox(card.LongRecord));
@@ -593,16 +599,39 @@ public sealed partial class MarkRenderer
 
     // Whether a card's plan sells on a rising give-up price with no target, and the distance it rises behind the highest
     // close at, the night's stored distance or the buy less the stop.
+    // From the 23.10 correction of 2026-11-13 a plan buying at a price trails only where the sale it was registered with does.
     static decimal? TrailOf(DecisionCardView card, FamilyPickCell? pick) =>
-        card.Target is null && (card.Trail is not null || pick?.Trailing == true) && card.Entry is { } entry && card.Stop is { } stop && entry > stop
-            ? card.Trail ?? entry - stop
-            : null;
+        card.Zone?.Sale is { } sale
+            ? sale.Target is null && sale.Trail is { } planTrail ? planTrail : null
+            : card.Target is null && (card.Trail is not null || pick?.Trailing == true) && card.Entry is { } entry && card.Stop is { } stop && entry > stop
+                ? card.Trail ?? entry - stop
+                : null;
+
+    // From the 23.10 correction of 2026-11-13 the tiles of the sale a plan buying at a price was registered with, the time
+    // limit's carrying the hold's last day.
+    // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+    static string SaleTiles(PlanSaleView sale, DecisionCardView card) =>
+        string.Concat(PlanSaleLines(sale).Select(line => PlanTile(
+            line.Key,
+            line.Label,
+            line.Value,
+            line.Note ?? (line.Key == "limit" && card.Hits is { } hits ? FormattableString.Invariant($"about {hits.Through:d MMM yyyy}") : null),
+            line.Key is "target" or "stage" && line.Value.StartsWith('$') ? "gain" : null,
+            Formatted($" data-sale=\"{Escaped(sale.Kind)}\""))));
+
+    // A plan's reward against its risk and the share of the time it must reach its sale to break even, worked from the price
+    // it buys at; none for a sale naming no price above the buy.
+    static string SaleReward(PlanSaleView sale) =>
+        sale.RewardPerRisk is { } ratio
+            ? Formatted($"<p class=\"card-reward\" data-reward=\"{ratio.ToString(Invariant)}\">You risk $1 to make ${Figures.Ratio(ratio)}.</p>")
+                + Formatted($"<p class=\"card-break-even\" data-break-even=\"{EquityBrief.Core.Cards.PlanWords.BreakEven(ratio).ToString("0.000", Invariant)}\">{Escaped(EquityBrief.Core.Cards.PlanWords.BreakEvenSaid(ratio, sale.Kind == EquityBrief.Core.Loop.PlanPoints.StagedSales ? "its staged sales" : "its target"))}</p>")
+            : string.Empty;
 
     // From 22.18 the lines beneath the tiles of a plan selling on a rising give-up price: the close past which it can no
     // longer lose, and its rule's record under the rule's name.
     static string TrailLines(DecisionCardView card, FamilyPickCell? pick)
     {
-        if (TrailOf(card, pick) is not { } trail || card.Entry is not { } entry)
+        if (TrailOf(card, pick) is not { } trail || (card.Zone is { NoBuy: false } zone ? zone.Price : card.Entry) is not { } entry)
         {
             return string.Empty;
         }
@@ -621,7 +650,7 @@ public sealed partial class MarkRenderer
         card.Stop is { } stop
             ? TrailOf(card, pick) is not null && TrailsByItsRule(card)
                 ? PlanTile("stop", "Sell if it falls to", Usd(stop), RisingWords, "loss")
-                : PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null ? "raised after each higher close, never lowered, and sold at the next day's open" : StaysUnlessChanged(card) is { } stays ? stays + " Sold at the next day's open." : "sold at the next day's open", "loss")
+                : PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null && card.Zone?.Sale is null ? "raised after each higher close, never lowered, and sold at the next day's open" : StaysUnlessChanged(card) is { } stays ? stays + " Sold at the next day's open." : "sold at the next day's open", "loss")
             : PlanTile("stop", "Stop", "None", card.Family == EquityBrief.Core.Families.HeavyweightRule.Name ? "nothing sells it at a price set in advance" : "no stop stored");
 
     // Whether a card's family sells on a rising give-up price by its own rule, the breakout today.
@@ -665,27 +694,46 @@ public sealed partial class MarkRenderer
             ? PlanTile("buy", "Buy if it dips to about", Price(zone.Price), Formatted($"within {zone.Within} trading days"))
             : PlanTile("buy", "Buy", "At the next day's open", card.Entry is { } entry ? Formatted($"at about {Price(entry)}") : "no buy price stored"));
         body.Append(StopTile(card, pick));
-        body.Append(TargetTile(card, pick));
 
-        if (card.Cap is { } cap)
+        // From the 23.10 correction of 2026-11-13 a plan buying at a price draws the sale it was registered with in the target's
+        // and the time limit's place, worked from the price it waits for, and on its time limit alone its rule's record beneath.
+        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+        if (card.Zone?.Sale is { } sale)
         {
-            body.Append(PlanTile("limit", "Otherwise sell after", Formatted($"{cap} trading days"), card.Hits is { } hits ? FormattableString.Invariant($"about {hits.Through:d MMM yyyy}") : null));
+            body.Append(SaleTiles(sale, card));
+        }
+        else
+        {
+            body.Append(TargetTile(card, pick));
+
+            if (card.Cap is { } cap)
+            {
+                body.Append(PlanTile("limit", "Otherwise sell after", Formatted($"{cap} trading days"), card.Hits is { } hits ? FormattableString.Invariant($"about {hits.Through:d MMM yyyy}") : null));
+            }
         }
 
         body.Append("</div>");
         body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
+        body.Append(card.Zone?.Sale is { OnTimeAlone: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
 
-        // The share of the time the plan must reach its target before its stop to break even, beside its reward to risk.
-        // see: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
-        if (pick?.RewardToRisk is { } reward && card.Target is not null)
+        if (card.Zone?.Sale is { } sold)
         {
-            body.Append(Invariant, $"<p class=\"card-reward\" data-reward=\"{reward.ToString(Invariant)}\">You risk $1 to make ${Figures.Ratio(reward)}.</p>");
+            body.Append(SaleReward(sold));
         }
-
-        // A card drawn with no pick beside it, the stock's full page's, works the ratio from its own buy, stop and target.
-        if ((pick?.RewardToRisk ?? (card is { Entry: { } buy, Stop: { } floor, Target: { } aim } && buy > floor && aim > buy ? (aim - buy) / (buy - floor) : null)) is { } ratio && card.Target is not null)
+        else
         {
-            body.Append(Invariant, $"<p class=\"card-break-even\" data-break-even=\"{EquityBrief.Core.Cards.PlanWords.BreakEven(ratio).ToString("0.000", Invariant)}\">{Escaped(EquityBrief.Core.Cards.PlanWords.BreakEvenSaid(ratio, "its target"))}</p>");
+            // The share of the time the plan must reach its target before its stop to break even, beside its reward to risk.
+            // see: Each plan states the share of the time it must reach its exit before its stop to break even, and whether its shares are the whole position
+            if (pick?.RewardToRisk is { } reward && card.Target is not null)
+            {
+                body.Append(Invariant, $"<p class=\"card-reward\" data-reward=\"{reward.ToString(Invariant)}\">You risk $1 to make ${Figures.Ratio(reward)}.</p>");
+            }
+
+            // A card drawn with no pick beside it, the stock's full page's, works the ratio from its own buy, stop and target.
+            if ((pick?.RewardToRisk ?? (card is { Entry: { } buy, Stop: { } floor, Target: { } aim } && buy > floor && aim > buy ? (aim - buy) / (buy - floor) : null)) is { } ratio && card.Target is not null)
+            {
+                body.Append(Invariant, $"<p class=\"card-break-even\" data-break-even=\"{EquityBrief.Core.Cards.PlanWords.BreakEven(ratio).ToString("0.000", Invariant)}\">{Escaped(EquityBrief.Core.Cards.PlanWords.BreakEvenSaid(ratio, "its target"))}</p>");
+            }
         }
 
         body.Append(FlagsOf(card.PlanFlags));
