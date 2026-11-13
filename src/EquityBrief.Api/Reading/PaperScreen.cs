@@ -77,6 +77,9 @@ public sealed record PaperAccounts(
 {
     // From the 19.4 correction of 2026-11-07 each monthly setup's line by its family.
     public IReadOnlyDictionary<string, PaperBookLine> Books { get; init; } = new Dictionary<string, PaperBookLine>(StringComparer.Ordinal);
+
+    // From the 23.10 correction of 2026-11-13 the live rules' trades under a plan through the night.
+    public IReadOnlyList<PlannedTradeRow> Planned { get; init; } = [];
 }
 
 // The projection from stored trades and test rows to paper trading's accounts and their trade logs. The accounts are an

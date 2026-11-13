@@ -19060,3 +19060,47 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 23.10 - correction: a live rule's trade under a plan buying at a price is drawn on every page as its plan made it, waiting with its price and last day or not filled, no trade   2026-11-13
+
+Corrects:   23.10, whose restart of 2026-11-10 gave live rules plans that buy at a price, each an order the fill step fills only
+            once a session trades at that price within its window, while every page went on reading the page list's trade
+            bought at the next open. Found by phase 23's first sign-off review (F4): on the night of 2026-11-12 the S&P 500
+            drift's TTWO, FERG and AKAM, waiting since 2026-11-10, were drawn bought on Past picks, Paper trading and their
+            stock pages, as were the S&P 400 drift's thirteen orders and its dip's HALO on the S&P 400's own.
+Label:      23.10, the checkpoint whose restart placed these orders; the review asked for it under that label.
+Ruled:      the operator's answer in the review's handoff of 2026-11-13: "Draw the plan's trade ... every page reads the trade
+            the rule's plan made, filled only when its price trades, with its stop placed from that fill, and an order still
+            waiting shown as waiting with its price and last day", for picks listed since the restart under a rule buying at a
+            price alone, earlier versions' next-open trades drawn as they are, an order unfilled at its last day "not filled, no
+            trade" in no rule's count, win rate, account or record. **A live rule's trade under a plan is drawn on every page as
+            its plan made it, and its waiting orders are a group of their own** written.
+Built:      the read surface reads each live rule's trades kept under a plan whose entry is not the next open, with their fill
+            rows, and Past picks on every index, Paper trading's accounts, the Run page's setups, the stock page's held trade and
+            the chart page's brief draw each as its plan made it: waiting with its price and its last session, the window's
+            sessions on the exchange calendar after its night, filled at its fill with the plan's stop placed from it, or "not
+            filled, no trade". On the S&P 400 and 600 a family's page-list trades are left out from its live rule's first such
+            order, the rule's own drawn in their place; a trade bought at the next open, and a plan buying at it, draw as before.
+            Paper trading names an account's orders waiting on a line above what it did not buy. A filled dip order reads as
+            waiting until its trade ends, since the dip's own step stores its fill only then. The architecture's Past picks and
+            the guide's paper trading and Past picks say so.
+Remedy:     none: the pages read it once the read surface restarts on the merge.
+Tests:      4 new: the S&P 400 over a constructed store, its frozen breakout's orders filled, waiting from an earlier night,
+            placed tonight and never filled beside a trade bought at the next open, read off Past picks, Paper trading, the
+            stock page and the chart page, every planned row held to no next-open word; the S&P 500's page list drawn as the live
+            drift's plan made it, worked by hand; and an order's last session and its words.
+Claims:     none new.
+Pins:       none move: the read surface is pinned by no rule.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, its prediction written first, filtered
+            to the new tests and restored from the file's own bytes. f4a Past picks reading the list's next-open trades again,
+            the page as it stood before this correction, red at both page tests; f4b the S&P 500's list drawn with no plan read,
+            f4c an unfilled order counted as stopped out, f4d a waiting order keeping the list's fill and f4e a next-open plan
+            redrawn, each red at the S&P 500 test; f4f every page-list trade of the family dropped and f4g the held card's stop
+            read off its listing card, each red at the S&P 400 test; f4h the last session counted in calendar days, red at both
+            it reaches. Each red as predicted.
+Owed:       phase 23's sign-off, by a fresh session reviewing these corrections and the correction table.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3715 of 3715 tests ran with none failed, migrations 0 to 144
+            with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.

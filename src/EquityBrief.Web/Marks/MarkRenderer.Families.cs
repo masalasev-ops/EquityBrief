@@ -220,10 +220,10 @@ public sealed partial class MarkRenderer
         ("Stock", "The ticker opens the stock's page, with the company beneath."),
         ("Setup", "The setup that listed it, by its family's live rule from its freeze and on the index's provisional settings before it."),
         ("Listed", "The night its list drew it, bought at the open of the session after."),
-        ("Buy", "The open it was bought at, the session after its night, or its plan's close while it buys at the next open."),
+        ("Buy", "The open it was bought at, the session after its night, or its plan's close while it buys at the next open; under a plan buying at a price, the price it filled at, or the price it waits for."),
         ("Stop", "The price a close beneath ends it at a loss, sold at the next session's open, or the first level of a stop that trails."),
         ("Target", "The price a close at or above ends it at a gain, sold at the next session's open; a setup that trails its stop names none."),
-        ("Status", "Open once bought, to buy at tomorrow's open until then, selling at tomorrow's open once its exit fired on a close, or the session it ended on."),
+        ("Status", "Open once bought, to buy at tomorrow's open until then, selling at tomorrow's open once its exit fired on a close, or the session it ended on; under a plan buying at a price, waiting for its price with its last session until it fills, or not filled, no trade, once its window passed."),
         ("Result", "What it made in multiples of what it risked, before its cost."),
         ("Cost", "Its round trip at the published spread for its size and price, in multiples of its risk."),
         ("After cost", "Its result less its cost, which is what the index's tests read."),
@@ -258,6 +258,8 @@ public sealed partial class MarkRenderer
                 : row.EndedOn is { } ended
                 ? Formatted($"<td>ended {DayOf(ended)}{(row.Sale is { } sale ? Formatted($", sold at {Price(sale)}") : string.Empty)}</td>")
                 : row.ToBuy ? Formatted($"<td>{Escaped(TradeGroupsView.ToBuyWords)}</td>")
+                : PlanOrderWords.IsWaiting(row.NotBought) ? Formatted($"<td data-plan=\"waiting\">{Escaped(row.NotBought!)}</td>")
+                : PlanOrderWords.IsNotFilled(row.NotBought) ? Formatted($"<td data-plan=\"not-filled\">{Escaped(row.NotBought!)}</td>")
                 : row.NotBought is { } refused ? Formatted($"<td>not bought: {Escaped(refused)}</td>")
                 : "<td><b>open</b></td>");
             body.Append(Invariant, $"<td class=\"r num\">{Multiple(row.Result)}</td><td class=\"r num\">{(row.Cost is { } cost ? Unsigned(cost, 2).ToString("0.00", Invariant) : "<span class=\"degraded\">none yet</span>")}</td><td class=\"r num\">{Multiple(row.AfterCost)}</td></tr>");

@@ -391,7 +391,7 @@ public sealed partial class MarkRenderer
         var rows = new (string Key, string Value)[]
         {
             ("Setup", Capitalised(SetupOf(card.Family)) + FormattableString.Invariant($", picked on {pick.Night:d MMM yyyy}")),
-            ("Fill", pick.Buy is { } fill ? Price(fill) + (pick.FilledOn is { } on ? FormattableString.Invariant($", the open of {on:d MMM yyyy}") : string.Empty) : "it buys at the next open"),
+            ("Fill", pick.Buy is { } fill ? Price(fill) + (pick.FilledOn is { } on ? pick.UnderPlan ? FormattableString.Invariant($", its plan's price traded on {on:d MMM yyyy}") : FormattableString.Invariant($", the open of {on:d MMM yyyy}") : string.Empty) : "it buys at the next open"),
             ("Stop", card.Stop is { } stop ? "a close below " + Price(stop) : "none"),
             ("Target", card.Target is { } target ? Price(target) : DipExit(card) is { } exit ? "none, it sells " + exit : "none, its stop trails the price"),
             ("Last day", card.Cap is { } cap ? Formatted($"after {cap} trading days") + (card.Hits is { } hits ? FormattableString.Invariant($", about {hits.Through:d MMM yyyy}") : string.Empty) : "its setup states no limit"),

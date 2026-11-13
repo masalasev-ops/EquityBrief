@@ -2054,7 +2054,10 @@ public static partial class NameScreen
 
         var card = WithEstimatedReport(CardScreen.View(row, CardContext.None with { LongRecords = records ?? SetupRecords.None }), reported, reportedOn)!;
 
-        return new HeldTradeView(card, open);
+        // From the 23.10 correction of 2026-11-13 a trade a live rule's plan bought at its price holds the stop that plan placed
+        // from its fill and the plan's target, not the card's from the listing close.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        return new HeldTradeView(open.UnderPlan ? card with { Stop = open.Stop ?? card.Stop, Target = open.Target ?? card.Target } : card, open);
     }
 
     // What the newest pass writing one section asked for alone came to, in one line: written again, not written with why,

@@ -234,6 +234,11 @@ public sealed record PickCell(
     DateOnly? SoldOn = null,
     decimal? Sale = null)
 {
+    // From the 23.10 correction of 2026-11-13 a live rule's trade under a plan buying at a price, its buy and its stop the
+    // plan's.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    public bool UnderPlan { get; init; }
+
     public string? FiredWords => FiredAs switch
     {
         null => null,
@@ -262,12 +267,20 @@ public static class PickStatus
     // see: Every count of trades names its group and one function works the four groups
     public const string ToBuy = "to-buy";
 
+    // From the 23.10 correction of 2026-11-13 a live rule's order under a plan buying at a price: waiting for its price, or
+    // ended at its window's last session unfilled, which no group, rate, account or record counts.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    public const string Waiting = "waiting";
+    public const string NotFilled = "not-filled";
+
     public static IReadOnlyList<string> Filters { get; } = [Open, ToBuy, Target, Stopped, Time];
 
     public static string Words(string status) => status switch
     {
         Open => "Open",
         ToBuy => "To buy at tomorrow's open",
+        Waiting => "Waiting for its price",
+        NotFilled => "Not filled, no trade",
         Target => "Reached target",
         Stopped => "Stopped out",
         Time => "Ran out of time",

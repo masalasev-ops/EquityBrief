@@ -109,7 +109,11 @@ public static class PicksScreen
             Family: DipRule.Name,
             Setup: SetupFamilies.Dips.Label,
             Planned: trade.Entry,
-            Cap: trade.Cap);
+            Cap: trade.Cap,
+            FilledOn: trade.FilledOn)
+        {
+            UnderPlan = trade.UnderPlan,
+        };
 
     // The trade an S&P 400's or 600's own pullback, breakout or drift holds a stock on as of a night: the newest listed before
     // the night that is open on it as Past picks reads it, bought and not ended or with its exit fired and not yet sold; none
@@ -150,7 +154,11 @@ public static class PicksScreen
             Setup: SetupFamilies.Named(trade.Family)?.Label ?? trade.Family,
             Trailing: trade.Trail is not null,
             Planned: trade.Entry,
-            Cap: trade.Cap);
+            Cap: trade.Cap,
+            FilledOn: trade.FilledOn)
+        {
+            UnderPlan = trade.UnderPlan,
+        };
 
     // From the 22.25 correction of 2026-11-11 how many open trades of an index's table, of the given setups and listed once
     // their setup went live, are in none of the system's trades: each the index's page list bought in the place of a stock
