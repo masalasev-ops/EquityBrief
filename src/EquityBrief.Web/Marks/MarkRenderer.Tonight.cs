@@ -207,6 +207,13 @@ public sealed partial class MarkRenderer
 
         body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>{Escaped(open + endedWords)}</b></p><p class=\"minute-said\">{Escaped(why)} {paper}</p></div>");
 
+        // The orders earlier nights placed still waiting for their price, a group of their own, in none of the counts above.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        if ((view.Groups ?? line.Groups) is { StillWaitingOrders.Count: > 0 } waiting)
+        {
+            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{StillWaitingOrders(waiting.StillWaitingOrders, line.Index)}</div>");
+        }
+
         // The stocks one step from qualifying, which from 22.17 the read-only copy draws none of.
         if (Copying)
         {

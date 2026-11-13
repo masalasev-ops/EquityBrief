@@ -2498,7 +2498,8 @@ app.MapGet(CountsProof.Route, async (HttpRequest request, ReadApi read, Endpoint
             verdicts.AddRange(CountsProof.CheckPicks(
                 new TradeCountView(listed.Sum(one => one.System.Bought), listed.Sum(one => one.System.Open), listed.Sum(one => one.System.Closed), 0, listed.Sum(one => one.System.AtTarget), listed.Sum(one => one.System.AtStop), null),
                 listed.Sum(one => one.ToBuy),
-                await Drawn("/screens/picks", query)));
+                await Drawn("/screens/picks", query),
+                listed.Sum(one => one.StillWaiting)));
 
             if (universe == Universes.Large)
             {
@@ -3043,6 +3044,7 @@ async Task<IResult> HomeAsync(
         // The monthly books' holdings bought at tonight's reshuffle, named apart from the new picks.
         // see: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle
         Reshuffled = [.. SinglePageApp.PlanlessBuys(reading.Word, null, heavyweights, quality).Select(buy => (buy.Family, buy.Ticker))],
+        StillWaiting = paper.StillWaiting,
     };
 
     return Results.Content(
@@ -3145,6 +3147,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
 
     var views = PaperScreen.Views(sources, tests, years, settings, sessions, night, Close, Fund);
     var standings = await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks);
+    var stillWaiting = PlanScreen.StillWaiting(planned, night);
 
     return new PaperAccounts(
         sources,
@@ -3155,10 +3158,11 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
         Fund,
         standings,
         PaperScreen.Averaged(views, settings, sessions, night, Close, Fund),
-        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions))
+        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions) with { StillWaitingOrders = stillWaiting })
     {
         Books = await BookLinesAsync(read, reading, night, sources, register, standings),
         Planned = planned,
+        StillWaiting = stillWaiting,
     };
 }
 
@@ -3667,7 +3671,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     // The fundamentals-first family's trades are drawn on no page's list of families, its rule running out of sight.
     // see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
     return Results.Content(
-        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector, null, dipTrades, paper?.Groups) +
+        page.PicksRegion(marks, night, PicksScreen.Summary(under, night), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector, null, dipTrades, paper?.Groups) +
         page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(copying ? [] : await read.TakenTradesAsync(), reading.Code)),
         "text/html; charset=utf-8");
 });
@@ -4203,7 +4207,7 @@ app.MapGet("/screens/run/{night?}", async (
             how: how,
             picture: picture,
             // The live rule's own trades: the pullback's, whatever the other setups listed.
-            trades: PicksScreen.Summary(PicksScreen.OfSetup(PlanScreen.Cells(PicksScreen.Cells(await read.PicksAsync(dated), dated), await read.PlannedTradesAsync(Universes.Large.Code, dated), dated), EquityBrief.Core.Families.SetupFamilies.Pullback)),
+            trades: PicksScreen.Summary(PicksScreen.OfSetup(PlanScreen.Cells(PicksScreen.Cells(await read.PicksAsync(dated), dated), await read.PlannedTradesAsync(Universes.Large.Code, dated), dated), EquityBrief.Core.Families.SetupFamilies.Pullback), dated),
             fresh: RunScreen.Freshness(everyListing, dated, first),
             research: new ResearchPicture(
                 TonightScreen.Spend(dated, await SpentOn(read, dated), caps),

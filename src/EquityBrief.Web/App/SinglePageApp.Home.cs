@@ -49,6 +49,10 @@ public sealed record HomeView(
 
     // The monthly books' holdings bought at tonight's reshuffle, each with its book's family, in Tonight's order.
     public IReadOnlyList<(string Family, string Ticker)> Reshuffled { get; init; } = [];
+
+    // From the 23.10 correction of 2026-11-13 the orders a plan placed on an earlier night still waiting for their price, which
+    // the heading does not count and a line beneath it names.
+    public IReadOnlyList<WaitingOrderView> StillWaiting { get; init; } = [];
 }
 
 // Home, from 22.16: the landing page for a reader new to investing, the day, tonight's ideas, how past ideas have done and
@@ -385,6 +389,11 @@ public sealed partial class SinglePageApp
         var title = Invariant($"Tonight's ideas: {view.IdeasCount} {(view.IdeasCount == 1 ? "stock" : "stocks")} to buy {view.OpensOn} morning");
 
         region.Append(Invariant($"<section class=\"card\" id=\"ideas\" data-ideas=\"{view.IdeasCount}\"><div class=\"card-h\"><div><div class=\"lbl\">Tonight's ideas</div><h2>{Escaped(title)}</h2></div><div>{stamp}</div></div><div class=\"card-b\">"));
+
+        // The heading counts tonight's new picks alone; the orders earlier nights placed still waiting for their price are a
+        // group of their own beneath it.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        region.Append(MarkRenderer.StillWaitingOrders(view.StillWaiting, view.Reading.Name));
 
         // Every pick is a card, the ideas to buy first and the picks watched after them, each in Tonight's order; the heading
         // counts the ideas to buy, and the line above the cards says what splits them.

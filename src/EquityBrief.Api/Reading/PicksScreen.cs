@@ -311,8 +311,10 @@ public static class PicksScreen
     // never in a reason's, and it counts in the average result, which is what each trade earned. A share
     // over fewer is not drawn because it is not computed.
     // see: An unresolved setup is never a win
-    public static PicksSummary Summary(IReadOnlyList<PickCell> cells)
+    public static PicksSummary Summary(IReadOnlyList<PickCell> cells, DateOnly? night = null)
     {
+        var drawn = night ?? cells.Select(cell => (DateOnly?)cell.Night).Max() ?? DateOnly.MinValue;
+
         // A listing that repeated a trade still open is one move counted already, so it is in no count.
         // see: A repeat listing made before the rule reached the filter is marked and counted once
         var counted = cells.Where(cell => cell.RepeatOf is null).ToArray();
@@ -345,7 +347,10 @@ public static class PicksScreen
             cells.Count - counted.Length,
             counted.Count(cell => cell.Provisional),
             counted.Count(cell => cell.Status == PickStatus.ToBuy),
-            counted.Count(cell => cell.FiredAs is not null));
+            counted.Count(cell => cell.FiredAs is not null),
+            counted.Count(cell => cell.Status == PickStatus.Waiting && cell.Night >= drawn),
+            counted.Count(cell => cell.Status == PickStatus.Waiting && cell.Night < drawn),
+            counted.Count(cell => cell.Status == PickStatus.NotFilled));
     }
 
     // The stored outcome a status stands for, which the run page's own test of a scored setup reads.

@@ -139,6 +139,66 @@ public partial class ReadSurface
         Assert.DoesNotContain("next open", lines["buy"], StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task TheOrdersStillWaitingForTheirPriceAreAGroupOfTheirOwnOnHomeTonightAndPastPicksAndEveryCountNamesItsGroup()
+    {
+        using var store = PlanTradesStore();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        // The one order earlier nights placed still waiting, M2's, as each page names the group, with its price and last
+        // session; tonight's new order, M1's, in none of them.
+        static void StillWaitingOnce(string page)
+        {
+            var group = Assert.Single(Blocks(page, "<div class=\"waiting-orders\".*?</div>"));
+
+            Assert.Contains("data-still-waiting=\"1\"", group, StringComparison.Ordinal);
+            Assert.Contains("1 order from earlier nights is still waiting for its price", group, StringComparison.Ordinal);
+            Assert.Contains("<li data-ticker=\"M2\" data-family=\"breakout\" data-listed=\"2026-09-30\" data-price=\"47.50\" data-last-day=\"2026-10-14\">", group, StringComparison.Ordinal);
+            Assert.Contains("listed 30 Sep: waiting for its price, 47.50, until 14 Oct 2026", group, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-ticker=\"M1\"", group, StringComparison.Ordinal);
+        }
+
+        // Home: the heading counts tonight's one new pick, and the order still waiting is the line beneath it.
+        var home = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/home?universe=400"));
+
+        Assert.Matches("<h2>Tonight's ideas: 1 stock to buy [A-Za-z]+ morning</h2></div><div>.*?</div></div><div class=\"card-b\"><div class=\"waiting-orders\"", home);
+        StillWaitingOnce(home);
+
+        // Tonight: one new pick, and the order still waiting beneath the open trades.
+        var tonight = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+
+        Assert.Contains("1 new pick to buy at", tonight, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"minute-line\" data-line=\"still-waiting\"><div class=\"waiting-orders\"", tonight, StringComparison.Ordinal);
+        StillWaitingOnce(tonight);
+
+        // Past picks: tonight's new order and the one still waiting each counted as its own group, none to buy at the open.
+        var picks = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400"));
+
+        Assert.Matches("data-to-buy=\"0\" data-new-waiting=\"1\" data-still-waiting=\"1\">Showing 6 of 6 S&P 400 trades, 2 open, 1 new tonight waiting for its price, 1 from earlier nights still waiting for their price\\.", picks);
+        StillWaitingOnce(picks);
+
+        // The proof holds every page's count to the one function's: tonight's new order is among the new picks, the one
+        // still waiting is its own group on each page, and no count fails.
+        var proof = await client.GetStringAsync("/proof/counts");
+        var mid = Assert.Single(Blocks(proof, "<h2 data-failed=\"\\d+\">S&amp;P 400: .*?</ul>"));
+
+        foreach (var rule in new[]
+        {
+            "Home's orders still waiting are those earlier nights placed",
+            "Tonight's orders still waiting are those earlier nights placed",
+            "Past picks' orders still waiting are those earlier nights placed",
+            "Past picks' stocks to buy are those waiting on the open",
+            "Home's ideas to buy and picks watched are the new picks",
+            "Tonight's new picks are those to buy less the reshuffle",
+        })
+        {
+            Assert.Contains($"<li data-verdict=\"pass\">pass: {WebUtility.HtmlEncode(rule)}</li>", mid, StringComparison.Ordinal);
+        }
+
+        Assert.DoesNotContain("data-verdict=\"fail\"", mid, StringComparison.Ordinal);
+    }
+
     // The S&P 500's page list on the night of 12 Nov, each trade first as the list bought it at the next open, worked by hand
     // under the live drift rule's plan buying at a price and stopping 1.5 typical days of 2.00 under its fill: TTWO, listed
     // 10 Nov at 97.25 for 10 sessions, waits through 24 Nov, its stop 94.25; FERG, listed on the night, waits as tonight's new
@@ -177,6 +237,18 @@ public partial class ReadSurface
         Assert.Equal((PickStatus.NotFilled, PlanOrderWords.NotFilled), (drawn["NOTF"].Status, drawn["NOTF"].Unfilled));
         Assert.Equal(list[4], drawn["NEXT"]);
         Assert.Equal(list[5], drawn["OTHR"]);
+
+        // The counts: one new tonight, one from earlier nights, one no trade, and the three bought open.
+        var summary = PicksScreen.Summary([.. drawn.Values], night);
+
+        Assert.Equal((0, 1, 1, 1, 3), (summary.ToBuy, summary.PlacedTonight, summary.StillWaiting, summary.NotFilled, summary.Open));
+
+        var counts = WebUtility.HtmlDecode(new MarkRenderer().PicksCounts(summary));
+
+        Assert.Contains("<dt>New tonight, waiting for their price</dt><dd>1</dd>", counts, StringComparison.Ordinal);
+        Assert.Contains("<dt>From earlier nights, still waiting for their price</dt><dd>1</dd>", counts, StringComparison.Ordinal);
+        Assert.Contains("<dt>Not filled, no trade</dt><dd>1</dd>", counts, StringComparison.Ordinal);
+        Assert.Contains("<dt>To buy at tomorrow's open</dt><dd>0</dd>", counts, StringComparison.Ordinal);
     }
 
     // The words and the last session worked by hand: an order of 30 Sep waiting 10 sessions waits through 14 Oct, Columbus
@@ -190,6 +262,8 @@ public partial class ReadSurface
         Assert.Equal(new DateOnly(2026, 12, 30), PlanScreen.LastDay(new DateOnly(2026, 12, 24), 3));
         Assert.Equal("waiting for its price, 47.50, until 14 Oct 2026", PlanOrderWords.Waiting(47.5m, new DateOnly(2026, 10, 14)));
         Assert.Equal("waiting for its price, its levels placing none, until 14 Oct 2026", PlanOrderWords.Waiting(null, new DateOnly(2026, 10, 14)));
+        Assert.Equal(", 1 new tonight waiting for its price, 2 from earlier nights still waiting for their price", PlanOrderWords.Counts(1, 2));
+        Assert.Equal(string.Empty, PlanOrderWords.Counts(0, 0));
         Assert.True(PlanOrderWords.IsWaiting(PlanOrderWords.Waiting(null, new DateOnly(2026, 10, 14))));
         Assert.False(PlanOrderWords.IsWaiting(PlanOrderWords.NotFilled));
         Assert.False(PlanOrderWords.IsWaiting(PaperAccount.Waiting));

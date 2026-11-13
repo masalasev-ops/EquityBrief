@@ -143,7 +143,8 @@ public partial class ReadSurface
     {
         var verdicts = CountsProof.Check(RestartGroups(), HomeAfterTheRestart, TonightAfterTheRestart, PaperAfterTheRestart);
 
-        Assert.Equal(18, verdicts.Count);
+        // From the 23.10 correction of 2026-11-13 two more, Home's and Tonight's orders still waiting, none after this restart.
+        Assert.Equal(20, verdicts.Count);
         Assert.All(verdicts, verdict => Assert.Equal("pass", verdict.Verdict));
     }
 

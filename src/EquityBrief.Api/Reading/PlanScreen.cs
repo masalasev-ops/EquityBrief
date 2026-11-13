@@ -197,4 +197,14 @@ public static class PlanScreen
         };
     }
 
+    // The orders from nights before the one drawn still waiting for their price, each with its price and its last session,
+    // in the order they were listed, which Home, Tonight and Past picks draw as a group of their own.
+    public static IReadOnlyList<WaitingOrderView> StillWaiting(IReadOnlyList<PlannedTradeRow> planned, DateOnly night) =>
+    [
+        .. LiveBuying(planned)
+            .Where(row => IsWaiting(row) && row.Listed < night)
+            .OrderBy(row => row.Listed)
+            .ThenBy(row => row.Place)
+            .Select(row => new WaitingOrderView(row.Family, row.Ticker, row.Listed, Price(row), LastDay(row.Listed, row.Order.Window))),
+    ];
 }

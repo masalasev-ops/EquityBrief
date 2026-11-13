@@ -19104,3 +19104,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 23.10 - correction: the orders waiting for their price are a group of their own on Home, Tonight and Past picks, tonight's new apart from earlier nights', every count naming its group   2026-11-13
+
+Corrects:   23.10, whose orders the one function counting trades took as tonight's to buy whatever night placed them, so the
+            counts proof read the S&P 400's fifteen orders waiting against Home's five new picks on the night of 2026-11-12, and
+            no page named the orders still waiting (F4's review, F5).
+Label:      23.10, as the correction before it.
+Ruled:      the operator's answer in the same handoff: "Home, Tonight and Past picks list each order still waiting with its
+            price and last day, in a group of its own, and every count names its group ... Home's heading counts tonight's new
+            picks, with the waiting orders in a line beneath." Read so: an order placed on the night drawn is tonight's new pick,
+            and the group still waiting is those placed on earlier nights, so the S&P 400 reads 5 new tonight and 10 from earlier
+            nights rather than counting the night's 5 twice.
+Built:      the one function counts an order placed on the night drawn among those to buy and one from an earlier night still
+            waiting as a group of its own; Home beneath its heading, Tonight beneath the open trades and Past picks above its
+            trades list each order still waiting with its price and last session; Past picks' counts name "New tonight, waiting
+            for their price", "From earlier nights, still waiting for their price" and "Not filled, no trade" on the S&P 500, and
+            its count line "1 new tonight waiting for its price, 10 from earlier nights still waiting for their price" on the S&P
+            400 and 600; the counts proof holds Home's, Tonight's and Past picks' to the function, two rules more. A page with no
+            order waiting draws as before, its markup unchanged.
+Remedy:     none.
+Tests:      1 new: Home, Tonight, Past picks and the counts proof over the S&P 400 store, its one order still waiting and its
+            one placed tonight; the restart's proof test counts 20 rules from 18.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule as the correction before it. f5a an earlier night's order counted among tonight's new picks, f5b the count
+            still waiting taking tonight's in, f5c the group listing tonight's order, f5d Past picks' count line naming no group
+            and f5e Home drawing no group, each red at the new test; f5f the S&P 500's summary counting tonight's orders as
+            earlier nights', red at the S&P 500 test. Each red as predicted.
+Owed:       phase 23's sign-off, as before.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3715 of 3715 tests ran with none failed, migrations 0 to 144
+            with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
