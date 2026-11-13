@@ -19027,3 +19027,36 @@ Table:      the operator's rule of 2026-11-01, widened on 2026-11-09 to every co
             394 code lines added restores a line a correction removed. Test methods 3437 to 3451, none removed. No correction undone.
 Carried:    none of phase 22's own. The S&P 400's and 600's other families' held trades, SIRI's among them, wait on the operator's
             answer of 2026-11-11: "The S&P 400's and 600's other families (SIRI) wait."
+
+### 18.4 - correction: a stock held on an open trade of the S&P 400's or 600's own pullback, breakout or drift is drawn with that trade, its card and its exits on its stock and chart pages   2026-11-12
+
+Corrects:   18.4, whose correction of 2026-10-28 drew a stock held on a family's open trade with that trade first but found the
+            trade among the S&P 500's swing listings alone; 22.1's correction of 2026-11-11 added the dip's on every index. Found
+            by phase 22's first sign-off review (F3): SIRI, held on the S&P 400's breakout trade bought on 2026-11-05, draws one
+            line naming the earlier version that holds it and no fill, stop or exit, its plan saying "SIRI has no plan to draw".
+Ruled:      the operator's answer of 2026-11-11 left these trades waiting, "The S&P 400's and 600's other families (SIRI) wait";
+            on 2026-11-12, told what the change draws, they said "If nightly run is finished build it". It is inside **A stock
+            held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the
+            chart**, which says a family, and the architecture's paragraph on a held trade already reads so: no spec moves.
+Built:      the stock page reads its own index's trades and takes the newest of its pullback's, breakout's or drift's listed
+            before the night that Past picks reads as open, bought and not ended or its exit fired and not yet sold, as a held
+            trade beside the dip's, with the card its listing night stored; the chart's brief chips that setup "held on its open
+            trade" and opens on the trade, its stop and its exits, the newer of a held dip's and this one where both hold it. The
+            fundamentals-first family's trades stay on no page.
+Remedy:     none: the pages read it once the read surface restarts on the merge.
+Tests:      2 new: S2, held on the S&P 600's breakout, read three nights on off its stock and chart pages, with M3's ended S&P 400
+            pullback and S1's unfilled S&P 600 drift held on neither; and which trade holds the stock, worked by hand over a fired
+            and unsold drift, its sale, the fundamentals-first family's trade and a trade listed on the night.
+Claims:     none new.
+Pins:       none move: the read surface is pinned by no rule.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, filtered to the held
+            tests by name and restored from the file's own bytes. h1 the stock page not handed the trade, red at the page test; h2
+            the open rule taken out, red at both; h3 the family filter taken out, red at the second; h4 the chart's chip not told,
+            red at the page test; h5 a trade listed on the night counted and h6 the oldest taken for the newest, each red at the
+            second. Each red as predicted, the dip's two held tests passing throughout.
+Owed:       SIRI's stock and chart pages read back on 5152 after the merge, its Release built from main with the server stopped.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3699 of 3699 tests ran with none failed, migrations 0 to 143
+            with none pending, schema version 143, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.
