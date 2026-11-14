@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-13 - docs/SCHEMA.md - the plan point test's record of a plan naming no price above its buy
+Decision: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath
+Was:
+> | `live_later_move` | REAL | from migration 144, the mean move of the live rule's plan's fills from 2019 from each fill to its sale, as a fraction of the fill, before costs; null where the family's live rule on the index states no plan, no fill from 2019 has ended, or the run was written before it |
+> ... walked over the family's setups from 2019: its fills' mean move from the fill to the sale as a fraction of the fill, before costs, and the share of them that sold above their fill, over how many fills, none where the live rule states no plan. A run given one family writes that family's row alone, the others' newest rows standing. The pages draw the two figures on a pick's card whose plan sells on its time limit alone, as that rule's record over every pick like it and never as the stock's own (see: ...).
+Now:
+> | `live_later_move` | REAL | from migration 144, the mean move of the live rule's plan's fills from 2019 whose sale placed no price above them, ... every fill of a plan selling on its time limit alone, and from the second 23.10 correction of 2026-11-13 those of the staged sales or the first band above with no level above the fill; null where ... no such fill from 2019 has ended, or the run was written before it |
+> ... the mean move of its fills whose sale placed no price above them, ... For a plan selling on its time limit alone that is every fill; from the second 23.10 correction of 2026-11-13, for the staged sales and the first band above it is the fills their levels placed no price above, held to the stop or the time limit. ... The pages draw the two figures on a pick's card whose plan names no price above its buy, ... (see: ...) (see: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath).
+Why: item (a) of the operator's order of 2026-11-13: a staged sale whose levels place nothing above the close draws the record of picks like it, read from the plan point test for its family, as the dip does; the figure is over the fills that, like it, had no price above to sell at.
+
+### 2026-11-13 - docs/ARCHITECTURE.html - a card whose plan's levels place no price above its buy says so in one line
+Decision: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath
+Was:
+> ... each staged level above the buy selling an equal share with the share kept to the stop or the time limit, said in words where the levels place none above the buy, or the time limit alone with the rule's record beneath, ... the record being worked out until its run has written them.
+Now:
+> ... each staged level above the buy selling an equal share with the share kept to the stop or the time limit, or the time limit alone with the rule's record beneath, ... the record being worked out until its run has written them. From the second 23.10 correction of that day a staged sale or the first band above whose levels place no price above the buy draws one line saying there is no price above tonight's close to sell at and the days it holds unless the stop sells it first, and beneath it the same record over the live plan's fills from 2019 its levels placed no price above, held to the stop or the time limit (see: ...).
+Why: the same; the S&P 400 drift's BHF, AMG, PCTY and NXST of 2026-11-12 drew "Sell a share at" with "No level above the buy" run into it.
+
 ### 2026-11-11 - docs/RUNBOOK.md - an approved change registers whatever the hour, and a night run again for an earlier session answers none
 Decision: An approved change answered after midnight UTC registers that night and is first read the night after, and a night run again for an earlier session answers none
 Was:

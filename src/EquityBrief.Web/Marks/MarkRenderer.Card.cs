@@ -286,7 +286,7 @@ public sealed partial class MarkRenderer
         body.Append("</div>");
         body.Append(TrailLines(card, pick));
         body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
-        body.Append(card.Zone?.Sale is { OnTimeAlone: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
+        body.Append(card.Zone?.Sale is { HoldsToItsLimit: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
         body.Append("</section>");
         body.Append(EntryCheckLine(card.EntryCheck, card.Ticker));
         body.Append(SetupRecordBox(card.LongRecord));
@@ -714,7 +714,7 @@ public sealed partial class MarkRenderer
 
         body.Append("</div>");
         body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
-        body.Append(card.Zone?.Sale is { OnTimeAlone: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
+        body.Append(card.Zone?.Sale is { HoldsToItsLimit: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
 
         if (card.Zone?.Sale is { } sold)
         {
