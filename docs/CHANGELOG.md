@@ -7,6 +7,160 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-14 - docs/ARCHITECTURE.html - Home, Tonight and the cards in the operator's words of 2026-11-14: the open named from the calendar, the held stock's card, the take profit and why a filing setup has no long record
+Decision: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing; Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk; Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
+Was:
+> ARCHITECTURE.html, Every count of trades names its group: ... A stock listed and not yet filled is to buy at tomorrow's open and in no group. A trade whose exit fired on tonight's close, on every index, is held and counted open until the next open sells it: each count of open trades adds how many of them sell at tomorrow's open, ...
+
+> ARCHITECTURE.html, Tonight in one minute: ... Then come tonight's picks and the setups they came from with how many of the index's stocks qualified under some setup; the trades from earlier nights still open with a link to Past picks; how many ended tonight at their target or at their stop or out of time, those whose rows store no ending counted as ended by their setup's own exit; and how many stocks are one step from qualifying ...
+
+> ARCHITECTURE.html, A family's card: ... and a note counting the stocks past its five; a line saying why where it lists none; ...
+
+> ARCHITECTURE.html, the card's parts: ... and the time limit with the hold's last day; the reward against the risk where the pick's row states it; ...
+
+> ARCHITECTURE.html, A setup's record on its tile: ... for the Fundamentals family and the sector heavyweights and Quality at a fair price that it has no long record yet and the year their filings reach back to (see: Each setup's tile ...
+
+> ARCHITECTURE.html, The setup's record over the long history: ... for the Fundamentals family and the sector heavyweights and Quality at a fair price that it has no long record yet and the year their filings reach back to on the index; and beneath it ...
+
+> ARCHITECTURE.html, Watching, not buying: ... (see: Home says in plain words why a pick is an idea to buy or watched and how it was tested)
+
+### 2026-11-14 - CLAUDE.md, docs/ARCHITECTURE.html and docs/SCHEMA.md - every pick takes profit at a price, the three setups with no stop stop under the buy, and the first five sessions after a restart are checked
+Decision: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk; The first five sessions after a restart hold each live rule's picks to its registered plan placed again, and change nothing
+Was:
+> CLAUDE.md, Bars are append-only: ... for the books' next rebalance, on the operator's ruling of 2026-10-20; and it is removed whole by the pull that wrote it ...
+
+> ARCHITECTURE.html, the plan: ... and the sale, the rule's own, the first band above, the staged sales or the time limit alone (see: ...). The plan is no engine's hook, since no engine proposes one. ...
+
+> ARCHITECTURE.html, Family recorder: membership, bar store, indicators, family results, ...; Dip family: membership, bar store, calendar, ...; Quality family: membership, bar store, indicators, ...; Improving family: membership, bar store, indicators, companies, ...; Decision cards: membership, bar store, calendar, companies, ...; and each one's Pulled history cell in the read and write matrix blank
+
+> SCHEMA.md, pulled_bar: **This is not the bar table, and no night reads it but the chart averages step, the setup ledger's step and, on a night whose store's year holds too few sessions, the index families, the rule cards, the heavyweights' book and the member readings step**, ...
+
+> SCHEMA.md, heavyweight_holding, heavyweight_rule_holding: | `reason` | TEXT | `no longer the leader`, `a close under its 200-day average` or `left the index`, ... null while held |; quality_holding and improving_trade: | `end_reason` | TEXT | ... `under its 200-day average` for a rule selling a holding (a trade) bought before the night at a close under it |; decision_card: | `plan` | TEXT | from 23.10, JSON: ... the order its family's live rule's plan places on the card's night from the stock's own bars |
+Now: each the same with every step placing a take-profit reading one stock's highs and lows from the newest pull over the twenty years before the night for the prices it turned down at, the price a rule's trade sells at; the five steps declaring that read; the books' and the Fundamentals family's new end reasons `a close under its stop` and `took profit` and their `stop`, `take_profit` and `take_profit_from` columns; an order carrying its multiple and the prices it turned down at; the heavyweights' card's `take_profit_from`; and the match check's catalogue and matrix rows.
+Why: the operator's order of 2026-11-14, items 1 to 3 and 7, with their three answers.
+
+### 2026-11-14 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the rules read each quarter from its filing and then its release, and the quarters fetch moves into the swing filter's step
+Decision: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
+Was:
+> CLAUDE.md: ... and the quarters fetch after the close, which asks for a member's reported quarters on the night after it reports, ...
+
+> ARCHITECTURE.html, section 14: <li>Ask the provider for the reported quarters of the members due, one request for a member's fundamentals and one for three years of its closes where the answer is stored: every member once at the start, at most 260 a night; ... bounded by its own limit and by the day's allowance and never by the night's deadline (see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted).</li>
+
+> ARCHITECTURE.html, section 14: <li>Read the reported quarters of every member, from the quarters fetched on the nights before this one: the trajectory, ...
+
+> ARCHITECTURE.html, section 14's note: Step 24 is carved out of the second of those by name and calls no model: it asks the provider for one member's quarters at a time on the nights after the member reports, which the reporting calendar sets rather than the index, and it is bounded by its own limit and by the day's allowance (see: ...). Step 25 is carved out of the second by name ... Step 28 calls no model and makes one request a night, to the Treasury ...
+
+> ARCHITECTURE.html, Fundamental reader: membership, bar store, calendar, reported quarters ... read from the newest fetch made on a night before this one, and the state they give it ...
+
+> ARCHITECTURE.html, Member reader: ... indicators, reported quarters, companies, fundamental readings ... the profit gate, the coverage from quarters whose interest expense was read and the state its quarters give it, ...
+
+> ARCHITECTURE.html, Sweep history: ... heavyweight nights, companies, filed facts
+
+> ARCHITECTURE.html, Late bar readings: ... member readings, entry readings, SEC tickers, release documents, gate results, ...
+
+> ARCHITECTURE.html, Filings refresher: nightly, once, after the quarters fetch; and by hand
+
+> ARCHITECTURE.html, Quarter fetcher: nightly, after the arithmetic has closed and before the filings refresh; and from 21.12 ...
+
+> ARCHITECTURE.html, read and write matrix: the Fundamental reader's, the Member reader's and Sweep history's Sources cells blank
+
+> ARCHITECTURE.html, Per-name network calls in the nightly run: ... the quarters fetch after the close ... It runs after the close, bounded by its own limit and by the day's allowance rather than by the night's deadline, and no figure the arithmetic computes moves whether it ran.
+
+> ARCHITECTURE.html, Filings refresh: after the quarters fetch and before the night's report requests, ...
+
+> ARCHITECTURE.html, Quarters step: after the close and before the filings refresh, bounded by its own limit of 15 minutes, ... a peak reporting night asking its members inside it would add minutes to a night that already takes ten of its fifteen on this machine's disk. ...
+
+> ARCHITECTURE.html, Profit gate and coverage of the 400's and 600's rules: the profit gate passes a member whose net income over the four newest quarters filed before the session sums above nothing, a quarter filed on the session or after it not read and a quarter filed twice read as first filed, fewer than four filed or one stating no net income not passing; the coverage passes a member whose operating income over the same four is at least twice their interest expense, read as a cost whatever its sign, a member filing no interest expense or in the Financials sector passing and one stating no operating income not, and on the night a member read with none where a quarter it reads was fetched before its interest expense was stored (see: ...) (see: A member's coverage is read on the night only over quarters whose fetch read their interest expense)
+
+> ARCHITECTURE.html, The quarters step reaches its limit or the day's allowance: ... and the night goes on to the filings refresh
+
+> ARCHITECTURE.html, A member's quarters fetched before their interest expense was stored: the member readings store its coverage as none, its profit gate and every other reading still read, until the quarters step fetches it again after its next report and stores each quarter's interest expense with the fetch having read it (see: A member's coverage is read on the night only over quarters whose fetch read their interest expense) / the member's page says its coverage was not read and why / a quarter stored before the interest expense was read would read as a company owing nothing and pass the coverage on a figure no filing states
+
+> SCHEMA.md, reported_quarter.interest_read: from 15.2, 1 where the fetch that stored the row read the income statement's interest expense, filed or not, and 0 on every row stored before, whose null says nothing about what was filed
+
+> SCHEMA.md, fundamental_reading: ... A night reads only the quarters fetched on the nights before it, so a night run again later never reads a quarter from its future. ...
+
+> SCHEMA.md, member_reading: | `profit` | INTEGER | 1 where the four newest quarters filed before the session sum their net income above nothing, 0 otherwise | / | `coverage` | INTEGER | 1 where the same four hold operating income at least twice their interest expense or the company is a financial one, 0 where they do not, null where a quarter among them was stored before interest expense was read |
+
+> SCHEMA.md, member_reading's writer note: ... A night run again for a session replaces that session's rows and no other's. Every reading is ...
+
+> RUNBOOK.md: | the quarters step | after the arithmetic, same invocation | ... ; From 17.3 the night refreshes the SEC's facts of the members that filed, after the quarters fetch and before the night's report requests: ...
+Now: each the same with the quarters fetch in the swing filter's step after the S&P 500's sector heavyweights' book and before the S&P 400's and 600's families, its section 14 step folded into the swing filter's and the note's steps renumbered; the readers reading each quarter from its filing and then its release, reading filed facts and release documents; the profit and the cover as the new decision reads them; the stock page saying beside the cover the quarter it was read to; and the runbook's `quarters-moved` section.
+Why: 23.10's second part, on the operator's order of 2026-11-13, parts 3 and 5.
+
+### 2026-11-14 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - an approval the operator withdrew undone by register --withdraw
+Decision: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+Was:
+> ARCHITECTURE.html, Candidate registrar: ... and gives the live swing filter its plan through <code>register --plan</code> as it gives a family rule its (see: The S&amp;P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's); it never updates and never deletes, ...
+Now: the same with `register --withdraw` undoing a withdrawn approval at one instant, the changed live rule and the rule in the background retired and the earlier rule live again; and the runbook's command for it before the Fundamentals family's flag.
+Why: 23.10's second part, on the operator's answer of 2026-11-13 to item (d): the S&P 500's Quality rule made live again at its setting before the approval of 2026-11-09.
+
+### 2026-11-14 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the long ledger written once more, resumed by its pin
+Decision: The long ledger is written once more at the second restart, each session replaced whole and resumed by its pin
+Was:
+> ARCHITECTURE.html: ... Both readings stand in one row. A session the long ledger holds is frozen until the restart writes it again, and each build ends by ...
+
+> ARCHITECTURE.html, Setup ledger: ... both readings in one row, the sessions it holds frozen, and at its end the standing setups ...
+
+> SCHEMA.md: ... a session it holds a setup of is frozen, and a build writes only the sessions it holds none of, so the table has no updater and no deleter until the restart writes it again. ...
+
+> SCHEMA.md: | `long_setup` | SetupLedger | none | none |
+Now: each the same with `ledger-build --long --again` writing once more every session not written under the catalogue's version now, clearing its rows and writing them again in one chunk's transaction, resumed where it stopped, the build that table's one deleter; and the runbook's three lines for it beside the long ledger's build.
+Why: 23.10's second part, on the operator's order of 2026-11-13, part 6.
+
+### 2026-11-14 - docs/ARCHITECTURE.html - the entry check's readings join the catalogue and the per-rule test walks the drift's conditions, sales check and tight-stop skip
+Decision: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+Was:
+> <p>Every reading is defined once, in the core's catalogue, and read as it stood: the one hundred readings of the stock, its business, its insiders, its analysts and the market, ... the place the night orders its list by, which the swing filter's version leaving off a deteriorating business reads through the catalogue and the night hands the filter's stage (see: ...) (see: ...), from the bars to the session, ...
+
+> Walk-forward tester: ... and from 23.10's second part each S&amp;P 500 pullback rule walked at the plan its registration states, and beside its live rule, ... and the tight-stop skip on today's plan (see: The S&amp;P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's); and from 21.10 ...
+Now: the catalogue's one hundred and nine readings, the entry check's nine after the business's state; and the tester's row with the drift's conditions, its sales check and its tight-stop skip beside the S&P 500's and the S&P 400's live drift, the S&P 600 pullback's skip through its own search, the S&P 500 drift's standing target on today's plan, and an own sweep's rule walked over the listings its condition keeps.
+Why: 23.10's second part, on the operator's order of 2026-11-13, part 4.
+
+### 2026-11-14 - docs/BUILD_PLAN.md - 23.10's second part cites the decision on the tight-stop skip that supersedes the one it cited
+Decision: The tight-stop skip is walked unregistered on today's plan where it was measured, taking no family's place
+Was:
+> ... the tight stop's skip walked unregistered on today's plan on the S&P 500's drift and the S&P 600's pullback (see: At phase 23's restart a pick whose give-up price sits within one typical daily move of its buy is skipped as a variant on the three families it helped), ...
+Now: the same citing **The tight-stop skip is walked unregistered on today's plan where it was measured, taking no family's place**.
+Why: a spec cites no decision under "Previously decided".
+
+### 2026-11-14 - docs/ARCHITECTURE.html - the S&P 500's swing filter states a plan and its heavyweight book a book's hooks
+Decision: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+Was:
+> Rule cards: ... keeps the swing filter's variants' own picks, five a night in the list's own order with one open trade a stock, each walked on the closes since as the family's walk ends a trade; ...
+
+> Rule picks: one row per index, rule, stock and night a rule whose list no other table keeps, the swing filter's variants, kept a pick on: its place, the plan's prices and reward to risk, its cap, the figures that listed it, and its end and result as the walk ends it
+
+> ... their own sell dial named apart from the hooks' exit; a quality or Fundamentals rule reads conditions and a score alone, and a heavyweights book reads none.
+
+> Heavyweight book: ... buys each leader it does not hold, with the sector's largest as its size cut, a rebalance reading a series the store holds no close of for the night waiting for one; ...
+
+> Candidate registrar: ... the maximum counted over the registration's own setup family (see: Each setup family's correction for luck counts its own rules alone, at most nine a family); it never updates and never deletes, ...
+
+> Walk-forward tester: ... the exposure walked unregistered beside each live rule whose family registers none (see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half); and from 21.10 ...
+Now: each the same with from 23.10's second part the live swing filter's own trades under its plan kept beside its variants' picks; the rule picks holding them with the order a plan placed; a swing filter rule stating a plan alone and the S&P 500's heavyweights book a book's hooks; the book taking each sector's leaders in its hooks' order over the readings the night hands it; the registrar refusing every other hook on either and giving the live swing filter its plan; and the per-rule test walking each pullback rule at its plan and today's plan, the graded exposure, the standing target, the two widenings and the tight-stop skip beside its live rule, unregistered.
+Why: 23.10's second part, on the operator's order of 2026-11-13, teaches the swing filter and the heavyweight book the hooks.
+
+### 2026-11-14 - docs/SCHEMA.md - the rule picks hold the live swing filter's trades under its plan
+Decision: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+Was:
+> Grain: one row per index, rule, stock and night a rule whose list no other table keeps kept a pick on, the swing filter's variants.
+
+> | `rule` | TEXT | the variant's name as the register holds it |
+
+> | `place` | INTEGER | the pick's place on the variant's own list, counted from one, at most five |
+
+> | `plan` | TEXT | from 23.10, JSON: the order the plan its variant's registration states placed at the night's close, as `family_trade` stores it; null for a variant stating no plan, as every one does until the swing filter reads the hooks |
+Now: the grain names the live rule stating a plan beside the variants, the rule column the rule's name, the place the live rule's on the page's list, and the plan column the order its rule's registration states, the pick walked under it, null for a rule stating none; and two columns added after it by migration 145, the benchmark of a pick kept under a plan and how many members it is the mean of.
+Why: 23.10's second part keeps the live swing filter's trades under its plan in the rule picks, placed, filled, sold and benchmarked under it.
+
+### 2026-11-14 - docs/BUILD_PLAN.md - the operator's answers of 2026-11-04 cite the decision that carries the fourth
+Decision: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+Was:
+> ... (see: A search over the long history re-runs every third test year with its setting carried between) (see: The index code paths stay and the S&P 500's swing filter and heavyweight book learn the hooks at the one restart) (see: Countrywide is left out ...
+Now: the same citing **The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's**, which supersedes it and carries the answer's words.
+Why: a spec cites no decision under "Previously decided".
+
 ### 2026-11-13 - .claude/rules/checks.md - rule-wording-out-of-pins states its list empty at 23.10's second part
 Decision: A rule's screen wording sits outside the sources its version pins and a file still holding it waits for a restart already happening
 Was:
