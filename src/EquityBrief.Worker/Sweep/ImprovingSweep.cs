@@ -253,12 +253,14 @@ public sealed class ImprovingLay
         ImprovingSweepSetting setting,
         bool soldUnderAverage = false,
         Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null,
-        (double Moves, double Multiple)? stops = null)
+        (double Moves, double Multiple)? stops = null,
+        bool half = false)
     {
         var trades = new List<HeavyweightTrade>();
         var chosen = new Dictionary<int, HeavyweightRebalance>();
         var open = new SortedDictionary<int, (int Entry, ImprovingScore Score, int Held)>();
         var exits = new Dictionary<int, (double Stop, double? TakeProfit)>();
+        var halves = new Dictionary<int, int>();
         var bySession = filings
             .SelectMany((one, name) => one.Select(filing => (Name: name, Filing: filing)))
             .GroupBy(one => one.Filing.Session)
@@ -270,6 +272,7 @@ public sealed class ImprovingLay
             var sold = tape.LastMemberClose[name][session];
             var cut = chosen[entry].Sectors[0].Cut;
             var bought = sold > entry;
+            int? halfAt = halves.Remove(name, out var at) && at <= sold ? at : null;
 
             // A trade sold before it was bought, its stock gone the session after its night, holds no result.
             trades.Add(new HeavyweightTrade(
@@ -278,11 +281,11 @@ public sealed class ImprovingLay
                 entry,
                 sold,
                 reason,
-                bought ? Return(tape, name, entry, sold) : null,
+                !bought ? null : halfAt is { } h ? HeavyweightSweep.HalfResult(tape, name, entry, h, sold) : Return(tape, name, entry, sold),
                 bought && cut.Length > 0 ? cut.Average(one => Return(tape, one, entry, tape.LastMemberClose[one][sold]) ?? 0.0) : null,
                 null,
                 null,
-                tape.Calendar[sold].Year - SweepColumns.FirstScored.Year));
+                tape.Calendar[sold].Year - SweepColumns.FirstScored.Year) { HalfAt = halfAt });
             open.Remove(name);
         }
 
@@ -323,9 +326,18 @@ public sealed class ImprovingLay
                 // filing exit.
                 // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
                 if (!fell && held < setting.Sessions && session > entry && exits.TryGetValue(name, out var placed)
-                    && EquityBrief.Core.Loop.TakeProfit.EndOf(tape.Close[name][session], placed.Stop, placed.TakeProfit) is { } exited)
+                    && BookHalf.Step(tape.Close[name][session], tape.Close[name][entry], placed, half, halves.ContainsKey(name)) is var step
+                    && (step.Ended is not null || step.SoldHalf))
                 {
-                    End(name, session, exited);
+                    if (step.SoldHalf)
+                    {
+                        halves[name] = session;
+                        exits[name] = step.Placed;
+
+                        continue;
+                    }
+
+                    End(name, session, step.Ended!);
                     sold.Add(name);
 
                     continue;
@@ -391,15 +403,17 @@ public sealed class ImprovingLay
 
     // One setting's book: its walk, each trade and its members bought at the open after its night and the trade charged
     // its round trip, and its months.
-    public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null)
+    public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null, bool half = false)
     {
-        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops);
+        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops, half);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,
                 trade.End,
                 Cost(trade),
-                (from, to) => from == trade.Entry ? FromFill(trade.Name, from, tape.LastMemberClose[trade.Name][to]) : Return(tape, trade.Name, from, tape.LastMemberClose[trade.Name][to]),
+                (from, to) => trade.HalfAt is { } h
+                    ? BookHalf.Return(tape, trade.Name, trade.Entry, from, tape.LastMemberClose[trade.Name][to], h, FillOver)
+                    : from == trade.Entry ? FromFill(trade.Name, from, tape.LastMemberClose[trade.Name][to]) : Return(tape, trade.Name, from, tape.LastMemberClose[trade.Name][to]),
                 (from, to) => CutReturn(chosen[trade.Entry].Sectors[0].Cut, from, to, bought: from == trade.Entry)))
             .ToArray();
 

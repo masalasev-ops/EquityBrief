@@ -75,6 +75,9 @@ public sealed record HeavyweightTrade(
     int Year)
 {
     public double? Edge => HeavyweightRule.Edge(Result, Cut);
+
+    // On the operator's ruling of 2026-11-14 on the books the session a half exit sold half the holding on, none where none.
+    public int? HalfAt { get; init; }
 }
 
 // What one setting's holdings came to: the trades ended and those still held, the edge over the size cut and the
@@ -562,25 +565,29 @@ public static class HeavyweightSweep
         IReadOnlyDictionary<int, HeavyweightRebalance> rebalances,
         HeavyweightExit exit,
         Func<int, int, double?>? everyMember = null,
-        (double Moves, double Multiple)? stops = null)
+        (double Moves, double Multiple)? stops = null,
+        bool half = false)
     {
         var trades = new List<HeavyweightTrade>();
         var open = new SortedDictionary<int, (int Entry, string Sector, int[] Cut)>();
 
         // From the operator's order of 2026-11-14 each holding's stop and take-profit where the walk is asked for them, a
-        // close under the stop or at or above the take-profit selling it at that close.
+        // close under the stop or at or above the take-profit selling it at that close; and from their ruling on the books, under
+        // a half exit, half sold at the take-profit and the stop on the other half moved up to the buy.
         // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
         var exits = new Dictionary<int, (double Stop, double? TakeProfit)>();
+        var halves = new Dictionary<int, int>();
 
         void End(int name, int session, string reason)
         {
             var (entry, sector, cut) = open[name];
             var sold = tape.LastMemberClose[name][session];
-            var result = Return(tape, name, entry, sold);
+            int? halfAt = halves.Remove(name, out var at) && at <= sold ? at : null;
+            var result = halfAt is { } h ? HalfResult(tape, name, entry, h, sold) : Return(tape, name, entry, sold);
             double? cutReturn = cut.Length > 0 ? cut.Average(one => Return(tape, one, entry, tape.LastMemberClose[one][sold]) ?? 0.0) : null;
             double? market = IndexReturn(tape, entry, sold);
 
-            trades.Add(new HeavyweightTrade(name, sector, entry, sold, reason, result, cutReturn, everyMember?.Invoke(entry, sold), market, tape.Calendar[sold].Year - SweepColumns.FirstScored.Year));
+            trades.Add(new HeavyweightTrade(name, sector, entry, sold, reason, result, cutReturn, everyMember?.Invoke(entry, sold), market, tape.Calendar[sold].Year - SweepColumns.FirstScored.Year) { HalfAt = halfAt });
             open.Remove(name);
             exits.Remove(name);
         }
@@ -594,9 +601,18 @@ public static class HeavyweightSweep
                     End(name, session - 1, HeavyweightBook.LeftTheIndex);
                 }
                 else if (session > open[name].Entry && exits.TryGetValue(name, out var placed) && !double.IsNaN(tape.Close[name][session])
-                    && EquityBrief.Core.Loop.TakeProfit.EndOf(tape.Close[name][session], placed.Stop, placed.TakeProfit) is { } exited)
+                    && BookHalf.Step(tape.Close[name][session], tape.Close[name][open[name].Entry], placed, half, halves.ContainsKey(name)) is var step
+                    && (step.Ended is not null || step.SoldHalf))
                 {
-                    End(name, session, exited);
+                    if (step.SoldHalf)
+                    {
+                        halves[name] = session;
+                        exits[name] = step.Placed;
+                    }
+                    else
+                    {
+                        End(name, session, step.Ended!);
+                    }
                 }
                 else if (exit != HeavyweightExit.Drop
                     && !double.IsNaN(tape.Close[name][session])
@@ -647,6 +663,12 @@ public static class HeavyweightSweep
     static double? Return(HeavyweightTape tape, int name, int from, int to) =>
         to >= from && !double.IsNaN(tape.Close[name][from]) && tape.Close[name][from] > 0 && !double.IsNaN(tape.Close[name][to])
             ? (tape.Close[name][to] / tape.Close[name][from]) - 1.0
+            : null;
+
+    // A holding's result from its buy's close with half sold at one close and half at a later one, none where a close is missing.
+    public static double? HalfResult(HeavyweightTape tape, int name, int entry, int half, int sold) =>
+        sold >= half && half > entry && tape.Close[name][entry] > 0 && !double.IsNaN(tape.Close[name][half]) && !double.IsNaN(tape.Close[name][sold])
+            ? BookHalf.Result(tape.Close[name][entry], tape.Close[name][half], tape.Close[name][sold])
             : null;
 
     // The index's return from a session's close to the newest it holds at or before a later one.

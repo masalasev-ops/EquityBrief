@@ -178,22 +178,27 @@ public sealed class QualityLay
         QualitySettings setting,
         bool soldUnderAverage = false,
         Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null,
-        (double Moves, double Multiple)? stops = null)
+        (double Moves, double Multiple)? stops = null,
+        bool half = false)
     {
         var trades = new List<HeavyweightTrade>();
         var rebalances = new Dictionary<int, HeavyweightRebalance>();
         var open = new SortedDictionary<int, int>();
         var reshuffleAt = reshuffles.ToHashSet();
 
-        // From the operator's order of 2026-11-14 each holding's stop and take-profit where the walk is asked for them.
+        // From the operator's order of 2026-11-14 each holding's stop and take-profit where the walk is asked for them; and from
+        // their ruling on the books, under a half exit, half sold at the take-profit and the stop on the other half moved up to
+        // the buy.
         // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
         var exits = new Dictionary<int, (double Stop, double? TakeProfit)>();
+        var halves = new Dictionary<int, int>();
 
         void End(int name, int session, string reason)
         {
             var entry = open[name];
             var sold = tape.LastMemberClose[name][session];
             var cut = rebalances[entry].Sectors[0].Cut;
+            int? halfAt = halves.Remove(name, out var at) && at <= sold ? at : null;
 
             trades.Add(new HeavyweightTrade(
                 name,
@@ -201,11 +206,11 @@ public sealed class QualityLay
                 entry,
                 sold,
                 reason,
-                Return(tape, name, entry, sold),
+                halfAt is { } h ? HeavyweightSweep.HalfResult(tape, name, entry, h, sold) : Return(tape, name, entry, sold),
                 cut.Length > 0 ? cut.Average(one => Return(tape, one, entry, tape.LastMemberClose[one][sold]) ?? 0.0) : null,
                 null,
                 null,
-                tape.Calendar[sold].Year - SweepColumns.FirstScored.Year));
+                tape.Calendar[sold].Year - SweepColumns.FirstScored.Year) { HalfAt = halfAt });
             open.Remove(name);
             exits.Remove(name);
         }
@@ -219,9 +224,18 @@ public sealed class QualityLay
                     End(name, session - 1, QualityFamily.LeftTheIndex);
                 }
                 else if (session > open[name] && exits.TryGetValue(name, out var placed) && !double.IsNaN(tape.Close[name][session])
-                    && EquityBrief.Core.Loop.TakeProfit.EndOf(tape.Close[name][session], placed.Stop, placed.TakeProfit) is { } exited)
+                    && BookHalf.Step(tape.Close[name][session], tape.Close[name][open[name]], placed, half, halves.ContainsKey(name)) is var step
+                    && (step.Ended is not null || step.SoldHalf))
                 {
-                    End(name, session, exited);
+                    if (step.SoldHalf)
+                    {
+                        halves[name] = session;
+                        exits[name] = step.Placed;
+                    }
+                    else
+                    {
+                        End(name, session, step.Ended!);
+                    }
                 }
                 else if (setting.SellOnFiling && session > open[name] && filings[name].TryGetValue(session, out var filed)
                     && !FundamentalScorecard.Clears(filed.Passed, filed.Applied, setting.ScoreFloorInNine))
@@ -286,15 +300,17 @@ public sealed class QualityLay
 
     // One setting's book: its walk, each holding and its members bought at the open after its reshuffle and the holding
     // charged its round trip, and its months.
-    public QualityBook Book(QualitySettings setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null)
+    public QualityBook Book(QualitySettings setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null, bool half = false)
     {
-        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops);
+        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops, half);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,
                 trade.End,
                 Cost(trade),
-                (from, to) => from == trade.Entry ? FromFill(trade.Name, from, tape.LastMemberClose[trade.Name][to]) : Return(tape, trade.Name, from, tape.LastMemberClose[trade.Name][to]),
+                (from, to) => trade.HalfAt is { } h
+                    ? BookHalf.Return(tape, trade.Name, trade.Entry, from, tape.LastMemberClose[trade.Name][to], h, FillOver)
+                    : from == trade.Entry ? FromFill(trade.Name, from, tape.LastMemberClose[trade.Name][to]) : Return(tape, trade.Name, from, tape.LastMemberClose[trade.Name][to]),
                 (from, to) => CutReturn(rebalances[trade.Entry].Sectors[0].Cut, from, to, bought: from == trade.Entry)))
             .ToArray();
 

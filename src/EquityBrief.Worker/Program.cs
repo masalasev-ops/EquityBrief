@@ -1027,8 +1027,9 @@ static int NoVerb()
         "'loop-rules --index <GSPC, MID or SML>' walks every family rule standing on the index at its own settings over " +
         "the test years and stores each variant's verdict against its live or provisional rule and each of those against " +
         "its benchmark, a rule the history cannot walk stored with why, with '--month <yyyy-MM>' and '--print' as " +
-        "'loop-test' reads them, and '--books' printing the live books alone at the nine stops and take-profits, each " +
-        "per dollar risked against the index's other stocks bought the same way, and writing nothing, " +
+        "'loop-test' reads them, and '--books' printing the live books alone at the nine stops and take-profits, full and " +
+        "half, chosen in points a month and each per dollar risked against the index's other stocks bought the same way, " +
+        "and writing nothing, " +
         "'loop-pooled --month <yyyy-MM>' sums each family's rules across the three indices' per-rule tests of the month " +
         "into one verdict, and each kind of change registered on two or more indices beside it, and stores each, with " +
         "'--print' printing each verdict and writing nothing, '--long' on either reading the long history from each " +

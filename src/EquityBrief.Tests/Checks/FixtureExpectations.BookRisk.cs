@@ -66,15 +66,14 @@ public partial class FixtureExpectations
         Assert.Equal(0.45 - (1.1 / 3), edges[1].Edge!.Value, 9);
         Assert.Null(edges[2].Edge);
 
-        Assert.Equal(
-            "From 2016 to 2016, picks like this made $0.59 more for every $1 risked than buying the index's other stocks the same way, over 2 picks.",
-            BookRisk.Box(edges, BookRiskTape().Calendar, 2016));
+        // The box counts the picks from 2019 alone, the years after the choice was made, and this tape holds none.
+        Assert.Equal("no pick from 2019 to measure", BookRisk.Box(edges, BookRiskTape().Calendar));
     }
 
-    // On the S&P 400 Quality is judged from 2016, so X's 2014 pick does not choose it; Y is chosen on its 2016 pick and its box
-    // reads both of its picks from 2016.
+    // On the S&P 400 Quality is judged from 2016, so X's 2014 pick is not read; the line reads each choice per dollar risked
+    // beside the one chosen in points a month, Y, whose box reads its one pick from 2019 and says a mean under nothing as less.
     [Fact]
-    public void ABooksStopAndTakeProfitAreChosenPerDollarRiskedFromItsFirstTestYearTo2018()
+    public void ABooksLineReadsEachExitPerDollarRiskedBesideTheChoiceInPointsAMonthAndItsBoxFrom2019()
     {
         DateOnly[] calendar = [new(2014, 6, 2), new(2016, 6, 1), new(2019, 6, 3)];
         (string, IReadOnlyList<(int Entry, double? Edge)>)[] choices =
@@ -85,10 +84,70 @@ public partial class FixtureExpectations
 
         Assert.Equal(
             $"book risk: {QualityRule.Name}, the live rule, per $1 risked against the index's other stocks bought the same way: "
-            + "X +0.200 over 1 from 2016 to 2018, +0.100 over 1 from 2019, +0.150 over 2 from 2016; "
-            + "Y +0.300 over 1 from 2016 to 2018, -0.200 over 1 from 2019, +0.050 over 2 from 2016; chosen from 2016 to 2018: Y; "
-            + "From 2016 to 2019, picks like this made $0.05 more for every $1 risked than buying the index's other stocks the same way, over 2 picks.",
-            BookRisk.Line(QualityRule.Name, "the live rule", "MID", calendar, choices));
-        Assert.EndsWith("no choice holds a pick before 2019, its family's first test year on the index being 2023", BookRisk.Line(HeavyweightRule.Name, "the live rule", "GSPC", calendar, choices), StringComparison.Ordinal);
+            + "X +0.200 over 1 from 2016 to 2018, +0.100 over 1 from 2019; "
+            + "Y +0.300 over 1 from 2016 to 2018, -0.200 over 1 from 2019; at the choice in points a month, Y: "
+            + "From 2019 to 2019, picks like this made $0.20 less for every $1 risked than buying the index's other stocks the same way, over 1 picks.",
+            BookRisk.Line(QualityRule.Name, "the live rule", "MID", calendar, choices, "Y"));
+        Assert.EndsWith("; no choice in points a month", BookRisk.Line(QualityRule.Name, "the live rule", "MID", calendar, choices, null), StringComparison.Ordinal);
+    }
+
+    // On the operator's ruling of 2026-11-14 on the books, item 3, a half exit: the first close at or above the take-profit sells
+    // half and moves the stop up to the buy, a close under the buy then ending the rest; a close under the stop before it ends the
+    // whole; and a span's return counts the half sold at its own close, within the span or before it.
+    [Fact]
+    public void AHalfExitSellsHalfAtTheTakeProfitAndMovesTheStopOnTheOtherHalfUpToTheBuy()
+    {
+        Assert.Equal((null, (20.0, (double?)null), true), BookHalf.Step(23, 20, (19, 22.9), half: true, halfSold: false));
+        Assert.Equal(Core.Loop.TakeProfit.UnderItsStop, BookHalf.Step(19.5, 20, (20, null), half: true, halfSold: true).Ended);
+        Assert.Equal(Core.Loop.TakeProfit.TookProfit, BookHalf.Step(23, 20, (19, 22.9), half: false, halfSold: false).Ended);
+        Assert.Equal(Core.Loop.TakeProfit.UnderItsStop, BookHalf.Step(18, 20, (19, 22.9), half: true, halfSold: false).Ended);
+
+        // From a fill of 10.2 over a close of 10 to 11: 0.08. Half sold at 12 within a span from 10 to 9: (6 + 4.5 - 10) / 10 =
+        // 0.05. Half sold at 12 before a span from 12 to 13: half held and half in cash, 0.5 / 12 = 1 / 24.
+        Assert.Equal(0.08, BookHalf.Over(10.2, 10, 11, null, false), 9);
+        Assert.Equal(0.05, BookHalf.Over(10, 10, 9, 12, false), 9);
+        Assert.Equal(1.0 / 24, BookHalf.Over(12, 12, 13, 12, true), 9);
+        Assert.Equal(0.125, BookHalf.Result(20, 23, 22), 9);
+    }
+
+    // The same pick against members walked the same way under a half exit: A sells half at its take-profit on the third session
+    // and the rest on the pick's, 0.5 x 0.15 + 0.5 x 0.10 = 0.125 over 0.05 = 2.5; B closes under its stop first, -1.2; E sells
+    // half on the third session and closes under its buy on the fourth, 0.5 x 0.1 + 0.5 x -0.025 = 0.0375 over 0.05 = 0.75. Under
+    // the full exit A and E sell whole at their take-profits, 3.0 and 2.0.
+    [Fact]
+    public void UnderAHalfExitTheIndexsOtherMembersAreBoughtTheSameWay()
+    {
+        double[][] close =
+        [
+            [10, 10.5, 11, 11.5, 12, 12],
+            [20, 21, 23, 22, 22, 22],
+            [50, 49, 47, 46, 45, 44],
+            [40, 41, 44, 39, 42, 43],
+        ];
+        bool[][] member = [.. close.Select(row => row.Select(_ => true).ToArray())];
+        var tape = new HeavyweightTape
+        {
+            Tickers = ["P", "A", "B", "E"],
+            Calendar = [new(2019, 3, 1), new(2019, 3, 4), new(2019, 3, 5), new(2019, 3, 6), new(2019, 3, 7), new(2019, 3, 8)],
+            Close = close,
+            Average200 = [.. close.Select(row => row.Select(_ => 0.0).ToArray())],
+            Member = member,
+            LastMemberClose = [.. close.Select((row, name) => HeavyweightTape.LastMemberCloseOf(member[name], row))],
+            Index = [.. Enumerable.Repeat(double.NaN, 6)],
+            First = 0,
+        };
+
+        static (double Risk, double Stop, double? TakeProfit, double Fill)? Placed(int name, int entry) => name switch
+        {
+            0 => (0.1, 9, null, 1.0),
+            1 => (0.05, 19, 22.9, 1.0),
+            2 => (0.05, 47.5, 60, 1.0),
+            _ => (0.05, 38, 43.9, 1.0),
+        };
+
+        HeavyweightTrade[] picks = [new(0, QualityRule.Name, 0, 4, "sold", 0.18, null, null, null, 0)];
+
+        Assert.Equal(1.8 - ((2.5 - 1.2 + 0.75) / 3), BookRisk.Edges(tape, picks, Placed, half: true).Single().Edge!.Value, 9);
+        Assert.Equal(1.8 - ((3.0 - 1.2 + 2.0) / 3), BookRisk.Edges(tape, picks, Placed, half: false).Single().Edge!.Value, 9);
     }
 }

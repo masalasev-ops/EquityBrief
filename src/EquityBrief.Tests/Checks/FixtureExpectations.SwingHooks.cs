@@ -174,7 +174,7 @@ public partial class FixtureExpectations
         };
 
         Assert.Equal(
-            "book choice: heavyweight, the live rule: its own +2.00 from 2015 to 2018 over 2 month(s), -1.00 from 2019 over 2; A -1.00 before, +10.00 from; B +2.00 before, -5.00 from; chosen from 2015 to 2018: B, -5.00 points a month from 2019 against its own -1.00",
+            "book choice: heavyweight, the live rule: its own +2.00 from 2015 to 2018 over 2 month(s), -1.00 from 2019 over 2; A -1.00 before, +10.00 from; B +2.00 before, -5.00 from; chosen from 2015 to 2018: B, -5.00 points a month from 2019 against its own -1.00, 4.00 points a month short of its own exit from 2019",
             RuleTests.BookChoiceLine(book, "MID", calendar, _ => true));
         Assert.Equal(
             "book choice: heavyweight, the live rule: its own none before 2019 over 0 month(s), -1.00 from 2019 over 2; A none before, +10.00 from; B none before, -5.00 from; no choice holds a month before 2019, its family's first test year on the index being 2023",

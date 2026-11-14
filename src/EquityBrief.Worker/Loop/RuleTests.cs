@@ -66,6 +66,11 @@ public static class BookStops
     public static string Words((double Moves, double Multiple) stops) =>
         FormattableString.Invariant($"a stop {stops.Moves:0.##} typical days under the buy and taking profit at {stops.Multiple:0.##} times the risk");
 
+    // On the operator's ruling of 2026-11-14 on the books, item 3, the same with half sold at the take-profit, the stop on the
+    // other half then moved up to the buy.
+    public static string HalfWords((double Moves, double Multiple) stops) =>
+        FormattableString.Invariant($"a stop {stops.Moves:0.##} typical days under the buy and {Core.Families.RuleWording.TakeProfit.TakingHalf(stops.Multiple)}");
+
     // A live book's walks at each, from a book walked at a stop and a take-profit.
     public static IReadOnlyList<(string Words, IReadOnlyList<(int Opens, double? Edge)> Months)> Beside(Func<(double Moves, double Multiple), IReadOnlyList<(int Opens, double? Edge)>> walked) =>
         [.. Grid.Select(stops => (Words(stops), walked(stops)))];
@@ -1616,29 +1621,51 @@ public static class RuleTests
     // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
     public static string BookChoiceLine(RuleUnderTest rule, string index, IReadOnlyList<DateOnly> calendar, Func<int, bool> inTestYears)
     {
-        static double? Mean(IReadOnlyList<(int Opens, double? Edge)> months, Func<int, bool> on) =>
-            months.Where(month => on(month.Opens) && month.Edge is not null).Select(month => month.Edge!.Value).DefaultIfEmpty(double.NaN).Average() is var mean && !double.IsNaN(mean) ? mean * 100 : null;
-
-        static int Count(IReadOnlyList<(int Opens, double? Edge)> months, Func<int, bool> on) => months.Count(month => on(month.Opens) && month.Edge is not null);
-
         static string Shown(double? points) => points is { } value ? FormattableString.Invariant($"{value:+0.00;-0.00}") : "none";
 
-        var first = LongTest.FirstTestYear(rule.Family, index);
-        var from = Core.History.LongLedger.StandingFrom.Year;
-        bool Early(int opens) => inTestYears(opens) && calendar[opens].Year >= first && calendar[opens].Year < from;
-        bool Late(int opens) => inTestYears(opens) && calendar[opens].Year >= from;
+        var (first, from, early, late) = BookYears(rule.Family, index, calendar, inTestYears);
         var years = first < from ? FormattableString.Invariant($"from {first} to {from - 1}") : FormattableString.Invariant($"before {from}");
-
         var own = rule.Months ?? [];
         var choices = rule.BookBeside ?? [];
-        var ranked = choices.Where(one => Mean(one.Months, Early) is not null).OrderByDescending(one => Mean(one.Months, Early)).ToArray();
+        var best = BookChosen(rule, index, calendar, inTestYears);
+        var chosen = choices.FirstOrDefault(one => one.Words == best);
 
-        return FormattableString.Invariant($"book choice: {rule.Family}, {rule.Rule}: its own {Shown(Mean(own, Early))} {years} over {Count(own, Early)} month(s), {Shown(Mean(own, Late))} from {from} over {Count(own, Late)}; ")
-            + string.Join("; ", choices.Select(one => FormattableString.Invariant($"{one.Words} {Shown(Mean(one.Months, Early))} before, {Shown(Mean(one.Months, Late))} from")))
-            + (ranked is [var best, ..]
-                ? FormattableString.Invariant($"; chosen {years}: {best.Words}, {Shown(Mean(best.Months, Late))} points a month from {from} against its own {Shown(Mean(own, Late))}")
+        // On the operator's ruling of 2026-11-14 on the books, item 3, the book's own exit is the reference and cannot be chosen,
+        // and a choice doing worse than it from 2019 says by how much, the take-profit standing either way.
+        double? shortBy = best is not null && BookMean(chosen.Months, late) is { } at && BookMean(own, late) is { } ownAt && at < ownAt ? ownAt - at : null;
+
+        return FormattableString.Invariant($"book choice: {rule.Family}, {rule.Rule}: its own {Shown(BookMean(own, early))} {years} over {BookCount(own, early)} month(s), {Shown(BookMean(own, late))} from {from} over {BookCount(own, late)}; ")
+            + string.Join("; ", choices.Select(one => FormattableString.Invariant($"{one.Words} {Shown(BookMean(one.Months, early))} before, {Shown(BookMean(one.Months, late))} from")))
+            + (best is not null
+                ? FormattableString.Invariant($"; chosen {years}: {best}, {Shown(BookMean(chosen.Months, late))} points a month from {from} against its own {Shown(BookMean(own, late))}")
+                    + (shortBy is { } by ? FormattableString.Invariant($", {by:0.00} points a month short of its own exit from {from}") : string.Empty)
                 : FormattableString.Invariant($"; no choice holds a month {years}") + (first < from ? string.Empty : FormattableString.Invariant($", its family's first test year on the index being {first}")));
     }
+
+    // The stop and take-profit a live book chooses in points a month on its months from its family's first test year on the index
+    // to 2018, none where no choice holds a month there.
+    public static string? BookChosen(RuleUnderTest rule, string index, IReadOnlyList<DateOnly> calendar, Func<int, bool> inTestYears)
+    {
+        var early = BookYears(rule.Family, index, calendar, inTestYears).Early;
+
+        return (rule.BookBeside ?? []).Where(one => BookMean(one.Months, early) is not null).OrderByDescending(one => BookMean(one.Months, early)).Select(one => one.Words).FirstOrDefault();
+    }
+
+    // A book's years: its family's first test year on the index, 2019, and whether a month opening on a session falls in the
+    // test years from the first to 2018 or from 2019, by the calendar year of its opening session.
+    static (int First, int From, Func<int, bool> Early, Func<int, bool> Late) BookYears(string family, string index, IReadOnlyList<DateOnly> calendar, Func<int, bool> inTestYears)
+    {
+        var first = LongTest.FirstTestYear(family, index);
+        var from = Core.History.LongLedger.StandingFrom.Year;
+
+        return (first, from, opens => inTestYears(opens) && calendar[opens].Year >= first && calendar[opens].Year < from, opens => inTestYears(opens) && calendar[opens].Year >= from);
+    }
+
+    // A book's mean edge in points a month over the months a test holds, none where none holds an edge.
+    static double? BookMean(IReadOnlyList<(int Opens, double? Edge)> months, Func<int, bool> on) =>
+        months.Where(month => on(month.Opens) && month.Edge is not null).Select(month => month.Edge!.Value).DefaultIfEmpty(double.NaN).Average() is var mean && !double.IsNaN(mean) ? mean * 100 : null;
+
+    static int BookCount(IReadOnlyList<(int Opens, double? Edge)> months, Func<int, bool> on) => months.Count(month => on(month.Opens) && month.Edge is not null);
 
     // From 21.18 a live rule's walk under the target standing as a sell order beside its own over the test years, walked
     // unregistered and written nowhere.

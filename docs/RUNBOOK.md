@@ -1352,6 +1352,8 @@ On the operator's answer of 2026-11-14 to item 15, `--books` walks the index's l
 dotnet run --project src/EquityBrief.Worker -- loop-rules --long --books --index GSPC --print
 ```
 
+On the operator's ruling of 2026-11-14 on the books, each book is walked under the nine half exits as well, half sold at the take-profit and the stop on the other half then moved up to the buy, the other half sold by the book's own exit; the eighteen are chosen in points a month on the years from the family's first test year to 2018, the book's own exit printed beside them as the reference and never chosen, with how far the choice falls short of it from 2019 where it does; each is read per dollar risked beside, its benchmark's members walked the same way, and the record box's sentence counts the picks from 2019 alone, the years after the choice.
+
 From 19.12 the tester also works which readings go with winners on an index, which the Ledger page draws (see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule):
 
 ```

@@ -38,16 +38,19 @@ public sealed partial class WalkForwardTester
                 continue;
             }
 
-            var walked = BookStops.Grid.Select(stops => (Stops: stops, Book: book(stops))).ToArray();
-
-            output.WriteLine(BookRisk.Line(family, rule, index, read.Calendar, [.. walked.Select(one => (BookStops.Words(one.Stops), BookRisk.Edges(tape, read.Series, one.Book.Costed, one.Stops)))]));
-
-            var own = new RuleUnderTest(family, rule, RuleTests.Live, rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: book(null).Months)
+            // On the operator's ruling of 2026-11-14 on the books the nine full exits and the nine half exits, chosen in points a month,
+            // the book's own exit beside them as the reference and not a choice, each read per dollar risked beside.
+            var walked = new[] { false, true }
+                .SelectMany(half => BookStops.Grid.Select(stops => (Stops: stops, Half: half, Words: half ? BookStops.HalfWords(stops) : BookStops.Words(stops))))
+                .Select(one => (one.Stops, one.Half, one.Words, Book: book(one.Stops, one.Half)))
+                .ToArray();
+            var own = new RuleUnderTest(family, rule, RuleTests.Live, rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: book(null, false).Months)
             {
-                BookBeside = [.. walked.Select(one => (BookStops.Words(one.Stops), one.Book.Months))],
+                BookBeside = [.. walked.Select(one => (one.Words, one.Book.Months))],
             };
 
             output.WriteLine(RuleTests.BookChoiceLine(own, index, read.Calendar, InTestYears));
+            output.WriteLine(BookRisk.Line(family, rule, index, read.Calendar, [.. walked.Select(one => (one.Words, BookRisk.Edges(tape, read.Series, one.Book.Costed, one.Stops, one.Half)))], RuleTests.BookChosen(own, index, read.Calendar, InTestYears)));
         }
 
         return 0;
