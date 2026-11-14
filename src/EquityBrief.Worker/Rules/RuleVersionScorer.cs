@@ -77,7 +77,7 @@ public sealed class RuleVersionScorer : IComponent
     // see: The ladder rules' code version pins every source a live ladder rule or its replay runs through, its comments and blank lines aside
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "2d37943222c1";
+    public const string CodeVersion = "6f4ab65630dc";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [

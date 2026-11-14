@@ -58,7 +58,7 @@ public sealed class SwingFilter : IComponent
     // the list from the compiled code and holds this to it.
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "87c0bd6de398";
+    public const string CodeVersion = "d8ad88783883";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [

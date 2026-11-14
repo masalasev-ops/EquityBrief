@@ -24,7 +24,7 @@ public sealed class ArrivedAndNarrow : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "a88af0ac4f25";
+    public override string Version => "44d4e7b93e6f";
 
     public override IReadOnlyList<string> Reads =>
         [NightValues.Close, NightValues.PreviousClose, NightValues.Zones, IndicatorSeries.Atr14];
