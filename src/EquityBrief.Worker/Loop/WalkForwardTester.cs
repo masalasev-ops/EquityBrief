@@ -965,11 +965,11 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             output.WriteLine(line);
         }
 
-        // On the operator's ruling of 2026-11-14, item 4, each live book's stop and take-profit chosen on the test years before
-        // 2019 and judged from 2019 beside its own, printed alone.
+        // On the operator's ruling of 2026-11-14, item 4, each live book's stop and take-profit chosen on the test years from its
+        // family's first test year on the index to the year before 2019 and judged from 2019 beside its own, printed alone.
         foreach (var one in tested.Where(one => one.Rule.BookBeside is { Count: > 0 }))
         {
-            output.WriteLine(RuleTests.BookChoiceLine(one.Rule, session => InTestYears(session) && read.YearOf(session) < Core.History.LongLedger.StandingFrom.Year, session => InTestYears(session) && read.YearOf(session) >= Core.History.LongLedger.StandingFrom.Year));
+            output.WriteLine(RuleTests.BookChoiceLine(one.Rule, read.Index, read.Calendar, InTestYears));
         }
 
         // From 21.14, on the operator's ruling of 2026-10-30, each graded exposure, a rule's own or the one walked beside a

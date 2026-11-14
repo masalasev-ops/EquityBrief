@@ -159,4 +159,26 @@ public partial class FixtureExpectations
         Assert.False(RuleTests.TightStop(1.0));
         Assert.Equal((0.40, 5), (RuleTests.PullbackWidenedStrength, RuleTests.PullbackWidenedArrival));
     }
+
+    // On the operator's ruling of 2026-11-14, item 4: a book's stop and take-profit chosen on its months from its family's first
+    // test year on the index to 2018 and judged from 2019, by the calendar year of each month's opening session. The S&P 400's
+    // heavyweights are judged from 2015, so the choice doing well in 2014 alone is not chosen; the S&P 500's from 2023, so
+    // nothing is chosen and the months from 2019 are still judged. Worked by hand in points a month, an edge times 100.
+    [Fact]
+    public void ABooksStopAndTakeProfitAreChosenFromItsFirstTestYearTo2018AndJudgedFrom2019ByCalendarYear()
+    {
+        DateOnly[] calendar = [new(2012, 6, 1), new(2014, 6, 2), new(2015, 6, 1), new(2016, 6, 1), new(2018, 6, 1), new(2019, 6, 3), new(2021, 6, 1)];
+        var book = new RuleUnderTest(HeavyweightRule.Name, "the live rule", "live", "words", LoopProcedures.Points, 21, Months: [(1, 0.05), (2, 0.01), (3, 0.03), (5, 0.02), (6, -0.04)])
+        {
+            BookBeside = [("A", [(1, 0.50), (2, -0.01), (3, -0.01), (5, 0.10), (6, 0.10)]), ("B", [(1, -0.50), (2, 0.02), (3, 0.02), (5, -0.10), (6, 0.00)])],
+        };
+
+        Assert.Equal(
+            "book choice: heavyweight, the live rule: its own +2.00 from 2015 to 2018 over 2 month(s), -1.00 from 2019 over 2; A -1.00 before, +10.00 from; B +2.00 before, -5.00 from; chosen from 2015 to 2018: B, -5.00 points a month from 2019 against its own -1.00",
+            RuleTests.BookChoiceLine(book, "MID", calendar, _ => true));
+        Assert.Equal(
+            "book choice: heavyweight, the live rule: its own none before 2019 over 0 month(s), -1.00 from 2019 over 2; A none before, +10.00 from; B none before, -5.00 from; no choice holds a month before 2019, its family's first test year on the index being 2023",
+            RuleTests.BookChoiceLine(book, "GSPC", calendar, _ => true));
+        Assert.Contains("no choice holds a month from 2015 to 2018", RuleTests.BookChoiceLine(book, "MID", calendar, opens => opens >= 5), StringComparison.Ordinal);
+    }
 }

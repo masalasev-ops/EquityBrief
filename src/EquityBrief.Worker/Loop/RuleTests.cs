@@ -1609,9 +1609,12 @@ public static class RuleTests
                 FormattableString.Invariant($"{rule.Family}, {rule.Rule}: {beside.Words}, walked unregistered and written nowhere, {Months(beside.Months, inTestYears)} over the test years, against its own {Months(rule.Months ?? [], inTestYears)}")));
     }
 
-    // On the operator's ruling of 2026-11-14, item 4, a live book's stop and take-profit chosen on its months before 2019, its own
-    // and each choice judged from 2019, in points a month; no choice where no choice holds a month before 2019.
-    public static string BookChoiceLine(RuleUnderTest rule, Func<int, bool> early, Func<int, bool> late)
+    // On the operator's ruling of 2026-11-14, item 4, a live book's stop and take-profit chosen on its months over the test years
+    // from its family's first test year on the index to the year before 2019, the years the long test judges it on, its own and
+    // each choice judged from 2019, in points a month; no choice where none holds a month in those years. A month's year is its
+    // opening session's calendar year.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    public static string BookChoiceLine(RuleUnderTest rule, string index, IReadOnlyList<DateOnly> calendar, Func<int, bool> inTestYears)
     {
         static double? Mean(IReadOnlyList<(int Opens, double? Edge)> months, Func<int, bool> on) =>
             months.Where(month => on(month.Opens) && month.Edge is not null).Select(month => month.Edge!.Value).DefaultIfEmpty(double.NaN).Average() is var mean && !double.IsNaN(mean) ? mean * 100 : null;
@@ -1620,15 +1623,21 @@ public static class RuleTests
 
         static string Shown(double? points) => points is { } value ? FormattableString.Invariant($"{value:+0.00;-0.00}") : "none";
 
+        var first = LongTest.FirstTestYear(rule.Family, index);
+        var from = Core.History.LongLedger.StandingFrom.Year;
+        bool Early(int opens) => inTestYears(opens) && calendar[opens].Year >= first && calendar[opens].Year < from;
+        bool Late(int opens) => inTestYears(opens) && calendar[opens].Year >= from;
+        var years = first < from ? FormattableString.Invariant($"from {first} to {from - 1}") : FormattableString.Invariant($"before {from}");
+
         var own = rule.Months ?? [];
         var choices = rule.BookBeside ?? [];
-        var chosen = choices.Where(one => Mean(one.Months, early) is not null).OrderByDescending(one => Mean(one.Months, early)).FirstOrDefault();
+        var ranked = choices.Where(one => Mean(one.Months, Early) is not null).OrderByDescending(one => Mean(one.Months, Early)).ToArray();
 
-        return FormattableString.Invariant($"book choice: {rule.Family}, {rule.Rule}: its own {Shown(Mean(own, early))} before {Core.History.LongLedger.StandingFrom.Year} over {Count(own, early)} month(s), {Shown(Mean(own, late))} from it over {Count(own, late)}; ")
-            + string.Join("; ", choices.Select(one => FormattableString.Invariant($"{one.Words} {Shown(Mean(one.Months, early))} before, {Shown(Mean(one.Months, late))} from")))
-            + (chosen is { } best
-                ? FormattableString.Invariant($"; chosen before {Core.History.LongLedger.StandingFrom.Year}: {best.Words}, {Shown(Mean(best.Months, late))} points a month from it against its own {Shown(Mean(own, late))}")
-                : FormattableString.Invariant($"; no choice holds a month before {Core.History.LongLedger.StandingFrom.Year}"));
+        return FormattableString.Invariant($"book choice: {rule.Family}, {rule.Rule}: its own {Shown(Mean(own, Early))} {years} over {Count(own, Early)} month(s), {Shown(Mean(own, Late))} from {from} over {Count(own, Late)}; ")
+            + string.Join("; ", choices.Select(one => FormattableString.Invariant($"{one.Words} {Shown(Mean(one.Months, Early))} before, {Shown(Mean(one.Months, Late))} from")))
+            + (ranked is [var best, ..]
+                ? FormattableString.Invariant($"; chosen {years}: {best.Words}, {Shown(Mean(best.Months, Late))} points a month from {from} against its own {Shown(Mean(own, Late))}")
+                : FormattableString.Invariant($"; no choice holds a month {years}") + (first < from ? string.Empty : FormattableString.Invariant($", its family's first test year on the index being {first}")));
     }
 
     // From 21.18 a live rule's walk under the target standing as a sell order beside its own over the test years, walked
