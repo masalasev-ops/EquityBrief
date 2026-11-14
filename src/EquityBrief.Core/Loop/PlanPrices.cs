@@ -87,9 +87,10 @@ public static class PlanPrices
 
         var read = new PlanCombination(entry, window, parts[1], parts[2]);
         var entered = entry == PlanPoints.NextOpen || entry == PlanPoints.Average || entry == PlanPoints.FirstPullback || PlanPoints.Zones.Contains(entry) || PlanPoints.DistanceOf(entry) is not null;
-        var stopped = parts[1] is PlanPoints.RuleStop or PlanPoints.ZoneStop || PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).Any(days => PlanPoints.TypicalStop(days) == parts[1]);
+        var stopped = parts[1] is PlanPoints.RuleStop or PlanPoints.ZoneStop || PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).Any(days => PlanPoints.NamesStop(parts[1], days));
+        var named = PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).FirstOrDefault(one => PlanPoints.NamesStop(parts[1], one)) is var stopDays and > 0 ? read with { Stop = PlanPoints.TypicalStop(stopDays) } : read;
 
-        return entered && stopped && PlanPoints.Sales.Contains(parts[2]) && read.Words == words ? read : null;
+        return entered && stopped && PlanPoints.Sales.Contains(parts[2]) && read.Words == words ? named : null;
     }
 
     // Whether a combination is the traded plan itself, the next open at the rule's stop and sale.

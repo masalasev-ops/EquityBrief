@@ -1414,6 +1414,12 @@ public static class RuleWording
 
         public static string Taking(double multiple) => FormattableString.Invariant($"{TakingOpening}{multiple:0.##}{TakingClosing}");
 
+        // On the operator's ruling of 2026-11-14 on sign-off F1 and F3 a rule's name in plain words: no ceiling on the ranges
+        // named as any range rather than a number, and one typical move in the singular.
+        public static string Ranges(double ceiling, string number) => ceiling == 0 || !double.IsFinite(ceiling) ? "any range" : "ranges at " + number;
+
+        public static string Moves(double moves, string number) => number + (moves == 1 ? " typical move" : " typical moves");
+
         public static string TakingHalf(double multiple) => FormattableString.Invariant($"taking profit on half at {multiple:0.##}{TakingClosing}, the stop on the other half then moved up to the buy");
     }
 }

@@ -193,10 +193,10 @@ public static class TheSetupFamilies
     static string Named(bool isLive, string words) => (isLive ? FamilyRecords.LivePrefix : "the ") + words;
 
     public static string Words(BreakoutSettings settings) =>
-        FormattableString.Invariant($"breakout rule at a {settings.HighSessions}-session high, {Number(settings.VolumeMultiple)} times the volume, ranges at {Number(settings.RangeCeiling)} and the stop {Number(settings.StopMoves)} typical moves beneath");
+        FormattableString.Invariant($"breakout rule at a {settings.HighSessions}-session high, {Number(settings.VolumeMultiple)} times the volume, {Core.Families.RuleWording.TakeProfit.Ranges(settings.RangeCeiling, Number(settings.RangeCeiling))} and the stop {Core.Families.RuleWording.TakeProfit.Moves(settings.StopMoves, Number(settings.StopMoves))} beneath");
 
     public static string Words(DriftSettings settings) =>
-        FormattableString.Invariant($"drift rule within {settings.WindowSessions} sessions, up {Number(settings.ReactionMoves)} typical moves on {Number(settings.VolumeMultiple)} times the volume, the target at {Number(settings.TargetRiskMultiple)} times the risk")
+        FormattableString.Invariant($"drift rule within {settings.WindowSessions} sessions, up {Core.Families.RuleWording.TakeProfit.Moves(settings.ReactionMoves, Number(settings.ReactionMoves))} on {Number(settings.VolumeMultiple)} times the volume, the target at {Number(settings.TargetRiskMultiple)} times the risk")
         + (settings.StopFloorMoves > 0 ? FormattableString.Invariant($", the stop at least {Number(settings.StopFloorMoves)} typical move beneath") : string.Empty);
 
     public static string Words(HeavyweightSettings settings) =>

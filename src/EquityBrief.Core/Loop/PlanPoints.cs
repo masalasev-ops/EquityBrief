@@ -225,7 +225,12 @@ public static class PlanPoints
     // The fewest fills a recommendation rests on, over the years no setting was chosen on.
     public const int FewestFills = 100;
 
-    public static string TypicalStop(double days) => FormattableString.Invariant($"{days:0.##} typical days under the buy");
+    // On the operator's ruling of 2026-11-14 on sign-off F3 one typical day is named in the singular.
+    public static string TypicalStop(double days) => FormattableString.Invariant($"{days:0.##} {(days == 1 ? "typical day" : "typical days")} under the buy");
+
+    // Whether a stop's words name a number of typical days under the buy, the plural one day was named in before F3 read as well.
+    public static bool NamesStop(string words, double days) =>
+        words == TypicalStop(days) || words == FormattableString.Invariant($"{days:0.##} typical days under the buy");
 
     // On the operator's order of 2026-11-10, item 1, the wider stops a recommendation stopping 2 typical days under the buy
     // is walked again at, the one doing best from 2019 standing where it beats it there.
@@ -279,10 +284,11 @@ public static class PlanPoints
         return yearBefore is null ? null : newest.Value > yearBefore.Value;
     }
 
-    public static string DistanceEntry(double days) => FormattableString.Invariant($"{days:0.##} {UnderTheClose}");
+    public static string DistanceEntry(double days) => days == 1 ? "1 typical day under the close" : FormattableString.Invariant($"{days:0.##} {UnderTheClose}");
 
     public static double? DistanceOf(string entry) =>
-        entry.EndsWith(" " + UnderTheClose, StringComparison.Ordinal)
+        entry == "1 typical day under the close" ? 1
+        : entry.EndsWith(" " + UnderTheClose, StringComparison.Ordinal)
         && double.TryParse(entry[..^(UnderTheClose.Length + 1)], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var days)
         && days > 0
             ? days
@@ -339,7 +345,7 @@ public static class PlanPoints
             return zoneStop;
         }
 
-        var days = TypicalDays.Concat(WiderDays).FirstOrDefault(one => TypicalStop(one) == stop);
+        var days = TypicalDays.Concat(WiderDays).FirstOrDefault(one => NamesStop(stop, one));
 
         return days > 0 && typicalDay > 0 ? fill - (days * typicalDay) : null;
     }
