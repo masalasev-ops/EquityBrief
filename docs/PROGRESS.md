@@ -19291,3 +19291,29 @@ Mutated:    the rule as above. d1 the check-up's state drawn approved, d2 the de
 Owed:       the second restart's remedy registering the earlier S&P 500 Quality rule live again, the learned score kept as a
             variant on each index.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: the off-peak run was not disabled on 2026-11-10, and the early local run fired that day at 13:05 UTC   2026-11-13
+
+Corrects:   the 23.10 ruling of 2026-11-10 reading the overnight order, whose item 9 says "The off-peak run's scheduled task
+            was disabled by the operator on 2026-11-10 while the records' remedy ran, so no story is labelled until it runs
+            again", and the session's report that day that the early local run did not fire. Asked by the operator, item (e) of
+            the order of 2026-11-13: "Why the off-peak run was thought disabled while it ran and wrote 6 paid reports on
+            2026-11-10, and why the early local run did not fire that day; both run as scheduled."
+Label:      23.10, the checkpoint whose ruling the record corrects.
+Found:      read from the run log and the session's notes. The operator disabled the off-peak run's task on 2026-11-09 during
+            that day's remedy of the records; the session of 2026-11-10 carried that state forward from its notes and wrote it
+            into the ruling's entry without reading the scheduler, while the task stood enabled: the off-peak run of 10:05 UTC
+            ran, its labeller from 10:09:59 to 10:30:22 UTC labelling 1,021 stories and its drain writing the 6 reports the
+            night had queued, AMCR's, ATRC's, BDX's, VCEL's, TMDX's and VRSK's, from 10:35 to 11:06 UTC. The early local run
+            fired at 13:05:49 UTC and finished at 13:07:35 UTC, reading 2 releases. It fired at 12:05 UTC every day through
+            2026-11-07 and at 13:05 UTC on each weekday from 2026-11-09, its task's trigger having become a weekly one of the
+            weekdays, which fires an hour after its stated 07:05 since the clocks went back, as the night's does; the session
+            read the task's last run before 13:05 UTC, saw 2026-11-09's, and took the slot as missed. Both ran as scheduled.
+Built:      nothing: the record's correction alone.
+Tests:      none.
+Claims:     none new.
+Pins:       none move.
+Mutated:    none: no assertion was added.
+Owed:       the operator's word on the early slot's time: `CLAUDE.md` and the runbook state 12:05 UTC every day, and its trigger
+            now fires at 13:05 UTC on weekdays.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
