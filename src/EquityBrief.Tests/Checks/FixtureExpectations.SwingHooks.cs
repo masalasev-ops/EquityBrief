@@ -180,5 +180,10 @@ public partial class FixtureExpectations
             "book choice: heavyweight, the live rule: its own none before 2019 over 0 month(s), -1.00 from 2019 over 2; A none before, +10.00 from; B none before, -5.00 from; no choice holds a month before 2019, its family's first test year on the index being 2023",
             RuleTests.BookChoiceLine(book, "GSPC", calendar, _ => true));
         Assert.Contains("no choice holds a month from 2015 to 2018", RuleTests.BookChoiceLine(book, "MID", calendar, opens => opens >= 5), StringComparison.Ordinal);
+
+        // A month's edge under nothing that rounds to nothing is shown as nothing, not as "-+0.00".
+        var flat = new RuleUnderTest(HeavyweightRule.Name, "the live rule", "live", "words", LoopProcedures.Points, 21, Months: [(5, -0.00001)]);
+
+        Assert.Contains(", 0.00 from 2019 over 1; ", RuleTests.BookChoiceLine(flat, "MID", calendar, _ => true), StringComparison.Ordinal);
     }
 }

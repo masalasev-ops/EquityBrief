@@ -1621,7 +1621,7 @@ public static class RuleTests
     // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
     public static string BookChoiceLine(RuleUnderTest rule, string index, IReadOnlyList<DateOnly> calendar, Func<int, bool> inTestYears)
     {
-        static string Shown(double? points) => points is { } value ? FormattableString.Invariant($"{value:+0.00;-0.00}") : "none";
+        static string Shown(double? points) => points is { } value ? FormattableString.Invariant($"{value:+0.00;-0.00;0.00}") : "none";
 
         var (first, from, early, late) = BookYears(rule.Family, index, calendar, inTestYears);
         var years = first < from ? FormattableString.Invariant($"from {first} to {from - 1}") : FormattableString.Invariant($"before {from}");

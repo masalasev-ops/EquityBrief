@@ -147,7 +147,7 @@ public static class BookRisk
         var from = Core.History.LongLedger.StandingFrom.Year;
         bool Early(int entry) => calendar[entry].Year >= first && calendar[entry].Year < from;
         bool Late(int entry) => calendar[entry].Year >= from;
-        static string Shown((double? Mean, int Picks) figure) => figure.Mean is { } mean ? FormattableString.Invariant($"{mean:+0.000;-0.000} over {figure.Picks}") : FormattableString.Invariant($"none over {figure.Picks}");
+        static string Shown((double? Mean, int Picks) figure) => figure.Mean is { } mean ? FormattableString.Invariant($"{mean:+0.000;-0.000;0.000} over {figure.Picks}") : FormattableString.Invariant($"none over {figure.Picks}");
         var years = first < from ? FormattableString.Invariant($"from {first} to {from - 1}") : FormattableString.Invariant($"before {from}");
         var at = choices.FirstOrDefault(one => one.Words == chosen);
 
