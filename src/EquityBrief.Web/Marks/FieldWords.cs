@@ -100,6 +100,15 @@ public static partial class FieldWords
         ("estimate_revision_month", "the change in the analysts' estimate over a month"),
         ("short_interest_share", "the share of its stock sold short"),
         ("business_state_filed", "the state of the business as its filings read"),
+        ("stretch_days", "how far the close stands above its 20-day average, in typical days"),
+        ("stretch_share", "how rarely the stock has stood this far above its 20-day average"),
+        ("gain_twenty", "the gain over the last 20 trading days"),
+        ("largest_gain", "the day's gain the largest of the past year"),
+        ("night_volume_ratio", "the day's volume against its 50-day average"),
+        ("gap_days", "the gap up from the day before's high, in typical days"),
+        ("highest_since_years", "the years since it last closed this high"),
+        ("older_days", "the older price band above, in typical days"),
+        ("one_off_share", "a one-off item's share of the earnings beat"),
     ];
 
     // The filer's own tags for its figures, as the SEC's facts name them. A one-word tag is no code name to a reader.

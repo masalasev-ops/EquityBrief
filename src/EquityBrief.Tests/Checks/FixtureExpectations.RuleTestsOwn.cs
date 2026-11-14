@@ -276,6 +276,12 @@ public partial class FixtureExpectations
             $"its {IndexRuleCandidate.CreditAverageParameter} at 1 is a level its replay reads none of",
             RuleTests.ThroughOwnSweep(testInputs, BreakoutRule.Name, StandingRow(row.Candidate, "breakout-600", FrozenMoved(atForty, (IndexRuleCandidate.CreditAverageParameter, 1))), evaluator, FrozenMoved(atForty, (IndexRuleCandidate.CreditAverageParameter, 1))).Why);
 
+        // From 23.10's second part a frozen rule stating a condition on the ledger's readings is walked over the listings it
+        // keeps, so a run that read no readings walks it with why rather than as though it stated none.
+        var conditioned = new Dictionary<string, double>(atForty, StringComparer.Ordinal) { ["also_stretch_days_above"] = 4 };
+
+        Assert.Equal(RuleTests.NoReadings, RuleTests.ThroughOwnSweep(testInputs, BreakoutRule.Name, StandingRow(row.Candidate, "breakout-600", conditioned), evaluator, conditioned).Why);
+
         // A pullback at the S&P 600's frozen setting, the profit and cover check among its levels, walked by its search's own
         // reading with its units the picks the search's own walk kept.
         var frozenPullback = FrozenParameters(RemedyFreezes[4].Parameters);

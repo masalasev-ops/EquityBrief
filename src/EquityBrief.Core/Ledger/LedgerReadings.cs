@@ -19,7 +19,7 @@ public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "d2ecd6139b90";
+    public const string Version = "75f41e575f4e";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -166,6 +166,21 @@ public static class LedgerReadings
         // deteriorating business reads in the provider's quarters' place, as the place the night orders its list by.
         // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
         new(BusinessStateFiled, RuleWording.LedgerReadingsWords.BusinessStateFiled),
+
+        // From 23.10's second part the entry check's readings, appended so every reading before them keeps its place, each read
+        // through the entry check's own function over the member's bars to the session, the stored year then being the year
+        // the night held and the bars before it the older history, so the night's entry check and the ledger read one figure;
+        // the one-off item's share from the newest results release accepted by the session, which the long years hold none of.
+        // see: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+        new("stretch_days", RuleWording.LedgerReadingsWords.StretchDays),
+        new("stretch_share", RuleWording.LedgerReadingsWords.StretchShare),
+        new("gain_twenty", RuleWording.LedgerReadingsWords.GainTwenty),
+        new("largest_gain", RuleWording.LedgerReadingsWords.LargestGain),
+        new("night_volume_ratio", RuleWording.LedgerReadingsWords.NightVolumeRatio),
+        new("gap_days", RuleWording.LedgerReadingsWords.GapDays),
+        new("highest_since_years", RuleWording.LedgerReadingsWords.HighestSinceYears),
+        new("older_days", RuleWording.LedgerReadingsWords.OlderDays),
+        new("one_off_share", RuleWording.LedgerReadingsWords.OneOffShare),
     ];
 
     // The column of the business's state off the SEC's facts, which the swing filter's stage is handed the night's read of.

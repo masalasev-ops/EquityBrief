@@ -895,7 +895,10 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             improvingLay,
             own,
             Like: standingOnly ? null : like,
-            Ranked: standingOnly ? null : family => ranked.GetValueOrDefault(family));
+            Ranked: standingOnly ? null : family => ranked.GetValueOrDefault(family),
+            Revenues: index is EquityBrief.Worker.Indices.IndexFamilies.LargeIndex or Core.Providers.FundHoldings.MidCapIndex
+                ? await PlanPointTest.QuarterRevenuesAsync(databaseFile, [.. read.Series.Select(one => one.Name.Ticker)], cancellation)
+                : null);
         var rules = standingOnly ? [.. RuleTests.Walk(ruleInputs).Select(StandingAlone)] : RuleTests.Walk(ruleInputs);
         var tested = standingOnly
             ? RuleTests.JudgeLong(read, rules, await NewestCutoffAsync(cancellation), draws)
@@ -951,6 +954,15 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         foreach (var one in tested.Where(one => one.Rule.StandingTarget is not null))
         {
             output.WriteLine(RuleTests.StandingLine(one.Rule, InTestYears));
+        }
+
+        // From 23.10's second part each walk beside a live rule its family has no room or no word to register, unregistered
+        // and written nowhere: the S&P 500 pullback's today's plan, graded exposure, standing target, two widenings and
+        // tight-stop skip among them.
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+        foreach (var line in tested.SelectMany(one => RuleTests.BesideLines(one.Rule, InTestYears)))
+        {
+            output.WriteLine(line);
         }
 
         // From 21.14, on the operator's ruling of 2026-10-30, each graded exposure, a rule's own or the one walked beside a

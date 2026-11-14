@@ -94,6 +94,11 @@ public sealed record LedgerTrend(DateOnly Session, decimal? Now, decimal? MonthB
 // after it reads it from, and the shares short.
 public sealed record LedgerShortInterest(DateOnly Reported, decimal Shares);
 
+// From 23.10's second part one results release as the one-off item's share reads it: the day the SEC accepted it, the largest
+// one-off item its fixed phrases find with whether the sentence ties it to earnings a share and which way it says the item
+// moved them, none where it names none, and the beat the provider's surprises store within a week of it.
+public sealed record LedgerOneOff(DateOnly On, decimal? Amount, bool? Tied, int? Direction, decimal? Beat);
+
 public sealed record LedgerContext(
     IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income,
     IReadOnlyDictionary<string, string?> Sectors,
@@ -312,6 +317,52 @@ public sealed record LedgerContext(
 
     // A member's 2-session relative strength index on each of its bars, read once a series through the dip's own function.
     public double?[] RsiTwo(SweepSeries one, double[] closes) => rsiTwo.GetValue(one, _ => DipRule.Rsi(closes));
+
+    // From 23.10's second part each member's results releases by ticker, its filer's, with the one-off item each names and the
+    // beat beside it, which the one-off item's share reads; none where the readings are read without them, as a context
+    // reading the long years alone is, and the share none for a ticker the store matches no filer for.
+    // see: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+    public IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>? OneOffs { get; init; }
+
+    readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, EquityBrief.Core.EntryCheck.EntryBar[]> entryBars = new();
+    readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, System.Collections.Concurrent.ConcurrentDictionary<int, EquityBrief.Core.EntryCheck.EntryReading?>> entries = new();
+
+    // From 23.10's second part a member's entry check reading as of a bar, through the entry check's own function, the stored year
+    // then being the year the night held and the bars before it the older history, as the check's measurement reads it; read
+    // once a member and bar.
+    public EquityBrief.Core.EntryCheck.EntryReading? EntryOf(SweepSeries one, int bar) =>
+        entries.GetValue(one, _ => new()).GetOrAdd(bar, at =>
+        {
+            var held = entryBars.GetValue(one, series => [.. series.Bars.Select(each => new EquityBrief.Core.EntryCheck.EntryBar(each.Session, each.High, each.Low, each.Close, each.Volume))]);
+            var start = one.WindowStart[at];
+
+            return EquityBrief.Core.EntryCheck.EntryReadings.Of(
+                one.Name.Ticker,
+                new ArraySegment<EquityBrief.Core.EntryCheck.EntryBar>(held, start, at + 1 - start),
+                new ArraySegment<EquityBrief.Core.EntryCheck.EntryBar>(held, 0, start),
+                double.IsFinite(one.Atr[at]) ? one.Atr[at] : null,
+                double.IsFinite(one.Rsi[at]) ? one.Rsi[at] : null,
+                double.IsFinite(one.Volume50[at]) ? one.Volume50[at] : null);
+        });
+
+    // From 23.10's second part the one-off item's share of the beat on a session, read off the newest results release the SEC
+    // accepted by it: the item's amount a share over the beat where the sentence ties it to earnings a share and says which
+    // way and a beat above nought is stored, nought where the release names no item, and none where no release is held or an
+    // item's share is not read.
+    public double? OneOffShare(string ticker, DateOnly session)
+    {
+        if (OneOffs?.GetValueOrDefault(ticker)?.LastOrDefault(release => release.On <= session) is not { } newest)
+        {
+            return null;
+        }
+
+        if (newest.Amount is not { } amount)
+        {
+            return 0;
+        }
+
+        return newest is { Tied: true, Direction: not null, Beat: { } beat } && beat > 0m ? Statistic.FromRatio(amount / beat) : null;
+    }
 
     // A member's fall over the drop's sessions to a bar in that bar's typical moves, none where it holds too few sessions
     // or no typical move.
@@ -1245,8 +1296,33 @@ public static class LedgerSetups
         // the swing filter's version leaving off a deteriorating business reads; none where too few quarters are filed.
         Set(LedgerReadings.BusinessStateFiled, context.BusinessStateFiled(ticker, day) is { } state ? Core.Quarters.FundamentalState.Place(state) : null);
 
+        // From 23.10's second part the entry check's readings as of the bar, through its own function, and the one-off item's
+        // share off the newest results release accepted by the session.
+        // see: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+        var entry = context.EntryOf(one, bar);
+
+        Set("stretch_days", entry?.StretchDays);
+        Set("stretch_share", entry?.StretchShare);
+        Set("gain_twenty", entry?.GainTwenty);
+        Set("largest_gain", entry?.LargestGain is { } largest ? largest ? 1 : 0 : null);
+        Set("night_volume_ratio", entry?.VolumeRatio);
+        Set("gap_days", GapDays(entry));
+        Set("highest_since_years", entry is { } read && (read.HighestSince ?? read.HistoryStart) is { } matched ? (read.Session.DayNumber - matched.DayNumber) / DaysAYear : null);
+        Set("older_days", entry?.OlderDays);
+        Set("one_off_share", context.OneOffShare(ticker, day));
+
         return readings;
     }
+
+    // The days of a year the highest close's lookback is counted in, the entry check's own.
+    const double DaysAYear = EquityBrief.Core.EntryCheck.EntryMeasure.YearDays;
+
+    // From 23.10's second part the gap up to a session in typical days: its low over the session before's high where it stands
+    // above it, nought where it does not, and none where no typical move is held or the reading holds a single session.
+    static double? GapDays(EquityBrief.Core.EntryCheck.EntryReading? entry) =>
+        entry?.TypicalDay is not { } day || !(day > 0)
+            ? null
+            : entry is { GapHigh: { } high, GapLow: { } low } ? Statistic.FromPrice(low - high) / day : 0;
 
     // The ledger's readings of a scorecard by their columns: its share of the checks that applied, gross profit over
     // assets, and each ratio a check weighs against its own a year before, the debt's and the shares' read as falls so
