@@ -115,6 +115,26 @@ public partial class FixtureExpectations
         Assert.False(new PlanOrder(DistanceStaged.Words, PlanPoints.NextOpen, null, 0, PlanPoints.TypicalStop(2), 95, null, 1, 103, [], null, null, 10).PlacesNoPrice());
     }
 
+    // On the operator's ruling of 2026-11-14 on sign-off F1 and F3 a rule's name is in plain words: a breakout with no range
+    // ceiling says any range rather than Infinity, and one typical day or move is singular, an old plural name still read.
+    [Fact]
+    public void ARulesNameSaysAnyRangeAndOneTypicalDayInTheSingular()
+    {
+        var open = new Dictionary<string, double>(Worker.Indices.IndexRules.Provisional(IndexEvaluator("breakout-400")), StringComparer.Ordinal)
+        {
+            [IndexBreakoutCandidate.RangeCeilingParameter] = double.PositiveInfinity,
+            [IndexBreakoutCandidate.StopMovesParameter] = 1,
+        };
+        var words = Worker.Indices.IndexRules.Words(IndexEvaluator("breakout-400"), open);
+
+        Assert.Contains("times the volume, any range and the stop 1 typical move beneath", words, StringComparison.Ordinal);
+        Assert.DoesNotContain("Infinity", words, StringComparison.Ordinal);
+        Assert.Equal("1 typical day under the buy", PlanPoints.TypicalStop(1));
+        Assert.Equal("2 typical days under the buy", PlanPoints.TypicalStop(2));
+        Assert.True(PlanPoints.NamesStop("1 typical days under the buy", 1));
+        Assert.Equal(1, PlanPoints.DistanceOf(PlanPoints.DistanceEntry(1)));
+    }
+
     // The test of the buy and sell points reads as traded the plan each family's live rule on the index states: the S&P 500
     // breakout's plan on the S&P 500 alone, none for the S&P 400 drift standing at its own plan, and nothing for a family with
     // no live rule on the index or for a variant.
