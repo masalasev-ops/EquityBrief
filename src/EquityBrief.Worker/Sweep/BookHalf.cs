@@ -23,12 +23,11 @@ public static class BookHalf
     public static double Result(double buy, double half, double sold) => ((0.5 * half) + (0.5 * sold)) / buy - 1.0;
 
     // A holding's return over a span as a fraction of the sum the span opens on: from its base (the buy's fill on the session
-    // it was bought, the span's first close after), over the sum, to the close it ends at; where half sold by the span's end at
-    // a close, that half counts at its own close, and where it sold before the span the sum is the half sold beside the half
-    // still held.
+    // it was bought, the span's first close after), over the sum, to the close it ends at; where half sold within the span at a
+    // close, that half counts at its own close. Half sold before the span has left the book as a holding sold whole leaves it,
+    // its cash counted in no month, so the span reads the half still held alone.
     public static double Over(double basePrice, double sum, double to, double? half, bool halfBefore) =>
-        half is not { } sold ? (to - basePrice) / sum
-        : halfBefore ? (to - basePrice) / (sold + basePrice)
+        half is not { } sold || halfBefore ? (to - basePrice) / sum
         : ((0.5 * sold) + (0.5 * to) - basePrice) / sum;
 
     // A holding's return over a span of the tape, from the open after its buy where the span opens on the buy; none where a close

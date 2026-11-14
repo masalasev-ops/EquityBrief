@@ -103,10 +103,11 @@ public partial class FixtureExpectations
         Assert.Equal(Core.Loop.TakeProfit.UnderItsStop, BookHalf.Step(18, 20, (19, 22.9), half: true, halfSold: false).Ended);
 
         // From a fill of 10.2 over a close of 10 to 11: 0.08. Half sold at 12 within a span from 10 to 9: (6 + 4.5 - 10) / 10 =
-        // 0.05. Half sold at 12 before a span from 12 to 13: half held and half in cash, 0.5 / 12 = 1 / 24.
+        // 0.05. Half sold at 12 before a span from 12 to 13: the half sold has left the book as a holding sold whole does, its
+        // cash in no month, so the half still held reads 1 / 12, not the 1 / 24 a half held in cash beside it would.
         Assert.Equal(0.08, BookHalf.Over(10.2, 10, 11, null, false), 9);
         Assert.Equal(0.05, BookHalf.Over(10, 10, 9, 12, false), 9);
-        Assert.Equal(1.0 / 24, BookHalf.Over(12, 12, 13, 12, true), 9);
+        Assert.Equal(1.0 / 12, BookHalf.Over(12, 12, 13, 12, true), 9);
         Assert.Equal(0.125, BookHalf.Result(20, 23, 22), 9);
     }
 
