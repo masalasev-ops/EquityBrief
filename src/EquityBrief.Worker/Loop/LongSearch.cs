@@ -112,6 +112,10 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
 
         output.WriteLine($"{Verb}: {WalkForwardTester.ProfitWords(index, income)}");
 
+        var standing = index == IndexFamilies.LargeIndex
+            ? []
+            : IndexFamilies.StandingRules(await new Candidates.CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation), clock.UtcNow).Rules.Where(rule => rule.Index == index && rule.Live).ToList();
+
         foreach (var family in Searched.Where(family => !written.Contains(family)))
         {
             if (SweepRunner.InTheNightsWindow(clock.UtcNow, WalkForwardTester.Expected))
@@ -122,7 +126,14 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
             }
 
             var started = clock.UtcNow;
-            var searched = Search(read, family, LongTest.FirstTestYear(family, index), output.WriteLine);
+            var live = LiveSetting(standing, family);
+
+            if (index != IndexFamilies.LargeIndex && live is null)
+            {
+                output.WriteLine($"{Verb}: the {family} on the {DecisionCards.NameOf(index)} holds no live rule at a setting of its grid, so it is judged against the S&P 500's frozen setting");
+            }
+
+            var searched = Search(read, family, LongTest.FirstTestYear(family, index), output.WriteLine, live);
 
             output.WriteLine(Line(index, searched));
 
@@ -173,12 +184,18 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
     // The search as a procedure over a read: each setting walked once over the whole history, each fold reading only what
     // ended before its year through its view, searched or carried as the schedule says, the rule's provisional setting walked
     // beside it, and the two judged on the folds' years as the tester judges a proposal.
-    public static SearchRead Search(LoopRead read, string family, int firstTestYear, Action<string> progress)
+    // On the operator's answer of 2026-11-14 to the phase 23 sign-off's F2 an S&P 400 or 600 family is judged against its
+    // own live rule's setting and its stop floor, the S&P 500's frozen setting read where none is handed.
+    public static SearchRead Search(LoopRead read, string family, int firstTestYear, Action<string> progress, (int[] Places, double StopFloor)? live = null)
     {
         var drift = family == DriftRule.Name;
         var adapter = FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar, drift ? LoopProcedures.DriftStopFloor : 0);
-        var currentAdapter = drift ? FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar) : adapter;
-        int[] provisional = family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen];
+        var currentAdapter = drift
+            ? live is { StopFloor: > 0 } floored
+                ? FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar, floored.StopFloor)
+                : FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar)
+            : adapter;
+        int[] provisional = live?.Places ?? (family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen]);
         var settings = adapter.Grid.Settings;
         var walked = new IReadOnlyList<LoopProcedures.Walked>[settings.Count];
 
@@ -197,7 +214,27 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
         var current = LoopProcedures.Walk(read, currentAdapter, provisional, ClearOf(read));
         var floorWords = drift ? FormattableString.Invariant($", its stop held at least {LoopProcedures.DriftStopFloor:0.##} typical move under the buy") : string.Empty;
 
-        return SearchOver(read, family, firstTestYear, adapter.Grid, settings, walked, current, setting => RuleReplay.SwingWords(family, setting) + floorWords, RuleReplay.SwingWords(family, provisional));
+        var currentFloorWords = live is { StopFloor: > 0 } held ? FormattableString.Invariant($", its stop held at least {held.StopFloor:0.##} typical move under the buy") : string.Empty;
+
+        return SearchOver(read, family, firstTestYear, adapter.Grid, settings, walked, current, setting => RuleReplay.SwingWords(family, setting) + floorWords, RuleReplay.SwingWords(family, provisional) + currentFloorWords);
+    }
+
+    // An S&P 400 or 600 family's live rule's setting on its grid and its stop floor, none where no live rule of it stands or
+    // its setting leaves the grid.
+    static (int[] Places, double StopFloor)? LiveSetting(IReadOnlyList<Indices.IndexRule> standing, string family)
+    {
+        if (standing.FirstOrDefault(rule => rule.Family == family) is not { } rule)
+        {
+            return null;
+        }
+
+        var p = rule.Parameters;
+        double[] values = family == BreakoutRule.Name
+            ? [p[Core.Candidates.IndexBreakoutCandidate.HighSessionsParameter], p[Core.Candidates.IndexBreakoutCandidate.VolumeMultipleParameter], p[Core.Candidates.IndexBreakoutCandidate.RangeCeilingParameter], p[Core.Candidates.IndexBreakoutCandidate.StopMovesParameter]]
+            : [p[Core.Candidates.IndexDriftCandidate.WindowSessionsParameter], p[Core.Candidates.IndexDriftCandidate.ReactionMovesParameter], p[Core.Candidates.IndexDriftCandidate.VolumeMultipleParameter], p[Core.Candidates.IndexDriftCandidate.TargetMultipleParameter]];
+        var places = IndexNightRead.Places(family == BreakoutRule.Name ? BreakoutSweep.Grid : DriftSweep.Grid, values);
+
+        return places.Any(place => place < 0) ? null : (places, family == DriftRule.Name ? p.GetValueOrDefault(Core.Candidates.IndexDriftCandidate.StopFloorParameter) : 0);
     }
 
     // From the 23.8 correction the dip searched over the long history the same way: its own sweep's grid walked once a

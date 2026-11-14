@@ -709,6 +709,7 @@ public sealed partial class SetupLedger : IComponent
                     Gics = gics,
                     QualityLive = live.Quality.Settings,
                     ImprovingLive = live.Improving.Setting,
+                    LiveRules = live.Read,
                     SessionDay = clock.SessionDateAt,
                 };
                 var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context)
@@ -1698,6 +1699,7 @@ public sealed partial class SetupLedger : IComponent
             Gics = await GicsAsync(connection, history: true, cancellation),
             QualityLive = rules.Quality.Settings,
             ImprovingLive = rules.Improving.Setting,
+            LiveRules = rules.Read,
             SessionDay = clock.SessionDateAt,
         };
 

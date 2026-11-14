@@ -134,6 +134,7 @@ public partial class FixtureExpectations
         await ledger.NightAsync("ledger-before");
 
         Assert.Equal([.. setups.Select(ticker => $"{ticker}|{LedgerSetups.BreakoutWords}|0")], FrozenRows(store, "MID", BreakoutRule.Name, night, SetupLedger.NightSource));
+        Assert.Equal(["6"], FamilyRows(store, $"SELECT COUNT(*) FROM setup WHERE index_code = 'MID' AND family = 'breakout' AND session_date = '{IndexNight}' AND risk_moves = 1.5;"));
 
         // Frozen after that read, and the night's step run again with the night's row still as it was: the ledger reads the
         // register as the night read it, before the freeze, and its rows are the provisional rule's still.
@@ -159,6 +160,10 @@ public partial class FixtureExpectations
         Assert.Equal(passing, FamilyRows(store, $"SELECT ticker FROM index_family_result WHERE index_code = 'MID' AND family = 'breakout' AND session_date = '{IndexNight}' AND passed = 1 ORDER BY ticker;"));
         Assert.Equal(["6|4"], FamilyRows(store, $"SELECT setups, live_passes FROM setup_night WHERE index_code = 'MID' AND family = 'breakout' AND session_date = '{IndexNight}';"));
         Assert.Equal(4, outcome.Indices.Single(index => index.Index == "MID").LivePasses);
+
+        // On the operator's answer of 2026-11-14 to sign-off F2 each setup read under the frozen rule is anchored as the rule
+        // trades it, its stop the rule's 3 typical moves under the close and not the S&P 500's 1.5.
+        Assert.Equal(["6"], FamilyRows(store, $"SELECT COUNT(*) FROM setup WHERE index_code = 'MID' AND family = 'breakout' AND session_date = '{IndexNight}' AND risk_moves = 3;"));
         Assert.Contains("the breakout read at its frozen live rule as the register stood at 2026-10-03T13:00:00Z", SetupLedger.Detail(outcome.Indices), StringComparison.Ordinal);
 
         // The history build over a copy of the same store frozen the same way, reading the register as it stands when it
@@ -172,6 +177,7 @@ public partial class FixtureExpectations
             .BuildAsync(copy.Root, "MID", night, night, output));
 
         Assert.Equal(rows, FrozenRows(copy, "MID", BreakoutRule.Name, night, SetupLedger.HistorySource));
+        Assert.Equal(["6"], FamilyRows(copy, $"SELECT COUNT(*) FROM setup WHERE index_code = 'MID' AND family = 'breakout' AND session_date = '{IndexNight}' AND risk_moves = 3;"));
         Assert.Contains("ledger-build: on the S&P 400, the breakout read at its frozen live rule as the register stood at 2026-10-03T15:00:00Z", output.ToString(), StringComparison.Ordinal);
         Assert.Contains("ledger-build: reading the S&P 500's history as it stood for its breadth", output.ToString(), StringComparison.Ordinal);
     }

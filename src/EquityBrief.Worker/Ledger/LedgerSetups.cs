@@ -117,6 +117,13 @@ public sealed record LedgerContext(
     // see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
     public IReadOnlyDictionary<DateOnly, double>? LargeBreadth { get; init; }
 
+    // On the operator's answer of 2026-11-14 to the phase 23 sign-off's F2, the S&P 400's and 600's live breakout and drift
+    // rules by family, which anchor each setup as the rule trades it: the breakout's stop at its rule's typical moves, the
+    // drift's stop moved down to its rule's floor, its target its rule's multiple of the risk and its hold the rule's; none on
+    // the S&P 500 or where no live rule is read, each family anchored at the frozen setting.
+    // see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
+    public IReadOnlyDictionary<string, Indices.IndexRule>? LiveRules { get; init; }
+
     // From 21.4 the sources of the readings the operator chose at 21.2: Yahoo's newest stored answer about each stock's
     // analysts, the trends of each stock's current fiscal year by the session each belongs to, the quarters fetches' and
     // from 21.6 the night's own, oldest first, and FINRA's settlements of each stock's short interest by the day each was
@@ -988,6 +995,9 @@ public static class LedgerSetups
         var liveVolume = BreakoutSweep.Grid.Value(frozen, 1);
         var liveCeiling = BreakoutSweep.Grid.Value(frozen, 2);
         var liveStop = BreakoutSweep.Grid.Value(frozen, 3);
+        var own = context.LiveRules?.GetValueOrDefault(BreakoutRule.Name)?.Parameters;
+        var stopMoves = own?.GetValueOrDefault(Core.Candidates.IndexBreakoutCandidate.StopMovesParameter) is double ownStop and > 0 ? ownStop : liveStop;
+        var cap = own?.GetValueOrDefault(Core.Candidates.IndexRuleCandidate.HoldParameter) is double hold and > 0 ? (int)hold : BreakoutRule.CapSessions;
         var open = sessions[at].Breadth >= FamilySweep.MarketFloor;
 
         for (var place = 0; place < held.Length; place++)
@@ -1005,7 +1015,7 @@ public static class LedgerSetups
                 continue;
             }
 
-            var plan = new SetupPlan(liveStop, null, liveStop, BreakoutRule.CapSessions);
+            var plan = new SetupPlan(stopMoves, null, stopMoves, cap);
 
             if (plan.On(calendar[at], close, one.Atr[bar]) is not { } anchor)
             {
@@ -1044,6 +1054,10 @@ public static class LedgerSetups
         var liveRise = DriftSweep.Grid.Value(frozen, 1);
         var liveVolume = DriftSweep.Grid.Value(frozen, 2);
         var liveMultiple = DriftSweep.Grid.Value(frozen, 3);
+        var own = context.LiveRules?.GetValueOrDefault(DriftRule.Name)?.Parameters;
+        var multiple = own?.GetValueOrDefault(Core.Candidates.IndexDriftCandidate.TargetMultipleParameter) is double ownMultiple and > 0 ? ownMultiple : DriftRule.TargetRiskMultiple;
+        var floorMoves = own?.GetValueOrDefault(Core.Candidates.IndexDriftCandidate.StopFloorParameter) ?? 0;
+        var cap = own?.GetValueOrDefault(Core.Candidates.IndexRuleCandidate.HoldParameter) is double hold and > 0 ? (int)hold : DriftRule.CapSessions;
         var open = sessions[at].Breadth >= FamilySweep.MarketFloor;
 
         for (var place = 0; place < held.Length; place++)
@@ -1072,12 +1086,13 @@ public static class LedgerSetups
                 continue;
             }
 
-            var risk = close - low;
-            var byRisk = close + (DriftRule.TargetRiskMultiple * risk);
+            var stop = floorMoves > 0 ? Math.Min(low, close - (floorMoves * move)) : low;
+            var risk = close - stop;
+            var byRisk = close + (multiple * risk);
             var band = BandAbove(one, bar, close);
             var target = !double.IsNaN(band) && band < byRisk ? band : byRisk;
-            var plan = new SetupPlan(risk / move, (target - close) / risk, null, DriftRule.CapSessions);
-            var anchor = new SetupAnchor(calendar[at], close, low, target, null, DriftRule.CapSessions, risk / move);
+            var plan = new SetupPlan(risk / move, (target - close) / risk, null, cap);
+            var anchor = new SetupAnchor(calendar[at], close, stop, target, null, cap, risk / move);
             var passes = open && 0 < liveWindow && rise >= liveRise && volume >= liveVolume && liveMultiple == DriftRule.TargetRiskMultiple;
             var readings = Readings(indexCode, name, one, closes[name], bar, sessions[at], members, calendar, at, market, context, series);
 
