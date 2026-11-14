@@ -621,7 +621,7 @@ public sealed partial class MarkRenderer
         rule is { Chosen.Live: false } variant
             ? ("A version being tested", "variant", variant.Chosen.Rule)
             : liveSince is { } since
-                ? (FormattableString.Invariant($"This version since {since:d MMM yyyy}"), "live", null)
+                ? (FormattableString.Invariant($"This version since {since:d MMM yyyy}{RuleFreeze.Beside(since)}"), "live", null)
                 : ("Not yet tested", "provisional", EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus);
 
     // Whether a card draws folded to one line: it lists nothing tonight and no variant is chosen on it.

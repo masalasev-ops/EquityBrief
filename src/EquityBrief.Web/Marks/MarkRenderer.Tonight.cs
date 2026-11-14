@@ -326,7 +326,7 @@ public sealed partial class MarkRenderer
             var since = liveSince.GetValueOrDefault(tile.Family);
             var first = since is null ? null : firstLive?.GetValueOrDefault(tile.Family) ?? since;
             var badge = first is { } live ? FormattableString.Invariant($"Live since {live:d MMM yyyy}") : "Not yet tested";
-            var version = since is { } registered && first != since ? FormattableString.Invariant($"<span class=\"tile-version\">This version since {registered:d MMM yyyy}; earlier trades kept.</span>") : string.Empty;
+            var version = since is { } registered && first != since ? FormattableString.Invariant($"<span class=\"tile-version\">This version since {registered:d MMM yyyy}{RuleFreeze.Beside(registered)}; earlier trades kept.</span>") : string.Empty;
 
             body.Append(Invariant, $"<button type=\"button\" class=\"setup-tile fam-edge\" data-family=\"{Escaped(tile.Family)}\" data-card=\"{Escaped(tile.Family)}\" data-count=\"{tile.Count}\" data-state=\"{Escaped(tile.State)}\">");
             body.Append(Invariant, $"<span class=\"tile-top\"><span class=\"fam-tag\" data-family=\"{Escaped(tile.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(tile.Family)}\"></span>{Escaped(tile.Label)}</span><span class=\"status-pill {(since is null ? "provisional" : "live")}\">{Escaped(badge)}</span></span>");

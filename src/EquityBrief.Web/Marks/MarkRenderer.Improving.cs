@@ -104,7 +104,7 @@ public sealed partial class MarkRenderer
         body.Append("<header class=\"fam-head\" data-family=\"improving\"><span class=\"fam-tag\" data-family=\"improving\"><span class=\"fam-swatch\" data-family=\"improving\"></span>");
         body.Append(Escaped(EquityBrief.Core.Families.ImprovingRule.Label)).Append("</span>");
         body.Append(card.LiveSince is { } since
-            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">This version since {since:d MMM yyyy}</span>")
+            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">This version since {since:d MMM yyyy}{RuleFreeze.Beside(since)}</span>")
             : FormattableString.Invariant($" <span class=\"status-pill provisional\" title=\"{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}\">Not yet tested</span>"));
         body.Append(Invariant, $" <span class=\"fam-count\">{Escaped(card.Bought == 1 ? "1 pick tonight" : Formatted($"{card.Bought} picks tonight"))}</span></header>");
         body.Append(Invariant, $"<p class=\"setup-about\">{Escaped(EquityBrief.Core.Families.ImprovingRule.Description)}<br>{Escaped(CheckedNightly)}</p>");

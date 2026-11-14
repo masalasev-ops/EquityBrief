@@ -79,6 +79,18 @@ public sealed record WaitingOrderView(string Family, string Ticker, DateOnly Lis
     }
 }
 
+// On the operator's ruling of 2026-11-14 the rules the second restart sets are frozen until the monthly run of 6 Feb 2027: beside
+// a live version's first session from that restart on, and before the freeze ends, the page says so.
+public static class RuleFreeze
+{
+    public static DateOnly From { get; } = new(2026, 11, 15);
+
+    public static DateOnly Until { get; } = new(2027, 2, 6);
+
+    public static string Beside(DateOnly since) =>
+        since >= From && since < Until ? "; rules frozen until " + Until.ToString("d MMM yyyy", CultureInfo.InvariantCulture) : string.Empty;
+}
+
 // From the operator's order of 2026-11-14 a company's name as a sentence reads it, its trailing legal words left off.
 public static class CompanyWords
 {
