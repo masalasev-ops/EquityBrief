@@ -220,19 +220,11 @@ public sealed class HeavyweightLay
     // A book over the whole history from the rebalances read at a setting of either full grid: its holdings walked under
     // the exit named, each bought at the open after its rebalance with its size cut each member from its own open after
     // it and after its round trip, as the sweeps on the index's own history score them, and its months.
-    public HeavyweightBook BookFrom(IReadOnlyDictionary<int, HeavyweightRebalance> rebalances, HeavyweightExit exit, string words, (double Moves, double Multiple)? stops = null)
+    public HeavyweightBook BookFrom(IReadOnlyDictionary<int, HeavyweightRebalance> rebalances, HeavyweightExit exit, string words, (double Moves, double Multiple)? stops = null, bool half = false)
     {
-        var trades = HeavyweightSweep.Walk(tape, rebalances, exit, (from, to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To)), stops);
-        var holdings = trades
-            .Select(trade => new BookHolding(
-                trade.Entry,
-                trade.End,
-                Cost(trade),
-                (from, to) => from == trade.Entry ? FromFill(trade.Name, from, tape.LastMemberClose[trade.Name][to]) : Return(trade.Name, from, tape.LastMemberClose[trade.Name][to]),
-                (from, to) => CutReturn(CutOf(rebalances, trade), from, to, bought: from == trade.Entry)))
-            .ToArray();
+        var trades = HeavyweightSweep.Walk(tape, rebalances, exit, (from, to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To)), stops, half);
 
-        return new HeavyweightBook(new HeavyweightSixSetting(0, words, false, IndexQuality.Profit, false), trades, [.. trades.Select(trade => AtTheOpenAfterCost(trade, rebalances))], BookMonths.Edges(months, holdings));
+        return new HeavyweightBook(new HeavyweightSixSetting(0, words, false, IndexQuality.Profit, false), trades, [.. trades.Select(trade => AtTheOpenAfterCost(trade, rebalances))], BookMonths.Edges(months, Holdings(trades, rebalances)));
     }
 
     // A holding and its size cut at the open after its rebalance, less its round trip where its stock holds a bar on both

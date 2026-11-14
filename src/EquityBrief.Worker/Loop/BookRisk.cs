@@ -205,7 +205,23 @@ public static class BookRisk
                     var designA = p.GetValueOrDefault(IndexHeavyweightCandidate.DesignParameter) == IndexHeavyweightCandidate.DesignA;
                     var six = p.GetValueOrDefault(IndexRuleCandidate.FloorsParameter, 1) == 1 ? RuleTests.SixOf(p, designA) : null;
 
-                    if (six is null)
+                    // A book off its design's six settings walked at its own setting as the record command replays it, its
+                    // rebalances read once for every exit; one on twelve months' strength or one the replay refuses is named alone.
+                    if (six is null && !Indices.IndexRules.TwelveOne(p) && Cards.RuleReplay.OwnBook(p).At is { } own)
+                    {
+                        var rebalances = own.Setting is { } ownSetting
+                            ? heavyweights.RebalancesA(ownSetting, own.Quality, own.Floors)
+                            : heavyweights.RebalancesB(own.Window, own.Industries, own.Members, own.Quality, own.Floors);
+                        var exit = own.Setting?.Exit ?? HeavyweightExit.Drop;
+
+                        yield return (HeavyweightRule.Name, row.Candidate, heavyweights.Tape, (stops, half) =>
+                        {
+                            var book = heavyweights.BookFrom(rebalances, exit, own.Key, stops, half);
+
+                            return (book.Costed, book.Months);
+                        });
+                    }
+                    else if (six is null)
                     {
                         yield return (HeavyweightRule.Name, row.Candidate, null, null);
                     }
