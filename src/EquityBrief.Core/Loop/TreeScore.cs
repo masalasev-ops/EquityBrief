@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
 
 namespace EquityBrief.Core.Loop;
@@ -34,7 +35,7 @@ public interface IScoreModel
 // the ridge score's.
 public static class TreeScore
 {
-    public const string Proposal = "the learned trees";
+    public const string Proposal = RuleWording.TreeScore.Proposal;
 }
 
 // One tree of the ensemble: each split's reading by its place among the model's readings, its threshold, and the node
@@ -240,8 +241,8 @@ public sealed record TreeModel(
 
     // A model's splits in words: the three readings split on most, the business readings' share, the trees and the rows.
     public static string Words(TreeModel model) =>
-        "the trees split most on "
+        RuleWording.TreeScore.SplitMostOn
         + string.Join(", ", model.Importances.Take(3).Select(one => FormattableString.Invariant($"{LedgerReadings.All[one.Reading].Column} ({one.Splits})")))
-        + FormattableString.Invariant($"; the business readings take {model.BusinessShare * 100:0} per cent of the splits; {model.Trees.Count} trees fitted over {model.Rows} finished setups across the three indices")
-        + FormattableString.Invariant($", their edge clipped at {model.LabelLow:+0.00;-0.00} and {model.LabelHigh:+0.00;-0.00} moves");
+        + RuleWording.TreeScore.Fitted(model.BusinessShare, model.Trees.Count, model.Rows)
+        + RuleWording.TreeScore.Clipped(model.LabelLow, model.LabelHigh);
 }

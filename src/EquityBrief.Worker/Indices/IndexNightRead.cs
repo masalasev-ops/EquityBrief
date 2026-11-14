@@ -100,23 +100,23 @@ public static class IndexNightRead
     public static IReadOnlyList<string> LargeFamilies { get; } = [];
 
     // The parts of a rule a member fails, in the rule's order, the first the row names.
-    public const string MarketClosed = "the market check closed";
+    public const string MarketClosed = RuleWording.IndexNightRead.MarketClosed;
 
     public const string NoSetup = "no setup";
 
-    public const string UnderTheFloors = "under the price or dollar volume floor";
+    public const string UnderTheFloors = RuleWording.IndexNightRead.UnderTheFloors;
 
-    public const string NoProfit = "the profit check";
+    public const string NoProfit = RuleWording.IndexNightRead.NoProfit;
 
-    public const string NoCover = "the interest cover check";
+    public const string NoCover = RuleWording.IndexNightRead.NoCover;
 
     // What a part reading the trade a setup places says of a member no setup listed.
-    public const string NotReadWithoutASetup = "not read: no setup tonight";
+    public const string NotReadWithoutASetup = RuleWording.IndexNightRead.NotReadWithoutASetup;
 
     // The breadth a market check reads, the index's own unless its rule states the S&P 500's.
-    public const string OwnBreadth = "the index's own breadth";
+    public const string OwnBreadth = RuleWording.IndexNightRead.OwnBreadth;
 
-    public const string LargeBreadth = "the S&P 500's breadth";
+    public const string LargeBreadth = RuleWording.IndexNightRead.LargeBreadth;
 
     // The market check as a gate: the breadth it reads against its floor, failing where the night holds none.
     public static Gate MarketGate(double? breadth, double floor, string reading = OwnBreadth) =>
@@ -124,12 +124,12 @@ public static class IndexNightRead
             ? new Gate(
                 RuleRows.Market,
                 share >= floor,
-                FormattableString.Invariant($"{reading} {FloorShare.Percent(share, floor)}% {(share >= floor ? "at or above" : "below")} its floor of {floor * 100:0.#}%"),
+                RuleWording.IndexNightRead.Market(reading, FloorShare.Percent(share, floor), share, floor),
                 FamilyRule.Values(("breadth", FamilyRule.Figure(share)), ("floor", FamilyRule.Figure(floor))))
-            : new Gate(RuleRows.Market, false, $"{reading} not read tonight", FamilyRule.Values(("floor", FamilyRule.Figure(floor))));
+            : new Gate(RuleRows.Market, false, RuleWording.IndexNightRead.NotReadTonight(reading), FamilyRule.Values(("floor", FamilyRule.Figure(floor))));
 
     // The market check of a rule that reads none, open on every night.
-    public static Gate NoMarketGate { get; } = new(RuleRows.Market, true, "its rule reads no market check", FamilyRule.Values());
+    public static Gate NoMarketGate { get; } = new(RuleRows.Market, true, RuleWording.IndexNightRead.NoMarketCheck, FamilyRule.Values());
 
     public static Gate SetupGateOf(bool listed) => new(RuleRows.Setup, listed, listed ? string.Empty : NoSetup, FamilyRule.Values());
 
@@ -229,7 +229,7 @@ public static class IndexNightRead
     }
 
     // Why a member the family's own rule lists is left off by the hooks an approval set.
-    public const string NotByItsHooks = "a condition or a score floor its approved setting adds";
+    public const string NotByItsHooks = RuleWording.IndexNightRead.NotByItsHooks;
 
     // A swing family at the setting an approval stored for it on the index: the breakout's or the drift's setting on its
     // sweep's grid where it states one, the drift's stop floor with it, and the pullback at its base; each member held to
@@ -300,8 +300,8 @@ public static class IndexNightRead
         return new Gate(
             RuleRows.Market,
             picks > 0,
-            FormattableString.Invariant($"the exposure allows {picks} pick(s) tonight: the index's breadth {FamilyRule.Figure(breadth)} against its floor of {floor:0.##}, and the VIX at {FamilyRule.Figure(over)} of its median of the {LedgerReadings.VixMedianSessions} sessions before, at or under 1 holding"),
-            FamilyRule.Values(("breadth", FamilyRule.Figure(breadth)), ("floor", FamilyRule.Figure(floor)), ("vix over median", FamilyRule.Figure(over)), ("picks", FamilyRule.Figure(picks))));
+            RuleWording.IndexNightRead.Exposure(picks, FamilyRule.Figure(breadth), floor, FamilyRule.Figure(over), LedgerReadings.VixMedianSessions),
+            FamilyRule.Values(("breadth", FamilyRule.Figure(breadth)), ("floor", FamilyRule.Figure(floor)), (RuleWording.IndexNightRead.VixOverMedian, FamilyRule.Figure(over)), ("picks", FamilyRule.Figure(picks))));
     }
 
     // The fundamentals-first family at a setting: the pullback's base listings on the night, its trade the pullback's,
@@ -391,14 +391,14 @@ public static class IndexNightRead
         var window = one.Bars[Math.Max(0, bar - MemberReadings.DollarVolumeSessions + 1)..(bar + 1)].Select(day => (day.Close, day.Volume)).ToArray();
         var dollarVolume = MemberReadings.DollarVolume(window);
         var least = MemberReadings.DollarVolumeFloor(inputs.Index) is not null ? Math.Max(lowestClose, MemberReadings.LowestPrice) : lowestClose;
-        var traded50 = dollarVolume is { } mean ? FormattableString.Invariant($"{mean:#,0} a session over the 50 sessions to tonight") : "fewer than 50 sessions of volume to tonight";
-        var floorWords = MemberReadings.DollarVolumeFloor(inputs.Index) is { } held ? FormattableString.Invariant($" and its floor of {held * floors:#,0}") : string.Empty;
+        var traded50 = dollarVolume is { } mean ? RuleWording.IndexNightRead.Traded(mean) : RuleWording.IndexNightRead.FewerThanFifty;
+        var floorWords = MemberReadings.DollarVolumeFloor(inputs.Index) is { } held ? RuleWording.IndexNightRead.AndItsFloor(held, floors) : string.Empty;
         var parts = new List<RulePart>
         {
             new(
                 UnderTheFloors,
                 MemberReadings.ClearsTheFloors(inputs.Index, traded, dollarVolume / floors) && traded >= lowestClose,
-                FormattableString.Invariant($"closed at {traded:0.00} with {traded50}, against the least close of {least:0.00}{floorWords}")),
+                RuleWording.IndexNightRead.ClosedAt(traded, traded50, least, floorWords)),
         };
 
         if (quality != IndexQuality.Off)
@@ -406,8 +406,8 @@ public static class IndexNightRead
             var income = inputs.Income.GetValueOrDefault(one.Name.Ticker) ?? [];
             var filed = MemberReadings.FiledBefore(income, inputs.Night);
             var words = filed.Count < MemberReadings.Quarters || filed.Any(quarter => quarter.NetIncome is null)
-                ? FormattableString.Invariant($"{filed.Count(quarter => quarter.NetIncome is not null)} of the {MemberReadings.Quarters} quarters the profit check sums filed with their net income before tonight")
-                : FormattableString.Invariant($"net income of {filed.Sum(quarter => quarter.NetIncome!.Value):#,0} over its {MemberReadings.Quarters} newest quarters as filed, not above nothing");
+                ? RuleWording.IndexNightRead.QuartersFiled(filed.Count(quarter => quarter.NetIncome is not null), MemberReadings.Quarters)
+                : RuleWording.IndexNightRead.NetIncomeNotAbove(filed.Sum(quarter => quarter.NetIncome!.Value), MemberReadings.Quarters);
 
             parts.Add(new(NoProfit, MemberReadings.Profit(income, inputs.Night), words));
         }
@@ -416,7 +416,7 @@ public static class IndexNightRead
         {
             var covered = coverage?.Invoke(one.Name.Ticker);
 
-            parts.Add(new(NoCover, covered is true, covered is null ? "its interest cover not read for tonight" : "its interest cover under its floor"));
+            parts.Add(new(NoCover, covered is true, covered is null ? RuleWording.IndexNightRead.CoverNotRead : RuleWording.IndexNightRead.CoverUnderItsFloor));
         }
 
         return parts;

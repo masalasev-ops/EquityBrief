@@ -255,7 +255,7 @@ public sealed class IndexFamilies : IComponent
 
             if (night is not { } session)
             {
-                await AppendAsync(connection, runId, startedAt, 0, Ok, "no session: the store holds no bar", cancellation);
+                await AppendAsync(connection, runId, startedAt, 0, Ok, RuleWording.IndexFamilies.NoSession, cancellation);
 
                 return new IndexFamiliesOutcome(null, []);
             }
@@ -304,7 +304,7 @@ public sealed class IndexFamilies : IComponent
                 .. indices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => IndexNightOutcome.NotComputed(index, fault)),
             ];
 
-            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
+            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + RuleWording.IndexFamilies.StepStoppedOn + fault, cancellation);
 
             return new IndexFamiliesOutcome(read, all);
         }
@@ -331,8 +331,8 @@ public sealed class IndexFamilies : IComponent
         }
 
         var detail = sold.Count == 0
-            ? "no holding sold on leaving the index stands at a close other than its stock's on the session it was sold"
-            : "sold again at its stock's close on the session it was sold: " + string.Join("; ", sold);
+            ? RuleWording.IndexFamilies.NoneToSellAgain
+            : RuleWording.IndexFamilies.SoldAgainOpening + string.Join("; ", sold);
 
         await AppendAsync(connection, runId, startedAt, sold.Count, Ok, detail, cancellation);
 
@@ -540,12 +540,11 @@ public sealed class IndexFamilies : IComponent
     // What the stage's row says for each index: what it read, or the failure that stopped it.
     public static string Detail(IReadOnlyList<IndexNightOutcome> outcomes) =>
         string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
-            ? $"{outcome.Index}: not computed tonight, {fault}"
-            : FormattableString.Invariant(
-                $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}{(outcome.Heavyweights.Waits is { } waits ? ", " + waits : string.Empty)}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")
-                + (outcome.Rules > 0 ? FormattableString.Invariant($"; {outcome.Rules} registered rule(s) kept {outcome.RuleTrades.Trades} trade(s) on their own lists, {outcome.RuleTrades.Ended} ended and {outcome.RuleTrades.Benchmarked} benchmarked") : string.Empty)
-                + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } or { Waits: not null } ? FormattableString.Invariant($"; the registered heavyweights rules' books {(outcome.HeavyweightRules.Rebalanced ? "rebalanced" : "carried")}, {outcome.HeavyweightRules.Entered} bought, {outcome.HeavyweightRules.Ended} sold, {outcome.HeavyweightRules.Held} held{(outcome.HeavyweightRules.Waits is { } ruleWaits ? "; " + ruleWaits : string.Empty)}") : string.Empty)
-                + (outcome.Releases is { } releases ? "; the release readings: " + releases : string.Empty)
+            ? RuleWording.IndexFamilies.NotComputedTonight(outcome.Index, fault)
+            : RuleWording.IndexFamilies.NightRead(outcome.Index, outcome.Members, outcome.Breadth, outcome.MarketOpen, outcome.Passed, outcome.Listed, outcome.HeldByATrade, outcome.TradesKept, outcome.TradesEnded, outcome.Heavyweights.Rebalanced, outcome.Heavyweights.Waits, outcome.Heavyweights.Entered, outcome.Heavyweights.Ended, outcome.Heavyweights.Held)
+                + (outcome.Rules > 0 ? RuleWording.IndexFamilies.RulesKept(outcome.Rules, outcome.RuleTrades.Trades, outcome.RuleTrades.Ended, outcome.RuleTrades.Benchmarked) : string.Empty)
+                + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } or { Waits: not null } ? RuleWording.IndexFamilies.RuleBooks(outcome.HeavyweightRules.Rebalanced, outcome.HeavyweightRules.Entered, outcome.HeavyweightRules.Ended, outcome.HeavyweightRules.Held, outcome.HeavyweightRules.Waits) : string.Empty)
+                + (outcome.Releases is { } releases ? RuleWording.Evaluation.TheReadings + releases : string.Empty)
                 + (outcome.BeforeTheYear is { } before ? "; " + before : string.Empty)));
 
     // The registered rules a night left unread, each with why, after the indices' own words.
@@ -748,7 +747,7 @@ public sealed class IndexFamilies : IComponent
 
             if (evaluator.Version != row.EvaluatorVersion)
             {
-                skipped.Add($"'{row.Candidate}', its evaluator moved from {row.EvaluatorVersion} to {evaluator.Version}");
+                skipped.Add(RuleWording.IndexFamilies.EvaluatorMoved(row.Candidate, row.EvaluatorVersion, evaluator.Version));
             }
             else if (IndexRules.Refusal(evaluator, parameters) is { } refusal)
             {
@@ -940,7 +939,7 @@ public sealed class IndexFamilies : IComponent
 
     // The cost a trade of the index pays, which its stored result is read after.
     // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
-    public const string CostsPaid = "the published spread";
+    public const string CostsPaid = RuleWording.IndexFamilies.CostsPaid;
 
     // Each member's year of bars, every span the index held it for, its prints and surprises off the calendar, and its
     // quarters as filed.
@@ -1150,8 +1149,8 @@ public sealed class IndexFamilies : IComponent
             .Select(name => name.Ticker)
             .ToArray();
 
-        return FormattableString.Invariant($"the store's year holds {held} of the {SessionsReadTo} sessions the year's high and the heavyweights' closes read, the sessions before it read from the pulled history for {read} member(s)")
-            + (few.Length > 0 ? FormattableString.Invariant($", which holds too few for {few.Length}, each reading none of them: {string.Join(", ", few)}") : string.Empty);
+        return RuleWording.IndexFamilies.BeforeTheYear(held, SessionsReadTo, read)
+            + (few.Length > 0 ? RuleWording.IndexFamilies.TooFew(few) : string.Empty);
     }
 
     // The trade each of the names still holds on the night on any card of any index, with the index it is held in: the
@@ -1447,9 +1446,9 @@ public static class IndexHeavyweights
     // Design (a) within an index at the S&P 500's frozen settings, a sector's return its members' mean.
     public static HeavyweightSetting Provisional { get; } = HeavyweightSweep.Frozen with { Sector = HeavyweightSectorReturn.Members };
 
-    public const string NoLongerTheLeader = "no longer the leader";
+    public const string NoLongerTheLeader = RuleWording.IndexFamilies.NoLongerTheLeader;
 
-    public const string LeftTheIndex = "left the index";
+    public const string LeftTheIndex = RuleWording.IndexFamilies.LeftTheIndex;
 
     const string LastRebalance = "SELECT MAX(session_date) FROM index_family_night WHERE index_code = $index AND rebalanced = 1 AND session_date < $night;";
 
@@ -1657,7 +1656,7 @@ public static class IndexHeavyweights
 
         if (at < 0)
         {
-            return ([], NoLeads, 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
+            return ([], NoLeads, 0, RuleWording.IndexFamilies.NoMemberClose(night));
         }
 
         if (HeavyweightRule.WaitsForSessions(setting.Reading, calendar.Length, night) is { } few)
@@ -1676,7 +1675,7 @@ public static class IndexHeavyweights
 
         if (!sessions.TryGetValue(at, out var session))
         {
-            return ([], NoLeads, 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
+            return ([], NoLeads, 0, RuleWording.IndexFamilies.NoMemberClose(night));
         }
 
         var kept = session.Members
@@ -1726,12 +1725,12 @@ public static class IndexHeavyweights
     }
 
     // The words a registered rule's holding ends on beside the book's own.
-    public const string UnderTheAverage = "a close under its 200-day average";
+    public const string UnderTheAverage = RuleWording.IndexFamilies.UnderTheAverage;
 
-    public const string NoLongerBought = "no longer among those it buys";
+    public const string NoLongerBought = RuleWording.IndexFamilies.NoLongerBought;
 
     // From 20.11 the reason a retired rule's book sells what it holds.
-    public const string RuleRetired = "its rule retired";
+    public const string RuleRetired = RuleWording.IndexFamilies.RuleRetired;
 
     const string UndoTheRuleNight = @"
         DELETE FROM index_heavyweight_rule_holding WHERE candidate = $candidate AND entered_on = $night;
@@ -2211,7 +2210,7 @@ public static class IndexHeavyweights
                 ("$index", leaver.Index), ("$ticker", leaver.Ticker), ("$entered_on", Stamp(leaver.Entered)),
                 ("$exit_close", Money.ToStorage(close)), ("$cost", TradeCost.InPercent(value, leaver.Entry, close) / 100.0),
             ], cancellation);
-            written.Add(FormattableString.Invariant($"{leaver.Index} {leaver.Ticker} bought {leaver.Entered:yyyy-MM-dd} and sold {leaver.Sold:yyyy-MM-dd}, at {Money.ToStorage(leaver.Exit)} and now at {Money.ToStorage(close)}"));
+            written.Add(RuleWording.IndexFamilies.Resold(leaver.Index, leaver.Ticker, leaver.Entered, leaver.Sold, Money.ToStorage(leaver.Exit), Money.ToStorage(close)));
         }
 
         return written;

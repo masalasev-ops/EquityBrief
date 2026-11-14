@@ -86,7 +86,7 @@ public sealed class DipFamily : IComponent
     public const string ProvisionalRule = "provisional";
 
     // Why a registered rule was not kept on a night: its evaluator's code moved since it was registered.
-    public const string Moved = "its evaluator's code moved since it was registered, so it is kept no further until it is registered again";
+    public const string Moved = RuleWording.DipFamily.Moved;
 
     // The indices the step reads, in the page's order of indices.
     public static IReadOnlyList<string> AllIndices { get; } = [IndexFamilies.LargeIndex, .. IndexFamilies.Indices];
@@ -257,7 +257,7 @@ public sealed class DipFamily : IComponent
 
             if (await ScalarAsync(connection, null, NewestSession, [], cancellation) is not string newest)
             {
-                await AppendAsync(connection, runId, startedAt, 0, Ok, "no session: the store holds no bar", cancellation);
+                await AppendAsync(connection, runId, startedAt, 0, Ok, RuleWording.DipFamily.NoSession, cancellation);
 
                 return new DipOutcome(null, []);
             }
@@ -303,7 +303,7 @@ public sealed class DipFamily : IComponent
                 .. AllIndices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => new DipIndexOutcome(index, 0, 0, 0, 0, 0, 0, 0, fault)),
             ];
 
-            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
+            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + RuleWording.DipFamily.StoppedOn(fault), cancellation);
 
             return new DipOutcome(read, all);
         }
@@ -327,9 +327,8 @@ public sealed class DipFamily : IComponent
     // What the step's row says for each index.
     public static string Detail(IReadOnlyList<DipIndexOutcome> outcomes) =>
         string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
-            ? $"{outcome.Index}: not computed tonight, {fault}"
-            : FormattableString.Invariant(
-                $"{outcome.Index}: {outcome.Members} member(s) read, {outcome.Passed} passed, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.UnderAnother} listed under another family, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended{(outcome.Rules > 1 ? FormattableString.Invariant($", {outcome.Rules} rules kept") : string.Empty)}")));
+            ? RuleWording.DipFamily.NotComputedTonight(outcome.Index, fault)
+            : RuleWording.DipFamily.OnTheIndex(outcome.Index, outcome.Members, outcome.Passed, outcome.Listed, outcome.HeldByATrade, outcome.UnderAnother, outcome.TradesKept, outcome.TradesEnded, outcome.Rules)));
 
     // The settings the night read the dip by on an index, the rule its card draws and the words its card states the rule
     // in, its market setting in the index's words.
@@ -338,7 +337,7 @@ public sealed class DipFamily : IComponent
         rule,
         setting = setting.Short,
         words = setting.WordsOn(index),
-        floors = "the price and dollar volume floors the index families read",
+        floors = RuleWording.DipFamily.Floors,
     });
 
     // What a market setting reads on an index on the night, read once for every rule: the S&P 500's breadth, and the
@@ -573,21 +572,21 @@ public sealed class DipFamily : IComponent
 
         if (DipRule.MarketLevels(index).FirstOrDefault(level => level.Key == key) is not { } level || market is null)
         {
-            return new Gate(DipRule.MarketGate, false, $"its market setting {key} is no level the index reads", FamilyRule.Values(("setting", key)));
+            return new Gate(DipRule.MarketGate, false, RuleWording.DipFamily.NoLevel(key), FamilyRule.Values(("setting", key)));
         }
 
         var at = market.Calendar.ToList().IndexOf(night);
 
         return level.Reads switch
         {
-            DipRule.ReadsOwnBreadth => DipRule.MarketOn(level, inputs?.Breadth >= level.Floor, "the index's own breadth at " + FamilyRule.Figure(inputs?.Breadth)),
-            DipRule.ReadsLargeBreadth => DipRule.MarketOn(level, market.LargeBreadth >= level.Floor, "the S&P 500's breadth at " + FamilyRule.Figure(market.LargeBreadth)),
+            DipRule.ReadsOwnBreadth => DipRule.MarketOn(level, inputs?.Breadth >= level.Floor, RuleWording.DipFamily.OwnBreadthRead(FamilyRule.Figure(inputs?.Breadth))),
+            DipRule.ReadsLargeBreadth => DipRule.MarketOn(level, market.LargeBreadth >= level.Floor, RuleWording.DipFamily.LargeBreadthRead(FamilyRule.Figure(market.LargeBreadth))),
             DipRule.ReadsFund => at >= 0 && DipRule.FundAboveItsAverage(market.Calendar, market.Fund)[at] is var above
-                ? DipRule.MarketOn(level, above, $"{DipRule.FundOf(index)} {(above ? "above" : "not above")} its average on the night")
-                : DipRule.MarketOn(level, false, "no session of the night in the market series"),
+                ? DipRule.MarketOn(level, above, RuleWording.DipFamily.FundOnTheNight(DipRule.FundOf(index), above))
+                : DipRule.MarketOn(level, false, RuleWording.DipFamily.NoSessionInTheSeries),
             _ => at >= 0 && DipRule.VixAboveItsMedian(market.Calendar, market.Vix)[at] is var over
-                ? DipRule.MarketOn(level, over, $"the VIX {(over ? "above" : "not above")} its median on the night")
-                : DipRule.MarketOn(level, false, "no session of the night in the market series"),
+                ? DipRule.MarketOn(level, over, RuleWording.DipFamily.VixOnTheNight(over))
+                : DipRule.MarketOn(level, false, RuleWording.DipFamily.NoSessionInTheSeries),
         };
     }
 

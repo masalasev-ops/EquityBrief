@@ -1,4 +1,5 @@
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Families;
 
 namespace EquityBrief.Core.Filter;
 
@@ -26,7 +27,7 @@ public static class OpenTrades
 {
     // The exclusion the filter writes for a stock whose trade is open, once the rule reaches it, naming the
     // night the open trade was listed on, and whether an exclusion is one of them.
-    public const string ExclusionPrefix = "an open trade from ";
+    public const string ExclusionPrefix = RuleWording.OpenTrades.ExclusionPrefix;
 
     public static string Exclusion(DateOnly listed) => ExclusionPrefix + listed.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 

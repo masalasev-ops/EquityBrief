@@ -70,7 +70,7 @@ public sealed class ImprovingFamily : IComponent
     public const string ProvisionalRule = "provisional";
 
     // Why a registered rule was not kept on a night: its evaluator's code moved since it was registered.
-    public const string Moved = "its evaluator's code moved since it was registered, so it is kept no further until it is registered again";
+    public const string Moved = RuleWording.ImprovingFamily.Moved;
 
     // The register as it stands, read whole and held at an instant by the code every family's rules are read by.
     const string ReadRegister = @"
@@ -274,7 +274,7 @@ public sealed class ImprovingFamily : IComponent
 
             if (await ScalarAsync(connection, null, NewestSession, [], cancellation) is not string newest)
             {
-                await AppendAsync(connection, runId, startedAt, 0, Ok, "no session: the store holds no bar", cancellation);
+                await AppendAsync(connection, runId, startedAt, 0, Ok, RuleWording.ImprovingFamily.NoSession, cancellation);
 
                 return new ImprovingOutcome(null, []);
             }
@@ -338,7 +338,7 @@ public sealed class ImprovingFamily : IComponent
                 .. AllIndices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => new ImprovingIndexOutcome(index, 0, 0, 0, 0, [], 0, [], 0, 0, fault)),
             ];
 
-            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
+            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + RuleWording.ImprovingFamily.StoppedOn + fault, cancellation);
 
             return new ImprovingOutcome(read, all);
         }
@@ -347,9 +347,8 @@ public sealed class ImprovingFamily : IComponent
     // What the step's row says for each index.
     public static string Detail(IReadOnlyList<ImprovingIndexOutcome> outcomes) =>
         string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
-            ? $"{outcome.Index}: not computed tonight, {fault}"
-            : FormattableString.Invariant(
-                $"{outcome.Index}: {outcome.Members} member(s) read, {outcome.Scored} scored, {outcome.FirstRead} newly read filing(s), {outcome.Improved} raising the score, {outcome.Bought.Count} bought, {outcome.Flagged} flagged, {outcome.Sold.Count} sold, {outcome.Held} held, {outcome.Waiting} waiting for their next session")));
+            ? RuleWording.ImprovingFamily.NotComputedTonight(outcome.Index, fault)
+            : RuleWording.ImprovingFamily.IndexRead(outcome.Index, outcome.Members, outcome.Scored, outcome.FirstRead, outcome.Improved, outcome.Bought.Count, outcome.Flagged, outcome.Sold.Count, outcome.Held, outcome.Waiting)));
 
     // The settings the night read a rule by, each of the grid's six dials, and the words its card states the rule in: the
     // family's starting rule's for the provisional rule, which runs at no other setting, and its grid setting's for a

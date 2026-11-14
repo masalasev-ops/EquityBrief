@@ -65,18 +65,18 @@ public sealed class QualityFamily : IComponent
     public const string ProvisionalRule = "provisional";
 
     // Why a holding ended, as the step stores it and the card draws it.
-    public const string NoLongerQualifies = "no longer qualifies";
+    public const string NoLongerQualifies = RuleWording.QualityFamily.NoLongerQualifies;
 
-    public const string LeftTheIndex = "left the index";
+    public const string LeftTheIndex = RuleWording.QualityFamily.LeftTheIndex;
 
     // Why the history test sold a holding on a filing; the night stores such a sale as no longer qualifying.
-    public const string OnAFiling = "a filing dropped its score";
+    public const string OnAFiling = RuleWording.QualityFamily.OnAFiling;
 
     // From 21.16 why a holding of a rule selling under its 200-day average was sold at a close under it.
-    public const string UnderItsAverage = "under its 200-day average";
+    public const string UnderItsAverage = RuleWording.QualityFamily.UnderItsAverage;
 
     // Why a registered rule was not kept on a night: its evaluator's code moved since it was registered.
-    public const string Moved = "its evaluator's code moved since it was registered, so it is kept no further until it is registered again";
+    public const string Moved = RuleWording.QualityFamily.Moved;
 
     // The indices the step reads, in the page's order of indices.
     public static IReadOnlyList<string> AllIndices { get; } = [QualityRule.LargeIndex, Core.Providers.FundHoldings.MidCapIndex, Core.Providers.FundHoldings.SmallCapIndex];
@@ -251,7 +251,7 @@ public sealed class QualityFamily : IComponent
 
             if (await ScalarAsync(connection, null, NewestSession, [], cancellation) is not string newest)
             {
-                await AppendAsync(connection, runId, startedAt, 0, Ok, "no session: the store holds no bar", cancellation);
+                await AppendAsync(connection, runId, startedAt, 0, Ok, RuleWording.QualityFamily.NoSession, cancellation);
 
                 return new QualityOutcome(null, []);
             }
@@ -299,7 +299,7 @@ public sealed class QualityFamily : IComponent
                 .. AllIndices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => new QualityIndexOutcome(index, 0, 0, 0, 0, false, [], [], 0, fault)),
             ];
 
-            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
+            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + RuleWording.QualityFamily.StoppedOn + fault, cancellation);
 
             return new QualityOutcome(read, all);
         }
@@ -308,9 +308,8 @@ public sealed class QualityFamily : IComponent
     // What the step's row says for each index.
     public static string Detail(IReadOnlyList<QualityIndexOutcome> outcomes) =>
         string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
-            ? $"{outcome.Index}: not computed tonight, {fault}"
-            : FormattableString.Invariant(
-                $"{outcome.Index}: {outcome.Members} member(s) read, {outcome.Scored} scored, {outcome.Qualified} qualified, {(outcome.Reshuffled ? "reshuffled" : "no reshuffle")}, {outcome.Chosen.Count} chosen, {outcome.Sold.Count} sold, {outcome.Held} held, {outcome.Waiting} waiting for their next session{(outcome.Rules > 1 ? FormattableString.Invariant($", {outcome.Rules} rules kept") : string.Empty)}")));
+            ? RuleWording.QualityFamily.NotComputedTonight(outcome.Index, fault)
+            : RuleWording.QualityFamily.IndexRead(outcome.Index, outcome.Members, outcome.Scored, outcome.Qualified, outcome.Reshuffled, outcome.Chosen.Count, outcome.Sold.Count, outcome.Held, outcome.Waiting, outcome.Rules)));
 
     // The settings the night read a rule by, and the words its card states the rule in.
     public static string Settings(QualitySettings settings, string rule = ProvisionalRule) => JsonSerializer.Serialize(new

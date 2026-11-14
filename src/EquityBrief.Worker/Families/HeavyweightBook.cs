@@ -89,9 +89,9 @@ public sealed class HeavyweightBook : IComponent
     public const string Stage = "heavyweights";
 
     // Why a holding ended, as the book stores it and the pages draw it.
-    public const string NoLongerTheLeader = "no longer the leader";
-    public const string UnderTheAverage = "a close under its 200-day average";
-    public const string LeftTheIndex = "left the index";
+    public const string NoLongerTheLeader = RuleWording.IndexFamilies.NoLongerTheLeader;
+    public const string UnderTheAverage = RuleWording.IndexFamilies.UnderTheAverage;
+    public const string LeftTheIndex = RuleWording.IndexFamilies.LeftTheIndex;
     public const string RuleRetired = Indices.IndexHeavyweights.RuleRetired;
 
     const string Sessions = "SELECT DISTINCT session_date FROM bar ORDER BY session_date;";
@@ -277,14 +277,14 @@ public sealed class HeavyweightBook : IComponent
 
         if (sessions.Count == 0)
         {
-            return await RecordAsync(connection, runId, startedAt, new HeavyweightBookOutcome(null, false, 0, [], [], 0, "the store holds no session"), cancellation);
+            return await RecordAsync(connection, runId, startedAt, new HeavyweightBookOutcome(null, false, 0, [], [], 0, RuleWording.HeavyweightBook.NoSession), cancellation);
         }
 
         var night = Day(sessions[^1]);
 
         if (await ScalarAsync(connection, NewestRead, [], cancellation) is string newest && Day(newest) > night)
         {
-            return await RecordAsync(connection, runId, startedAt, new HeavyweightBookOutcome(night, false, 0, [], [], 0, FormattableString.Invariant($"the book has read {newest}, a later session than {night:yyyy-MM-dd}, and reads no earlier one")), cancellation);
+            return await RecordAsync(connection, runId, startedAt, new HeavyweightBookOutcome(night, false, 0, [], [], 0, RuleWording.HeavyweightBook.ReadLater(newest, night)), cancellation);
         }
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
@@ -466,8 +466,8 @@ public sealed class HeavyweightBook : IComponent
             if (CandidateEvaluators.Find(rule.Evaluator) is not BookEvaluator evaluator || evaluator.Version != rule.EvaluatorVersion)
             {
                 var fault = CandidateEvaluators.Find(rule.Evaluator) is null
-                    ? $"the code carries no evaluator named '{rule.Evaluator}'"
-                    : $"registered under {rule.Evaluator} at {rule.EvaluatorVersion} and the code carries {CandidateEvaluators.Find(rule.Evaluator)!.Version}";
+                    ? RuleWording.HeavyweightBook.NoEvaluator(rule.Evaluator)
+                    : RuleWording.HeavyweightBook.EvaluatorMoved(rule.Evaluator, rule.EvaluatorVersion, CandidateEvaluators.Find(rule.Evaluator)!.Version);
 
                 faults.Add($"'{rule.Candidate}' {fault}");
                 outcomes.Add(new HeavyweightRuleOutcome(rule.Candidate, false, [], [], 0, Fault: fault));
@@ -534,7 +534,7 @@ public sealed class HeavyweightBook : IComponent
 
         return missing.Length == 0
             ? null
-            : FormattableString.Invariant($"the rebalance waits for a night the store holds a close for {string.Join(", ", missing)} on, since none is stored for {night:yyyy-MM-dd}");
+            : RuleWording.HeavyweightBook.WaitsForCloses(missing, night);
     }
 
     // Each sector's fund's return over a look-back on the fund's own sessions to the night, none for a fund holding no
@@ -741,8 +741,8 @@ public sealed class HeavyweightBook : IComponent
 
         return (
             added.Count,
-            FormattableString.Invariant($"the store's year holds {held} of the {need} sessions the heavyweights' closes read, the sessions before it read from the pulled history for {read} member(s)")
-                + (few.Count > 0 ? FormattableString.Invariant($", which holds too few for {few.Count}, each reading no return and no beta: {string.Join(", ", few)}") : string.Empty));
+            RuleWording.HeavyweightBook.BeforeTheYear(held, need, read)
+                + (few.Count > 0 ? RuleWording.HeavyweightBook.TooFew(few) : string.Empty));
     }
 
     // A member's sessions before its first stored one that the newest pull holding that session holds, the newest of them
@@ -912,8 +912,8 @@ public sealed class HeavyweightBook : IComponent
             ? why
             : Line(outcome.Rebalanced, outcome.Valued, outcome.Entered, outcome.Ended, outcome.Held, outcome.Waits)
               + (outcome.Rules is { Count: > 0 } rules
-                  ? "; the registered rules: " + string.Join("; ", rules.Select(rule => rule.Fault is { } fault
-                      ? $"'{rule.Candidate}' FAILURE: kept by no book, {fault}"
+                  ? RuleWording.HeavyweightBook.TheRegisteredRules + string.Join("; ", rules.Select(rule => rule.Fault is { } fault
+                      ? RuleWording.HeavyweightBook.KeptByNoBook(rule.Candidate, fault)
                       : $"'{rule.Candidate}' " + Line(rule.Rebalanced, null, rule.Entered, rule.Ended, rule.Held, rule.Waits)))
                   : string.Empty)
               + (outcome.BeforeTheYear is { } before ? "; " + before : string.Empty);

@@ -279,7 +279,7 @@ public sealed class SwingFilter : IComponent
                     trends.GetValueOrDefault(ticker),
                     read?.Strength,
                     read?.Reading,
-                    read?.Note ?? (read is null ? "no swing readings are stored for the night" : null),
+                    read?.Note ?? (read is null ? RuleWording.SwingFilter.NoReadings : null),
                     tonight?.Close,
                     before?.Close,
                     before?.High,
@@ -367,7 +367,7 @@ public sealed class SwingFilter : IComponent
     // and otherwise how many members a state was read for and how many of those read deteriorating.
     static string FiledSaid(bool read, IReadOnlyDictionary<string, string?> states) =>
         read
-            ? FormattableString.Invariant($"; business states read off the SEC's facts for {states.Values.Count(state => state is not null)} of {states.Count} member(s), {states.Values.Count(state => state == Core.Quarters.FundamentalState.Deteriorating)} deteriorating")
+            ? RuleWording.SwingFilter.FiledStates(states.Values.Count(state => state is not null), states.Count, states.Values.Count(state => state == Core.Quarters.FundamentalState.Deteriorating))
             : string.Empty;
 
     // What the stage's row says of the estimates a rule reading them asked for: nothing where none was asked, the
@@ -375,9 +375,9 @@ public sealed class SwingFilter : IComponent
     static string EstimatesSaid(IReadOnlyList<string> asked, IEstimateSource? estimates) =>
         asked.Count == 0
             ? string.Empty
-            : FormattableString.Invariant($"; estimates read for {asked.Count} member(s) a rule reading them passed on everything else, ")
+            : RuleWording.SwingFilter.EstimatesRead(asked.Count)
                 + string.Join(", ", asked)
-                + (estimates is null ? ": none asked for, since the night handed nothing to ask with" : estimates.Said);
+                + (estimates is null ? RuleWording.SwingFilter.NoneAsked : estimates.Said);
 
     // The five gates' answers, their reasons and values, and the notes, as the row stores them.
     public static string GatesJson(GateResult result) =>

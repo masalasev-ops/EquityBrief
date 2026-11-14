@@ -77,7 +77,7 @@ public static class ShadowColumn
             {
                 skipped.Add(new ShadowSkip(
                     row.Candidate,
-                    $"the code carries no evaluator named '{row.Evaluator}'",
+                    RuleWording.ShadowColumn.NoEvaluator(row.Evaluator),
                     ShadowSkipCause.NoEvaluator));
 
                 continue;
@@ -94,8 +94,7 @@ public static class ShadowColumn
             {
                 skipped.Add(new ShadowSkip(
                     row.Candidate,
-                    $"registered under {row.Evaluator} at {row.EvaluatorVersion} and the code carries " +
-                    $"{evaluator.Version}, so a score would be about a rule the register does not name",
+                    RuleWording.ShadowColumn.VersionMoved(row.Evaluator, row.EvaluatorVersion, evaluator.Version),
                     ShadowSkipCause.VersionMoved));
 
                 continue;
@@ -113,7 +112,7 @@ public static class ShadowColumn
             {
                 skipped.Add(new ShadowSkip(
                     row.Candidate,
-                    $"the night computed no '{missing}' for {night.Ticker}",
+                    RuleWording.ShadowColumn.NotComputed(missing, night.Ticker),
                     ShadowSkipCause.NotAvailable));
 
                 continue;
@@ -157,7 +156,7 @@ public static class ShadowColumn
 
             if (found is null)
             {
-                skipped.Add(new ShadowSkip(row.Candidate, $"the code carries no evaluator named '{row.Evaluator}'", ShadowSkipCause.NoEvaluator));
+                skipped.Add(new ShadowSkip(row.Candidate, RuleWording.ShadowColumn.NoEvaluator(row.Evaluator), ShadowSkipCause.NoEvaluator));
 
                 continue;
             }
@@ -171,8 +170,7 @@ public static class ShadowColumn
             {
                 skipped.Add(new ShadowSkip(
                     row.Candidate,
-                    $"registered under {row.Evaluator} at {row.EvaluatorVersion} and the code carries " +
-                    $"{evaluator.Version}, so a score would be about a rule the register does not name",
+                    RuleWording.ShadowColumn.VersionMoved(row.Evaluator, row.EvaluatorVersion, evaluator.Version),
                     ShadowSkipCause.VersionMoved));
 
                 continue;
@@ -213,7 +211,7 @@ public static class ShadowColumn
 
             if (found is null)
             {
-                skipped.Add(new ShadowSkip(row.Candidate, $"the code carries no evaluator named '{row.Evaluator}'", ShadowSkipCause.NoEvaluator));
+                skipped.Add(new ShadowSkip(row.Candidate, RuleWording.ShadowColumn.NoEvaluator(row.Evaluator), ShadowSkipCause.NoEvaluator));
 
                 continue;
             }
@@ -227,8 +225,7 @@ public static class ShadowColumn
             {
                 skipped.Add(new ShadowSkip(
                     row.Candidate,
-                    $"registered under {row.Evaluator} at {row.EvaluatorVersion} and the code carries " +
-                    $"{evaluator.Version}, so a score would be about a rule the register does not name",
+                    RuleWording.ShadowColumn.VersionMoved(row.Evaluator, row.EvaluatorVersion, evaluator.Version),
                     ShadowSkipCause.VersionMoved));
 
                 continue;

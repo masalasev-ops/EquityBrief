@@ -33,9 +33,9 @@ public static class SetupFamilies
     public static SetupFamily Pullbacks { get; } = new(
         Pullback,
         "Pullback",
-        "Pullbacks to support",
-        "Pullback in an uptrend",
-        "A strong stock in an uptrend dips to a support band and turns back up. Stop below the band, target at the next band above.",
+        RuleWording.SetupFamilies.PullbacksHeading,
+        RuleWording.SetupFamilies.PullbacksEyebrow,
+        RuleWording.SetupFamilies.PullbacksRule,
         ForwardReturnSeries.Clear,
         ForwardReturnSeries.SetupSessionCap,
         OnThePullbacksPlan: true);
@@ -46,9 +46,9 @@ public static class SetupFamilies
     public static SetupFamily Breakouts { get; } = new(
         BreakoutRule.Name,
         "Breakout",
-        "Breakouts to a new high",
-        "Breakout from a base",
-        "A stock closes above its highest price of the past six months on heavy volume, after its daily ranges narrowed. Stop one and a half typical moves below, raised as the price climbs and never lowered; no target.",
+        RuleWording.SetupFamilies.BreakoutsHeading,
+        RuleWording.SetupFamilies.BreakoutsEyebrow,
+        RuleWording.SetupFamilies.BreakoutsRule,
         BreakoutRule.Horizon,
         BreakoutRule.CapSessions,
         Trails: true);
@@ -60,8 +60,8 @@ public static class SetupFamilies
         DriftRule.Name,
         "Earnings drift",
         "Earnings drift",
-        "After a strong report",
-        "A company beats its estimate and the stock closes up at least half a typical day's move on twice its usual volume. Bought within three sessions while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.",
+        RuleWording.SetupFamilies.EarningsDriftEyebrow,
+        RuleWording.SetupFamilies.EarningsDriftRule,
         DriftRule.Horizon,
         DriftRule.CapSessions);
 
@@ -72,8 +72,8 @@ public static class SetupFamilies
         LeaderRule.Name,
         "Sector leader",
         "Sector leaders",
-        "Strongest stocks of the strongest sectors",
-        "A stock in the top quarter of one of the three strongest sectors, at a pullback's buy point. Stop below the band, target at the next band above, as a pullback's.",
+        RuleWording.SetupFamilies.SectorLeadersEyebrow,
+        RuleWording.SetupFamilies.SectorLeadersRule,
         ForwardReturnSeries.Clear,
         ForwardReturnSeries.SetupSessionCap,
         OnThePullbacksPlan: true);
@@ -89,9 +89,9 @@ public static class SetupFamilies
     public static SetupFamily FundamentalsFirst { get; } = new(
         FundamentalsRule.Name,
         "Fundamentals first",
-        "Improving businesses in an uptrend",
-        "Business first, then the chart",
-        "A company whose revenue grew on the year-earlier quarter and faster than the quarter before, whose gross or operating margin widened on the year, whose cash from operations covered its net income and whose four newest quarters and newest quarter were profitable, closing above its 200-day average with the 50-day above it, bought at a pullback's buy point. Stop below the band, target at its reward to risk, as the pullback's base.",
+        RuleWording.SetupFamilies.FundamentalsFirstHeading,
+        RuleWording.SetupFamilies.FundamentalsFirstEyebrow,
+        RuleWording.SetupFamilies.FundamentalsFirstRule,
         ForwardReturnSeries.Clear,
         Sweep.SweepDesign.Live.Hold);
 
@@ -105,8 +105,8 @@ public static class SetupFamilies
     public static SetupFamily Dips { get; } = new(
         DipRule.Name,
         "Short-term dip",
-        "Short dips in an uptrend",
-        "Sharp drop in an uptrend",
+        RuleWording.SetupFamilies.DipsHeading,
+        RuleWording.SetupFamilies.DipsEyebrow,
         DipRule.Provisional.Words,
         DipRule.Name,
         DipRule.Provisional.TimeLimit);
@@ -121,8 +121,8 @@ public static class SetupFamilies
         HeavyweightRule.Name,
         "Sector heavyweight",
         "Sector heavyweights",
-        "Largest companies leading their sectors",
-        "On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's ten largest companies, the two whose twelve-month returns beat the sector fund's by the most, where they beat it at all, their close is above their 50-day average and that above their 200-day, and their beta is at least one, bought at the next session's open. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.");
+        RuleWording.SetupFamilies.SectorHeavyweightsEyebrow,
+        RuleWording.SetupFamilies.SectorHeavyweightsRule);
 
     // The one order every page lists the families in, Tonight's: the three swing families in the page's order, the
     // fundamentals-first family after them and the sector heavyweights last, by the word the store keeps each under.
@@ -201,9 +201,9 @@ public static class SetupFamilies
 
     // What a family's record says of a rule no freeze has registered yet.
     // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
-    public const string Provisional = "provisional: not yet frozen; its record starts at the freeze";
+    public const string Provisional = RuleWording.SetupFamilies.Provisional;
 
     // The status line a card draws for a rule no freeze has registered yet, beside "Live rule since" for one a freeze has.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
-    public const string ProvisionalStatus = "Provisional: not yet frozen";
+    public const string ProvisionalStatus = RuleWording.SetupFamilies.ProvisionalStatus;
 }

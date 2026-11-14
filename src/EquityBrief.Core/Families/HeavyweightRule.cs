@@ -105,7 +105,7 @@ public static class HeavyweightRule
     // history the night read before it holding fewer together than the setting's readings need; none where they do.
     public static string? WaitsForSessions(HeavyweightSettings settings, int held, DateOnly night) =>
         held < SessionsNeeded(settings)
-            ? FormattableString.Invariant($"the rebalance waits for a night the store's year and the pulled history before it hold the {SessionsNeeded(settings)} sessions its readings need, since they hold {held} to {night:yyyy-MM-dd}")
+            ? RuleWording.HeavyweightRuleWords.WaitsForSessions(SessionsNeeded(settings), held, night)
             : null;
 
     // Why a rebalance read nothing it could rank by, whatever the cause: no ranked company of any sector reading a lead,
@@ -116,9 +116,9 @@ public static class HeavyweightRule
         var ranked = sectors.SelectMany(sector => sector.Largest).ToArray();
 
         return !ranked.Any(one => one.Lead is not null)
-            ? FormattableString.Invariant($"the rebalance waits, since no sector's largest companies read a lead on {night:yyyy-MM-dd}")
+            ? RuleWording.HeavyweightRuleWords.NoLead(night)
             : settings.HighBeta && !ranked.Any(one => betaOf(one.Ticker) is not null)
-                ? FormattableString.Invariant($"the rebalance waits, since no sector's largest companies read a beta on {night:yyyy-MM-dd}")
+                ? RuleWording.HeavyweightRuleWords.NoBeta(night)
                 : null;
     }
 

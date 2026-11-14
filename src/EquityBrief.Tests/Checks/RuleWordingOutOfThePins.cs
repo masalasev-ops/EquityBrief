@@ -13,47 +13,10 @@ namespace EquityBrief.Tests.Checks;
 // see: A rule's screen wording sits outside the sources its version pins and a file still holding it waits for a restart already happening
 public class RuleWordingOutOfThePins
 {
-    // The files still holding wording: each is pinned by a rule that did not restart with the 16.3 remedy of 2026-11-03, so
-    // moving its words would restart that rule. Each moves at phase 23's restart, or the next time a rule pinned to it
-    // changes version for a real reason.
-    public static IReadOnlyList<string> StillHolding { get; } =
-    [
-        "src/EquityBrief.Core/Candidates/CandidateEvaluator.cs",
-        "src/EquityBrief.Core/Candidates/ShadowColumn.cs",
-        "src/EquityBrief.Core/Cards/RuleRows.cs",
-        "src/EquityBrief.Core/Families/DipRule.cs",
-        "src/EquityBrief.Core/Families/FamilyRule.cs",
-        "src/EquityBrief.Core/Families/HeavyweightRule.cs",
-        "src/EquityBrief.Core/Families/ImprovingGrid.cs",
-        "src/EquityBrief.Core/Families/ImprovingRule.cs",
-        "src/EquityBrief.Core/Families/QualityRule.cs",
-        "src/EquityBrief.Core/Families/SetupFamilies.cs",
-        "src/EquityBrief.Core/Filter/OpenTrades.cs",
-        "src/EquityBrief.Core/Filter/SwingFunnel.cs",
-        "src/EquityBrief.Core/Filter/SwingGates.cs",
-        "src/EquityBrief.Core/Ladders/LadderSeries.cs",
-        "src/EquityBrief.Core/Ladders/TrendSeries.cs",
-        "src/EquityBrief.Core/Ledger/FundamentalScorecard.cs",
-        "src/EquityBrief.Core/Ledger/LedgerReadings.cs",
-        "src/EquityBrief.Core/Ledger/TradeFills.cs",
-        "src/EquityBrief.Core/Loop/ExitMenu.cs",
-        "src/EquityBrief.Core/Loop/RuleHooks.cs",
-        "src/EquityBrief.Core/Loop/TreeScore.cs",
-        "src/EquityBrief.Core/Releases/ReleaseAnswers.cs",
-        "src/EquityBrief.Core/Sweep/SweepAxes.cs",
-        "src/EquityBrief.Data/ReleaseReadings.cs",
-        "src/EquityBrief.Worker/Bars/SeriesGapStop.cs",
-        "src/EquityBrief.Worker/Dips/DipFamily.cs",
-        "src/EquityBrief.Worker/Families/FamilyLister.cs",
-        "src/EquityBrief.Worker/Families/HeavyweightBook.cs",
-        "src/EquityBrief.Worker/Filter/SwingFilter.cs",
-        "src/EquityBrief.Worker/Filter/SwingReader.cs",
-        "src/EquityBrief.Worker/Improving/ImprovingFamily.cs",
-        "src/EquityBrief.Worker/Indices/IndexFamilies.cs",
-        "src/EquityBrief.Worker/Indices/IndexNightRead.cs",
-        "src/EquityBrief.Worker/Quality/QualityFamily.cs",
-        "src/EquityBrief.Worker/Sweep/SweepIdeas.cs",
-    ];
+    // The files still holding wording, a file pinned by a rule that did not restart with the 16.3 remedy of 2026-11-03. From
+    // 23.10's second part, the second restart of phase 23, every one has its words moved to the wording file and the list is
+    // empty; a file joins it again only where a rule pinning it cannot restart with the change that would move its words.
+    public static IReadOnlyList<string> StillHolding { get; } = [];
 
     // Files whose remaining sentences no page draws: refusals to a command line, what a registration states and what a
     // check prints, each read back by the operator at the terminal.
@@ -67,7 +30,17 @@ public class RuleWordingOutOfThePins
 
     // A literal that reads as words and is compared as a value: the release reader's answer, which the rule's code tests, and
     // from 23.10 a mark's kind as `session_mark` stores it, which every rule's read of the pull compares.
-    static readonly IReadOnlyList<string> Keys = ["lowered or withdrawn", "checked and kept"];
+    static readonly IReadOnlyList<string> Keys =
+    [
+        "lowered or withdrawn",
+        "checked and kept",
+
+        // From 23.10's second part the version declarations a pin is read up to, which the pin finds by their text in the
+        // source and so stay where they are: an evaluator's, the swing filter's and the ledger catalogue's.
+        "public override string Version =>",
+        "public const string CodeVersion =",
+        "public const string Version =",
+    ];
 
     // From 23.10 a file whose sentences are each a key: the test of the buy and sell points' words for each entry, stop and
     // sale, which `plan_point` stores, a plan's registration is read back by and a plan trade's order carries, so a change to

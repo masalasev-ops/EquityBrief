@@ -1,3 +1,5 @@
+using EquityBrief.Core.Families;
+
 namespace EquityBrief.Core.Ledger;
 
 // Where the open a trade is bought at stood against the plan its listing night's close set.
@@ -30,14 +32,14 @@ public sealed record TradeFill(DateOnly On, double Fill, string? Past, double? R
 public static class TradeFills
 {
     // What a page says of a trade whose next session is not stored yet.
-    public const string Waiting = "buys at the next open";
+    public const string Waiting = RuleWording.TradeFills.Waiting;
 
     // Why a trade holds no fill.
-    public const string NoNextSession = "no next session";
+    public const string NoNextSession = RuleWording.TradeFills.NoNextSession;
 
-    public const string NoOpen = "no open on its next session";
+    public const string NoOpen = RuleWording.TradeFills.NoOpen;
 
-    public const string NoRisk = "no risk at its close";
+    public const string NoRisk = RuleWording.TradeFills.NoRisk;
 
     public static string? PastOf(double open, double stop, double? target) =>
         open <= stop ? FillPast.Stop : target is { } aimed && open >= aimed ? FillPast.Target : null;

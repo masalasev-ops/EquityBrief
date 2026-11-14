@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-13 - .claude/rules/checks.md - rule-wording-out-of-pins states its list empty at 23.10's second part
+Decision: A rule's screen wording sits outside the sources its version pins and a file still holding it waits for a restart already happening
+Was:
+> | `rule-wording-out-of-pins` | every CI run | ... and each registered drift name is drawn in the words that name its target; the reader of sentences shown to find one and to leave a comment, a thrown message and a query alone (see: ...) |
+Now:
+> | `rule-wording-out-of-pins` | every CI run | ... and each registered drift name is drawn in the words that name its target; the reader of sentences shown to find one and to leave a comment, a thrown message and a query alone; and from 23.10's second part the list is empty, every file it named having its words in the wording file, the version declarations a pin is read up to exempt as values the code compares, and a walk of the sources a rule reaches following no call into the wording file (see: ...) |
+Why: 23.10's second part, on the operator's order of 2026-11-13, moves the words of the 35 files the list named, the restart the decision waited for; each roster row says what its check asserts.
+
 ### 2026-11-13 - docs/SCHEMA.md - a dip trade under a plan keeps its fill from the session it fills
 Corrects: item (b) of the operator's order of 2026-11-13: "A filled dip order reads as waiting until its trade ends, because the dip's step stores its fill only then: a dip trade is drawn as bought from the session it filled, on every page, read from the fill the step makes, with a test."
 Was:

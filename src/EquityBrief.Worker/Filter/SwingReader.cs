@@ -261,16 +261,16 @@ public sealed class SwingReader : IComponent
         return new SwingReadOutcome(members.Count, members.Count, readings.Count, stale, gapped, none, dropped, breadth);
     }
 
-    public const string NoBarStored = "no bar is stored for the name";
+    public const string NoBarStored = Core.Families.RuleWording.SwingReader.NoBarStored;
 
-    const string NoBarThisSessionOpening = "no bar for this session";
+    const string NoBarThisSessionOpening = Core.Families.RuleWording.SwingReader.NoBarThisSessionOpening;
 
-    const string GapOpening = "the stored series has a gap at";
+    const string GapOpening = Core.Families.RuleWording.SwingReader.GapOpening;
 
     static string NoBarThisSession(DateOnly last) =>
-        NoBarThisSessionOpening + "; the last session stored for the name is " + Stamp(last);
+        NoBarThisSessionOpening + Core.Families.RuleWording.SwingReader.LastSessionStored + Stamp(last);
 
-    static string GapAt(DateOnly gap) => GapOpening + " " + Stamp(gap) + ", so nothing is read across it";
+    static string GapAt(DateOnly gap) => GapOpening + " " + Stamp(gap) + Core.Families.RuleWording.SwingReader.GapEnding;
 
     // The gap a row's note names, and none where the note names none.
     public static DateOnly? GapIn(string? note) =>
@@ -434,10 +434,10 @@ public sealed class SwingReader : IComponent
         command.Parameters.AddWithValue("$rows_written", members);
         command.Parameters.AddWithValue(
             "$detail",
-            FormattableString.Invariant($"{members} member(s), {read} read, {stale} with no bar for the session, {gapped} gapped, {none} holding no bar, {dropped} dropped") + gaps + "; breadth " +
+            Core.Families.RuleWording.SwingReader.Counts(members, read, stale, gapped, none, dropped) + gaps + "; breadth " +
             (breadth.Share is { } share
                 ? FormattableString.Invariant($"{share * 100:0.0}% over {breadth.Counted} of {breadth.Members}")
-                : FormattableString.Invariant($"not available, {breadth.Counted} of {breadth.Members} members holding a close and a 200-day average")));
+                : Core.Families.RuleWording.SwingReader.BreadthNotAvailable(breadth.Counted, breadth.Members)));
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

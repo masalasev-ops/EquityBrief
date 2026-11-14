@@ -1,3 +1,4 @@
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Swings;
 
 namespace EquityBrief.Core.Ladders;
@@ -155,12 +156,12 @@ public static class TrendSeries
     {
         if (shortAverage is not { } shortMean)
         {
-            return new Trend(TrendState.NotClassified, "no 50-day average");
+            return new Trend(TrendState.NotClassified, RuleWording.TrendSeries.NoShortAverage);
         }
 
         if (longAverage is not { } longMean)
         {
-            return new Trend(TrendState.NotClassified, "no 200-day average");
+            return new Trend(TrendState.NotClassified, RuleWording.TrendSeries.NoLongAverage);
         }
 
         var lows = Recent(swings, SwingSeries.Low);
@@ -175,13 +176,13 @@ public static class TrendSeries
         {
             return new Trend(
                 TrendState.NotClassified,
-                $"fewer than {SwingsCompared} swing lows and fewer than {SwingsCompared} swing highs");
+                RuleWording.TrendSeries.FewerSwings(SwingsCompared));
         }
 
         if (close > shortMean && shortMean > longMean)
         {
             return lows.Count < SwingsCompared
-                ? new Trend(TrendState.NotClassified, $"fewer than {SwingsCompared} swing lows")
+                ? new Trend(TrendState.NotClassified, RuleWording.TrendSeries.FewerSwingLows(SwingsCompared))
                 : Rising(lows)
                     ? new Trend(TrendState.Uptrend, null)
                     : new Trend(TrendState.Range, null);
@@ -190,7 +191,7 @@ public static class TrendSeries
         if (close < shortMean && shortMean < longMean)
         {
             return highs.Count < SwingsCompared
-                ? new Trend(TrendState.NotClassified, $"fewer than {SwingsCompared} swing highs")
+                ? new Trend(TrendState.NotClassified, RuleWording.TrendSeries.FewerSwingHighs(SwingsCompared))
                 : Falling(highs)
                     ? new Trend(TrendState.Downtrend, null)
                     : new Trend(TrendState.Range, null);
