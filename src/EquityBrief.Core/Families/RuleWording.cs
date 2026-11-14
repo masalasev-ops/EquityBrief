@@ -1413,5 +1413,7 @@ public static class RuleWording
         public const string TakingClosing = " times the risk";
 
         public static string Taking(double multiple) => FormattableString.Invariant($"{TakingOpening}{multiple:0.##}{TakingClosing}");
+
+        public static string TakingHalf(double multiple) => FormattableString.Invariant($"taking profit on half at {multiple:0.##}{TakingClosing}, the stop on the other half then moved up to the buy");
     }
 }

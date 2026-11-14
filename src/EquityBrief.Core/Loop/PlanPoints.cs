@@ -11,13 +11,20 @@ public sealed record PlanCombination(string Entry, int Window, string Stop, stri
     // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
     public double? TakeProfit { get; init; }
 
+    // On the operator's ruling of 2026-11-14 the take-profit on half: half the shares sell at the multiple of the risk, the
+    // stop on the other half then moved up to the buy and the other half sold by the plan's own sale.
+    public bool Half { get; init; }
+
     public string Words => (Window > 0
         ? FormattableString.Invariant($"{Entry} within {Window} sessions, {Stop}, {Exit}")
         : FormattableString.Invariant($"{Entry}, {Stop}, {Exit}"))
-        + (TakeProfit is { } multiple ? ", " + EquityBrief.Core.Loop.TakeProfit.Words(multiple) : string.Empty);
+        + (TakeProfit is { } multiple ? ", " + (Half ? EquityBrief.Core.Families.RuleWording.TakeProfit.TakingHalf(multiple) : EquityBrief.Core.Loop.TakeProfit.Words(multiple)) : string.Empty);
 
     // The same plan taking profit at a multiple of its risk.
-    public PlanCombination Taking(double multiple) => this with { TakeProfit = multiple };
+    public PlanCombination Taking(double multiple) => this with { TakeProfit = multiple, Half = false };
+
+    // The same plan taking profit on half its shares at a multiple of its risk.
+    public PlanCombination Halving(double multiple) => this with { TakeProfit = multiple, Half = true };
 }
 
 // What the sale reads: a target the close must reach, a trail the stop follows the highest close by, the staged levels
@@ -28,6 +35,10 @@ public sealed record PlanSale(double? Target, double? Trail, IReadOnlyList<doubl
     // the next open; none for every other family.
     // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
     public double? RsiAbove { get; init; }
+
+    // On the operator's ruling of 2026-11-14 the price a close must reach for half the shares to sell at the next open, the
+    // stop on the other half moved up to the buy from then; none for a plan selling no half.
+    public double? HalfAt { get; init; }
 }
 
 // How one filled pick ended: its result in its own risk before costs, the price each share sold at weighted by its share,
@@ -391,6 +402,7 @@ public static class PlanPoints
         var levels = sale.Staged.Where(level => level > fill).Order().ToArray();
         var share = levels.Length > 0 ? 1.0 / (levels.Length + 1) : 1.0;
         var (held, sold, next, highest) = (1.0, 0.0, 0, fill);
+        var (halfAt, standing) = (sale.HalfAt, stop);
 
         for (var session = fillBar; session < fillBar + cap; session++)
         {
@@ -401,13 +413,18 @@ public static class PlanPoints
 
             var close = closes[session];
             var open = opens[session + 1];
-            var floor = sale.Trail is { } distance ? Math.Max(stop, highest - distance) : stop;
+            var floor = sale.Trail is { } distance ? Math.Max(standing, highest - distance) : standing;
 
             highest = Math.Max(highest, close);
 
-            if (close < stop)
+            if (close < standing)
             {
                 return Ended(sold + (held * open), session, Stopped);
+            }
+
+            if (halfAt is { } half && close >= half)
+            {
+                (sold, held, halfAt, standing) = (sold + (held / 2 * open), held / 2, null, Math.Max(standing, fill));
             }
 
             while (next < levels.Length && close >= levels[next])

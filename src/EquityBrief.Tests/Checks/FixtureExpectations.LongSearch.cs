@@ -143,6 +143,22 @@ public partial class FixtureExpectations
 
         // A path ending before its sale is no outcome.
         Assert.Null(PlanPoints.Walk(closes, opens, 1, 10.0, 9.0, new PlanSale(20.0, null, []), 63));
+
+        // On the operator's ruling of 2026-11-14 the take-profit on half at 10.4: the close of 10.4 sells half at the next
+        // open, 11.0, and the other half at the time limit's next open, 11.4, together 11.2 on a buy of 10.
+        var halved = PlanPoints.Walk(closes, opens, 1, 10.0, 9.0, new PlanSale(null, null, []) { HalfAt = 10.4 }, 5)!;
+
+        Assert.Equal((11.2, 5, PlanPoints.Timed), (halved.Sold, halved.Sessions, halved.End));
+        Assert.Equal(1.2, halved.Result, 9);
+
+        // Once the half has sold the stop on the other half stands at the buy: the close of 10.7 sells half at 10.8, and the
+        // close of 9.9 under the buy of 10, above the first stop of 9, sells the rest at 9.8, together 10.3.
+        double[] upOpens = [10.0, 10.0, 10.0, 10.8, 9.8, 9.5];
+        double[] upCloses = [10.0, 10.2, 10.7, 9.9, 9.6, 9.6];
+        var raised = PlanPoints.Walk(upCloses, upOpens, 1, 10.0, 9.0, new PlanSale(null, null, []) { HalfAt = 10.5 }, 4)!;
+
+        Assert.Equal((10.3, 3, PlanPoints.Stopped), (raised.Sold, raised.Sessions, raised.End));
+        Assert.Equal(0.3, raised.Result, 9);
     }
 
     // Three picks offered, two filled at 1.3 and -1.0 and ended in that order, one not filled: 2 of 3 filled, 0.1 a pick
