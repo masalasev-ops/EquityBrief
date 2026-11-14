@@ -147,6 +147,52 @@ public partial class FixtureExpectations
         Assert.Equal(ExitProcedures.Proposals, proposals.Count);
         Assert.All(proposals, one => Assert.Null(one.Change));
 
+        // A dip standing at a plan is walked under every exit of the menu in place of the plan's sale, the plan's buy kept:
+        // each walk keeps a trade, sold where the menu's exit replayed from the plan's fill sells it and never by the plan's
+        // own sale, and the autopsy completes over it.
+        var plannedHooks = LoopRegistrations.HooksOf(new Core.Candidates.DipCandidate("MID"), new Dictionary<string, double>(parameters, StringComparer.Ordinal) { [PlanHook.StopParameter] = 4 });
+        var plannedWalk = RuleWalk.Dip(dip.Read, dip, parameters, "the dip rule at a plan", plannedHooks);
+        var plan = new PlannedListings(dip.Read, RuleHooks.Of(plannedWalk.Standing).Plan!, Core.Families.DipRule.Name);
+        var planOwn = Assert.Single(plannedWalk.Own, one => one.Trade.Result is not null);
+
+        Assert.Equal(plan.Of(planOwn.Trade.Listing).End, planOwn.End);
+
+        // Every exit keeps A's trade, bought on the plan's fill; one whose path runs past the fixture's last session is kept
+        // open, and each one ended is sold where the menu's exit replayed from that fill sells it.
+        var ended = 0;
+
+        foreach (var exit in ExitMenu.Swing)
+        {
+            var kept = Assert.Single(plannedWalk.Under(exit), one => one.Trade.Listing.Name == a);
+            var replayed = plan.Under(kept.Trade.Listing, exit);
+
+            Assert.Equal(replayed.Result is null, kept.Trade.Result is null);
+
+            if (kept.Trade.Result is null)
+            {
+                continue;
+            }
+
+            ended++;
+            Assert.Equal(replayed.End, kept.End);
+            Assert.Equal(kept.Trade.Listing.Session + replayed.Sessions, kept.Exit!.Value);
+            Assert.DoesNotContain(kept.End, new[] { PlanPoints.Reached, PlanPoints.Timed });
+        }
+
+        Assert.True(ended >= 2, FormattableString.Invariant($"{ended} exit(s) ended A's trade"));
+        Assert.Equal(Core.Ledger.SetupEnds.Target,Assert.Single(plannedWalk.Under(target), one => one.Trade.Listing.Name == a).End);
+        Assert.NotEqual(planOwn.Trade.Result, Assert.Single(plannedWalk.Under(timeStop), one => one.Trade.Listing.Name == a).Trade.Result);
+
+        // The autopsy reads the same walks: every exit but the standing target, which does not stand for the dip, keeps A's.
+        var menu = ExitProcedures.MenuWalks(dip.Read, plannedWalk);
+
+        Assert.Equal(ExitMenu.Swing.Count, menu.Count);
+        Assert.All(ExitMenu.Swing.Select((exit, at) => (exit, at)).Where(one => one.exit.Kind != ExitKind.Standing), one => Assert.Contains(menu[one.at], kept => kept.Trade.Listing.Name == a));
+
+        var (plannedProposals, _) = ExitProcedures.Autopsy(dip.Read, plannedWalk, _ => { });
+
+        Assert.Equal(ExitProcedures.Proposals, plannedProposals.Count);
+
         // A grid's choice is the change a dip registration states: its places with the drop's volume last, a 1 where it
         // crossed the drop's volume and none where it crossed another of the second stage's levels.
         var figures = FamilySweep.Figures("none", [], dip.Nights);
