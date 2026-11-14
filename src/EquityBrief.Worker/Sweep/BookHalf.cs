@@ -19,6 +19,12 @@ public static class BookHalf
         return (Core.Loop.TakeProfit.EndOf(close, placed.Stop, placed.TakeProfit), placed, false);
     }
 
+    // A holding's stop and take-profit as a walk places them: under a half exit, on the operator's ruling, half sells at the buy
+    // plus the multiple of the risk whatever price the stock turned down at before; otherwise as the take-profit is placed for
+    // every pick, at its own sale's price, a price it turned down at before or the multiple of its risk.
+    public static (double Stop, double? TakeProfit) Placed((double Stop, double? TakeProfit) exits, double buy, double multiple, bool half) =>
+        half && buy > exits.Stop ? (exits.Stop, buy + (multiple * (buy - exits.Stop))) : exits;
+
     // A holding's result from its buy's close, half sold at one close and half at another.
     public static double Result(double buy, double half, double sold) => ((0.5 * half) + (0.5 * sold)) / buy - 1.0;
 

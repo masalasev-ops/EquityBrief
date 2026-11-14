@@ -645,7 +645,7 @@ public static class HeavyweightSweep
 
                     if (stops is { } asked && tape.ExitsAt(leader, session, asked.Moves, asked.Multiple) is { } placed)
                     {
-                        exits[leader] = placed;
+                        exits[leader] = BookHalf.Placed(placed, tape.Close[leader][session], asked.Multiple, half);
                     }
                 }
             }

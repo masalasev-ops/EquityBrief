@@ -279,7 +279,7 @@ public sealed class QualityLay
 
                 if (stops is { } asked && tape.ExitsAt(name, session, asked.Moves, asked.Multiple) is { } placed)
                 {
-                    exits[name] = placed;
+                    exits[name] = BookHalf.Placed(placed, tape.Close[name][session], asked.Multiple, half);
                 }
             }
         }

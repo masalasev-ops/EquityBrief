@@ -102,6 +102,11 @@ public partial class FixtureExpectations
         Assert.Equal(Core.Loop.TakeProfit.TookProfit, BookHalf.Step(23, 20, (19, 22.9), half: false, halfSold: false).Ended);
         Assert.Equal(Core.Loop.TakeProfit.UnderItsStop, BookHalf.Step(18, 20, (19, 22.9), half: true, halfSold: false).Ended);
 
+        // Half sells at the buy plus the multiple of the risk, on the operator's ruling, whatever price the stock turned down at
+        // before: bought at 20 with its stop at 19 and a turn down at 20.3, half sells at 22; the full exit keeps 20.3.
+        Assert.Equal((19.0, (double?)22.0), BookHalf.Placed((19, 20.3), 20, 2, half: true));
+        Assert.Equal((19.0, (double?)20.3), BookHalf.Placed((19, 20.3), 20, 2, half: false));
+
         // From a fill of 10.2 over a close of 10 to 11: 0.08. Half sold at 12 within a span from 10 to 9: (6 + 4.5 - 10) / 10 =
         // 0.05. Half sold at 12 before a span from 12 to 13: the half sold has left the book as a holding sold whole does, its
         // cash in no month, so the half still held reads 1 / 12, not the 1 / 24 a half held in cash beside it would.

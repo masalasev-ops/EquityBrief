@@ -50,6 +50,16 @@ public sealed partial class WalkForwardTester
             };
 
             output.WriteLine(RuleTests.BookChoiceLine(own, index, read.Calendar, InTestYears));
+
+            // What each exit's trades came to, beside the book's own: how many ended, why, their mean result after the round trip,
+            // and how many sold half first, so a choice's figure can be read back to the trades behind it.
+            foreach (var (words, costed) in walked.Select(one => (one.Words, one.Book.Costed)).Prepend(("its own exit", book(null, false).Costed)))
+            {
+                var ended = costed.Where(trade => trade.End is not null && trade.Result is not null).ToArray();
+                var reasons = string.Join(", ", ended.GroupBy(trade => trade.Reason ?? "none").OrderByDescending(group => group.Count()).Select(group => FormattableString.Invariant($"{group.Key} {group.Count()}")));
+
+                output.WriteLine(FormattableString.Invariant($"book trades: {family}, {words}: {ended.Length} ended, {ended.Count(trade => trade.HalfAt is not null)} selling half first, a mean result of {(ended.Length > 0 ? ended.Average(trade => trade.Result!.Value) * 100 : 0):+0.00;-0.00;0.00}% and a median of {(ended.Length > 0 ? ended.Select(trade => trade.Result!.Value).Order().ElementAt(ended.Length / 2) * 100 : 0):+0.00;-0.00;0.00}%; {reasons}"));
+            }
             output.WriteLine(BookRisk.Line(family, rule, index, read.Calendar, [.. walked.Select(one => (one.Words, BookRisk.Edges(tape, read.Series, one.Book.Costed, one.Stops, one.Half)))], RuleTests.BookChosen(own, index, read.Calendar, InTestYears)));
         }
 

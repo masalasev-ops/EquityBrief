@@ -20,7 +20,7 @@ public static class BookRisk
     // Each ended pick's buy session and its edge per dollar risked, none where its stop or its fill is not read or no other
     // member of the index is.
     public static IReadOnlyList<(int Entry, double? Edge)> Edges(HeavyweightTape tape, IReadOnlyList<SweepSeries> series, IReadOnlyList<HeavyweightTrade> costed, (double Moves, double Multiple) stops, bool half = false) =>
-        Edges(tape, costed, (name, entry) => Placed(tape, series, name, entry, stops), half);
+        Edges(tape, costed, (name, entry) => Placed(tape, series, name, entry, stops, half), half);
 
     // The same over a placement handed in: each member's risk, stop, take-profit and fill at a buy session, none where none is;
     // under a half exit each member walked the same way, half sold at its take-profit and its stop then moved up to its buy.
@@ -60,14 +60,16 @@ public static class BookRisk
     // A member's stop and take-profit placed at a session's close as the book places a holding's, its risk a fraction of that
     // close, and its fill at the next open over that close; none where the index does not hold it, it has no close, no stop is
     // placed or no open follows.
-    static (double Risk, double Stop, double? TakeProfit, double Fill)? Placed(HeavyweightTape tape, IReadOnlyList<SweepSeries> series, int name, int entry, (double Moves, double Multiple) stops)
+    static (double Risk, double Stop, double? TakeProfit, double Fill)? Placed(HeavyweightTape tape, IReadOnlyList<SweepSeries> series, int name, int entry, (double Moves, double Multiple) stops, bool half)
     {
         var close = tape.Close[name][entry];
 
-        if (!tape.Member[name][entry] || !(close > 0) || tape.ExitsAt(name, entry, stops.Moves, stops.Multiple) is not { } exits || !(exits.Stop < close))
+        if (!tape.Member[name][entry] || !(close > 0) || tape.ExitsAt(name, entry, stops.Moves, stops.Multiple) is not { } placed || !(placed.Stop < close))
         {
             return null;
         }
+
+        var exits = BookHalf.Placed(placed, close, stops.Multiple, half);
 
         var bar = Array.BinarySearch(series[name].SessionAt, entry);
 
