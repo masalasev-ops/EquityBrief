@@ -346,6 +346,11 @@ public static class PlanTrades
             return null;
         }
 
+        if (order.PlacesNoPrice())
+        {
+            return new PlanWhere(null, null, new PlanEnd(night, null, null, null, null, null, PlanEnd.Unfilled));
+        }
+
         var factor = bars.Closes[pick] / Statistic.FromPrice(entry);
         var scaled = order.Scaled(factor);
         var rulesRisk = bars.Closes[pick] - (Statistic.FromPrice(ruleStop) * factor);

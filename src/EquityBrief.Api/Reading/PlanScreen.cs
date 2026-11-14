@@ -34,7 +34,7 @@ public static class PlanScreen
                     Unfilled =
                     [
                         .. unfilled.Select(one => byKey.TryGetValue((owner, one.Ticker, one.Listed), out var row) && row.Fill is null
-                            ? (one.Ticker, one.Listed, row.NotFilled ? PlanOrderWords.NotFilled : WaitingWords(row))
+                            ? (one.Ticker, one.Listed, row.NotFilled ? PlanOrderWords.NotFilledOf(row.Order) : WaitingWords(row))
                             : one),
                     ],
                 }
@@ -113,7 +113,7 @@ public static class PlanScreen
                 NowOn = null,
                 NowClose = null,
                 Past = null,
-                Unfilled = row.NotFilled ? PlanOrderWords.NotFilled : WaitingWords(row),
+                Unfilled = row.NotFilled ? PlanOrderWords.NotFilledOf(row.Order) : WaitingWords(row),
                 Waiting = false,
                 FilledOn = null,
                 FiredAs = null,
@@ -196,7 +196,7 @@ public static class PlanScreen
             row.Fill is not null ? row.Result : null,
             null,
             row.Fill,
-            row.Fill is not null ? null : row.NotFilled ? PlanOrderWords.NotFilled : WaitingWords(row),
+            row.Fill is not null ? null : row.NotFilled ? PlanOrderWords.NotFilledOf(row.Order) : WaitingWords(row),
             null,
             row.Fill is not null ? row.Sale : null)
         {

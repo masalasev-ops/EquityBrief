@@ -103,6 +103,16 @@ public partial class FixtureExpectations
 
         Assert.Equal((98.0, 103.2), (scaled.Fill!.Value, scaled.Sold!.Value));
         Assert.Equal(1.04, scaled.Result!.Value, 9);
+
+        // On the operator's ruling of 2026-11-14 an order its levels placed no price for is not placed: it ends unfilled on
+        // its own night, before any window passes and over sessions a waiting order would still wait through, and its words
+        // say no order was placed; an order at a price that never fills keeps the words it had.
+        var placedNone = PlanTrades.Ended(OrderAt(null), 100m, 95m, night, SixSessions(2))!;
+
+        Assert.Equal((night, (double?)null, (DateOnly?)null, PlanEnd.Unfilled), (placedNone.On, placedNone.Result, placedNone.FilledOn, placedNone.End));
+        Assert.Equal("No price to buy at from its levels tonight, so no order was placed.", Web.Marks.PlanOrderWords.NotFilledOf(OrderAt(null)));
+        Assert.Equal("not filled, no trade", Web.Marks.PlanOrderWords.NotFilledOf(OrderAt(90)));
+        Assert.False(new PlanOrder(DistanceStaged.Words, PlanPoints.NextOpen, null, 0, PlanPoints.TypicalStop(2), 95, null, 1, 103, [], null, null, 10).PlacesNoPrice());
     }
 
     // The test of the buy and sell points reads as traded the plan each family's live rule on the index states: the S&P 500

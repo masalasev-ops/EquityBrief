@@ -38,6 +38,10 @@ public sealed record PlanOrder(
 
     public PlanSale Sale => new(Target, Trail, Staged) { RsiAbove = RsiAbove };
 
+    // On the operator's ruling of 2026-11-14 an order buying at a level its stock's levels placed no price for is not placed:
+    // it ends on its own night unfilled and buys nothing.
+    public bool PlacesNoPrice() => Level is null && Entry != PlanPoints.NextOpen && Entry != PlanPoints.FirstPullback;
+
     // The sale walked from a fill: its own, with the take-profit price beside it where the order takes profit.
     public PlanSale SaleFrom(double fill, double stop) =>
         TakeProfit is { } multiple ? Loop.TakeProfit.SaleWith(Sale, fill, stop, TurnedDown, multiple) : Sale;
@@ -189,7 +193,7 @@ public static class PlanHook
         stated[WindowParameter] = combination.Window;
         stated[StopParameter] = combination.Stop == PlanPoints.RuleStop ? RuleStop
             : combination.Stop == PlanPoints.ZoneStop ? ZoneStop
-            : PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).First(one => PlanPoints.TypicalStop(one) == combination.Stop);
+            : PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).First(one => PlanPoints.NamesStop(combination.Stop, one));
         stated[SaleParameter] = Sales.ToList().IndexOf(combination.Exit);
 
         if (combination.TakeProfit is { } multiple)

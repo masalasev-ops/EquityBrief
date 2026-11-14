@@ -32,7 +32,12 @@ public static class PlanOrderWords
 
     public static bool IsWaiting(string? why) => why is not null && why.StartsWith(WaitingOpening, StringComparison.Ordinal);
 
-    public static bool IsNotFilled(string? why) => string.Equals(why, NotFilled, StringComparison.Ordinal);
+    // On the operator's ruling of 2026-11-14 an order its levels placed no price for is not placed, and says so in their words.
+    public const string NoPrice = "No price to buy at from its levels tonight, so no order was placed.";
+
+    public static string NotFilledOf(EquityBrief.Core.Loop.PlanOrder order) => order.PlacesNoPrice() ? NoPrice : NotFilled;
+
+    public static bool IsNotFilled(string? why) => string.Equals(why, NotFilled, StringComparison.Ordinal) || string.Equals(why, NoPrice, StringComparison.Ordinal);
 
     // A count's words for the orders waiting, tonight's new and earlier nights' each named as its group, each led by a comma
     // and none where none waits.
