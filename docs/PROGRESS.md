@@ -19427,3 +19427,30 @@ Claims:     none new.
 Pins:       every dip rule's: the dip's step is a source each pins, registered again by the second part's remedy.
 Mutated:    the rule as above. b1 the open trade's fill left unstored, predicted red at the new test.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 ruling - the last restart of a live rule: no version goes live before the monthly run of 6 Feb 2027, a defect the one exception   2026-11-14
+
+Not a checkpoint entry: it records the operator's ruling of 2026-11-14 making this restart the last restart of a live rule,
+and lands nothing.
+Ruled:      the operator's ruling of 2026-11-14, clause 17 of their rulings on the report replaced by their amendment, word
+            for word in `prompts/2026-11-14-23.10-rulings-amendment-clause-17.md`: "This is the last restart of a live rule."
+            (a) A change that does not change a rule's trades never restarts its record. (b) A trade-changing change never
+            replaces the live rule: it becomes a background version, and at a monthly run a winner goes live on the operator's
+            word and carries its own record. (c) No version goes live before the monthly run of Sat 6 Feb 2027. (d) A defect
+            making a live rule trade on wrong data is the one exception: it is brought to the operator with what it changes and
+            how many trades it touches, nothing restarts without their word, and a ruling entry names the exception. (e) Beside
+            every "This version since <date>" the page says the rules are frozen until 6 Feb 2027. (f) A check fails where a
+            live rule's record restarts without a ruling entry naming the exception. Clause 7's "goes live only at a monthly
+            run, on my word" is read under this ruling.
+In this PR: (e) and (f): each of the four places a card says "This version since <date>" adds "rules frozen until 6 Feb
+            2027" for a version from the restart on; and a check refuses any remedy dated from 2026-11-15 that runs a register
+            command unless a ruling entry of this record names its file and the exception. This restart's remedy is dated
+            2026-11-14, before the freeze.
+3 November: why the replay kept so few records that night. It read 57 of the S&P 500's family records: 17 carried and 40
+            restarted, 39 of them the S&P 400's and 600's rules, which the replay does not read, and the S&P 500's breakout at
+            251 sessions, whose replay did not match its trades. The other 80 rules have no replay at all: the swing filter's
+            versions, the eight ladder windows, the candidates and the books. About 120 of 137 restarted.
+Owed:       (a)'s replay, built right after this restart and before any other change to a file a version pins, covering every
+            kind of rule, the family rules, the swing filter's versions, the ladder rules, the candidates and the books, each
+            reading each night's inputs as stored, and naming any kind it cannot cover with why.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
