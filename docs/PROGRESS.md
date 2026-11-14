@@ -19240,3 +19240,54 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             saying none above the buy; each predicted red at its test, and each red as predicted.
 Owed:       the remedy's four runs, and each card holding no price above its buy read back once they have written.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: an approval the operator did not give is drawn as withdrawn on their word, and the read surface refuses a write from a script or a headless browser   2026-11-13
+
+Corrects:   the S&P 500's Monthly check-up drawing Quality at a fair price's learned score, "the learned score, ordering the
+            list" of the monthly run of 2026-11-07, as "Approved and live", "Approved on 2026-11-09", where the operator says
+            they did not approve it; item (d) of the order of 2026-11-13.
+Label:      23.10, whose restart registered the learned score as a variant on each index and whose second restart undoes the
+            approval, as the operator asked.
+Ruled:      the operator's answers of 2026-11-13, word for word in `prompts/2026-11-13-23.10-second-restart-order.md`: "Undo it
+            at the restart, as you recommend ... the page shows the 11-09 approval as withdrawn on my word of 11-13; the
+            register stays append-only. I did not press Approve. Find from the run log, the read surface's request log and each
+            session's record what sent that approval at 2:46 pm ET on 2026-11-09, and say so in PROGRESS. Then add a guard";
+            kept in **An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's
+            remedy** and **A write reaches the store only from a person's press on a page, and the read surface refuses one
+            from a script or a headless browser**.
+Found:      what sent the approval, read on 2026-11-13. The decision row: approved at 19:46:39 UTC on 2026-11-09 on run
+            `loop-test-GSPC-20261107T192031Z`, written by the Loop page's Approve route, which needs the page's own header. The
+            run log holds no row from 19:30 to 20:00 UTC that day, a press writing its decision alone. The read surface keeps
+            its request times in memory alone, and the server then running, started at 05:28 UTC, restarted at 21:49 UTC that
+            day, so none survives. The sessions' records: the phase 21 sign-off session's holds the operator's "yes i approve
+            it. Should i just press the button" at 19:44:16 UTC, and its answers, PR 676 having merged, taking "it" as the
+            Quality change without asking: "Yes, just press Approve", and at 19:46:18 UTC "Go ahead and press Approve"; its two
+            scripts read the Loop page with no header and wrote nothing. At 19:46:56 UTC the operator sent it a screenshot
+            showing the press's own answer, "Approved. The change is applied at the start of the next night", which only the
+            browser that pressed draws. The press came from a browser on that session's answer, not from a script or a
+            read-back; the fault is the session's reading of "it". No other session's record holds a call to the read surface
+            between 19:25 and 20:05 UTC.
+Built:      the code holds each approval the operator withdrew, here the one above, withdrawn on 2026-11-13, and every place
+            the Loop page and the Monthly check-up draw the operator's word draws it as withdrawn on their word and never as
+            approved: its decision line, its row among the decisions, the count of their word, the check-up's opening and its
+            state, saying the earlier rule is made live again at the next restart of the rules; the decision row stands. The
+            read surface refuses every request that is not a read, before any route reads it, where it names no person's
+            browser: a script's, a command line's, a windowless browser's or none; the suite's hosts name a browser as a page
+            does. The decisions, the architecture and the runbook say so.
+Remedy:     none: the read surface reads it from its restart on the merge; the register's undo is the second restart's.
+Tests:      3 new: the withdrawn approval on the Loop page and the check-up beside an approval given on another index; every
+            one of the 16 routes that write refusing Python, curl, Windows PowerShell, node, a headless Chrome and a client
+            naming nothing, with the page's header, and writing nothing; and no script or skill under `tools/` or `.claude/`
+            carrying the page's header, the reader shown to find a planted line.
+Claims:     none new.
+Pins:       none move: the read surface and the loop's rows and decisions are pinned by no rule, tests holding the latter so.
+Mutated:    the rule as above. d1 the check-up's state drawn approved, d2 the decision line drawn approved, d3 the count reading
+            a withdrawn approval as approved, d4 the reader attaching no withdrawal, each predicted red at the withdrawal test;
+            d5 the guard letting every request through and d6 a write read as a read, each predicted red at the routes test;
+            d7 the header's reader finding nothing, predicted red at the scripts test. Each red as predicted but d1, which
+            survived its first run: the Loop page the test's store draws holds no change block, so the check-up's state was a
+            property no assertion named, a missing property; the test now draws the withdrawn approval's change block itself,
+            and d1 run again is red at it.
+Owed:       the second restart's remedy registering the earlier S&P 500 Quality rule live again, the learned score kept as a
+            variant on each index.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.

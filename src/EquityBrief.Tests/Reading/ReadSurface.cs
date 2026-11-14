@@ -5204,7 +5204,7 @@ public partial class ReadSurface
     // A clock handed in stands in for the machine's, for a page that reads the session the day holds.
     // From 21.13 the market strip's quotes come from the feed handed in, and from one that answers nothing otherwise, so no
     // test asks Yahoo whatever hour it runs at.
-    internal sealed class Host(string root, IClock? clock = null, EquityBrief.Core.Providers.IStripQuoteFeed? quotes = null) : WebApplicationFactory<ReadApi>
+    internal sealed class Host(string root, IClock? clock = null, EquityBrief.Core.Providers.IStripQuoteFeed? quotes = null) : PageFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {

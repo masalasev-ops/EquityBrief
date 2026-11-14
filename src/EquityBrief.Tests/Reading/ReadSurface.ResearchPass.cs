@@ -987,7 +987,7 @@ public partial class ReadSurface
     // The settings are how a test reaches configuration the surface reads at a press,
     // which is where the lane is decided. The clock is how it reaches the instant a press
     // is written at, which is half of a request's key.
-    sealed class PassHost(string root, params (string Key, string Value)[] settings) : WebApplicationFactory<ReadApi>
+    sealed class PassHost(string root, params (string Key, string Value)[] settings) : PageFactory
     {
         public IClock? Clock { get; init; }
 

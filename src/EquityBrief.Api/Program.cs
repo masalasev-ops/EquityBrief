@@ -168,6 +168,24 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// From the second 23.10 correction of 2026-11-13 a request that writes, any but a read, is refused where it names no
+// person's browser: a script, a headless browser or nothing at all, so no read-back, sweep or test run against the read
+// surface writes; a person's press on a page carries its browser's own name.
+// see: A write reaches the store only from a person's press on a page, and the read surface refuses one from a script or a headless browser
+app.Use(async (context, next) =>
+{
+    if (!WriteGuard.Reads(context.Request.Method) && !WriteGuard.FromAPersonsBrowser(context.Request.Headers.UserAgent.ToString()))
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        context.Response.ContentType = "text/html; charset=utf-8";
+        await context.Response.WriteAsync(WriteGuard.Refusal);
+
+        return;
+    }
+
+    await next();
+});
+
 // A store behind this checkout is named on every screen rather than failing on the first column
 // it lacks, and the run page still draws its run log, which is where a refused night is.
 app.Use(async (context, next) =>

@@ -88,7 +88,12 @@ public sealed partial class ReadApi
                 reader.IsDBNull(7) ? null : reader.GetString(7),
                 reader.IsDBNull(8) ? null : reader.GetString(8),
                 reader.IsDBNull(9) ? null : reader.GetInt32(9),
-                reader.IsDBNull(10) ? null : reader.GetString(10)));
+                reader.IsDBNull(10) ? null : reader.GetString(10))
+            {
+                // From the second 23.10 correction of 2026-11-13 an approval the operator withdrew carries the withdrawal.
+                // see: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+                Withdrawal = reader.GetString(3) == LoopDecisions.Approved ? LoopDecisions.WithdrawalOf(index, reader.GetString(0), reader.GetString(1), reader.GetString(2)) : null,
+            });
         }
 
         return rows;

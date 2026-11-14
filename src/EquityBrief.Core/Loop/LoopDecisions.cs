@@ -26,6 +26,28 @@ public static class LoopDecisions
 
     public const string Automatic = "automatic";
 
+    // From the second 23.10 correction of 2026-11-13 an approval the operator withdrew on their word: the index, the run, the
+    // family and the proposal it stood on, the day it was withdrawn and what the pages say of it, drawn in place of the approval.
+    // The register is append-only, so a rule the approval registered stands until a restart's remedy registers the earlier
+    // rule again.
+    // see: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+    public sealed record Withdrawal(string Index, string Run, string Family, string Proposal, DateOnly On, string Said);
+
+    public static IReadOnlyList<Withdrawal> Withdrawn { get; } =
+    [
+        new(
+            "GSPC",
+            "loop-test-GSPC-20261107T192031Z",
+            "quality",
+            "the learned score, ordering the list",
+            new DateOnly(2026, 11, 13),
+            "It was recorded as approved on 2026-11-09 and applied on 2026-11-10, and you did not approve it. At the next restart of the rules the earlier rule is made live again, and the learned score keeps running beside it as a variant on each index."),
+    ];
+
+    // The withdrawal of an approval given on an index's run, its family and its proposal; none where it stands.
+    public static Withdrawal? WithdrawalOf(string index, string run, string family, string proposal) =>
+        Withdrawn.FirstOrDefault(one => one.Index == index && one.Run == run && one.Family == family && one.Proposal == proposal);
+
     // The run a restore's decision is stored under in place of a tester run's, and the proposal it names.
     public const string RestoreRun = "restore";
 
