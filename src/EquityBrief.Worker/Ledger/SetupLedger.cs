@@ -102,7 +102,7 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.LongMarketBar, Touch.Read),
             new StoreTouch(Store.LongFiling, Touch.Read),
             new StoreTouch(Store.LongFact, Touch.Read),
-            new StoreTouch(Store.LongSetup, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.LongSetup, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongReading, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongOutlier, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.DepartedSetup, Touch.Read | Touch.Insert | Touch.Delete),
@@ -290,6 +290,11 @@ public sealed partial class SetupLedger : IComponent
     // setups left open whose prices stop at their last price, and each family's years under both readings, the last two
     // written whole for the index.
     // see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
+    // From 23.10's second part one session's rows of the long ledger, which a build writing the ledger once more clears in the
+    // chunk's own transaction before writing the session again, its one removal of a long setup.
+    // see: The long ledger is written once more at the second restart, each session replaced whole and resumed by its pin
+    const string ClearLongSession = "DELETE FROM long_setup WHERE index_code = $index AND session_date = $session;";
+
     static readonly string InsertLongSetup =
         "INSERT INTO long_setup (index_code, family, ticker, session_date, rule, live_pass, picked, entry, stop, target, trail, cap, risk_moves, "
         + string.Join(", ", LedgerReadings.All.Select(reading => reading.Column))
@@ -521,6 +526,7 @@ public sealed partial class SetupLedger : IComponent
         var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
         var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
         var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var oneOffs = await OneOffsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation, night);
         var actions = await ActionsAsync(connection, names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, names.Select(name => name.Ticker), cancellation);
         var shortInterest = await ShortInterestAsync(connection, names.Select(name => name.Ticker), cancellation);
@@ -531,6 +537,7 @@ public sealed partial class SetupLedger : IComponent
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            OneOffs = oneOffs,
             Actions = actions,
             Trends = trends,
             ShortInterest = shortInterest,
@@ -565,6 +572,7 @@ public sealed partial class SetupLedger : IComponent
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var oneOffs = await OneOffsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var shortInterest = await ShortInterestAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
@@ -580,6 +588,7 @@ public sealed partial class SetupLedger : IComponent
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            OneOffs = oneOffs,
             Actions = actions,
             Trends = trends,
             ShortInterest = shortInterest,
@@ -642,6 +651,7 @@ public sealed partial class SetupLedger : IComponent
         var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
         var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
         var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var oneOffs = await OneOffsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation, night);
         var actions = await ActionsAsync(connection, names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, names.Select(name => name.Ticker), cancellation);
         var shortInterest = await ShortInterestAsync(connection, names.Select(name => name.Ticker), cancellation);
@@ -691,6 +701,7 @@ public sealed partial class SetupLedger : IComponent
                     Insiders = insiders.Rows,
                     InsiderSpans = insiders.Spans,
                     Releases = releases,
+                    OneOffs = oneOffs,
                     Actions = actions,
                     Trends = trends,
                     ShortInterest = shortInterest,
@@ -1654,6 +1665,7 @@ public sealed partial class SetupLedger : IComponent
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
         var insiders = await InsidersAsync(connection, filers, inputs.Names.Select(name => name.Ticker), FirstInsiderDay(calendar), cancellation);
         var releases = await ReleasesAsync(connection, filers, inputs.Names.Select(name => name.Ticker), cancellation);
+        var oneOffs = await OneOffsAsync(connection, filers, inputs.Names.Select(name => name.Ticker), cancellation);
         var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var shortInterest = await ShortInterestAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
@@ -1681,6 +1693,7 @@ public sealed partial class SetupLedger : IComponent
             Actions = actions,
             Trends = trends,
             ShortInterest = shortInterest,
+            OneOffs = oneOffs,
             LargeBreadth = largeBreadth is null ? null : LargeBreadthOver(calendar, largeBreadth),
             Gics = await GicsAsync(connection, history: true, cancellation),
             QualityLive = rules.Quality.Settings,
@@ -2058,6 +2071,7 @@ public sealed partial class SetupLedger : IComponent
         var facts = await FactsAsync(connection, filers, inputs.Names.Select(name => name.Ticker), cancellation, longHistory is null ? FactsOfFiler : LongFactsOfFiler);
         var insiders = await InsidersAsync(connection, filers, inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
         var releases = await ReleasesAsync(connection, filers, inputs.Names.Select(name => name.Ticker), cancellation);
+        var oneOffs = await OneOffsAsync(connection, filers, inputs.Names.Select(name => name.Ticker), cancellation);
         var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var shortInterest = await ShortInterestAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
@@ -2078,7 +2092,7 @@ public sealed partial class SetupLedger : IComponent
 
             foreach (var row in session)
             {
-                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest);
+                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest, oneOffs);
 
                 if (!held)
                 {
@@ -2530,6 +2544,115 @@ public sealed partial class SetupLedger : IComponent
 
         return versions.Count == 0 ? null : await ReleasesUnderAsync(connection, filerQueries, tickers, versions[0], cancellation);
     }
+
+    // A release's largest one-off item, none where its stored text is no gzip the ledger can open, which reads as a release
+    // whose phrases found none rather than stopping the build.
+    static EquityBrief.Core.EntryCheck.OneOffItem? OneOffOf(byte[] stored)
+    {
+        try
+        {
+            return EquityBrief.Core.EntryCheck.OneOffItems.Of(EquityBrief.Core.Releases.ResultsReleases.Decompressed(stored));
+        }
+        catch (InvalidDataException)
+        {
+            return null;
+        }
+    }
+
+    // From 23.10's second part every results release the store holds through each ticker's filer, oldest first, each by the day
+    // the SEC accepted it with the largest one-off item its fixed phrases find and the beat the provider's surprises store within
+    // a week of it, which the one-off item's share reads; a night's read takes each filer's newest by the night alone, the one
+    // its share reads, so its row and a row rebuilt from the history for the same session carry the same figure.
+    // see: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<LedgerOneOff>>> OneOffsAsync(
+        SqliteConnection connection,
+        IReadOnlyList<string> filerQueries,
+        IEnumerable<string> tickers,
+        CancellationToken cancellation,
+        DateOnly? newestBy = null)
+    {
+        var filerOf = await FilerOfAsync(connection, filerQueries, cancellation);
+        string[] wanted = [.. tickers.Distinct(StringComparer.Ordinal).Where(filerOf.ContainsKey)];
+        var filers = wanted.Select(ticker => filerOf[ticker]).ToHashSet(StringComparer.Ordinal);
+        var byFiler = new Dictionary<string, List<(DateOnly On, EquityBrief.Core.EntryCheck.OneOffItem? Item)>>(StringComparer.Ordinal);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = newestBy is null ? StoredReleases : NewestReleasesBy;
+
+            if (newestBy is { } night)
+            {
+                command.Parameters.AddWithValue("$night", Stamp(night));
+            }
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (!filers.Contains(reader.GetString(0)))
+                {
+                    continue;
+                }
+
+                if (!byFiler.TryGetValue(reader.GetString(0), out var held))
+                {
+                    byFiler[reader.GetString(0)] = held = [];
+                }
+
+                held.Add((Date(reader.GetString(1)[..10]), OneOffOf((byte[])reader[2])));
+            }
+        }
+
+        var beats = new Dictionary<string, List<(DateOnly On, decimal Beat)>>(StringComparer.Ordinal);
+        var named = wanted.ToHashSet(StringComparer.Ordinal);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = StoredBeats;
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (named.Contains(reader.GetString(0))
+                    && decimal.TryParse(reader.GetString(2), NumberStyles.Number, CultureInfo.InvariantCulture, out var actual)
+                    && decimal.TryParse(reader.GetString(3), NumberStyles.Number, CultureInfo.InvariantCulture, out var estimate))
+                {
+                    if (!beats.TryGetValue(reader.GetString(0), out var held))
+                    {
+                        beats[reader.GetString(0)] = held = [];
+                    }
+
+                    held.Add((Date(reader.GetString(1)), actual - estimate));
+                }
+            }
+        }
+
+        return wanted.ToDictionary(
+            ticker => ticker,
+            ticker =>
+            {
+                var own = beats.GetValueOrDefault(ticker) ?? [];
+
+                return (IReadOnlyList<LedgerOneOff>)[.. (byFiler.GetValueOrDefault(filerOf[ticker]) ?? []).Select(release =>
+                {
+                    var near = own.Where(beat => Math.Abs(beat.On.DayNumber - release.On.DayNumber) <= EquityBrief.Worker.EntryCheck.EntryReader.ReportReachDays).ToArray();
+
+                    return new LedgerOneOff(release.On, release.Item?.Amount, release.Item?.TiedToEarnings, release.Item?.Direction, near.Length > 0 ? near[^1].Beat : null);
+                })];
+            },
+            StringComparer.Ordinal);
+    }
+
+    // Each filer's newest results release accepted by the night, the one a night's one-off item's share reads.
+    const string NewestReleasesBy = @"
+        SELECT d.cik, d.accepted_at, d.text_gzip
+        FROM release_document d
+        JOIN (SELECT cik, MAX(accepted_at) AS newest FROM release_document WHERE release = 1 AND substr(accepted_at, 1, 10) <= $night GROUP BY cik) n
+          ON n.cik = d.cik AND n.newest = d.accepted_at
+        WHERE d.release = 1
+        ORDER BY d.accepted_at;
+    ";
 
     // Each ticker's results releases through its filer, each with its reading under the version given.
     static async Task<IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>> ReleasesUnderAsync(

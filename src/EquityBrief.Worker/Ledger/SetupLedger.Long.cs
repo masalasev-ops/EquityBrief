@@ -41,6 +41,10 @@ public sealed partial class SetupLedger
 
     const string LongSessions = "SELECT DISTINCT session_date FROM long_setup WHERE index_code = $index;";
 
+    // From 23.10's second part the sessions the long ledger holds rows of written under the catalogue's version now, which a
+    // build writing the ledger once more passes over, so it resumes where it stopped.
+    const string LongSessionsAtPin = "SELECT DISTINCT session_date FROM long_setup WHERE index_code = $index AND pin = $pin;";
+
     const string LongReadThrough = "SELECT MAX(read_through) FROM long_reading WHERE index_code = $index;";
 
     static readonly string LongReadings =
@@ -79,7 +83,12 @@ public sealed partial class SetupLedger
     // store's size at each chunk, and stops on no size: the long tables' budget stands as what the operator accepted on
     // 2026-11-07 and no longer stops a build.
     // see: A long build states the store's size before and after it with its expected growth and time, and stops on no size
-    public async Task<int> LongBuildAsync(string dataRoot, string index, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default, Func<long>? storeSize = null)
+    //
+    // From 23.10's second part, with `again`, the long ledger written once more: every session of the span holding no rows
+    // written under the catalogue's version now, each session's rows cleared and written again in one chunk's transaction, so a
+    // build stopped part way resumes where it stopped and a session is never left half written.
+    // see: The long ledger is written once more at the second restart, each session replaced whole and resumed by its pin
+    public async Task<int> LongBuildAsync(string dataRoot, string index, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default, Func<long>? storeSize = null, bool again = false)
     {
         var startedAt = clock.UtcNow;
         var pause = wait ?? Task.Delay;
@@ -104,7 +113,7 @@ public sealed partial class SetupLedger
             return 1;
         }
 
-        var stored = await LongSessionsAsync(connection, index, cancellation);
+        var stored = await LongSessionsPassedAsync(connection, index, again, cancellation);
         var sessionsToWrite = Enumerable.Range(first, last - first + 1).Where(at => !stored.Contains(prepared.Calendar[at])).ToArray();
         var runId = FormattableString.Invariant($"{LongBuildStage}-{index}-{startedAt:yyyyMMddTHHmmssZ}");
         var atLastPrice = prepared.HeldAtLastPrice();
@@ -161,6 +170,11 @@ public sealed partial class SetupLedger
 
             foreach (var (at, asRuled, lastPrice) in built)
             {
+                if (again)
+                {
+                    await ClearLongSessionAsync(connection, transaction, index, prepared.Calendar[at], cancellation);
+                }
+
                 for (var place = 0; place < asRuled.Families.Count; place++)
                 {
                     var (family, reads) = asRuled.Families[place];
@@ -285,6 +299,31 @@ public sealed partial class SetupLedger
         settled
             .Where(parameter => parameter.Name is "$result" or "$benchmark" or "$edge" or "$edge_after_cost" or "$sessions" or "$end" or "$ended_on" or "$settled")
             .Select(parameter => ("$last_" + parameter.Name[1..], parameter.Value));
+
+    // From 23.10's second part the sessions of the long ledger on an index a build passes over: every one it holds a setup of,
+    // or, writing the ledger once more, every one whose rows were written under the catalogue's version now.
+    // see: The long ledger is written once more at the second restart, each session replaced whole and resumed by its pin
+    public static async Task<IReadOnlySet<DateOnly>> LongSessionsPassedAsync(SqliteConnection connection, string index, bool again, CancellationToken cancellation) =>
+        again ? await LongSessionsAtPinAsync(connection, index, cancellation) : await LongSessionsAsync(connection, index, cancellation);
+
+    // From 23.10's second part one session's rows of the long ledger on an index cleared in the transaction that writes them again.
+    public static async Task ClearLongSessionAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly session, CancellationToken cancellation) =>
+        await ExecuteAsync(connection, transaction, ClearLongSession, [("$index", index), ("$session", Stamp(session))], cancellation);
+
+    static async Task<IReadOnlySet<DateOnly>> LongSessionsAtPinAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    {
+        var stored = new HashSet<DateOnly>();
+
+        await using var command = Command(connection, null, LongSessionsAtPin, [("$index", index), ("$pin", LedgerReadings.Version)]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            stored.Add(Date(reader.GetString(0)));
+        }
+
+        return stored;
+    }
 
     static async Task<IReadOnlySet<DateOnly>> LongSessionsAsync(SqliteConnection connection, string index, CancellationToken cancellation)
     {

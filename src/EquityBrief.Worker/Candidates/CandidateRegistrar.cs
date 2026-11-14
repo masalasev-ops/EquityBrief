@@ -656,6 +656,93 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Registered, null, detail);
     }
 
+    // From 23.10's second part an approval the operator withdrew undone at one instant or not at all: the live rule its change
+    // registered and the rule it replaced, standing in the background under the same words, both retired on the evidence given,
+    // and the earlier rule registered live again under its own name at its own parameters, as it stood before the approval.
+    // Refused, writing nothing, where the rule named is no live rule standing or no rule it replaced stands in the background.
+    // see: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+    public async Task<RegistrationOutcome> WithdrawAsync(string live, string evidence, string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        async Task<RegistrationOutcome> RefuseAsync(string said)
+        {
+            await transaction.RollbackAsync(cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        var rows = await RowsAsync(connection, cancellation);
+        var standing = CandidateFamily.Standing(rows, startedAt);
+
+        if (!FamilyRecords.IsLive(live) || standing.LastOrDefault(row => row.Candidate == live) is not { } row)
+        {
+            return await RefuseAsync($"'{live}' is no live rule standing registered, so no approval was undone and nothing was written.");
+        }
+
+        if (standing.LastOrDefault(other => other.Evaluator == row.Evaluator && FamilyRecords.IsBackground(other.Candidate)) is not { } replaced)
+        {
+            return await RefuseAsync($"no rule '{live}' replaced stands in the background on '{row.Evaluator}', so no approval was undone and nothing was written.");
+        }
+
+        var earlier = FamilyRecords.LivePrefix + replaced.Candidate[FamilyRecords.BackgroundPrefix.Length..];
+        var taken = rows.ToList();
+
+        foreach (var retiring in new[] { live, replaced.Candidate })
+        {
+            if (RetirementRefusal(taken, retiring, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
+            {
+                return await RefuseAsync($"'{retiring}' was refused, so nothing was written: {refusal}");
+            }
+
+            var retired = taken.Last(one => one.Candidate == retiring);
+
+            taken.Add(retired with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = retiring, RegisteredAt = startedAt, Evidence = evidence });
+        }
+
+        var parameters = CandidateEvaluator.Read(replaced.Parameters);
+
+        if (Refusal(taken, earlier, replaced.Evaluator, parameters, startedAt) is { } again)
+        {
+            return await RefuseAsync($"'{earlier}' was refused, so nothing was written: {again}");
+        }
+
+        taken.Add(replaced with
+        {
+            Id = taken.Max(one => one.Id) + 1,
+            Candidate = earlier,
+            EvaluatorVersion = CandidateEvaluators.Find(replaced.Evaluator)!.Version,
+            Event = Registered,
+            Retires = null,
+            RegisteredAt = startedAt,
+            Evidence = null,
+        });
+
+        var appended = rows;
+
+        foreach (var added in taken.Skip(rows.Count))
+        {
+            var id = await AppendAsync(
+                connection, appended, added.Candidate, added.Rule, added.Test, added.Evaluator, added.Parameters,
+                added.EvaluatorVersion, added.Event, added.Retires, startedAt, added.Evidence, cancellation);
+
+            appended = [.. appended, added with { Id = id }];
+        }
+
+        var detail = $"'{live}' and '{replaced.Candidate}' retired and '{earlier}' registered live again, on the evidence: {evidence}";
+
+        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Registered, null, detail);
+    }
+
     // From 23.10 the words a variant of a live rule is named with: the live rule's own name, its opening words "the live" read
     // as "the", with what the variant buys and sells by.
     public static string VariantOf(string live, string buysBy) =>
@@ -696,7 +783,9 @@ public sealed class CandidateRegistrar : IComponent
             return await RefuseAsync($"'{live}' is no live rule standing registered, so no plan was given to it and nothing was written.");
         }
 
-        if (CandidateEvaluators.Find(row.Evaluator) is not FamilyRuleEvaluator carried)
+        // From 23.10's second part the S&P 500's pullback, the live swing filter, states its plan as a family rule does.
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+        if (CandidateEvaluators.Find(row.Evaluator) is not { } carried || carried is not (FamilyRuleEvaluator or SwingFilterRule))
         {
             return await RefuseAsync($"'{live}' runs on '{row.Evaluator}', which keeps no family rule's trades one at a time, so it states no plan and nothing was written.");
         }
@@ -1200,6 +1289,18 @@ public sealed class CandidateRegistrar : IComponent
               "and a candidate under its name would give that name two meanings."
             : null;
 
+    // From 23.10's second part the hooks a swing filter rule states that its night does not read, none where it states only a
+    // plan, which the night keeps every swing filter rule's picks under. The page's list reads the members the filter passed
+    // with its market gate read, in the order and under the exit an approval stores for the S&P 500's pullback, and a variant
+    // keeps its own in the list's own order on closes, so an exit, a condition, a score, the exposure, a ranking or the
+    // expected-value order stated on a registration would be read by neither; the per-rule test walks the pullback's graded
+    // exposure and its standing target beside its live rule, unregistered.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    public static string? SwingHooksUnread(EquityBrief.Core.Loop.RuleHooks hooks) =>
+        (hooks with { Plan = null }).IsOff
+            ? null
+            : "a swing filter rule states a plan alone, its list's order and exit being the ones an approval stores for the S&P 500's pullback";
+
     // Why a registration is refused, or null. Apart from the write so the check
     // reads the same reader the registrar does rather than a copy of it, and so
     // each refusal can be put to it over constructed rows.
@@ -1235,10 +1336,12 @@ public sealed class CandidateRegistrar : IComponent
 
         // A family rule whose trades are walked one at a time may state the engines' hooks beside its own parameters,
         // each off where it is not stated, and from 21.4 so may the dip's rule, as the swing rules do, and a book's rule
-        // its conditions and its score alone; a heavyweights book reads none, so its hooks are refused as any parameter
-        // it does not read is.
+        // its conditions and its score alone; an S&P 400's or 600's heavyweights book reads none, so its hooks are refused
+        // as any parameter it does not read is. From 23.10's second part the S&P 500's swing filter states the hook its
+        // night keeps a pick under, the plan, and the S&P 500's heavyweight book a book's.
         // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
-        var hooked = carried is FamilyRuleEvaluator and not IndexHeavyweightCandidate;
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+        var hooked = carried is FamilyRuleEvaluator and not IndexHeavyweightCandidate || carried is SwingFilterRule or SectorHeavyweightCandidate;
 
         if (hooked)
         {
@@ -1246,9 +1349,14 @@ public sealed class CandidateRegistrar : IComponent
             {
                 var hooks = EquityBrief.Core.Loop.RuleHooks.Of(parameters);
 
-                if (carried is QualityCandidate or ImprovingCandidate && !hooks.AreABooks)
+                if (carried is QualityCandidate or ImprovingCandidate or SectorHeavyweightCandidate && !hooks.AreABooks)
                 {
                     return $"'{evaluator}' is registered with hooks a book does not read: {EquityBrief.Core.Loop.RuleHooks.NotABooks}.";
+                }
+
+                if (carried is SwingFilterRule && SwingHooksUnread(hooks) is { } unread)
+                {
+                    return $"'{evaluator}' is registered with hooks the swing filter's night does not read: {unread}.";
                 }
             }
             catch (ArgumentException refused)

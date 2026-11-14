@@ -104,6 +104,12 @@ public static class RegisterVerb
 
     public const string VariantOnly = "--variant-only";
 
+    // From 23.10's second part the flag that undoes an approval the operator withdrew: the family's live rule an approved change
+    // registered, and the rule it replaced kept in the background, retired, and that earlier rule registered live again, at one
+    // instant or not at all.
+    // see: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+    public const string Withdraw = "--withdraw";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -122,6 +128,7 @@ public static class RegisterVerb
         new(WithoutFlag, [WithoutFlag, "--evidence"], [], []),
         new(Standing, [Standing, "--index"], [], []),
         new(Planned, [Planned, "--combination", "--evidence"], [], [VariantOnly]),
+        new(Withdraw, [Withdraw, "--evidence"], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -191,6 +198,11 @@ public static class RegisterVerb
             return EquityBrief.Core.Loop.PlanPrices.Named(Given("--combination")) is { } combination
                 ? await Said(await registrar.RegisterPlannedAsync(Given(Planned), combination, !args.Contains(VariantOnly, StringComparer.Ordinal), Given("--evidence"), runId), output, error)
                 : await RefusedAsync(registrar, runId, $"'{Given("--combination")}' names no plan the test of the buy and sell points walks, so nothing was written.", error);
+        }
+
+        if (form.Flag == Withdraw)
+        {
+            return await Said(await registrar.WithdrawAsync(Given(Withdraw), Given("--evidence"), runId), output, error);
         }
 
         // A family rule registered again is replayed first, so its record carries on where every trade is reproduced.
