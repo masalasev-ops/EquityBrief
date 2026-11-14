@@ -107,8 +107,9 @@ public sealed class ImprovingLay
     }
 
     // The history laid once for every setting: the tape, each month's first session from the first scored, and every
-    // member's scorecards and newly read filings.
-    public static async Task<ImprovingLay> ReadAsync(LoopRead read, SweepHistory history, IReadOnlyDictionary<string, IReadOnlyList<ImprovingRelease>> releases, DateOnly through, Action<string> progress, CancellationToken cancellation)
+    // member's scorecards and newly read filings; from the operator's answer of 2026-11-14 to item 15 the facts read by the
+    // reader a run hands it, the long history's over the long years, and the standing table's otherwise.
+    public static async Task<ImprovingLay> ReadAsync(LoopRead read, SweepHistory history, IReadOnlyDictionary<string, IReadOnlyList<ImprovingRelease>> releases, DateOnly through, Action<string> progress, CancellationToken cancellation, Func<IEnumerable<string>, Task<IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>>>? factsOf = null)
     {
         var months = HeavyweightSweep.Rebalances(read.Calendar, read.FirstScored, HeavyweightPeriod.Month);
         var (tape, _) = HeavyweightSweep.Lay(read.Inputs, read.Companies, null, new HashSet<int>(), read.FirstScored);
@@ -116,7 +117,7 @@ public sealed class ImprovingLay
 
         progress("reading every member's filings as first filed");
 
-        var facts = await history.FiledFactsAsync(ciks, through, cancellation);
+        var facts = factsOf is null ? await history.FiledFactsAsync(ciks, through, cancellation) : await factsOf(ciks);
 
         progress(FormattableString.Invariant($"replaying {read.Series.Length} name(s) night by night from {read.Calendar[read.FirstScored]:yyyy-MM-dd}"));
 

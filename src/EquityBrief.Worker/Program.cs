@@ -1027,7 +1027,8 @@ static int NoVerb()
         "'loop-rules --index <GSPC, MID or SML>' walks every family rule standing on the index at its own settings over " +
         "the test years and stores each variant's verdict against its live or provisional rule and each of those against " +
         "its benchmark, a rule the history cannot walk stored with why, with '--month <yyyy-MM>' and '--print' as " +
-        "'loop-test' reads them, " +
+        "'loop-test' reads them, and '--books' printing the live books alone at the nine stops and take-profits, each " +
+        "per dollar risked against the index's other stocks bought the same way, and writing nothing, " +
         "'loop-pooled --month <yyyy-MM>' sums each family's rules across the three indices' per-rule tests of the month " +
         "into one verdict, and each kind of change registered on two or more indices beside it, and stores each, with " +
         "'--print' printing each verdict and writing nothing, '--long' on either reading the long history from each " +
@@ -1837,7 +1838,7 @@ static async Task<int> LoopRulesRun(string[] args)
     // From 23.7 '--long' walks the rules over the long history, each family from its own first test year.
     // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
     return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
-        .RulesAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal), longRun: args.Contains("--long", StringComparer.Ordinal));
+        .RulesAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal), longRun: args.Contains("--long", StringComparer.Ordinal), books: args.Contains("--books", StringComparer.Ordinal));
 }
 
 // The one verdict across the three indices by hand for a month, each index's newest per-rule test of the month summed,

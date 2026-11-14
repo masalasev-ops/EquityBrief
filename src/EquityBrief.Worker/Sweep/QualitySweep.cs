@@ -83,8 +83,10 @@ public sealed class QualityLay
     ];
 
     // The history laid once for every setting: the tape, each month's first session from the first scored, every member's
-    // reading on each, and its reading on the first session after each of its filings.
-    public static async Task<QualityLay> ReadAsync(LoopRead read, SweepHistory history, DateOnly through, Action<string> progress, CancellationToken cancellation)
+    // reading on each, and its reading on the first session after each of its filings; from the operator's answer of
+    // 2026-11-14 to item 15 the facts read by the reader a run hands it, the long history's over the long years, and the
+    // standing table's otherwise.
+    public static async Task<QualityLay> ReadAsync(LoopRead read, SweepHistory history, DateOnly through, Action<string> progress, CancellationToken cancellation, Func<IEnumerable<string>, Task<IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>>>? factsOf = null)
     {
         var reshuffles = HeavyweightSweep.Rebalances(read.Calendar, read.FirstScored, HeavyweightPeriod.Month);
         var (tape, _) = HeavyweightSweep.Lay(read.Inputs, read.Companies, null, reshuffles.ToHashSet(), read.FirstScored);
@@ -92,7 +94,7 @@ public sealed class QualityLay
 
         progress("reading every member's filings as first filed");
 
-        var facts = await history.FiledFactsAsync(ciks, through, cancellation);
+        var facts = factsOf is null ? await history.FiledFactsAsync(ciks, through, cancellation) : await factsOf(ciks);
 
         progress(FormattableString.Invariant($"scoring and valuing {read.Series.Length} name(s) at {reshuffles.Count} reshuffle(s) and after each filing"));
 

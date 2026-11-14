@@ -688,7 +688,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // of those against its benchmark, written whole; with print, printed and nothing written. It adopts and retires
     // nothing.
     // see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
-    public async Task<int> RulesAsync(string index, string? month, CancellationToken cancellation = default, bool print = false, bool longRun = false, long draws = 0)
+    public async Task<int> RulesAsync(string index, string? month, CancellationToken cancellation = default, bool print = false, bool longRun = false, long draws = 0, bool books = false)
     {
         if (!Indices.Contains(index, StringComparer.Ordinal))
         {
@@ -774,6 +774,13 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         }
 
         var standingRules = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started);
+
+        // On the operator's answer of 2026-11-14 to item 15 the live books alone, measured per dollar risked, printed and written
+        // nowhere.
+        if (books)
+        {
+            return await BooksAsync(index, read, history, longHistory, through, standingRules, cancellation);
+        }
 
         // From 23.7 the long test walks the families its record reaches alone: the books laid over the standing facts, the
         // dip's and the sweeps' own reads of the standing pull's market series, and the like setups and the ranking off the
