@@ -19196,3 +19196,47 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 23.10 - correction: a staged sale or the first band above whose levels place no price above the buy says so in one line, with the record of picks like it beneath   2026-11-13
+
+Corrects:   the 23.10 correction of 2026-11-13 drawing a card's registered sale: a staged sale whose levels place nothing above
+            the close drew "Sell a share at" with "No level above the buy" run into it, while each closed well above its buy,
+            the S&P 400 drift's BHF, AMG, PCTY and NXST of 2026-11-12 among them, BHF at $44.10 against $40.87. Found by the
+            operator reading PR 696's work back on 5152.
+Label:      23.10, the checkpoint whose plans the cards draw, as the operator asked.
+Ruled:      item (a) of the operator's order of 2026-11-13, word for word in
+            `prompts/2026-11-13-23.10-second-restart-order.md`, its words in **A plan whose levels place no price above its buy
+            says so in one line and draws the record of picks like it beneath**.
+Read back:  item (c) first. PR 696's remedy, the dip's buy and sell points on each index, ran from main and ended at 22:42 UTC
+            with exit 0: the dip's live plan from 2019 moved +0.3% on average by its time limit over 13,936 fills on the S&P
+            500, 55% of them up, +0.5% over 12,863 on the S&P 400, 53% up, and +0.7% over 14,455 on the S&P 600, 55% up. Every
+            planned card since the restart read back against its registered plan on 5152: 18 of 18 drew their plan's sale,
+            TTWO's target of $250.52 the page's own rounding of 250.515, and the 8 cards of the newest nights and the watched
+            cards' better plan the same; no card changed, and no dip card holds a buy, so none draws the dip's record yet.
+Counted:    staged orders since the restart with no level above the buy, through the night of 2026-11-13: the S&P 500 none,
+            no live rule there selling by staged levels; the S&P 400 11 of the drift's 14, BILL, VNT and CTRE of 2026-11-10,
+            PRI, RBA and AHR of 2026-11-11, BHF, AMG, PCTY and NXST of 2026-11-12 and TTEK of 2026-11-13; the S&P 600 none, its
+            breakout placing no order. No index placed an order selling at the first band above.
+Built:      a staged sale whose levels place no price above the buy draws one line, "No price level above tonight's close to
+            sell at: it is near its highs for the past year, so it holds for" its days "unless the stop sells it first.", and
+            the first band above with no band above, the same fault, "No price above tonight's close where it has turned down
+            before: it holds for" its days "unless the stop sells it first.", each with the record of picks like it beneath, on
+            Home, Tonight's row and its folded card, the stock page and the read-only copy, Tonight's columns saying the same.
+            The plan point test's record of a family's live plan counts the fills its sale placed no price above: every fill
+            under the time limit alone, so the dip's three rows stand, and the fills held to the stop or the time limit under
+            the staged sales and the first band above. The decision, the schema, the architecture and the guide say so.
+Remedy:     `tools/remedies/2026-11-13-23.10-correction-the-records-of-picks-like-it.txt`, from main after the merge while
+            nothing else writes: the buy and sell points of the S&P 400 drift and breakout, the S&P 600 breakout and the S&P 500
+            breakout, each its family alone.
+Tests:      2 new: a staged sale and the first band with no level above, each one line with the record read and being worked
+            out beneath on the card, the copy and Home, Tonight's columns, and a staged sale with levels drawing none; the
+            record over the fills a sale placed no price above, worked by hand, with which sales place none. The card test's
+            two rows of no level above move with the words.
+Claims:     none new.
+Pins:       none move: the read surface and the plan point test are pinned by no rule.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered to its
+            own test and restored from the file's own bytes. a1 the record line drawn for the time limit alone, a2 the staged
+            sale's old line, a3 the record over every fill, a4 a first band with a band read as none above, a5 Tonight's row
+            saying none above the buy; each predicted red at its test, and each red as predicted.
+Owed:       the remedy's four runs, and each card holding no price above its buy read back once they have written.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.

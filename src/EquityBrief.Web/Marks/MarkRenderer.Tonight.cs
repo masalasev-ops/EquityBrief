@@ -418,7 +418,7 @@ public sealed partial class MarkRenderer
                 body.Append(SaleCell(sale));
                 body.Append(sale.RewardPerRisk is { } ratio
                     ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">${Figures.Ratio(ratio)}</td>")
-                    : Formatted($"<td class=\"r num\" data-reward-to-risk=\"none\">{(sale.OnTimeAlone ? "No target: it sells on its time limit" : "<span class=\"degraded\">none above the buy</span>")}</td>"));
+                    : Formatted($"<td class=\"r num\" data-reward-to-risk=\"none\">{(sale.OnTimeAlone ? "No target: it sells on its time limit" : sale.HoldsToItsLimit ? "No price above tonight's close: it holds to its time limit" : "<span class=\"degraded\">none above the buy</span>")}</td>"));
             }
             else
             {
@@ -457,7 +457,7 @@ public sealed partial class MarkRenderer
             ? Formatted($"<td class=\"r num plan-target\" data-target=\"staged\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(PlanSaleView.SharesOf(sale.Stages.Count).Each)} at each of {Escaped(string.Join(", ", sale.Stages.Select(Figures.Price)))}</td>")
             : sale.Target is { } target && !sale.OnTimeAlone
                 ? Formatted($"<td class=\"r num plan-target\" data-target=\"{target.ToString(Invariant)}\" data-sale=\"{Escaped(sale.Kind)}\">{Figures.Price(target)}</td>")
-                : Formatted($"<td class=\"r num plan-target\" data-target=\"none\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(sale.OnTimeAlone ? "none: sells after " + after : sale.Trail is not null ? "rising stop, no target" : sale.RsiAbove is not null ? "sells on a bounce" : "none above the buy: sells after " + after)}</td>");
+                : Formatted($"<td class=\"r num plan-target\" data-target=\"none\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(sale.OnTimeAlone ? "none: sells after " + after : sale.Trail is not null ? "rising stop, no target" : sale.RsiAbove is not null ? "sells on a bounce" : "none above tonight's close: holds for " + after)}</td>");
     }
 
     // A buy no plan sells, as a row of tomorrow's buys: its stock with the link to its row on its own card, its setup, why
