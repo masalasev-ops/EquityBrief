@@ -19377,3 +19377,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 23.10 ruling - the parts tabled for phase 24 built as 23.10's second part, the second and last restart of phase 23   2026-11-13
+
+Not a checkpoint entry: it records the operator's order building the parts 23.10 tabled for phase 24 as 23.10's second part,
+and lands nothing.
+Ruled:      the operator's order of 2026-11-13, word for word with their answers in
+            `prompts/2026-11-13-23.10-second-restart-order.md`: "The parts 23.10 tabled for phase 24 (BUILD_PLAN.md, "Tabled for
+            phase 24") are built now as 23.10's second part, not left for phase 24, on my word: it is the second and last
+            restart of phase 23, because the first left these parts out and phase 24 is not planned yet."
+Moved:      the build plan's list tabled for phase 24 into 23.10 as its second part with a done condition of its own, and the
+            phase's paragraph on its restart, their prior text in the changelog. Beside the tabled parts the second part holds
+            the dip's step storing a plan trade's fill when it fills, item (b) of the order, which moves the dip rules' pins,
+            and the S&P 500's Quality rule made live again at its setting before the approval the operator withdrew, the undo
+            their answer on item (d) puts at this restart.
+Not ready:  why each tabled part was not ready on 2026-11-10. The order of that day asked the restart "on my word now, without
+            stopping", its remedy from main and the three standing ledgers written again before the night at 00:00 UTC. The plan
+            hook, the marks, the plan point test's live plan, the card's zone and the loop's walk of a plan were built from
+            09:15 to 10:30 UTC, the pull request merged at 11:14 UTC, its remedy ran from 12:07 to 13:07 UTC and the ledgers
+            after it, and none of these was begun by then. The wording: about 469 sentences in 35 files, each to move word for
+            word with every stored key kept, restarting every rule pinning those files. The swing filter's and the book's hooks
+            with the S&P 500 pullback's plan: the swing filter read no hook, the registrar refused it a hook and a plan, and its
+            live list stored no order. The profit check's quarter: the night's step order and the day the history reads a
+            quarter from, which the operator's answer of 2026-11-13 settles. The entry readings with the skip and the six
+            conditions: their catalogue entry needs the standing and the long ledgers written again, and the skip stood in no
+            code. The provider's quarters: the members', the fundamentals' and the S&P 400's and 600's readers read the
+            provider's quarters, and the reader taking a quarter from its filing, then its release, stood for the cards alone.
+            The long ledger written once more: it waited on the readings it was to walk, and its nine to eleven hours could not
+            end before that night.
+Owed:       23.10's second part, one pull request a commit a part, every rule that restarts named with its record's length
+            before its merge, on the operator's go.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
