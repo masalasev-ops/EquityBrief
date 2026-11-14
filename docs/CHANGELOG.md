@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-13 - docs/RUNBOOK.md - a read-back sends nothing that writes
+Decision: A write reaches the store only from a person's press on a page, and the read surface refuses one from a script or a headless browser
+Was:
+> ... since a read of the store while a writer runs holds the lock the writer waits on (see: A branch build is served over a copy of the store, and its server refuses to start on the live store).
+Now:
+> ... since a read of the store while a writer runs holds the lock the writer waits on (see: A branch build is served over a copy of the store, and its server refuses to start on the live store). A read-back reads pages and sends nothing that writes: from the second 23.10 correction of 2026-11-13 the read surface refuses any request that is not a read where it names no person's browser, a script's, a command line's, a windowless browser's or none, with "Nothing was written" and why, so a press wanted on the operator's word is theirs to make in their own browser (see: ...).
+Why: item (d) of the operator's order of 2026-11-13 and their answer: "add a guard: no read-back, sweep or test run against 5152 may send an approval, a rejection or any other request that writes".
+
+### 2026-11-13 - docs/ARCHITECTURE.html - the read surface refuses a write from a script, and an approval the operator withdrew reads as withdrawn
+Decision: A write reaches the store only from a person's press on a page, and the read surface refuses one from a script or a headless browser; An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+Was:
+> ... and a press writes one row of the decisions under the page's own header and nothing else, a decline with its reason (see: ...). At the start of the next night's swing filter step, ...
+Now:
+> ... and a press writes one row of the decisions under the page's own header and nothing else, a decline with its reason (see: ...). From the second 23.10 correction of 2026-11-13 a request that writes is refused, before any route reads it, where it names no person's browser, a script's, a windowless browser's or none, so no read-back, sweep or test run against the read surface writes (see: ...); and an approval the operator withdrew on their word is drawn as withdrawn and never as approved on the Loop page and the Monthly check-up, the register keeping the rule the approval registered until the next restart's remedy registers the earlier rule again (see: ...). At the start of the next night's swing filter step, ...
+Why: item (d) of the operator's order of 2026-11-13 and their answers: the S&P 500 Quality learned score's approval of 2026-11-09 is one they did not give, and no read-back may write.
+
 ### 2026-11-13 - docs/SCHEMA.md - the plan point test's record of a plan naming no price above its buy
 Decision: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath
 Was:

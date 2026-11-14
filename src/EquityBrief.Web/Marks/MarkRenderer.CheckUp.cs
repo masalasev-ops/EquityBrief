@@ -44,11 +44,14 @@ public sealed partial class MarkRenderer
         var newest = state.Words.OrderByDescending(word => word.DecidedAt, StringComparer.Ordinal).First();
         var day = LongDay(DateOnly.ParseExact(DayOf(newest.DecidedAt), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
         var what = state.Words.Count == 1 ? "one change" : Formatted($"{state.Words.Count} changes");
-        var approved = state.Words.Where(word => word.Decision == LoopDecisions.Approved).ToArray();
+        var approved = state.Words.Where(word => word.Decision == LoopDecisions.Approved && word.Withdrawal is null).ToArray();
+        var withdrawn = state.Words.Where(word => word.Withdrawal is not null).ToArray();
 
         return (
             "Nothing needs you this month.",
-            approved.Length == 0
+            approved.Length == 0 && withdrawn.Length > 0
+                ? Formatted($"The approval recorded on {day} was withdrawn on your word of {LongDay(withdrawn.Max(word => word.Withdrawal!.On))}: at the next restart of the rules the earlier rule is made live again.")
+            : approved.Length == 0
                 ? Formatted($"You declined {what} on {day}, so every strategy stays as it is.")
                 : approved.Any(word => word.Outcome is null)
                     ? Formatted($"You approved {what} on {day}. {(approved.Length == 1 ? "It goes" : "They go")} live with the next night's run.")
@@ -79,10 +82,13 @@ public sealed partial class MarkRenderer
     }
 
     // What the operator's word on a change has become, as a short state for its heading and its row.
+    // From the second 23.10 correction of 2026-11-13 an approval the operator withdrew reads as withdrawn, never as approved.
+    // see: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
     static (string Words, string Kind) WordState(LoopDecisionRow? word) => word switch
     {
         null => ("Waiting for you", "waiting"),
         { Decision: LoopDecisions.Declined } => ("Declined", "declined"),
+        { Withdrawal: not null } => ("Approval withdrawn", "withdrawn"),
         { Outcome: LoopDecisions.Applied } => ("Approved and live", "applied"),
         { Outcome: LoopDecisions.Refused } => ("Approved, not applied", "refused"),
         _ => ("Approved, goes live with the next night's run", "approved"),
@@ -260,6 +266,7 @@ public sealed partial class MarkRenderer
             {
                 null => "Passed, waiting for you",
                 { Decision: LoopDecisions.Declined } => "Passed, declined",
+                { Withdrawal: not null } => "Passed, approval withdrawn",
                 _ => "Passed, approved",
             };
         }
