@@ -7,11 +7,25 @@ namespace EquityBrief.Web.Marks;
 public sealed record EndedTonightView(int AtTarget, int AtStop, int AtLimit, int Other)
 {
     public int Count => AtTarget + AtStop + AtLimit + Other;
+
+    // From the operator's order of 2026-11-14 the stocks behind each count, in the page's order, which the line names.
+    public IReadOnlyList<string> TargetTickers { get; init; } = [];
+
+    public IReadOnlyList<string> StopTickers { get; init; } = [];
+
+    public IReadOnlyList<string> LimitTickers { get; init; } = [];
+
+    public IReadOnlyList<string> OtherTickers { get; init; } = [];
 }
 
 // What Tonight in one minute reads: the market line, tonight's picks by setup, the trades from earlier nights still open
 // with those that ended on the night, and the stocks one step from qualifying with the link opening them.
-public sealed record OneMinuteView(MarketLineView Line, IReadOnlyList<SetupTileView> Tiles, EndedTonightView? Ended, string? PicksHref, DateOnly? Night = null, TradeGroupsView? Groups = null, int? Fundamentals = null);
+public sealed record OneMinuteView(MarketLineView Line, IReadOnlyList<SetupTileView> Tiles, EndedTonightView? Ended, string? PicksHref, DateOnly? Night = null, TradeGroupsView? Groups = null, int? Fundamentals = null)
+{
+    // From the operator's order of 2026-11-14 the stocks a setup's rules met again tonight while a trade holds them, each with
+    // the setup that matched.
+    public IReadOnlyList<(string Ticker, string Family)> HeldAgain { get; init; } = [];
+}
 
 // One setup in the reader's words: the line its tile states what it looks for in, and the two sentences its card's header
 // describes it with.
@@ -45,10 +59,10 @@ public sealed partial class MarkRenderer
             "A stock in a long uptrend falls hard for a few days with no earnings news, bought for the bounce. It is sold within days, once it closes back above its short average."),
         [EquityBrief.Core.Families.HeavyweightRule.Name] = new(
             "Holds the biggest companies beating their sector; reshuffled monthly.",
-            "Holds the biggest companies that are beating their own sector over the past year. It is reshuffled on the first trading day of each month, and a stock is sold when it stops leading. No stop and no target."),
+            "Holds the biggest companies that are beating their own sector over the past year. It is reshuffled on the first trading day of each month, and a stock is sold when it stops leading. " + BookExitSaid),
         [EquityBrief.Core.Families.QualityRule.Name] = new(
             "Holds companies with strong fundamentals at a fair price; reshuffled monthly.",
-            "Holds the companies whose filings score strongest on nine checks and whose price over earnings is no higher than its own usual. It is reshuffled on the first trading day of each month, and a stock is sold when it no longer qualifies. No stop and no target."),
+            "Holds the companies whose filings score strongest on nine checks and whose price over earnings is no higher than its own usual. It is reshuffled on the first trading day of each month, and a stock is sold when it no longer qualifies. " + BookExitSaid),
     };
 
     // Why a pick is here as a row draws it: the night's stored words in the reader's words, or from 22.17 on the read-only
@@ -69,7 +83,7 @@ public sealed partial class MarkRenderer
     {
         if (night is not { } after)
         {
-            return "tomorrow's";
+            return "the next trading day's";
         }
 
         var day = after.AddDays(1);
@@ -175,37 +189,44 @@ public sealed partial class MarkRenderer
             ? "No new picks to buy at " + opens + " open."
             : Counted(newPicks, "new pick", "new picks") + " to buy at " + opens + " open" + from + ".")
             + (reshuffled == 0 ? string.Empty : Formatted($" The monthly books' reshuffle adds {reshuffled} more."));
-        var qualified = line.Passed is { } passed && line.Members is { } members
-            ? Formatted($"{passed} of the {members} {line.Index} stocks qualified under some setup tonight. ")
-            : string.Empty;
-        var others = setups - listing.Count;
-        var quiet = line.BuyPoints == 0
-            ? "No setup found anything new."
-            : others switch
-            {
-                0 => "Every setup found something new.",
-                1 => "The other setup found nothing new.",
-                _ => Formatted($"The other {others} setups found nothing new."),
-            };
 
-        body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>{Escaped(picks)}</b></p><p class=\"minute-said\">{Escaped(qualified + quiet)}</p></div>");
+        // From the operator's order of 2026-11-14 the line beneath in their words: on a night with picks the setups that found
+        // nothing named; on one without, a stock its setup's rules met again while held named with where its card is, or that
+        // no stock met all the rules of any setup.
+        // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
+        var quietSetups = view.Tiles
+            .Where(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name && tile.Family != EquityBrief.Core.Families.QualityRule.Name && tile.Count == 0)
+            .Select(tile => tile.Label)
+            .ToList();
+        var said = newPicks > 0
+            ? quietSetups.Count == 0
+                ? "Every setup found something new tonight."
+                : Capitalised(Listed([.. quietSetups.Select((label, at) => at == 0 ? label : at == quietSetups.Count - 1 ? "the " + label.ToLowerInvariant() : label.ToLowerInvariant())])) + " found nothing tonight."
+            : view.HeldAgain.Count > 0
+                ? "No new picks. " + string.Join(" ", view.HeldAgain.Select(held => FormattableString.Invariant($"{held.Ticker} met the {(EquityBrief.Core.Families.SetupFamilies.Named(held.Family)?.Label ?? held.Family).ToLowerInvariant()} rules again but is already held; its card is below.")))
+                : line.Passed is 0
+                    ? Formatted($"No {line.Index} stock met all the rules of any of the {setups} setups tonight.")
+                    : "No setup found anything new.";
 
-        // The system's trades still open, and those that ended tonight.
+        body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>{Escaped(picks)}</b></p><p class=\"minute-said\">{Escaped(said)}</p></div>");
+
+        // The system's trades still open on the index, every setup's live or provisional rule under any version, how many of
+        // them the current rules bought since they started, and those that ended tonight, each named, selling at the next
+        // session's open, in the operator's words of 2026-11-14.
         // see: Every count of trades names its group and one function works the four groups
         var open = (view.Groups ?? line.Groups) is { } groups
-            ? groups.OpenWords
+            ? groups.OpenLine(line.Index)
             : line.OpenTrades == 0
-                ? "No trade from an earlier night is still open"
-                : Counted(line.OpenTrades, "trade from an earlier night is still open", "trades from earlier nights are still open");
-        var endedWords = (view.Groups ?? line.Groups) is { System.Selling: > 0 } selling
-            ? Formatted($"; {TradeGroupsView.Selling(selling.System.Selling)}.")
-            : view.Ended is { Count: > 0 } done
-                ? Formatted($"; {done.Count} ended tonight.")
-                : ".";
-        var why = view.Ended is { Count: > 0 } split ? EndedWords(split) : "None ended tonight.";
-        var paper = Formatted($"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">See them on Past picks</a>{((view.Groups ?? line.Groups) is null ? string.Empty : Formatted($", and this version's alone on <a href=\"#/paper{(line.Universe is { } paperOn ? "?universe=" + Uri.EscapeDataString(paperOn) : string.Empty)}\">Paper trading</a>"))}");
+                ? "No trade from an earlier night is still open."
+                : Counted(line.OpenTrades, "trade from an earlier night is still open.", "trades from earlier nights are still open.");
+        var why = view.Ended is { Count: > 0 } split
+            ? EndedWords(split, opens)
+            : (view.Groups ?? line.Groups) is { System.Selling: > 0 } selling
+                ? Formatted($"{selling.System.Selling} {(selling.System.Selling == 1 ? "sells" : "sell")} at {opens} open.")
+                : "None ended tonight.";
+        var paper = Formatted($"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">See them on Past picks</a>{((view.Groups ?? line.Groups) is null ? string.Empty : Formatted($", and those {TradeGroupsView.CurrentWords} on <a href=\"#/paper{(line.Universe is { } paperOn ? "?universe=" + Uri.EscapeDataString(paperOn) : string.Empty)}\">Paper trading</a>"))}");
 
-        body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>{Escaped(open + endedWords)}</b></p><p class=\"minute-said\">{Escaped(why)} {paper}</p></div>");
+        body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>{Escaped(open + " " + why)}</b></p><p class=\"minute-said\">{paper}</p></div>");
 
         // The orders earlier nights placed still waiting for their price, a group of their own, in none of the counts above.
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
@@ -239,38 +260,36 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
-    // Why the trades that ended tonight ended, where the store says why.
-    static string EndedWords(EndedTonightView ended)
+    // Why the trades that ended tonight ended, where the store says why, each group's stocks named and selling at the next
+    // session's open: "2 reached their target and sell at Monday's open: TTWO and ROP."
+    static string EndedWords(EndedTonightView ended, string opens)
     {
         var said = new List<string>();
 
-        if (ended.AtTarget > 0)
+        void Add(int count, IReadOnlyList<string> tickers, string one, string many)
         {
-            said.Add(Counted(ended.AtTarget, "reached its target", "reached their target"));
+            if (count > 0)
+            {
+                said.Add(Formatted($"{Counted(count, one + " and sells", many + " and sell")} at {opens} open{(tickers.Count > 0 ? ": " + Listed(tickers) : string.Empty)}."));
+            }
         }
 
-        if (ended.AtStop > 0)
-        {
-            said.Add(Counted(ended.AtStop, "hit its stop", "hit their stop"));
-        }
+        Add(ended.AtTarget, ended.TargetTickers, "reached its target", "reached their target");
+        Add(ended.AtStop, ended.StopTickers, "hit its stop", "hit their stop");
+        Add(ended.AtLimit, ended.LimitTickers, "ran out of time", "ran out of time");
+        Add(ended.Other, ended.OtherTickers, "ended by its setup's own exit", "ended by their setups' own exits");
 
-        if (ended.AtLimit > 0)
-        {
-            said.Add(Counted(ended.AtLimit, "ran out of time", "ran out of time"));
-        }
+        return string.Join(" ", said);
+    }
 
-        if (ended.Other > 0)
-        {
-            said.Add(Counted(ended.Other, "ended by its setup's own exit", "ended by their setups' own exits"));
-        }
-
-        return said.Count switch
+    // Names joined as a sentence reads them: "A", "A and B", "A, B and C".
+    static string Listed(IReadOnlyList<string> names) =>
+        names.Count switch
         {
             0 => string.Empty,
-            1 => said[0] + ".",
-            _ => string.Join(", ", said.Take(said.Count - 1)) + " and " + said[^1] + ".",
+            1 => names[0],
+            _ => string.Join(", ", names.Take(names.Count - 1)) + " and " + names[^1],
         };
-    }
 
     // The market check's bar: the share of the index above its 200-day average drawn against the floor the setups need,
     // the floor marked; none where the night read no share or no floor.
@@ -424,7 +443,12 @@ public sealed partial class MarkRenderer
             {
                 body.Append(PriceCell("buy", pick.Buy, null));
                 body.Append(PriceCell("stop", pick.Stop, null));
-                body.Append(PriceCell("target", pick.Target, pick.Trailing ? "rising stop, no target" : pick.Exit is { } exit ? ReaderWords.Plain(exit) : null));
+
+                // From the operator's order of 2026-11-14 the price its plan takes profit at, where its card holds one.
+                // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+                body.Append(pick.Card?.TakeProfit is { } taking
+                    ? PriceCell("target", taking.Price, null)
+                    : PriceCell("target", pick.Target, pick.Trailing ? "rising stop, no target" : pick.Exit is { } exit ? ReaderWords.Plain(exit) : null));
                 body.Append(RewardCell(pick));
             }
 
@@ -454,7 +478,10 @@ public sealed partial class MarkRenderer
         var after = Formatted($"{sale.Cap} trading days");
 
         return sale.Kind == EquityBrief.Core.Loop.PlanPoints.StagedSales && sale.Stages.Count > 0
-            ? Formatted($"<td class=\"r num plan-target\" data-target=\"staged\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(PlanSaleView.SharesOf(sale.Stages.Count).Each)} at each of {Escaped(string.Join(", ", sale.Stages.Select(Figures.Price)))}</td>")
+            ? Formatted($"<td class=\"r num plan-target\" data-target=\"staged\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(PlanSaleView.SharesOf(sale.Stages.Count).Each)} at each of {Escaped(string.Join(", ", sale.Stages.Select(Figures.Price)))}{(sale.TakeProfit is { } rest ? Formatted($", the rest at {Figures.Price(rest.Price)}") : string.Empty)}</td>")
+            // From the operator's order of 2026-11-14 the price it takes profit at where its sale names none of its own.
+            : sale.TakeProfit is { } taking && (sale.Target is null || sale.OnTimeAlone)
+                ? Formatted($"<td class=\"r num plan-target\" data-target=\"{taking.Price.ToString(Invariant)}\" data-sale=\"{Escaped(sale.Kind)}\">{Figures.Price(taking.Price)}</td>")
             : sale.Target is { } target && !sale.OnTimeAlone
                 ? Formatted($"<td class=\"r num plan-target\" data-target=\"{target.ToString(Invariant)}\" data-sale=\"{Escaped(sale.Kind)}\">{Figures.Price(target)}</td>")
                 : Formatted($"<td class=\"r num plan-target\" data-target=\"none\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(sale.OnTimeAlone ? "none: sells after " + after : sale.Trail is not null ? "rising stop, no target" : sale.RsiAbove is not null ? "sells on a bounce" : "none above tonight's close: holds for " + after)}</td>");

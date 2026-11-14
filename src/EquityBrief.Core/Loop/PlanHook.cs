@@ -21,6 +21,14 @@ public sealed record PlanOrder(
     double? RsiAbove,
     int Cap)
 {
+    // From the operator's order of 2026-11-14 the multiple of the risk the take-profit price falls back to, and the prices the
+    // stock turned down at before its night above the lowest its stop could stand, which the take-profit is read from at the
+    // fill; none for an order placed before, which sells as it did.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public double? TakeProfit { get; init; }
+
+    public IReadOnlyList<TurnedDown> TurnedDown { get; init; } = [];
+
     static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public string Json() => JsonSerializer.Serialize(this, Options);
@@ -29,6 +37,10 @@ public sealed record PlanOrder(
         string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<PlanOrder>(json, Options);
 
     public PlanSale Sale => new(Target, Trail, Staged) { RsiAbove = RsiAbove };
+
+    // The sale walked from a fill: its own, with the take-profit price beside it where the order takes profit.
+    public PlanSale SaleFrom(double fill, double stop) =>
+        TakeProfit is { } multiple ? Loop.TakeProfit.SaleWith(Sale, fill, stop, TurnedDown, multiple) : Sale;
 
     // The order at the scale the stock's closes are stored at now, an adjustment since its night moving every price by the
     // same factor, the night's close over the close it was set at.
@@ -44,6 +56,7 @@ public sealed record PlanOrder(
                 Target = Target * factor,
                 Staged = [.. Staged.Select(level => level * factor)],
                 Trail = Trail * factor,
+                TurnedDown = [.. TurnedDown.Select(turned => turned with { Price = turned.Price * factor })],
             };
 }
 
@@ -57,9 +70,10 @@ public sealed record PlanTradeState(bool Waiting, int? FillBar, double? Fill, do
 // From 23.10 the plan a rule's trades are bought and sold by, one way of the test of the buy and sell points: the entry,
 // the next open, a zone, the 20-session average, a plain distance under the close or the first pullback, within its window;
 // the stop, the rule's own, the zone's own or a number of typical days under the buy; and the sale, the rule's own, the
-// first band above, the staged sales or the time limit alone. Five parameters a registration states, all off where none is
-// stated, and stated off where the four name the next open at the rule's own stop and sale, the rule then buying at the next
-// open at its own stop and sale as before.
+// first band above, the staged sales or the time limit alone; and from the operator's order of 2026-11-14 the multiple of the
+// risk its take-profit falls back to. Six parameters a registration states, all off where none is stated, and stated off
+// where they name the next open at the rule's own stop and sale with no take-profit, the rule then buying at the next open at
+// its own stop and sale as before.
 // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
 public static class PlanHook
 {
@@ -69,7 +83,12 @@ public static class PlanHook
     public const string StopParameter = "plan_stop";
     public const string SaleParameter = "plan_sale";
 
-    public static IReadOnlyList<string> Parameters { get; } = [EntryParameter, DistanceParameter, WindowParameter, StopParameter, SaleParameter];
+    // From the operator's order of 2026-11-14 the multiple of the risk the take-profit price falls back to, one of those the
+    // test walks; off where none is stated.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public const string TakeProfitParameter = "plan_take_profit";
+
+    public static IReadOnlyList<string> Parameters { get; } = [EntryParameter, DistanceParameter, WindowParameter, StopParameter, SaleParameter, TakeProfitParameter];
 
     // The entries by number: 0 the next open, 1 to 3 the zones, 4 the 20-session average, 5 a distance under the close in
     // typical days and 6 the first pullback.
@@ -135,9 +154,17 @@ public static class PlanHook
             throw new ArgumentException(FormattableString.Invariant($"The plan's sale states {saleNumber}, and it states 0 to {Sales.Count - 1}."), nameof(parameters));
         }
 
+        // From the operator's order of 2026-11-14 the take-profit's multiple, one of those the test walks, none where it is off.
+        var takeProfit = parameters.GetValueOrDefault(TakeProfitParameter);
+
+        if (takeProfit != 0 && !TakeProfit.Multiples.Contains(takeProfit))
+        {
+            throw new ArgumentException(FormattableString.Invariant($"The plan's take-profit states {takeProfit} times the risk, and it states 0 for none or one of {string.Join(", ", TakeProfit.Multiples)}."), nameof(parameters));
+        }
+
         // The plan stated off, the next open at the rule's own stop and sale, is the rule's own plan, which its own walk trades:
         // a variant keeping today's plan beside a planned live rule states it so.
-        var combination = new PlanCombination(entry, window, stop, Sales[saleNumber]);
+        var combination = new PlanCombination(entry, window, stop, Sales[saleNumber]) { TakeProfit = takeProfit > 0 ? takeProfit : null };
 
         return PlanPrices.Traded(combination) ? null : combination;
     }
@@ -165,12 +192,17 @@ public static class PlanHook
             : PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).First(one => PlanPoints.TypicalStop(one) == combination.Stop);
         stated[SaleParameter] = Sales.ToList().IndexOf(combination.Exit);
 
+        if (combination.TakeProfit is { } multiple)
+        {
+            stated[TakeProfitParameter] = multiple;
+        }
+
         return stated;
     }
 
     // The order a combination places on a pick at its night's close: the level it buys at, the stop's parts and the sale read
     // off the stock's levels plan or the rule's own; none where the level is not read.
-    public static PlanOrder? OrderOf(PlanCombination combination, double close, PlanLevels levels, double? average20, double typicalDay, double ruleStop, PlanSale ruleSale, int cap)
+    public static PlanOrder? OrderOf(PlanCombination combination, double close, PlanLevels levels, double? average20, double typicalDay, double ruleStop, PlanSale ruleSale, int cap, IReadOnlyList<TurnedDown>? turnedDown = null)
     {
         var zone = PlanPoints.Zones.ToList().IndexOf(combination.Entry);
         (double Top, double? Stop)? zoneRead = zone >= 0 && zone < levels.Zones.Count ? levels.Zones[zone] : null;
@@ -189,7 +221,15 @@ public static class PlanHook
             : combination.Exit == PlanPoints.StagedSales ? new PlanSale(null, null, levels.Staged)
             : new PlanSale(null, null, []);
 
-        return new PlanOrder(combination.Words, combination.Entry, level, combination.Window, combination.Stop, ruleStop, zoneRead?.Stop, typicalDay, sale.Target, [.. sale.Staged.Order()], sale.Trail, sale.RsiAbove, cap);
+        // The prices it turned down at above the lowest its stop could stand from any fill the order takes, which the take-profit
+        // reads at the fill.
+        var lowest = new[] { ruleStop, zoneRead?.Stop ?? ruleStop, (level ?? close) - (PlanPoints.WiderDays.Max() * typicalDay) }.Min();
+
+        return new PlanOrder(combination.Words, combination.Entry, level, combination.Window, combination.Stop, ruleStop, zoneRead?.Stop, typicalDay, sale.Target, [.. sale.Staged.Order()], sale.Trail, sale.RsiAbove, cap)
+        {
+            TakeProfit = combination.TakeProfit,
+            TurnedDown = combination.TakeProfit is null ? [] : [.. (turnedDown ?? []).Where(turned => turned.Price > lowest)],
+        };
     }
 
     // A plan trade over its stock's bars from its night, `pick` the night's own bar: waiting while its window has not passed
@@ -214,6 +254,6 @@ public static class PlanHook
             return new PlanTradeState(false, null, null, null, null);
         }
 
-        return new PlanTradeState(false, filled.Bar, filled.Price, stop, PlanPoints.Walk(closes, opens, filled.Bar, filled.Price, stop, order.Sale, order.Cap, rsi));
+        return new PlanTradeState(false, filled.Bar, filled.Price, stop, PlanPoints.Walk(closes, opens, filled.Bar, filled.Price, stop, order.SaleFrom(filled.Price, stop), order.Cap, rsi));
     }
 }

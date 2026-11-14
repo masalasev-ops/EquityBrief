@@ -765,7 +765,67 @@ public static class SchemaMigrations
         new Migration(142, "add the plan a trade is bought and sold by to the rules' trade tables and the pick's card", AddTradePlan),
         new Migration(143, "create setup_session on setup's session_date and ticker", CreateSetupSession),
         new Migration(144, "add the live plan's move by its sale and its share up from 2019 to plan_point", AddLiveLaterMove),
+        new Migration(145, "add a plan trade's benchmark and its members to rule_pick", AddRulePickBenchmark),
+        new Migration(146, "add the entry check's readings to setup and long_setup", AddEntryReadings),
+        new Migration(147, "add the stop and the take-profit to the books' holdings and the Fundamentals family's trades, and the held-again mark to decision_card", AddBookExits),
     ];
+
+    // From the operator's order of 2026-11-14 a book's holding and a Fundamentals trade carry the stop placed under their buy,
+    // the price they take profit at and where it came from; each row kept and the new columns null for one bought before.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    const string AddBookExits = @"
+        ALTER TABLE heavyweight_holding ADD COLUMN stop TEXT;
+        ALTER TABLE heavyweight_holding ADD COLUMN take_profit TEXT;
+        ALTER TABLE heavyweight_holding ADD COLUMN take_profit_from TEXT;
+        ALTER TABLE heavyweight_rule_holding ADD COLUMN stop TEXT;
+        ALTER TABLE heavyweight_rule_holding ADD COLUMN take_profit TEXT;
+        ALTER TABLE heavyweight_rule_holding ADD COLUMN take_profit_from TEXT;
+        ALTER TABLE index_heavyweight_holding ADD COLUMN stop TEXT;
+        ALTER TABLE index_heavyweight_holding ADD COLUMN take_profit TEXT;
+        ALTER TABLE index_heavyweight_holding ADD COLUMN take_profit_from TEXT;
+        ALTER TABLE index_heavyweight_rule_holding ADD COLUMN stop TEXT;
+        ALTER TABLE index_heavyweight_rule_holding ADD COLUMN take_profit TEXT;
+        ALTER TABLE index_heavyweight_rule_holding ADD COLUMN take_profit_from TEXT;
+        ALTER TABLE quality_holding ADD COLUMN stop TEXT;
+        ALTER TABLE quality_holding ADD COLUMN take_profit TEXT;
+        ALTER TABLE quality_holding ADD COLUMN take_profit_from TEXT;
+        ALTER TABLE improving_trade ADD COLUMN stop TEXT;
+        ALTER TABLE improving_trade ADD COLUMN take_profit TEXT;
+        ALTER TABLE improving_trade ADD COLUMN take_profit_from TEXT;
+        ALTER TABLE decision_card ADD COLUMN take_profit_from TEXT;
+        ALTER TABLE decision_card ADD COLUMN held_again TEXT;
+    ";
+
+    // From 23.10's second part the entry check's readings, a column a reading after every column before them on both ledgers,
+    // each row kept and the new columns null until a build or a night writes them.
+    // see: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+    const string AddEntryReadings = @"
+        ALTER TABLE setup ADD COLUMN stretch_days REAL;
+        ALTER TABLE setup ADD COLUMN stretch_share REAL;
+        ALTER TABLE setup ADD COLUMN gain_twenty REAL;
+        ALTER TABLE setup ADD COLUMN largest_gain REAL;
+        ALTER TABLE setup ADD COLUMN night_volume_ratio REAL;
+        ALTER TABLE setup ADD COLUMN gap_days REAL;
+        ALTER TABLE setup ADD COLUMN highest_since_years REAL;
+        ALTER TABLE setup ADD COLUMN older_days REAL;
+        ALTER TABLE setup ADD COLUMN one_off_share REAL;
+        ALTER TABLE long_setup ADD COLUMN stretch_days REAL;
+        ALTER TABLE long_setup ADD COLUMN stretch_share REAL;
+        ALTER TABLE long_setup ADD COLUMN gain_twenty REAL;
+        ALTER TABLE long_setup ADD COLUMN largest_gain REAL;
+        ALTER TABLE long_setup ADD COLUMN night_volume_ratio REAL;
+        ALTER TABLE long_setup ADD COLUMN gap_days REAL;
+        ALTER TABLE long_setup ADD COLUMN highest_since_years REAL;
+        ALTER TABLE long_setup ADD COLUMN older_days REAL;
+        ALTER TABLE long_setup ADD COLUMN one_off_share REAL;
+    ";
+
+    // From 23.10's second part a swing filter rule's trade kept under a plan is benchmarked on every member that night under the
+    // same plan once its window and its cap have passed, as a family rule's is.
+    const string AddRulePickBenchmark = @"
+        ALTER TABLE rule_pick ADD COLUMN benchmark REAL;
+        ALTER TABLE rule_pick ADD COLUMN members INTEGER;
+    ";
 
     // From the 23.10 correction of 2026-11-13 the live plan's fills from 2019: their mean move from the fill to the sale, as a
     // fraction of the fill, and the share of them up at their sale, which a card whose plan sells on its time limit alone draws.

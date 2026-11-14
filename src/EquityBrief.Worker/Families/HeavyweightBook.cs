@@ -152,7 +152,7 @@ public sealed class HeavyweightBook : IComponent
     // again on the next night that can.
     const string LastRebalance = "SELECT MAX(session_date) FROM heavyweight_night WHERE session_date < $night AND lead IS NOT NULL;";
 
-    const string Open = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through FROM heavyweight_holding WHERE ended_on IS NULL ORDER BY ticker;";
+    const string Open = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through, stop, take_profit FROM heavyweight_holding WHERE ended_on IS NULL ORDER BY ticker;";
 
     // A night run again: what it entered goes, what it ended opens again, and its reading is written again.
     const string ClearTheNight = @"
@@ -175,14 +175,14 @@ public sealed class HeavyweightBook : IComponent
     ";
 
     const string Enter = @"
-        INSERT INTO heavyweight_holding (ticker, entered_on, sector, company, entry_close, growth, cut, through)
-        VALUES ($ticker, $night, $sector, $company, $entry_close, 1.0, $cut, $night);
+        INSERT INTO heavyweight_holding (ticker, entered_on, sector, company, entry_close, growth, cut, through, stop, take_profit, take_profit_from)
+        VALUES ($ticker, $night, $sector, $company, $entry_close, 1.0, $cut, $night, $stop, $take_profit, $take_profit_from);
     ";
 
     // Each registered rule's book, the same statements over the rule's own rows.
     const string LastRuleRebalance = "SELECT MAX(session_date) FROM heavyweight_rule_night WHERE candidate = $candidate AND session_date < $night AND lead IS NOT NULL;";
 
-    const string OpenRule = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through FROM heavyweight_rule_holding WHERE candidate = $candidate AND ended_on IS NULL ORDER BY ticker;";
+    const string OpenRule = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through, stop, take_profit FROM heavyweight_rule_holding WHERE candidate = $candidate AND ended_on IS NULL ORDER BY ticker;";
 
     // One rule's night run again, undone for a rule whose book the night keeps.
     const string ClearTheRulesNight = @"
@@ -205,8 +205,8 @@ public sealed class HeavyweightBook : IComponent
     ";
 
     const string EnterRule = @"
-        INSERT INTO heavyweight_rule_holding (candidate, ticker, entered_on, sector, company, entry_close, growth, cut, through)
-        VALUES ($candidate, $ticker, $night, $sector, $company, $entry_close, 1.0, $cut, $night);
+        INSERT INTO heavyweight_rule_holding (candidate, ticker, entered_on, sector, company, entry_close, growth, cut, through, stop, take_profit, take_profit_from)
+        VALUES ($candidate, $ticker, $night, $sector, $company, $entry_close, 1.0, $cut, $night, $stop, $take_profit, $take_profit_from);
     ";
 
     const string AppendRun = @"
@@ -236,7 +236,7 @@ public sealed class HeavyweightBook : IComponent
     // A size cut member's growth since the buy and the session it was carried to.
     public sealed record CutMember(string Ticker, double Growth, DateOnly On);
 
-    sealed record Holding(string Ticker, DateOnly EnteredOn, string Sector, string Company, decimal EntryClose, double Growth, IReadOnlyList<CutMember> Cut, DateOnly Through);
+    sealed record Holding(string Ticker, DateOnly EnteredOn, string Sector, string Company, decimal EntryClose, double Growth, IReadOnlyList<CutMember> Cut, DateOnly Through, decimal? Stop = null, decimal? TakeProfit = null);
 
     // A member as every book reads it on a rebalance, before a setting's look-back picks its return: its company and
     // sector, its value, its dollars, its close and averages, its beta, and its bars to the night.
@@ -246,8 +246,15 @@ public sealed class HeavyweightBook : IComponent
             new(Ticker, Company, Sector, Value, DollarVolume, ReturnOver(UpTo, lookBack), Close, Average50, Average200, Beta);
     }
 
-    // A book the night keeps: the page's or a registered rule's, the settings it holds at, and its rule where it is one.
-    sealed record Ledger(string? Candidate, HeavyweightSettings Settings);
+    // A book the night keeps: the page's or a registered rule's, the settings it holds at, its rule where it is one, and from
+    // 23.10's second part the book's hooks its rule states, none for the page's.
+    sealed record Ledger(string? Candidate, HeavyweightSettings Settings, EquityBrief.Core.Loop.RuleHooks? Hooks = null);
+
+    // From 23.10's second part whether a registered rule's book reads the catalogue's readings through its conditions or its
+    // score, so the night reads them for it.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    public static bool HooksReadReadings(IEnumerable<RegisterRow> rules) =>
+        rules.Any(rule => CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator && EquityBrief.Core.Loop.RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)).ReadsReadings);
 
     // The registered rules a night keeps a book for: the heavyweights' rules standing when the night started.
     public static IReadOnlyList<RegisterRow> Standing(IReadOnlyList<RegisterRow> register, DateTimeOffset nightStartedAt) =>
@@ -266,7 +273,9 @@ public sealed class HeavyweightBook : IComponent
             .Where(row => row.Event == CandidateFamily.Retired)
             .ToDictionary(row => row.Retires!, row => row.RegisteredAt, StringComparer.Ordinal);
 
-    public async Task<HeavyweightBookOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default, IReadOnlyList<RegisterRow>? rules = null, IReadOnlyDictionary<string, DateTimeOffset>? retired = null)
+    // `readings` reads the catalogue's readings of the night's members, handed in where a rule's book reads them through its
+    // hooks.
+    public async Task<HeavyweightBookOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default, IReadOnlyList<RegisterRow>? rules = null, IReadOnlyDictionary<string, DateTimeOffset>? retired = null, Func<string, IReadOnlyList<double?>?>? readings = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -352,6 +361,17 @@ public sealed class HeavyweightBook : IComponent
                     ("$entered_on", Stamp(carried.EnteredOn)),
                 ], cancellation);
 
+                // From the operator's order of 2026-11-14 one bought before tonight is sold at tonight's close under its stop or
+                // at or above its take-profit.
+                if (carried.EnteredOn < night && CloseOn(carried.Ticker, night) is { } closed
+                    && EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closed), carried.Stop is { } floor ? Statistic.FromPrice(floor) : null, carried.TakeProfit is { } aim ? Statistic.FromPrice(aim) : null) is { } exited)
+                {
+                    await EndAsync(connection, transaction, ledger, carried, night, closed, exited, cancellation);
+                    ended.Add($"{carried.Ticker}: {exited}");
+
+                    continue;
+                }
+
                 if (ledger.Settings.SoldUnderAverage
                     && CloseOn(carried.Ticker, night) is { } close
                     && HeavyweightRule.Broken(Statistic.FromPrice(close), averages.TryGetValue((carried.Ticker, IndicatorSeries.Sma200), out var average) ? average : null))
@@ -379,11 +399,22 @@ public sealed class HeavyweightBook : IComponent
                 return (new HeavyweightRuleOutcome(ledger.Candidate ?? string.Empty, false, entered, ended, open.Count, waits), 0, rows + ended.Count);
             }
 
+            // From 23.10's second part a rule whose book's hooks read the catalogue's readings waits on a night that supplied none,
+            // and otherwise each sector's leaders are taken in their order from the members its conditions pass.
+            // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+            var hooks = ledger.Hooks ?? EquityBrief.Core.Loop.RuleHooks.Off;
+
+            if (hooks.ReadsReadings && readings is null)
+            {
+                return (new HeavyweightRuleOutcome(ledger.Candidate ?? string.Empty, false, entered, ended, open.Count, RuleWording.HeavyweightBook.HooksUnread), 0, rows + ended.Count);
+            }
+
             var read = await ValuedAsync();
             var sectors = HeavyweightRule.Read(
                 [.. read.Select(member => member.At(ledger.Settings.LookBack))],
                 ledger.Settings,
-                ledger.Settings.FundReturn ? FundReturns(series, night, ledger.Settings.LookBack) : null);
+                ledger.Settings.FundReturn ? FundReturns(series, night, ledger.Settings.LookBack) : null,
+                hooks.ReadsReadings ? eligible => hooks.Order(eligible, ticker => readings!(ticker)) : null);
             var betas = read.ToDictionary(member => member.Ticker, member => member.Beta, StringComparer.Ordinal);
 
             // One that read no lead, or no beta where the settings read one, waits the same way whatever the cause.
@@ -438,6 +469,11 @@ public sealed class HeavyweightBook : IComponent
 
                     var ranked = sector.Largest.Single(one => one.Ticker == leader);
 
+                    // From the operator's order of 2026-11-14 its stop under the close it is bought at in its typical moves
+                    // tonight, and the price it takes profit at, beside the reshuffle.
+                    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+                    var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, leader, night, close, cancellation);
+
                     rows += await ExecuteAsync(connection, transaction, ledger.Candidate is null ? Enter : EnterRule,
                     [
                         .. Owned(ledger),
@@ -447,6 +483,9 @@ public sealed class HeavyweightBook : IComponent
                         ("$company", ranked.Company),
                         ("$entry_close", Money.ToStorage(close)),
                         ("$cut", Cut([.. sector.Largest.Select(one => new CutMember(one.Ticker, 1.0, night))])),
+                        ("$stop", exits is { } placed ? Money.ToStorage(Statistic.ToPrice(placed.Stop)) : DBNull.Value),
+                        ("$take_profit", exits?.TakeProfit is { } taking ? Money.ToStorage(Statistic.ToPrice(taking.Price)) : DBNull.Value),
+                        ("$take_profit_from", exits?.TakeProfit is { } from ? EquityBrief.Core.Loop.TakeProfit.Stored(from) : DBNull.Value),
                     ], cancellation);
                     entered.Add(leader);
                 }
@@ -477,7 +516,8 @@ public sealed class HeavyweightBook : IComponent
 
             await ExecuteAsync(connection, transaction, ClearTheRulesNight, [("$candidate", rule.Candidate), ("$night", Stamp(night))], cancellation);
 
-            var (kept, _, ruleRows) = await KeepAsync(new Ledger(rule.Candidate, evaluator.SettingsOf(CandidateEvaluator.Read(rule.Parameters))));
+            var parameters = CandidateEvaluator.Read(rule.Parameters);
+            var (kept, _, ruleRows) = await KeepAsync(new Ledger(rule.Candidate, evaluator.SettingsOf(parameters), EquityBrief.Core.Loop.RuleHooks.Of(parameters)));
 
             outcomes.Add(kept);
             written += ruleRows;
@@ -861,7 +901,9 @@ public sealed class HeavyweightBook : IComponent
                 Money.FromStorage(row.GetString(4)),
                 row.GetDouble(5),
                 CutOf(row.GetString(6)),
-                Day(row.GetString(7))));
+                Day(row.GetString(7)),
+                row.IsDBNull(8) ? null : Money.FromStorage(row.GetString(8)),
+                row.IsDBNull(9) ? null : Money.FromStorage(row.GetString(9))));
         }
 
         return holdings;

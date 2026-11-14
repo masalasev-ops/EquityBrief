@@ -262,25 +262,27 @@ public partial class FixtureExpectations
     public void TheHooksAndTheMenuArePinnedByTheRulesTheyHookAndByNoOtherEvaluator()
     {
         // The S&P 500's breakout and drift and every S&P 400 and 600 rule pin the hooks' and the menu's sources beside
-        // their own; the swing filter, the three conditions and the S&P 500's heavyweights do not, so the pin move of the
-        // hooks moved none of their versions, and no shared evaluation source names them.
+        // their own; the three conditions do not, so the pin move of the hooks moved none of their versions, and no shared
+        // evaluation source names them.
         // From 21.4 the dip's, the quality family's and the Fundamentals family's rules read the hooks as well, so they pin
-        // the same three sources.
+        // the same three sources; and from 23.10's second part the S&P 500's swing filter and its heavyweight book.
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
         string[] hooked =
         [
-            "breakout", "breakout-400", "breakout-600", "dip-400", "dip-500", "dip-600", "drift", "drift-400", "drift-600", "heavyweight-400", "heavyweight-600",
-            "improving-400", "improving-500", "improving-600", "pullback-400", "pullback-600", "quality-400", "quality-500", "quality-600",
+            "breakout", "breakout-400", "breakout-600", "dip-400", "dip-500", "dip-600", "drift", "drift-400", "drift-600", "heavyweight", "heavyweight-400", "heavyweight-600",
+            "improving-400", "improving-500", "improving-600", "pullback-400", "pullback-600", "quality-400", "quality-500", "quality-600", "swing-filter",
         ];
 
-        // From 23.10 the plan's walk and the levels it places an order at are among them, and a Quality or Fundamentals book
-        // states no plan, so its rules pin every other.
+        // From 23.10 the plan's walk and the levels it places an order at are among them, and a Quality, Fundamentals or S&P 500
+        // heavyweights book states no plan, so its rules pin every other. From the operator's order of 2026-11-14 the swings a
+        // take-profit is read off join the walk's, seven.
         var read = RuleHooks.Sources.Except(RuleHooks.PlanWalkSources, StringComparer.Ordinal).ToArray();
 
-        Assert.Equal(6, RuleHooks.PlanWalkSources.Count);
+        Assert.Equal(7, RuleHooks.PlanWalkSources.Count);
         Assert.Subset(RuleHooks.Sources.ToHashSet(StringComparer.Ordinal), RuleHooks.PlanWalkSources.ToHashSet(StringComparer.Ordinal));
         Assert.Equal(hooked, CandidateEvaluators.All.Where(evaluator => read.All(evaluator.OwnSources.Contains)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
         Assert.Equal(
-            hooked.Where(name => !name.StartsWith("quality-", StringComparison.Ordinal) && !name.StartsWith("improving-", StringComparison.Ordinal)),
+            hooked.Where(name => !name.StartsWith("quality-", StringComparison.Ordinal) && !name.StartsWith("improving-", StringComparison.Ordinal) && name != "heavyweight"),
             CandidateEvaluators.All.Where(evaluator => RuleHooks.PlanWalkSources.All(evaluator.OwnSources.Contains)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
         Assert.DoesNotContain(CandidateEvaluators.All, evaluator => !hooked.Contains(evaluator.Name) && RuleHooks.Sources.Any(evaluator.OwnSources.Contains));
         // The levels a plan places its order at are read through the night's own ladder and bands, three of whose files every

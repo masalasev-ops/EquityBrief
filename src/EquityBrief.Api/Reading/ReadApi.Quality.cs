@@ -27,7 +27,16 @@ public sealed record QualityHoldingRow(
     double? Result,
     double? Benchmark,
     double? Cost,
-    double? Edge);
+    double? Edge)
+{
+    // From the operator's order of 2026-11-14 its stop under its buy, the price it takes profit at and where that came from,
+    // none before it was bought.
+    public decimal? Stop { get; init; }
+
+    public decimal? TakeProfit { get; init; }
+
+    public string? TakeProfitFrom { get; init; }
+}
 
 // What the read surface reads of the quality family's own rows, which its step alone writes.
 // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
@@ -70,7 +79,9 @@ public sealed partial class ReadApi
                CASE WHEN ended_on <= $on THEN ended_on END,
                CASE WHEN ended_on <= $on THEN end_reason ELSE 'open' END,
                CASE WHEN ended_on <= $on THEN result END, CASE WHEN ended_on <= $on THEN benchmark END,
-               CASE WHEN ended_on <= $on THEN cost END, CASE WHEN ended_on <= $on THEN edge END
+               CASE WHEN ended_on <= $on THEN cost END, CASE WHEN ended_on <= $on THEN edge END,
+               CASE WHEN bought_on <= $on THEN stop END, CASE WHEN bought_on <= $on THEN take_profit END,
+               CASE WHEN bought_on <= $on THEN take_profit_from END
         FROM quality_holding
         WHERE rule = $rule AND index_code = $index AND chosen_on <= $on AND (ended_on IS NULL OR ended_on >= $since)
         ORDER BY chosen_on, ticker;
@@ -191,7 +202,12 @@ public sealed partial class ReadApi
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
                 reader.IsDBNull(10) ? null : reader.GetDouble(10),
                 reader.IsDBNull(11) ? null : reader.GetDouble(11),
-                reader.IsDBNull(12) ? null : reader.GetDouble(12)));
+                reader.IsDBNull(12) ? null : reader.GetDouble(12))
+            {
+                Stop = reader.IsDBNull(13) ? null : Money.FromStorage(reader.GetString(13)),
+                TakeProfit = reader.IsDBNull(14) ? null : Money.FromStorage(reader.GetString(14)),
+                TakeProfitFrom = reader.IsDBNull(15) ? null : reader.GetString(15),
+            });
         }
 
         return rows;

@@ -251,11 +251,13 @@ public sealed class ImprovingLay
         IReadOnlyList<IReadOnlyDictionary<int, ImprovingScore>> scores,
         ImprovingSweepSetting setting,
         bool soldUnderAverage = false,
-        Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
+        Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null,
+        (double Moves, double Multiple)? stops = null)
     {
         var trades = new List<HeavyweightTrade>();
         var chosen = new Dictionary<int, HeavyweightRebalance>();
         var open = new SortedDictionary<int, (int Entry, ImprovingScore Score, int Held)>();
+        var exits = new Dictionary<int, (double Stop, double? TakeProfit)>();
         var bySession = filings
             .SelectMany((one, name) => one.Select(filing => (Name: name, Filing: filing)))
             .GroupBy(one => one.Filing.Session)
@@ -316,6 +318,18 @@ public sealed class ImprovingLay
 
                 var fell = score.Applied > 0 && !FundamentalScorecard.Clears(score.Passed, score.Applied, setting.HoldInNine);
 
+                // From the operator's order of 2026-11-14 a close under its stop or at or above its take-profit, beside its
+                // filing exit.
+                // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+                if (!fell && held < setting.Sessions && session > entry && exits.TryGetValue(name, out var placed)
+                    && EquityBrief.Core.Loop.TakeProfit.EndOf(tape.Close[name][session], placed.Stop, placed.TakeProfit) is { } exited)
+                {
+                    End(name, session, exited);
+                    sold.Add(name);
+
+                    continue;
+                }
+
                 if (fell || held >= setting.Sessions)
                 {
                     End(name, session, fell ? ImprovingRule.ScoreFell : ImprovingRule.TimeLimit);
@@ -358,6 +372,11 @@ public sealed class ImprovingLay
             foreach (var name in buys)
             {
                 open[name] = (session, scores[name].GetValueOrDefault(session), 0);
+
+                if (stops is { } asked && tape.ExitsAt(name, session, asked.Moves, asked.Multiple) is { } placed)
+                {
+                    exits[name] = placed;
+                }
             }
         }
 
@@ -371,9 +390,9 @@ public sealed class ImprovingLay
 
     // One setting's book: its walk, each trade and its members bought at the open after its night and the trade charged
     // its round trip, and its months.
-    public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
+    public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null)
     {
-        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage || setting.SoldUnderAverage, arrange);
+        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,

@@ -73,11 +73,19 @@ public static class PlanScreen
             ? Statistic.ToPrice(placed)
             : row.Stop;
 
-    // How a filled plan trade ended, read off its sale against its target and its stop, time otherwise.
+    // How a filled plan trade ended, read off its sale against its target and its stop, time otherwise; from the operator's order
+    // of 2026-11-14 its target the price its walk took profit at from its fill.
     static string Ending(PlannedTradeRow row, decimal? stop) =>
-        row.Sale is { } sale && row.Order.Target is { } target && sale >= Statistic.ToPrice(target) ? PickStatus.Target
+        row.Sale is { } sale && TargetOf(row, stop) is { } target && sale >= target ? PickStatus.Target
         : row.Sale is { } sold && stop is { } floor && sold <= floor ? PickStatus.Stopped
         : PickStatus.Time;
+
+    static decimal? TargetOf(PlannedTradeRow row, decimal? stop) =>
+        (row.Fill is { } fill && stop is { } floor
+            ? row.Order.SaleFrom(Statistic.FromPrice(fill), Statistic.FromPrice(floor)).Target
+            : row.Order.Target) is { } target
+            ? Statistic.ToPrice(target)
+            : null;
 
     // The S&P 500's page list's cells with each a planned live rule listed drawn as its plan's trade.
     public static IReadOnlyList<PickCell> Cells(IReadOnlyList<PickCell> cells, IReadOnlyList<PlannedTradeRow> planned, DateOnly asOf)

@@ -10,6 +10,12 @@ namespace EquityBrief.Web.Marks;
 // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
 public sealed record PlanSaleView(string Kind, decimal Buy, decimal? Stop, decimal? Target, IReadOnlyList<decimal> Stages, decimal? Trail, double? RsiAbove, int Cap)
 {
+    // From the operator's order of 2026-11-14 the price the plan takes profit at, worked from the price it buys at: its own
+    // target or first band above, the price above its last staged level what is left sells at, or where its sale names none
+    // above the buy the price it turned down at before or the multiple of its risk; none for a plan placed before the order.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public TakeProfitView? TakeProfit { get; init; }
+
     // A plan selling on its time limit alone, which names no price to sell at.
     public bool OnTimeAlone => Kind == PlanPoints.TimeLimit;
 
@@ -17,12 +23,14 @@ public sealed record PlanSaleView(string Kind, decimal Buy, decimal? Stop, decim
     // time limit: the time limit alone, and the staged sales or the first band above where its levels place none above it.
     // see: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath
     public bool HoldsToItsLimit =>
-        OnTimeAlone || (Kind == PlanPoints.StagedSales && Stages.Count == 0) || (Kind == PlanPoints.FirstBand && Target is null);
+        TakeProfit is null && (OnTimeAlone || (Kind == PlanPoints.StagedSales && Stages.Count == 0) || (Kind == PlanPoints.FirstBand && Target is null));
 
     // What the sale aims at, which what the plan risks for what it aims at reads: its target, or the staged levels' mean; none
-    // where it names no price above the buy.
+    // where it names no price above the buy; from the operator's order of 2026-11-14 its take-profit price where it names none
+    // of its own.
     public decimal? Aim =>
-        OnTimeAlone ? null
+        Kind != PlanPoints.StagedSales && (Target is not { } own || own <= Buy) && TakeProfit is { } taking && taking.Price > Buy ? taking.Price
+        : OnTimeAlone ? null
         : Target is { } target && target > Buy ? target
         : Kind == PlanPoints.StagedSales && Stages.Count > 0 ? Stages.Average()
         : null;
@@ -63,7 +71,19 @@ public sealed record PlanSaleView(string Kind, decimal Buy, decimal? Stop, decim
             var (each, last) = SharesOf(Stages.Count);
 
             steps.AddRange(Stages.Select(stage => $"Sell {each} at the next trading day's open after a day that closes at or above {At(stage)}."));
-            steps.Add($"Keep {last} until a day that closes below the stop or the time limit.");
+            steps.Add(TakeProfit is { } remainder
+                ? $"Sell {last} at the next trading day's open after a day that closes at or above {At(remainder.Price)}."
+                : $"Keep {last} until a day that closes below the stop or the time limit.");
+        }
+        else if (TakeProfit is { } taking)
+        {
+            // From the operator's order of 2026-11-14 the take-profit price, beside a trail or the dip's bounce.
+            steps.Add($"Sell at the next trading day's open after a day that closes at or above {At(taking.Price)}.");
+
+            if (RsiAbove is { } level && !OnTimeAlone)
+            {
+                steps.Add(FormattableString.Invariant($"Or sell at the next trading day's open after a day its {EquityBrief.Core.Families.DipRule.RsiSessions}-day RSI closes above {level:0}."));
+            }
         }
         else if (!OnTimeAlone && Target is { } target)
         {
@@ -111,6 +131,34 @@ public sealed partial class MarkRenderer
     {
         var after = FormattableString.Invariant($"{sale.Cap} trading days");
         var backstop = new PlanSaleLine("limit", "Otherwise sell after", after);
+
+        // From the operator's order of 2026-11-14 a plan taking profit draws the price beside its other ways out: staged levels
+        // keep their shares and what is left takes profit at its price; a trail or the dip's bounce stand beside it.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        if (sale.TakeProfit is { } taking)
+        {
+            var take = new PlanSaleLine("target", TakeProfitView.Label, SaleDollars(taking.Price), taking.Line ?? (sale.Kind == PlanPoints.FirstBand ? FirstBandWords : null));
+
+            if (sale.Kind == PlanPoints.StagedSales && sale.Stages.Count > 0)
+            {
+                var (each, last) = PlanSaleView.SharesOf(sale.Stages.Count);
+
+                return
+                [
+                    .. sale.Stages.Select(stage => new PlanSaleLine("stage", "Sell " + each + " at", SaleDollars(stage))),
+                    take with { Note = "On " + last + (taking.Line is { } said ? ". " + said : ".") },
+                    backstop,
+                ];
+            }
+
+            return
+            [
+                take,
+                .. sale.Trail is { } distance && sale.Target is null ? [new PlanSaleLine("trail", "Or sell on a close under", "a give-up price that rises", FormattableString.Invariant($"{SaleDollars(distance)} behind its highest close."))] : Array.Empty<PlanSaleLine>(),
+                .. sale.RsiAbove is { } level ? [new PlanSaleLine("bounce", "Or sell", "When it bounces back", FormattableString.Invariant($"A close whose {EquityBrief.Core.Families.DipRule.RsiSessions}-session RSI stands above {level:0} sells it at the next day's open."))] : Array.Empty<PlanSaleLine>(),
+                backstop,
+            ];
+        }
 
         if (sale.OnTimeAlone)
         {

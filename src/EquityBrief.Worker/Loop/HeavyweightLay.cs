@@ -97,14 +97,14 @@ public sealed class HeavyweightLay
 
     // One setting's book over the whole history: its rebalances read as the six settings' search reads them, its holdings
     // walked, each after its round trip, and its months.
-    public HeavyweightBook Book(HeavyweightSixSetting setting, bool designA)
+    public HeavyweightBook Book(HeavyweightSixSetting setting, bool designA, (double Moves, double Multiple)? stops = null)
     {
         var rebalances = HeavyweightSix.RebalancesOf(setting, read.Calendar, months).ToDictionary(
             session => session,
             session => designA
                 ? HeavyweightSix.ReadA(tape, sessions[session], setting, names, ClearsOn)
                 : HeavyweightSix.ReadB(tape, session, setting, leading, industryOf, SectorOf, ClearsOn));
-        var trades = HeavyweightSweep.Walk(tape, rebalances, designA ? setting.Leaders!.Exit : HeavyweightExit.Drop, (from, to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To)));
+        var trades = HeavyweightSweep.Walk(tape, rebalances, designA ? setting.Leaders!.Exit : HeavyweightExit.Drop, (from, to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To)), stops);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,
@@ -120,7 +120,7 @@ public sealed class HeavyweightLay
     // A book at one of the sweep's own settings over the whole history, as the night's book reads it: on the S&P 500
     // every member at each rebalance of the setting's period, and on the S&P 400 or 600 the members clearing the index's
     // floors and gate; its holdings walked under the setting's exit, each after its round trip, and its months.
-    public HeavyweightBook BookOf(HeavyweightSetting setting, string words)
+    public HeavyweightBook BookOf(HeavyweightSetting setting, string words, (double Moves, double Multiple)? stops = null)
     {
         var large = read.Index == WalkForwardTester.LargeIndex;
         var rebalances = HeavyweightSweep.Rebalances(read.Calendar, read.FirstScored, setting.Period).ToDictionary(
@@ -132,7 +132,7 @@ public sealed class HeavyweightLay
 
                 return HeavyweightSweep.Read(kept, setting, names);
             });
-        var trades = HeavyweightSweep.Walk(tape, rebalances, setting.Exit, (from, to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To)));
+        var trades = HeavyweightSweep.Walk(tape, rebalances, setting.Exit, (from, to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To)), stops);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,
@@ -221,9 +221,9 @@ public sealed class HeavyweightLay
     // A book over the whole history from the rebalances read at a setting of either full grid: its holdings walked under
     // the exit named, each bought at the open after its rebalance with its size cut each member from its own open after
     // it and after its round trip, as the sweeps on the index's own history score them, and its months.
-    public HeavyweightBook BookFrom(IReadOnlyDictionary<int, HeavyweightRebalance> rebalances, HeavyweightExit exit, string words)
+    public HeavyweightBook BookFrom(IReadOnlyDictionary<int, HeavyweightRebalance> rebalances, HeavyweightExit exit, string words, (double Moves, double Multiple)? stops = null)
     {
-        var trades = HeavyweightSweep.Walk(tape, rebalances, exit, (from, to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To)));
+        var trades = HeavyweightSweep.Walk(tape, rebalances, exit, (from, to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To)), stops);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,

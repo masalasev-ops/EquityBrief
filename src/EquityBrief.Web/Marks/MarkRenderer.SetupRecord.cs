@@ -106,7 +106,7 @@ public sealed partial class MarkRenderer
             { Made: true } => Formatted($"From {record.From} to {record.Through}, picks like this made about <b class=\"made\">{Escaped(RecordDollars(record.EdgePerPick!.Value))}</b> more for every $1 risked than buying the index's other stocks the same way, over {record.Picks!.Value.ToString("N0", CultureInfo.InvariantCulture)} picks."),
             { Lost: true } => Formatted($"From {record.From} to {record.Through}, picks like this lost about <b class=\"lost\">{Escaped(RecordDollars(record.EdgePerPick!.Value))}</b> for every $1 risked, compared with buying the index's other stocks the same way, over {record.Picks!.Value.ToString("N0", CultureInfo.InvariantCulture)} picks."),
             { Short: true } => Formatted($"From {record.From} to {record.Through}, {record.Picks!.Value} picks like this, short of the {EquityBrief.Core.Cards.TakenWalk.RecordMinimum} a record needs."),
-            _ => Formatted($"<b class=\"none\">No long record yet:</b> the filings this setup reads reach back only to {record.ReachesBack}, so its record starts with its live trades."),
+            _ => Formatted($"<b class=\"none\">No long record yet:</b> {Escaped(FilingsUntested(record))}"),
         };
 
         return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span><span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
@@ -126,9 +126,19 @@ public sealed partial class MarkRenderer
         {
             { Made: true } or { Lost: true } => Formatted($"{record.From} to {record.Through} on the {Escaped(IndexNamed(record.Index))}, with its plan as it stands: <b class=\"{record.State}\">{record.State} {Escaped(RecordDollars(record.EdgePerPick!.Value))}</b> per $1 risked against the index's stocks bought the same way."),
             { Short: true } => Formatted($"{record.From} to {record.Through} on the {Escaped(IndexNamed(record.Index))}: {record.Picks!.Value} picks, short of the {EquityBrief.Core.Cards.TakenWalk.RecordMinimum} a record needs."),
-            _ => Formatted($"<b class=\"none\">No long record yet:</b> the filings it reads reach back only to {record.ReachesBack}."),
+            _ => Formatted($"<b class=\"none\">No long record yet:</b> {Escaped(FilingsUntestedShort(record))}"),
         };
 
         return Formatted($"<span class=\"tile-record\" data-record=\"{record.State}\">{line}</span>");
     }
+
+    // From the operator's order of 2026-11-14 why a setup reading filings has no record here from 2019: the walk that gives the
+    // other setups theirs replays prices alone, and its filings reach back only so far; its own per-rule test over the long
+    // history judges it from its first test year on the index, three learning years after its filings cover the index, on the
+    // Monthly check-up.
+    public static string FilingsUntested(SetupLongRecord record) => FormattableString.Invariant(
+        $"the walk that gives the other setups their record from {EquityBrief.Core.History.LongLedger.StandingFrom.Year} replays prices alone, and this setup buys on filings, which reach back only to {record.ReachesBack}. Its own test over the long history judges it from {EquityBrief.Core.Loop.LongTest.FirstTestYear(record.Family, record.Index)}, on the Monthly check-up.");
+
+    public static string FilingsUntestedShort(SetupLongRecord record) => FormattableString.Invariant(
+        $"the walk from {EquityBrief.Core.History.LongLedger.StandingFrom.Year} replays prices alone, and this setup buys on filings; its own test over the long history judges it from {EquityBrief.Core.Loop.LongTest.FirstTestYear(record.Family, record.Index)}.");
 }

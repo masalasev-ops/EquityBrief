@@ -44,8 +44,10 @@ public class RuleWordingOutOfThePins
 
     // From 23.10 a file whose sentences are each a key: the test of the buy and sell points' words for each entry, stop and
     // sale, which `plan_point` stores, a plan's registration is read back by and a plan trade's order carries, so a change to
-    // one is a change to what a plan names and moves the rule pinning it as it should.
-    static readonly IReadOnlyList<string> KeyFiles = ["src/EquityBrief.Core/Loop/PlanPoints.cs"];
+    // one is a change to what a plan names and moves the rule pinning it as it should. From 23.10's second part the rules'
+    // reader of a results release's tables, whose line names are each compared with a row of the release and drawn by no
+    // page, so a change to one moves what a rule reads.
+    static readonly IReadOnlyList<string> KeyFiles = ["src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Core/Readings/ReleaseLines.cs"];
 
     const string FilterVersions = "the swing filter's versions";
 

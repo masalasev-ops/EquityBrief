@@ -42,6 +42,7 @@ public sealed class FamilyRecorder : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),

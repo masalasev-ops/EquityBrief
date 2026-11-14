@@ -386,7 +386,11 @@ public sealed record MemberReadingRow(
     string? Industry,
     double? IndustryMonth,
     double? IndustryQuarter,
-    double? PeerSurprise);
+    double? PeerSurprise)
+{
+    // From 23.10's second part the quarters its interest cover reads where they are older than its profit check's.
+    public CoverRead? Cover { get; init; }
+}
 
 // A company's analysts' rating counts as one fetch filed them: the day of the fetch, the five counts and their total,
 // each none where the fetch filed none or was made before the counts were stored.
@@ -561,7 +565,23 @@ public sealed record DecisionCardRow(
 {
     // From 23.10 the order the plan its family's live rule states placed on the pick's trade, none before it.
     public string? Plan { get; init; }
+
+    // From the operator's order of 2026-11-14 where a book's take-profit came from, its target being that price, none for a
+    // card of any other setup, whose order says it, and for one written before.
+    public string? TakeProfitFrom { get; init; }
+
+    // From the operator's order of 2026-11-14, on a card for a stock its setup's rules met again while a trade holds it, the
+    // trade holding it in JSON, its setup, night and index; none for any other card.
+    public string? HeldAgain { get; init; }
+
+    // And that trade as its rule keeps it: the price paid and the session, and its stop and its sale, each placed from that
+    // fill where a plan bought it; none before the trade is read.
+    public HeldTradeFigures? HeldTrade { get; init; }
 }
+
+// The open trade holding a stock its setup's rules met again: the price paid and the session it was paid on, and its stop and
+// the price it sells at, as its rule keeps them.
+public sealed record HeldTradeFigures(decimal? Fill, DateOnly? FilledOn, decimal? Stop, decimal? Sale);
 
 // The operator's own record of one family on one index as the night's follower wrote it: the unit its results are read
 // in, the trades won at the target and lost at the stop where the rule sets a target, every trade ended, those open, and
@@ -3956,7 +3976,7 @@ public sealed partial class ReadApi : IComponent
     // ---- the decision cards ----
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 
-    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved, plan";
+    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved, plan, take_profit_from, held_again";
 
     const string DecisionCardsOn = "SELECT " + CardColumns + @" FROM decision_card
         WHERE index_code = $index AND session_date = $on
@@ -4028,6 +4048,8 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(20) ? null : reader.GetString(20))
             {
                 Plan = reader.IsDBNull(21) ? null : reader.GetString(21),
+                TakeProfitFrom = reader.IsDBNull(22) ? null : reader.GetString(22),
+                HeldAgain = reader.IsDBNull(23) ? null : reader.GetString(23),
             });
         }
 
@@ -4039,7 +4061,82 @@ public sealed partial class ReadApi : IComponent
             entry[night] = await EntryReadingsOnAsync(night);
         }
 
-        return [.. rows.Select(row => row with { EntryCheck = entry[row.Night].GetValueOrDefault(row.Ticker) })];
+        var held = new List<DecisionCardRow>();
+
+        foreach (var row in rows)
+        {
+            held.Add(row.HeldAgain is { } trade
+                ? row with { EntryCheck = entry[row.Night].GetValueOrDefault(row.Ticker), HeldTrade = await HeldTradeAsync(row.Ticker, trade) }
+                : row with { EntryCheck = entry[row.Night].GetValueOrDefault(row.Ticker) });
+        }
+
+        return held;
+    }
+
+    // From the operator's order of 2026-11-14 the open trade a held card's stock is held on, its family's live rule's before
+    // another's: its fill as the fill step priced it, and its stop and sale, each placed from that fill where a plan bought it.
+    // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
+    const string HeldTrade = @"
+        SELECT t.stop, t.target, t.plan, f.fill, f.filled_on FROM family_trade t
+        LEFT JOIN trade_fill f ON f.source = 'family_trade' AND f.index_code = 'GSPC' AND f.owner = t.candidate AND f.ticker = t.ticker AND f.session_date = t.session_date
+        WHERE $index = 'GSPC' AND t.ticker = $ticker AND t.family = $family AND t.session_date = $night
+        UNION ALL
+        SELECT t.stop, t.target, t.plan, f.fill, f.filled_on FROM index_rule_trade t
+        LEFT JOIN trade_fill f ON f.source = 'index_rule_trade' AND f.index_code = t.index_code AND f.owner = t.candidate AND f.ticker = t.ticker AND f.session_date = t.session_date
+        WHERE t.index_code = $index AND t.ticker = $ticker AND t.family = $family AND t.session_date = $night
+        LIMIT 1;
+    ";
+
+    async Task<HeldTradeFigures?> HeldTradeAsync(string ticker, string stored)
+    {
+        string family;
+        string? night;
+        string index;
+
+        using (var document = System.Text.Json.JsonDocument.Parse(stored))
+        {
+            var root = document.RootElement;
+
+            family = root.GetProperty("family").GetString() ?? string.Empty;
+            night = root.TryGetProperty("night", out var on) ? on.GetString() : null;
+            index = root.TryGetProperty("index", out var code) ? code.GetString() ?? string.Empty : string.Empty;
+        }
+
+        if (night is null)
+        {
+            return null;
+        }
+
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = HeldTrade;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$family", family);
+        command.Parameters.AddWithValue("$night", night);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        decimal? Price(int column) => reader.IsDBNull(column) ? null : Money.FromStorage(reader.GetString(column));
+
+        var (stop, target, fill) = (Price(0), Price(1), Price(3));
+        var filledOn = reader.IsDBNull(4) ? (DateOnly?)null : DateOnly.ParseExact(reader.GetString(4), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        // A plan places its stop and its sale from the fill.
+        if (!reader.IsDBNull(2) && EquityBrief.Core.Loop.PlanOrder.FromJson(reader.GetString(2)) is { } order && fill is { } paid
+            && EquityBrief.Core.Loop.PlanPoints.StopOf(order.Stop, EquityBrief.Core.Prices.Statistic.FromPrice(paid), order.RuleStop, order.ZoneStop, order.TypicalDay) is { } placed)
+        {
+            stop = EquityBrief.Core.Prices.Statistic.ToPrice(placed);
+            target = order.SaleFrom(EquityBrief.Core.Prices.Statistic.FromPrice(paid), placed).Target is { } sale ? EquityBrief.Core.Prices.Statistic.ToPrice(sale) : target;
+        }
+
+        return new HeldTradeFigures(fill, filledOn, stop, target);
     }
 
     // ---- the operator's taken trades, written by a card's presses alone ----

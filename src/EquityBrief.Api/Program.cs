@@ -726,9 +726,10 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         familyPicks: night is { } drawnOn ? await PicksOfTheName(read, ticker, drawnOn) : null,
         // The sector heavyweights' holdings as of the night, which say whether they hold the name.
         heavyweights: night is { } heldOn ? await read.HeavyweightHoldingsAsync(heldOn) : null,
-        // The name's member readings for the page's night, or its newest where the page is tonight's, and its company's
-        // rating counts as its newest fetch on or before that night filed them.
-        memberReading: await read.MemberReadingAsync(ticker, on),
+        // The name's member readings for the page's night, or its newest where the page is tonight's, with the quarters its
+        // cover reads where they are older than its profit check's, and its company's rating counts as its newest fetch on
+        // or before that night filed them.
+        memberReading: await read.MemberReadingWithCoverAsync(ticker, on),
         ratings: await read.RatingsAsync(ticker, on),
         decisionCards: nightCards,
         // The account and the taken trades on tonight's page alone: an export and an earlier night's page draw neither, and
@@ -805,7 +806,13 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         secFiled: await read.SecFiledDaysAsync(ticker, on),
         fetchedOn: await read.SnapshotFetchedOnAsync(ticker, on),
         sharesFiledOn: await read.SharesFiledOnAsync(ticker, on),
-        entryCheck: bars.Count > 0 ? await read.EntryReadingOfAsync(ticker, bars[^1].SessionDate) : null);
+        entryCheck: bars.Count > 0 ? await read.EntryReadingOfAsync(ticker, bars[^1].SessionDate) : null,
+        // From the operator's order of 2026-11-14 an order from an earlier night still waiting to buy the stock, with tonight's
+        // close, which the page's opening line names.
+        waitingOrder: night is { } waitingOn && await read.IndexOfAsync(ticker, waitingOn) is { } waitingIndex
+            && PlanScreen.StillWaiting(await read.PlannedTradesAsync(waitingIndex, waitingOn), waitingOn).FirstOrDefault(order => order.Ticker == ticker) is { } stillWaiting
+            ? stillWaiting with { LastClose = bars.Count > 0 ? bars[^1].Close : null }
+            : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -2954,7 +2961,10 @@ async Task<IResult> HomeAsync(
         // its rule's winning trades off its card.
         decimal? trail = pick.Trailing && pick.Target is null && pick.Buy is { } buy && pick.Stop is { } stop && buy > stop ? pick.Card?.Trail ?? buy - stop : null;
 
-        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners, EntryCheck: pick.Card?.EntryCheck, StopMoves: MarkRenderer.ApprovedExitMovesTheStop(pick.Card?.Approved), LongRecord: longRecords.Of(reading.Code, point.Family));
+        return new HomeIdea(point.Family, pick.Row.Ticker, cells.GetValueOrDefault(pick.Row.Ticker)?.Name, why, pick.Buy, pick.Stop, pick.Target, pick.Trailing, pick.RewardToRisk, trail, pick.Card?.Winners, EntryCheck: pick.Card?.EntryCheck, StopMoves: MarkRenderer.ApprovedExitMovesTheStop(pick.Card?.Approved), LongRecord: longRecords.Of(reading.Code, point.Family))
+        {
+            TakeProfit = pick.Card?.TakeProfit,
+        };
     }
 
     // A buy no plan sells, the Fundamentals family's or a monthly book's, as Tonight's buys draw it.
@@ -3063,6 +3073,9 @@ async Task<IResult> HomeAsync(
         // see: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle
         Reshuffled = [.. SinglePageApp.PlanlessBuys(reading.Word, null, heavyweights, quality).Select(buy => (buy.Family, buy.Ticker))],
         StillWaiting = paper.StillWaiting,
+
+        // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
+        HeldAgain = [.. families.SelectMany(family => family.HeldAgain)],
     };
 
     return Results.Content(
@@ -3166,6 +3179,21 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     var views = PaperScreen.Views(sources, tests, years, settings, sessions, night, Close, Fund);
     var standings = await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks);
     var stillWaiting = PlanScreen.StillWaiting(planned, night);
+
+    // From the operator's order of 2026-11-14 each waiting order named with its company and the night's stored close, which
+    // its row states with how far above its price it stands.
+    if (stillWaiting.Count > 0)
+    {
+        string[] waitingOn = [.. stillWaiting.Select(order => order.Ticker).Distinct(StringComparer.Ordinal)];
+        var named = await read.PaperStocksAsync(waitingOn, night);
+        var lastCloses = await read.ClosesAsync(waitingOn, night);
+
+        stillWaiting = [.. stillWaiting.Select(order => order with
+        {
+            Company = named.TryGetValue(order.Ticker, out var stock) ? stock.Company : null,
+            LastClose = lastCloses.TryGetValue((order.Ticker, night), out var last) ? last : null,
+        })];
+    }
 
     return new PaperAccounts(
         sources,

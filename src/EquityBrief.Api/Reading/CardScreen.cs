@@ -76,6 +76,16 @@ public static class CardScreen
             ? (planned.Zone.NoBuy ? default(decimal?) : planned.Zone.Price, planned.Stop, planned.Target)
             : (row.Entry, row.Stop, row.Target);
 
+        // From the operator's order of 2026-11-14 the price the card's plan takes profit at: a plan buying at a price works it
+        // from that price, and one buying at the next open from tonight's close and the stop placed from it.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        var takeProfit = BookTakeProfit(row)
+            ?? zone?.Zone.Sale?.TakeProfit
+            ?? (zone is null && EquityBrief.Core.Loop.PlanOrder.FromJson(row.Plan) is { TakeProfit: not null } order && row.Entry is { } close
+                && EquityBrief.Core.Loop.PlanPoints.StopOf(order.Stop, EquityBrief.Core.Prices.Statistic.FromPrice(close), order.RuleStop, order.ZoneStop, order.TypicalDay) is { } placedStop
+                ? TakeProfitOf(order, EquityBrief.Core.Prices.Statistic.FromPrice(close), placedStop)
+                : null);
+
         // A page the operator reads sizes on the example until they save their own; an export and the read-only copy size on nothing.
         // see: A pick's plan is sized on the example account until the operator saves their own
         var sizedOn = given.Account ?? (given.Pressable ? EquityBrief.Core.Cards.AccountSettings.Example : null);
@@ -98,8 +108,8 @@ public static class CardScreen
             // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
             zone?.Zone.Sale is { } planSale ? planSale.Steps()
             : dip
-                ? EquityBrief.Core.Cards.Management.ForDip(stopDrawn, (given.Dip ?? EquityBrief.Core.Families.DipRule.Provisional).ExitLevel, row.Cap)
-                : EquityBrief.Core.Cards.Management.For(stopDrawn, targetDrawn, row.Trail, row.Cap, heavyweights),
+                ? EquityBrief.Core.Cards.Management.ForDip(stopDrawn, (given.Dip ?? EquityBrief.Core.Families.DipRule.Provisional).ExitLevel, row.Cap, takeProfit?.Price)
+                : EquityBrief.Core.Cards.Management.For(stopDrawn, targetDrawn, row.Trail, row.Cap, heavyweights, takeProfit?.Price),
             money is { } plan && sizedOn is { } held
                 ? new CardMoneyView(
                     plan.Shares,
@@ -133,6 +143,10 @@ public static class CardScreen
             EntryCheck = row.EntryCheck,
             LongRecord = given.LongRecords.Of(row.Index, row.Family),
             Zone = zone?.Zone,
+            TakeProfit = takeProfit,
+            HeldAgain = HeldAgainView.Of(row.HeldAgain) is { } heldAgain
+                ? heldAgain with { Fill = row.HeldTrade?.Fill, BoughtOn = row.HeldTrade?.FilledOn, Stop = row.HeldTrade?.Stop, TakeProfit = row.HeldTrade?.Sale, LastClose = row.Entry }
+                : null,
         };
     }
 
@@ -169,12 +183,43 @@ public static class CardScreen
             [.. order.Staged.Where(staged => staged > level).Order().Select(staged => EquityBrief.Core.Prices.Statistic.ToPrice(staged))],
             order.Trail is { } trail ? EquityBrief.Core.Prices.Statistic.ToPrice(trail) : null,
             order.RsiAbove,
-            order.Cap);
+            order.Cap)
+        {
+            TakeProfit = stop is { } from ? TakeProfitOf(order, level, from) : null,
+        };
 
         return (
             new ZoneBuy(EquityBrief.Core.Prices.Statistic.ToPrice(level), order.Window, tonight, order.Target is null ? order.Cap : null) { Sale = sale },
             stopAt,
             targetAt);
+    }
+
+    // From the operator's order of 2026-11-14 the price an order takes profit at from a buy and the stop placed from it, through
+    // the core's one function the walk sells at; none for an order placed before, which takes profit at none.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public static TakeProfitView? TakeProfitOf(EquityBrief.Core.Loop.PlanOrder order, double buy, double stop) =>
+        order.TakeProfit is { } multiple && EquityBrief.Core.Loop.TakeProfit.Placed(order.Sale, buy, stop, order.TurnedDown, multiple) is { } placed
+            ? new TakeProfitView(
+                EquityBrief.Core.Prices.Statistic.ToPrice(placed.Price),
+                placed.Source,
+                placed.TurnedDownOn,
+                placed.Multiple,
+                EquityBrief.Core.Prices.Statistic.ToPrice(buy),
+                EquityBrief.Core.Prices.Statistic.ToPrice(stop))
+            : null;
+
+    // A book's card's take-profit as its night stored it, its target that price and its stop the one the book added under the
+    // buy; none for any other card.
+    static TakeProfitView? BookTakeProfit(DecisionCardRow row)
+    {
+        if (row.TakeProfitFrom is not { } stored || row.Target is not { } price)
+        {
+            return null;
+        }
+
+        var (source, on, multiple) = EquityBrief.Core.Loop.TakeProfit.FromStored(stored);
+
+        return new TakeProfitView(price, source, on, multiple, row.Entry, row.Stop, EquityBrief.Core.Loop.TakeProfit.MiddleStopMoves);
     }
 
     // What could hit the trade, as the night stored it on the card.
@@ -234,14 +279,19 @@ public static class CardScreen
     public static IReadOnlyList<FamilyCardView> WithCards(IReadOnlyList<FamilyCardView> cards, IReadOnlyList<DecisionCardRow> stored, CardContext? context = null)
     {
         var byPick = stored
+            .Where(row => row.HeldAgain is null)
             .GroupBy(row => (row.Family, row.Ticker))
             .ToDictionary(group => group.Key, group => View(group.First(), context));
 
+        // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them,
+        // drawn in the section of the setup that matched, a group of their own.
+        // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
         return
         [
             .. cards.Select(card => card with
             {
                 Picks = [.. card.Picks.Select(pick => byPick.TryGetValue((card.Family, pick.Row.Ticker), out var view) ? pick with { Card = view } : pick)],
+                HeldAgain = [.. stored.Where(row => row.HeldAgain is not null && row.Family == card.Family).OrderBy(row => row.Ticker, StringComparer.Ordinal).Select(row => View(row, context))],
             }),
         ];
     }

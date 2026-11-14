@@ -55,6 +55,7 @@ public sealed class DipFamily : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.SeriesState, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),

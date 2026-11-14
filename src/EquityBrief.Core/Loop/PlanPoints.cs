@@ -6,9 +6,18 @@ public readonly record struct WaitFill(int Bar, double Price);
 // One way to trade a flagged setup: where it buys and within how many sessions, where its stop stands and how it sells.
 public sealed record PlanCombination(string Entry, int Window, string Stop, string Exit)
 {
-    public string Words => Window > 0
+    // From the operator's order of 2026-11-14 the multiple of the risk its take-profit price falls back to, named after its
+    // sale's words; none for a plan walked as it stood before.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public double? TakeProfit { get; init; }
+
+    public string Words => (Window > 0
         ? FormattableString.Invariant($"{Entry} within {Window} sessions, {Stop}, {Exit}")
-        : FormattableString.Invariant($"{Entry}, {Stop}, {Exit}");
+        : FormattableString.Invariant($"{Entry}, {Stop}, {Exit}"))
+        + (TakeProfit is { } multiple ? ", " + EquityBrief.Core.Loop.TakeProfit.Words(multiple) : string.Empty);
+
+    // The same plan taking profit at a multiple of its risk.
+    public PlanCombination Taking(double multiple) => this with { TakeProfit = multiple };
 }
 
 // What the sale reads: a target the close must reach, a trail the stop follows the highest close by, the staged levels
@@ -549,5 +558,5 @@ public static class PlanPoints
             .FirstOrDefault();
 
     public static int Changes(PlanCombination combination) =>
-        (combination.Entry == NextOpen ? 0 : 1) + (combination.Stop == RuleStop ? 0 : 1) + (combination.Exit == RuleSale ? 0 : 1);
+        (combination.Entry == NextOpen ? 0 : 1) + (combination.Stop == RuleStop ? 0 : 1) + (combination.Exit == RuleSale ? 0 : 1) + (combination.TakeProfit is null ? 0 : 1);
 }

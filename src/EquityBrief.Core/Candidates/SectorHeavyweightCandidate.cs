@@ -23,7 +23,7 @@ public sealed class SectorHeavyweightCandidate : BookEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "461d9f707638";
+    public override string Version => "413adb9d4ce2";
 
     public override string Family => HeavyweightRule.Name;
 
@@ -33,8 +33,11 @@ public sealed class SectorHeavyweightCandidate : BookEvaluator
     // Every file the book's evaluation runs through, the rule's first: the readings it values, ranks and places a
     // member by, the stage that keeps the book, the shared evaluator code that reads a registration, the money and
     // statistic crossings and the store, and the indicator arithmetic whose averages its trend gate reads. None of the
-    // sources the listings' candidates share, which no book reads, so a change to them moves no heavyweights version.
+    // sources the listings' candidates share, which no book reads, so a change to them moves no heavyweights version. From
+    // 23.10's second part the hooks a book reads, its conditions and its score over the catalogue's readings, and not the
+    // plan's walk, since a book states no plan.
     // see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through but the catalogue
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
     public override IReadOnlyList<string> OwnSources { get; } =
     [
         "src/EquityBrief.Core/Families/HeavyweightRule.cs",
@@ -51,6 +54,19 @@ public sealed class SectorHeavyweightCandidate : BookEvaluator
         "src/EquityBrief.Data/StoreConnection.cs",
         "src/EquityBrief.Core/Indicators/IndicatorSeries.cs",
         "src/EquityBrief.Worker/Indicators/IndicatorEngine.cs",
+        "src/EquityBrief.Core/Ledger/LedgerReadings.cs",
+        .. EquityBrief.Core.Loop.RuleHooks.Sources.Except(EquityBrief.Core.Loop.RuleHooks.PlanWalkSources, StringComparer.Ordinal),
+
+        // From the operator's order of 2026-11-14 the stop and the take-profit each holding is bought with: the price it
+        // turned down at before, read off its swings over its stored and pulled history, and its typical daily move.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        "src/EquityBrief.Worker/Loop/PlanTrades.cs",
+        "src/EquityBrief.Core/Swings/SwingSeries.cs",
+        "src/EquityBrief.Core/Levels/LevelSeries.cs",
+        "src/EquityBrief.Core/Ladders/LadderSeries.cs",
+        "src/EquityBrief.Core/Prices/PriceForm.cs",
+        "src/EquityBrief.Core/Sweep/SweepReadings.cs",
+        "src/EquityBrief.Worker/Filter/SessionReplay.cs",
     ];
 
     // The parameters a registration states for settings, and the settings a registration's parameters state.

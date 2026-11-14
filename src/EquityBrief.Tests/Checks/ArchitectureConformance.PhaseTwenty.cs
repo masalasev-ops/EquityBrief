@@ -84,8 +84,8 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.FundamentalsRows,
     ];
 
-    // The rows the document loses after phase 20's report: none.
-    internal static string[] TakenOutAfterPhaseTwenty => [];
+    // The rows the document loses after phase 20's report: phase 22's.
+    internal static string[] TakenOutAfterPhaseTwenty => [.. TakenOutAfterPhaseTwentyTwo];
 
     // How many more rows each part landed than its count in the plan, a negative figure where it landed fewer. The
     // corrections, counted none, six: paper trading's seven parts for its table of every account. 20.0, none as counted.

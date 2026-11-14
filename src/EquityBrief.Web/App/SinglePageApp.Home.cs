@@ -12,7 +12,12 @@ namespace EquityBrief.Web.App;
 // target, the distance it rises behind the highest close at and its rule's winning trades; whether an exit changed on the
 // Loop page moves its give-up price; for the Fundamentals family the setting its index's rule stands at; and from the 22.6
 // correction of 2026-11-09 its setup's record over the long history.
-public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null, SetupLongRecord? LongRecord = null, ZoneBuy? Zone = null, AlternativePlan? Alternative = null);
+public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null, SetupLongRecord? LongRecord = null, ZoneBuy? Zone = null, AlternativePlan? Alternative = null)
+{
+    // From the operator's order of 2026-11-14 the price it takes profit at and where it came from, off its card.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public TakeProfitView? TakeProfit { get; init; }
+}
 
 // How past ideas have done on Home: the day the rules first went live and the system's trades bought and sold since and how
 // many made money; the live setups' accounts averaged, their return, the day every live rule took effect and the index's
@@ -53,6 +58,9 @@ public sealed record HomeView(
     // From the 23.10 correction of 2026-11-13 the orders a plan placed on an earlier night still waiting for their price, which
     // the heading does not count and a line beneath it names.
     public IReadOnlyList<WaitingOrderView> StillWaiting { get; init; } = [];
+
+    // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
+    public IReadOnlyList<DecisionCardView> HeldAgain { get; init; } = [];
 }
 
 // Home, from 22.16: the landing page for a reader new to investing, the day, tonight's ideas, how past ideas have done and
@@ -167,13 +175,13 @@ public sealed partial class SinglePageApp
         ([.. picks.Where(pick => pick.LongRecord is not { Lost: true })], [.. picks.Where(pick => pick.LongRecord is { Lost: true })]);
 
     // The line above every card: how each kind of pick is tested, and which kinds are ideas to buy and which are watched.
-    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
+    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
     public static string SplitLine(UniverseChoice reading, bool watching) =>
         Invariant($"We test every kind of pick against simply buying other {reading.Name} stocks on the same days. Kinds that beat it, or are too new to test, are ideas to buy. Kinds that lost to it are {(watching ? "shown below as watched, followed" : "watched and followed")} on paper only.");
 
     // The heading of the picks watched, above their cards: how many, and that the rules picked them but their kind of pick
     // lost the test; none on a night no pick is watched.
-    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
+    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
     public static string? WatchingLine(IReadOnlyList<HomeIdea> watching, UniverseChoice reading)
     {
         if (watching.Count == 0)
@@ -195,7 +203,7 @@ public sealed partial class SinglePageApp
 
     // Why a watched pick is not bought: the years its kind of pick was tested over, that it did worse than buying the index's
     // other stocks on the same days with the same sell rules and by how much for each dollar put at risk.
-    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
+    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
     public static string NotBuyingLine(HomeIdea idea, UniverseChoice reading) =>
         idea.LongRecord is { Lost: true, EdgePerPick: { } edge } record
             ? Invariant($"We tested this kind of pick on {reading.Name} stocks from {record.From} to {record.Through}. It did worse than simply buying other {reading.Name} stocks on the same days with the same sell rules: {Worse(edge)} for every $1 put at risk. So we follow it on paper instead of suggesting it.")
@@ -207,7 +215,10 @@ public sealed partial class SinglePageApp
     // The line opening a pick's card, saying whether it is an idea to buy or watched, and for an idea why, from its setup's
     // record over the long history: one that lost is watched, its reasons in the lines beneath; one that made money, holds too
     // few picks, reaches back too few years or is unread is an idea to buy.
-    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
+    // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
+    // From the operator's order of 2026-11-14, item 5, in their words, for a kind of pick whose record cannot be measured yet.
+    public const string TooFewToMeasure = "Too few past picks of this kind to measure yet.";
+
     public static string VerdictLine(HomeIdea idea, UniverseChoice reading)
     {
         var record = idea.LongRecord;
@@ -215,9 +226,9 @@ public sealed partial class SinglePageApp
         {
             { Lost: true } => ("watch", "Watching, not buying.", (string?)null),
             { Made: true } => ("buy", "An idea to buy.", Invariant($"We tested this kind of pick on {reading.Name} stocks from {record.From} to {record.Through}, and it did better than buying other {reading.Name} stocks on the same days with the same sell rules.")),
-            { Short: true } => ("buy", "An idea to buy.", Invariant($"There are too few picks of this kind since {record.From} to test it yet, so nothing counts against it.")),
-            { ReachesBack: not null } => ("buy", "An idea to buy.", "There isn't enough history to test this kind of pick yet, so nothing counts against it."),
-            _ => ("buy", "An idea to buy.", "This kind of pick hasn't been tested yet, so nothing counts against it."),
+            { Short: true } => ("buy", "An idea to buy.", TooFewToMeasure),
+            { ReachesBack: not null } => ("buy", "An idea to buy.", TooFewToMeasure),
+            _ => ("buy", "An idea to buy.", TooFewToMeasure),
         };
 
         return Invariant($"<p class=\"home-verdict\" data-verdict=\"{verdict}\"><b>{Escaped(head)}</b>{(why is null ? string.Empty : " " + Escaped(why))}</p>");
@@ -438,6 +449,14 @@ public sealed partial class SinglePageApp
             region.Append("</div>");
         }
 
+        // From the operator's order of 2026-11-14 the stocks a setup's rules met again while a trade holds them, a group of their
+        // own under tonight's ideas, each a full card, counted in none of the ideas.
+        // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
+        if (!marks.Copying)
+        {
+            region.Append(marks.HeldAgainGroup(view.HeldAgain));
+        }
+
         if (view.IdeasCount + view.Watching.Count > 0)
         {
             var every = view.IdeasCount + view.Watching.Count;
@@ -509,7 +528,7 @@ public sealed partial class SinglePageApp
         card.Append(VerdictLine(idea, reading));
 
         // A watched card says why its rule picked it and why it is not bought.
-        // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested
+        // see: Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
         card.Append(watched
             ? Invariant($"<p class=\"home-why\"><b>{PickedLabel}</b> {Escaped(idea.Why)}</p><p class=\"home-why-not\"><b>{Escaped(NotBuyingLabel)}</b> {Escaped(NotBuyingLine(idea, reading))}</p>")
             : Invariant($"<p class=\"home-why\">{Escaped(idea.Why)}</p>"));
@@ -576,7 +595,11 @@ public sealed partial class SinglePageApp
             ? Invariant($"<div><span>Sell when</span><b class=\"stop\">{ReshuffleDrops}</b></div>")
             : Invariant($"<div><span>Sell if it falls to</span><b class=\"stop\">{(idea.Stop is { } stop ? Dollars(stop) : NoFigure)}</b></div>"));
 
-        card.Append(Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
+        // From the operator's order of 2026-11-14 the price it takes profit at, and the line saying where it came from.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        card.Append(idea.TakeProfit is { } taking
+            ? Invariant($"<div><span>{TakeProfitView.Label}</span><b class=\"aim\">{Dollars(taking.Price)}</b>{(taking.Line is { } said ? Invariant($"<span class=\"aim-from\">{Escaped(said)}</span>") : string.Empty)}</div>")
+            : Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
         card.Append("</div>");
 
         return card.ToString();

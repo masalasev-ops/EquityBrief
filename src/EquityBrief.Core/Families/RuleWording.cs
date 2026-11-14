@@ -273,6 +273,17 @@ public static class RuleWording
     }
 
     // src/EquityBrief.Core/Ledger/LedgerReadings.cs
+    // From 23.10's second part the profit part's words over the quarters as the rules read them, each from its filing and then
+    // its results release.
+    public static class ReadQuarters
+    {
+        public static string QuartersRead(int read, int quarters) =>
+            FormattableString.Invariant($"{read} of the {quarters} quarters the profit check sums read with their net income from a filing or a results release before tonight");
+
+        public static string NetIncomeNotAbove(decimal netIncome, int quarters) =>
+            FormattableString.Invariant($"net income of {netIncome:#,0} over its {quarters} newest quarters as read from their filings and releases, not above nothing");
+    }
+
     public static class LedgerReadingsWords
     {
         public const string CloseOverTwenty = "the close over its 20-session average";
@@ -382,6 +393,25 @@ public static class RuleWording
         public const string ShortInterestShare = "the shares short FINRA last reported before the session over the newest share count the filings' covers state; none while no store holds the reports";
 
         public const string BusinessStateFiled = "the business's state off the SEC's facts as first filed before the session, as the night's place for a state: 0 improving, where both of the two newest filed quarters grew their sales on the same quarter a year earlier and widened their operating margin, 3 deteriorating, where both shrank and narrowed, 1 steady otherwise; none where fewer than two quarters hold the four figures";
+
+        // From 23.10's second part the entry check's readings, each as the entry check reads it on the night.
+        public const string StretchDays = "the close over its 20-session average, in typical days, the stored year's sessions held; none where fewer than 20 or no typical move";
+
+        public const string StretchShare = "the share of the stored year's sessions holding the 20-session average that stood as far above it as the session or further, in per cent";
+
+        public const string GainTwenty = "the gain over the 20 sessions to the session, in per cent; none where the stored year holds fewer";
+
+        public const string LargestGain = "1 where the session's one-day gain is a rise larger than each of the 249 before it, 0 where it is not; none where fewer than 250 are held";
+
+        public const string NightVolumeRatio = "the session's volume over the mean of the 50 sessions to it, the session's own among them, as the entry check reads it";
+
+        public const string GapDays = "the gap up to the session, its low over the session before's high, in typical days, 0 where its low does not stand above that high; none where no typical move is held";
+
+        public const string HighestSinceYears = "the years since an earlier session last closed at or above the session's close, or since the history's first session where none did";
+
+        public const string OlderDays = "the nearest band above the close from the sessions before the stored year, its low over the close in typical days; none where no band stands above or no typical move is held";
+
+        public const string OneOffShare = "the largest one-off item the newest results release accepted by the session names, its amount a share over the beat on the estimate, where the release ties it to earnings per share and says which way and a beat above nought is stored, 0 where the release names no item; none where no release is stored, or an item's share is not read";
     }
 
     // src/EquityBrief.Core/Ledger/FundamentalScorecard.cs
@@ -1060,6 +1090,9 @@ public static class RuleWording
 
         public static string KeptByNoBook(string candidate, string fault) =>
             $"'{candidate}' FAILURE: kept by no book, {fault}";
+
+        // From 23.10's second part a rule whose conditions or score read the catalogue's readings on a night that supplied none.
+        public const string HooksUnread = "the rebalance waits for a night that reads the catalogue's readings its conditions or its score read";
     }
 
     // The words of src/EquityBrief.Core/Families/FamilyRule.cs.
@@ -1365,5 +1398,20 @@ public static class RuleWording
 
         public static string FewerSwingHighs(int swingsCompared) =>
             $"fewer than {swingsCompared} swing highs";
+    }
+
+    // TakeProfit.cs, from the operator's order of 2026-11-14: the reasons a book's holding or a Fundamentals trade ends on its
+    // stop or its take-profit, stored as its end, and the words a plan's sale carries its take-profit multiple in.
+    public static class TakeProfit
+    {
+        public const string UnderItsStop = "a close under its stop";
+
+        public const string TookProfit = "took profit";
+
+        public const string TakingOpening = "taking profit at ";
+
+        public const string TakingClosing = " times the risk";
+
+        public static string Taking(double multiple) => FormattableString.Invariant($"{TakingOpening}{multiple:0.##}{TakingClosing}");
     }
 }

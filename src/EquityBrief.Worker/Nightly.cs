@@ -464,7 +464,7 @@ public static class Nightly
                     $"{outcome.RowsDropped} dropped";
             }),
             // Section 14's step 14. The four readings of every member's reported quarters and the state
-            // they give it, from the quarters fetched on the nights before this one, before the listings
+            // they give it, from the quarters the fetches stored by the night, before the listings
             // and the facts file that read them. It makes no request: the quarters it reads were asked
             // for after an earlier night's close. From 15.2 every member's readings follow, under a row of their own,
             // since the state the quarters give a member is one of them. From 22.8 every member's fundamentals scorecard
@@ -596,7 +596,29 @@ public static class Nightly
                     ? await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).SetupsTonightAsync(indexCode, night.Token)
                     : null;
                 var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings, hookSetups);
-                var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, standingAt), HeavyweightBook.RetiredBooks(register, standingAt));
+                // From 23.10's second part a book whose rule states conditions or a score is handed the catalogue's readings.
+                // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+                var books = HeavyweightBook.Standing(register, standingAt);
+                var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(
+                    indexCode,
+                    runId,
+                    night.Token,
+                    books,
+                    HeavyweightBook.RetiredBooks(register, standingAt),
+                    HeavyweightBook.HooksReadReadings(books) ? await ReadingsTonightAsync(night.Token) : null);
+
+                // From 23.10's second part the reported quarters of the members due, asked after the S&P 500's heavyweights'
+                // book and before the S&P 400's and 600's families, so their profit check reads the quarter the night stores:
+                // one request for a member's fundamentals and one for its closes where the answer is stored, the fourth
+                // carve-out the nightly rule names. It is handed no token from the night's deadline: it is bounded by its own
+                // limit and by the day's allowance, read off the night's feeds before every ask, and writes its own row under
+                // its own stage. A night run again for an earlier session asks for nothing, since the quarters it would store
+                // are today's and not that night's.
+                // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+                // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
+                var quartered = askForTheFirstName
+                    ? QuarterFetcher.Detail(await new QuarterFetcher(companies, historical, () => feeds.WeightedCalls, clock, store.DatabaseFile).RunAsync(indexCode, runId, wider: wider))
+                    : "no quarters were asked for, since this night was run again for an earlier session";
 
                 // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
                 // holds back a stock whose S&P 500 trade is still open. A failure in their part is caught and named on
@@ -636,6 +658,21 @@ public static class Nightly
                 // see: The forming list advises and never lists a stock
                 var ruleCards = await new RuleCards(clock, store.DatabaseFile, forming).RunAsync(runId, register, standingAt, night.Token);
 
+                // From the operator's order of 2026-11-14 each live rule in its first five sessions after its registration has
+                // its picks placed again under its registered plan and held to what the night stored, on a row of its own; a
+                // failure is named there, and the step goes on.
+                // see: The first five sessions after a restart hold each live rule's picks to its registered plan placed again, and change nothing
+                string matchChecked;
+
+                try
+                {
+                    matchChecked = "match check: " + EquityBrief.Worker.Loop.MatchCheck.Said(await new EquityBrief.Worker.Loop.MatchCheck(clock, store.DatabaseFile).RunAsync(runId, clock.SessionDateAt(clock.UtcNow), night.Token));
+                }
+                catch (Exception failed) when (failed is Microsoft.Data.Sqlite.SqliteException or ArgumentException or InvalidOperationException)
+                {
+                    matchChecked = "match check not read tonight, " + failed.Message;
+                }
+
                 // Each live rule's periods read against its reference once they have closed with every unit in them
                 // settled, a rule two counted periods running under its low flagged. A failure is named on the step's
                 // row, and the step goes on.
@@ -667,6 +704,7 @@ public static class Nightly
                     $"; {kept.Kept} kept by the registered family rules" +
                     $"; {held.Held} held by the sector heavyweights" +
                     $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own" +
+                    $"; quarters: {quartered}" +
                     $"; {applied}" +
                     $"; {string.Join(", ", indices.Nights.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} list" : $"the {one.Index} list not computed tonight"))}" +
                     $"; {string.Join(", ", dips.Indices.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} dip list" : $"the {one.Index} dip list not computed tonight"))}" +
@@ -674,9 +712,10 @@ public static class Nightly
                     (decisionCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", decisionCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} cards not computed tonight")) : string.Empty) +
                     $"; {ruleCards.Rules} rule row(s), {ruleCards.Picks} variant pick(s) and {ruleCards.Forming} forming" +
                     (ruleCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", ruleCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} rule rows not computed tonight")) : string.Empty) +
+                    $"; {matchChecked}" +
                     $"; {alarmed}" +
                     (takenFollowed.Fault is null ? $"; {takenFollowed.Followed} taken trade(s) followed" : "; the taken trades not followed tonight");
-            }, [EquityBrief.Worker.Loop.LoopApply.Stage, SwingFilter.Stage, EstimatesFetcher.Stage, TrendsFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, EquityBrief.Worker.Dips.DipFamily.Stage, DecisionCards.Stage, RuleCards.Stage, EquityBrief.Worker.Loop.LiveAlarmReader.Stage, TakenFollower.Stage]),
+            }, [EquityBrief.Worker.Loop.LoopApply.Stage, SwingFilter.Stage, EstimatesFetcher.Stage, TrendsFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, QuarterFetcher.Stage, IndexFamilies.Stage, EquityBrief.Worker.Dips.DipFamily.Stage, DecisionCards.Stage, RuleCards.Stage, EquityBrief.Worker.Loop.LiveAlarmReader.Stage, TakenFollower.Stage]),
             // Section 14's step 17. The setup ledger, after the families have drawn every index's list, since it
             // stores the live rule's own pass and the night's pick beside each setup. It appends tonight's setups
             // on each index and closes the windows of the setups stored before that ended on tonight's close. A
@@ -787,27 +826,7 @@ public static class Nightly
                     $"{outcome.ReasonsFired} reason(s) fired, {outcome.NamesStale} stale, " +
                     $"{outcome.Duration}";
             }),
-            // Section 14's step 24, after the arithmetic has closed and before the night's requests. The
-            // reported quarters of the members due, one request for a member's fundamentals and one for
-            // its closes where the answer is stored, the fourth carve-out the nightly rule names. It is
-            // handed no token from the night's deadline, which bounds the arithmetic: it is bounded by its
-            // own limit and by the day's allowance, read off the night's feeds before every ask. A night
-            // run again for an earlier session asks for nothing, since the quarters it would store are
-            // today's and not that night's.
-            // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
-            new("quarters", async () =>
-            {
-                if (!askForTheFirstName)
-                {
-                    return "no quarters were asked for, since this night was run again for an earlier session";
-                }
-
-                var outcome = await new QuarterFetcher(companies, historical, () => feeds.WeightedCalls, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, wider: wider);
-
-                return QuarterFetcher.Detail(outcome);
-            }),
-            // Section 14's step 25, after the quarters fetch and before the night's requests. The archive's daily index
+            // Section 14's step 24, after the arithmetic has closed and before the night's requests. The archive's daily index
             // for each weekday since the refresh last read one, and the facts of the members whose filer filed a
             // report, an amendment or a results announcement, the seventh carve-out the nightly rule names: free and
             // from the SEC rather than the provider, its documents on its own row. It is handed no token from the
@@ -845,7 +864,7 @@ public static class Nightly
 
                 return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again; {insidersAgain} setup and member reading row(s) given their insider readings again; {scoredAgain.Scored} member(s) scored again on their filings");
             }, [FilingsRefresher.Stage, Fundamentals.FundamentalScorer.AgainStage]),
-            // Section 14's step 26, after the filings refresh, from 22.9. Quality at a fair price on each index, reading every
+            // Section 14's step 25, after the filings refresh, from 22.9. Quality at a fair price on each index, reading every
             // member's scorecard as the night's last scoring stored it and its price against its own earnings as the ledger's
             // valuation reading stored it: the holdings carried, bought at their next open and, on the first night of a
             // month, sold where they no longer qualify and chosen down the ranking. It makes no request, so a night run
@@ -860,7 +879,7 @@ public static class Nightly
 
                 return Quality.QualityFamily.Detail(outcome.Indices);
             }, [Quality.QualityFamily.Stage]),
-            // Section 14's step 27, after the quality family. The Fundamentals family on each index, reading every member's
+            // Section 14's step 26, after the quality family. The Fundamentals family on each index, reading every member's
             // scorecard as the night's last scoring stored it, the score a newly read filing's previous filing held through
             // the core's one scorecard, and its newest results release through the one reader of the release readings: its
             // trades carried, bought at their next open and sold, and tonight's buys and flags stored. It makes no request,
@@ -873,7 +892,7 @@ public static class Nightly
 
                 return Improving.ImprovingFamily.Detail(outcome.Indices);
             }, [Improving.ImprovingFamily.Stage]),
-            // Section 14's step 28, after the Fundamentals family. The Treasury's 10-year par yield for the session's year, one free
+            // Section 14's step 27, after the Fundamentals family. The Treasury's 10-year par yield for the session's year, one free
             // request to the Treasury and none to the provider, every session to the night's kept that the store does not
             // hold. It is handed no token from the night's deadline, and a refused or unreadable answer keeps nothing and
             // stops no step. A night run again for an earlier session reads it too, since the table holds that session.
@@ -885,7 +904,7 @@ public static class Nightly
 
                 return Treasury.TreasuryReader.Detail(read, clock.SessionDateAt(clock.UtcNow));
             }),
-            // Section 14's step 29, after the Treasury's 10-year. The night asks for six reports taken
+            // Section 14's step 28, after the Treasury's 10-year. The night asks for six reports taken
             // in turn across the S&P 500's, 400's and 600's pages and leaves them queued: it writes a
             // row a name and starts no drain, and the off-peak run starts the drain five minutes after each
             // peak window ends, each pass

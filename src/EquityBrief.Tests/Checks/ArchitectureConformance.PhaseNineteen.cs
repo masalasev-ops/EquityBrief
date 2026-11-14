@@ -231,8 +231,8 @@ public partial class ArchitectureConformance
     ];
 
     // The rows the document loses after phase 19's report, each counted by the report of the phase that landed it and in
-    // no claim now: the 19.4 correction's table of every account, which the page's parts replace.
-    internal static string[] TakenOutAfterPhaseNineteen => [.. Reading.ReadSurface.RetiredPaperRows];
+    // no claim now: the 19.4 correction's table of every account, which the page's parts replace, and phase 20's.
+    internal static string[] TakenOutAfterPhaseNineteen => [.. Reading.ReadSurface.RetiredPaperRows, .. TakenOutAfterPhaseTwenty];
 
     // How many more rows each part of phase 19 landed than its count in the plan, a negative figure where it landed fewer.
     // 19.0, none as counted. 19.1, one as counted. 19.2, nine of twelve: the readings store, three marks, Tonight's two rows,

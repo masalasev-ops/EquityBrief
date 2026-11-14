@@ -18,7 +18,7 @@ public static class Management
     // A short-term dip pick's management: sold at the next session's open after a close under its stop or one its exit
     // reads, by its dial's level, above its exit's average of closes, from 22.3 its 2-session RSI closing above its level
     // or a close above the close before, and at the close of its last session where neither came.
-    public static IReadOnlyList<string> ForDip(decimal? stop, int exitLevel, int? timeLimit)
+    public static IReadOnlyList<string> ForDip(decimal? stop, int exitLevel, int? timeLimit, decimal? takeProfit = null)
     {
         var words = new List<string>();
 
@@ -33,7 +33,9 @@ public static class Management
             Families.DipRule.UpCloseExit => "Sell at the next trading day's open after a day that closes above the day before.",
             _ => FormattableString.Invariant($"Sell at the next trading day's open after a day that closes above its {exitLevel}-day average close."),
         });
-        words.Add("No target: the trade is ended by its stop, its exit or its time limit.");
+        words.Add(takeProfit is { } aim
+            ? $"Sell at the next trading day's open after a day that closes at or above {Price(aim)}."
+            : "Take profit at a price set from the buy: the nearest price above it where the stock turned down before, or a multiple of the risk above it.");
 
         if (timeLimit is { } most)
         {
@@ -43,7 +45,11 @@ public static class Management
         return words;
     }
 
-    public static IReadOnlyList<string> For(decimal? stop, decimal? target, decimal? trail, int? cap, bool heavyweights)
+    // From the operator's order of 2026-11-14 every pick takes profit at a price, so no card says it has none: a sale naming no
+    // target of its own sells at its take-profit price, and the heavyweights' book sells at the night's close under its stop or
+    // at its take-profit beside its reshuffle.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public static IReadOnlyList<string> For(decimal? stop, decimal? target, decimal? trail, int? cap, bool heavyweights, decimal? takeProfit = null)
     {
         if (heavyweights)
         {
@@ -51,7 +57,7 @@ public static class Management
             [
                 "Kept while it leads its sector: sell at the close of a month's reshuffle, its first trading day or the first after it whose stored year holds the closes the rule reads, where the rule would no longer buy it.",
                 "Sell at its last close as a member if it leaves the index.",
-                "No stop and no target: nothing sells it at a price set in advance, so the whole position is at risk.",
+                .. BookExit(stop, takeProfit ?? target),
             ];
         }
 
@@ -64,9 +70,9 @@ public static class Management
                 : $"Sell at the next trading day's open after a day that closes below {Price(floor)}.");
         }
 
-        words.Add(target is { } goal
+        words.Add((target ?? takeProfit) is { } goal
             ? $"Sell at the next trading day's open after a day that closes at or above {Price(goal)}."
-            : "No target: the trade is ended by its stop or its time limit.");
+            : "Take profit at a price set from the buy: the nearest price above it where the stock turned down before, or a multiple of the risk above it.");
 
         if (cap is { } most)
         {
@@ -75,6 +81,18 @@ public static class Management
 
         return words;
     }
+
+    // A book's holding's stop and take-profit, each sold at the night's close; where its first close as a holding has not set
+    // them yet, how they will be set.
+    public static IReadOnlyList<string> BookExit(decimal? stop, decimal? takeProfit) =>
+    [
+        stop is { } floor
+            ? $"Sell at the close of a day that closes below {Price(floor)}."
+            : FormattableString.Invariant($"Its stop is set when it is bought, {Loop.TakeProfit.MiddleStopMoves:0.#} typical daily moves under the buy, and it sells at the close of a day that closes below it."),
+        takeProfit is { } aim
+            ? $"Take profit at the close of a day that closes at or above {Price(aim)}."
+            : FormattableString.Invariant($"Its take profit is set with its stop: the nearest price above the buy where the stock turned down before, or {Loop.TakeProfit.MiddleMultiple:0.#} times the risk above the buy."),
+    ];
 
     static string Price(decimal price) => price.ToString("0.00", CultureInfo.InvariantCulture);
 }

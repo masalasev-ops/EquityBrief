@@ -45,6 +45,69 @@ public sealed record RuleUnderTest(
     // From 21.18 the rule's walk under the target standing as a sell order, walked beside it unregistered where its family
     // on the index registers none; none elsewhere.
     public IReadOnlyList<(int Entry, double? Edge)>? StandingTarget { get; init; }
+
+    // From 23.10's second part the walks beside a live rule its family has no room or no word to register, each named by what
+    // it changes, unregistered and written nowhere; none elsewhere.
+    public IReadOnlyList<(string Words, IReadOnlyList<(int Entry, double? Edge)> Units)>? Beside { get; init; }
+
+    // From the operator's order of 2026-11-14 a live book's walks beside it at each stop and take-profit the test states, its
+    // months the unit, unregistered and written nowhere; none for any other rule.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public IReadOnlyList<(string Words, IReadOnlyList<(int Opens, double? Edge)> Months)>? BookBeside { get; init; }
+}
+
+// From the operator's order of 2026-11-14 the nine stops and take-profits a book is walked at beside its live rule, each in
+// words, the moves of its stop under the buy and the multiple of its risk.
+public static class BookStops
+{
+    public static IReadOnlyList<(double Moves, double Multiple)> Grid { get; } =
+        [.. from moves in Core.Loop.TakeProfit.StopMoves from multiple in Core.Loop.TakeProfit.Multiples select (moves, multiple)];
+
+    public static string Words((double Moves, double Multiple) stops) =>
+        FormattableString.Invariant($"a stop {stops.Moves:0.##} typical days under the buy and taking profit at {stops.Multiple:0.##} times the risk");
+
+    // A live book's walks at each, from a book walked at a stop and a take-profit.
+    public static IReadOnlyList<(string Words, IReadOnlyList<(int Opens, double? Edge)> Months)> Beside(Func<(double Moves, double Multiple), IReadOnlyList<(int Opens, double? Edge)>> walked) =>
+        [.. Grid.Select(stops => (Words(stops), walked(stops)))];
+}
+
+// From 23.10's second part what each walk beside the S&P 500 pullback's live rule changes, as the run prints it.
+public static class PullbackBesideWords
+{
+    public const string TodaysPlan = "today's plan, bought at the next open at its own stop and sale";
+
+    public const string StandingTarget = "its target standing as a sell order, on today's plan";
+
+    public const string TightStop = "the tight-stop skip, a listing whose stop stands within one typical move of its buy not listed, on today's plan";
+
+    public static string Exposure(double floor) =>
+        FormattableString.Invariant($"its exposure graded at the breadth floor {floor:0.00}, its market check open, on today's plan");
+
+    public static string StrengthWidened(double floor) =>
+        FormattableString.Invariant($"the uptrend's strength floor at {floor:0.00}, widened");
+
+    public static string ArrivalWidened(int sessions) =>
+        FormattableString.Invariant($"the turn up within {sessions} sessions, widened");
+}
+
+// From 23.10's second part what each walk beside a live drift or the S&P 600's pullback changes, as the run prints it.
+public static class DriftConditionWords
+{
+    public const string Volume = "the reaction's volume over 3 times its 50-day mean, a condition";
+
+    public const string Gap = "a gap up over a typical day, a condition";
+
+    public const string Stretch = "the close 2 to 4 typical days over its 20-day average, a condition";
+
+    public const string LargestGain = "the reaction the largest one-day gain of the past year, a condition";
+
+    public const string StretchOver = "the close over 4 typical days above its 20-day average, a condition";
+
+    public const string SalesCheck = "the sales check, the newest quarter first filed selling more than the same quarter a year before";
+
+    public const string TightStop = "the tight-stop skip, a pick whose stop stands within one typical move of its buy not bought, on today's plan";
+
+    public const string TightStopPullback = "the tight-stop skip, its stop at least one typical move under its buy, on the plan its search walks";
 }
 
 // From 21.1 a tone variant's walk and its opposite's over the same history, each trade by the session it was listed on,
@@ -108,7 +171,8 @@ public sealed record RuleTestInputs(
     OwnReads? Own = null,
     Func<int, int, string?>? FiledStates = null,
     LikePool? Like = null,
-    Func<string, RankingWalk?>? Ranked = null)
+    Func<string, RankingWalk?>? Ranked = null,
+    IReadOnlyDictionary<string, IReadOnlyList<QuarterRevenue>>? Revenues = null)
 {
     // From 21.4 the business's state off the SEC's facts as first filed for a stock on a session, which the S&P 500 pullback
     // version leaving off a deteriorating business is walked at: the one handed in, or the catalogue's own through the
@@ -175,6 +239,9 @@ public static class RuleTests
     // sweep's own reading: the run laid out no such reading for its family, or its book reads twelve months' strength at
     // a window or an industries count no sweep on the index's own history read.
     public const string NoOwnRead = "a level its sweep's own reading would walk, which the run laid out no reading for";
+
+    // From 23.10's second part why a rule stating conditions on the ledger's readings is not walked over its own sweep's reading.
+    public const string NoReadings = "its conditions read the ledger's catalogue, and the run read no readings";
 
     public const string TwelveOneOffTheBase = "twelve months' strength at a window or an industries count other than design (b)'s base, which no sweep on the index's own history read";
 
@@ -312,9 +379,9 @@ public static class RuleTests
             .. Swings(inputs, BreakoutRule.Name),
             .. Swings(inputs, DriftRule.Name),
             .. Heavyweights(inputs),
-            .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting).Months) : []),
+            .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting).Months, (setting, stops) => lay.Book(setting, stops: stops).Months) : []),
             .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters, inputs)) : []),
-            .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting).Months) : []),
+            .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting).Months, (setting, stops) => improving.Book(setting, stops: stops).Months) : []),
         ];
 
         walked = [.. walked.Select(rule => inputs.Standing.FirstOrDefault(row => row.Candidate == rule.Rule) is { } row && RuleHooks.Of(CandidateEvaluator.Read(row.Parameters)).Exposure is not null ? rule with { Graded = true } : rule)];
@@ -459,7 +526,7 @@ public static class RuleTests
     // history test's own lay at its setting, its months the unit, the live rule first; none before a freeze, so the
     // monthly run reads the family from its next run after one.
     // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
-    public static IEnumerable<RuleUnderTest> Improving(IReadOnlyList<RegisterRow> standing, string index, Func<ImprovingSweepSetting, IReadOnlyList<(int Opens, double? Edge)>> months)
+    public static IEnumerable<RuleUnderTest> Improving(IReadOnlyList<RegisterRow> standing, string index, Func<ImprovingSweepSetting, IReadOnlyList<(int Opens, double? Edge)>> months, Func<ImprovingSweepSetting, (double Moves, double Multiple), IReadOnlyList<(int Opens, double? Edge)>>? withStops = null)
     {
         foreach (var row in LiveFirst(standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is ImprovingCandidate rule && rule.Index == index)))
         {
@@ -467,7 +534,10 @@ public static class RuleTests
 
             // From 21.14 a rule requiring a flag first carries the same settings without it beside, walked unregistered
             // and written nowhere, for the split on each side of the local model's cutoff the operator asked for.
-            yield return new RuleUnderTest(ImprovingRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting), Unflagged: setting.FlagFirst ? months(setting with { FlagFirst = false }) : null);
+            yield return new RuleUnderTest(ImprovingRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting), Unflagged: setting.FlagFirst ? months(setting with { FlagFirst = false }) : null)
+            {
+                BookBeside = withStops is { } walk && FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside(stops => walk(setting, stops)) : null,
+            };
         }
     }
 
@@ -585,13 +655,16 @@ public static class RuleTests
     // history test's own lay at its setting, its months the unit, the live rule first; none before a freeze, so the
     // monthly run reads the family from its next run after one.
     // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
-    public static IEnumerable<RuleUnderTest> Quality(IReadOnlyList<RegisterRow> standing, string index, Func<QualitySettings, IReadOnlyList<(int Opens, double? Edge)>> months)
+    public static IEnumerable<RuleUnderTest> Quality(IReadOnlyList<RegisterRow> standing, string index, Func<QualitySettings, IReadOnlyList<(int Opens, double? Edge)>> months, Func<QualitySettings, (double Moves, double Multiple), IReadOnlyList<(int Opens, double? Edge)>>? withStops = null)
     {
         foreach (var row in LiveFirst(standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is QualityCandidate rule && rule.Index == index)))
         {
             var setting = QualityCandidate.SettingsOf(CandidateEvaluator.Read(row.Parameters));
 
-            yield return new RuleUnderTest(QualityRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting));
+            yield return new RuleUnderTest(QualityRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting))
+            {
+                BookBeside = withStops is { } walk && FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside(stops => walk(setting, stops)) : null,
+            };
         }
     }
 
@@ -676,7 +749,9 @@ public static class RuleTests
             }
 
             var perNight = p.GetValueOrDefault(SwingFilterRule.BestOfParameter) is > 0 and var best ? (int)best : SetupFamilies.ListedANight;
-            var walk = RuleWalk.LargeSwingFilter(inputs.Read, filter.History, filter.Version, settings, inputs.Progress, live ? inputs.Approved.GetValueOrDefault(SetupFamilies.Pullback) : null, inputs.Readings, inputs.Trees, perNight, PlanOf(p));
+            var approved = live ? inputs.Approved.GetValueOrDefault(SetupFamilies.Pullback) : null;
+            var standing = OwnHooksOn(approved, p);
+            var walk = RuleWalk.LargeSwingFilter(inputs.Read, filter.History, filter.Version, settings, inputs.Progress, standing, inputs.Readings, inputs.Trees, perNight, PlanOf(p));
 
             // The version leaving off a deteriorating business is walked over the listings its state keeps, each read on
             // the listing's own session, so its trades are the live filter's less the stocks it leaves off that night.
@@ -684,9 +759,85 @@ public static class RuleTests
                 ? walk.Keeping(at => !string.Equals(filedStates!(walk.Listings[at].Name, walk.Listings[at].Session), Core.Quarters.FundamentalState.Deteriorating, StringComparison.Ordinal))
                 : walk.Own;
 
-            yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(own));
+            yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(own))
+            {
+                Beside = live ? PullbackBeside(inputs, filter, settings, p, approved, standing) : null,
+            };
         }
     }
+
+    // From 23.10's second part the hooks a swing filter rule is walked at: those an approval stored for the live rule, with the
+    // plan the rule's own registration states on top of them, as the night keeps its picks under it.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    static LoopChange? OwnHooksOn(LoopChange? approved, IReadOnlyDictionary<string, double> p)
+    {
+        var own = p.Where(pair => RuleHooks.IsHook(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+
+        return own.Count == 0 ? approved : LoopChange.OfHooks(own).OnTopOf(approved);
+    }
+
+    // From 23.10's second part, on the operator's order of 2026-11-13, the S&P 500 pullback's live rule's walks beside it, each
+    // unregistered and written nowhere, the family keeping nine: today's plan where it trades another; its graded exposure at
+    // the floor its market check reads, its listings read with that check open, and its target standing as a sell order, each
+    // on today's plan as their walks read it; its two widenings of 2026-11-07, the uptrend's strength floor at 0.40 and the turn
+    // up within 5 sessions, each at the plan it trades; and the tight-stop skip on today's plan, where it was measured, a
+    // listing whose stop stands within one typical move of its buy not listed.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    static IReadOnlyList<(string Words, IReadOnlyList<(int Entry, double? Edge)> Units)> PullbackBeside(
+        RuleTestInputs inputs,
+        (string Version, FilterSettings Settings, LargePullback History) filter,
+        FilterSettings settings,
+        IReadOnlyDictionary<string, double> p,
+        LoopChange? approved,
+        LoopChange? standing)
+    {
+        var beside = new List<(string, IReadOnlyList<(int Entry, double? Edge)>)>();
+        var plan = PlanOf(p);
+        var planned = RuleHooks.Of(p).Plan is not null;
+
+        RuleWalk Walk(FilterSettings at, LoopChange? hooks) =>
+            RuleWalk.LargeSwingFilter(inputs.Read, filter.History, filter.Version, at, inputs.Progress, hooks, inputs.Readings, inputs.Trees, SetupFamilies.ListedANight, plan);
+
+        var today = planned ? Walk(settings, approved) : null;
+
+        if (today is not null)
+        {
+            beside.Add((PullbackBesideWords.TodaysPlan, Units(today.Own)));
+        }
+
+        var onToday = today ?? Walk(settings, approved);
+
+        if (p.GetValueOrDefault(SwingFilterRule.MarketGateParameter, 1) == 1 && inputs.Readings is not null)
+        {
+            var exposed = LoopChange.OfHooks(ExposureProcedures.Exposed(LoopChange.NoHooks, settings.BreadthFloor)).OnTopOf(approved);
+
+            beside.Add((PullbackBesideWords.Exposure(settings.BreadthFloor), Units(Walk(settings with { BreadthFloor = SweepGrid.MarketOff }, exposed).Own)));
+        }
+
+        // The walk's listings are the history's at the settings, in the same order, each stating its stop's distance in typical
+        // moves.
+        var listings = filter.History.Listings(settings, plan);
+
+        beside.Add((PullbackBesideWords.StandingTarget, Units(onToday.Under(ExitMenu.Swing.Single(choice => choice.Kind == ExitKind.Standing)))));
+        beside.Add((PullbackBesideWords.StrengthWidened(PullbackWidenedStrength), Units(Walk(settings with { StrengthFloor = PullbackWidenedStrength }, standing).Own)));
+        beside.Add((PullbackBesideWords.ArrivalWidened(PullbackWidenedArrival), Units(Walk(settings with { ArrivalSessions = PullbackWidenedArrival }, standing).Own)));
+        beside.Add((PullbackBesideWords.TightStop, Units(onToday.Keeping(at => !TightStop(listings[at].StopMoves)))));
+
+        return beside;
+    }
+
+    // From 23.10's second part the two widenings of the S&P 500 pullback proposed on 2026-11-07, the uptrend's strength floor and
+    // the sessions the turn up may arrive within.
+    public const double PullbackWidenedStrength = 0.40;
+
+    public const int PullbackWidenedArrival = 5;
+
+    // From 23.10's second part the low end of a pullback's stop the tight-stop skip walks it at, one typical move under the buy.
+    public const double PullbackTightStopLow = 1;
+
+    // From 23.10's second part the tight-stop skip's test: a stop standing within one typical move of the buy.
+    // see: The tight-stop skip is walked unregistered on today's plan where it was measured, taking no family's place
+    public static bool TightStop(double stopMoves) => stopMoves < 1;
 
     // From 21.1 the plan a swing filter version's trade gate reads, from its trade parameter: the ladder's first tranche,
     // the plan at the nearest bands, or section 10's, the live plan.
@@ -716,7 +867,21 @@ public static class RuleTests
             // profit and cover check among them, is walked by its search's own reading at every level it states.
             if (CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate own && ReadsOwnSweep(own, p))
             {
-                yield return ThroughOwnSearch(inputs.Own?.Pullback, own, row, p, inputs.Readings);
+                var tested = ThroughOwnSearch(inputs.Own?.Pullback, own, row, p, inputs.Readings);
+
+                // From 23.10's second part, on the operator's answer of 2026-11-13, the S&P 600 pullback's live rule carries the
+                // tight-stop skip beside it, unregistered and written nowhere so its family's free places stay for its plan: its
+                // own search at its setting with the stop's low end at one typical move, as the skip was measured on 2026-11-06,
+                // on the plan its search walks.
+                // see: The tight-stop skip is walked unregistered on today's plan where it was measured, taking no family's place
+                if (inputs.Read.Index == Core.Providers.FundHoldings.SmallCapIndex && StandingOf(row) == Live
+                    && p.GetValueOrDefault(IndexPullbackCandidate.StopLowParameter) < PullbackTightStopLow
+                    && ThroughOwnSearch(inputs.Own?.Pullback, own, row, new Dictionary<string, double>(p, StringComparer.Ordinal) { [IndexPullbackCandidate.StopLowParameter] = PullbackTightStopLow }, inputs.Readings) is { Trades: { } skipped })
+                {
+                    tested = tested with { Beside = [(DriftConditionWords.TightStopPullback, skipped)] };
+                }
+
+                yield return tested;
 
                 continue;
             }
@@ -1057,14 +1222,29 @@ public static class RuleTests
             exposure = (Units(RuleWalk.Swing(inputs.Read, family, large, change with { Hooks = ExposureProcedures.Exposed(hooks, exposureFloor) }, inputs.Readings, inputs.Trees).Own), exposureFloor);
         }
 
+        // From 23.10's second part a live rule trading a plan has its walks that sell or skip as today's plan did walked on
+        // today's plan, a plan's sale and an exit of the menu never standing together.
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+        var today = RuleHooks.Of(hooks).Plan is not null && StandingOf(row) != Variant
+            ? RuleWalk.Swing(inputs.Read, family, large, change with { Hooks = WithoutPlan(hooks) }, inputs.Readings, inputs.Trees, marketOff: !large && p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter) == IndexRuleCandidate.NoMarketCheck)
+            : walk;
+
         // From 21.18 a live or provisional rule the standing target reaches whose family on the index registers no rule at
         // it, the S&P 500's drift, which holds nine, has its walk under the standing target walked beside it unregistered.
         // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
         var standingExit = ExitMenu.Swing.Single(choice => choice.Kind == ExitKind.Standing);
         var standingUnits = StandingOf(row) != Variant && ExitProcedures.StandsFor(inputs.Read.Index, family) && RuleHooks.Of(hooks).Exit == 0
             && !inputs.Standing.Any(other => other.Evaluator == row.Evaluator && RuleHooks.Of(CandidateEvaluator.Read(other.Parameters)).Exit == standingExit.Number)
-                ? Units(walk.Under(standingExit))
+                ? Units(today.Under(standingExit))
                 : null;
+
+        // From 23.10's second part, on the operator's order of 2026-11-13, the S&P 500 drift's live rule carries beside it,
+        // each unregistered and written nowhere, its family keeping nine: the three conditions the entry check's measurement
+        // of 2026-11-05 named on it, read from the ledger's catalogue, each alone at the plan it trades; the sales check as
+        // measured on 2026-11-10; and the tight-stop skip on today's plan, where it was measured.
+        // see: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+        // see: The tight-stop skip is walked unregistered on today's plan where it was measured, taking no family's place
+        var beside = large && family == DriftRule.Name && StandingOf(row) == Live ? DriftBeside(inputs, walk, today, LargeDriftConditions) : null;
 
         bool Open(int at)
         {
@@ -1107,11 +1287,96 @@ public static class RuleTests
                     return leaves;
                 });
 
-            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, OpenFloor: Units(floored), Skipped: skipped, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor) { StandingTarget = standingUnits };
+            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, OpenFloor: Units(floored), Skipped: skipped, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor) { StandingTarget = standingUnits, Beside = beside };
         }
 
-        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor) { StandingTarget = standingUnits };
+        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor) { StandingTarget = standingUnits, Beside = beside };
     }
+
+    // From 23.10's second part the hooks a rule stands at with its plan stated off, today's plan.
+    static IReadOnlyDictionary<string, double> WithoutPlan(IReadOnlyDictionary<string, double> hooks) =>
+        hooks.Where(pair => !PlanHook.Parameters.Contains(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+
+    // From 23.10's second part the conditions the entry check's measurement of 2026-11-05 named, each tested alone: on the S&P
+    // 500's drift the volume over 3 times normal, the gap over a typical day and the stretch of 2 to 4 typical days, read from
+    // the ledger's catalogue; on the S&P 400's the volume alone; and on the S&P 600's the largest gain and the stretch over 4,
+    // which its family has room to register.
+    // see: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+    public static IReadOnlyList<(string Words, IReadOnlyDictionary<string, double> Hooks)> LargeDriftConditions { get; } =
+    [
+        (DriftConditionWords.Volume, new Dictionary<string, double>(StringComparer.Ordinal) { ["also_night_volume_ratio_above"] = 3 }),
+        (DriftConditionWords.Gap, new Dictionary<string, double>(StringComparer.Ordinal) { ["also_gap_days_above"] = 1 }),
+        (DriftConditionWords.Stretch, new Dictionary<string, double>(StringComparer.Ordinal) { ["also_stretch_days_above"] = 2, ["also_stretch_days_below"] = 4 }),
+    ];
+
+    public static IReadOnlyList<(string Words, IReadOnlyDictionary<string, double> Hooks)> MidDriftConditions { get; } =
+    [
+        (DriftConditionWords.Volume, new Dictionary<string, double>(StringComparer.Ordinal) { ["also_night_volume_ratio_above"] = 3 }),
+    ];
+
+    public static IReadOnlyList<(string Words, IReadOnlyDictionary<string, double> Hooks)> SmallDriftConditions { get; } =
+    [
+        (DriftConditionWords.LargestGain, new Dictionary<string, double>(StringComparer.Ordinal) { ["also_largest_gain_above"] = 1 }),
+        (DriftConditionWords.StretchOver, new Dictionary<string, double>(StringComparer.Ordinal) { ["also_stretch_days_above"] = 4 }),
+    ];
+
+    // From 23.10's second part a live drift's walks beside it over the extended grid's walk: each condition alone at the plan the
+    // rule trades, read from its listings' readings, a listing whose reading is not held kept off as a condition keeps it; the
+    // sales check as measured, a listing whose quarters are not read kept off as the measurement counted it failing; and the
+    // tight-stop skip over today's plan, a listing whose stop stands within one typical move of its buy not bought, its place
+    // spent, as the measurement of 2026-11-06 skipped it.
+    static IReadOnlyList<(string Words, IReadOnlyList<(int Entry, double? Edge)> Units)> DriftBeside(RuleTestInputs inputs, RuleWalk walk, RuleWalk today, IReadOnlyList<(string Words, IReadOnlyDictionary<string, double> Hooks)> conditions)
+    {
+        var beside = new List<(string, IReadOnlyList<(int Entry, double? Edge)>)>();
+        var none = new double?[LedgerReadings.Count];
+
+        if (inputs.Readings is not null)
+        {
+            foreach (var (words, hooks) in conditions)
+            {
+                beside.Add((words, Units(walk.Hooked(hooks, at => walk.ReadingsAt(at) ?? none))));
+            }
+        }
+
+        if (inputs.Revenues is { } revenues)
+        {
+            beside.Add((DriftConditionWords.SalesCheck, Units(walk.Keeping(at => SalesGrewAt(inputs.Read, revenues, walk.Listings[at].Name, walk.Listings[at].Session)))));
+        }
+
+        beside.Add((DriftConditionWords.TightStop, Units(today.KeepingSkipping(null, listing => listing.Move > 0 && TightStop((listing.Entry - listing.Stop) / listing.Move)))));
+
+        return beside;
+    }
+
+    // From 23.10's second part a live drift's walks beside it over its own sweep's reading: each condition alone over the listings
+    // it keeps, a listing whose reading is not held kept off, and the sales check as measured, each bought at the open after its
+    // listing and charged its round trip as the rule's own walk is.
+    static IReadOnlyList<(string Words, IReadOnlyList<(int Entry, double? Edge)> Units)> OwnDriftBeside(RuleTestInputs inputs, IndexSweepRunner.OwnSwingRead own, IReadOnlyList<FamilyListing> listings, IReadOnlyList<(string Words, IReadOnlyDictionary<string, double> Hooks)> conditions)
+    {
+        var beside = new List<(string, IReadOnlyList<(int Entry, double? Edge)>)>();
+
+        if (inputs.Readings is { } read)
+        {
+            foreach (var (words, hooks) in conditions)
+            {
+                var condition = RuleHooks.Of(hooks);
+
+                beside.Add((words, Units(own.Costed(own.AtOpen(listings.Where(listing => condition.Passes(read.Of(listing.Name, listing.Bar, listing.Session)))), 1))));
+            }
+        }
+
+        if (inputs.Revenues is { } revenues)
+        {
+            beside.Add((DriftConditionWords.SalesCheck, Units(own.Costed(own.AtOpen(listings.Where(listing => PlanPoints.SalesGrew(revenues.GetValueOrDefault(own.Series[listing.Name].Name.Ticker), own.Calendar[listing.Session]) == true)), 1))));
+        }
+
+        return beside;
+    }
+
+    // From 23.10's second part whether a listing's newest quarter first filed by its session sold more than the same quarter a year
+    // before, as the drift's sales check of 2026-11-10 reads it; false where either is not read.
+    static bool SalesGrewAt(LoopRead read, IReadOnlyDictionary<string, IReadOnlyList<QuarterRevenue>> revenues, int name, int session) =>
+        PlanPoints.SalesGrew(revenues.GetValueOrDefault(read.Series[name].Name.Ticker), read.Calendar[session]) == true;
 
     // From 21.9 whether a rule of the family registered on the same index states the graded exposure.
     static bool RegistersExposure(RuleTestInputs inputs, RegisterRow row) =>
@@ -1314,6 +1579,36 @@ public static class RuleTests
         return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: its exposure graded at the breadth floor {rule.ExposureFloor:0.00}, walked unregistered and written nowhere, {Side(rule.Exposure!, inTestYears)} over the test years, against its own {Side(rule.Trades ?? [], inTestYears)}");
     }
 
+    // From 23.10's second part each walk beside a live rule as the run prints it: what it changes, its trades and their mean
+    // edge after costs over the test years against the rule's own, unregistered and written nowhere.
+    public static IEnumerable<string> BesideLines(RuleUnderTest rule, Func<int, bool> inTestYears)
+    {
+        static string Side(IReadOnlyList<(int Entry, double? Edge)> units, Func<int, bool> on)
+        {
+            var kept = units.Where(unit => on(unit.Entry)).ToArray();
+            var edged = kept.Where(unit => unit.Edge is not null).ToArray();
+
+            return edged.Length == 0
+                ? FormattableString.Invariant($"{kept.Length} trade(s), none ended")
+                : FormattableString.Invariant($"{kept.Length} trade(s) at {edged.Average(unit => unit.Edge!.Value):+0.000;-0.000} risks");
+        }
+
+        // From the operator's order of 2026-11-14 a live book's months at each stop and take-profit beside its own.
+        static string Months(IReadOnlyList<(int Opens, double? Edge)> months, Func<int, bool> on)
+        {
+            var kept = months.Where(month => on(month.Opens) && month.Edge is not null).ToArray();
+
+            return kept.Length == 0
+                ? "no month ended"
+                : FormattableString.Invariant($"{kept.Average(month => month.Edge!.Value) * 100:+0.00;-0.00} points a month over {kept.Length} month(s)");
+        }
+
+        return (rule.Beside ?? []).Select(beside =>
+            FormattableString.Invariant($"{rule.Family}, {rule.Rule}: {beside.Words}, walked unregistered and written nowhere, {Side(beside.Units, inTestYears)} over the test years, against its own {Side(rule.Trades ?? [], inTestYears)}"))
+            .Concat((rule.BookBeside ?? []).Select(beside =>
+                FormattableString.Invariant($"{rule.Family}, {rule.Rule}: {beside.Words}, walked unregistered and written nowhere, {Months(beside.Months, inTestYears)} over the test years, against its own {Months(rule.Months ?? [], inTestYears)}")));
+    }
+
     // From 21.18 a live rule's walk under the target standing as a sell order beside its own over the test years, walked
     // unregistered and written nowhere.
     public static string StandingLine(RuleUnderTest rule, Func<int, bool> inTestYears)
@@ -1400,6 +1695,19 @@ public static class RuleTests
         var version = ReleaseTone.VersionOf(p);
         var hooks = RuleHooks.Of(HooksOf(p));
 
+        // From 23.10's second part a rule stating conditions on the ledger's readings is walked over the listings they keep, a
+        // listing whose reading is not held kept off as the night keeps it; a run that read no readings walks it with why.
+        // see: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+        if (hooks.Also.Count > 0)
+        {
+            if (inputs.Readings is not { } read)
+            {
+                return Kept(NoReadings);
+            }
+
+            listings = [.. listings.Where(listing => hooks.Passes(read.Of(listing.Name, listing.Bar, listing.Session)))];
+        }
+
         // From 21.9 a rule stating the graded exposure is walked with its market check off, each night's picks as its
         // exposure allows; a live or provisional rule whose family registers none has its exposure walked beside it at the
         // floor its market check reads.
@@ -1448,7 +1756,15 @@ public static class RuleTests
                     }),
                     1);
 
-                return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)), OpenFloor: Units(floored), Skipped: skipped, Exposure: besideUnits, ExposureFloor: besideUnits is null ? null : besideFloor);
+                // From 23.10's second part the S&P 400 drift's live rule carries beside it, unregistered and written nowhere, its
+                // family keeping nine, the volume condition the entry check's measurement of 2026-11-05 named on it, read from
+                // the ledger's catalogue, and the sales check as measured on 2026-11-10.
+                // see: The entry check's readings join the ledger's catalogue at the second restart, read as of each setup's session
+                var beside = inputs.Read.Index == Core.Providers.FundHoldings.MidCapIndex && StandingOf(row) == Live
+                    ? OwnDriftBeside(inputs, own, listings, MidDriftConditions)
+                    : null;
+
+                return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)), OpenFloor: Units(floored), Skipped: skipped, Exposure: besideUnits, ExposureFloor: besideUnits is null ? null : besideFloor) { Beside = beside };
             }
 
             return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)), Exposure: besideUnits, ExposureFloor: besideUnits is null ? null : besideFloor);
@@ -1616,9 +1932,13 @@ public static class RuleTests
         {
             foreach (var row in LiveFirst(inputs.Standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is SectorHeavyweightCandidate)))
             {
-                var book = inputs.Lay.BookOf(SettingOf(CandidateEvaluator.Read(row.Parameters)), row.Rule);
+                var setting = SettingOf(CandidateEvaluator.Read(row.Parameters));
+                var book = inputs.Lay.BookOf(setting, row.Rule);
 
-                yield return new RuleUnderTest(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: book.Months);
+                yield return new RuleUnderTest(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: book.Months)
+                {
+                    BookBeside = FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside(stops => inputs.Lay.BookOf(setting, row.Rule, stops).Months) : null,
+                };
             }
 
             yield break;
@@ -1641,7 +1961,10 @@ public static class RuleTests
 
             yield return six is null
                 ? BookOffTheSix(inputs.Lay, row, p, designA)
-                : new RuleUnderTest(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: inputs.Lay.Book(six, designA).Months);
+                : new RuleUnderTest(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: inputs.Lay.Book(six, designA).Months)
+                {
+                    BookBeside = FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside(stops => inputs.Lay.Book(six, designA, stops).Months) : null,
+                };
         }
     }
 

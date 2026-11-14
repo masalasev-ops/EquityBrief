@@ -18,7 +18,7 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
     public const string HoldParameter = "hold";
     public const string LimitParameter = "limit";
 
-    public override string Version => "9a672021a320";
+    public override string Version => "eef80f100c18";
 
     public override string SetupFamily => ImprovingRule.Name;
 
@@ -62,6 +62,17 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Core/Prices/Statistic.cs",
         "src/EquityBrief.Data/StoreConnection.cs",
         .. EquityBrief.Core.Loop.RuleHooks.Sources.Except(EquityBrief.Core.Loop.RuleHooks.PlanWalkSources, StringComparer.Ordinal),
+
+        // From the operator's order of 2026-11-14 the stop and the take-profit each trade is bought with: the price it turned
+        // down at before, read off its swings over its stored and pulled history, and its typical daily move.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        "src/EquityBrief.Worker/Loop/PlanTrades.cs",
+        "src/EquityBrief.Core/Swings/SwingSeries.cs",
+        "src/EquityBrief.Core/Levels/LevelSeries.cs",
+        "src/EquityBrief.Core/Ladders/LadderSeries.cs",
+        "src/EquityBrief.Core/Prices/PriceForm.cs",
+        "src/EquityBrief.Core/Sweep/SweepReadings.cs",
+        "src/EquityBrief.Worker/Filter/SessionReplay.cs",
     ];
 
     // The parameters a registration states for a setting, and the setting a registration's parameters state.

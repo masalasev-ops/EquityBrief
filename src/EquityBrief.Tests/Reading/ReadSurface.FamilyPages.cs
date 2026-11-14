@@ -129,11 +129,14 @@ public partial class ReadSurface
         // N1 and K3 one step short.
         var minute = Assert.Single(Blocks(page, "<div class=\"one-minute\".*?</div></div></div>"));
         Assert.StartsWith("<div class=\"one-minute\" data-picks=\"7\" data-open-trades=\"1\" data-ended=\"0\" data-one-step=\"2\"><div class=\"minute-line\" data-line=\"market\" data-summary><p class=\"market-line\"", minute, StringComparison.Ordinal);
+        // From the operator's order of 2026-11-14 the line beneath names the setup that found nothing, the drift, the
+        // fundamentals drawing no tile, and the open line names the index and those the current rules bought since the
+        // earliest of the live rules' versions, the pullback's of 25 Sep.
         Assert.Contains(
-            FormattableString.Invariant($"<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>7 new picks to buy at Monday's open, from the pullback and the breakout.</b></p><p class=\"minute-said\">{passed} of the {members} S&P 500 stocks qualified under some setup tonight. The other 2 setups found nothing new.</p></div>"),
+            "<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>7 new picks to buy at Monday's open, from the pullback and the breakout.</b></p><p class=\"minute-said\">Earnings drift found nothing tonight.</p></div>",
             minute,
             StringComparison.Ordinal);
-        Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>Of the system's trades, 8 are open, 8 of them this version's.</b></p><p class=\"minute-said\">None ended tonight. <a href=\"#/picks?status=open\">See them on Past picks</a>, and this version's alone on <a href=\"#/paper\">Paper trading</a></p></div>", minute, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>8 trades are open on the S&P 500, 8 of them bought under the current rules since 25 Sep. None ended tonight.</b></p><p class=\"minute-said\"><a href=\"#/picks?status=open\">See them on Past picks</a>, and those bought under the current rules on <a href=\"#/paper\">Paper trading</a></p></div>", minute, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>2 stocks are one step from qualifying.</b></p><p class=\"minute-said\">They could become picks in the next few nights. <a class=\"close-open\" href=\"#/night/{TheSwitch}?universe=500&close=open\">See which, and the step each is missing</a></p></div>"), minute, StringComparison.Ordinal);
 
         // Read back against the store: the buy points are the listed rows, and the open trade is the one
@@ -294,7 +297,7 @@ public partial class ReadSurface
         Assert.Equal(["F1", "F2", "F3", "F4", "F5", "K1", "K2"], folds.Select(fold => fold.Ticker));
         Assert.All(folds, fold => Assert.True(fold.Hidden, $"{fold.Ticker}'s fold is open with no name in the link."));
         Assert.All(folds, fold => Assert.Matches($"^<div class=\"decision-card\" data-index=\"GSPC\" data-family=\"[a-z]+\" data-ticker=\"{fold.Ticker}\"", fold.Body));
-        Assert.Equal(7, Strings(store, $"SELECT COUNT(*) FROM decision_card WHERE session_date = '{TheSwitch}';").Select(int.Parse).Single());
+        Assert.Equal(7, Strings(store, $"SELECT COUNT(*) FROM decision_card WHERE session_date = '{TheSwitch}' AND held_again IS NULL;").Select(int.Parse).Single());
         Assert.Contains("data-selected=\"none\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain(" class=\"sel\"", points, StringComparison.Ordinal);
         Assert.DoesNotContain("data-select-href", points, StringComparison.Ordinal);

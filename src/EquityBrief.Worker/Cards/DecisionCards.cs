@@ -52,6 +52,7 @@ public sealed class DecisionCards : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
@@ -120,6 +121,21 @@ public sealed class DecisionCards : IComponent
         SELECT ticker, family, place FROM index_family_pick
         WHERE index_code = $index AND session_date = $night AND place IS NOT NULL
         ORDER BY place, ticker;
+    ";
+
+    // From the operator's order of 2026-11-14 the stocks a setup's rules met again tonight while a trade an earlier night's
+    // list made still holds them, each with the setup, night and index holding it.
+    // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
+    const string LargeHeldAgain = @"
+        SELECT ticker, family, held_family, held_night, held_index FROM family_pick
+        WHERE session_date = $night AND state = 'open trade' AND held_family IS NOT NULL
+        ORDER BY family, ticker;
+    ";
+
+    const string IndexHeldAgain = @"
+        SELECT ticker, family, held_family, held_night, held_index FROM index_family_pick
+        WHERE index_code = $index AND session_date = $night AND state = 'open trade' AND held_family IS NOT NULL
+        ORDER BY family, ticker;
     ";
 
     const string DipPicks = @"
@@ -266,8 +282,8 @@ public sealed class DecisionCards : IComponent
     ";
 
     const string InsertCard = @"
-        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved, plan)
-        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits, $score_rank, $similar, $approved, $plan);
+        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved, plan, take_profit_from, held_again)
+        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits, $score_rank, $similar, $approved, $plan, $take_profit_from, $held_again);
     ";
 
     // From 23.10 the order the plan its family's live rule states placed on the pick's trade that night, none where the live
@@ -669,7 +685,11 @@ public sealed class DecisionCards : IComponent
         // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
         var dipPicks = await PicksAsync(connection, transaction, DipPicks, index, night, cancellation);
 
-        if (picks.Count == 0 && bought.Count == 0 && indexPicks.Count == 0 && dipPicks.Count == 0)
+        // From the operator's order of 2026-11-14 the stocks a setup's rules met again while a trade holds them.
+        // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
+        var heldAgain = await HeldAgainAsync(connection, transaction, large ? LargeHeldAgain : IndexHeldAgain, index, night, cancellation);
+
+        if (picks.Count == 0 && bought.Count == 0 && indexPicks.Count == 0 && dipPicks.Count == 0 && heldAgain.Count == 0)
         {
             return 0;
         }
@@ -708,6 +728,22 @@ public sealed class DecisionCards : IComponent
             var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation, live, plan.Target is not null);
 
             written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score, Approved(pick.Family), live);
+        }
+
+        // Each stock a setup's rules met again while a trade holds it: a card as a pick's, its plan as its rule would have made
+        // it tonight, marked with the setup, night and index of the trade holding it, at no place on any list.
+        foreach (var (pick, held) in heldAgain)
+        {
+            var live = Live(pick.Family);
+            var plan = large
+                ? await LargePlanAsync(connection, transaction, pick, night, cancellation)
+                : await IndexPlanAsync(connection, transaction, index, pick, night, indexSettings, cancellation);
+            var market = large
+                ? await LargeMarketAsync(connection, transaction, pick.Ticker, night, true, cancellation)
+                : new MarketReading(breadth, floor, true);
+            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation, live, plan.Target is not null);
+
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, 0, plan, market, sectors, ranks, null, cancellation, score, Approved(pick.Family), live, held);
         }
 
         // The fundamentals-first family's picks on the S&P 500, which the index families' step lists, each with the score's
@@ -751,7 +787,13 @@ public sealed class DecisionCards : IComponent
 
         foreach (var buy in bought)
         {
-            var plan = new Plan(buy.Entry, null, null, null, [FormattableString.Invariant($"it led {buy.Sector} at the rebalance of {night:yyyy-MM-dd}, its trend and its beta passing")]);
+            // From the operator's order of 2026-11-14 the stop the book places under its buy and the price it takes profit at.
+            // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+            var exits = buy.Entry is { } bookBuy ? await PlanTrades.BookExitAsync(connection, transaction, buy.Ticker, night, bookBuy, cancellation) : null;
+            var plan = new Plan(buy.Entry, exits is { } placed ? Statistic.ToPrice(placed.Stop) : null, exits?.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null, null, [FormattableString.Invariant($"it led {buy.Sector} at the rebalance of {night:yyyy-MM-dd}, its trend and its beta passing")])
+            {
+                TakeProfitFrom = exits?.TakeProfit is { } from ? TakeProfit.Stored(from) : null,
+            };
             var market = large
                 ? await LargeMarketAsync(connection, transaction, buy.Ticker, night, false, cancellation)
                 : new MarketReading(breadth, floor, false);
@@ -764,7 +806,11 @@ public sealed class DecisionCards : IComponent
 
     // A card's plan: its buy, its stop and target where the rule sets them, the trail a trailing rule raises its stop by,
     // the sessions it is held for at most where it caps them, and the gates its first line names.
-    sealed record Plan(decimal? Entry, decimal? Stop, decimal? Target, int? Cap, IReadOnlyList<string> Gates, decimal? Trail = null);
+    sealed record Plan(decimal? Entry, decimal? Stop, decimal? Target, int? Cap, IReadOnlyList<string> Gates, decimal? Trail = null)
+    {
+        // From the operator's order of 2026-11-14 where a book's take-profit came from, its target being that price.
+        public string? TakeProfitFrom { get; init; }
+    }
 
     sealed record Pick(string Ticker, string Family, int Place);
 
@@ -778,7 +824,7 @@ public sealed class DecisionCards : IComponent
     // drew by the provisional rule.
     // see: An approved change is applied by the night's own build on the index it was approved on alone
     // see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
-    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null, string? approved = null, string? live = null)
+    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null, string? approved = null, string? live = null, string? heldAgain = null)
     {
         var named = NameOf(index);
         var words = SetupFamilies.Named(family)?.Label.ToLowerInvariant() ?? SetupFamilies.SectorHeavyweights.Heading.ToLowerInvariant();
@@ -830,6 +876,8 @@ public sealed class DecisionCards : IComponent
             ("$similar", score?.Similar is { } similar ? similar.Json() : DBNull.Value),
             ("$approved", (object?)approved ?? DBNull.Value),
             ("$plan", await TradedPlanAsync(connection, transaction, index, family, ticker, night, cancellation) is { } traded ? traded : DBNull.Value),
+            ("$take_profit_from", (object?)plan.TakeProfitFrom ?? DBNull.Value),
+            ("$held_again", (object?)heldAgain ?? DBNull.Value),
         ], cancellation);
 
         return 1;
@@ -1260,6 +1308,30 @@ public sealed class DecisionCards : IComponent
         }
 
         return picks;
+    }
+
+    // The stocks a setup's rules met again while a trade holds them, each with the trade holding it in JSON, its setup, night
+    // and index, the index its own list's where the row names none.
+    static async Task<IReadOnlyList<(Pick Pick, string Held)>> HeldAgainAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, string index, DateOnly night, CancellationToken cancellation)
+    {
+        var held = new List<(Pick, string)>();
+
+        await using var command = Command(connection, transaction, sql, [("$index", index), ("$night", Stamp(night))]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            held.Add((
+                new Pick(reader.GetString(0), reader.GetString(1), 0),
+                System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    family = reader.GetString(2),
+                    night = reader.IsDBNull(3) ? null : reader.GetString(3),
+                    index = reader.IsDBNull(4) ? index : reader.GetString(4),
+                })));
+        }
+
+        return held;
     }
 
     static async Task<IReadOnlyList<Bought>> BoughtAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, string index, DateOnly night, CancellationToken cancellation, string? candidate = null)

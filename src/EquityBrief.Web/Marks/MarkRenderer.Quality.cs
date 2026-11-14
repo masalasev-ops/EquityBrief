@@ -5,7 +5,13 @@ namespace EquityBrief.Web.Marks;
 // One holding on Quality at a fair price's card: the stock, its company, the night it was chosen, its score tonight as
 // checks passed of the checks that applied, its valuation's place tonight, its change since it was bought, none before
 // its buy, and tonight's line in the reader's words.
-public sealed record QualityHoldingCell(string Ticker, string? Company, DateOnly ChosenOn, int? Passed, int? Applied, double? Place, double? SinceBought, string Tonight, decimal? Fill = null, DateOnly? BoughtOn = null, decimal? Close = null);
+public sealed record QualityHoldingCell(string Ticker, string? Company, DateOnly ChosenOn, int? Passed, int? Applied, double? Place, double? SinceBought, string Tonight, decimal? Fill = null, DateOnly? BoughtOn = null, decimal? Close = null)
+{
+    // From the operator's order of 2026-11-14 its stop under the buy and the price it takes profit at, none before it was bought.
+    public decimal? Stop { get; init; }
+
+    public TakeProfitView? TakeProfit { get; init; }
+}
 
 // One stock next in line: qualifying tonight and not held, in the family's order.
 public sealed record QualityNextCell(string Ticker, string? Company, int Passed, int Applied, double? Place);
@@ -53,6 +59,7 @@ public sealed partial class MarkRenderer
         ("Score", "How many of the fundamentals checks its filings passed tonight, of the checks that apply to it."),
         ("Price against its own past", "How cheap its price over earnings stands against its own last 12 quarters."),
         ("Since bought", "Its change since it was bought at the open after the reshuffle that chose it."),
+        ("Stop and take profit", "A close under its stop, or at or above its take-profit price, sells it at that close before the next reshuffle."),
         ("Tonight", "Whether it still qualifies, and what happens at the next reshuffle if it does not."),
     ];
 
@@ -124,6 +131,7 @@ public sealed partial class MarkRenderer
                 body.Append(cell.SinceBought is { } change
                     ? Formatted($"<td class=\"r num quality-since\">{SignedFigure(change * 100, 1, Formatted($"{Unsigned(change * 100, 1):+0.0;-0.0;0.0}%"))}</td>")
                     : "<td class=\"r num quality-since\"><span class=\"degraded\">bought at the next open</span></td>");
+                body.Append(BookExitCell(cell.Stop, cell.TakeProfit));
                 body.Append(Invariant, $"<td class=\"quality-tonight\"><span class=\"quality-bought\">{Escaped(QualityBoughtSaid(cell, card.NextReshuffle))}</span> {Escaped(cell.Tonight)}</td></tr>");
             }
 
@@ -260,6 +268,19 @@ public sealed partial class MarkRenderer
     {
         "no longer qualifies" => "it no longer qualified at the reshuffle",
         "left the index" => "it left the index",
+        EquityBrief.Core.Loop.TakeProfit.UnderItsStop => "it closed under its stop",
+        EquityBrief.Core.Loop.TakeProfit.TookProfit => "it closed at or above its take-profit price",
         _ => reason,
     };
+
+    // From the operator's order of 2026-11-14 a book's holding's stop and take-profit in one cell: the stop the book added under
+    // its buy and how far, and the price it takes profit at and where it came from; for one bought before, that none was set.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public static string BookExitCell(decimal? stop, TakeProfitView? takeProfit) =>
+        stop is null && takeProfit is null
+            ? "<td class=\"book-exit\"><span class=\"degraded\">bought before a stop and a take-profit were set</span></td>"
+            : Formatted($"<td class=\"book-exit\" data-stop=\"{StoredPrice(stop)}\" data-take-profit=\"{StoredPrice(takeProfit?.Price)}\">")
+                + (stop is { } floor ? Formatted($"<span class=\"exit-line\">{Escaped(TakeProfitView.AddedStopLabel)} {Escaped(Price(floor))}</span>{(takeProfit?.AddedStopLine is { } moved ? Formatted($"<span class=\"exit-note\">{Escaped(moved)}</span>") : string.Empty)}") : string.Empty)
+                + (takeProfit is { } taking ? Formatted($"<span class=\"exit-line\">{Escaped(TakeProfitView.Label)} {Escaped(Price(taking.Price))}</span>{(taking.Line is { } said ? Formatted($"<span class=\"exit-note\">{Escaped(said)}</span>") : string.Empty)}") : string.Empty)
+                + "</td>";
 }

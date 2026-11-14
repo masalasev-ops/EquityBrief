@@ -37,6 +37,10 @@ public sealed partial class MarkRenderer
     static string RewardCell(FamilyPickCell pick) =>
         pick.RewardToRisk is { } ratio
             ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">${Figures.Ratio(ratio)}</td>")
+            // From the operator's order of 2026-11-14 what it risks for its take-profit, where its card holds one.
+            // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+            : pick.Card?.TakeProfit is { Buy: { } buy, Stop: { } stop } taking && buy > stop && taking.Price > buy
+                ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{((taking.Price - buy) / (buy - stop)).ToString(Invariant)}\">${Figures.Ratio((taking.Price - buy) / (buy - stop))}</td>")
             : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? NoTargetRising : pick.Exit is not null ? NoTargetExit : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>";
 
     // What a pick's risk line says where its setup sets no target.

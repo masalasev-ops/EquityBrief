@@ -29,7 +29,10 @@ public sealed record QualityOutcome(DateOnly? Night, IReadOnlyList<QualityIndexO
 // down the ranking; a holding whose stock left the index sold at its last close as a member; each choice bought at its
 // next session's open through the core's one pricing function; and each holding's growth carried night by night by the
 // closes as the store holds them, with each member's beside it on its answer, so a holding's benchmark is an
-// equal-weighted hold of the members answered on the night it was chosen. It reads no pulled history, makes no request,
+// equal-weighted hold of the members answered on the night it was chosen. From the operator's order of 2026-11-14 a holding
+// bought carries a stop under its fill and a take-profit, a close under the one or at or above the other selling it at that
+// close, the take-profit read from the prices the stock turned down at over twenty years, the pulled history among them. It
+// makes no request,
 // calls no model, reads no market check and writes only its own tables. Each index's part is one transaction, so a
 // failure in it leaves none of its writes and is named on its row while the other indices go on.
 // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
@@ -43,6 +46,7 @@ public sealed class QualityFamily : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.FundamentalScore, Touch.Read),
@@ -139,7 +143,7 @@ public sealed class QualityFamily : IComponent
     ";
 
     const string OpenHoldings = @"
-        SELECT ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, growth, through
+        SELECT ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, growth, through, stop, take_profit
         FROM quality_holding WHERE rule = $rule AND index_code = $index AND end_reason = 'open'
         ORDER BY chosen_on, ticker;
     ";
@@ -170,7 +174,8 @@ public sealed class QualityFamily : IComponent
     ";
 
     const string FillHolding = @"
-        UPDATE quality_holding SET bought_on = $bought_on, fill = $fill, gap = $gap, bench_gap = $bench_gap, members = $members
+        UPDATE quality_holding SET bought_on = $bought_on, fill = $fill, gap = $gap, bench_gap = $bench_gap, members = $members,
+            stop = $stop, take_profit = $take_profit, take_profit_from = $take_profit_from
         WHERE rule = $rule AND index_code = $index AND ticker = $ticker AND chosen_on = $chosen_on;
     ";
 
@@ -195,7 +200,7 @@ public sealed class QualityFamily : IComponent
     sealed record Answered(string Ticker, int Passed, int Applied, double? Place, QualityAnswer Answer, double Carried);
 
     // One open holding as stored.
-    sealed record Holding(string Ticker, DateOnly ChosenOn, decimal BuyClose, DateOnly? BoughtOn, decimal? Fill, double? Gap, double? BenchGap, double Growth, DateOnly Through);
+    sealed record Holding(string Ticker, DateOnly ChosenOn, decimal BuyClose, DateOnly? BoughtOn, decimal? Fill, double? Gap, double? BenchGap, double Growth, DateOnly Through, decimal? Stop = null, decimal? TakeProfit = null);
 
     // What every rule on an index reads on the night: its members, each one's scorecard, its valuation's place and
     // whether it closed above its 200-session average.
@@ -492,7 +497,9 @@ public sealed class QualityFamily : IComponent
                 row.IsDBNull(5) ? null : row.GetDouble(5),
                 row.IsDBNull(6) ? null : row.GetDouble(6),
                 row.GetDouble(7),
-                Date(row.GetString(8))));
+                Date(row.GetString(8)),
+                row.IsDBNull(9) ? null : Money.FromStorage(row.GetString(9)),
+                row.IsDBNull(10) ? null : Money.FromStorage(row.GetString(10))));
         }
 
         // A rule selling on a filing reads each member's scorecard as its answers stored it the night before, since a score
@@ -567,9 +574,16 @@ public sealed class QualityFamily : IComponent
             var under = !gone && !failing && !filed && settings.SoldUnderAverage
                 && holding.BoughtOn is { } bought && bought < night && inputs.Below.TryGetValue(holding.Ticker, out var isBelow) && isBelow;
 
-            if (gone || failing || filed || under)
+            // From the operator's order of 2026-11-14 one bought by tonight is sold at tonight's close under its stop or at or
+            // above its take-profit.
+            // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+            var exited = !gone && !failing && !filed && !under && holding.BoughtOn is { } boughtBy && boughtBy <= night && Close(bars, holding.Ticker, night) is { } closed
+                ? EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closed), holding.Stop is { } floor ? Statistic.FromPrice(floor) : null, holding.TakeProfit is { } aim ? Statistic.FromPrice(aim) : null)
+                : null;
+
+            if (gone || failing || filed || under || exited is not null)
             {
-                await EndAsync(connection, transaction, index, rule, holding, gone ? holding.Through : night, gone ? LeftTheIndex : under ? UnderItsAverage : NoLongerQualifies, bars, tonight, night, cancellation);
+                await EndAsync(connection, transaction, index, rule, holding, gone ? holding.Through : night, gone ? LeftTheIndex : under ? UnderItsAverage : exited ?? NoLongerQualifies, bars, tonight, night, cancellation);
                 sold.Add(holding.Ticker);
                 written++;
 
@@ -654,12 +668,18 @@ public sealed class QualityFamily : IComponent
             return null;
         }
 
+        // From the operator's order of 2026-11-14 its stop placed under the fill in the stock's typical moves on the night it was
+        // chosen, and the price it takes profit at.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, holding.Ticker, holding.ChosenOn, next.Day.Open, cancellation);
         var filled = holding with
         {
             BoughtOn = next.Session,
             Fill = next.Day.Open,
             Gap = fill.Result is { } result ? -result : null,
             BenchGap = fill.Benchmark is { } benchmark ? -benchmark : null,
+            Stop = exits is { } placed ? Statistic.ToPrice(placed.Stop) : null,
+            TakeProfit = exits?.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null,
         };
 
         await ExecuteAsync(connection, transaction, FillHolding,
@@ -667,6 +687,9 @@ public sealed class QualityFamily : IComponent
             ("$rule", rule), ("$index", index), ("$ticker", holding.Ticker), ("$chosen_on", Stamp(holding.ChosenOn)),
             ("$bought_on", Stamp(next.Session)), ("$fill", Money.ToStorage(next.Day.Open)),
             ("$gap", (object?)filled.Gap ?? DBNull.Value), ("$bench_gap", (object?)filled.BenchGap ?? DBNull.Value), ("$members", fill.Members),
+            ("$stop", filled.Stop is { } stop ? Money.ToStorage(stop) : DBNull.Value),
+            ("$take_profit", filled.TakeProfit is { } aim ? Money.ToStorage(aim) : DBNull.Value),
+            ("$take_profit_from", exits?.TakeProfit is { } from ? EquityBrief.Core.Loop.TakeProfit.Stored(from) : DBNull.Value),
         ], cancellation);
 
         return filled;

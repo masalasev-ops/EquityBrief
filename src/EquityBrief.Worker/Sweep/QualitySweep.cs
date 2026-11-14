@@ -175,12 +175,17 @@ public sealed class QualityLay
         IReadOnlyList<IReadOnlyDictionary<int, QualityReading>> filings,
         QualitySettings setting,
         bool soldUnderAverage = false,
-        Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
+        Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null,
+        (double Moves, double Multiple)? stops = null)
     {
         var trades = new List<HeavyweightTrade>();
         var rebalances = new Dictionary<int, HeavyweightRebalance>();
         var open = new SortedDictionary<int, int>();
         var reshuffleAt = reshuffles.ToHashSet();
+
+        // From the operator's order of 2026-11-14 each holding's stop and take-profit where the walk is asked for them.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        var exits = new Dictionary<int, (double Stop, double? TakeProfit)>();
 
         void End(int name, int session, string reason)
         {
@@ -200,6 +205,7 @@ public sealed class QualityLay
                 null,
                 tape.Calendar[sold].Year - SweepColumns.FirstScored.Year));
             open.Remove(name);
+            exits.Remove(name);
         }
 
         for (var session = tape.First; session < tape.Calendar.Length; session++)
@@ -209,6 +215,11 @@ public sealed class QualityLay
                 if (!tape.Member[name][session])
                 {
                     End(name, session - 1, QualityFamily.LeftTheIndex);
+                }
+                else if (session > open[name] && exits.TryGetValue(name, out var placed) && !double.IsNaN(tape.Close[name][session])
+                    && EquityBrief.Core.Loop.TakeProfit.EndOf(tape.Close[name][session], placed.Stop, placed.TakeProfit) is { } exited)
+                {
+                    End(name, session, exited);
                 }
                 else if (setting.SellOnFiling && session > open[name] && filings[name].TryGetValue(session, out var filed)
                     && !FundamentalScorecard.Clears(filed.Passed, filed.Applied, setting.ScoreFloorInNine))
@@ -249,6 +260,11 @@ public sealed class QualityLay
             foreach (var name in chosen)
             {
                 open[name] = session;
+
+                if (stops is { } asked && tape.ExitsAt(name, session, asked.Moves, asked.Multiple) is { } placed)
+                {
+                    exits[name] = placed;
+                }
             }
         }
 
@@ -268,9 +284,9 @@ public sealed class QualityLay
 
     // One setting's book: its walk, each holding and its members bought at the open after its reshuffle and the holding
     // charged its round trip, and its months.
-    public QualityBook Book(QualitySettings setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
+    public QualityBook Book(QualitySettings setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null)
     {
-        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting, soldUnderAverage || setting.SoldUnderAverage, arrange);
+        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,

@@ -5,7 +5,13 @@ namespace EquityBrief.Web.Marks;
 // One stock on the Fundamentals card's "Improving fastest" tab: the stock, its company, its score tonight and where its
 // newly read filing lifted it from, what changed in one sentence, its status and the line beneath it, tonight's close and
 // its entry check's reading on the night.
-public sealed record ImprovingRowCell(string Ticker, string? Company, int Passed, int Applied, int? BeforePassed, int? BeforeApplied, string Changed, string Status, string Line, decimal? Close = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null);
+public sealed record ImprovingRowCell(string Ticker, string? Company, int Passed, int Applied, int? BeforePassed, int? BeforeApplied, string Changed, string Status, string Line, decimal? Close = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null)
+{
+    // From the operator's order of 2026-11-14 its open trade's stop under the buy and the price it takes profit at.
+    public decimal? Stop { get; init; }
+
+    public TakeProfitView? TakeProfit { get; init; }
+}
 
 // One stock on its "Strongest businesses" tab: the stock, its company, its score tonight, its business in one sentence, its
 // price against its own past, and what the quality book says of it, none where it says nothing.
@@ -263,7 +269,11 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<td class=\"improving-changed\">{Escaped(cell.Changed)}</td>");
             // A buy carries its entry check's line as every pick's card does.
             // see: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does
-            body.Append(Invariant, $"<td class=\"improving-status\" data-state=\"{state}\"><b>{Escaped(cell.Status)}</b><span>{Escaped(cell.Line)}</span>{(state == "bought" ? EntryCheckLine(cell.EntryCheck, cell.Ticker) : string.Empty)}</td></tr>");
+            // From the operator's order of 2026-11-14 a trade bought carries its stop and its take-profit beside its filing exit.
+            // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+            var exits = cell.Stop is null && cell.TakeProfit is null ? string.Empty : BookExitCell(cell.Stop, cell.TakeProfit).Replace("<td class=\"book-exit\"", "<span class=\"book-exit\"", StringComparison.Ordinal).Replace("</td>", "</span>", StringComparison.Ordinal);
+
+            body.Append(Invariant, $"<td class=\"improving-status\" data-state=\"{state}\"><b>{Escaped(cell.Status)}</b><span>{Escaped(cell.Line)}</span>{exits}{(state == "bought" ? EntryCheckLine(cell.EntryCheck, cell.Ticker) : string.Empty)}</td></tr>");
         }
 
         return body.Append("</tbody></table></div>").ToString();
@@ -362,7 +372,7 @@ public sealed partial class MarkRenderer
         body.Append("<details class=\"fold fam-rule improving-rule\"><summary>How it picks, and how it will be tested</summary><div class=\"fold-b\">");
         body.Append("<p class=\"record-said\">Flagged: a company whose results release, sent since its last filing, reads results better than expected and an outlook raised or kept. A flag buys nothing.</p>");
         body.Append(Invariant, $"<p class=\"record-said\">Bought at the next open: a company whose new filing, read tonight for the first time, lifts its score to {InEveryNine(settings.BuyInNine, atLeast: true)} to the company{(setting.Rise ? " and above the score of the filing before it" : string.Empty)}{(setting.Faster ? ", while its sales over a year grow faster than in the quarter before" : string.Empty)}. {(setting.FlagFirst ? "A flag must have stood the night before." : "A flag is not needed.")}</p>");
-        body.Append(Invariant, $"<p class=\"record-said\">Kept while its score stays at {InEveryNine(settings.HoldInNine)} or better. Sold at the close of the night a new filing drops it below {InEveryNine(settings.HoldInNine)}, at the close of its {settings.Sessions}th trading day, or at its last close in the index, whichever comes first. No stop and no target.</p>");
+        body.Append(Invariant, $"<p class=\"record-said\">Kept while its score stays at {InEveryNine(settings.HoldInNine)} or better. Sold at the close of the night a new filing drops it below {InEveryNine(settings.HoldInNine)}, at the close of its {settings.Sessions}th trading day, or at its last close in the index, whichever comes first. {BookExitSaid}</p>");
         body.Append("<p class=\"record-said\">Judged by its return against an equal-weight hold of the index's stocks over the same days, in points, after its trading costs. One trade a stock; a stock it buys may also be bought by another setup.</p>");
         body.Append(card.LiveSince is { } live
             ? FormattableString.Invariant($"<p class=\"record-said\">Its settings were fixed on {live:d MMM yyyy} after its test over the past, and its record counts from then. {EquityBrief.Core.Families.ImprovingRule.ReadingsCaveat}</p>")

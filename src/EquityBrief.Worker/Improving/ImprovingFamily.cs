@@ -43,6 +43,7 @@ public sealed class ImprovingFamily : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
@@ -142,7 +143,7 @@ public sealed class ImprovingFamily : IComponent
     const string AveragesOn = "SELECT ticker, value FROM indicator WHERE session_date = $night AND name = $name AND value IS NOT NULL;";
 
     const string OpenTrades = @"
-        SELECT ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, growth, through
+        SELECT ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, growth, through, stop, take_profit
         FROM improving_trade WHERE rule = $rule AND index_code = $index AND end_reason = 'open'
         ORDER BY chosen_on, ticker;
     ";
@@ -181,7 +182,8 @@ public sealed class ImprovingFamily : IComponent
     ";
 
     const string FillTrade = @"
-        UPDATE improving_trade SET bought_on = $bought_on, fill = $fill, gap = $gap, bench_gap = $bench_gap, members = $members
+        UPDATE improving_trade SET bought_on = $bought_on, fill = $fill, gap = $gap, bench_gap = $bench_gap, members = $members,
+            stop = $stop, take_profit = $take_profit, take_profit_from = $take_profit_from
         WHERE rule = $rule AND index_code = $index AND ticker = $ticker AND chosen_on = $chosen_on;
     ";
 
@@ -220,7 +222,7 @@ public sealed class ImprovingFamily : IComponent
         double Carried);
 
     // One open trade as stored.
-    sealed record Trade(string Ticker, DateOnly ChosenOn, decimal BuyClose, DateOnly? BoughtOn, decimal? Fill, double? Gap, double? BenchGap, double Growth, DateOnly Through);
+    sealed record Trade(string Ticker, DateOnly ChosenOn, decimal BuyClose, DateOnly? BoughtOn, decimal? Fill, double? Gap, double? BenchGap, double Growth, DateOnly Through, decimal? Stop = null, decimal? TakeProfit = null);
 
     readonly IClock clock;
     readonly string databaseFile;
@@ -550,7 +552,9 @@ public sealed class ImprovingFamily : IComponent
                 row.IsDBNull(5) ? null : row.GetDouble(5),
                 row.IsDBNull(6) ? null : row.GetDouble(6),
                 row.GetDouble(7),
-                Date(row.GetString(8))));
+                Date(row.GetString(8)),
+                row.IsDBNull(9) ? null : Money.FromStorage(row.GetString(9)),
+                row.IsDBNull(10) ? null : Money.FromStorage(row.GetString(10))));
         }
 
         var sold = new List<string>();
@@ -619,9 +623,16 @@ public sealed class ImprovingFamily : IComponent
             // tonight's close, as the history test sells it.
             var below = !gone && !fell && !ended && trade.BoughtOn is { } boughtOn && boughtOn < night && trade.Through == night && under.Contains(trade.Ticker);
 
-            if (gone || fell || ended || below)
+            // From the operator's order of 2026-11-14 one bought by tonight is sold at tonight's close under its stop or at or
+            // above its take-profit.
+            // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+            var exited = !gone && !fell && !ended && !below && trade.BoughtOn is { } boughtBy && boughtBy <= night && trade.Through == night && Close(bars, trade.Ticker, night) is { } closed
+                ? EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closed), trade.Stop is { } floor ? Statistic.FromPrice(floor) : null, trade.TakeProfit is { } aim ? Statistic.FromPrice(aim) : null)
+                : null;
+
+            if (gone || fell || ended || below || exited is not null)
             {
-                await EndAsync(connection, transaction, index, rule, trade, gone ? trade.Through : night, gone ? LeftTheIndex : fell ? ScoreFell : below ? ImprovingRule.UnderItsAverage : TimeLimit, bars, tonight, night, cancellation);
+                await EndAsync(connection, transaction, index, rule, trade, gone ? trade.Through : night, gone ? LeftTheIndex : fell ? ScoreFell : below ? ImprovingRule.UnderItsAverage : exited ?? TimeLimit, bars, tonight, night, cancellation);
                 sold.Add(trade.Ticker);
                 written++;
 
@@ -756,12 +767,18 @@ public sealed class ImprovingFamily : IComponent
             return null;
         }
 
+        // From the operator's order of 2026-11-14 its stop placed under the fill in the stock's typical moves on the night it was
+        // chosen, and the price it takes profit at, beside its filing exit.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, trade.Ticker, trade.ChosenOn, next.Day.Open, cancellation);
         var filled = trade with
         {
             BoughtOn = next.Session,
             Fill = next.Day.Open,
             Gap = fill.Result is { } result ? -result : null,
             BenchGap = fill.Benchmark is { } benchmark ? -benchmark : null,
+            Stop = exits is { } placed ? Statistic.ToPrice(placed.Stop) : null,
+            TakeProfit = exits?.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null,
         };
 
         await ExecuteAsync(connection, transaction, FillTrade,
@@ -769,6 +786,9 @@ public sealed class ImprovingFamily : IComponent
             ("$rule", rule), ("$index", index), ("$ticker", trade.Ticker), ("$chosen_on", Stamp(trade.ChosenOn)),
             ("$bought_on", Stamp(next.Session)), ("$fill", Money.ToStorage(next.Day.Open)),
             ("$gap", (object?)filled.Gap ?? DBNull.Value), ("$bench_gap", (object?)filled.BenchGap ?? DBNull.Value), ("$members", fill.Members),
+            ("$stop", filled.Stop is { } stop ? Money.ToStorage(stop) : DBNull.Value),
+            ("$take_profit", filled.TakeProfit is { } aim ? Money.ToStorage(aim) : DBNull.Value),
+            ("$take_profit_from", exits?.TakeProfit is { } from ? EquityBrief.Core.Loop.TakeProfit.Stored(from) : DBNull.Value),
         ], cancellation);
 
         return filled;

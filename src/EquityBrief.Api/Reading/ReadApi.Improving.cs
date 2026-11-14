@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Data;
 
 namespace EquityBrief.Api.Reading;
 
@@ -31,7 +32,18 @@ public sealed record ImprovingResultRow(
 
 // One trade as stored, read as of a night: the night it was chosen, the filing and the release behind it, its fill's gap and
 // its benchmark's, and its end where it ended by the night.
-public sealed record ImprovingTradeRow(string Ticker, DateOnly ChosenOn, DateOnly Filed, DateOnly? Released, DateOnly? BoughtOn, double? Gap, double? BenchGap, DateOnly? EndedOn, string EndReason);
+public sealed record ImprovingTradeRow(string Ticker, DateOnly ChosenOn, DateOnly Filed, DateOnly? Released, DateOnly? BoughtOn, double? Gap, double? BenchGap, DateOnly? EndedOn, string EndReason)
+{
+    // From the operator's order of 2026-11-14 its fill, its stop under it, the price it takes profit at and where that came
+    // from, none before it was bought.
+    public decimal? Fill { get; init; }
+
+    public decimal? Stop { get; init; }
+
+    public decimal? TakeProfit { get; init; }
+
+    public string? TakeProfitFrom { get; init; }
+}
 
 // One member's scorecard on a night as the Fundamentals card reads it: its count, its gross profit over its assets and its
 // checks as stored.
@@ -72,7 +84,9 @@ public sealed partial class ReadApi
                CASE WHEN bought_on <= $on THEN bought_on END, CASE WHEN bought_on <= $on THEN gap END,
                CASE WHEN bought_on <= $on THEN bench_gap END,
                CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN end_reason ELSE 'open' END
+               CASE WHEN ended_on <= $on THEN end_reason ELSE 'open' END,
+               CASE WHEN bought_on <= $on THEN fill END, CASE WHEN bought_on <= $on THEN stop END,
+               CASE WHEN bought_on <= $on THEN take_profit END, CASE WHEN bought_on <= $on THEN take_profit_from END
         FROM improving_trade
         WHERE rule = $rule AND index_code = $index AND chosen_on <= $on AND (ended_on IS NULL OR ended_on >= $on)
         ORDER BY chosen_on, ticker;
@@ -196,7 +210,13 @@ public sealed partial class ReadApi
                 reader.IsDBNull(5) ? null : reader.GetDouble(5),
                 reader.IsDBNull(6) ? null : reader.GetDouble(6),
                 reader.IsDBNull(7) ? null : ImprovingDate(reader.GetString(7)),
-                reader.GetString(8)));
+                reader.GetString(8))
+            {
+                Fill = reader.IsDBNull(9) ? null : Money.FromStorage(reader.GetString(9)),
+                Stop = reader.IsDBNull(10) ? null : Money.FromStorage(reader.GetString(10)),
+                TakeProfit = reader.IsDBNull(11) ? null : Money.FromStorage(reader.GetString(11)),
+                TakeProfitFrom = reader.IsDBNull(12) ? null : reader.GetString(12),
+            });
         }
 
         return rows;

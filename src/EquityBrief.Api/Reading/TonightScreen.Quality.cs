@@ -11,6 +11,21 @@ namespace EquityBrief.Api.Reading;
 // see: A quality holding's edge is its return less an equal-weighted hold of its index's members over the same sessions, after its round trip
 public static partial class TonightScreen
 {
+    // From the operator's order of 2026-11-14 a book's holding's take-profit as its step stored it at the buy, with the stop the
+    // book added under the buy; none for one bought before.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public static TakeProfitView? BookTakeProfit(decimal? price, string? from, decimal? buy, decimal? stop)
+    {
+        if (price is not { } taking)
+        {
+            return null;
+        }
+
+        var (source, on, multiple) = EquityBrief.Core.Loop.TakeProfit.FromStored(from);
+
+        return new TakeProfitView(taking, source, on, multiple, buy, stop, stop is null ? null : EquityBrief.Core.Loop.TakeProfit.MiddleStopMoves);
+    }
+
     // The card on a night: the holdings open at its close, each with its score and its place tonight, its change since it
     // was bought and tonight's line; what the last reshuffle chose and each holding sold since it; the holdings' change
     // since that reshuffle beside an equal-weighted hold of the members answered on it; the next names in line; and the
@@ -54,7 +69,11 @@ public static partial class TonightScreen
                     TonightLine(holding, now, night, AnswerOn(lastReshuffle ?? holding.ChosenOn, holding.Ticker)),
                     holding.Fill,
                     holding.BoughtOn,
-                    cellByTicker.TryGetValue(holding.Ticker, out var closing) ? closing.Close : null);
+                    cellByTicker.TryGetValue(holding.Ticker, out var closing) ? closing.Close : null)
+                {
+                    Stop = holding.Stop,
+                    TakeProfit = BookTakeProfit(holding.TakeProfit, holding.TakeProfitFrom, holding.Fill, holding.Stop),
+                };
             }),
         ];
 

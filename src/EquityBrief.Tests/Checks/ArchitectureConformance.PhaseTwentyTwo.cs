@@ -152,10 +152,21 @@ public partial class ArchitectureConformance
 
         // From the 22.17 correction of 2026-11-09: the records and the picks watched on the read-only copy.
         .. Reading.ReadSurface.CopyRecordRows,
+
+        // From 23.10's second part: the match check's catalogue and matrix rows.
+        .. MatchCheckRows,
     ];
 
-    // The rows the document loses after phase 22's report: none.
-    internal static string[] TakenOutAfterPhaseTwentyTwo => [];
+    // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported
+    // quarters, whose fetch asks inside the swing filter's step.
+    internal static string[] TakenOutAfterPhaseTwentyTwo => [CheckReach.Key(NightlyRunSteps.Heading, RetiredQuartersStep)];
+
+    // 23.10's second part's rows: the match check over the five sessions after a restart.
+    internal static string[] MatchCheckRows => [CheckReach.Key(Scope.CatalogueTable, "Match check"), CheckReach.Key(Scope.MatrixTable, "Match check")];
+
+    // Section 14's step asking for the reported quarters as it stood until 23.10's second part retired it, word for word.
+    internal const string RetiredQuartersStep =
+        "Ask the provider for the reported quarters of the members due, one request for a member's fundamentals and one for three years of its closes where the answer is stored: every member once at the start, at most 260 a night; a member on the first night after it reports; a member whose new quarter the answer does not yet carry on each of the five nights after and weekly after that; and a member joining the index on its first night; bounded by its own limit and by the day's allowance and never by the night's deadline (see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted).";
 
     // The part whose measured figure the pair after 22.12 starts from: the plan restated the pair at 22.7 from the claims
     // measured after 22.6, so the parts after it are counted from that figure and the parts up to it are each read

@@ -113,7 +113,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
     public sealed record PlanMoves(double Move, double Up, int Fills);
 
-    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default, bool driftChecks = false, string? only = null)
+    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default, bool driftChecks = false, string? only = null, bool driftReport = false)
     {
         if (!Funds.TryGetValue(index, out var fund))
         {
@@ -172,6 +172,11 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         if (driftChecks)
         {
             return await DriftChecksAsync(index, setups, walker, cancellation);
+        }
+
+        if (driftReport)
+        {
+            return await DriftReportAsync(index, setups, walker, cancellation);
         }
 
         var tallies = new Dictionary<(string Family, int Combination, string Group), PlanTally>();
@@ -338,6 +343,44 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             tradedSince[family] = liveSince;
             picked[at] = (family, combination, chosen, liveUnseen, count);
             refinements.Add($"The {family} trades {live.Words} from its live rule's registration, which its figures here are read against.");
+        }
+
+        // From the operator's order of 2026-11-14, item 4: each family's plan as it trades today walked again taking profit at
+        // each multiple of its risk stated before the run, the multiple chosen on the years before 2019 and judged from 2019,
+        // each beside today's plan per $1 risked against the benchmark; where every multiple does worse than today's plan from
+        // 2019, by how much. The take-profit stays whichever does best; the test chooses its multiple alone.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        var takingProfit = new Dictionary<string, PlanCombination>(StringComparer.Ordinal);
+
+        foreach (var (family, _, _, _, _) in picked)
+        {
+            var today = livePlans.GetValueOrDefault(family) ?? PlanPoints.Combinations[traded];
+
+            if (today.TakeProfit is not null)
+            {
+                continue;
+            }
+
+            PlanCombination[] grid = [today, .. TakeProfit.Multiples.Select(today.Taking)];
+            var walkedGrid = Tallied(walker, [.. setups.Where(one => one.Family == family)], grid, cancellation);
+            var (todayUnseen, todaySince) = walkedGrid[today.Words];
+            var chosenTaking = grid.Skip(1)
+                .Where(one => walkedGrid[one.Words].Unseen?.EdgePerPick is not null)
+                .OrderByDescending(one => walkedGrid[one.Words].Unseen!.EdgePerPick)
+                .ThenBy(one => one.TakeProfit)
+                .FirstOrDefault() ?? today.Taking(TakeProfit.MiddleMultiple);
+
+            takingProfit[family] = chosenTaking;
+
+            var worse = grid.Skip(1).All(one => walkedGrid[one.Words].Since?.EdgePerPick is { } edge && todaySince?.EdgePerPick is { } held && edge < held);
+            var shortBy = grid.Skip(1).Select(one => walkedGrid[one.Words].Since?.EdgePerPick).OfType<double>().DefaultIfEmpty().Max() - (todaySince?.EdgePerPick ?? 0);
+
+            refinements.Add(
+                FormattableString.Invariant($"The {family}'s take-profit, item 4: today's plan, {today.Words}, {Shown(todayUnseen?.EdgePerPick)} a pick per $1 risked against the benchmark over {todayUnseen?.Fills ?? 0} fill(s) before {LongLedger.StandingFrom.Year} and {Shown(todaySince?.EdgePerPick)} over {todaySince?.Fills ?? 0} from {LongLedger.StandingFrom.Year}; ")
+                + string.Join("; ", grid.Skip(1).Select(one => FormattableString.Invariant($"taking profit at {one.TakeProfit:0.##} times the risk {Shown(walkedGrid[one.Words].Unseen?.EdgePerPick)} before {LongLedger.StandingFrom.Year} and {Shown(walkedGrid[one.Words].Since?.EdgePerPick)} from it")))
+                + FormattableString.Invariant($". Chosen on the years before {LongLedger.StandingFrom.Year}: {chosenTaking.TakeProfit:0.##} times the risk, judged from {LongLedger.StandingFrom.Year} at {Shown(walkedGrid[chosenTaking.Words].Since?.EdgePerPick)} against today's {Shown(todaySince?.EdgePerPick)}.")
+                + (worse ? FormattableString.Invariant($" Every multiple does worse than today's plan from {LongLedger.StandingFrom.Year}, the closest short of it by {Math.Abs(shortBy):0.000} a pick per $1 risked; for the operator's ruling, the take-profit standing either way.") : string.Empty));
+            output.WriteLine($"{Verb}: take-profit chosen: {family}: {chosenTaking.Words}");
         }
 
         // From the 23.10 correction of 2026-11-13 the live plan's fills from 2019 its sale placed no price above, their mean move
@@ -560,9 +603,54 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         return 0;
     }
 
+    // On the operator's order of 2026-11-14, item 2, read-only: the S&P 500 drift's signals under the plan its live rule trades
+    // since 10 Nov and under the next-open plan it traded before, over 2019 to 2026 and over 2020 to 2026: how many signals
+    // there were and how many filled, the mean fall from the signal's close to the fill, and the mean result of the fills per
+    // $1 risked and their mean edge over the ruled benchmark, beside the same signals bought at the next open. Prints and
+    // writes nothing, and changes neither the plan nor the setup's words.
+    async Task<int> DriftReportAsync(string index, IReadOnlyList<FlaggedSetup> setups, Walker walker, CancellationToken cancellation)
+    {
+        var drift = setups.Where(one => one.Family == Core.Families.DriftRule.Name).ToArray();
+        var next = PlanPoints.Combinations.First(PlanPrices.Traded);
+        var live = LivePlans(await RegisterAsync(cancellation), clock.UtcNow, index).GetValueOrDefault(Core.Families.DriftRule.Name);
+
+        if (live is null)
+        {
+            output.WriteLine($"{Verb}: the drift's live rule on the {DecisionCards.NameOf(index)} states no plan, so there is no waiting plan to report on");
+
+            return 0;
+        }
+
+        foreach (var from in new[] { 2019, 2020 })
+        {
+            var since = drift.Where(one => one.Session.Year >= from).ToArray();
+            var worked = since.Select(one => (Setup: one, Walked: walker.WorkedUnder(one, [live, next]))).Where(one => one.Walked.Count == 2).ToArray();
+
+            string Line(string name, int at)
+            {
+                var fills = worked.Where(one => one.Walked[at].Pick is { Filled: true }).ToArray();
+                var falls = fills.Where(one => one.Walked[at].Fill is { } fill && one.Setup.Entry > 0).Select(one => (one.Walked[at].Fill!.Value / one.Setup.Entry) - 1.0).ToArray();
+                var results = fills.Select(one => one.Walked[at].Pick!.Result).OfType<double>().ToArray();
+                var edges = fills.Select(one => one.Walked[at].Pick!.Edge).OfType<double>().ToArray();
+
+                return FormattableString.Invariant($"{name}: {worked.Length} signal(s), {fills.Length} filled, the fill {(falls.Length == 0 ? "not read" : $"{falls.Average() * 100:+0.0;-0.0}% from the signal's close on average")}; per $1 risked {(results.Length == 0 ? "none ended" : $"{results.Average():+0.000;-0.000} result")} and {(edges.Length == 0 ? "no benchmark read" : $"{edges.Average():+0.000;-0.000} against the benchmark")} over {results.Length} ended fill(s)");
+            }
+
+            output.WriteLine(FormattableString.Invariant($"{Verb}: the S&P 500 drift from {from} through {Text(drift.Select(one => one.Session).DefaultIfEmpty().Max())}: {Line($"the waiting plan, {live.Words}", 0)}; {Line($"the next open, {next.Words}", 1)}"));
+        }
+
+        output.WriteLine($"{Verb}: printed alone, nothing written");
+
+        return 0;
+    }
+
     // Each stock's quarters of revenue as first filed in the SEC's facts the store holds, the long facts, the standing facts
     // and the pulled revenue, found through the filer the long filings, the companies and the pulled companies name for it.
-    async Task<IReadOnlyDictionary<string, IReadOnlyList<Core.Families.QuarterRevenue>>> QuarterRevenuesAsync(IReadOnlyList<string> tickers, CancellationToken cancellation)
+    Task<IReadOnlyDictionary<string, IReadOnlyList<Core.Families.QuarterRevenue>>> QuarterRevenuesAsync(IReadOnlyList<string> tickers, CancellationToken cancellation) =>
+        QuarterRevenuesAsync(databaseFile, tickers, cancellation);
+
+    // From 23.10's second part the same for the per-rule test, which walks the drift's sales check beside its live rule.
+    public static async Task<IReadOnlyDictionary<string, IReadOnlyList<Core.Families.QuarterRevenue>>> QuarterRevenuesAsync(string databaseFile, IReadOnlyList<string> tickers, CancellationToken cancellation)
     {
         var wanted = tickers.ToHashSet(StringComparer.Ordinal);
         var filers = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
@@ -668,12 +756,14 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             var evaluator = Core.Candidates.CandidateEvaluators.Find(row.Evaluator);
 
             // The dip's rule is kept by its own step on each index, its family named for its index, so it is read by its index and
-            // the family the test walks before the S&P 500's family rules are; and it reads its hooks beside its own dials.
+            // the family the test walks before the S&P 500's family rules are; and it reads its hooks beside its own dials. From
+            // 23.10's second part the S&P 500's pullback is the live swing filter, which reads the hooks as well.
             var family = evaluator switch
             {
                 Core.Candidates.DipCandidate dip => dip.Index == index ? PlanPoints.DipName : null,
                 Core.Candidates.IndexRuleCandidate rule => rule.Index == index ? rule.SetupFamily : null,
                 Core.Candidates.FamilyRuleEvaluator rule => index == Market ? rule.Family : null,
+                Core.Candidates.SwingFilterRule => index == Market ? Core.Families.SetupFamilies.Pullback : null,
                 _ => null,
             };
 
@@ -918,7 +1008,20 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             return held;
         });
 
-        readonly System.Collections.Concurrent.ConcurrentDictionary<(int At, double StopMoves, double? Reward, double? Trail, int Cap, int Zone, string Stop, string Sale), double?> benchmarks = new();
+        readonly System.Collections.Concurrent.ConcurrentDictionary<(int At, double StopMoves, double? Reward, double? Trail, int Cap, int Zone, string Stop, string Sale, double? TakeProfit), double?> benchmarks = new();
+
+        // From the operator's order of 2026-11-14 every name's swings once, which the take-profit reads the nearest price a stock
+        // turned down at above a price from, as of a bar, with nothing gathered.
+        readonly Lazy<Swing[]>[] swingsOf = [.. series.Select(one => new Lazy<Swing[]>(() => [.. one.Swings]))];
+
+        Func<double, TurnedDown?> TurnedDownAt(int name, int bar)
+        {
+            var swings = swingsOf[name].Value;
+            var confirmed = series[name].Confirmed[bar];
+            var session = series[name].Bars[bar].Session;
+
+            return price => TakeProfit.NearestAbove(price, swings, confirmed, session);
+        }
 
         readonly System.Collections.Concurrent.ConcurrentDictionary<(int Name, int Bar), LevelsAsOf> memberLevels = new();
 
@@ -929,7 +1032,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         {
             var zone = combination.Stop == PlanPoints.ZoneStop ? PlanPoints.Zones.ToList().IndexOf(combination.Entry) : -1;
 
-            return benchmarks.GetOrAdd((at, plan.StopMoves, plan.RewardToRisk, plan.TrailMoves, plan.Cap, zone, combination.Stop, combination.Exit), key =>
+            return benchmarks.GetOrAdd((at, plan.StopMoves, plan.RewardToRisk, plan.TrailMoves, plan.Cap, zone, combination.Stop, combination.Exit, combination.TakeProfit), key =>
                 PlanPoints.BenchmarkOf(members.Value[key.At].Select(member =>
                 {
                     var (closes, opens) = prices[member.Name].Value;
@@ -950,7 +1053,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                         : key.Zone >= 0 ? (levels!.Zones.Count > key.Zone ? levels.Zones[key.Zone].Stop : null)
                         : PlanPoints.StopOf(key.Stop, fill, close - risk, null, typical);
 
-                    PlanSale? SaleAt(double fill) => key.Sale switch
+                    PlanSale? Own(double fill) => key.Sale switch
                     {
                         PlanPoints.RuleSale => plan.TrailMoves is { } moves ? new PlanSale(null, moves * typical, [])
                             : plan.RewardToRisk is { } reward ? new PlanSale(close + (reward * risk), null, [])
@@ -959,6 +1062,14 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                         PlanPoints.StagedSales => new PlanSale(null, null, levels!.Staged),
                         _ => new PlanSale(null, null, []),
                     };
+
+                    // From the operator's order of 2026-11-14 each member takes profit as the plan places it on the pick.
+                    var turnedDown = TurnedDownAt(member.Name, member.Bar);
+
+                    PlanSale? SaleAt(double fill) =>
+                        Own(fill) is { } sale && key.TakeProfit is { } multiple && StopAt(fill) is { } placed
+                            ? TakeProfit.SaleWith(sale, fill, placed, turnedDown, multiple)
+                            : Own(fill);
 
                     return PlanPoints.MemberResult(closes, opens, member.Bar, risk, StopAt, SaleAt, plan.Cap, rsis[member.Name].Value);
                 })));
@@ -1115,6 +1226,14 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                 }
 
                 var (sale, saleWords) = SaleAt(fill.Price);
+
+                // From the operator's order of 2026-11-14 a plan taking profit sells at its take-profit price beside its own sale,
+                // read at the fill from the prices the stock turned down at before its session.
+                if (combination.TakeProfit is { } multiple)
+                {
+                    sale = TakeProfit.SaleWith(sale, fill.Price, stop, TurnedDownAt(name, bar), multiple);
+                    saleWords = sale.Target is { } taking ? saleWords + FormattableString.Invariant($", taking profit at {taking:0.00}") : saleWords;
+                }
 
                 if (PlanPoints.Walk(closes, opens, fill.Bar, fill.Price, stop, sale, setup.Cap, rsi) is not { } outcome)
                 {

@@ -7,13 +7,21 @@ namespace EquityBrief.Web.Marks;
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 public sealed partial class MarkRenderer
 {
-    // A Quality at a fair price holding's row on Tonight opens on its buy and how it is kept.
+    // A Quality at a fair price holding's row on Tonight opens on its buy and how it is kept: from the operator's order of
+    // 2026-11-14 sold at the close under its stop or at its take profit, and otherwise kept while it qualifies.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
     public static string QualityBoughtSaid(QualityHoldingCell cell, DateOnly? next) =>
         (cell.Fill is { } fill && cell.BoughtOn is { } on
             ? Formatted($"Bought at {Figures.Price(fill)} on {on.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture)}. ")
             : "Bought at the next open. ")
-        + "No stop and no target: it is kept while it qualifies, checked at each monthly reshuffle"
+        + (cell.Stop is { } stop && cell.TakeProfit is { } aim
+            ? Formatted($"Sells at the close if it closes below {Figures.Price(stop)} or at or above {Figures.Price(aim.Price)}; otherwise it is kept while it qualifies, checked at each monthly reshuffle")
+            : BookExitSaid + " Otherwise it is kept while it qualifies, checked at each monthly reshuffle")
         + (next is { } reshuffle ? Formatted($", next on {reshuffle.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture)}.") : ".");
+
+    // How a book's stop and take profit are set, where a holding's are not drawn.
+    public static string BookExitSaid => FormattableString.Invariant(
+        $"It sells at the close of a day that closes {EquityBrief.Core.Loop.TakeProfit.MiddleStopMoves:0.#} typical daily moves under its buy, or at its take profit: the nearest price above the buy where it turned down before, or {EquityBrief.Core.Loop.TakeProfit.MiddleMultiple:0.#} times that risk above the buy.");
 
     // A setup tile's quiet nights on Tonight: how many nights in a row it has found nothing and the longest run its history
     // holds, none on a night it found picks.

@@ -16,7 +16,7 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
     public const string BookParameter = "book";
     public const string SaleParameter = "sale";
 
-    public override string Version => "84474c2c44f7";
+    public override string Version => "79294c7c782f";
 
     public override string SetupFamily => QualityRule.Name;
 
@@ -47,6 +47,17 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Core/Prices/Statistic.cs",
         "src/EquityBrief.Data/StoreConnection.cs",
         .. EquityBrief.Core.Loop.RuleHooks.Sources.Except(EquityBrief.Core.Loop.RuleHooks.PlanWalkSources, StringComparer.Ordinal),
+
+        // From the operator's order of 2026-11-14 the stop and the take-profit each holding is bought with: the price it
+        // turned down at before, read off its swings over its stored and pulled history, and its typical daily move.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        "src/EquityBrief.Worker/Loop/PlanTrades.cs",
+        "src/EquityBrief.Core/Swings/SwingSeries.cs",
+        "src/EquityBrief.Core/Levels/LevelSeries.cs",
+        "src/EquityBrief.Core/Ladders/LadderSeries.cs",
+        "src/EquityBrief.Core/Prices/PriceForm.cs",
+        "src/EquityBrief.Core/Sweep/SweepReadings.cs",
+        "src/EquityBrief.Worker/Filter/SessionReplay.cs",
     ];
 
     // The parameters a registration states for settings, and the settings a registration's parameters state.

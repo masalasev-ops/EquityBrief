@@ -255,7 +255,7 @@ public partial class ReadSurface
         // the two past the five, named.
         Assert.Equal(
             [
-                "HELD qualified again tonight but its trade from 2026-10-01 is still open, so it is not listed. One stock, one trade.",
+                "HELD qualified again tonight but its trade from 2026-10-01 is still open, so it is not bought again; its card is under Met the rules again.",
                 "2 more qualified tonight and are not listed here, a setup picking at most 5 a night: F6, F7.",
             ],
             Regex.Matches(card, "<p class=\"family-note\">(.*?)</p>").Select(match => match.Groups[1].Value));

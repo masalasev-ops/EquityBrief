@@ -48,7 +48,12 @@ public sealed record FamilyCardView(
     IReadOnlyList<int>? SweepLost = null,
     FrozenSweepView? Frozen = null,
     bool NotComputed = false,
-    EquityBrief.Core.Cards.PaperProgress? Progress = null);
+    EquityBrief.Core.Cards.PaperProgress? Progress = null)
+{
+    // From the operator's order of 2026-11-14 the cards of the stocks its rules met again tonight while a trade holds them.
+    // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
+    public IReadOnlyList<DecisionCardView> HeldAgain { get; init; } = [];
+}
 
 // What a frozen card states of the sweep its freeze followed: the day it was frozen, the run and the answer it stated,
 // the figures that run stated for its family's setting, and whether its edge is drawn in points, the sector
@@ -223,14 +228,14 @@ public sealed partial class MarkRenderer
         ("Buy", "The open it was bought at, the session after its night, or its plan's close while it buys at the next open; under a plan buying at a price, the price it filled at, or the price it waits for."),
         ("Stop", "The price a close beneath ends it at a loss, sold at the next session's open, or the first level of a stop that trails."),
         ("Target", "The price a close at or above ends it at a gain, sold at the next session's open; a setup that trails its stop names none."),
-        ("Status", "Open once bought, to buy at tomorrow's open until then, selling at tomorrow's open once its exit fired on a close, or the session it ended on; under a plan buying at a price, waiting for its price with its last session until it fills, or not filled, no trade, once its window passed."),
+        ("Status", "Open once bought, to buy at the next session's open until then, selling at the next session's open once its exit fired on a close, or the session it ended on; under a plan buying at a price, buying if it falls to its price, with the last day it waits, until it fills, or not filled, no trade, once its window passed."),
         ("Result", "What it made in multiples of what it risked, before its cost."),
         ("Cost", "Its round trip at the published spread for its size and price, in multiples of its risk."),
         ("After cost", "Its result less its cost, which is what the index's tests read."),
     ];
 
     // An index's trades on Past picks, newest first, each with its result before and after its cost.
-    public string IndexTrades(IReadOnlyList<IndexTradeCell> rows, string index)
+    public string IndexTrades(IReadOnlyList<IndexTradeCell> rows, string index, DateOnly? night = null)
     {
         var body = new StringBuilder();
 
@@ -254,10 +259,10 @@ public sealed partial class MarkRenderer
             body.Append(PriceCell("stop", row.Stop, null));
             body.Append(PriceCell("target", row.Target, row.Trailing ? "trailing" : null));
             body.Append(row.FiredWhy is { } why
-                ? Formatted($"<td><b>{Escaped(TradeGroupsView.SellsWords)}</b>: {Escaped(why)}</td>")
+                ? Formatted($"<td><b>{Escaped(TradeGroupsView.SellsWords(night))}</b>: {Escaped(why)}</td>")
                 : row.EndedOn is { } ended
                 ? Formatted($"<td>ended {DayOf(ended)}{(row.Sale is { } sale ? Formatted($", sold at {Price(sale)}") : string.Empty)}</td>")
-                : row.ToBuy ? Formatted($"<td>{Escaped(TradeGroupsView.ToBuyWords)}</td>")
+                : row.ToBuy ? Formatted($"<td>{Escaped(TradeGroupsView.ToBuyWords(row.Listed))}</td>")
                 : PlanOrderWords.IsWaiting(row.NotBought) ? Formatted($"<td data-plan=\"waiting\">{Escaped(row.NotBought!)}</td>")
                 : PlanOrderWords.IsNotFilled(row.NotBought) ? Formatted($"<td data-plan=\"not-filled\">{Escaped(row.NotBought!)}</td>")
                 : row.NotBought is { } refused ? Formatted($"<td>not bought: {Escaped(refused)}</td>")
@@ -628,6 +633,75 @@ public sealed partial class MarkRenderer
     // chosen folds to one line, its name, its standing and why it lists nothing, every other part behind it.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
+    // From the operator's order of 2026-11-14 the stocks a setup's rules met again while a trade holds them, a group of their own
+    // beneath its picks: each a full card under its label and the line saying which setup holds it and since when, counted in
+    // no pick, trade or order count; nothing where none did.
+    // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
+    public string HeldAgainGroup(IReadOnlyList<DecisionCardView> cards)
+    {
+        if (cards.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<div class=\"held-again\" data-held-again=\"{cards.Count}\"><h5>{Escaped(HeldAgainView.Group)} ({cards.Count})</h5>");
+
+        foreach (var card in cards)
+        {
+            if (card.HeldAgain is not { } held)
+            {
+                continue;
+            }
+
+            body.Append(Invariant, $"<div class=\"held-card\" data-ticker=\"{Escaped(card.Ticker)}\" data-family=\"{Escaped(card.Family)}\" data-held-by=\"{Escaped(held.Family)}\"><p class=\"held-label\"><b>{Escaped(HeldAgainView.Label)}</b></p><p class=\"held-line\">{Escaped(held.Line(card.Ticker, card.Family))}</p>");
+            body.Append(HeldTradeFacts(held));
+            body.Append(DecisionCard(card, null, linked: true));
+            body.Append("</div>");
+        }
+
+        return body.Append("</div>").ToString();
+    }
+
+    // The open trade beside a held card, in the operator's order of 2026-11-14: which setup bought it and when, the price paid,
+    // its stop and its sale as its rule keeps them, the last close and the change since it was bought; each figure left out
+    // where the store holds none.
+    static string HeldTradeFacts(HeldAgainView held)
+    {
+        var facts = new List<(string Name, string Value)>
+        {
+            ("Bought by", Capitalised((EquityBrief.Core.Families.SetupFamilies.Named(held.Family)?.Label ?? held.Family).ToLowerInvariant()) + (held.Night is { } listed ? ", listed " + listed.ToString("d MMM yyyy", Invariant) : string.Empty)),
+        };
+
+        if (held.Fill is { } fill)
+        {
+            facts.Add(("Price paid", Figures.Price(fill) + (held.BoughtOn is { } on ? " on " + on.ToString("d MMM yyyy", Invariant) : string.Empty)));
+        }
+
+        if (held.Stop is { } stop)
+        {
+            facts.Add(("Stop", "a close below " + Figures.Price(stop)));
+        }
+
+        if (held.TakeProfit is { } sale)
+        {
+            facts.Add(("Sale", "a close at or above " + Figures.Price(sale)));
+        }
+
+        if (held.LastClose is { } close)
+        {
+            facts.Add(("Last close", Figures.Price(close)));
+
+            if (held.Fill is { } paid && paid > 0)
+            {
+                facts.Add(("Since bought", Formatted($"{((close - paid) / paid * 100):+0.0;-0.0;0.0}%")));
+            }
+        }
+
+        return "<dl class=\"held-trade\">" + string.Concat(facts.Select(fact => Formatted($"<dt>{Escaped(fact.Name)}</dt><dd>{Escaped(fact.Value)}</dd>"))) + "</dl>";
+    }
+
     public string FamilyCard(FamilyCardView card)
     {
         var body = new StringBuilder();
@@ -679,6 +753,8 @@ public sealed partial class MarkRenderer
             {
                 body.Append(Invariant, $"<p class=\"family-note\">{WithSignedFigures(ReaderWords.Plain(note))}</p>");
             }
+
+            body.Append(HeldAgainGroup(card.HeldAgain));
         }
 
         if (card.RuleChoice is { } drawn)

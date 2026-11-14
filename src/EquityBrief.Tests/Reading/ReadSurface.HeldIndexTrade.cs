@@ -62,7 +62,7 @@ public partial class ReadSurface
         Assert.Contains("held on the open trade", summary, StringComparison.Ordinal);
         Assert.Contains("picked it for on 29 Sep 2026, bought at the next open at 48.00.", lines["buy"], StringComparison.Ordinal);
         Assert.Equal("Sell at the next trading day's open after a day that closes below the stop, 45.00 at the buy, raised after each close to that close less 3.00 and never lowered.", lines["stop"]);
-        Assert.Equal("No target: the trade is ended by its stop or its time limit. Otherwise sell at the close 63 trading days after the buy.", lines["exit"]);
+        Assert.Equal("Take profit at a price set from the buy: the nearest price above it where the stock turned down before, or a multiple of the risk above it. Otherwise sell at the close 63 trading days after the buy.", lines["exit"]);
 
         // A trade that ended before the night, and one never filled, hold the stock on neither page.
         foreach (var ticker in new[] { "M3", "S1" })

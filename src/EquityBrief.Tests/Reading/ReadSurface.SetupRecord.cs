@@ -92,8 +92,10 @@ public partial class ReadSurface
             Read(MarkRenderer.SetupRecordBox(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026))),
             StringComparison.Ordinal);
         Assert.Contains("<b class=\"made\">$0.19</b>", MarkRenderer.SetupRecordBox(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026)), StringComparison.Ordinal);
+        // From the operator's order of 2026-11-14 the box says why 2019 on is not walked for a setup reading filings, and where
+        // it is judged instead.
         Assert.Contains(
-            "No long record yet: the filings this setup reads reach back only to 2013, so its record starts with its live trades.",
+            "No long record yet: the walk that gives the other setups their record from 2019 replays prices alone, and this setup buys on filings, which reach back only to 2013. Its own test over the long history judges it from 2016, on the Monthly check-up.",
             Read(MarkRenderer.SetupRecordBox(SetupLongRecord.Filings("GSPC", ImprovingRule.Name))),
             StringComparison.Ordinal);
         Assert.Contains(
@@ -132,7 +134,7 @@ public partial class ReadSurface
             "2019 to 2026 on the S&P 500, with its plan as it stands: made $0.19 per $1 risked against the index's stocks bought the same way.",
             Read(MarkRenderer.TileRecordLine(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026))));
         Assert.Contains("<b class=\"made\">made $0.19</b>", MarkRenderer.TileRecordLine(new SetupLongRecord("GSPC", BreakoutRule.Name, 0.186, 517, 2019, 2026)), StringComparison.Ordinal);
-        Assert.Equal("No long record yet: the filings it reads reach back only to 2013.", Read(MarkRenderer.TileRecordLine(SetupLongRecord.Filings("GSPC", QualityRule.Name))));
+        Assert.Equal("No long record yet: the walk from 2019 replays prices alone, and this setup buys on filings; its own test over the long history judges it from 2016.", Read(MarkRenderer.TileRecordLine(SetupLongRecord.Filings("GSPC", QualityRule.Name))));
         Assert.Equal("2019 to 2026 on the S&P 500: 12 picks, short of the 20 a record needs.", Read(MarkRenderer.TileRecordLine(new SetupLongRecord("GSPC", DipRule.Name, -0.04, 12, 2019, 2026))));
         Assert.Equal(string.Empty, MarkRenderer.TileRecordLine(new SetupLongRecord("MID", DriftRule.Name, 0.3, null, 2019, 2025)));
 
@@ -149,7 +151,7 @@ public partial class ReadSurface
         // The breakout's run made money; the sector heavyweights' filings reach back to 23.5's year on the S&P 400 less three;
         // the drift's run wrote no count and the pullback's none at all, so neither tile draws a line.
         Assert.EndsWith("2019 to 2026 on the S&P 400, with its plan as it stands: made $0.03 per $1 risked against the index's stocks bought the same way.", Read(Tile(BreakoutRule.Name)), StringComparison.Ordinal);
-        Assert.EndsWith("No long record yet: the filings it reads reach back only to 2012.", Read(Tile(HeavyweightRule.Name)), StringComparison.Ordinal);
+        Assert.EndsWith("No long record yet: the walk from 2019 replays prices alone, and this setup buys on filings; its own test over the long history judges it from 2015.", Read(Tile(HeavyweightRule.Name)), StringComparison.Ordinal);
         Assert.DoesNotContain("tile-record", Tile(DriftRule.Name), StringComparison.Ordinal);
         Assert.DoesNotContain("tile-record", Tile(SetupFamilies.Pullback), StringComparison.Ordinal);
         Assert.NotEqual(string.Empty, Tile(SetupFamilies.Pullback));
@@ -185,6 +187,6 @@ public partial class ReadSurface
         // on the S&P 400 less three.
         var held = Regex.Match(tonight, "<div class=\"decision-card\"[^>]*data-family=\"heavyweight\" data-ticker=\"M2\".*?class=\"rec-sub\"", RegexOptions.Singleline).Value;
 
-        Assert.Contains("No long record yet: the filings this setup reads reach back only to 2012, so its record starts with its live trades.", Read(held), StringComparison.Ordinal);
+        Assert.Contains("which reach back only to 2012. Its own test over the long history judges it from 2015,", Read(held), StringComparison.Ordinal);
     }
 }

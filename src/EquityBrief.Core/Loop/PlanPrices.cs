@@ -63,6 +63,14 @@ public static class PlanPrices
 
         var parts = words.Split(", ");
 
+        // From the operator's order of 2026-11-14 a fourth part names the take-profit's multiple of the risk.
+        if (parts.Length == 4 && TakeProfit.MultipleOf(parts[3]) is { } multiple && Named(string.Join(", ", parts[..3])) is { } before)
+        {
+            var taking = before.Taking(multiple);
+
+            return taking.Words == words ? taking : null;
+        }
+
         if (parts.Length != 3)
         {
             return null;

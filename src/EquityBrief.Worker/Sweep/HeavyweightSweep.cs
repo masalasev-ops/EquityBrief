@@ -136,6 +136,40 @@ public sealed class HeavyweightTape
 
     public required int First { get; init; }
 
+    // From the operator's order of 2026-11-14 each name's series as the night's functions read it, laid only where a walk asks
+    // for a holding's stop and take-profit: its typical daily moves and the swings it confirmed by each bar.
+    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    public Lazy<SweepSeries>[]? Series { get; init; }
+
+    // A holding's stop and take-profit from its buy at a session's close: the stop the moves under it in the stock's typical
+    // daily moves that session, and the price it takes profit at from the swing highs confirmed by it; none where the tape
+    // lays no series or the session holds no typical move.
+    public (double Stop, double? TakeProfit)? ExitsAt(int name, int entry, double moves, double multiple)
+    {
+        if (Series is null || !(Close[name][entry] is var buy && buy > 0))
+        {
+            return null;
+        }
+
+        var series = Series[name].Value;
+        var bar = Array.FindLastIndex(series.Bars, one => one.Session <= Calendar[entry]);
+
+        if (bar < 0 || !(series.Atr[bar] is var typical && typical > 0)
+            || EquityBrief.Core.Loop.TakeProfit.StopUnder(Statistic.FromPrice(series.Bars[bar].Close), typical, moves) is not { } stopAtBar)
+        {
+            return null;
+        }
+
+        // The stop and the take-profit placed in the bar's own prices, brought to the tape's by its close there.
+        var scale = buy / Statistic.FromPrice(series.Bars[bar].Close);
+        var swings = series.Swings;
+        var confirmed = series.Confirmed[bar];
+        var session = series.Bars[bar].Session;
+        var taking = EquityBrief.Core.Loop.TakeProfit.Of(Statistic.FromPrice(series.Bars[bar].Close), stopAtBar, null, price => EquityBrief.Core.Loop.TakeProfit.NearestAbove(price, swings, confirmed, session), multiple);
+
+        return (stopAtBar * scale, taking?.Price * scale);
+    }
+
     // The newest session at or before one on which the index held a name and it closed, -1 where none.
     public static int[] LastMemberCloseOf(bool[] member, double[] close)
     {
@@ -427,6 +461,7 @@ public static class HeavyweightSweep
             LastMemberClose = lastMemberClose,
             Index = indexClose,
             First = first,
+            Series = [.. names.Select(name => new Lazy<SweepSeries>(() => SweepColumns.Series(name, sessionAt)))],
         };
 
         return (tape, sessions);
@@ -526,10 +561,16 @@ public static class HeavyweightSweep
         HeavyweightTape tape,
         IReadOnlyDictionary<int, HeavyweightRebalance> rebalances,
         HeavyweightExit exit,
-        Func<int, int, double?>? everyMember = null)
+        Func<int, int, double?>? everyMember = null,
+        (double Moves, double Multiple)? stops = null)
     {
         var trades = new List<HeavyweightTrade>();
         var open = new SortedDictionary<int, (int Entry, string Sector, int[] Cut)>();
+
+        // From the operator's order of 2026-11-14 each holding's stop and take-profit where the walk is asked for them, a
+        // close under the stop or at or above the take-profit selling it at that close.
+        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        var exits = new Dictionary<int, (double Stop, double? TakeProfit)>();
 
         void End(int name, int session, string reason)
         {
@@ -541,6 +582,7 @@ public static class HeavyweightSweep
 
             trades.Add(new HeavyweightTrade(name, sector, entry, sold, reason, result, cutReturn, everyMember?.Invoke(entry, sold), market, tape.Calendar[sold].Year - SweepColumns.FirstScored.Year));
             open.Remove(name);
+            exits.Remove(name);
         }
 
         for (var session = tape.First; session < tape.Calendar.Length; session++)
@@ -550,6 +592,11 @@ public static class HeavyweightSweep
                 if (!tape.Member[name][session])
                 {
                     End(name, session - 1, HeavyweightBook.LeftTheIndex);
+                }
+                else if (session > open[name].Entry && exits.TryGetValue(name, out var placed) && !double.IsNaN(tape.Close[name][session])
+                    && EquityBrief.Core.Loop.TakeProfit.EndOf(tape.Close[name][session], placed.Stop, placed.TakeProfit) is { } exited)
+                {
+                    End(name, session, exited);
                 }
                 else if (exit != HeavyweightExit.Drop
                     && !double.IsNaN(tape.Close[name][session])
@@ -579,6 +626,11 @@ public static class HeavyweightSweep
                 foreach (var leader in leaders.Where(leader => !open.ContainsKey(leader) && !double.IsNaN(tape.Close[leader][session])))
                 {
                     open[leader] = (session, sector, cut);
+
+                    if (stops is { } asked && tape.ExitsAt(leader, session, asked.Moves, asked.Multiple) is { } placed)
+                    {
+                        exits[leader] = placed;
+                    }
                 }
             }
         }
