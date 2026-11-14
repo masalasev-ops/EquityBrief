@@ -19408,3 +19408,22 @@ Not ready:  why each tabled part was not ready on 2026-11-10. The order of that 
 Owed:       23.10's second part, one pull request a commit a part, every rule that restarts named with its record's length
             before its merge, on the operator's go.
 Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: a dip trade under a plan keeps its fill on the session it fills, so every page draws it bought from then   2026-11-13
+
+Corrects:   23.10's restart of 2026-11-10: the dip's step stored a plan trade's fill only with its end, so a dip order that had
+            filled read as waiting on every page until its trade ended; item (b) of the operator's order of 2026-11-13. No page
+            drew it so that day: since the restart one planned dip order stood, HALO's on the S&P 400, and its levels placed no
+            price, so it can never fill.
+Label:      23.10, whose restart gave the dip its plan; built first in 23.10's second part on the operator's answer, since the
+            dip's step is a source every dip rule pins and the second part restarts them anyway.
+Ruled:      the operator's order and answer of 2026-11-13, word for word in `prompts/2026-11-13-23.10-second-restart-order.md`.
+Built:      the dip's step, walking a trade under a plan, stores its fill and the session it filled once it has filled, the
+            trade open until its plan sells it, and every page reads it bought from then off the stored fill; the schema says
+            so.
+Tests:      1 new: a dip trade under a plan filled on its first session and held, worked by hand, its fill and session stored
+            with the trade open, and the read surface's planned trades reading it bought from then.
+Claims:     none new.
+Pins:       every dip rule's: the dip's step is a source each pins, registered again by the second part's remedy.
+Mutated:    the rule as above. b1 the open trade's fill left unstored, predicted red at the new test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.

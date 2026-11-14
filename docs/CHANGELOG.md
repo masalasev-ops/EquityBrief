@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-13 - docs/SCHEMA.md - a dip trade under a plan keeps its fill from the session it fills
+Corrects: item (b) of the operator's order of 2026-11-13: "A filled dip order reads as waiting until its trade ends, because the dip's step stores its fill only then: a dip trade is drawn as bought from the session it filled, on every page, read from the fill the step makes, with a test."
+Was:
+> | `plan` | TEXT | from 23.10, JSON: ... and one never filled stored ended at its limit with no fill and no result; null for a rule stating no plan |
+Now:
+> | `plan` | TEXT | from 23.10, JSON: ... and one never filled stored ended at its limit with no fill and no result; from 23.10's second part its fill and `bought_on` stored from the night after the session it filled, the trade open until it ends; null for a rule stating no plan |
+Why: the same; it lands with 23.10's second part, since the dip's step is a source every dip rule pins.
+
 ### 2026-11-13 - docs/BUILD_PLAN.md - the parts tabled for phase 24 built as 23.10's second part, the second and last restart of phase 23
 Ruling: the operator's order of 2026-11-13, word for word in `prompts/2026-11-13-23.10-second-restart-order.md`: "The parts 23.10 tabled for phase 24 (BUILD_PLAN.md, "Tabled for phase 24") are built now as 23.10's second part, not left for phase 24, on my word: it is the second and last restart of phase 23, because the first left these parts out and phase 24 is not planned yet. Record it as a ruling, move the "Tabled for phase 24" items into 23.10 with the prior text in the changelog, and say in PROGRESS why each was not ready on 2026-11-10."
 Was:

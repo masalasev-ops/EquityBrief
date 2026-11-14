@@ -2058,7 +2058,7 @@ Grain: one row per rule, index, stock and session a dip list kept a trade on, fr
 | `result` | REAL | what it came to bought at the open in multiples of the risk its listing close set, before its cost, null while held |
 | `cost` | REAL | its round trip in multiples of that risk at the published table, its company valued as the member readings read it on its night, null while held |
 | `exit` | INTEGER | from 21.16, the exit of the menu its rule's approved change names in its sell dial's place, which the trade is walked under, sold at the next open after the menu's trigger and at its own close where the menu's time or the time limit ends it; null under the rule's own sell dial (see: Every change the engines propose is one its family's night reads, so each is put to the operator) |
-| `plan` | TEXT | from 23.10, JSON: the order the plan its rule's registration states placed at the night's close, as `family_trade` stores it, the trade bought at its plan's fill and sold at its plan's sale, and one never filled stored ended at its limit with no fill and no result; null for a rule stating no plan |
+| `plan` | TEXT | from 23.10, JSON: the order the plan its rule's registration states placed at the night's close, as `family_trade` stores it, the trade bought at its plan's fill and sold at its plan's sale, and one never filled stored ended at its limit with no fill and no result; from 23.10's second part its fill and `bought_on` stored from the night after the session it filled, the trade open until it ends; null for a rule stating no plan |
 
 Primary key: `rule`, `index_code`, `ticker`, `session_date`.
 

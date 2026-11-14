@@ -849,8 +849,27 @@ public sealed class DipFamily : IComponent
             {
                 var planBars = PlanBars.Of(await PlanTrades.BarsAsync(connection, transaction, trade.Ticker, night, cancellation));
 
-                if (PlanTrades.Ended(order, trade.Entry, trade.Stop, trade.Session, planBars) is not { } end)
+                if (PlanTrades.Where(order, trade.Entry, trade.Stop, trade.Session, planBars) is not { } where)
                 {
+                    continue;
+                }
+
+                // From 23.10's second part a trade its plan has filled and not yet ended keeps its fill and the session it
+                // filled on, so every page draws it bought from then; the step had stored a fill only with its trade's end.
+                if (where.End is not { } end)
+                {
+                    if (where is { FilledOn: { } heldFrom, Fill: { } held })
+                    {
+                        await ExecuteAsync(connection, transaction, WalkTrade,
+                        [
+                            ("$rule", trade.Rule), ("$index", index), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)),
+                            ("$bought_on", Stamp(heldFrom)), ("$fill", Money.ToStorage(Statistic.ToPrice(held))), ("$past", DBNull.Value),
+                            ("$ended_on", DBNull.Value), ("$sale", DBNull.Value), ("$end", DipEnd.Open),
+                            ("$sessions", Math.Max(0, planBars.Sessions.Length - planBars.IndexOf(heldFrom))),
+                            ("$result", DBNull.Value), ("$cost", DBNull.Value),
+                        ], cancellation);
+                    }
+
                     continue;
                 }
 

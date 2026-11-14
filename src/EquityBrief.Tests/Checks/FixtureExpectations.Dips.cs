@@ -1,5 +1,6 @@
 using System.Globalization;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
@@ -513,6 +514,37 @@ public partial class FixtureExpectations
 
         Assert.Equal(first, FamilyRows(store, "SELECT ticker, state, place FROM dip_pick WHERE index_code = 'MID' ORDER BY ticker;"));
         Assert.Equal(["2026-09-29|119.68|2026-09-30|119.84|exit|1"], FamilyRows(store, "SELECT bought_on, fill, ended_on, sale, end_reason, sessions FROM dip_trade WHERE ticker = 'DN';"));
+    }
+
+    // From 23.10's second part, item (b) of the operator's order of 2026-11-13: a dip trade under a plan that has filled and not
+    // yet ended keeps its fill and the session it filled on, so every page draws it bought from then; the step had stored a
+    // fill only with the trade's end, so a filled order read as waiting until it ended. Worked by hand: DN, listed on
+    // 2026-09-28 at its close of 119.52 with its rule's stop at 113.52, its plan buying at 119.00 within 5 sessions, 4 typical
+    // days of 1.00 under the buy and the time limit of 10 alone: 09-29 opens at 119.68 and trades down to 118.68, so it fills at
+    // the level on 09-29, and by the night of 10-02 it has held 4 sessions with its stop of 115.00 untouched and its limit not
+    // reached, so it stays open.
+    [Fact]
+    public async Task ADipTradeUnderAPlanKeepsItsFillOnTheSessionItFillsAndIsReadBoughtFromThen()
+    {
+        using var store = DipStore();
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var plan = new PlanOrder("0.52 typical days under the close within 5 sessions, 4 typical days under the buy, the time limit alone", "0.52 typical days under the close", 119.00, 5, PlanPoints.TypicalStop(4), 113.52, null, 1, null, [], null, null, 10).Json();
+
+        store.Execute($"INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, end_reason, plan) VALUES ('the live S&P 400 dip rule', 'MID', 'DN', '2026-09-28', 1, '119.52', '113.52', 10, 5, 4.0, 'open', '{plan.Replace("'", "''", StringComparison.Ordinal)}');");
+
+        await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
+
+        var stored = Assert.Single(FamilyRows(store, "SELECT bought_on, fill, ended_on, end_reason, sessions, result FROM dip_trade WHERE ticker = 'DN';")).Split('|');
+
+        Assert.Equal("2026-09-29", stored[0]);
+        Assert.Equal(119.00m, decimal.Parse(stored[1], CultureInfo.InvariantCulture));
+        Assert.Equal(["null", "open", "4", "null"], stored[2..]);
+
+        // The read surface's planned trades, which every page reads, read it bought on 09-29 at 119.00, open.
+        var read = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, clock);
+        var trade = Assert.Single(await read.PlannedTradesAsync("MID", new DateOnly(2026, 10, 2)), one => one.Ticker == "DN");
+
+        Assert.Equal((new DateOnly(2026, 9, 29), 119.00m, (DateOnly?)null, false), (trade.FilledOn!.Value, trade.Fill!.Value, trade.EndedOn, trade.NotFilled));
     }
 
     [Fact]
