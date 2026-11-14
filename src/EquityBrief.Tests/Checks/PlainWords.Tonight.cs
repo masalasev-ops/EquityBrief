@@ -219,6 +219,19 @@ public partial class PlainWords
     {
         Assert.Equal("HELD qualified again tonight, and its trade is kept.", ReaderWords.Plain("HELD qualified again tonight, and its trade is held."));
         Assert.Equal("Kept while it leads: sold at a later month's reshuffle.", ReaderWords.Plain("Held while it leads: sold at a later month's rebalance."));
+
+        // From the operator's order of 2026-11-14 their phrase "already held" stands as they wrote it.
+        Assert.Equal("ROP met the earnings drift rules again but is already held; its card is below.", ReaderWords.Plain("ROP met the earnings drift rules again but is already held; its card is below."));
+    }
+
+    // The operator's phrase "already held" is read past by the check, and "held" anywhere else on a card is still a fault.
+    [Fact]
+    public void TheOperatorsPhraseAlreadyHeldIsReadPastAndHeldAnywhereElseIsStillAFault()
+    {
+        static string Card(string words) => $"<section class=\"card\" data-card=\"family\"><div class=\"card-b\"><p data-summary>Tonight's picks.</p><p>{words}</p></div></section>";
+
+        Assert.Empty(Faults(Card("Met the rules again, already held (1). Already held, not bought again."), "family", ["held"]));
+        Assert.Single(Faults(Card("Already held, and its trade is held."), "family", ["held"]));
     }
 
     // The sources 22.6 writes.

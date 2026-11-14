@@ -1734,7 +1734,10 @@ public static partial class NameScreen
         DateOnly? fetchedOn = null,
         DateOnly? sharesFiledOn = null,
         // The entry check's reading of the stock on the night.
-        EquityBrief.Core.EntryCheck.EntryReading? entryCheck = null)
+        EquityBrief.Core.EntryCheck.EntryReading? entryCheck = null,
+        // From the operator's order of 2026-11-14 an order from an earlier night still waiting to buy the stock, which the
+        // page's opening line names.
+        WaitingOrderView? waitingOrder = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -2002,7 +2005,7 @@ public static partial class NameScreen
             // A written headline the stored directions contradict gives way to the one code writes.
             // see: A written sentence the stored latest quarter contradicts is withheld where it is drawn, and two sources disagreeing on a beat or a miss are named in one sentence in its place
             headline: (WrittenHeadline(accepted) is { } writtenHeadline && EquityBrief.Core.Research.Directions.Clashes(writtenHeadline.Sentence, EquityBrief.Core.Research.Directions.For(reportView?.Quarter, writtenHeadline.WrittenOn)).Count == 0 ? writtenHeadline : null)
-                ?? Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
+                ?? Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState, waitingOrder, heldTrade),
             tiles: tiles,
             asksForQuotes: asksForQuotes,
             report: reportView,
@@ -2225,8 +2228,36 @@ public static partial class NameScreen
     // The sentence under the masthead where no written one is accepted: whether a rule picked the name tonight and which,
     // or how close it came, its business as its reported quarters read it and its trend, with no figure in it.
     // see: The headline carries no figure and is written last from the accepted claims, and code writes it where none is accepted
-    public static HeadlineView Headline(string company, DecisionCardView? card, FilterWhy? passed, EquityBrief.Core.Filter.MissedGate? missed, string? state, string? trend)
+    public static HeadlineView Headline(string company, DecisionCardView? card, FilterWhy? passed, EquityBrief.Core.Filter.MissedGate? missed, string? state, string? trend, WaitingOrderView? waiting = null, HeldTradeView? held = null)
     {
+        // From the operator's order of 2026-11-14 a stock an order waits to buy, or a trade holds, opens on that, in their words;
+        // a held stock its setup's rules met again tonight saying it is not bought again.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        var named = CompanyWords.Short(company);
+
+        if (card is null && waiting is { Price: { } price } order)
+        {
+            var setup = (EquityBrief.Core.Families.SetupFamilies.Named(order.Family)?.Label ?? order.Family).ToLowerInvariant();
+            var gap = PlanOrderWords.Gap(price, order.LastClose) is { } above
+                ? FormattableString.Invariant($" Last close {Math.Abs(above * 100):0.0}% {(above >= 0 ? "above" : "below")}.")
+                : string.Empty;
+
+            return new HeadlineView(FormattableString.Invariant($"{named} has an order waiting: {setup} buys it if it falls to ${price:0.00} by {order.LastDay:d MMM}.{gap}"), Written: false);
+        }
+
+        if (held is { } trade)
+        {
+            var setup = (EquityBrief.Core.Families.SetupFamilies.Named(trade.Card.Family)?.Label ?? trade.Card.Family).ToLowerInvariant();
+            var bought = trade.Pick.FilledOn ?? trade.Pick.Night;
+            var line = trade.Pick.Buy is { } at
+                ? FormattableString.Invariant($"{named} is held: bought by {setup} on {bought:d MMM} at about ${at:0.00}.")
+                : FormattableString.Invariant($"{named} is held: bought by {setup} on {bought:d MMM}.");
+
+            return new HeadlineView(card is { } again && string.Equals(again.Family, trade.Card.Family, StringComparison.Ordinal)
+                ? line + $" It met the {setup} rules again tonight; not bought again while the trade is open."
+                : line, Written: false);
+        }
+
         var business = state switch
         {
             EquityBrief.Core.Quarters.FundamentalState.Improving => "an improving business",
@@ -2263,12 +2294,15 @@ public static partial class NameScreen
     };
 
     // A name's member readings as the page draws them, each as the member reader stored it, its index named as every
-    // page names it, with its company's rating counts as the newest fetch filed them.
+    // page names it, with its company's rating counts as the newest fetch filed them, and from 23.10's second part the
+    // quarters its cover reads where they are older than its profit check's.
     public static MemberReadingsView Member(MemberReadingRow row, RatingsRow? ratings = null) =>
         new(EquityBrief.Web.App.Universes.ByCode(row.IndexCode)?.Name ?? row.IndexCode, row.SessionDate, row.Close, row.DollarVolume,
             row.CompanyValue, row.Cost, row.CostDouble, row.Profit, row.Coverage, row.State, row.YearHigh, row.Nearness,
             row.SinceHigh, row.VolumeRatio, row.Industry, row.IndustryMonth, row.IndustryQuarter, row.PeerSurprise,
-            ratings is null ? null : new RatingsView(ratings.Fetched, ratings.StrongBuy, ratings.Buy, ratings.Hold, ratings.Sell, ratings.StrongSell, ratings.Total, ratings.BeforeCounts));
+            ratings is null ? null : new RatingsView(ratings.Fetched, ratings.StrongBuy, ratings.Buy, ratings.Hold, ratings.Sell, ratings.StrongSell, ratings.Total, ratings.BeforeCounts),
+            CoverTo: row.Cover?.To,
+            CoverFilingNotIn: row.Cover?.FilingNotIn ?? false);
 
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,
     // one sentence per reading, and the quarters any reading read with the dates each was filed and

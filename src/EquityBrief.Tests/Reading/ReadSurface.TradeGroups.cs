@@ -135,7 +135,7 @@ public partial class ReadSurface
     }
 
     const string HomeAfterTheRestart = "<h2>Tonight's ideas: 1 stock to buy Thursday morning</h2><p>All versions since 2 Oct: 2 ideas bought and sold on paper, 1 made money.</p>";
-    const string TonightAfterTheRestart = "<p>1 new pick to buy at tomorrow's open, all from the earnings drift.</p><p>Of the system's trades, 2 are open, 1 of them this version's.</p><p>1 stock to buy at tomorrow's open, at about tonight's close.</p>";
+    const string TonightAfterTheRestart = "<p>1 new pick to buy at tomorrow's open, all from the earnings drift.</p><p>2 trades are open on the S&P 500, 1 of them bought under the current rules since 3 Nov.</p><p>1 stock to buy at tomorrow's open, at about tonight's close.</p>";
     const string PaperAfterTheRestart = "<p>This version's trades: 1 open and 0 have closed, the newest bought on 4 Nov.</p><p>The system has bought 4 trades since 2 Oct: 2 open, 1 reached their target, 1 hit their stop, +8.8% overall.</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";
 
     [Fact]
@@ -143,8 +143,9 @@ public partial class ReadSurface
     {
         var verdicts = CountsProof.Check(RestartGroups(), HomeAfterTheRestart, TonightAfterTheRestart, PaperAfterTheRestart);
 
-        // From the 23.10 correction of 2026-11-13 two more, Home's and Tonight's orders still waiting, none after this restart.
-        Assert.Equal(20, verdicts.Count);
+        // From the 23.10 correction of 2026-11-13 two more, Home's and Tonight's orders still waiting, none after this restart;
+        // from the operator's order of 2026-11-14 one fewer, Tonight's open line naming no same trades before this version.
+        Assert.Equal(19, verdicts.Count);
         Assert.All(verdicts, verdict => Assert.Equal("pass", verdict.Verdict));
     }
 
@@ -153,8 +154,8 @@ public partial class ReadSurface
     [InlineData("2 ideas bought", "0 ideas bought", "home", "Home's ideas bought and sold are the system's closed")]
     [InlineData(", 1 made money", ", 0 made money", "home", "Home's ideas that made money are the system's")]
     [InlineData("ideas: 1 stock", "ideas: 3 stock", "home", "Home's ideas to buy and picks watched are the new picks")]
-    [InlineData("trades, 2 are open", "trades, 1 are open", "tonight", "Tonight's open trades are the system's")]
-    [InlineData("1 of them this", "2 of them this", "tonight", "Tonight's open trades of this version are this version's")]
+    [InlineData("2 trades are open", "1 trades are open", "tonight", "Tonight's open trades are the system's")]
+    [InlineData("1 of them bought", "2 of them bought", "tonight", "Tonight's open trades bought under the current rules are this version's")]
     [InlineData("1 new pick to", "3 new picks to", "tonight", "Tonight's new picks are those to buy less the reshuffle")]
     [InlineData("1 stock to buy at tomorrow's open, at", "3 stocks to buy at tomorrow's open, at", "tonight", "Tomorrow's buys count the same new picks")]
     [InlineData("bought 4 trades", "bought 1 trades", "paper", "Paper trading's bought are the system's")]
@@ -220,7 +221,7 @@ public partial class ReadSurface
         Assert.Equal((false, false, false), (ended.Open, ended.ToBuy, ended.Selling));
         Assert.Equal((false, false, false), (refused.Open, refused.ToBuy, refused.Selling));
 
-        var drawn = new MarkRenderer().IndexTrades([waiting, selling, refused, ended], "S&P 400");
+        var drawn = new MarkRenderer().IndexTrades([waiting, selling, refused, ended], "S&P 400", day);
 
         Assert.Contains("to buy at tomorrow's open", drawn, StringComparison.Ordinal);
         Assert.Contains("<b>sells at tomorrow's open</b>: target reached", drawn, StringComparison.Ordinal);
@@ -286,7 +287,7 @@ public partial class ReadSurface
     public void TheProofHoldsEachPagesSellingCountToTheFunction()
     {
         var groups = RestartGroups() with { System = RestartGroups().System with { Selling = 1 } };
-        var tonight = TonightAfterTheRestart.Replace("this version's.", "this version's; 1 of them sells at tomorrow's open.", StringComparison.Ordinal);
+        var tonight = TonightAfterTheRestart.Replace("since 3 Nov.", "since 3 Nov. 1 sells at tomorrow's open.", StringComparison.Ordinal);
         var paper = PaperAfterTheRestart.Replace(": 2 open,", ": 2 open, 1 of them sells at tomorrow's open,", StringComparison.Ordinal);
 
         Assert.All(CountsProof.Check(groups, HomeAfterTheRestart, tonight, paper), verdict => Assert.Equal("pass", verdict.Verdict));
@@ -348,7 +349,7 @@ public partial class ReadSurface
     const string HomeWithTheSame = "<h2>Tonight's ideas: 1 stock to buy Thursday morning</h2><p>All versions since 2 Oct: 3 ideas bought and sold on paper, 1 made money.</p>";
 
     static string TonightWithTheSame(TradeGroupsView groups) =>
-        $"<p>1 new pick to buy at tomorrow's open, all from the earnings drift.</p><p>{groups.OpenWords}.</p><p>1 stock to buy at tomorrow's open, at about tonight's close.</p>";
+        $"<p>1 new pick to buy at Thursday's open, all from the earnings drift.</p><p>{groups.OpenLine("S&P 500")} None ended tonight.</p><p>1 stock to buy at Thursday's open, at about tonight's close.</p>";
 
     static string PaperWithTheSame(TradeGroupsView groups) =>
         $"<p>This version's trades: 1 open and 0 have closed, the newest bought on 4 Nov.</p><p>{groups.SystemLine} {groups.SameLine}</p><details><summary>Earlier versions: 3 trades a rule's earlier versions listed</summary></details>";
@@ -368,11 +369,14 @@ public partial class ReadSurface
         Assert.Equal((1, 1, 2), (groups.System.MadeMoney, groups.System.AtTarget, groups.System.AtStop));
         Assert.Equal(0.066667, groups.System.MeanReturn!.Value, 6);
 
-        Assert.Equal("Of the system's trades, 3 are open, 1 of them this version's, 1 the same trades before this version", groups.OpenWords);
+        // From the operator's order of 2026-11-14 Tonight's line, worked by hand: the system's three open on the index, this
+        // version's NEW1 among them, since 1 Nov, the earlier of the two live accounts' starts, the drift's 4 Nov and the
+        // quality book's 1 Nov.
+        Assert.Equal("3 trades are open on the S&P 500, 1 of them bought under the current rules since 1 Nov.", groups.OpenLine("S&P 500"));
         Assert.Equal("2 of them are the same trades before this version, kept apart under each account below and in none of its figures.", groups.SameLine);
 
-        // A night with no such trade draws neither.
-        Assert.Equal("Of the system's trades, 2 are open, 1 of them this version's", RestartGroups().OpenWords);
+        // A night with no such trade draws no same line, and its open line counts NEW1 and HELD.
+        Assert.Equal("2 trades are open on the S&P 500, 1 of them bought under the current rules since 1 Nov.", RestartGroups().OpenLine("S&P 500"));
         Assert.Empty(RestartGroups().SameLine);
     }
 
@@ -396,8 +400,8 @@ public partial class ReadSurface
 
         // A page naming another count for the group, or none where the group holds some.
         Assert.Equal(
-            "Tonight's open trades of the same before this version are that group's",
-            Assert.Single(CountsProof.Check(groups, HomeWithTheSame, TonightWithTheSame(groups).Replace("1 the same", "2 the same", StringComparison.Ordinal), PaperWithTheSame(groups)), verdict => verdict.Verdict != "pass").Rule);
+            "Tonight's open trades bought under the current rules are this version's",
+            Assert.Single(CountsProof.Check(groups, HomeWithTheSame, TonightWithTheSame(groups).Replace("1 of them bought", "2 of them bought", StringComparison.Ordinal), PaperWithTheSame(groups)), verdict => verdict.Verdict != "pass").Rule);
         Assert.Equal(
             "Paper trading's same trades before this version are that group's",
             Assert.Single(CountsProof.Check(groups, HomeWithTheSame, TonightWithTheSame(groups), PaperWithTheSame(groups).Replace(groups.SameLine, string.Empty, StringComparison.Ordinal)), verdict => verdict.Verdict != "pass").Rule);

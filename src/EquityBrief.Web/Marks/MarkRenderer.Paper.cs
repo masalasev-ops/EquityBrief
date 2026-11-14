@@ -576,7 +576,7 @@ public sealed partial class MarkRenderer
         // did not buy, none it holds.
         // see: Each table and line of what the system bought names the account it walks, and draws no stock that account holds as not bought
         html.Append("<p class=\"paper-walks\" data-walks=\"each\">Each row is a trade of its setup's own account, which the Setup column names.</p>");
-        html.Append(link.Closed ? ClosedTrades(page.Closed) : OpenTrades(page.Open));
+        html.Append(link.Closed ? ClosedTrades(page.Closed) : OpenTrades(page.Open, page.Groups?.Night));
 
         if (page.Unbought.Count == 0)
         {
@@ -624,7 +624,7 @@ public sealed partial class MarkRenderer
                 html.Append(StockCell(trade.Ticker, trade.Company, null));
                 html.Append(FamilyCell(trade.Family));
                 html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
-                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
+                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords(page.Groups?.Night)))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Stop is null, trade.Closed is { } shut ? (shut.Risks, shut.Fraction) : (trade.Open?.Risks, trade.Open?.Fraction))}</td></tr>");
             }
 
@@ -646,7 +646,7 @@ public sealed partial class MarkRenderer
                 html.Append(FamilyCell(trade.Family));
                 html.Append(Copying ? "<td>an earlier version</td>" : Formatted($"<td><span title=\"{Escaped(trade.Version ?? string.Empty)}\">an earlier version</span></td>"));
                 html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
-                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
+                html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : trade.Selling is { } sells ? Formatted($"<td>{Escaped(Capitalised(TradeGroupsView.SellsWords(page.Groups?.Night)))}: {Escaped(sells)}</td>") : "<td><span class=\"pill\">open</span></td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Stop is null, trade.Closed is { } shut ? (shut.Risks, shut.Fraction) : (trade.Open?.Risks, trade.Open?.Fraction))}</td></tr>");
             }
 
@@ -683,7 +683,7 @@ public sealed partial class MarkRenderer
     // The open trades: the stock and its company linking to its chart with the variants holding it too, its setup, its buy
     // and the session it was bought on, its stop tonight, its target or that it trails or none for a holding, tonight's close
     // with the sessions held of its cap, its result so far, and where it stands in words.
-    string OpenTrades(IReadOnlyList<PaperBoughtView> trades)
+    string OpenTrades(IReadOnlyList<PaperBoughtView> trades, DateOnly? night)
     {
         if (trades.Count == 0)
         {
@@ -724,7 +724,7 @@ public sealed partial class MarkRenderer
                 : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
             html.Append(Invariant, $"<td class=\"r num\">{(open?.Close is { } shut ? Figures.Price(shut) : "<span class=\"degraded\">not stored</span>")}<span class=\"pb-day\">{Held(open?.Held, trade.Cap)}</span></td>");
             html.Append(Invariant, $"<td class=\"r num\">{Result(book, (open?.Risks, open?.Fraction))}</td>");
-            html.Append(Invariant, $"<td><span class=\"pb-standing {StandingClass(open?.Standing)}\" data-standing=\"{Escaped(open?.Standing ?? string.Empty)}\">{Escaped(trade.Selling is { } why ? Capitalised(TradeGroupsView.SellsWords) + ": " + why : Capitalised(open?.Standing ?? HeavyweightStandings.NotRead))}</span></td></tr>");
+            html.Append(Invariant, $"<td><span class=\"pb-standing {StandingClass(open?.Standing)}\" data-standing=\"{Escaped(open?.Standing ?? string.Empty)}\">{Escaped(trade.Selling is { } why ? Capitalised(TradeGroupsView.SellsWords(night)) + ": " + why : Capitalised(open?.Standing ?? HeavyweightStandings.NotRead))}</span></td></tr>");
         }
 
         html.Append("</tbody></table></div>");

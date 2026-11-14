@@ -36,11 +36,12 @@ public static class TradeGroups
                 + head.Trades.Count(one => one.Trade.Bought > night)
                 + (head.Earlier ?? []).Count(one => one.Trade.Bought > night));
 
+        // The day the earliest of the current rules started, so every trade they bought was bought since it.
         var since = heads.Select(head => head.Since).OfType<DateOnly>().ToArray();
 
         return new TradeGroupsView(
             FirstLive(register, indexCode, family),
-            since.Length == 0 ? null : since.Max(),
+            since.Length == 0 ? null : since.Min(),
             Count([.. version, .. earlier, .. same], night, close, sessions),
             Count(version, night, close, sessions),
             Count(earlier, night, close, sessions),
@@ -48,6 +49,7 @@ public static class TradeGroups
             ToBuy(heads.Where(head => head.Book && head.Family != Core.Families.ImprovingRule.Name)))
         {
             SameTrades = Count(same, night, close, sessions),
+            Night = night,
             StillWaiting = heads.Sum(head => (head.Unfilled ?? []).Count(one => PlanOrderWords.IsWaiting(one.Why) && one.Listed < night)),
         };
     }

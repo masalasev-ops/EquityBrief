@@ -109,8 +109,10 @@ public partial class ReadSurface
         // link keeping the index; and the stocks one step short not read on an index whose night stores only the first step
         // each stock missed.
         var minute = Assert.Single(Blocks(page, "<div class=\"one-minute\".*?</div></div></div>"));
-        Assert.Contains("<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>1 new pick to buy at Monday's open, all from the breakout.</b></p><p class=\"minute-said\">2 of the 3 S&P 400 stocks qualified under some setup tonight. The other 3 setups found nothing new.</p></div>", minute, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>Of the system's trades, 2 are open, 2 of them this version's.</b></p><p class=\"minute-said\">None ended tonight. <a href=\"#/picks?status=open&universe=400\">See them on Past picks</a>, and this version's alone on <a href=\"#/paper?universe=400\">Paper trading</a></p></div>", minute, StringComparison.Ordinal);
+        // From the operator's order of 2026-11-14 the line beneath names the setups that found nothing, and the open line
+        // names the index and those the current rules bought.
+        Assert.Contains("<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>1 new pick to buy at Monday's open, all from the breakout.</b></p><p class=\"minute-said\">Pullback and the earnings drift found nothing tonight.</p></div>", minute, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>2 trades are open on the S&P 400, 2 of them bought under the current rules since 28 Sep. None ended tonight.</b></p><p class=\"minute-said\"><a href=\"#/picks?status=open&universe=400\">See them on Past picks</a>, and those bought under the current rules on <a href=\"#/paper?universe=400\">Paper trading</a></p></div>", minute, StringComparison.Ordinal);
         Assert.Contains("<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>Which stocks are one step from qualifying is not read tonight.</b></p><p class=\"minute-said\">This index's night stores only the first step each stock missed.</p></div>", minute, StringComparison.Ordinal);
         Assert.DoesNotContain("S&P 500 members", page, StringComparison.Ordinal);
 
@@ -130,7 +132,7 @@ public partial class ReadSurface
         var pullback = FamilyCardOf(page, "pullback");
 
         Assert.Contains("No picks tonight. 1 stock qualified but was already bought on an earlier night and its trade is still open, named beneath.", pullback, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"family-note\">M3 qualified again tonight but its trade from 2026-09-30 on the S&P 500's list is still open, so it is not listed. One stock, one trade.</p>", pullback, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"family-note\">M3 qualified again tonight but its trade from 2026-09-30 on the S&P 500's list is still open, so it is not bought again; its card is under Met the rules again.</p>", pullback, StringComparison.Ordinal);
 
         // The drift carries its line of evidence and says how far the S&P 400's members got.
         var drift = FamilyCardOf(page, "drift");
@@ -372,7 +374,7 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
 
-        Assert.Contains("on the S&P 400's list is still open, so it is not listed. One stock, one trade.", FamilyCardOf(page, "pullback"), StringComparison.Ordinal);
+        Assert.Contains("on the S&P 400's list is still open, so it is not bought again; its card is under Met the rules again.", FamilyCardOf(page, "pullback"), StringComparison.Ordinal);
         Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&P 500 large cap\">", page, StringComparison.Ordinal);
         Assert.Contains("<option value=\"500\" data-members=\"", page, StringComparison.Ordinal);
     }

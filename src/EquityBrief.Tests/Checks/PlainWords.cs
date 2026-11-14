@@ -225,7 +225,9 @@ public partial class PlainWords
                 continue;
             }
 
-            var said = Visible(WithoutAsides(card));
+            // The operator's phrase "already held" of 2026-11-14 is their words and not the glossary's "held", which is the
+            // drift's step; it alone is read past, so "held" anywhere else is still a fault.
+            var said = Regex.Replace(Visible(WithoutAsides(card)), @"(?<![\w'’-])" + Regex.Escape(ReaderWords.AlreadyHeld) + @"(?![\w'’-])", " ", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
             foreach (var term in terms)
             {

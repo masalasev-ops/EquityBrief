@@ -18,8 +18,13 @@ public static partial class CountsProof
     const string Fail = "fail";
     const string Unexamined = "unexamined";
 
-    // The count the group of orders still waiting is headed with.
-    const string StillWaitingCount = @"(\d+) orders? from earlier nights (?:is|are) still waiting";
+    // The count the group of orders still waiting is headed with, in the operator's words of 2026-11-14.
+    const string StillWaitingCount = @"Waiting to buy: (\d+) orders? that buys? only if";
+
+    // Tonight's line on the open trades, in the operator's words of 2026-11-14, and the open its sales are made at, named
+    // from the trading calendar.
+    const string TonightOpen = @"(\d+) trades? (?:is|are) open on the";
+    const string NextOpen = @"(?:tomorrow's|the next trading day's|[A-Z][a-z]+day's)";
 
     public static IReadOnlyList<ProofVerdict> Check(TradeGroupsView groups, string home, string tonight, string paper)
     {
@@ -30,10 +35,10 @@ public static partial class CountsProof
             Same("Home's ideas bought and sold are the system's closed", Read(onHome, @"All versions since [^:]+: (\d+) ideas? bought and sold"), groups.System.Closed),
             Same("Home's ideas that made money are the system's", Read(onHome, @"bought and sold on paper, (\d+) made money"), groups.System.MadeMoney),
             Same("Home's ideas to buy and picks watched are the new picks", Read(onHome, @"Tonight's ideas: (\d+) stocks?") is { } ideas && Read(onHome, @"Watching, not buying: (\d+) picks?", "Tonight's ideas:") is { } watched ? ideas + watched : null, groups.NewPicks),
-            Same("Tonight's open trades are the system's", Read(onTonight, @"Of the system's trades, (\d+)"), groups.System.Open),
-            Same("Tonight's open trades of this version are this version's", Read(onTonight, @"(\d+) of them this version's"), groups.ThisVersion.Open),
-            Same("Tonight's open trades selling at tomorrow's open are the system's", Read(onTonight, @"(\d+) of them sells? at tomorrow's open", "Of the system's trades"), groups.System.Selling),
-            Same("Paper trading's open trades selling at tomorrow's open are the system's", Read(onPaper, @"The system has bought [^:]*: \d+ open, (\d+) of them sells? at tomorrow's open", "The system has bought"), groups.System.Selling),
+            Same("Tonight's open trades are the system's", Read(onTonight, TonightOpen), groups.System.Open),
+            Same("Tonight's open trades bought under the current rules are this version's", Read(onTonight, @"(\d+) of them " + TradeGroupsView.CurrentWords), groups.ThisVersion.Open),
+            Same("Tonight's open trades selling at the next open are the system's", Sum(onTonight, @"(\d+) (?:reached|hit|ran|ended|sells?)[^.:]*? at " + NextOpen + " open", TonightOpen), groups.System.Selling),
+            Same("Paper trading's open trades selling at the next open are the system's", Read(onPaper, @"The system has bought [^:]*: \d+ open, (\d+) of them sells? at " + NextOpen + " open", "The system has bought"), groups.System.Selling),
             Same("Tonight's new picks are those to buy less the reshuffle", Read(onTonight, @"(\d+) new picks? to buy", "No new picks to buy"), groups.NewPicks),
             Same("Tomorrow's buys count the same new picks", Read(onTonight, @"(\d+) stocks? to buy at [^.,:]+ open, at about tonight's close", "No stock to buy at"), groups.NewPicks),
             Same("Paper trading's bought are the system's", Read(onPaper, @"The system has bought (\d+)"), groups.System.Bought),
@@ -42,7 +47,6 @@ public static partial class CountsProof
             Same("Paper trading's hit their stop are the system's", Read(onPaper, @"(\d+) hit their stop"), groups.System.AtStop),
             Same("Paper trading's open of this version are this version's", Read(onPaper, @"This version's trades: (\d+) open", "No live setup has bought a trade under its current version"), groups.ThisVersion.Open),
             Same("Paper trading's fold counts the earlier versions'", Read(onPaper, @"Earlier versions: (\d+) trades?"), groups.EarlierVersions.Bought),
-            Same("Tonight's open trades of the same before this version are that group's", Read(onTonight, @"(\d+) the same trades? before this version", "Of the system's trades"), groups.SameTrades.Open),
             Same("Paper trading's same trades before this version are that group's", Read(onPaper, @"(\d+) of them (?:is|are) the same trades? before this version", "The system has bought"), groups.SameTrades.Bought),
             new("The system's trades are this version's, the same before it and the earlier versions'", groups.System.Bought == groups.ThisVersion.Bought + groups.SameTrades.Bought + groups.EarlierVersions.Bought && groups.System.Open == groups.ThisVersion.Open + groups.SameTrades.Open + groups.EarlierVersions.Open ? Pass : Fail),
 
@@ -50,7 +54,7 @@ public static partial class CountsProof
             // of their own on Home beneath its heading and on Tonight beneath the open trades.
             // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
             Same("Home's orders still waiting are those earlier nights placed", Read(onHome, StillWaitingCount, "Tonight's ideas:"), groups.StillWaiting),
-            Same("Tonight's orders still waiting are those earlier nights placed", Read(onTonight, StillWaitingCount, "Of the system's trades"), groups.StillWaiting),
+            Same("Tonight's orders still waiting are those earlier nights placed", Read(onTonight, StillWaitingCount, TonightOpen), groups.StillWaiting),
         ];
     }
 
@@ -61,13 +65,13 @@ public static partial class CountsProof
     {
         var text = Text(picks);
         var open = Read(text, @"(\d+) in this table") is { } here ? here + (Read(text, @"(\d+) more of its setups' bought by their rules' own lists") ?? 0) : Read(text, @"Still open (\d+)");
-        var buying = Read(text, @"To buy at tomorrow's open (\d+)") ?? Read(text, @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?, (\d+) to buy at tomorrow's open", @"trades?, \d+ open(?:, \d+ of them sells? at tomorrow's open)?(?:\.|, \d+ new tonight|, \d+ from earlier nights)");
+        var buying = Read(text, @"To buy at " + NextOpen + @" open (\d+)") ?? Read(text, @"trades?, \d+ open(?:, \d+ of them sells? at " + NextOpen + @" open)?, (\d+) to buy at " + NextOpen + " open", @"trades?, \d+ open(?:, \d+ of them sells? at " + NextOpen + @" open)?(?:\.|, \d+ new tonight|, \d+ from earlier nights)");
 
         // From the 23.10 correction of 2026-11-13 an order a plan placed tonight is among the picks to buy, named as its own
         // group, and the orders from earlier nights still waiting are a group of their own, none drawn where none waits.
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
-        var newWaiting = Read(text, Regex.Escape(PlanOrderWords.NewTonightHeading) + @" (\d+)") ?? Read(text, @"(\d+) new tonight waiting for (?:its|their) price") ?? 0;
-        var stillDrawn = Read(text, Regex.Escape(PlanOrderWords.StillWaitingHeading) + @" (\d+)") ?? Read(text, @"(\d+) from earlier nights still waiting for their price") ?? (buying is null ? null : 0);
+        var newWaiting = Read(text, Regex.Escape(PlanOrderWords.NewTonightHeading) + @" (\d+)") ?? Read(text, @"(\d+) new tonight " + PlanOrderWords.StillWaiting) ?? 0;
+        var stillDrawn = Read(text, Regex.Escape(PlanOrderWords.StillWaitingHeading) + @" (\d+)") ?? Read(text, @"(\d+) from earlier nights " + PlanOrderWords.StillWaiting) ?? (buying is null ? null : 0);
 
         return
         [
@@ -97,6 +101,13 @@ public static partial class CountsProof
             : read == counted
                 ? new ProofVerdict(rule, Pass)
                 : new ProofVerdict(rule, Fail, FormattableString.Invariant($"the page draws {read}, and the function counts {counted}"));
+
+    // Every count the words hold added, nothing where they hold none and the page draws the line the counts belong to, none
+    // at all where it draws neither.
+    static int? Sum(string text, string pattern, string none) =>
+        Regex.Matches(text, pattern) is { Count: > 0 } found
+            ? found.Sum(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
+            : Regex.IsMatch(text, none) ? 0 : null;
 
     // The first count the words hold, nothing where they hold none, and none at all where the page says in words it has none.
     static int? Read(string text, string pattern, string? none = null) =>

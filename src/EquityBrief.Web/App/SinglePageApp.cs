@@ -4499,7 +4499,7 @@ public sealed partial class SinglePageApp : IComponent
 
         body.Append(shown.Count == 0
             ? "<p class=\"degraded\" data-shown=\"none\">No trade stands in this status yet.</p>"
-            : marks.PicksTable(shown, named: true));
+            : marks.PicksTable(shown, named: true, night));
         body.Append(Cards.Key(
             "How to read the trade line.",
             "The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished, and a price past either end sits at that end. A setup that trails its stop names no target, so its row draws no line and its result is what it made in multiples of what it risked.",
@@ -4535,8 +4535,8 @@ public sealed partial class SinglePageApp : IComponent
 
         return Cards.Computed(
             "Past picks",
-            Invariant($"<p class=\"list-count\" data-dip=\"{kept.Count}\" data-open=\"{open}\" data-to-buy=\"{toBuy}\">{kept.Count} {Escaped(universe.Name)} short-term dip trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open{(toBuy == 0 ? string.Empty : Invariant($", {toBuy} {TradeGroupsView.ToBuyWords}"))}</p>")
-                + marks.IndexTrades(kept, universe.Name)
+            Invariant($"<p class=\"list-count\" data-dip=\"{kept.Count}\" data-open=\"{open}\" data-to-buy=\"{toBuy}\">{kept.Count} {Escaped(universe.Name)} short-term dip trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open{(toBuy == 0 ? string.Empty : Invariant($", {toBuy} {TradeGroupsView.ToBuyWords(night)}"))}</p>")
+                + marks.IndexTrades(kept, universe.Name, night)
                 + Cards.Key(
                     "How to read it.",
                     DipTradesKey,
@@ -4566,8 +4566,8 @@ public sealed partial class SinglePageApp : IComponent
 
         return Cards.Computed(
             "Past picks",
-            Invariant($"<p class=\"list-count\" data-business-first=\"{kept.Count}\" data-open=\"{open}\" data-to-buy=\"{toBuy}\">{kept.Count} {Escaped(Universes.Large.Name)} fundamentals-first trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open{(toBuy == 0 ? string.Empty : Invariant($", {toBuy} {TradeGroupsView.ToBuyWords}"))}</p>")
-                + marks.IndexTrades(kept, Universes.Large.Name)
+            Invariant($"<p class=\"list-count\" data-business-first=\"{kept.Count}\" data-open=\"{open}\" data-to-buy=\"{toBuy}\">{kept.Count} {Escaped(Universes.Large.Name)} fundamentals-first trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open{(toBuy == 0 ? string.Empty : Invariant($", {toBuy} {TradeGroupsView.ToBuyWords(night)}"))}</p>")
+                + marks.IndexTrades(kept, Universes.Large.Name, night)
                 + Cards.Key(
                     "How to read it.",
                     "A trade is listed on the night the setup passes a stock and stays open until a close reaches its target, a close falls through its stop, or its sessions run out. Its result is what it made in multiples of what it risked; its cost is its round trip at the published spread for its size and price, in the same units.",
@@ -4745,11 +4745,11 @@ public sealed partial class SinglePageApp : IComponent
         var body = new StringBuilder();
 
         body.Append(marks.SetupChips(setup, setups, universe.Word));
-        body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{trades.Count}\" data-trades=\"{all}\" data-open=\"{open}\" data-to-buy=\"{toBuy}\"{(newWaiting + stillWaiting == 0 ? string.Empty : Invariant($" data-new-waiting=\"{newWaiting}\" data-still-waiting=\"{stillWaiting}\""))}>Showing {trades.Count} of {all} {Escaped(universe.Name)} trade{(all == 1 ? string.Empty : "s")}, {open} open{(trades.Count(trade => trade.Selling) is > 0 and var selling ? ", " + TradeGroupsView.Selling(selling) : string.Empty)}{(toBuy == 0 ? string.Empty : Invariant($", {toBuy} {TradeGroupsView.ToBuyWords}"))}{Escaped(PlanOrderWords.Counts(newWaiting, stillWaiting))}. {(groups is { } counted && setup is null ? Escaped(counted.OpenHere(open - beforeLive - listOwn, "this table", unrowed)) + (beforeLive == 0 ? string.Empty : Invariant($" The table's other {beforeLive} open came before their setups went live.")) + (listOwn == 0 ? string.Empty : Escaped(ListOwnWords(listOwn))) + Invariant($" Paper trading's accounts count {TradeGroupsView.VersionWords} alone, on <a href=\"{PaperRoute}?{Universes.Query}={universe.Word}\">Paper trading</a>.") : string.Empty)}</p>"));
+        body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{trades.Count}\" data-trades=\"{all}\" data-open=\"{open}\" data-to-buy=\"{toBuy}\"{(newWaiting + stillWaiting == 0 ? string.Empty : Invariant($" data-new-waiting=\"{newWaiting}\" data-still-waiting=\"{stillWaiting}\""))}>Showing {trades.Count} of {all} {Escaped(universe.Name)} trade{(all == 1 ? string.Empty : "s")}, {open} open{(trades.Count(trade => trade.Selling) is > 0 and var selling ? ", " + TradeGroupsView.Selling(selling, night) : string.Empty)}{(toBuy == 0 ? string.Empty : Invariant($", {toBuy} {TradeGroupsView.ToBuyWords(night)}"))}{Escaped(PlanOrderWords.Counts(newWaiting, stillWaiting))}. {(groups is { } counted && setup is null ? Escaped(counted.OpenHere(open - beforeLive - listOwn, "this table", unrowed)) + (beforeLive == 0 ? string.Empty : Invariant($" The table's other {beforeLive} open came before their setups went live.")) + (listOwn == 0 ? string.Empty : Escaped(ListOwnWords(listOwn))) + Invariant($" Paper trading's accounts count {TradeGroupsView.VersionWords} alone, on <a href=\"{PaperRoute}?{Universes.Query}={universe.Word}\">Paper trading</a>.") : string.Empty)}</p>"));
         body.Append(setup is null && groups is { } waitingOn ? MarkRenderer.StillWaitingOrders(waitingOn.StillWaitingOrders, universe.Name) : string.Empty);
         body.Append(trades.Count == 0
             ? Invariant($"<p class=\"degraded\" data-picks=\"none\">No trade has been listed on the {Escaped(universe.Possessive)} lists yet. Each night its families pass a stock, the first five a setup are listed and followed here from that close on.</p>")
-            : marks.IndexTrades(trades, universe.Name));
+            : marks.IndexTrades(trades, universe.Name, night));
         body.Append(Cards.Key(
             "How to read it.",
             "A trade is listed on the night its list drew it and stays open until a close reaches its target, a close falls through its stop or trailing stop, or its sessions run out. Its result is what it made in multiples of what it risked; its cost is its round trip at the published spread for its size and price, in the same units, and the result after cost is what the index's tests read."
