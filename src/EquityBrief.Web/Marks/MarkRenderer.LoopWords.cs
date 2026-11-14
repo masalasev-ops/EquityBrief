@@ -56,10 +56,21 @@ public sealed partial class MarkRenderer
             : Formatted($"The run for {month} tried {tried} changes across {rows.Count(row => row.Tested > 0)} strategies; {(put == 0 ? "none beat luck" : waiting == 0 ? (put == 1 ? "one beat luck and you have decided on it" : Formatted($"{put} beat luck and you have decided on them")) : waiting == 1 ? "one beat luck and waits for your word" : Formatted($"{waiting} beat luck and wait for your word"))}.");
     }
 
-    public static string LoopDecisionsSaid(LoopDecided decided) =>
-        decided.Decisions.Count == 0
+    // From the second 23.10 correction of 2026-11-13 an approval the operator withdrew is counted as withdrawn and not approved.
+    // see: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+    public static string LoopDecisionsSaid(LoopDecided decided)
+    {
+        var withdrawn = decided.Decisions.Count(one => one.Withdrawal is not null);
+        var approved = decided.Decisions.Count(one => one.Decision != LoopDecisions.Declined && one.Withdrawal is null);
+        var declined = decided.Decisions.Count(one => one.Decision == LoopDecisions.Declined);
+        var changes = decided.Decisions.Count == 1 ? "1 change" : Formatted($"{decided.Decisions.Count} changes");
+
+        return decided.Decisions.Count == 0
             ? "You have not yet given your word on any change on this index."
-            : Formatted($"You gave your word on {(decided.Decisions.Count == 1 ? "1 change" : Formatted($"{decided.Decisions.Count} changes"))} on this index: {decided.Decisions.Count(one => one.Decision != LoopDecisions.Declined)} approved and {decided.Decisions.Count(one => one.Decision == LoopDecisions.Declined)} declined.");
+            : withdrawn == 0
+                ? Formatted($"You gave your word on {changes} on this index: {approved} approved and {declined} declined.")
+                : Formatted($"You gave your word on {changes} on this index: {approved} approved, {declined} declined and {withdrawn} {(withdrawn == 1 ? "approval" : "approvals")} withdrawn.");
+    }
 
     public static string LoopAlarmSaid(LoopDecided decided)
     {

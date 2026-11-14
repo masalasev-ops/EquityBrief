@@ -30,9 +30,9 @@ public partial class ReadSurface
     {
         { "the rule's target", Ordered(PlanPoints.TypicalStop(2), PlanPoints.RuleSale, target: 45), ["Aim to sell at$45.00", "Otherwise sell after60 trading days"], "2.50" },
         { "the first band above", Ordered(PlanPoints.RuleStop, PlanPoints.FirstBand, target: 46), ["Aim to sell at$46.00the first price above the buy where it has turned down before", "Otherwise sell after60 trading days"], "2.00" },
-        { "the first band above, none above the buy", Ordered(PlanPoints.RuleStop, PlanPoints.FirstBand), ["Aim to sell atNo price above the buyIts levels hold no price above the buy where it has turned down before, so it sells after 60 trading days unless the stop sells it first.", "Otherwise sell after60 trading days"], null },
+        { "the first band above, none above the buy", Ordered(PlanPoints.RuleStop, PlanPoints.FirstBand), ["No price above tonight's close where it has turned down before:it holds for 60 trading days unless the stop sells it first."], null },
         { "the staged sales", Ordered(PlanPoints.TypicalStop(2), PlanPoints.StagedSales, staged: [44, 39, 42]), ["Sell a third at$42.00", "Sell a third at$44.00", "Keep the last thirduntil a close below the stop", "Otherwise sell after60 trading days"], "1.50" },
-        { "the staged sales, none above the buy", Ordered(PlanPoints.TypicalStop(2), PlanPoints.StagedSales, staged: [39]), ["Sell a share atNo level above the buyIts levels place no price above the buy to sell a share at, so it sells after 60 trading days unless the stop sells it first.", "Otherwise sell after60 trading days"], null },
+        { "the staged sales, none above the buy", Ordered(PlanPoints.TypicalStop(2), PlanPoints.StagedSales, staged: [39]), ["No price level above tonight's close to sell at:it is near its highs for the past year, so it holds for 60 trading days unless the stop sells it first."], null },
         { "the time limit alone", Ordered(PlanPoints.RuleStop, PlanPoints.TimeLimit, cap: 5), ["No price target:this rule sells after 5 trading days"], null },
     };
 
@@ -112,6 +112,84 @@ public partial class ReadSurface
             Assert.DoesNotContain("Risks $1", Read(home), StringComparison.Ordinal);
             Assert.DoesNotContain("its 2-day RSI", Read(new MarkRenderer().DecisionCard(view)), StringComparison.Ordinal);
         }
+    }
+
+    // From the second 23.10 correction of 2026-11-13: a staged sale whose levels place no price above the buy, as the S&P 400
+    // drift's BHF of 2026-11-12, and the first band above with no band above it, each draw one line saying so and how long it
+    // holds, and beneath it the record of picks like it, as the time limit alone draws the dip's; a staged sale with a level
+    // above its buy draws no such line. Worked by hand: a move of +0.0123 is up about 1.2% and 0.5432 is 54% up.
+    [Fact]
+    public void ACardWhoseLevelsPlaceNoPriceAboveItsBuySaysSoAndDrawsTheRecordOfPicksLikeIt()
+    {
+        const string Up = "Over 2019 to 2026, picks like this were up about 1.2% on average by then, and 54% of them were up. That is the rule's record, not this stock's chance.";
+
+        DecisionCardView Card(string family, string plan, SetupRecords records) =>
+            CardScreen.View(new DecisionCardRow("MID", EntryNight, family, "BHF", 1, 44.10m, 37m, null, "the rule", "{}", "[]", null, Cap: 60) { Plan = plan }, CardContext.None with { LongRecords = records });
+
+        SetupRecords Moved(string family) => new([new SetupLongRecord("MID", family, 0.05, 400, 2019, 2026) { LiveMove = 0.0123, LiveUp = 0.5432, LiveFills = 300 }]);
+
+        foreach (var (family, plan, line) in new[]
+        {
+            (DriftRule.Name, Ordered(PlanPoints.TypicalStop(2), PlanPoints.StagedSales, staged: [39]), "No price level above tonight's close to sell at:it is near its highs for the past year, so it holds for 60 trading days unless the stop sells it first."),
+            (BreakoutRule.Name, Ordered(PlanPoints.RuleStop, PlanPoints.FirstBand), "No price above tonight's close where it has turned down before:it holds for 60 trading days unless the stop sells it first."),
+        })
+        {
+            foreach (var (records, said) in new[] { (Moved(family), Up), (SetupRecords.None, MarkRenderer.RecordBeingWorkedOut) })
+            {
+                var view = Card(family, plan, records);
+
+                foreach (var drawn in new[] { new MarkRenderer().DecisionCard(view), new MarkRenderer { Copying = true }.DecisionCard(view) })
+                {
+                    Assert.Equal([line], Tiles(drawn, "<div class=\"plan-tile\" data-tile=\"(?:target|stage|keep|limit)\".*?</div>"));
+                    Assert.Equal(said, Read(Assert.Single(Tiles(drawn, "<p class=\"time-record\".*?</p>"))));
+                    Assert.DoesNotContain("Sell a share at", Read(drawn), StringComparison.Ordinal);
+                    Assert.DoesNotContain("Aim to sell at", Read(drawn), StringComparison.Ordinal);
+                }
+
+                var home = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Reading = Universes.Mid, Ideas = [new HomeIdea(family, "BHF", null, "Beat.", view.Zone!.Price, view.Stop, null, false, null, LongRecord: records.Of("MID", family), Zone: view.Zone)], IdeasCount = 1 }, string.Empty);
+
+                Assert.Equal([line], Tiles(home, "<div data-sale=\"[a-z]+\">.*?</div>"));
+                Assert.Equal(said, Read(Assert.Single(Tiles(home, "<p class=\"home-cond\" data-time-record>.*?</p>"))));
+            }
+        }
+
+        var staged = Card(DriftRule.Name, Ordered(PlanPoints.TypicalStop(2), PlanPoints.StagedSales, staged: [44, 42]), Moved(DriftRule.Name));
+
+        Assert.Empty(Tiles(new MarkRenderer().DecisionCard(staged), "<p class=\"time-record\".*?</p>"));
+
+        // Tonight's row of the staged sale with no level above says the same in its columns.
+        var held = Card(DriftRule.Name, Ordered(PlanPoints.TypicalStop(2), PlanPoints.StagedSales, staged: [39]), Moved(DriftRule.Name));
+        var point = new BuyPointView(DriftRule.Name, "Earnings drift", new FamilyPickCell(new ListingCell("BHF", EntryNight, 1, 0, 44.10m, []), 1, 44.10m, 37m, null, false, 3m, "why", [], held));
+        var row = Regex.Match(WebUtility.HtmlDecode(new MarkRenderer().TomorrowsBuys([point], null, night: EntryNight)), "<tr data-ticker=\"BHF\".*?</tr>", RegexOptions.Singleline).Value;
+
+        Assert.Contains(">none above tonight's close: holds for 60 trading days</td>", row, StringComparison.Ordinal);
+        Assert.Contains(">No price above tonight's close: it holds to its time limit</td>", row, StringComparison.Ordinal);
+        Assert.DoesNotContain("none above the buy", row, StringComparison.Ordinal);
+    }
+
+    // The record of picks like a plan naming no price above its buy counts only the fills its sale placed no price above, worked
+    // by hand: fills moving +0.04 and -0.02 with no price above, and one moving +0.05 sold at a staged level above it, are a mean of
+    // +0.01 over two fills, one of them up; a pick never filled counts in none of it. Which sales place no price above a fill of
+    // 40.00: the time limit alone; the staged sales at 39.00 alone and not at 39.00 and 42.00; the first band above with none and
+    // not with one at 46.00; and never the rule's sale.
+    [Fact]
+    public void TheRecordOfPicksLikeAPlanNamingNoPriceAboveCountsOnlyTheFillsItsSalePlacedNoneAbove()
+    {
+        var combination = new PlanCombination("1 typical days under the close", 20, PlanPoints.TypicalStop(2), PlanPoints.StagedSales);
+        Worker.Loop.PlanPointTest.Worked Fill(double move, bool none, bool filled = true) =>
+            new(combination, 40, filled ? 40 : null, 38, "at 42.00", new PlanPick(2021, "2019 on", "calm", filled, filled ? move * 10 : null, null, 10, filled ? "sold" : null, 0, null), "worked") { Move = filled ? move : null, NoPriceAbove = none };
+
+        var moved = Worker.Loop.PlanPointTest.MovesOver([Fill(0.04, true), Fill(-0.02, true), Fill(0.05, false), Fill(0.09, true, filled: false)])!;
+
+        Assert.Equal((0.01, 0.5, 2), (Math.Round(moved.Move, 10), moved.Up, moved.Fills));
+        Assert.Null(Worker.Loop.PlanPointTest.MovesOver([Fill(0.05, false)]));
+
+        Assert.True(Worker.Loop.PlanPointTest.NoPriceAboveOf(PlanPoints.TimeLimit, new PlanSale(null, null, []), 40));
+        Assert.True(Worker.Loop.PlanPointTest.NoPriceAboveOf(PlanPoints.StagedSales, new PlanSale(null, null, [39]), 40));
+        Assert.False(Worker.Loop.PlanPointTest.NoPriceAboveOf(PlanPoints.StagedSales, new PlanSale(null, null, [39, 42]), 40));
+        Assert.True(Worker.Loop.PlanPointTest.NoPriceAboveOf(PlanPoints.FirstBand, new PlanSale(null, null, []), 40));
+        Assert.False(Worker.Loop.PlanPointTest.NoPriceAboveOf(PlanPoints.FirstBand, new PlanSale(46, null, []), 40));
+        Assert.False(Worker.Loop.PlanPointTest.NoPriceAboveOf(PlanPoints.RuleSale, new PlanSale(null, null, []), 40));
     }
 
     // A watched card's better plan draws its sale as a pick's card does: its staged levels above the buy, a third each, the

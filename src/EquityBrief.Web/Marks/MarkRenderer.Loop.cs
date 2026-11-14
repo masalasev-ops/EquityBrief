@@ -200,7 +200,13 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"loop-decision\" data-loop-key=\"{Escaped(key)}\">");
 
-        if (mine is not null)
+        // From the second 23.10 correction of 2026-11-13 an approval the operator withdrew says so on their word, never approved.
+        // see: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+        if (mine?.Withdrawal is { } withdrawn)
+        {
+            html.Append($"<p class=\"loop-decided\" data-decision=\"withdrawn\"><b>Approval withdrawn</b> on your word of {withdrawn.On.ToString("yyyy-MM-dd", Invariant)}. {Escaped(withdrawn.Said)}</p>");
+        }
+        else if (mine is not null)
         {
             html.Append(mine.Decision == LoopDecisions.Declined
                 ? $"<p class=\"loop-decided\" data-decision=\"declined\"><b>Declined</b> on {Escaped(DayOf(mine.DecidedAt))}: {Escaped(mine.Reason ?? string.Empty)}. It changes nothing.</p>"
@@ -324,7 +330,9 @@ public sealed partial class MarkRenderer
 
             foreach (var one in decided.Decisions)
             {
-                var word = one.Decision == LoopDecisions.Declined ? "declined: " + (one.Reason ?? string.Empty) : "approved";
+                var word = one.Decision == LoopDecisions.Declined ? "declined: " + (one.Reason ?? string.Empty)
+                    : one.Withdrawal is { } withdrawn ? "approval withdrawn on your word of " + withdrawn.On.ToString("yyyy-MM-dd", Invariant)
+                    : "approved";
                 var applied = one.Decision == LoopDecisions.Declined ? "nothing, as declined"
                     : one.Outcome switch
                     {
@@ -333,7 +341,7 @@ public sealed partial class MarkRenderer
                         _ => "waiting for the next night",
                     };
 
-                html.Append($"<tr data-run=\"{Escaped(one.Run)}\" data-family=\"{Escaped(one.Family)}\" data-decision=\"{Escaped(one.Decision)}\" data-outcome=\"{Escaped(one.Outcome ?? "waiting")}\">");
+                html.Append($"<tr data-run=\"{Escaped(one.Run)}\" data-family=\"{Escaped(one.Family)}\" data-decision=\"{Escaped(one.Withdrawal is null ? one.Decision : "withdrawn")}\" data-outcome=\"{Escaped(one.Outcome ?? "waiting")}\">");
                 html.Append($"<td class=\"num\">{Escaped(DayOf(one.DecidedAt))}</td><td>{Escaped(one.Family)}</td><td>{Escaped(Capitalised(one.Proposal))}, {Escaped(one.Run)}</td><td>{Escaped(word)}</td><td>{Escaped(applied)}</td></tr>");
             }
 

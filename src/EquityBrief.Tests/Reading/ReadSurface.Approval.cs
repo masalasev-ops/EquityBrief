@@ -144,6 +144,60 @@ public partial class ReadSurface
             rows);
     }
 
+    // From the second 23.10 correction of 2026-11-13, item (d) of the operator's order: the S&P 500 Quality learned score's
+    // approval recorded at 19:46:39 UTC on 2026-11-09, which the operator did not give, is drawn as withdrawn on their word of
+    // 2026-11-13 on the Monthly check-up and never as approved: its decision line, its row among the decisions, the count of
+    // their word, the check-up's opening and its state; an approval on another index the operator gave reads as approved.
+    // see: An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+    [Fact]
+    public async Task AnApprovalTheOperatorWithdrewIsDrawnAsWithdrawnOnTheirWordAndNeverAsApproved()
+    {
+        using var store = new TemporaryStore().Migrated();
+        const string Learned = "loop-test-GSPC-20261107T192031Z";
+        const string Proposal = "the learned score, ordering the list";
+
+        Run(store, Learned, "GSPC", "2026-11");
+        Run(store, SmallOctober, "SML", "2026-10");
+        Proposed(store, Learned, "GSPC", "quality", Proposal, true, null);
+        Proposed(store, SmallOctober, "SML", "drift", "the autopsy's exit, ranked 1", true, Exit(8));
+        store.Execute($@"
+            INSERT INTO loop_decision (run_id, index_code, family, proposal, decision, reason, decided_at) VALUES
+                ('{Learned}', 'GSPC', 'quality', '{Proposal}', 'approved', NULL, '2026-11-09T19:46:39Z'),
+                ('{SmallOctober}', 'SML', 'drift', 'the autopsy''s exit, ranked 1', 'approved', NULL, '2026-10-09T15:00:00Z');
+            INSERT INTO loop_applied (run_id, index_code, family, proposal, applied_at, outcome, words) VALUES
+                ('{Learned}', 'GSPC', 'quality', '{Proposal}', '2026-11-10T21:43:50Z', 'applied', 'the setup stands from tonight ordered by the learned score'),
+                ('{SmallOctober}', 'SML', 'drift', 'the autopsy''s exit, ranked 1', '2026-10-09T23:35:00Z', 'applied', 'the family stands from the next night at exit: the eighth');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var large = await LoopWhole(client, "universe=500");
+
+        // The page reads the stored words through the reader's plain phrases, the learned score and a variant among them.
+        Assert.Contains("<p class=\"loop-decided\" data-decision=\"withdrawn\"><b>Approval withdrawn</b> on your word of 2026-11-13. It was recorded as approved on 2026-11-09 and applied on 2026-11-10, and you did not approve it. At the next restart of the rules the earlier rule is made live again, and the score fitted to past setups keeps running beside it as a version on each index.</p>", large, StringComparison.Ordinal);
+        Assert.Contains("<td>approval withdrawn on your word of 2026-11-13</td>", large, StringComparison.Ordinal);
+        Assert.Contains("You gave your word on 1 change on this index: 0 approved, 0 declined and 1 approval withdrawn.", large, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-decision=\"approved\"", large, StringComparison.Ordinal);
+        Assert.DoesNotContain("Approved and live", large, StringComparison.Ordinal);
+        Assert.DoesNotContain("Passed, approved", large, StringComparison.Ordinal);
+        Assert.DoesNotContain("You approved", large, StringComparison.Ordinal);
+
+        // The S&P 600's approval, which the operator gave, reads as it did.
+        Assert.Contains("<p class=\"loop-decided\" data-decision=\"approved\" data-outcome=\"applied\"><b>Approved</b> on 2026-10-09. Applied on 2026-10-09: the setup stands from the next night at exit: the eighth.</p>", await LoopWhole(client, "universe=600"), StringComparison.Ordinal);
+
+        // The check-up's state of a change and its opening, drawn from the same rows.
+        var withdrawn = new LoopDecisionRow(Learned, "quality", Proposal, LoopDecisions.Approved, null, "2026-11-09T19:46:39Z", LoopDecisions.Applied, "the setup stands", "2026-11-10T21:43:50Z", 19) { Withdrawal = LoopDecisions.WithdrawalOf("GSPC", Learned, "quality", Proposal) };
+
+        Assert.NotNull(withdrawn.Withdrawal);
+        Assert.Null(LoopDecisions.WithdrawalOf("MID", Learned, "quality", Proposal));
+
+        var block = WebUtility.HtmlDecode(new MarkRenderer().CheckUpChangeBlock(new CheckUpChange(new LoopProposalRow("quality", Proposal, "the change", "today", "risks", 400, 19, 0.002, true, true, 4, 3, 1.5, true, 0.1, 3, true, null, null), [], string.Empty, withdrawn, null, true)));
+
+        Assert.Contains("<span class=\"pill cu-state\" data-state=\"withdrawn\">Approval withdrawn</span>", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("Approved", block, StringComparison.Ordinal);
+        Assert.Equal("The approval recorded on November 9, 2026 was withdrawn on your word of November 13, 2026: at the next restart of the rules the earlier rule is made live again.", MarkRenderer.CheckUpOpening(new CheckUpState(119, 7, 1, 0, [withdrawn], new DateOnly(2026, 12, 5))).Beneath);
+    }
+
     [Fact]
     public async Task TheLoopPageDrawsThePressesEachDecisionWithWhatTheApplyDidTheSettingsStoredAndTheLiveAlarmWithItsRestore()
     {

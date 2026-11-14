@@ -42,6 +42,15 @@ public partial class ReadSurface
         Assert.Equal(string.Empty, Row("long-search", "drift"));
         // The page reads every stored word through the reader's phrases, sessions among them.
         Assert.Equal("|Pullback||the second zone within 20 trading days, the rule's stop, the time limit alone||2,048||64%||+0.292||-0.135||+0.050||-0.020||+0.150||from 2019 -0.030||", Row("plan-points", "pullback"));
+
+        // From the second 23.10 correction of 2026-11-13, item (g) of the operator's order: the figures from 2019 were also read
+        // in choosing the plans on 2026-11-10, the stop's width and the entry's distance, so the note says they read high and that a
+        // plan's own record from its start is its test, and no longer that those years are ones it was not picked on.
+        var note = Regex.Match(page, "<p class=\"card-note\" data-long-note=\"chosen\">(.*?)</p>", RegexOptions.Singleline).Groups[1].Value;
+
+        Assert.Contains("its gains from 2019 were also used to choose how far under the close it buys and how far under the buy it gives up, so they look high too", note, StringComparison.Ordinal);
+        Assert.Contains("each plan's own record from the day it started trading is its real test", note, StringComparison.Ordinal);
+        Assert.DoesNotContain("not picked on", page, StringComparison.Ordinal);
     }
 
     [Fact]

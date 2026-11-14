@@ -201,7 +201,7 @@ public partial class ReadSurface
 
     // The read surface under a clock the test fixes, so a page and its file are opened at one
     // instant against the spend the test wrote for it.
-    sealed class ClockedHost(string root, IClock clock) : WebApplicationFactory<ReadApi>
+    sealed class ClockedHost(string root, IClock clock) : EquityBrief.Tests.Harness.PageFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
