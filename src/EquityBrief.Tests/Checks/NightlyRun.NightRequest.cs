@@ -140,9 +140,10 @@ public partial class NightlyRun
             [[night, expected.GetProperty("rule").GetString()!]],
             StoreRows(store, "SELECT session_date, rule FROM list_rule;"));
 
-        // No request and no drain started, and the step still runs after the close, the quarters step, the
-        // filings refresh and the Treasury's 10-year, with the labeller's start after it, its own row saying
-        // why and recording no model call and no request.
+        // No request and no drain started, and the step still runs after the close, the filings refresh and the
+        // Treasury's 10-year, with the labeller's start after it, its own row saying why and recording no model call
+        // and no request; from 23.10's second part the quarters fetch asks inside the swing filter's step, before the
+        // close.
         Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
         Assert.Equal(expected.GetProperty("count").GetInt32(), StoreRows(store, "SELECT ticker FROM research_request;").Count);
         Assert.Equal(0, launcher.Started);
@@ -150,8 +151,11 @@ public partial class NightlyRun
         var stages = RunLog(store, "night-with-request");
 
         Assert.Equal(
-            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, EquityBrief.Worker.Quality.QualityFamily.Stage, EquityBrief.Worker.Improving.ImprovingFamily.Stage, EquityBrief.Worker.Treasury.TreasuryReader.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage],
-            stages.Select(row => row.Stage).TakeLast(10));
+            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, EquityBrief.Worker.Quality.QualityFamily.Stage, EquityBrief.Worker.Improving.ImprovingFamily.Stage, EquityBrief.Worker.Treasury.TreasuryReader.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage],
+            stages.Select(row => row.Stage).TakeLast(9));
+        Assert.True(
+            stages.ToList().FindIndex(row => row.Stage == EquityBrief.Worker.Quarters.QuarterFetcher.Stage) is var asked && asked >= 0
+                && asked < stages.ToList().FindIndex(row => row.Stage == EquityBrief.Worker.Nights.NightClose.Stage));
         Assert.Equal("ok", stages[^3].Outcome);
         Assert.Equal(expected.GetProperty("line").GetString(), stages[^3].Detail);
         Assert.Equal(
@@ -327,7 +331,8 @@ public partial class NightlyRun
 
         // And it asks for no member's quarters: what it would store is today's answer and not that
         // night's, so the step says so and writes no ask and no quarter.
-        Assert.Contains("  quarters: no quarters were asked for, since this night was run again for an earlier session", output.ToString(), StringComparison.Ordinal);
+        // From 23.10's second part it is said on the swing filter's step's line, where the fetch now runs.
+        Assert.Contains("; quarters: no quarters were asked for, since this night was run again for an earlier session", output.ToString(), StringComparison.Ordinal);
         Assert.Empty(StoreRows(store, "SELECT ticker FROM quarter_ask;"));
         Assert.Empty(StoreRows(store, "SELECT ticker FROM reported_quarter;"));
     }

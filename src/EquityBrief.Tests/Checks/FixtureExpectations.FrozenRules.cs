@@ -248,7 +248,8 @@ public partial class FixtureExpectations
         // Each reacts on 2026-10-01, the session before the night, to a print reported before that day's open: R1's quarter
         // to 2026-06-30 filed on 2026-08-05 at 110 against 100 a year before, grown 10 per cent; R2's the same quarter filed
         // on 2026-10-01, the session before the night, which the night's refresh had not stored; R3's at 90, fallen 10 per
-        // cent; and R4 with no filer known.
+        // cent; and R4 with no revenue filed. From 23.10's second part each files its revenue under the filer its quarters'
+        // profit is filed under, which the profit check reads.
         using var store = DriftStore(
             "SML",
             ("R1", ReactedYear(), "2026-10-01"),
@@ -256,9 +257,10 @@ public partial class FixtureExpectations
             ("R3", ReactedYear(), "2026-10-01"),
             ("R4", ReactedYear(), "2026-10-01"));
 
-        foreach (var (ticker, cik, now, filed) in new[] { ("R1", "0000000101", "110", "2026-08-05"), ("R2", "0000000102", "110", "2026-10-01"), ("R3", "0000000103", "90", "2026-08-05") })
+        foreach (var (ticker, now, filed) in new[] { ("R1", "110", "2026-08-05"), ("R2", "110", "2026-10-01"), ("R3", "90", "2026-08-05") })
         {
-            store.Execute($"INSERT INTO company (ticker, fetched_at, cik) VALUES ('{ticker}', '2026-08-01T00:00:00Z', '{cik}');");
+            var cik = FilerOf(store, ticker);
+
             store.Execute(
                 "INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES " +
                 $"('{cik}', 'Revenues', '2026-04-01', '2026-06-30', '{now}', '{filed}', '10-Q', '{cik}-26-1', 'r'), " +

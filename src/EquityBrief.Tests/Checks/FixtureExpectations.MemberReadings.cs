@@ -52,6 +52,8 @@ public partial class FixtureExpectations
     // One fetch made on the session before the night: the company's sector and industry, and its four quarters to
     // 2026-06-30, each filed a month after it ends with the net income, operating income and interest expense given, the
     // count given and the basis its counts are stated on, the interest expense read on every quarter but the one given.
+    // From 23.10's second part each quarter's filing states the same figures under the company's filer, its interest on
+    // every quarter but the one given, which the profit check and the cover read.
     static void ReadFetch(
         TemporaryStore store,
         string ticker,
@@ -71,7 +73,7 @@ public partial class FixtureExpectations
         Insert(
             store,
             "INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry) VALUES " +
-            $"('{ticker}', '{at}', NULL, {Text(sector)}, NULL, {Text(industry)}, NULL);");
+            $"('{ticker}', '{at}', '{CikFor(ticker)}', {Text(sector)}, NULL, {Text(industry)}, NULL);");
 
         foreach (var (periodEnd, filed) in new[] { ("2025-09-30", "2025-10-30"), ("2025-12-31", "2026-01-30"), ("2026-03-31", "2026-04-30"), ("2026-06-30", "2026-07-30") })
         {
@@ -80,6 +82,13 @@ public partial class FixtureExpectations
                 "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, net_income, operating_income, interest_expense, interest_read, shares, basis_session, basis_close) VALUES " +
                 FormattableString.Invariant(
                     $"('{ticker}', '{at}', '{Day(fetchedOn)}', '{periodEnd}', '{filed}', '{net}', '{operating}', {Text(interest?.ToString(CultureInfo.InvariantCulture))}, {(periodEnd == interestUnread ? 0 : 1)}, {Text(shares?.ToString(CultureInfo.InvariantCulture))}, '{Day(basis)}', '{basisClose}');"));
+
+            QuarterFacts(
+                store,
+                CikFor(ticker),
+                periodEnd,
+                filed,
+                [("NetIncomeLoss", net), ("OperatingIncomeLoss", operating), .. interest is { } stated && periodEnd != interestUnread ? new[] { ("InterestExpense", stated) } : []]);
         }
     }
 
@@ -154,11 +163,13 @@ public partial class FixtureExpectations
         ReadFetch(store, "M1", before, "Information Technology", "Semiconductors", 1_000_000_000m, before, 20m, 2m, 1m, 1m);
         ReadFetch(store, "S1", before, "Financials", null, null, before, 8m, 1m, 0.1m, 5m);
 
-        // A quarter A1 filed on the night itself, a loss of 1,000, which the night does not read.
+        // A quarter A1 filed on the night itself, a loss of 1,000, which the night does not read: its filing, made that day, is
+        // read from the session after.
         Insert(
             store,
             "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, net_income, operating_income, interest_expense, interest_read, shares, basis_session, basis_close) VALUES " +
             $"('A1', '{Day(before)}T22:00:00Z', '{Day(before)}', '2026-07-31', '{Day(night)}', '-1000', '-1000', '10', 1, '30000000', '{Day(before)}', '110');");
+        QuarterFacts(store, CikFor("A1"), "2026-07-31", Day(night), ("NetIncomeLoss", -1000m), ("OperatingIncomeLoss", -1000m), ("InterestExpense", 10m));
 
         // The states the night's fundamental readings stored.
         Insert(store, $"INSERT INTO fundamental_reading (ticker, session_date, state, readings) VALUES ('A1', '{Day(night)}', 'improving', '{{}}'), ('A2', '{Day(night)}', 'deteriorating', '{{}}');");
@@ -204,11 +215,12 @@ public partial class FixtureExpectations
             ["GSPC", "110", "105300", "3300000000", Spread(4, 3), Spread(4, 3, 2), "1", "1", "improving", "120", Fixed(110.0 / 120.0, 10), "25", Fixed(1.5, 10), "Semiconductors", Fixed(month, 10), Fixed(quarter, 10), Fixed(surprise, 10)],
             MemberRow(store, "A1", night));
 
-        // A2: 45; 29 sessions at 50 and 21 at 45, 47,900; worth 4.05 billion; the profit gate failing on its losses and its
-        // coverage not read, a quarter fetched without its interest expense; its high of 50 made 21 sessions before; and no
-        // volume ratio over an average of nothing.
+        // A2: 45; 29 sessions at 50 and 21 at 45, 47,900; worth 4.05 billion; the profit gate failing on its losses; from
+        // 23.10's second part its coverage failing, its newest quarter's filing stating no interest, so the cover reads the
+        // three quarters stating it, fewer than four; its high of 50 made 21 sessions before; and no volume ratio over an
+        // average of nothing.
         Assert.Equal(
-            ["GSPC", "45", "47900", "4050000000", Spread(4, 3), Spread(4, 3, 2), "0", "null", "deteriorating", "50", Fixed(0.9, 10), "21", "null", "Semiconductors", Fixed(month, 10), Fixed(quarter, 10), Fixed(surprise, 10)],
+            ["GSPC", "45", "47900", "4050000000", Spread(4, 3), Spread(4, 3, 2), "0", "0", "deteriorating", "50", Fixed(0.9, 10), "21", "null", "Semiconductors", Fixed(month, 10), Fixed(quarter, 10), Fixed(surprise, 10)],
             MemberRow(store, "A2", night));
 
         // A3: no count, so no value and its cost read in the $1 to 2 billion band at $20 to 40, 0.089; its coverage failing
@@ -491,9 +503,9 @@ public partial class FixtureExpectations
             [$"{night}|||||||"],
             Query(store, "SELECT session_date || '|' || IFNULL(ijh_half_year, '') || '|' || IFNULL(ijh_year, '') || '|' || IFNULL(ijr_half_year, '') || '|' || IFNULL(ijr_year, '') || '|' || IFNULL(hyg_average, '') || '|' || IFNULL(hyg_change, '') || '|' FROM switch_reading;"));
 
-        // And the quarters step after the close stores each company's five rating counts and each quarter's interest
-        // expense with whether its fetch read one, as the captured answers file them, read off the payloads here rather
-        // than through the parser.
+        // And the quarters fetch after the member readings, from 23.10's second part in the swing filter's step, stores each
+        // company's five rating counts and each quarter's interest expense with whether its fetch read one, as the captured
+        // answers file them, read off the payloads here rather than through the parser.
         var quarters = 0;
 
         foreach (var ticker in new[] { "AAPL", "KEYS", "MSFT", "NFLX" })

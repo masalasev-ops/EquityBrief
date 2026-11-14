@@ -47,13 +47,24 @@ public partial class FixtureExpectations
     static string FrozenPulledMember(string ticker) =>
         $"INSERT INTO pulled_member (index_code, ticker, exchange, pull) VALUES ('MID', '{ticker}', 'US', 'members-pull-test');";
 
-    // A quarter as the night's fetch filed it and as the history's pull filed it, its net and its operating income 10.
+    // A quarter as the night's fetch filed it and as the history's pull filed it, its net and its operating income 10, and
+    // from 23.10's second part its net income as its filing states it under a filer of the member's own, which the profit
+    // check reads; a member whose newest company row names another filer is given its filings under that one.
     static IEnumerable<string> FrozenQuarter(string ticker, DateOnly end, DateOnly filed, string interest = "NULL") =>
     [
         "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, net_income, operating_income) "
             + $"VALUES ('{ticker}', '{Day(filed)}T22:00:00Z', '{Day(filed)}', '{Day(end)}', '{Day(filed)}', '10', '10');",
         "INSERT INTO pulled_income (ticker, period_end, filing_date, net_income, operating_income, interest_expense, pull) "
             + $"VALUES ('{ticker}', '{Day(end)}', '{Day(filed)}', '10', '10', {interest}, 'income-pull-test');",
+        $"INSERT OR IGNORE INTO company (ticker, fetched_at, cik) VALUES ('{ticker}', '2000-01-01T00:00:00Z', '{CikFor(ticker)}');",
+        .. FrozenFiling(CikFor(ticker), end, filed),
+    ];
+
+    // A quarter's net income of 10 as its filing states it under the filer given.
+    static IEnumerable<string> FrozenFiling(string cik, DateOnly end, DateOnly filed) =>
+    [
+        "INSERT OR IGNORE INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) "
+            + $"VALUES ('{cik}', 'NetIncomeLoss', '{Day(end.AddDays(1).AddMonths(-3))}', '{Day(end)}', '10', '{Day(filed)}', '10-Q', '{cik}-{Day(end)}', 'constructed');",
     ];
 
     // The rows a family's setups of a session hold on an index, by ticker: the rule's words, its pass and the source.
@@ -315,10 +326,14 @@ public partial class FixtureExpectations
     static IEnumerable<string> DrifterSession(DateOnly[] calendar, int at) =>
         FrozenDrifters.Select(ticker => DrifterBar(ticker, at) is var bar ? FrozenBar(ticker, calendar[at], bar.Open, bar.High, bar.Low, bar.Close, bar.Volume) : string.Empty);
 
+    // The drifters' four quarters, each with the day it was filed.
+    static readonly (string End, string Filed)[] DrifterQuarters = [("2024-12-31", "2025-02-10"), ("2025-03-31", "2025-05-01"), ("2025-06-30", "2025-08-01"), ("2025-09-30", "2025-11-03")];
+
     // The three drifters on the S&P 400 through the session given, each with four profitable quarters and its report; DA's
     // and DB's filers' revenue for the quarter to 2025-12-31 at 120 against 100 a year before, first filed on the reaction
     // session for DA and on the session before the pullback, 2026-02-04, for DB; and today's members as the history reads
-    // them.
+    // them. From 23.10's second part each drifter's quarters' net income is filed under the filer its newest company row
+    // names, which the profit check reads.
     static TemporaryStore FrozenDriftStore(DateOnly[] calendar, int through)
     {
         var store = new TemporaryStore().Migrated();
@@ -330,7 +345,7 @@ public partial class FixtureExpectations
             statements.Add(FrozenPulledMember(ticker));
             statements.Add($"INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('{ticker}', '{Day(calendar[FrozenReaction])}', 'earnings', 'before', '{{\"surprise\":\"10\"}}', '{Day(calendar[FrozenReaction])}T21:00:00Z');");
 
-            foreach (var (end, filed) in new[] { ("2024-12-31", "2025-02-10"), ("2025-03-31", "2025-05-01"), ("2025-06-30", "2025-08-01"), ("2025-09-30", "2025-11-03") })
+            foreach (var (end, filed) in DrifterQuarters)
             {
                 statements.AddRange(FrozenQuarter(ticker, DateOnly.ParseExact(end, "yyyy-MM-dd", CultureInfo.InvariantCulture), DateOnly.ParseExact(filed, "yyyy-MM-dd", CultureInfo.InvariantCulture)));
             }
@@ -339,6 +354,12 @@ public partial class FixtureExpectations
         foreach (var (ticker, cik, filed) in new[] { ("DA", "0000000201", calendar[FrozenReaction]), ("DB", "0000000202", calendar[FrozenReaction + 2]) })
         {
             statements.Add($"INSERT INTO company (ticker, fetched_at, cik) VALUES ('{ticker}', '2026-01-02T23:40:00.000Z', '{cik}');");
+
+            foreach (var (end, quarterFiled) in DrifterQuarters)
+            {
+                statements.AddRange(FrozenFiling(cik, DateOnly.ParseExact(end, "yyyy-MM-dd", CultureInfo.InvariantCulture), DateOnly.ParseExact(quarterFiled, "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+            }
+
             statements.Add($"INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('{cik}', 'Revenues', '2024-10-01', '2024-12-31', '100', '2025-02-10', '10-Q', 'x-1', 'refresh');");
             statements.Add($"INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('{cik}', 'Revenues', '2025-10-01', '2025-12-31', '120', '{Day(filed)}', '10-Q', 'x-2', 'refresh');");
         }
