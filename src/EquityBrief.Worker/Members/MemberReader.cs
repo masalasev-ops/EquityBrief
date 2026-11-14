@@ -16,13 +16,15 @@ public sealed record MemberReadOutcome(DateOnly Night, int Members, int WithABar
 
 // The member readings. Writes, for every member of the S&P 500, 400 and 600 on the night, each reading its rules and
 // their sweeps read, as it stood on the session: its dollar volume, the round trip a trade at its close pays at the
-// published table and at double, the profit gate, the coverage and the state its quarters give it, its nearness to its
-// year's high and the sessions since, its volume over its average, its industry's S&P 500 members' return over a month
-// and a quarter and their mean surprise before the night; and the market switches an S&P 400's or 600's rule may read.
-// Each reading is the one function the sweeps read it with. It makes no request and calls no model, and a night run
-// again replaces its own session's rows and no other's.
+// published table and at double, the profit gate and the coverage over its quarters as the rules read them, each from
+// its filing and then its results release, and the state its quarters give it, its nearness to its year's high and the
+// sessions since, its volume over its average, its industry's S&P 500 members' return over a month and a quarter and
+// their mean surprise before the night; and the market switches an S&P 400's or 600's rule may read. Each reading is the
+// one function the sweeps read it with. It makes no request and calls no model, and a night run again replaces its own
+// session's rows and no other's.
 // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
 // see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
+// see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
 // see: The nightly run is arithmetic only
 public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
 {
@@ -37,6 +39,8 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.SwitchReading, Touch.Insert | Touch.Delete),
@@ -73,10 +77,10 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
 
     const string VolumeAverages = "SELECT ticker, value FROM indicator WHERE session_date = $session AND name = $name;";
 
-    // Each member's newest fetch made on a night before this one, its quarters and the counts and basis they carry.
-    const string QuartersBefore = @"
-        SELECT r.ticker, r.period_end, r.filing_date, r.net_income, r.operating_income, r.interest_expense, r.interest_read,
-               r.shares, r.basis_session, r.basis_close
+    // Each member's newest fetch made on a night before this one, the counts its quarters carry and the basis they are
+    // stated on, which its company's value reads.
+    const string CountsBefore = @"
+        SELECT r.ticker, r.period_end, r.filing_date, r.shares, r.basis_session, r.basis_close
         FROM reported_quarter r
         WHERE r.fetched_at = (
             SELECT MAX(fetched_at) FROM reported_quarter
@@ -126,9 +130,8 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
             $rows_written, 0, 0, '0', $detail);
     ";
 
-    // One member's quarters as its newest fetch filed them, which of them carried the interest expense the fetch read,
-    // and its counts with the close they are stated against.
-    sealed record Quarters(IReadOnlyList<FiledIncome> Income, IReadOnlySet<DateOnly> InterestRead, IReadOnlyList<FiledCount> Counts, decimal? BasisClose, DateOnly? BasisSession);
+    // One member's counts as its newest fetch filed them, with the close they are stated against.
+    sealed record Counted(IReadOnlyList<FiledCount> Counts, decimal? BasisClose, DateOnly? BasisSession);
 
     public async Task<MemberReadOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default, IReadOnlyList<string>? wider = null)
     {
@@ -144,7 +147,8 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
         var calendar = bars.Values.SelectMany(series => series.Select(bar => bar.Session)).Where(day => day <= night).Distinct().Order().ToArray();
         var at = Array.IndexOf(calendar, night);
         var averages = await ValuesAsync(connection, VolumeAverages, night, ("$name", IndicatorSeries.VolAvg50), cancellation);
-        var quarters = await QuartersAsync(connection, night, cancellation);
+        var quarters = await CountsAsync(connection, night, cancellation);
+        var sourced = await Indices.IndexFamilies.QuartersReadAsync(connection, members.Select(member => member.Ticker), night, cancellation);
         var companies = await CompaniesAsync(connection, night, cancellation);
         var states = await StatesAsync(connection, night, cancellation);
         var byDay = bars.ToDictionary(pair => pair.Key, pair => pair.Value.ToDictionary(bar => bar.Session), StringComparer.Ordinal);
@@ -265,15 +269,9 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
             var bar = held ? series[last] : default;
             decimal? traded = held ? (bar.RawClose > 0m ? bar.RawClose : bar.Close) : null;
             var value = held ? ValueOn(ticker, night) : null;
-            var fetch = quarters.GetValueOrDefault(ticker);
-            var income = fetch?.Income ?? [];
-            var four = MemberReadings.FiledBefore(income, night);
+            FiledIncome[] income = [.. (sourced.GetValueOrDefault(ticker) ?? []).Select(one => one.Income)];
             var company = companies.GetValueOrDefault(ticker);
-
-            // see: A member's coverage is read on the night only over quarters whose fetch read their interest expense
-            bool? coverage = four.All(quarter => fetch!.InterestRead.Contains(quarter.PeriodEnd))
-                ? MemberReadings.Coverage(income, night, company.Sector)
-                : null;
+            var coverage = MemberReadings.Coverage(income, night, company.Sector);
             var high = held ? MemberReadings.YearHigh(before.GetValueOrDefault(ticker), series, last) : null;
             var industry = company.Industry;
 
@@ -292,7 +290,7 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
             command.Parameters.AddWithValue("$cost", Number(traded is { } price ? TradeCost.InPercent(value, price, price) : null));
             command.Parameters.AddWithValue("$cost_double", Number(traded is { } doubled ? TradeCost.InPercent(value, doubled, doubled, TradeCost.Doubled) : null));
             command.Parameters.AddWithValue("$profit", MemberReadings.Profit(income, night) ? 1 : 0);
-            command.Parameters.AddWithValue("$coverage", coverage is { } covered ? (covered ? 1 : 0) : DBNull.Value);
+            command.Parameters.AddWithValue("$coverage", coverage ? 1 : 0);
             command.Parameters.AddWithValue("$state", (object?)states.GetValueOrDefault(ticker) ?? DBNull.Value);
             command.Parameters.AddWithValue("$year_high", Money(high?.High));
             command.Parameters.AddWithValue("$nearness", Number(high is { High: > 0m } year ? Statistic.FromRatio(bar.Close / year.High) : null));
@@ -557,15 +555,13 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
         return values;
     }
 
-    static async Task<IReadOnlyDictionary<string, Quarters>> QuartersAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    static async Task<IReadOnlyDictionary<string, Counted>> CountsAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
-        command.CommandText = QuartersBefore;
+        command.CommandText = CountsBefore;
         command.Parameters.AddWithValue("$session", Stamp(night));
 
-        var income = new Dictionary<string, List<FiledIncome>>(StringComparer.Ordinal);
-        var read = new Dictionary<string, HashSet<DateOnly>>(StringComparer.Ordinal);
         var counts = new Dictionary<string, List<FiledCount>>(StringComparer.Ordinal);
         var basis = new Dictionary<string, (decimal? Close, DateOnly? Session)>(StringComparer.Ordinal);
 
@@ -574,44 +570,24 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
         while (await reader.ReadAsync(cancellation))
         {
             var ticker = reader.GetString(0);
-            var periodEnd = Date(reader.GetString(1));
 
-            if (!income.ContainsKey(ticker))
+            if (!counts.ContainsKey(ticker))
             {
-                (income[ticker], read[ticker], counts[ticker]) = ([], [], []);
+                counts[ticker] = [];
             }
 
-            basis[ticker] = (reader.IsDBNull(9) ? null : Money(reader.GetString(9)), reader.IsDBNull(8) ? null : Date(reader.GetString(8)));
+            basis[ticker] = (reader.IsDBNull(5) ? null : Money(reader.GetString(5)), reader.IsDBNull(4) ? null : Date(reader.GetString(4)));
 
-            // A quarter carrying no filing date cannot be read as it stood, and is read as none filed.
-            if (reader.IsDBNull(2))
+            // A count carrying no filing date cannot be read as it stood, and is read as none filed.
+            if (!reader.IsDBNull(2) && !reader.IsDBNull(3) && !reader.IsDBNull(4))
             {
-                continue;
-            }
-
-            var filed = Date(reader.GetString(2));
-
-            income[ticker].Add(new FiledIncome(
-                periodEnd,
-                filed,
-                reader.IsDBNull(3) ? null : Money(reader.GetString(3)),
-                reader.IsDBNull(4) ? null : Money(reader.GetString(4)),
-                reader.IsDBNull(5) ? null : Money(reader.GetString(5))));
-
-            if (reader.GetInt64(6) == 1)
-            {
-                read[ticker].Add(periodEnd);
-            }
-
-            if (!reader.IsDBNull(7) && !reader.IsDBNull(8))
-            {
-                counts[ticker].Add(new FiledCount(periodEnd, filed, Money(reader.GetString(7)), Date(reader.GetString(8))));
+                counts[ticker].Add(new FiledCount(Date(reader.GetString(1)), Date(reader.GetString(2)), Money(reader.GetString(3)), Date(reader.GetString(4))));
             }
         }
 
-        return income.ToDictionary(
+        return counts.ToDictionary(
             pair => pair.Key,
-            pair => new Quarters(pair.Value, read[pair.Key], counts[pair.Key], basis[pair.Key].Close, basis[pair.Key].Session),
+            pair => new Counted(pair.Value, basis[pair.Key].Close, basis[pair.Key].Session),
             StringComparer.Ordinal);
     }
 

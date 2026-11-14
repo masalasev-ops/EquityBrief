@@ -28,7 +28,7 @@ public sealed record IndexRule(string Candidate, IndexRuleCandidate Evaluator, I
 // reaction can reach, by its ticker and report date, under each reading version a standing rule names; and from 20.11
 // each member's quarters' revenue as first filed, over the facts filed before the session before the night, which are
 // those the night's filings refresh had stored, read only where a standing drift rule reads it.
-// see: A member's coverage is read on the night only over quarters whose fetch read their interest expense
+// see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
 // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
 // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
 public sealed record IndexLevels(

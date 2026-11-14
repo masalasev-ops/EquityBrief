@@ -82,7 +82,10 @@ public abstract class IndexRuleCandidate(string index) : FamilyRuleEvaluator
     public override double? TypicalMoveOf(FamilyMember member) => null;
 
     // An index rule's own sources: its family's own, then the files every index rule's evaluation on the night runs
-    // through, then the sources every family rule's evaluator pins.
+    // through, then the sources every family rule's evaluator pins; from 23.10's second part the files its members'
+    // quarters are read through among them, each from its filing and then its results release, a file the family's own
+    // list names already pinned once.
+    // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
     protected static IReadOnlyList<string> IndexSourcesWith(params string[] family) =>
     [
         .. family,
@@ -95,7 +98,17 @@ public abstract class IndexRuleCandidate(string index) : FamilyRuleEvaluator
         "src/EquityBrief.Worker/Sweep/FamilySweep.cs",
         "src/EquityBrief.Core/Readings/MemberReadings.cs",
         "src/EquityBrief.Core/Readings/IndexSwitches.cs",
+        .. QuartersReadThrough.Where(source => !family.Contains(source, StringComparer.Ordinal)),
         .. SourcesWith("src/EquityBrief.Core/Families/FamilyRule.cs").Skip(1),
         .. EquityBrief.Core.Loop.RuleHooks.Sources,
+    ];
+
+    static readonly string[] QuartersReadThrough =
+    [
+        "src/EquityBrief.Core/Readings/QuartersAsRead.cs",
+        "src/EquityBrief.Core/Readings/ReleaseLines.cs",
+        "src/EquityBrief.Core/Families/FirstFiledRevenue.cs",
+        "src/EquityBrief.Core/Ledger/FiledFacts.cs",
+        "src/EquityBrief.Core/Releases/ReleaseAvailability.cs",
     ];
 }

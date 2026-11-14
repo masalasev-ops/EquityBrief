@@ -12,28 +12,27 @@ using EquityBrief.Worker.Shortlist;
 namespace EquityBrief.Tests.Checks;
 
 // nightly-run: the night reads every member's reported quarters after its swing readings and before its
-// listings, and asks for the members due after its close and before the overnight queue.
+// listings, and from 23.10's second part asks for the members due inside the swing filter's step, after the S&P 500's
+// sector heavyweights' book and before the S&P 400's and 600's families.
 // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+// see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
 public partial class NightlyRun
 {
     [Fact]
-    public async Task TheNightReadsTheReportedQuartersBeforeTheListingsAndAsksForThemAfterTheClose()
+    public async Task TheNightReadsTheReportedQuartersBeforeTheListingsAndAsksForThemBeforeTheSAndP400sAnd600sFamilies()
     {
-        // Section 14's order, read off the document.
+        // Section 14's order, read off the document: the readings between the swing readings and the list reasons, no step of
+        // its own asking for the quarters, and the close followed by the filings refresh.
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture)).ToList();
         var readings = steps.IndexOf(ArchitectureConformance.ReadingsStep);
-        var quarters = steps.IndexOf(ArchitectureConformance.QuartersStep);
+        var close = steps.FindIndex(step => step.StartsWith("Close the arithmetic", StringComparison.Ordinal));
 
-        Assert.True(readings > 0 && quarters > 0, "Section 14 holds neither step as the claims key them.");
+        Assert.True(readings > 0 && close > 0, "Section 14 holds neither step as the claims key them.");
         Assert.StartsWith("Compute the swing readings", steps[readings - 1], StringComparison.Ordinal);
         Assert.StartsWith("Evaluate the list reasons", steps[readings + 1], StringComparison.Ordinal);
-        Assert.StartsWith("Close the arithmetic", steps[quarters - 1], StringComparison.Ordinal);
-        Assert.StartsWith("Read the archive's daily index", steps[quarters + 1], StringComparison.Ordinal);
-        Assert.StartsWith("From 22.9, read Quality at a fair price", steps[quarters + 2], StringComparison.Ordinal);
-        Assert.StartsWith("From 22.13, read the Fundamentals family", steps[quarters + 3], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the Treasury, and not the provider", steps[quarters + 4], StringComparison.Ordinal);
-        Assert.StartsWith("Ask for six reports taken in turn", steps[quarters + 5], StringComparison.Ordinal);
+        Assert.DoesNotContain(steps, step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal));
+        Assert.StartsWith("Read the archive's daily index", steps[close + 1], StringComparison.Ordinal);
 
         // And the night running it, over the fixture.
         using var store = new TemporaryStore();
@@ -47,7 +46,8 @@ public partial class NightlyRun
         var asked = stages.IndexOf(QuarterFetcher.Stage);
 
         Assert.True(read > stages.IndexOf(SwingReader.Stage) && read < stages.IndexOf(ShortlistBuilder.Stage), string.Join(", ", stages));
-        Assert.True(asked > stages.IndexOf(EquityBrief.Worker.Nights.NightClose.Stage) && asked < stages.IndexOf(EquityBrief.Worker.Ledger.FilingsRefresher.Stage), string.Join(", ", stages));
+        Assert.True(asked > stages.IndexOf(EquityBrief.Worker.Families.HeavyweightBook.Stage) && asked < stages.IndexOf(EquityBrief.Worker.Indices.IndexFamilies.Stage), string.Join(", ", stages));
+        Assert.True(asked < stages.IndexOf(EquityBrief.Worker.Nights.NightClose.Stage), string.Join(", ", stages));
 
         // The readings wrote a row for every member, and each reads no fundamentals yet: the night holds
         // no quarter fetched before it.
@@ -65,21 +65,29 @@ public partial class NightlyRun
             StoreRows(store, "SELECT index_code, ticker, state FROM member_reading WHERE session_date = '2026-09-08' ORDER BY ticker;"));
         Assert.Equal([["2026-09-08"]], StoreRows(store, "SELECT session_date FROM switch_reading;"));
 
-        // The quarters step asked for each member once, the fill's, and stored what each answer carried.
+        // The quarters fetch asked for each member once, the fill's, and stored what each answer carried, its words on the
+        // swing filter's line.
         Assert.Equal(
             [["AAPL", "fill", "stored"], ["KEYS", "fill", "stored"], ["MSFT", "fill", "stored"], ["NFLX", "fill", "stored"]],
             StoreRows(store, "SELECT ticker, reason, outcome FROM quarter_ask ORDER BY ticker;"));
-        Assert.Contains("  quarters: 4 of 4 member(s) due asked: 0 reporting, 0 waiting, 0 joining, 4 filled", output, StringComparison.Ordinal);
+        Assert.Contains("; quarters: 4 of 4 member(s) due asked: 0 reporting, 0 waiting, 0 joining, 4 filled", output, StringComparison.Ordinal);
+        Assert.DoesNotContain($"  {QuarterFetcher.Stage}: ", output, StringComparison.Ordinal);
 
-        // Handed no token from the night's deadline, which bounds the arithmetic alone: the step's call in
-        // the night's own list passes none, so its own limit is what bounds it.
+        // Handed no token from the night's deadline, which bounds the arithmetic: its call, between the S&P 500's
+        // heavyweights' book and the S&P 400's and 600's families in the swing filter's step, passes none, so its own limit
+        // is what bounds it.
         var night = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Nightly.cs"));
-        var step = night[night.IndexOf($"new(\"{QuarterFetcher.Stage}\"", StringComparison.Ordinal)..];
+        var from = night.IndexOf("await new HeavyweightBook(", StringComparison.Ordinal);
+        var to = night.IndexOf("await new IndexFamilies(", StringComparison.Ordinal);
 
-        step = step[..step.IndexOf("}),", StringComparison.Ordinal)];
+        Assert.True(from > 0 && to > from, "The swing filter's step holds the book and the index families in that order.");
 
-        Assert.DoesNotContain("night.Token", step, StringComparison.Ordinal);
-        Assert.Contains(".RunAsync(indexCode, runId, wider: wider)", step, StringComparison.Ordinal);
+        var fetch = night[from..to];
+
+        Assert.Contains("new QuarterFetcher(", fetch, StringComparison.Ordinal);
+        Assert.Contains(".RunAsync(indexCode, runId, wider: wider)", fetch, StringComparison.Ordinal);
+        Assert.DoesNotContain("night.Token", fetch[fetch.IndexOf("new QuarterFetcher(", StringComparison.Ordinal)..], StringComparison.Ordinal);
+        Assert.DoesNotContain($"new(\"{QuarterFetcher.Stage}\"", night, StringComparison.Ordinal);
     }
 
     [Fact]

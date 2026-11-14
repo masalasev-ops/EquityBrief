@@ -193,6 +193,33 @@ public static class QuarterReadings
             Valuation(ordered, closeOnBasis));
     }
 
+    // From 23.10's second part the readings with each quarter's business read apart from the fetch: the trajectory and the
+    // quality over the quarters read from their filing and then their results release, each against the same quarter a year
+    // earlier as filed, and the record and the valuation over the fetch's earnings a share and closes, which stay the
+    // provider's. The newest quarter the business was read from is the one the readings were read from.
+    // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
+    public static Readings Of(IReadOnlyList<ReportedQuarter> fetched, IReadOnlyList<ReportedQuarter> business, decimal? closeOnBasis, DateOnly? awaited)
+    {
+        var ordered = fetched.OrderByDescending(quarter => quarter.PeriodEnd).ToArray();
+        var read = business.OrderByDescending(quarter => quarter.PeriodEnd).ToArray();
+
+        if (ordered.Length == 0 && read.Length == 0)
+        {
+            return Of([], closeOnBasis, awaited);
+        }
+
+        var trajectory = Trajectory(read);
+
+        return new Readings(
+            StateOf(trajectory),
+            read.Length > 0 ? read[0].PeriodEnd : ordered[0].PeriodEnd,
+            awaited,
+            trajectory,
+            Record(ordered),
+            Quality(read),
+            Valuation(ordered, closeOnBasis));
+    }
+
     // The trajectory over the two newest quarters, which must each hold sales and an operating margin
     // against a year earlier.
     public static TrajectoryReading Trajectory(IReadOnlyList<ReportedQuarter> ordered)

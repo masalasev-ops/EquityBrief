@@ -69,6 +69,16 @@ public sealed record SweepMarketSeries(string Series, IReadOnlyList<(DateOnly Se
     public DateOnly? Last => Closes.Count > 0 ? Closes[^1].Session : null;
 }
 
+// What the history reads of each pulled company's quarters of income: each quarter with the day it became known, every
+// session after it reading it, and how many of them were read from their filing, from their results release and, where
+// neither is stored, from the later of their report day and the provider's filing date.
+public sealed record SweepIncome(
+    IReadOnlyDictionary<string, IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>> Income,
+    int Quarters,
+    int FromFilings,
+    int FromReleases,
+    int Fallbacks);
+
 // One row of a rebalance the night's book stored: the session, the sector, the company's place by value, the listing
 // held and its value, its lead over the sector, and whether it passed the trend gate and was a leader bought.
 public sealed record StoredHeavyweightRow(DateOnly Session, string Sector, int Place, string Ticker, decimal Value, double? Lead, bool Trend, bool Leader);
@@ -122,6 +132,7 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.SessionMark, Touch.Read),
         ],
         Feeds: []);
@@ -368,37 +379,146 @@ public sealed class SweepHistory : IComponent
         return HoldingSpans.From(periods, held, today);
     }
 
-    // Each pulled company's quarters of income filed by the history's end, none where the store holds no table for them.
+    // Each pulled company's quarters of income known by the history's end, none where the store holds no table for them.
     // see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
-    public async Task<IReadOnlyDictionary<string, IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>>> IncomeAsync(DateOnly through, CancellationToken cancellation = default)
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>>> IncomeAsync(DateOnly through, CancellationToken cancellation = default) =>
+        (await IncomeReadAsync(through, cancellation)).Income;
+
+    // From 23.10's second part each pulled quarter of income read from the moment the SEC made the document it is read
+    // from public, as the night reads it: from the session after the day its first filing stating it was made, through the
+    // company's filer as its newest company row and then the companies pull name it; else from the first night whose late
+    // slot starts after the SEC accepted the first results release after its end; and where neither is stored from the
+    // session after the later of its report day and the provider's filing date, each counted, its figures the pull's.
+    // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
+    public async Task<SweepIncome> IncomeReadAsync(DateOnly through, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(ConnectionString(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var income = new Dictionary<string, List<EquityBrief.Core.Readings.FiledIncome>>(StringComparer.Ordinal);
-
         if (!await TableHeldAsync(connection, "pulled_income", cancellation))
         {
-            return new Dictionary<string, IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>>(StringComparer.Ordinal);
+            return new SweepIncome(new Dictionary<string, IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>>(StringComparer.Ordinal), 0, 0, 0, 0);
         }
 
         static decimal? Figure(SqliteDataReader row, int at) => row.IsDBNull(at) ? null : Money.FromStorage(row.GetString(at));
 
-        await foreach (var row in RowsAsync(
-            connection,
-            "SELECT ticker, period_end, filing_date, net_income, operating_income, interest_expense FROM pulled_income WHERE filing_date <= $through;",
-            [("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))],
-            cancellation))
+        var stamp = through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var pulled = new Dictionary<string, List<(DateOnly End, DateOnly Filed, decimal? Net, decimal? Operating, decimal? Interest)>>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, period_end, filing_date, net_income, operating_income, interest_expense FROM pulled_income;", [], cancellation))
         {
-            if (!income.TryGetValue(row.GetString(0), out var held))
+            if (!pulled.TryGetValue(row.GetString(0), out var held))
             {
-                income[row.GetString(0)] = held = [];
+                pulled[row.GetString(0)] = held = [];
             }
 
-            held.Add(new EquityBrief.Core.Readings.FiledIncome(Date(row.GetString(1)), Date(row.GetString(2)), Figure(row, 3), Figure(row, 4), Figure(row, 5)));
+            held.Add((Date(row.GetString(1)), Date(row.GetString(2)), Figure(row, 3), Figure(row, 4), Figure(row, 5)));
         }
 
-        return income.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>)pair.Value, StringComparer.Ordinal);
+        // Each company's filer: the companies pull's, and over it its newest company row's.
+        var filers = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        if (await TableHeldAsync(connection, "pulled_company", cancellation))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL ORDER BY pull;", [], cancellation))
+            {
+                filers[row.GetString(0)] = row.GetString(1);
+            }
+        }
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, cik FROM company WHERE cik IS NOT NULL ORDER BY fetched_at;", [], cancellation))
+        {
+            filers[row.GetString(0)] = row.GetString(1);
+        }
+
+        // Each company's report days, the pulled prints and the calendar's.
+        var prints = new Dictionary<string, List<DateOnly>>(StringComparer.Ordinal);
+
+        foreach (var query in new[] { "SELECT ticker, event_date FROM pulled_earnings;", "SELECT ticker, event_date FROM calendar WHERE kind = 'earnings';" })
+        {
+            if (query.Contains("pulled_earnings", StringComparison.Ordinal) && !await TableHeldAsync(connection, "pulled_earnings", cancellation))
+            {
+                continue;
+            }
+
+            await foreach (var row in RowsAsync(connection, query, [], cancellation))
+            {
+                if (!prints.TryGetValue(row.GetString(0), out var days))
+                {
+                    prints[row.GetString(0)] = days = [];
+                }
+
+                days.Add(Date(row.GetString(1)));
+            }
+        }
+
+        // Each filer's results releases accepted by the history's end.
+        var releases = new Dictionary<string, List<DateTimeOffset>>(StringComparer.Ordinal);
+
+        if (await TableHeldAsync(connection, "release_document", cancellation))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT cik, accepted_at FROM release_document WHERE release = 1 AND substr(accepted_at, 1, 10) <= $through;", [("$through", stamp)], cancellation))
+            {
+                if (!releases.TryGetValue(row.GetString(0), out var accepted))
+                {
+                    releases[row.GetString(0)] = accepted = [];
+                }
+
+                accepted.Add(DateTimeOffset.Parse(row.GetString(1), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal));
+            }
+        }
+
+        var income = new Dictionary<string, IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>>(StringComparer.Ordinal);
+        var (quarters, fromFilings, fromReleases, fallbacks) = (0, 0, 0, 0);
+
+        foreach (var (ticker, held) in pulled.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+        {
+            var cik = filers.GetValueOrDefault(ticker);
+            var facts = new List<FiledFactRow>();
+
+            if (cik is not null)
+            {
+                await foreach (var row in RowsAsync(connection, "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik AND filed <= $through;", [("$cik", cik), ("$through", stamp)], cancellation))
+                {
+                    facts.Add(new FiledFactRow(row.GetString(0), Date(row.GetString(1)), Date(row.GetString(2)), Money.FromStorage(row.GetString(3)), Date(row.GetString(4)), row.GetString(5), row.GetString(6)));
+                }
+            }
+
+            var read = EquityBrief.Core.Readings.QuartersAsRead.InTheHistory(
+                [.. held.Select(one => (PeriodEnd: one.End, ProviderFiled: one.Filed))],
+                facts,
+                cik is not null && releases.TryGetValue(cik, out var accepted) ? accepted : [],
+                prints.GetValueOrDefault(ticker) ?? []);
+            var kept = new List<EquityBrief.Core.Readings.FiledIncome>();
+
+            for (var at = 0; at < held.Count; at++)
+            {
+                if (read[at].Known > through)
+                {
+                    continue;
+                }
+
+                kept.Add(new EquityBrief.Core.Readings.FiledIncome(held[at].End, read[at].Known, held[at].Net, held[at].Operating, held[at].Interest));
+                quarters++;
+
+                switch (read[at].From)
+                {
+                    case EquityBrief.Core.Readings.QuarterFrom.Filing:
+                        fromFilings++;
+                        break;
+                    case EquityBrief.Core.Readings.QuarterFrom.Release:
+                        fromReleases++;
+                        break;
+                    default:
+                        fallbacks++;
+                        break;
+                }
+            }
+
+            income[ticker] = kept;
+        }
+
+        return new SweepIncome(income, quarters, fromFilings, fromReleases, fallbacks);
     }
 
     // From 22.10 each filer's facts as first filed by the history's end, one statement a filer, which the quality family's

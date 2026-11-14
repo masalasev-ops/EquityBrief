@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Quarters;
+using EquityBrief.Core.Readings;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -11,13 +12,17 @@ namespace EquityBrief.Worker.Quarters;
 public sealed record FundamentalReadOutcome(int Members, int RowsWritten, IReadOnlyDictionary<string, int> States);
 
 // The fundamental readings. Writes, for every member of the index on the night, the four readings of
-// its reported quarters and the state they give it, from the quarters fetched on the nights before
-// this one, so a member reporting on a Tuesday is asked on Wednesday's night and read on Thursday's.
+// its reported quarters and the state they give it, from the quarters fetched by the night, so a member
+// reporting on a Tuesday is asked on Wednesday's night and read on the first night after that one.
+// From 23.10's second part each quarter's business is read as the rules read it, from its filing and
+// then its results release and never the provider's figures, and the earnings a share, the estimates
+// and the closes after each report stay the fetch's.
 //
 // A row for every member, one holding no quarter among them, because absent is never a failure: a
 // member with no fundamentals or too few quarters is judged and listed as any other, and its row says
 // which it is. It makes no request and calls no model: everything it reads is already in the store.
 // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
+// see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
 // see: The nightly run is arithmetic only
 //
 // The arithmetic is in `QuarterReadings`. What is here is reading, writing and the run log.
@@ -30,6 +35,9 @@ public sealed class FundamentalReader : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -48,7 +56,7 @@ public sealed class FundamentalReader : IComponent
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
 
-    // Each member's newest fetch made on a night before this one, and the quarters it stored.
+    // Each member's newest fetch stored by the night, the night's own among them, and the quarters it stored.
     const string QuartersBefore = @"
         SELECT r.ticker, r.fetched_at, r.period_end, r.filing_date, r.report_date, r.revenue, r.operating_income,
                r.net_income, r.operating_cash_flow, r.eps_actual, r.eps_estimate, r.eps_trailing, r.sales_growth,
@@ -57,7 +65,7 @@ public sealed class FundamentalReader : IComponent
         FROM reported_quarter r
         WHERE r.fetched_at = (
             SELECT MAX(fetched_at) FROM reported_quarter
-            WHERE ticker = r.ticker AND session_date < $session)
+            WHERE ticker = r.ticker AND session_date <= $session)
         ORDER BY r.ticker, r.period_end DESC;
     ";
 
@@ -109,6 +117,7 @@ public sealed class FundamentalReader : IComponent
         var night = await NewestAsync(connection, cancellation) ?? clock.SessionDateAt(clock.UtcNow);
         var members = await MembersAsync(connection, indexCode, clock.SessionDateAt(clock.UtcNow), wider, cancellation);
         var fetched = await QuartersAsync(connection, night, cancellation);
+        var sourced = await Indices.IndexFamilies.QuartersReadAsync(connection, members, night, cancellation);
         var closes = await ClosesAsync(connection, cancellation);
         var reports = await ReportsAsync(connection, night, cancellation);
 
@@ -129,7 +138,8 @@ public sealed class FundamentalReader : IComponent
         {
             var fetch = fetched.GetValueOrDefault(ticker);
             var quarters = fetch?.Quarters ?? [];
-            var readings = QuarterReadings.Of(quarters, OnBasis(ticker, night, fetch, closes), Awaited(quarters, reports.GetValueOrDefault(ticker)));
+            ReportedQuarter[] business = [.. (sourced.GetValueOrDefault(ticker) ?? []).Select(one => BusinessOf(one, quarters.FirstOrDefault(row => row.PeriodEnd == one.PeriodEnd)))];
+            var readings = QuarterReadings.Of(quarters, business, OnBasis(ticker, night, fetch, closes), Awaited(business, reports.GetValueOrDefault(ticker)));
 
             states[readings.State]++;
 
@@ -185,7 +195,24 @@ public sealed class FundamentalReader : IComponent
                 ? decimal.Round(tonight * basis / stored, 6, MidpointRounding.ToEven)
                 : null;
 
-    // The quarter the newest report before tonight covers, where the fetch read from does not hold it.
+    // From 23.10's second part a quarter's business as the rules read it, laid over its fetch's own row where the fetch
+    // holds one: its sales, operating income, net income and cash from operations from its filing or its release, its
+    // growth and its margin each against the same quarter a year earlier as filed, and its earnings a share, the estimate
+    // and the close after its report the fetch's.
+    public static ReportedQuarter BusinessOf(ReadQuarter read, ReportedQuarter? fetched) =>
+        (fetched ?? new ReportedQuarter(read.PeriodEnd, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)) with
+        {
+            Revenue = read.Revenue,
+            OperatingIncome = read.OperatingIncome,
+            NetIncome = read.NetIncome,
+            OperatingCashFlow = read.OperatingCashFlow,
+            SalesGrowth = QuarterFetch.Grown(read.Revenue, read.RevenueYearEarlier),
+            SalesGrowthBefore = QuarterFetch.Grown(read.RevenueYearEarlier, read.RevenueTwoYearsEarlier),
+            OperatingMargin = QuarterFetch.Margined(read.OperatingIncome, read.Revenue),
+            MarginYearEarlier = QuarterFetch.Margined(read.OperatingIncomeYearEarlier, read.RevenueYearEarlier),
+        };
+
+    // The quarter the newest report before tonight covers, where the quarters read do not hold it.
     static DateOnly? Awaited(IReadOnlyList<ReportedQuarter> quarters, (DateOnly On, DateOnly? Period)? report) =>
         report is { Period: { } period }
             && quarters.Count > 0

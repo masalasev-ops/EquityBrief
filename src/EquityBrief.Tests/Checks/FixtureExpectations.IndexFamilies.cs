@@ -35,18 +35,60 @@ public partial class FixtureExpectations
         ];
     }
 
-    // Four quarters filed before the night, each with the net income given.
+    // Four quarters filed before the night, each with the net income given, as the provider's fetch labels them and, from
+    // 23.10's second part, as each quarter's filing states them under the member's filer, which the rules read.
     static void Quarters(TemporaryStore store, string ticker, params decimal[] income)
     {
         var ends = new[] { "2025-09-30", "2025-12-31", "2026-03-31", "2026-06-30" };
         var filed = new[] { "2025-10-30", "2026-02-10", "2026-04-30", "2026-07-30" };
+        var cik = FilerOf(store, ticker);
 
         for (var at = 0; at < income.Length; at++)
         {
             store.Execute(
                 "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, net_income, operating_income) " +
                 FormattableString.Invariant($"VALUES ('{ticker}', '2026-08-01T00:00:00Z', '2026-08-01', '{ends[at]}', '{filed[at]}', '{income[at]}', '{income[at]}');"));
+            QuarterFacts(store, cik, ends[at], filed[at], ("NetIncomeLoss", income[at]), ("OperatingIncomeLoss", income[at]));
         }
+    }
+
+    // The filer a member's newest company row names, and where none names one, a filer of its own named on a company row
+    // older than any a test stores.
+    internal static string FilerOf(TemporaryStore store, string ticker)
+    {
+        using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1;";
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        if (command.ExecuteScalar() is string named)
+        {
+            return named;
+        }
+
+        var cik = CikFor(ticker);
+
+        store.Execute($"INSERT INTO company (ticker, fetched_at, cik) VALUES ('{ticker}', '2000-01-01T00:00:00Z', '{cik}');");
+
+        return cik;
+    }
+
+    // A filer of a test's own for a ticker, ten digits as the SEC's archive addresses one, which every reader of the archive
+    // refuses otherwise: each character two digits, a letter from 10 and a digit as itself, padded at the front.
+    internal static string CikFor(string ticker) =>
+        string.Concat(ticker.Select(character => char.IsDigit(character) ? "0" + character : ((int)char.ToUpperInvariant(character) - 'A' + 10).ToString(CultureInfo.InvariantCulture))).PadLeft(10, '0');
+
+    // One quarter's facts as its filing states them: each concept's figure for the three months to the quarter's end, filed
+    // on the day given.
+    internal static void QuarterFacts(TemporaryStore store, string cik, string end, string filed, params (string Concept, decimal Value)[] facts)
+    {
+        var start = DateOnly.ParseExact(end, "yyyy-MM-dd", CultureInfo.InvariantCulture).AddDays(1).AddMonths(-3).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        store.Execute(
+            "INSERT OR IGNORE INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES " +
+            string.Join(", ", facts.Select(fact => FormattableString.Invariant($"('{cik}', '{fact.Concept}', '{start}', '{end}', '{fact.Value}', '{filed}', '10-Q', '{cik}-{end}', 'constructed')"))) + ";");
     }
 
     // The S&P 400 on the constructed night. IA breaks out above its half year's high on twice its volume, ID on 1.7
@@ -249,7 +291,7 @@ public partial class FixtureExpectations
         {
             StoreYear(store, ticker, [.. Enumerable.Range(0, 261).Select(at => new FamilyBar(days[at], Math.Round(series[at] * 1.005m, 4), Math.Round(series[at] * 0.995m, 4), series[at], 1_000_000))]);
             store.Execute($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', '{ticker}', '2025-01-02', NULL, '2025-01-02T00:00:00Z');");
-            store.Execute($"INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry) VALUES ('{ticker}', '2026-09-01T00:00:00Z', 'CIK{ticker}', 'Industrials', NULL, NULL, NULL);");
+            store.Execute($"INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry) VALUES ('{ticker}', '2026-09-01T00:00:00Z', '{CikFor(ticker)}', 'Industrials', NULL, NULL, NULL);");
             Quarters(store, ticker, 10m, 10m, 10m, 10m);
             store.Execute($"UPDATE reported_quarter SET shares = '100000000', basis_session = '2026-06-30', basis_close = '100' WHERE ticker = '{ticker}';");
         }

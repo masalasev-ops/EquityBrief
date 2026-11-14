@@ -378,10 +378,10 @@ public static class IndexNightRead
 
     // Where a member stands on the night against the floors and the quality, each a part of its own in the rule's order:
     // its close as traded at least the lowest close and the floor with its mean dollar volume over the 50 sessions to it at
-    // least the index's floor at the stated multiple, its quarters filed before the night passing the profit gate, and
-    // where the quality asks it the coverage as the member readings stored it for the night, a coverage not read passing
-    // nothing; a part a member fails saying what it had.
-    // see: A member's coverage is read on the night only over quarters whose fetch read their interest expense
+    // least the index's floor at the stated multiple, its quarters read before the night from their filings and then their
+    // results releases passing the profit gate, and where the quality asks it the coverage as the member readings stored it
+    // for the night, a coverage not read passing nothing; a part a member fails saying what it had.
+    // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
     public static IReadOnlyList<RulePart> PartsOn(IndexNightInputs inputs, int name, decimal floors, decimal lowestClose, IndexQuality quality, Func<string, bool?>? coverage = null)
     {
         var one = inputs.Series[name];
@@ -406,8 +406,8 @@ public static class IndexNightRead
             var income = inputs.Income.GetValueOrDefault(one.Name.Ticker) ?? [];
             var filed = MemberReadings.FiledBefore(income, inputs.Night);
             var words = filed.Count < MemberReadings.Quarters || filed.Any(quarter => quarter.NetIncome is null)
-                ? RuleWording.IndexNightRead.QuartersFiled(filed.Count(quarter => quarter.NetIncome is not null), MemberReadings.Quarters)
-                : RuleWording.IndexNightRead.NetIncomeNotAbove(filed.Sum(quarter => quarter.NetIncome!.Value), MemberReadings.Quarters);
+                ? RuleWording.ReadQuarters.QuartersRead(filed.Count(quarter => quarter.NetIncome is not null), MemberReadings.Quarters)
+                : RuleWording.ReadQuarters.NetIncomeNotAbove(filed.Sum(quarter => quarter.NetIncome!.Value), MemberReadings.Quarters);
 
             parts.Add(new(NoProfit, MemberReadings.Profit(income, inputs.Night), words));
         }
