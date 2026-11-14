@@ -143,17 +143,47 @@ public sealed class RuleCards : IComponent
     ";
 
     const string InsertPick = @"
-        INSERT INTO rule_pick (index_code, rule, ticker, session_date, family, place, entry, stop, target, reward_to_risk, cap, why)
-        VALUES ($index, $rule, $ticker, $night, $family, $place, $entry, $stop, $target, $reward_to_risk, $cap, $why);
+        INSERT INTO rule_pick (index_code, rule, ticker, session_date, family, place, entry, stop, target, reward_to_risk, cap, why, plan)
+        VALUES ($index, $rule, $ticker, $night, $family, $place, $entry, $stop, $target, $reward_to_risk, $cap, $why, $plan);
     ";
 
     const string EndPick = "UPDATE rule_pick SET ended_on = $ended_on, result = $result WHERE index_code = $index AND rule = $rule AND ticker = $ticker AND session_date = $session;";
 
     // A rule's picks still open before the night, which the night walks and which hold their stock off its list.
     const string OpenPicks = @"
-        SELECT rule, ticker, session_date, entry, stop, target, cap
+        SELECT rule, ticker, session_date, entry, stop, target, cap, plan
         FROM rule_pick
         WHERE index_code = $index AND ended_on IS NULL AND session_date < $night;
+    ";
+
+    // From 23.10's second part a rule's picks kept under a plan and not yet benchmarked, read before the night, each benchmarked
+    // once its window and its cap have passed.
+    const string Unbenchmarked = @"
+        SELECT rule, ticker, session_date, entry, stop, reward_to_risk, cap, plan
+        FROM rule_pick
+        WHERE index_code = $index AND plan IS NOT NULL AND benchmark IS NULL AND members IS NULL AND session_date < $night
+        ORDER BY session_date, rule, ticker;
+    ";
+
+    const string Benchmarked = "UPDATE rule_pick SET benchmark = $benchmark, members = $members WHERE index_code = $index AND rule = $rule AND ticker = $ticker AND session_date = $session;";
+
+    const string TypicalOn = "SELECT value FROM indicator WHERE ticker = $ticker AND session_date = $session AND name = $typical AND value IS NOT NULL;";
+
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
+    const string MembersOn = @"
+        SELECT DISTINCT ticker
+        FROM membership
+        WHERE index_code = $index
+          AND (joined IS NULL OR joined <= $session)
+          AND (""left"" IS NULL OR ""left"" > $session);
+    ";
+
+    // From 23.10's second part the S&P 500's page list's pullbacks on the night in their places, which the live swing filter
+    // stating a plan keeps as its own trades under it.
+    static readonly string PagePullbacks = @"
+        SELECT ticker, place FROM family_pick
+        WHERE session_date = $night AND family = '" + SetupFamilies.Pullback + "' AND state = '" + FamilyList.Listed + @"'
+        ORDER BY place, ticker;
     ";
 
     const string InsertForming = @"
@@ -363,27 +393,45 @@ public sealed class RuleCards : IComponent
         // Every pick open before the night holds its stock off its rule's list tonight, one ending at tonight's close
         // among them, which frees the stock from the night after; the walk ends those the closes since have ended.
         await WalkOpenPicksAsync(connection, transaction, index, night, open, cancellation);
+        await BenchmarkPlannedAsync(connection, transaction, index, night, cancellation);
 
         foreach (var row in filterRules)
         {
             var verdicts = filter.Select(member => (member, Verdict: member.Shadow.FirstOrDefault(outcome => outcome.Candidate == row.Candidate))).Where(pair => pair.Verdict is not null).ToArray();
             var evaluated = filter.Count > 0 && verdicts.Length > 0;
             var parameters = CandidateEvaluator.Read(row.Parameters);
+            var hooks = EquityBrief.Core.Loop.RuleHooks.Of(parameters);
             var gates = evaluated ? Funnel(SwingGates.Order, [.. verdicts.Select(pair => SwingAnswers(pair.Verdict!.Values, parameters))]) : null;
+            var held = open.Where(pick => pick.Rule == row.Candidate).Select(pick => pick.Ticker).ToHashSet(StringComparer.Ordinal);
             int count;
 
             if (FamilyRecords.IsLive(row.Candidate))
             {
                 count = listed.GetValueOrDefault(SetupFamilies.Pullback);
+
+                // From 23.10's second part the live swing filter stating a plan keeps the page list's pullbacks as its own trades
+                // under it, each with the order its plan places at the night's close, which every page draws as the plan made it.
+                // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+                if (hooks.Plan is not null)
+                {
+                    var rows = filter.ToDictionary(member => member.Ticker, member => (Member: member, Verdict: member.Shadow.FirstOrDefault(outcome => outcome.Candidate == row.Candidate)), StringComparer.Ordinal);
+                    var kept = KeepPagePicks(await PagePullbacksAsync(connection, transaction, night, cancellation), rows, held);
+
+                    foreach (var pick in kept)
+                    {
+                        await InsertPickAsync(connection, transaction, index, row.Candidate, night, pick, cancellation, await OrderAsync(connection, transaction, hooks, night, pick, cancellation));
+                    }
+
+                    picks += kept.Count;
+                }
             }
             else
             {
-                var held = open.Where(pick => pick.Rule == row.Candidate).Select(pick => pick.Ticker).ToHashSet(StringComparer.Ordinal);
                 var kept = KeepPullbackPicks(verdicts.Where(pair => pair.Verdict!.Fired).Select(pair => (pair.member, pair.Verdict!)), held);
 
                 foreach (var pick in kept)
                 {
-                    await InsertPickAsync(connection, transaction, index, row.Candidate, night, pick, cancellation);
+                    await InsertPickAsync(connection, transaction, index, row.Candidate, night, pick, cancellation, await OrderAsync(connection, transaction, hooks, night, pick, cancellation));
                 }
 
                 picks += kept.Count;
@@ -825,9 +873,9 @@ public sealed class RuleCards : IComponent
 
     // The plan a pullback variant reads for a member: the swing plan at the nearest bands where its verdict names it and
     // the plan clear of the noise otherwise, none where the row holds no stop below the buy.
-    static (decimal Entry, decimal Stop, decimal? Target, double? RewardToRisk)? PlanOf(FilterRow member, ShadowOutcome verdict)
+    static (decimal Entry, decimal Stop, decimal? Target, double? RewardToRisk)? PlanOf(FilterRow member, ShadowOutcome? verdict)
     {
-        var swing = verdict.Values.GetValueOrDefault("plan") == "swing";
+        var swing = verdict?.Values.GetValueOrDefault("plan") == "swing";
         var stop = swing ? member.SwingStop : member.ClearStop;
 
         if (member.Entry is not { } entry || stop is not { } placed || placed >= entry || placed <= 0)
@@ -856,10 +904,15 @@ public sealed class RuleCards : IComponent
         double? ClearRewardToRisk,
         string Why);
 
-    sealed record OpenPick(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, int Cap);
+    sealed record OpenPick(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, int Cap, string? Plan = null)
+    {
+        public EquityBrief.Core.Loop.PlanOrder? Order => EquityBrief.Core.Loop.PlanOrder.FromJson(Plan);
+    }
 
     // The open picks walked on the closes to the night: each ended as the family's walk ends it, at the first close
-    // through its stop, at its target or at its cap's close, and left open otherwise.
+    // through its stop, at its target or at its cap's close, and left open otherwise. From 23.10's second part a pick kept
+    // under a plan is walked under it, filled where its level trades within its window or never, and sold as the plan sells,
+    // its result in the risk the rule's own plan set at the night's close, as the family recorder walks a family rule's.
     async Task WalkOpenPicksAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<OpenPick> open, CancellationToken cancellation)
     {
         if (open.Count == 0)
@@ -874,6 +927,22 @@ public sealed class RuleCards : IComponent
 
         foreach (var pick in open)
         {
+            if (pick.Order is { } order)
+            {
+                var bars = EquityBrief.Worker.Loop.PlanBars.Of(await EquityBrief.Worker.Loop.PlanTrades.BarsAsync(connection, transaction, pick.Ticker, night, cancellation));
+
+                if (EquityBrief.Worker.Loop.PlanTrades.Ended(order, pick.Entry, pick.Stop, pick.Session, bars) is { } planned)
+                {
+                    await ExecuteAsync(connection, transaction, EndPick,
+                    [
+                        ("$ended_on", Stamp(planned.On)), ("$result", planned.Result is { } made ? made : DBNull.Value),
+                        ("$index", index), ("$rule", pick.Rule), ("$ticker", pick.Ticker), ("$session", Stamp(pick.Session)),
+                    ], cancellation);
+                }
+
+                continue;
+            }
+
             if (FamilyRecorder.Walk(pick.Session, pick.Entry, pick.Stop, pick.Target, pick.Cap, closes.GetValueOrDefault(pick.Ticker), calendar, at) is { } end && end.On <= night)
             {
                 await ExecuteAsync(connection, transaction, EndPick,
@@ -883,6 +952,87 @@ public sealed class RuleCards : IComponent
                 ], cancellation);
             }
         }
+    }
+
+    // From 23.10's second part each pick kept under a plan benchmarked once its window and its cap have passed by the night: the
+    // same plan on every member the index held that night, each bought at its own next open at the pick's distance in its own
+    // typical moves, the mean of their results in the risk the plan sets on each and how many that is, as the family recorder
+    // benchmarks a family rule's; a pick whose night holds no typical move, or whose plan the test names no longer, is
+    // benchmarked on none.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    static async Task BenchmarkPlannedAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
+    {
+        var due = new List<(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, double? Reward, int Cap, EquityBrief.Core.Loop.PlanOrder Order)>();
+
+        await using (var command = Command(connection, transaction, Unbenchmarked, [("$index", index), ("$night", Stamp(night))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (EquityBrief.Core.Loop.PlanOrder.FromJson(reader.GetString(7)) is { } order)
+                {
+                    due.Add((reader.GetString(0), reader.GetString(1), Date(reader.GetString(2)), Money.FromStorage(reader.GetString(3)), Money.FromStorage(reader.GetString(4)), reader.IsDBNull(5) ? null : reader.GetDouble(5), reader.GetInt32(6), order));
+                }
+            }
+        }
+
+        if (due.Count == 0)
+        {
+            return;
+        }
+
+        var calendar = await FamilyRecorder.SessionsAsync(connection, due.Min(pick => pick.Session), cancellation);
+        IReadOnlyList<(string Ticker, IReadOnlyList<SweepBar> Bars)>? everyBar = null;
+
+        foreach (var listedOn in due.Where(pick => calendar.Count(session => session > pick.Session && session <= night) >= pick.Cap + pick.Order.Window + 1).GroupBy(pick => pick.Session))
+        {
+            var members = new HashSet<string>(StringComparer.Ordinal);
+
+            await using (var command = Command(connection, transaction, MembersOn, [("$index", index), ("$session", Stamp(listedOn.Key))]))
+            await using (var reader = await command.ExecuteReaderAsync(cancellation))
+            {
+                while (await reader.ReadAsync(cancellation))
+                {
+                    members.Add(reader.GetString(0));
+                }
+            }
+
+            everyBar ??= await EquityBrief.Worker.Loop.PlanTrades.MembersBarsAsync(connection, transaction, await AllMembersAsync(connection, transaction, index, due, cancellation), night, cancellation);
+            IReadOnlyList<(string Ticker, IReadOnlyList<SweepBar> Bars)> onTheNight = [.. everyBar.Where(member => members.Contains(member.Ticker))];
+
+            foreach (var pick in listedOn)
+            {
+                var typical = await ScalarAsync(connection, TypicalOn, [("$ticker", pick.Ticker), ("$session", Stamp(pick.Session)), ("$typical", EquityBrief.Core.Indicators.IndicatorSeries.Atr14)], cancellation, transaction) is double move ? move : 0;
+                (double? benchmark, int count) = typical > 0 && EquityBrief.Core.Loop.PlanPrices.Named(pick.Order.Words) is { } combination
+                    ? EquityBrief.Worker.Loop.PlanTrades.Benchmark(combination, Statistic.FromPrice(pick.Entry - pick.Stop) / typical, pick.Reward, null, pick.Cap, onTheNight, pick.Session)
+                    : (null, 0);
+
+                await ExecuteAsync(connection, transaction, Benchmarked,
+                [
+                    ("$benchmark", benchmark is { } value ? value : DBNull.Value), ("$members", count),
+                    ("$index", index), ("$rule", pick.Rule), ("$ticker", pick.Ticker), ("$session", Stamp(pick.Session)),
+                ], cancellation);
+            }
+        }
+    }
+
+    // Every member any due pick's night held, whose bars the benchmarks read once.
+    static async Task<IReadOnlySet<string>> AllMembersAsync(SqliteConnection connection, SqliteTransaction transaction, string index, IEnumerable<(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, double? Reward, int Cap, EquityBrief.Core.Loop.PlanOrder Order)> due, CancellationToken cancellation)
+    {
+        var all = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var session in due.Select(pick => pick.Session).Distinct())
+        {
+            await using var command = Command(connection, transaction, MembersOn, [("$index", index), ("$session", Stamp(session))]);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                all.Add(reader.GetString(0));
+            }
+        }
+
+        return all;
     }
 
     async Task InsertNightsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<RuleNightRow> rules, CancellationToken cancellation)
@@ -918,7 +1068,7 @@ public sealed class RuleCards : IComponent
             ("$source", source),
         ], cancellation);
 
-    async Task InsertPickAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string rule, DateOnly night, RulePick pick, CancellationToken cancellation) =>
+    async Task InsertPickAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string rule, DateOnly night, RulePick pick, CancellationToken cancellation, EquityBrief.Core.Loop.PlanOrder? order = null) =>
         await ExecuteAsync(connection, transaction, InsertPick,
         [
             ("$index", index),
@@ -933,7 +1083,36 @@ public sealed class RuleCards : IComponent
             ("$reward_to_risk", pick.RewardToRisk is { } reward ? reward : DBNull.Value),
             ("$cap", pick.Cap),
             ("$why", pick.Why),
+            ("$plan", order is null ? DBNull.Value : order.Json()),
         ], cancellation);
+
+    // From 23.10's second part the order a swing filter rule stating a plan keeps on a pick, placed from the stock's own bars
+    // through the night at the stop and target of the plan the rule reads, none where the rule states no plan.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    static async Task<EquityBrief.Core.Loop.PlanOrder?> OrderAsync(SqliteConnection connection, SqliteTransaction transaction, EquityBrief.Core.Loop.RuleHooks hooks, DateOnly night, RulePick pick, CancellationToken cancellation) =>
+        hooks.Plan is { } combination
+            ? await EquityBrief.Worker.Loop.PlanTrades.OrderAsync(connection, transaction, combination, SetupFamilies.Pullback, pick.Ticker, night, pick.Stop, pick.Target, null, pick.Cap, cancellation)
+            : null;
+
+    // The page list's pullbacks on the night in their places, as the live swing filter keeps them under its plan: each at the
+    // plan its own verdict names, none whose stock the rule holds a trade on still open and none whose plan places no stop
+    // below the buy.
+    public static IReadOnlyList<RulePick> KeepPagePicks(IEnumerable<(string Ticker, int Place)> page, IReadOnlyDictionary<string, (FilterRow Member, ShadowOutcome? Verdict)> rows, IReadOnlySet<string> held)
+    {
+        var kept = new List<RulePick>();
+
+        foreach (var (ticker, place) in page)
+        {
+            if (held.Contains(ticker) || !rows.TryGetValue(ticker, out var row) || PlanOf(row.Member, row.Verdict) is not { } plan)
+            {
+                continue;
+            }
+
+            kept.Add(new RulePick(ticker, place, plan.Entry, plan.Stop, plan.Target, plan.RewardToRisk, SetupFamilies.Pullbacks.CapSessions, row.Member.Why));
+        }
+
+        return kept;
+    }
 
     async Task<int> InsertFormingAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string rule, IReadOnlyList<FormingMember> members, IReadOnlyDictionary<string, DateOnly> earnings, CancellationToken cancellation)
     {
@@ -1003,6 +1182,20 @@ public sealed class RuleCards : IComponent
         return listed;
     }
 
+    static async Task<IReadOnlyList<(string Ticker, int Place)>> PagePullbacksAsync(SqliteConnection connection, SqliteTransaction transaction, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = Command(connection, transaction, PagePullbacks, [("$night", Stamp(night))]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+        var page = new List<(string, int)>();
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            page.Add((reader.GetString(0), reader.IsDBNull(1) ? 0 : reader.GetInt32(1)));
+        }
+
+        return page;
+    }
+
     async Task<IReadOnlyList<OpenPick>> OpenPicksAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
     {
         await using var command = Command(connection, transaction, OpenPicks, [("$index", index), ("$night", Stamp(night))]);
@@ -1018,7 +1211,8 @@ public sealed class RuleCards : IComponent
                 Money.FromStorage(reader.GetString(3)),
                 Money.FromStorage(reader.GetString(4)),
                 reader.IsDBNull(5) ? null : Money.FromStorage(reader.GetString(5)),
-                reader.GetInt32(6)));
+                reader.GetInt32(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7)));
         }
 
         return open;

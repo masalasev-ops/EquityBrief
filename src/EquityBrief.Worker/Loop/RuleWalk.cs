@@ -621,6 +621,12 @@ public sealed class RuleWalk(
         var hooks = standing?.Hooks ?? LoopChange.NoHooks;
         var standingExit = RuleHooks.Of(hooks).ExitChoice;
 
+        // From 23.10's second part a pullback standing at a plan is walked under it, each listing's order placed from its
+        // stock's series as the night places it and walked once, five a night in the list's own order with one open trade a
+        // stock, as the family's walk walks a family rule standing at one.
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+        var planned = Planned(read, hooks, family);
+
         // From 19.10 each trade and its benchmark are bought at the next session's open, from 21.14 each trade a close's
         // signal ends is sold at the open after that close, and from 21.17 the benchmark's members are sold the same way.
         var fills = new OpenFills(series, read.Members);
@@ -693,6 +699,11 @@ public sealed class RuleWalk(
 
         RuleListing Unit(IdeaListing listing)
         {
+            if (planned is not null)
+            {
+                return PlannedUnit(read, planned, PlanOf(listing));
+            }
+
             var (result, sessions, benchmark) = Standing(listing);
 
             return new RuleListing(
@@ -740,6 +751,12 @@ public sealed class RuleWalk(
 
                 kept = ordered;
                 order = IdeaOrder.RsiFall;
+            }
+
+            // A walk under a plan takes the night's listings in the order kept above, an arrangement's places first.
+            if (planned is not null)
+            {
+                return ExitProcedures.WalkPlanned(read, planned, [.. kept.Select(listing => order == IdeaOrder.RsiFall ? PlanOf(listing) with { Order = listing.RsiFall, ThenBy = 0 } : PlanOf(listing))]);
             }
 
             if (exit is null)

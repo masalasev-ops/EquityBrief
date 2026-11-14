@@ -204,8 +204,11 @@ public static class HeavyweightRule
     // sector above nothing and passing the trend gate, the largest lead first and the ticker settling a tie. A member
     // filing no sector stands in none, and a member with no value stands in its sector's mean and in no rank. Where
     // a sector's return is handed in, as the sweep hands in its fund's, the lead is read over that and none where it
-    // is none; where the settings ask for a beta, a leader holds one at the floor or above.
-    public static IReadOnlyList<HeavyweightSector> Read(IReadOnlyList<HeavyweightMember> members, HeavyweightSettings settings, IReadOnlyDictionary<string, double?>? sectorReturns = null)
+    // is none; where the settings ask for a beta, a leader holds one at the floor or above. From 23.10's second part a book
+    // whose rule states a book's hooks hands in their order, which keeps the members its conditions pass among those eligible
+    // to lead, in its score's order where it states one and the rule's own otherwise, before the leaders are taken.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    public static IReadOnlyList<HeavyweightSector> Read(IReadOnlyList<HeavyweightMember> members, HeavyweightSettings settings, IReadOnlyDictionary<string, double?>? sectorReturns = null, Func<IReadOnlyList<string>, IReadOnlyList<string>>? order = null)
     {
         var sectors = new List<HeavyweightSector>();
 
@@ -229,13 +232,15 @@ public static class HeavyweightRule
                 })
                 .ToArray();
 
-            var leaders = largest
-                .Where(ranked => ranked.Lead > 0 && ranked.Trend && (!settings.HighBeta || ranked.Member.Beta >= BetaFloor))
-                .OrderByDescending(ranked => ranked.Lead)
-                .ThenBy(ranked => ranked.Listing.Ticker, StringComparer.Ordinal)
-                .Take(settings.Leaders)
-                .Select(ranked => ranked.Listing.Ticker)
-                .ToArray();
+            IReadOnlyList<string> eligible =
+            [
+                .. largest
+                    .Where(ranked => ranked.Lead > 0 && ranked.Trend && (!settings.HighBeta || ranked.Member.Beta >= BetaFloor))
+                    .OrderByDescending(ranked => ranked.Lead)
+                    .ThenBy(ranked => ranked.Listing.Ticker, StringComparer.Ordinal)
+                    .Select(ranked => ranked.Listing.Ticker),
+            ];
+            var leaders = (order?.Invoke(eligible) ?? eligible).Take(settings.Leaders).ToArray();
 
             sectors.Add(new HeavyweightSector(
                 sector.Key,

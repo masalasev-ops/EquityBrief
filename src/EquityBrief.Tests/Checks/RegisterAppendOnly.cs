@@ -571,7 +571,12 @@ public class RegisterAppendOnly
             ["drift", "drift-400", "drift-600"],
             evaluators.Where(evaluator => evaluator.OwnSources.Contains("src/EquityBrief.Core/Releases/ReleaseTone.cs", StringComparer.Ordinal)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
         Assert.Equal(["heavyweight"], books.Select(book => book.Family));
-        Assert.All(evaluators.Where(evaluator => evaluator is not (FamilyRuleEvaluator or BookEvaluator)), evaluator => Assert.Empty(evaluator.OwnSources));
+        Assert.All(evaluators.Where(evaluator => evaluator is not (FamilyRuleEvaluator or BookEvaluator or SwingFilterRule)), evaluator => Assert.Empty(evaluator.OwnSources));
+
+        // From 23.10's second part the swing filter pins the hooks' sources and the plan's walk beside the shared evaluation
+        // sources, which a swing filter rule's picks are kept and walked through.
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+        Assert.Equal(Core.Loop.RuleHooks.Sources, Assert.Single(evaluators.OfType<SwingFilterRule>()).OwnSources);
 
         // The heavyweights' evaluator pins its rule's file first and every file its book's evaluation runs through,
         // read off the compiled code with the catalogue left out, and the indicator arithmetic whose averages its
@@ -586,7 +591,11 @@ public class RegisterAppendOnly
                 book.GetType().GetMethod(nameof(BookEvaluator.SettingsOf))!,
             ])
             .Where(path => path is not "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs" && !path.EndsWith($"/{book.GetType().Name}.cs", StringComparison.Ordinal))
-            .Concat(["src/EquityBrief.Core/Indicators/IndicatorSeries.cs", "src/EquityBrief.Worker/Indicators/IndicatorEngine.cs"]);
+            .Concat(["src/EquityBrief.Core/Indicators/IndicatorSeries.cs", "src/EquityBrief.Worker/Indicators/IndicatorEngine.cs"])
+            // From 23.10's second part the marks' file, pinned with the hooks' sources a book reads, whose reads of the pull
+            // are constants the compiled code holds inlined, so no call reaches it.
+            .Concat(["src/EquityBrief.Core/Chart/SessionMarking.cs"])
+            .Distinct(StringComparer.Ordinal);
 
         Assert.Equal("src/EquityBrief.Core/Families/HeavyweightRule.cs", book.OwnSources[0]);
         Assert.Contains("src/EquityBrief.Worker/Families/HeavyweightBook.cs", book.OwnSources);

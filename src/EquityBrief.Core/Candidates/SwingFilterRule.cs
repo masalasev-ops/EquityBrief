@@ -81,7 +81,12 @@ public sealed class SwingFilterRule : GateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "a887ec1bc6c6";
+    public override string Version => "5e2e01716eb0";
+
+    // From 23.10's second part the hooks' reading and the plan's walk, which a swing filter rule's list is ordered and its
+    // picks bought and sold through, beside the shared evaluation sources.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    public override IReadOnlyList<string> OwnSources => EquityBrief.Core.Loop.RuleHooks.Sources;
 
     // The settings' own names as a version stores them, then the trade gate's input, the market gate, the
     // deteriorating business, sector leadership, the most a night the list keeps, the raised estimates and, from

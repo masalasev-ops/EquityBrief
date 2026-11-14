@@ -432,7 +432,11 @@ public partial class FixtureExpectations
 
         Assert.True(pinned.Length >= 30, $"Read {pinned.Length} pinned source(s), expected at least 30.");
         Assert.All(DipLedgerSources, path => Assert.True(File.Exists(Path.Combine(Repository.Root, path)), path));
-        Assert.Empty(DipLedgerSources.Intersect(pinned, StringComparer.Ordinal));
+
+        // From 23.10's second part the sector heavyweights' book pins the catalogue its hooks read the night's readings by, a
+        // move of every pin that restart makes and registers every rule again for, and that source alone of those 22.2 wrote.
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+        Assert.Equal(["src/EquityBrief.Core/Ledger/LedgerReadings.cs"], DipLedgerSources.Intersect(pinned, StringComparer.Ordinal));
 
         // The reader is shown to find a source both lists hold.
         Assert.NotEmpty(new[] { "src/EquityBrief.Worker/Indices/IndexFamilies.cs" }.Intersect(pinned, StringComparer.Ordinal));
