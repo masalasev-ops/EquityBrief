@@ -38,6 +38,9 @@ public sealed partial class SinglePageApp
     public const string LongSearchLede =
         "Using prices back to 2005, the system looks again for each strategy's best settings and tests each price strategy's ways of buying and selling. None of it changes anything until you say so.";
 
+    public const string PlanPointsNote =
+        "The best way found to buy and sell each price strategy on 2005 to 2018, beside the plan traded today. It was picked as the best there, so its gain there looks high. On 10 November 2026 its gains from 2019 were also used to choose how far under the close it buys and how far under the buy it gives up, so they look high too: each plan's own record from the day it started trading is its real test. Gains are per $1 risked, over the same plan bought on every stock in the index that day and sold the same way. The last column is the gain over holding the index's own fund for the same days.";
+
     static string Edge(double? figure) => figure is { } held ? held.ToString("+0.000;-0.000;0.000", CultureInfo.InvariantCulture) : "none";
 
     // What the long history came to in a sentence, on its own card and in the opening page's link to it.
@@ -72,7 +75,10 @@ public sealed partial class SinglePageApp
 
         if (points.Count > 0)
         {
-            body.Append("<p class=\"card-note\">The best way found to buy and sell each price strategy on 2005 to 2018, beside the plan traded today. It was picked as the best there, so its gain there looks high; the columns from 2019 cover years it was not picked on. Gains are per $1 risked, over the same plan bought on every stock in the index that day and sold the same way. The last column is the gain over holding the index's own fund for the same days.</p>");
+            // From the second 23.10 correction of 2026-11-13 the note says the figures from 2019 were read in choosing the plans too:
+            // on 2026-11-10 the stop's width and the entry's distance were chosen on them, so they read high as well, and a plan's
+            // own record from the day it started trading is its test.
+            body.Append(Invariant($"<p class=\"card-note\" data-long-note=\"chosen\">{Escaped(PlanPointsNote)}</p>"));
             body.Append("<div class=\"tbl-wrap\"><table class=\"loop-table\" data-table=\"plan-points\"><thead><tr><th>Strategy</th><th>Recommended way to buy and sell</th><th class=\"r\">Times bought</th><th class=\"r\">Share of picks bought</th><th class=\"r\">Gain per pick, 2005 to 2018</th><th class=\"r\">Today's plan, 2005 to 2018</th><th class=\"r\">Gain per pick, from 2019</th><th class=\"r\">Today's plan, from 2019</th><th class=\"r\">Against the fund</th></tr></thead><tbody>");
 
             foreach (var row in points)

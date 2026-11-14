@@ -19351,3 +19351,29 @@ Mutated:    the rule as above. f1 the end's row drawing its own select, f2 the m
             select offering its own proposal alone; each predicted red at the new test, and each red as predicted.
 Owed:       the remedy.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: the long history's card says the recommended plans' figures from 2019 were read in choosing them   2026-11-13
+
+Corrects:   the Monthly check-up's card of the long history, which said the columns from 2019 "cover years it was not picked
+            on", and the schema and the runbook saying the same: on 2026-11-10 the recommended plans' figures from 2019 were also
+            used to choose the stop's width and the entry's distance, each kept where it did better from 2019, so they read
+            high; item (g) of the order of 2026-11-13.
+Label:      23.10, the checkpoint whose plans those figures chose.
+Ruled:      the operator's order of 2026-11-13, word for word in `prompts/2026-11-13-23.10-second-restart-order.md`: "In
+            PROGRESS and on the Monthly check-up's long card: the recommended plans' figures from 2019 were also used on
+            2026-11-10 to choose the stop width and the entry distance, so they read high, and each plan's record from its
+            registration is its test."
+Recorded:   so stated here: every figure from 2019 the 23.10 ruling of 2026-11-10 reading the overnight order and the restart's
+            table of that day give for a recommended plan was read in choosing its stop's width and its entry's distance, and
+            reads high for it; each plan's record from its registration on 2026-11-10 is its test.
+Built:      the card's note says so in those words, and the schema's and the runbook's sentences with it.
+Remedy:     none.
+Tests:      none new: the long history's page test reads the note's two sentences and that the old words are gone.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule as above. g1 the note's old words, predicted red at the page test, and red as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3721 of 3721 tests ran with none failed, migrations 0 to 144
+            with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.

@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-13 - docs/SCHEMA.md and docs/RUNBOOK.md - the recommended plans' figures from 2019 were read in choosing them
+Corrects: item (g) of the operator's order of 2026-11-13: "the recommended plans' figures from 2019 were also used on 2026-11-10 to choose the stop width and the entry distance, so they read high, and each plan's record from its registration is its test." Each run since the order of 2026-11-10 keeps a wider stop or a level's distance where it does better from 2019, so those years are not ones the recommendation was not chosen on.
+Was:
+> | `later_fills` | INTEGER | the recommended combination's fills from 2019, years it was not chosen on |
+> ... so its edge there reads high for having been chosen there, and its edge from 2019, years it was not chosen on, stands beside it.
+> (RUNBOOK) ... and each one's edge from 2019, years the recommendation was not chosen on, to `plan_point` (see: ...)
+Now:
+> | `later_fills` | INTEGER | the recommended combination's fills from 2019, years its combination was not chosen on, though from 2026-11-10 its stop's width and its entry's distance are kept where they do better there |
+> ... so its edge there reads high for having been chosen there, and its edge from 2019 stands beside it; from 2026-11-10 its stop's width and its entry's distance are kept where they do better from 2019, so that edge reads high too, and each plan's record from its registration is its test.
+> (RUNBOOK) ... and each one's edge from 2019, to `plan_point`; since the refinements below keep a wider stop or a level's distance where it does better from 2019, that edge was read in choosing the recommendation and reads high, and each plan's record from its registration is its test (see: ...)
+Why: the same; the Loop page's card of the long history says it in the same words.
+
 ### 2026-11-13 - docs/SCHEMA.md - the plan point test's record of a plan naming no price above its buy
 Decision: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath
 Was:
