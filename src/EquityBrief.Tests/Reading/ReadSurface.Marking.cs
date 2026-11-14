@@ -111,6 +111,59 @@ public partial class ReadSurface
         Assert.Contains("marked: bad print", after, StringComparison.Ordinal);
     }
 
+    // From the second 23.10 correction of 2026-11-13: a session that is both an unexplained jump and an end no filing settles, as
+    // OCAI's of 2007-01-12 and DWDP's of 2019-06-28 were, draws one select under its one name, on its jump's row, offering the
+    // jump's proposal and the end's, its end's row naming that choice; it is counted once among the marks owed, and its one
+    // confirm writes its one mark. Before it each row drew a select of the one name, and the form sent both.
+    [Fact]
+    public async Task ASessionThatIsBothAJumpAndAnEndIsChosenOnceUnderOneName()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // Sixty weekday sessions from 2008-01-02, 1,000 shares each: BTH closes at 10.00 and jumps to 15.00 on its last, with an
+        // 8-K carrying item 2.02 two days after, which settles no end.
+        var days = Enumerable.Range(0, 120).Select(day => new DateOnly(2008, 1, 2).AddDays(day)).Where(day => day.DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday).Take(60).ToArray();
+        var last = days[^1];
+        var key = FormattableString.Invariant($"BTH|{last:yyyy-MM-dd}");
+
+        store.Execute("INSERT INTO long_bar (ticker, session_date, open, high, low, close, raw_close, volume, run_id) VALUES " + string.Join(", ", days.Select((day, at) => FormattableString.Invariant($"('BTH', '{day:yyyy-MM-dd}', '{(at == 59 ? "15.00" : "10.00")}', '{(at == 59 ? "15.00" : "10.00")}', '{(at == 59 ? "15.00" : "10.00")}', '{(at == 59 ? "15.00" : "10.00")}', NULL, 1000, 'long-prices-1')"))) + ";");
+        store.Execute(FormattableString.Invariant($@"
+            INSERT INTO data_check (ticker, session_date, class, kind, era, says, run_id) VALUES
+                ('BTH', '{last:yyyy-MM-dd}', 'jump', 'unexplained', '2005 to 2009', 'a jump of 50% nothing stored explains', 'data-check-long-1');
+            INSERT INTO long_filing (ticker, cik, accession, form, items, reported, filed, run_id) VALUES
+                ('BTH', '1', '0000000001-08-000002', '8-K', '2.02', NULL, '{last.AddDays(2):yyyy-MM-dd}', 'long-prices-1');
+            INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES
+                ('long-prices-1', 'long-prices', '2026-11-07T10:00:00Z', '2026-11-07T10:20:00Z', 'ok', 5, 0, 0, '0', '{{""codes"":1,""priced"":1,""bars"":60,""ends"":1,""marked"":0,""cutover"":""2018-10-01"",""apartAtMost"":0,""lowest"":[],""nothing"":[],""unsettled"":[""BTH {last:yyyy-MM-dd}""]}}');"));
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/marking"));
+
+        Assert.Contains("1 unexplained jumps and 1 unsettled ends, 1 not yet marked", page, StringComparison.Ordinal);
+        Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(page, $"<tr data-mark=\"{System.Text.RegularExpressions.Regex.Escape(key)}\">").Count);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(page, $"<select name=\"m\\|{System.Text.RegularExpressions.Regex.Escape(key)}\""));
+        Assert.Contains("<option value=\"checked and kept\" selected>checked and kept (proposed for its jump)</option>", page, StringComparison.Ordinal);
+        Assert.Contains("<option value=\"history ends\">history ends (proposed for its end)</option>", page, StringComparison.Ordinal);
+        Assert.Contains("One mark covers this session and its jump in the table above: choose it there.", page, StringComparison.Ordinal);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(page, $"<button type=\"submit\" name=\"only\" value=\"{System.Text.RegularExpressions.Regex.Escape(key)}\">"));
+
+        using var press = new HttpRequestMessage(HttpMethod.Post, SinglePageApp.MarkingPostRoute)
+        {
+            Content = new FormUrlEncodedContent([new("m|" + key, "history ends"), new("only", key)]),
+        };
+
+        press.Headers.Add(SinglePageApp.PassHeader, SinglePageApp.PassHeaderValue);
+
+        Assert.Contains("1 mark(s) written", WebUtility.HtmlDecode(await (await client.SendAsync(press)).Content.ReadAsStringAsync()), StringComparison.Ordinal);
+        Assert.Equal([("BTH", "history ends")], Marks(store).Select(mark => (mark.Ticker, mark.Kind)));
+
+        var after = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/marking"));
+
+        Assert.Contains("0 not yet marked", after, StringComparison.Ordinal);
+        Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(after, "marked: history ends").Count);
+    }
+
     static IReadOnlyList<(string Ticker, string Kind, string Says)> Marks(TemporaryStore store)
     {
         using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");

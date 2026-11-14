@@ -19317,3 +19317,37 @@ Mutated:    none: no assertion was added.
 Owed:       the operator's word on the early slot's time: `CLAUDE.md` and the runbook state 12:05 UTC every day, and its trigger
             now fires at 13:05 UTC on weekdays.
 Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: the two double-keyed marks written and DWDP's end settled from its 8-K, and the Marking page chooses a session once   2026-11-13
+
+Corrects:   the 23.4 correction's marking page, whose session holding both an unexplained jump and an end no filing settles
+            drew a select of one name on each row, so the form sent both, and the two such sessions left unmarked on 2026-11-10,
+            OCAI's of 2007-01-12 and DWDP's of 2019-06-28; item (f) of the order of 2026-11-13.
+Label:      23.10, whose restart wrote the marks of 2026-11-10, as the operator asked.
+Ruled:      the operator's answer of 2026-11-13, word for word in `prompts/2026-11-13-23.10-second-restart-order.md`: OCAI
+            2007-01-12 "history ends", its revocation settling it and its last move real; DWDP 2019-06-28 "bad print", and DWDP's
+            end settled "from the company's own 8-K of that date rather than sending it to my list: DWDP's history ends on its
+            last session under that code, marked as a ticker change to DD, the consolidation applied as a split, and the history
+            carries on under DD."
+Found:      DowDuPont's 8-K of 2019-06-03, accession 0001193125-19-163322, items 1.01, 2.01, 5.02, 5.03, 8.01 and 9.01,
+            reports the distribution of Corteva and the name changed to DuPont de Nemours, settling the end: DWDP's last session
+            under its code is 2019-05-31, a raw close of 30.52, which its series reads as 91.56 after the 1-for-3 consolidation
+            the provider records as DWDP's split of 2019-06-03. The DWDP rows of 2019-06-03 at 76.10 and 2019-06-04 at 74.11 are
+            DD's own first two sessions at DD's raw scale after the consolidation, its raw closes equal to the cent; DD's series
+            carries them at 83.07 and 80.90, its scale today, and the company's sessions before them, the consolidation and the
+            distribution applied as its split of 2019-06-03, so its history carries on under DD with no join. The row of
+            2019-06-28 repeats 2019-05-31's raw close of 30.52 and nearly its volume.
+Built:      a session listed both as a jump and as an end is chosen once under its one name, on its jump's row, which offers
+            the jump's proposal and the end's, its end's row naming that choice; the marks owed count it once.
+Remedy:     `tools/remedies/2026-11-13-23.10-correction-the-two-marks.txt`, from main after the merge: `session-mark` writes
+            OCAI's of 2007-01-12 as its history's end, DWDP's of 2019-06-28 as a bad print, and DWDP's of 2019-05-31 as its
+            history's end, naming the ticker change to DD and the 8-K.
+Tests:      1 new: a session both a jump and an end drawn with one select offering both proposals, counted once, and its one
+            confirm writing its one mark.
+Claims:     none new.
+Pins:       none move: the marks are the store's and the read surface is pinned by no rule; the marks are read by the sweeps'
+            and the rules' reads of the pull from their next read.
+Mutated:    the rule as above. f1 the end's row drawing its own select, f2 the marks owed counted a row each, f3 the jump's
+            select offering its own proposal alone; each predicted red at the new test, and each red as predicted.
+Owed:       the remedy.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
