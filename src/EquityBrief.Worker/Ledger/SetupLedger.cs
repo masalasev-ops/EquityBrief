@@ -1526,7 +1526,7 @@ public sealed partial class SetupLedger : IComponent
 
         output.WriteLine(FormattableString.Invariant($"ledger-build: {sessionsToWrite.Count} session(s) to write of the {last - first + 1} in the span, {last - first + 1 - sessionsToWrite.Count} written already"));
 
-        await WriteAsync(dataRoot, connection, prepared, first, last, sessionsToWrite, chunk => InParallel(chunk.Length, item => prepared.Compute(chunk[item])), startedAt, output, pause, cancellation);
+        await WriteAsync(dataRoot, connection, prepared, first, last, sessionsToWrite, prepared.Compute, startedAt, output, pause, cancellation);
 
         return 0;
     }
@@ -1581,8 +1581,7 @@ public sealed partial class SetupLedger : IComponent
             }
 
             var sessions = SessionsToWrite(prepared.Calendar, first, last, new HashSet<DateOnly>(), again: true, await StoredSessionsAsync(connection, index, NightSource, cancellation));
-            var computed = InParallel(sessions.Count, item => prepared.Compute(sessions[item]));
-            var built = sessions.Select((at, item) => (at, item)).ToDictionary(pair => pair.at, pair => computed[pair.item]);
+            var built = sessions.ToDictionary(at => at, prepared.Compute);
             var benchmarks = built.Values
                 .SelectMany(session => session.Families)
                 .GroupBy(family => family.Family.Family, StringComparer.Ordinal)
@@ -1621,7 +1620,7 @@ public sealed partial class SetupLedger : IComponent
 
         foreach (var (prepared, first, last, sessions, built, startedAt) in rebuilt)
         {
-            await WriteAsync(dataRoot, connection, prepared, first, last, sessions, chunk => [.. chunk.Select(at => built[at])], startedAt, output, pause, cancellation);
+            await WriteAsync(dataRoot, connection, prepared, first, last, sessions, at => built[at], startedAt, output, pause, cancellation);
         }
 
         return (true, "every index's history written again: " + string.Join("; ", counted));
@@ -1730,34 +1729,6 @@ public sealed partial class SetupLedger : IComponent
 
     // One session the history build computed: each family's setups with each one's path and benchmark beside it.
     sealed record BuiltSession(IReadOnlyList<(FamilySetups Family, IReadOnlyList<SetupRead> Reads)> Families);
-
-    // Each of the items computed across the machine's cores, each read alone and kept in its own place, so the rows written
-    // are those reading the items one by one writes; where any fails, the failure of the earliest item is raised, as reading
-    // them one by one raises it.
-    public static T[] InParallel<T>(int count, Func<int, T> compute)
-    {
-        var computed = new T[count];
-        var failures = new Exception?[count];
-
-        Parallel.For(0, count, item =>
-        {
-            try
-            {
-                computed[item] = compute(item);
-            }
-            catch (Exception failure)
-            {
-                failures[item] = failure;
-            }
-        });
-
-        if (Array.Find(failures, failure => failure is not null) is { } first)
-        {
-            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(first).Throw();
-        }
-
-        return computed;
-    }
 
     sealed partial class PreparedHistory(
         string index,
@@ -1941,7 +1912,7 @@ public sealed partial class SetupLedger : IComponent
     // An index's history written over the sessions given, a chunk of sessions at a time, each chunk waiting for the
     // night and holding the drain's lock while it replaces those sessions' history rows, then the index's summary and
     // the build's row on the run log.
-    async Task WriteAsync(string dataRoot, SqliteConnection connection, PreparedHistory prepared, int first, int last, IReadOnlyList<int> sessionsToWrite, Func<int[], BuiltSession[]> compute, DateTimeOffset startedAt, TextWriter output, Func<TimeSpan, CancellationToken, Task> pause, CancellationToken cancellation)
+    async Task WriteAsync(string dataRoot, SqliteConnection connection, PreparedHistory prepared, int first, int last, IReadOnlyList<int> sessionsToWrite, Func<int, BuiltSession> session, DateTimeOffset startedAt, TextWriter output, Func<TimeSpan, CancellationToken, Task> pause, CancellationToken cancellation)
     {
         var index = prepared.Index;
         var calendar = prepared.Calendar;
@@ -1957,7 +1928,6 @@ public sealed partial class SetupLedger : IComponent
             await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
 
             var watch = Stopwatch.StartNew();
-            var computed = compute(chunkSessions);
 
             using var held = await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation);
             await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
@@ -1972,11 +1942,9 @@ public sealed partial class SetupLedger : IComponent
 
             var chunk = 0;
 
-            for (var item = 0; item < chunkSessions.Length; item++)
+            foreach (var at in chunkSessions)
             {
-                var at = chunkSessions[item];
-
-                foreach (var (family, reads) in computed[item].Families)
+                foreach (var (family, reads) in session(at).Families)
                 {
                     for (var place = 0; place < family.Rows.Count; place++)
                     {

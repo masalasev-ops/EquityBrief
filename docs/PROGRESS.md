@@ -19477,14 +19477,14 @@ Built:      23.10's second part, the second and last restart of phase 23, on the
             of" the date; clause 6, an S&amp;P 400 or 600 rule stating no plan taking its family's take-profit as it registers
             again; clause 9, rule names in plain words; clause 10, an order its levels place no price for not placed; clause
             17, the rule freeze beside every version and its check; clause 18, the monthly loop walking a planned rule under each
-            exit of the menu; and F2, the S&amp;P 400's and 600's long search judged against each index's own setting. On the
-            operator's question of 2026-11-15, the remedy made faster: the standing and the long ledger's builds and the monthly
-            rebuild compute a chunk's sessions across the machine's cores, each kept in its own place, where they were read one
-            session at a time; on copies of the store every row the old build and the new one wrote over the same sessions was the
-            same, 14,015 setups and 868 night rows on the S&amp;P 400's standing ledger, 9,397 and 445 on the S&amp;P 500's, all
-            eight families among them, and 12,795 and 10,837 setups of the long ledger on the S&amp;P 400 and the S&amp;P 500; the
-            S&amp;P 400's chunks took 30 to 36 seconds against 70 to 75 on the standing ledger and 95 to 97 against 172 to 181 on
-            the long one, each pair run beside the same load. On the operator's review of PR 699 of 2026-11-15, word for word
+            exit of the menu; and F2, the S&amp;P 400's and 600's long search judged against each index's own setting. The
+            ledger's builds still read one session at a time: on the operator's question of 2026-11-15 they were made to compute
+            a chunk's sessions across the machine's cores, and on the operator's ruling of that evening, word for word in
+            `prompts/2026-11-15-23.10-ruling-on-item-5.md`, they read one at a time again, as before it, since over the S&amp;P
+            600's long ledger 59 of its 338,061 setups, on HZO, RGR and SAIA, read another fundamentals score and share fall
+            than one at a time: a stock's scorecard is kept by the count of its facts filed before a session and worked with
+            the first session to ask, whose day decides which share counts stand before it. On the operator's review of PR 699
+            of 2026-11-15, word for word
             in `prompts/2026-11-15-23.10-review-of-pr-699.md`: the short-term dip's own check in the ruled words on its tile and
             its card; no card saying "No fixed target", a plan that trails drawing its rising give-up price, a trailing half
             selling on a close under the take-profit less the trail's distance and never under the buy, and every profit row
@@ -19515,12 +19515,12 @@ Remedy:     `tools/remedies/2026-11-14-23.10-the-second-restart.txt`, dated befo
             plans kept without their take-profit in the background; the cards' plans and the books' cards; the standing and the
             long ledger written once more; the buy and sell points on each index; each live book's
             record box. Rehearsed whole on a copy of the store on the C: drive.
-Tests:      17 new: a take-profit placed by its shape; the shape read back and refused without a multiple; a staged level after a
+Tests:      16 new: a take-profit placed by its shape; the shape read back and refused without a multiple; a staged level after a
             half selling no more than is held; a take-profit added at the restart counting from the session after; an open
             trade of a live rule placed before the restart taking its rule's and no other; an S&amp;P 400 or 600 rule stating no
             plan taking its family's; both tests choosing among the three shapes and never today's; each book's exit, its half
-            and its stop; the book's box in points a month; the half's card lines; a build's sessions computed across the cores
-            kept in their places, the earliest failure raised; a trailing half's line and a trail with no take-profit; a remedy
+            and its stop; the book's box in points a month; the half's card lines; a trailing half's line and a trail with no
+            take-profit; a remedy
             registering background versions alone passing the freeze and one touching a live rule named, each form; the
             heavyweights' card drawing each holding's exit and the restart's line; a book's buy drawing the stop and
             take-profit its exit places from the close on Home, Tonight's buys and its book's card, the night's cards written
@@ -19537,8 +19537,8 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
             staged level selling its whole share: survived the first test, whose flat closes let the oversold share cancel at the
             same price, an unreachable boundary; the test reworked to fall to its stop after the levels, red. The added
             take-profit's target counted from the fill: red. The box at ten times a month: red. A trade placed on the restart's
-            day taking the take-profit: red. A rule stating no plan given none: red. The sessions computed across the cores
-            raising the last failure in place of the earliest: red. The trailing half's give-up price let under the buy: red.
+            day taking the take-profit: red. A rule stating no plan given none: red. The trailing half's give-up price let
+            under the buy: red.
             The freeze check refusing every register line, as it did: red. The freeze check passing a line naming a live rule:
             red. The heavyweights' restart date not read: red. The books' cards placing no take-profit: red. Tonight's row of
             a book's buy drawing how it sells beside its card's prices: red. The night's own cards clearing the books' cards
@@ -19549,9 +19549,15 @@ Owed:       (a)'s replay, as the ruling entry above states it; the heavyweights'
             a live record during the freeze so `--moved` passes the freeze check, and as the first job after it the books'
             own exit as background versions for the nine books once a pin move changing no live trade keeps its record, the
             retirement choice for Quality at a fair price and the Fundamentals family brought to the operator then; clause
-            19's monthly test on a copy of the store after the remedy, reported before 5 Dec.
+            19's monthly test on a copy of the store after the remedy, reported before 5 Dec; on the operator's ruling on item
+            5, the ledger's builds computing their sessions across the machine's cores again only with a test that builds the
+            same sessions twice, one at a time and across the cores, on all three indexes and failing on any row that differs;
+            and, with the replay fix's pull request, a later session reading the scorecard its filings' count was first worked
+            with, its share check missing a count dated after that first session, which only readings over the history read,
+            the ledger's builds and the monthly run's tests, each night's readings worked from a store of figures of their own
+            asked for that night alone.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
-            that run: all six steps, 0 warnings, 0 errors, 3771 of 3771 tests ran with none failed, migrations 0 to 149 with none
+            that run: all six steps, 0 warnings, 0 errors, 3770 of 3770 tests ran with none failed, migrations 0 to 149 with none
             pending, schema version 149, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
             passing, none out of scope and none unexamined, 1640 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.

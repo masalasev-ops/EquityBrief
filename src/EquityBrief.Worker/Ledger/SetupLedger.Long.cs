@@ -156,9 +156,7 @@ public sealed partial class SetupLedger
 
             try
             {
-                var reads = InParallel(chunkSessions.Length * 2, item => (item % 2 == 0 ? prepared : atLastPrice).Compute(chunkSessions[item / 2]));
-
-                built = [.. chunkSessions.Select((at, place) => (at, reads[2 * place], reads[2 * place + 1]))];
+                built = [.. chunkSessions.Select(at => (at, prepared.Compute(at), atLastPrice.Compute(at)))];
             }
             catch (Exception failure) when (!cancellation.IsCancellationRequested)
             {

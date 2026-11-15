@@ -42,18 +42,6 @@ public partial class FixtureExpectations
         Assert.Equal("; the store held 10,000 bytes before and 10,000 after", SetupLedger.SizeDetail(10_000, 10_000, 0, 0, TimeSpan.Zero));
     }
 
-    // A build's sessions computed across the machine's cores each kept in its own place, so the rows written are those reading
-    // them one by one writes; where several fail, the earliest one's failure raised, as reading them one by one raises it.
-    [Fact]
-    public void SessionsComputedAcrossTheCoresKeepTheirPlacesAndRaiseTheEarliestFailure()
-    {
-        Assert.Equal([.. Enumerable.Range(0, 500).Select(item => item * item)], SetupLedger.InParallel(500, item => item * item));
-
-        var failure = Assert.Throws<InvalidOperationException>(() => SetupLedger.InParallel(500, item => item % 97 == 13 ? throw new InvalidOperationException(FormattableString.Invariant($"item {item}")) : item));
-
-        Assert.Equal("item 13", failure.Message);
-    }
-
     // A long price row, its open, high and low at its close.
     static string LongBarRow(string ticker, string day, decimal close) =>
         FormattableString.Invariant($"('{ticker}', '{day}', '{close}', '{close}', '{close}', '{close}', '{close}', 1000, 'r')");
