@@ -75,6 +75,9 @@ public sealed record HeavyweightTrade(
     int Year)
 {
     public double? Edge => HeavyweightRule.Edge(Result, Cut);
+
+    // On the operator's ruling of 2026-11-14 on the books the session a half exit sold half the holding on, none where none.
+    public int? HalfAt { get; init; }
 }
 
 // What one setting's holdings came to: the trades ended and those still held, the edge over the size cut and the
@@ -135,6 +138,44 @@ public sealed class HeavyweightTape
     public required double[] Index { get; init; }
 
     public required int First { get; init; }
+
+    // From the operator's order of 2026-11-14 each name's series as the night's functions read it, laid only where a walk asks
+    // for a holding's stop and take-profit: its typical daily moves and the swings it confirmed by each bar.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public Lazy<SweepSeries>[]? Series { get; init; }
+
+    // A holding's stop and take-profit from its buy at a session's close: the stop the moves under it in the stock's typical
+    // daily moves that session, and the price it takes profit at from the swing highs confirmed by it; none where the tape
+    // lays no series or the session holds no typical move.
+    public (double Stop, double? TakeProfit)? ExitsAt(int name, int entry, double moves, double multiple, EquityBrief.Core.Loop.TakeProfitPlacing placing = EquityBrief.Core.Loop.TakeProfitPlacing.Turned)
+    {
+        if (Series is null || !(Close[name][entry] is var buy && buy > 0))
+        {
+            return null;
+        }
+
+        var series = Series[name].Value;
+        var bar = Array.FindLastIndex(series.Bars, one => one.Session <= Calendar[entry]);
+
+        if (bar < 0 || !(series.Atr[bar] is var typical && typical > 0)
+            || EquityBrief.Core.Loop.TakeProfit.StopUnder(Statistic.FromPrice(series.Bars[bar].Close), typical, moves) is not { } stopAtBar)
+        {
+            return null;
+        }
+
+        // The stop and the take-profit placed in the bar's own prices, brought to the tape's by its close there.
+        var scale = buy / Statistic.FromPrice(series.Bars[bar].Close);
+        var swings = series.Swings;
+        var confirmed = series.Confirmed[bar];
+        var session = series.Bars[bar].Session;
+        var atBar = Statistic.FromPrice(series.Bars[bar].Close);
+
+        // On the operator's answer of 2026-11-14 on the tables the full take-profit placed as the walk asks: today's, the multiple
+        // of the risk alone, or the first price it turned down at that far above the buy or more.
+        var taking = EquityBrief.Core.Loop.TakeProfit.Of(atBar, stopAtBar, null, EquityBrief.Core.Loop.TakeProfit.NearestFor(price => EquityBrief.Core.Loop.TakeProfit.NearestAbove(price, swings, confirmed, session), placing, atBar, stopAtBar, multiple), multiple);
+
+        return (stopAtBar * scale, taking?.Price * scale);
+    }
 
     // The newest session at or before one on which the index held a name and it closed, -1 where none.
     public static int[] LastMemberCloseOf(bool[] member, double[] close)
@@ -427,6 +468,7 @@ public static class HeavyweightSweep
             LastMemberClose = lastMemberClose,
             Index = indexClose,
             First = first,
+            Series = [.. names.Select(name => new Lazy<SweepSeries>(() => SweepColumns.Series(name, sessionAt)))],
         };
 
         return (tape, sessions);
@@ -526,21 +568,33 @@ public static class HeavyweightSweep
         HeavyweightTape tape,
         IReadOnlyDictionary<int, HeavyweightRebalance> rebalances,
         HeavyweightExit exit,
-        Func<int, int, double?>? everyMember = null)
+        Func<int, int, double?>? everyMember = null,
+        (double Moves, double Multiple)? stops = null,
+        bool half = false,
+        EquityBrief.Core.Loop.TakeProfitPlacing placing = EquityBrief.Core.Loop.TakeProfitPlacing.Turned)
     {
         var trades = new List<HeavyweightTrade>();
         var open = new SortedDictionary<int, (int Entry, string Sector, int[] Cut)>();
+
+        // From the operator's order of 2026-11-14 each holding's stop and take-profit where the walk is asked for them, a
+        // close under the stop or at or above the take-profit selling it at that close; and from their ruling on the books, under
+        // a half exit, half sold at the take-profit and the stop on the other half moved up to the buy.
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+        var exits = new Dictionary<int, (double Stop, double? TakeProfit)>();
+        var halves = new Dictionary<int, int>();
 
         void End(int name, int session, string reason)
         {
             var (entry, sector, cut) = open[name];
             var sold = tape.LastMemberClose[name][session];
-            var result = Return(tape, name, entry, sold);
+            int? halfAt = halves.Remove(name, out var at) && at <= sold ? at : null;
+            var result = halfAt is { } h ? HalfResult(tape, name, entry, h, sold) : Return(tape, name, entry, sold);
             double? cutReturn = cut.Length > 0 ? cut.Average(one => Return(tape, one, entry, tape.LastMemberClose[one][sold]) ?? 0.0) : null;
             double? market = IndexReturn(tape, entry, sold);
 
-            trades.Add(new HeavyweightTrade(name, sector, entry, sold, reason, result, cutReturn, everyMember?.Invoke(entry, sold), market, tape.Calendar[sold].Year - SweepColumns.FirstScored.Year));
+            trades.Add(new HeavyweightTrade(name, sector, entry, sold, reason, result, cutReturn, everyMember?.Invoke(entry, sold), market, tape.Calendar[sold].Year - SweepColumns.FirstScored.Year) { HalfAt = halfAt });
             open.Remove(name);
+            exits.Remove(name);
         }
 
         for (var session = tape.First; session < tape.Calendar.Length; session++)
@@ -550,6 +604,20 @@ public static class HeavyweightSweep
                 if (!tape.Member[name][session])
                 {
                     End(name, session - 1, HeavyweightBook.LeftTheIndex);
+                }
+                else if (session > open[name].Entry && exits.TryGetValue(name, out var placed) && !double.IsNaN(tape.Close[name][session])
+                    && BookHalf.Step(tape.Close[name][session], tape.Close[name][open[name].Entry], placed, half, halves.ContainsKey(name)) is var step
+                    && (step.Ended is not null || step.SoldHalf))
+                {
+                    if (step.SoldHalf)
+                    {
+                        halves[name] = session;
+                        exits[name] = step.Placed;
+                    }
+                    else
+                    {
+                        End(name, session, step.Ended!);
+                    }
                 }
                 else if (exit != HeavyweightExit.Drop
                     && !double.IsNaN(tape.Close[name][session])
@@ -579,6 +647,11 @@ public static class HeavyweightSweep
                 foreach (var leader in leaders.Where(leader => !open.ContainsKey(leader) && !double.IsNaN(tape.Close[leader][session])))
                 {
                     open[leader] = (session, sector, cut);
+
+                    if (stops is { } asked && tape.ExitsAt(leader, session, asked.Moves, asked.Multiple, placing) is { } placed)
+                    {
+                        exits[leader] = BookHalf.Placed(placed, tape.Close[leader][session], asked.Multiple, half);
+                    }
                 }
             }
         }
@@ -595,6 +668,12 @@ public static class HeavyweightSweep
     static double? Return(HeavyweightTape tape, int name, int from, int to) =>
         to >= from && !double.IsNaN(tape.Close[name][from]) && tape.Close[name][from] > 0 && !double.IsNaN(tape.Close[name][to])
             ? (tape.Close[name][to] / tape.Close[name][from]) - 1.0
+            : null;
+
+    // A holding's result from its buy's close with half sold at one close and half at a later one, none where a close is missing.
+    public static double? HalfResult(HeavyweightTape tape, int name, int entry, int half, int sold) =>
+        sold >= half && half > entry && tape.Close[name][entry] > 0 && !double.IsNaN(tape.Close[name][half]) && !double.IsNaN(tape.Close[name][sold])
+            ? BookHalf.Result(tape.Close[name][entry], tape.Close[name][half], tape.Close[name][sold])
             : null;
 
     // The index's return from a session's close to the newest it holds at or before a later one.

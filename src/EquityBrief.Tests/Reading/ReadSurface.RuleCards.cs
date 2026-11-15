@@ -183,7 +183,7 @@ public partial class ReadSurface
 
         // The live rule's card says why K9 is not on tonight's list; the variant's, drawn as that rule saw the night, lists
         // K9 and draws none of tonight's list's notes.
-        Assert.Contains($"<p class=\"family-note\">K9 qualified again tonight but its trade from {BeforeTheSwitch} is still open, so it is not listed. One stock, one trade.</p>", live, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"family-note\">K9 qualified again tonight but its trade from {BeforeTheSwitch} is still open, so it is not bought again; its card is under Met the rules again.</p>", live, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"K9\" data-variant-pick=\"true\">", chosen, StringComparison.Ordinal);
         Assert.DoesNotContain("class=\"family-note\"", chosen, StringComparison.Ordinal);
 

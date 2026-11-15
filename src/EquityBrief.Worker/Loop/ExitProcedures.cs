@@ -79,12 +79,18 @@ public static class ExitProcedures
     {
         progress(FormattableString.Invariant($"walking the {rule.Family} on the {DecisionCards.NameOf(read.Index)} under its own exit and the menu's {ExitMenu.Swing.Count}"));
 
-        IReadOnlyList<IReadOnlyList<Walked>> walks = [.. ExitMenu.Swing.Select(exit => exit.Kind != ExitKind.Standing || StandsFor(read.Index, rule.Family) ? rule.Under(exit) : [])];
+        var walks = MenuWalks(read, rule);
         // From 21.16 every family's night reads the exit of the menu its rule names, the short-term dip's among them, so each
         // exit the autopsy finds states its change to put.
         // see: Every change the engines propose is one its family's night reads, so each is put to the operator
         return Propose(read, rule.Family, rule.Current, rule.Closes, rule.Own, walks);
     }
+
+    // The rule's walk under each exit of the menu the autopsy reads, none under the standing target where it does not stand
+    // for the family; on the operator's ruling of 2026-11-14 a rule standing at a plan walked under each in place of the
+    // plan's sale, the plan's buy kept.
+    public static IReadOnlyList<IReadOnlyList<Walked>> MenuWalks(LoopRead read, RuleWalk rule) =>
+        [.. ExitMenu.Swing.Select(exit => exit.Kind != ExitKind.Standing || StandsFor(read.Index, rule.Family) ? rule.Under(exit) : [])];
 
     // Each fold's ranking of the menu's exits above the rule's own, the k-th proposal the k-th exit each fold ranks, and
     // the autopsy's figures read off the rule's own finished trades.
@@ -267,22 +273,43 @@ public static class ExitProcedures
     // its close after its round trip; one never filled holding its stock through its window with no result; each against the
     // same plan on every member that session, each bought at its own next open. A listing a skip names is not bought.
     // see: At phase 23's restart each price family's live rule takes the plan its long test recommends where it beats today's plan from 2019 above the ruled benchmark, today's plan kept beside it as a variant
-    public static IReadOnlyList<Walked> WalkPlanned(LoopRead read, PlannedListings planned, IReadOnlyList<FamilyListing> listings, Func<FamilyListing, bool>? skip = null)
+    // On the operator's ruling of 2026-11-14, under an exit of the menu each listing is bought as the plan buys it and sold by
+    // the exit in place of the plan's sale, against the same exit on every member that session bought at its next open.
+    public static IReadOnlyList<Walked> WalkPlanned(LoopRead read, PlannedListings planned, IReadOnlyList<FamilyListing> listings, Func<FamilyListing, bool>? skip = null, ExitChoice? under = null)
     {
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
 
         int YearOf(int session) => read.YearOf(session);
 
+        (double? Result, int Sessions, string End) Of(FamilyListing listing) => under is null ? planned.Of(listing) : planned.Under(listing, under);
+
+        (double? Result, int Sessions) Exit(FamilyListing listing)
+        {
+            var (result, sessions, _) = Of(listing);
+
+            return (result, sessions);
+        }
+
+        Func<FamilyListing, double> benchmark = planned.Benchmark;
+
+        if (under is not null)
+        {
+            var fills = new OpenFills(read.Series, read.Members);
+            var closes = read.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
+
+            benchmark = listing => fills.Benchmark(MenuBenchmark(read, closes, listing, under), listing, under);
+        }
+
         var trades = skip is null
-            ? FamilySweep.Walk(listings, tickers, YearOf, planned.Exit, planned.Benchmark)
-            : RuleReplay.WalkSkippingAtTheOpen(listings, tickers, YearOf, planned.Exit, planned.Benchmark, skip);
+            ? FamilySweep.Walk(listings, tickers, YearOf, Exit, benchmark)
+            : RuleReplay.WalkSkippingAtTheOpen(listings, tickers, YearOf, Exit, benchmark, skip);
 
         return
         [
             .. trades.Select(trade =>
             {
                 var listing = trade.Listing;
-                var (_, sessions, end) = planned.Of(listing);
+                var (_, sessions, end) = Of(listing);
                 var costed = trade.Result is { } result
                     ? trade with { Result = result - IndexSweepRunner.CostInRisk(read.Series[listing.Name], listing, result, read.Companies, 1) }
                     : trade;

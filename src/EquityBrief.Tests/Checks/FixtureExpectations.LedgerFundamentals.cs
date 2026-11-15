@@ -156,11 +156,13 @@ internal static class BusinessFirstHistory
                     + FormattableString.Invariant($"'{cik}', '{fact.Concept}', '{Stamp(fact.Start)}', '{Stamp(fact.End)}', '{fact.Value}', '{Stamp(fact.Filed)}', 'x', 'x', 'refresh');"));
             }
 
+            // From 23.10's second part each quarter's net income as its filing states it, which the profit check reads.
             foreach (var quarter in Quarters())
             {
                 store.Execute(
                     "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, net_income, operating_income) " +
                     $"VALUES ('{ticker}', '2025-11-04T00:00:00Z', '2025-11-04', '{Stamp(quarter.PeriodEnd)}', '{Stamp(quarter.FilingDate)}', '10', '10');");
+                FixtureExpectations.QuarterFacts(store, cik, Stamp(quarter.PeriodEnd), Stamp(quarter.FilingDate), ("NetIncomeLoss", 10m));
             }
         }
 

@@ -12,12 +12,13 @@ public partial class ReadSurface
     [Fact]
     public async Task TonightNamesTheSessionItsPicksAreBoughtAtAndSaysTomorrowOnlyWhereTheExchangeTradesTheNextDay()
     {
-        // A Thursday, a Friday, the Wednesday before Thanksgiving's closure, the closure table's last day and no night.
+        // A Thursday, a Friday, the Wednesday before Thanksgiving's closure, the closure table's last day and no night, which
+        // from the operator's order of 2026-11-14 names no tomorrow it cannot read off a night.
         Assert.Equal("tomorrow's", MarkRenderer.OpenDay(new DateOnly(2026, 10, 29)));
         Assert.Equal("Monday's", MarkRenderer.OpenDay(new DateOnly(2026, 10, 30)));
         Assert.Equal("Friday's", MarkRenderer.OpenDay(new DateOnly(2026, 11, 25)));
         Assert.Equal("the next trading day's", MarkRenderer.OpenDay(ExchangeClosures.CoveredThrough));
-        Assert.Equal("tomorrow's", MarkRenderer.OpenDay(null));
+        Assert.Equal("the next trading day's", MarkRenderer.OpenDay(null));
 
         Assert.Contains(
             "data-buy-points=\"0\">No stock to buy at Monday's open: no setup picked one tonight.</p>",

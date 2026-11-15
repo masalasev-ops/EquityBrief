@@ -64,7 +64,7 @@ public partial class ReadSurface
         // Nor is the family named on another family's card: no label beside M1's breakout row, and the note on M3 names
         // the trade holding it back without naming its family.
         Assert.DoesNotContain(SetupFamilies.FundamentalsFirst.Label, mid, StringComparison.Ordinal);
-        Assert.Contains("M3 qualified again tonight but its trade from 2026-09-30 on the S&P 400's list is still open, so it is not listed.", mid, StringComparison.Ordinal);
+        Assert.Contains("M3 qualified again tonight but its trade from 2026-09-30 on the S&P 400's list is still open, so it is not bought again;", mid, StringComparison.Ordinal);
 
         // Nor on the stock pages: M2's page says it is on no list, M1's names the breakout alone, and neither chart page
         // draws the family's chip.

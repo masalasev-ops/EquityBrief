@@ -6,9 +6,39 @@ public readonly record struct WaitFill(int Bar, double Price);
 // One way to trade a flagged setup: where it buys and within how many sessions, where its stop stands and how it sells.
 public sealed record PlanCombination(string Entry, int Window, string Stop, string Exit)
 {
-    public string Words => Window > 0
+    // From the operator's order of 2026-11-14 the multiple of the risk its take-profit price falls back to, named after its
+    // sale's words; none for a plan walked as it stood before.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public double? TakeProfit { get; init; }
+
+    // On the operator's ruling of 2026-11-14 the take-profit on half: half the shares sell at the multiple of the risk, the
+    // stop on the other half then moved up to the buy and the other half sold by the plan's own sale.
+    public bool Half { get; init; }
+
+    // On the operator's answer of 2026-11-14 on the tables how a full take-profit is placed; today's where none is named.
+    public TakeProfitPlacing Placing { get; init; }
+
+    public string Words => (Window > 0
         ? FormattableString.Invariant($"{Entry} within {Window} sessions, {Stop}, {Exit}")
-        : FormattableString.Invariant($"{Entry}, {Stop}, {Exit}");
+        : FormattableString.Invariant($"{Entry}, {Stop}, {Exit}"))
+        + (TakeProfit is { } multiple ? ", " + (Half ? EquityBrief.Core.Families.RuleWording.TakeProfit.TakingHalf(multiple) : Placing switch
+        {
+            TakeProfitPlacing.Risk => EquityBrief.Core.Families.RuleWording.TakeProfit.TakingAtRisk(multiple),
+            TakeProfitPlacing.Beyond => EquityBrief.Core.Families.RuleWording.TakeProfit.TakingBeyond(multiple),
+            _ => EquityBrief.Core.Loop.TakeProfit.Words(multiple),
+        }) : string.Empty);
+
+    // The same plan taking profit at a multiple of its risk.
+    public PlanCombination Taking(double multiple) => this with { TakeProfit = multiple, Half = false, Placing = TakeProfitPlacing.Turned };
+
+    // The same plan taking profit at the multiple of its risk alone, and at the first price it turned down at that far above the
+    // buy or more, beside today's.
+    public PlanCombination TakingAtRisk(double multiple) => this with { TakeProfit = multiple, Half = false, Placing = TakeProfitPlacing.Risk };
+
+    public PlanCombination TakingBeyond(double multiple) => this with { TakeProfit = multiple, Half = false, Placing = TakeProfitPlacing.Beyond };
+
+    // The same plan taking profit on half its shares at a multiple of its risk.
+    public PlanCombination Halving(double multiple) => this with { TakeProfit = multiple, Half = true, Placing = TakeProfitPlacing.Turned };
 }
 
 // What the sale reads: a target the close must reach, a trail the stop follows the highest close by, the staged levels
@@ -19,6 +49,16 @@ public sealed record PlanSale(double? Target, double? Trail, IReadOnlyList<doubl
     // the next open; none for every other family.
     // see: The buy and sell points sell the dip at the next open after its 2-session RSI closes above 65
     public double? RsiAbove { get; init; }
+
+    // On the operator's ruling of 2026-11-14 the price a close must reach for half the shares to sell at the next open, the
+    // stop on the other half moved up to the buy from then; none for a plan selling no half.
+    public double? HalfAt { get; init; }
+
+    // On the operator's ruling of 2026-11-14, clause 5, a take-profit added at the rules restart to a trade or an order placed
+    // before it counts from this bar on: the half's price, and the target where the take-profit set it; nought for every other.
+    public int TakeProfitFromBar { get; init; }
+
+    public bool TargetIsTakeProfit { get; init; }
 }
 
 // How one filled pick ended: its result in its own risk before costs, the price each share sold at weighted by its share,
@@ -205,7 +245,12 @@ public static class PlanPoints
     // The fewest fills a recommendation rests on, over the years no setting was chosen on.
     public const int FewestFills = 100;
 
-    public static string TypicalStop(double days) => FormattableString.Invariant($"{days:0.##} typical days under the buy");
+    // On the operator's ruling of 2026-11-14 on sign-off F3 one typical day is named in the singular.
+    public static string TypicalStop(double days) => FormattableString.Invariant($"{days:0.##} {(days == 1 ? "typical day" : "typical days")} under the buy");
+
+    // Whether a stop's words name a number of typical days under the buy, the plural one day was named in before F3 read as well.
+    public static bool NamesStop(string words, double days) =>
+        words == TypicalStop(days) || words == FormattableString.Invariant($"{days:0.##} typical days under the buy");
 
     // On the operator's order of 2026-11-10, item 1, the wider stops a recommendation stopping 2 typical days under the buy
     // is walked again at, the one doing best from 2019 standing where it beats it there.
@@ -259,10 +304,11 @@ public static class PlanPoints
         return yearBefore is null ? null : newest.Value > yearBefore.Value;
     }
 
-    public static string DistanceEntry(double days) => FormattableString.Invariant($"{days:0.##} {UnderTheClose}");
+    public static string DistanceEntry(double days) => days == 1 ? "1 typical day under the close" : FormattableString.Invariant($"{days:0.##} {UnderTheClose}");
 
     public static double? DistanceOf(string entry) =>
-        entry.EndsWith(" " + UnderTheClose, StringComparison.Ordinal)
+        entry == "1 typical day under the close" ? 1
+        : entry.EndsWith(" " + UnderTheClose, StringComparison.Ordinal)
         && double.TryParse(entry[..^(UnderTheClose.Length + 1)], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var days)
         && days > 0
             ? days
@@ -319,7 +365,7 @@ public static class PlanPoints
             return zoneStop;
         }
 
-        var days = TypicalDays.Concat(WiderDays).FirstOrDefault(one => TypicalStop(one) == stop);
+        var days = TypicalDays.Concat(WiderDays).FirstOrDefault(one => NamesStop(stop, one));
 
         return days > 0 && typicalDay > 0 ? fill - (days * typicalDay) : null;
     }
@@ -382,6 +428,7 @@ public static class PlanPoints
         var levels = sale.Staged.Where(level => level > fill).Order().ToArray();
         var share = levels.Length > 0 ? 1.0 / (levels.Length + 1) : 1.0;
         var (held, sold, next, highest) = (1.0, 0.0, 0, fill);
+        var (halfAt, standing) = (sale.HalfAt, stop);
 
         for (var session = fillBar; session < fillBar + cap; session++)
         {
@@ -392,21 +439,29 @@ public static class PlanPoints
 
             var close = closes[session];
             var open = opens[session + 1];
-            var floor = sale.Trail is { } distance ? Math.Max(stop, highest - distance) : stop;
+            var floor = sale.Trail is { } distance ? Math.Max(standing, highest - distance) : standing;
 
             highest = Math.Max(highest, close);
 
-            if (close < stop)
+            if (close < standing)
             {
                 return Ended(sold + (held * open), session, Stopped);
             }
 
-            while (next < levels.Length && close >= levels[next])
+            if (halfAt is { } half && close >= half && session >= sale.TakeProfitFromBar)
             {
-                (sold, held, next) = (sold + (share * open), held - share, next + 1);
+                (sold, held, halfAt, standing) = (sold + (held / 2 * open), held / 2, null, Math.Max(standing, fill));
             }
 
-            if (sale.Target is { } target && close >= target)
+            // A staged level sells its share or what is left where a half sold before it left less, never more than is held.
+            while (next < levels.Length && close >= levels[next])
+            {
+                var taken = Math.Min(share, held);
+
+                (sold, held, next) = (sold + (taken * open), held - taken, next + 1);
+            }
+
+            if (sale.Target is { } target && close >= target && (!sale.TargetIsTakeProfit || session >= sale.TakeProfitFromBar))
             {
                 return Ended(sold + (held * open), session, Reached);
             }
@@ -549,5 +604,5 @@ public static class PlanPoints
             .FirstOrDefault();
 
     public static int Changes(PlanCombination combination) =>
-        (combination.Entry == NextOpen ? 0 : 1) + (combination.Stop == RuleStop ? 0 : 1) + (combination.Exit == RuleSale ? 0 : 1);
+        (combination.Entry == NextOpen ? 0 : 1) + (combination.Stop == RuleStop ? 0 : 1) + (combination.Exit == RuleSale ? 0 : 1) + (combination.TakeProfit is null ? 0 : 1);
 }

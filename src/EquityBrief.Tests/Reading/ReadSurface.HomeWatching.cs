@@ -54,7 +54,8 @@ public partial class ReadSurface
         Assert.True(region.IndexOf("class=\"home-watch\"", StringComparison.Ordinal) < region.IndexOf("data-ticker=\"BMY\"", StringComparison.Ordinal));
 
         // Each card opens on which it is and why, from its setup's record.
-        Assert.Contains("An idea to buy. There isn't enough history to test this kind of pick yet, so nothing counts against it.", text, StringComparison.Ordinal);
+        Assert.Contains("An idea to buy. Too few past picks of this kind to measure yet.", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("nothing counts against it", text, StringComparison.Ordinal);
         Assert.Contains("An idea to buy. We tested this kind of pick on S&P 500 stocks from 2019 to 2026, and it did better than buying other S&P 500 stocks on the same days with the same sell rules.", text, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(region, "<p class=\"home-verdict\" data-verdict=\"buy\">").Count);
         Assert.Equal(3, Regex.Matches(region, "<p class=\"home-verdict\" data-verdict=\"watch\">").Count);
@@ -98,8 +99,9 @@ public partial class ReadSurface
             "Watching, not buying: 1 pick tonight. The rules picked it, but this kind of pick has done worse than simply buying other S&P 500 stocks since 2019.",
             one,
             StringComparison.Ordinal);
-        Assert.Contains("An idea to buy. There are too few picks of this kind since 2019 to test it yet, so nothing counts against it.", one, StringComparison.Ordinal);
-        Assert.Contains("An idea to buy. This kind of pick hasn't been tested yet, so nothing counts against it.", one, StringComparison.Ordinal);
+        // From the operator's order of 2026-11-14, item 5: a pick of too few and an unread one each say it in their words.
+        Assert.Equal(2, Regex.Matches(one, Regex.Escape("An idea to buy. Too few past picks of this kind to measure yet.")).Count);
+        Assert.DoesNotContain("nothing counts against it", one, StringComparison.Ordinal);
 
         // None watched: no heading and no watched group, and the line above the cards points to none below.
         var none = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [unread], IdeasCount = 1 }, string.Empty);

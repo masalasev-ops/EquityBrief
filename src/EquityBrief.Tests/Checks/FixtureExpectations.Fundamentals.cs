@@ -181,11 +181,13 @@ public partial class FixtureExpectations
                 FormattableString.Invariant($"VALUES ('AAA', '{stamp}', '{close}', '{close + 0.5m}', '{close - 0.5m}', '{close}', 1000000, 'constructed', '{stamp}T21:00:00Z', '{close}');"));
         }
 
+        // From 23.10's second part each quarter's net income as its filing states it, which the profit check reads.
         foreach (var quarter in Quarters(10m, 10m, 10m, 10m))
         {
             store.Execute(
                 "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, net_income, operating_income) " +
                 FormattableString.Invariant($"VALUES ('AAA', '2026-08-01T00:00:00Z', '2026-08-01', '{quarter.PeriodEnd:yyyy-MM-dd}', '{quarter.FilingDate:yyyy-MM-dd}', '10', '10');"));
+            QuarterFacts(store, "0000000101", quarter.PeriodEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), quarter.FilingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), ("NetIncomeLoss", 10m));
         }
 
         var clock = FixedClock.At(new DateTimeOffset(2026, 8, 4, 23, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates);

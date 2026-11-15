@@ -136,12 +136,29 @@ public sealed class IndexFamilies : IComponent
 
     const string PrintsOf = "SELECT event_date, timing, detail FROM calendar WHERE ticker = $ticker AND kind = 'earnings' ORDER BY event_date;";
 
-    // Each quarter as filed, its net and operating income, the profit gate's reading, from the fetches nights before this
-    // one stored, as the member readings read them, since the night's own quarters step runs after its index families and
-    // a night run again the next morning reads what its night read.
-    const string QuartersOf = @"
-        SELECT period_end, filing_date, net_income, operating_income FROM reported_quarter
-        WHERE ticker = $ticker AND filing_date IS NOT NULL AND session_date < $night ORDER BY period_end;
+    // From 23.10's second part the quarters the provider's fetches stored by the night label, the night's own among them,
+    // since the night's quarters fetch runs before its index families and a night run again reads what its night read;
+    // newest fetch first, so a newer fetch's label for a quarter stands in an older one's place.
+    const string LabelsOf = @"
+        SELECT period_end, fetched_at FROM reported_quarter
+        WHERE ticker = $ticker AND session_date <= $night
+        ORDER BY fetched_at DESC, period_end DESC;
+    ";
+
+    // The member's filer, as its newest company row names it.
+    const string FilerOf = "SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1;";
+
+    // The filer's facts for the periods ending from a day, filed by the night.
+    const string FactsOf = @"
+        SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact
+        WHERE cik = $cik AND period_end >= $from AND filed <= $night;
+    ";
+
+    // The filer's results releases accepted after a day and by the end of the night, each with its text.
+    const string ReleasesOf = @"
+        SELECT text_gzip, accepted_at FROM release_document
+        WHERE cik = $cik AND release = 1 AND accepted_at > $from AND substr(accepted_at, 1, 10) <= $night
+        ORDER BY accepted_at;
     ";
 
     // Every trade an index's list kept, all indices together, which the open trade rule reads.
@@ -255,7 +272,7 @@ public sealed class IndexFamilies : IComponent
 
             if (night is not { } session)
             {
-                await AppendAsync(connection, runId, startedAt, 0, Ok, "no session: the store holds no bar", cancellation);
+                await AppendAsync(connection, runId, startedAt, 0, Ok, RuleWording.IndexFamilies.NoSession, cancellation);
 
                 return new IndexFamiliesOutcome(null, []);
             }
@@ -304,7 +321,7 @@ public sealed class IndexFamilies : IComponent
                 .. indices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => IndexNightOutcome.NotComputed(index, fault)),
             ];
 
-            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
+            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + RuleWording.IndexFamilies.StepStoppedOn + fault, cancellation);
 
             return new IndexFamiliesOutcome(read, all);
         }
@@ -331,8 +348,8 @@ public sealed class IndexFamilies : IComponent
         }
 
         var detail = sold.Count == 0
-            ? "no holding sold on leaving the index stands at a close other than its stock's on the session it was sold"
-            : "sold again at its stock's close on the session it was sold: " + string.Join("; ", sold);
+            ? RuleWording.IndexFamilies.NoneToSellAgain
+            : RuleWording.IndexFamilies.SoldAgainOpening + string.Join("; ", sold);
 
         await AppendAsync(connection, runId, startedAt, sold.Count, Ok, detail, cancellation);
 
@@ -540,12 +557,11 @@ public sealed class IndexFamilies : IComponent
     // What the stage's row says for each index: what it read, or the failure that stopped it.
     public static string Detail(IReadOnlyList<IndexNightOutcome> outcomes) =>
         string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
-            ? $"{outcome.Index}: not computed tonight, {fault}"
-            : FormattableString.Invariant(
-                $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}{(outcome.Heavyweights.Waits is { } waits ? ", " + waits : string.Empty)}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")
-                + (outcome.Rules > 0 ? FormattableString.Invariant($"; {outcome.Rules} registered rule(s) kept {outcome.RuleTrades.Trades} trade(s) on their own lists, {outcome.RuleTrades.Ended} ended and {outcome.RuleTrades.Benchmarked} benchmarked") : string.Empty)
-                + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } or { Waits: not null } ? FormattableString.Invariant($"; the registered heavyweights rules' books {(outcome.HeavyweightRules.Rebalanced ? "rebalanced" : "carried")}, {outcome.HeavyweightRules.Entered} bought, {outcome.HeavyweightRules.Ended} sold, {outcome.HeavyweightRules.Held} held{(outcome.HeavyweightRules.Waits is { } ruleWaits ? "; " + ruleWaits : string.Empty)}") : string.Empty)
-                + (outcome.Releases is { } releases ? "; the release readings: " + releases : string.Empty)
+            ? RuleWording.IndexFamilies.NotComputedTonight(outcome.Index, fault)
+            : RuleWording.IndexFamilies.NightRead(outcome.Index, outcome.Members, outcome.Breadth, outcome.MarketOpen, outcome.Passed, outcome.Listed, outcome.HeldByATrade, outcome.TradesKept, outcome.TradesEnded, outcome.Heavyweights.Rebalanced, outcome.Heavyweights.Waits, outcome.Heavyweights.Entered, outcome.Heavyweights.Ended, outcome.Heavyweights.Held)
+                + (outcome.Rules > 0 ? RuleWording.IndexFamilies.RulesKept(outcome.Rules, outcome.RuleTrades.Trades, outcome.RuleTrades.Ended, outcome.RuleTrades.Benchmarked) : string.Empty)
+                + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } or { Waits: not null } ? RuleWording.IndexFamilies.RuleBooks(outcome.HeavyweightRules.Rebalanced, outcome.HeavyweightRules.Entered, outcome.HeavyweightRules.Ended, outcome.HeavyweightRules.Held, outcome.HeavyweightRules.Waits) : string.Empty)
+                + (outcome.Releases is { } releases ? RuleWording.Evaluation.TheReadings + releases : string.Empty)
                 + (outcome.BeforeTheYear is { } before ? "; " + before : string.Empty)));
 
     // The registered rules a night left unread, each with why, after the indices' own words.
@@ -748,7 +764,7 @@ public sealed class IndexFamilies : IComponent
 
             if (evaluator.Version != row.EvaluatorVersion)
             {
-                skipped.Add($"'{row.Candidate}', its evaluator moved from {row.EvaluatorVersion} to {evaluator.Version}");
+                skipped.Add(RuleWording.IndexFamilies.EvaluatorMoved(row.Candidate, row.EvaluatorVersion, evaluator.Version));
             }
             else if (IndexRules.Refusal(evaluator, parameters) is { } refusal)
             {
@@ -940,10 +956,10 @@ public sealed class IndexFamilies : IComponent
 
     // The cost a trade of the index pays, which its stored result is read after.
     // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
-    public const string CostsPaid = "the published spread";
+    public const string CostsPaid = RuleWording.IndexFamilies.CostsPaid;
 
     // Each member's year of bars, every span the index held it for, its prints and surprises off the calendar, and its
-    // quarters as filed.
+    // quarters as the rules read them on the night.
     public static async Task<(IReadOnlyList<SweepName> Names, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income)> InputsAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)
     {
         var tickers = new List<string>();
@@ -996,15 +1012,7 @@ public sealed class IndexFamilies : IComponent
                 }
             }
 
-            await foreach (var row in RowsAsync(connection, QuartersOf, [("$ticker", ticker), ("$night", Stamp(night))], cancellation))
-            {
-                quarters.Add(new FiledIncome(
-                    Date(row.GetString(0)),
-                    Date(row.GetString(1)),
-                    row.IsDBNull(2) ? null : Money.FromStorage(row.GetString(2)),
-                    row.IsDBNull(3) ? null : Money.FromStorage(row.GetString(3)),
-                    null));
-            }
+            quarters.AddRange((await QuartersReadAsync(connection, ticker, night, cancellation)).Select(quarter => quarter.Income));
 
             names.Add(new SweepName(ticker, [.. bars], spans, [.. prints], null, surprises));
             income[ticker] = quarters;
@@ -1026,6 +1034,81 @@ public sealed class IndexFamilies : IComponent
         }
 
         return (names, income);
+    }
+
+    // From 23.10's second part each member's quarters as the rules read them on a night, newest first, one function the
+    // index families, the member readings and the fundamental readings read them through: the quarters the provider's
+    // fetches stored by the night label, a label within a month of one a newer fetch made read as that one, each quarter
+    // from its filer's filing as first filed and then its results release, the filer's releases read only where a label no
+    // filing the night reads states. A member with no filer reads its releases and its filings as none, and a member with no
+    // fetch reads no quarter. A reading made before the night's own fetch, as the measure of what the rule moves reads the
+    // member readings, names the day its labels were stored by.
+    // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
+    public static async Task<IReadOnlyDictionary<string, IReadOnlyList<ReadQuarter>>> QuartersReadAsync(SqliteConnection connection, IEnumerable<string> tickers, DateOnly night, CancellationToken cancellation, DateOnly? labelsBy = null)
+    {
+        var read = new Dictionary<string, IReadOnlyList<ReadQuarter>>(StringComparer.Ordinal);
+
+        foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
+        {
+            read[ticker] = await QuartersReadAsync(connection, ticker, night, cancellation, labelsBy);
+        }
+
+        return read;
+    }
+
+    public static async Task<IReadOnlyList<ReadQuarter>> QuartersReadAsync(SqliteConnection connection, string ticker, DateOnly night, CancellationToken cancellation, DateOnly? labelsBy = null)
+    {
+        var fetched = new List<(DateOnly End, string Fetch)>();
+
+        await foreach (var row in RowsAsync(connection, LabelsOf, [("$ticker", ticker), ("$night", Stamp(labelsBy ?? night))], cancellation))
+        {
+            var (end, fetch) = (Date(row.GetString(0)), row.GetString(1));
+
+            if (fetched.All(held => held.Fetch == fetch || Math.Abs(held.End.DayNumber - end.DayNumber) > QuartersAsRead.LabelWithin))
+            {
+                fetched.Add((end, fetch));
+            }
+        }
+
+        var labels = fetched.Select(one => one.End).Distinct().ToList();
+
+        if (labels.Count == 0)
+        {
+            return [];
+        }
+
+        var filed = new List<FiledFactRow>();
+        var releases = new List<ReleaseAccepted>();
+
+        if (await ScalarAsync(connection, FilerOf, [("$ticker", ticker)], cancellation) is string cik)
+        {
+            // The year earlier and the year before it of the oldest label, and a month either side, which a growth reads.
+            var from = labels.Min().AddYears(-2).AddDays(-2 * QuartersAsRead.LabelWithin);
+
+            await foreach (var row in RowsAsync(connection, FactsOf, [("$cik", cik), ("$from", Stamp(from)), ("$night", Stamp(night))], cancellation))
+            {
+                filed.Add(new FiledFactRow(row.GetString(0), Date(row.GetString(1)), Date(row.GetString(2)), Money.FromStorage(row.GetString(3)), Date(row.GetString(4)), row.GetString(5), row.GetString(6)));
+            }
+
+            if (QuartersAsRead.Unfiled(labels, filed, night) is [var oldest, ..])
+            {
+                await foreach (var row in RowsAsync(connection, ReleasesOf, [("$cik", cik), ("$from", Stamp(oldest)), ("$night", Stamp(night))], cancellation))
+                {
+                    if (row.IsDBNull(0))
+                    {
+                        continue;
+                    }
+
+                    using var compressed = new MemoryStream((byte[])row.GetValue(0));
+                    using var unzipped = new System.IO.Compression.GZipStream(compressed, System.IO.Compression.CompressionMode.Decompress);
+                    using var text = new StreamReader(unzipped, System.Text.Encoding.UTF8);
+
+                    releases.Add(new ReleaseAccepted(await text.ReadToEndAsync(cancellation), DateTimeOffset.Parse(row.GetString(1), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal)));
+                }
+            }
+        }
+
+        return QuartersAsRead.Of(labels, filed, releases, night);
     }
 
     // The closes the night's longest readings read to the night, the night's own among them: the breakout's year's high
@@ -1150,8 +1233,8 @@ public sealed class IndexFamilies : IComponent
             .Select(name => name.Ticker)
             .ToArray();
 
-        return FormattableString.Invariant($"the store's year holds {held} of the {SessionsReadTo} sessions the year's high and the heavyweights' closes read, the sessions before it read from the pulled history for {read} member(s)")
-            + (few.Length > 0 ? FormattableString.Invariant($", which holds too few for {few.Length}, each reading none of them: {string.Join(", ", few)}") : string.Empty);
+        return RuleWording.IndexFamilies.BeforeTheYear(held, SessionsReadTo, read)
+            + (few.Length > 0 ? RuleWording.IndexFamilies.TooFew(few) : string.Empty);
     }
 
     // The trade each of the names still holds on the night on any card of any index, with the index it is held in: the
@@ -1447,9 +1530,9 @@ public static class IndexHeavyweights
     // Design (a) within an index at the S&P 500's frozen settings, a sector's return its members' mean.
     public static HeavyweightSetting Provisional { get; } = HeavyweightSweep.Frozen with { Sector = HeavyweightSectorReturn.Members };
 
-    public const string NoLongerTheLeader = "no longer the leader";
+    public const string NoLongerTheLeader = RuleWording.IndexFamilies.NoLongerTheLeader;
 
-    public const string LeftTheIndex = "left the index";
+    public const string LeftTheIndex = RuleWording.IndexFamilies.LeftTheIndex;
 
     const string LastRebalance = "SELECT MAX(session_date) FROM index_family_night WHERE index_code = $index AND rebalanced = 1 AND session_date < $night;";
 
@@ -1466,14 +1549,33 @@ public static class IndexHeavyweights
     const string FundCloses = "SELECT session_date, close FROM market_bar WHERE series = $series AND session_date <= $night ORDER BY session_date;";
 
     const string OpenHoldings = @"
-        SELECT ticker, entered_on, sector, entry_close, growth, cut, through FROM index_heavyweight_holding
+        SELECT ticker, entered_on, sector, entry_close, growth, cut, through, stop, take_profit FROM index_heavyweight_holding
         WHERE index_code = $index AND ended_on IS NULL AND entered_on < $night;
     ";
+
+    // On the operator's ruling of 2026-11-15 on the shapes the exit an S&P 400 or 600 heavyweights book trades, a full take-profit:
+    // neither index's book chose the half, which their holdings do not carry.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    static EquityBrief.Core.Loop.BookExit IndexBookExit(string index) =>
+        EquityBrief.Core.Loop.BookExits.Of(Core.Families.HeavyweightRule.Name, index) is { Half: false } exit
+            ? exit
+            : throw new InvalidOperationException($"The {index} heavyweights book's exit sells half, which its holdings do not carry.");
+
+    // From the operator's order of 2026-11-14 a holding's stop, take-profit and where it came from as a buy stores them.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    static IEnumerable<(string, object)> BookExitParameters((double Stop, EquityBrief.Core.Loop.TakeProfitPrice? TakeProfit)? exits) =>
+    [
+        ("$stop", exits is { } placed ? Money.ToStorage(Statistic.ToPrice(placed.Stop)) : DBNull.Value),
+        ("$take_profit", exits?.TakeProfit is { } taking ? Money.ToStorage(Statistic.ToPrice(taking.Price)) : DBNull.Value),
+        ("$take_profit_from", exits?.TakeProfit is { } from ? EquityBrief.Core.Loop.TakeProfit.Stored(from) : DBNull.Value),
+    ];
 
     const string UndoTheNight = @"
         DELETE FROM index_heavyweight_holding WHERE index_code = $index AND entered_on = $night;
         UPDATE index_heavyweight_holding SET ended_on = NULL, exit_close = NULL, reason = NULL, result = NULL, cut_return = NULL, cost = NULL
         WHERE index_code = $index AND ended_on = $night;
+        UPDATE index_heavyweight_holding SET stop = NULL, take_profit = NULL, take_profit_from = NULL, exit_added_on = NULL
+        WHERE index_code = $index AND exit_added_on = $night;
     ";
 
     const string Carry = @"
@@ -1488,8 +1590,8 @@ public static class IndexHeavyweights
     ";
 
     const string Buy = @"
-        INSERT INTO index_heavyweight_holding (index_code, ticker, entered_on, sector, entry_close, growth, cut, through, lead)
-        VALUES ($index, $ticker, $night, $sector, $entry_close, 1.0, $cut, $night, $lead);
+        INSERT INTO index_heavyweight_holding (index_code, ticker, entered_on, sector, entry_close, growth, cut, through, lead, stop, take_profit, take_profit_from)
+        VALUES ($index, $ticker, $night, $sector, $entry_close, 1.0, $cut, $night, $lead, $stop, $take_profit, $take_profit_from);
     ";
 
     // A stock's close on a session as the bar table holds it, whatever the night's members.
@@ -1500,6 +1602,12 @@ public static class IndexHeavyweights
 
     const string SoldAgain = @"
         UPDATE index_heavyweight_holding SET exit_close = $exit_close, cost = $cost
+        WHERE index_code = $index AND ticker = $ticker AND entered_on = $entered_on;
+    ";
+
+    // On the operator's ruling of 2026-11-14, clause 5, the book's exit a live holding bought before the rules restart takes.
+    const string AddedExit = @"
+        UPDATE index_heavyweight_holding SET stop = $stop, take_profit = $take_profit, take_profit_from = $take_profit_from, exit_added_on = $night
         WHERE index_code = $index AND ticker = $ticker AND entered_on = $entered_on;
     ";
 
@@ -1525,14 +1633,21 @@ public static class IndexHeavyweights
 
         // Each open holding and its size cut carried by tonight's closes, and one whose stock left the index sold at the
         // session it was last carried to, its last close as a member, which the night's members hold no bar of.
-        var open = new List<(string Ticker, DateOnly Entered, string Sector, decimal Entry, double Growth, List<CutMember> Cut, DateOnly Through)>();
+        var open = new List<(string Ticker, DateOnly Entered, string Sector, decimal Entry, double Growth, List<CutMember> Cut, DateOnly Through, decimal? Stop, decimal? TakeProfit)>();
 
         await foreach (var row in RowsAsync(connection, transaction, OpenHoldings, [("$index", index), ("$night", Stamp(night))], cancellation))
         {
-            open.Add((row.GetString(0), Date(row.GetString(1)), row.GetString(2), Money.FromStorage(row.GetString(3)), row.GetDouble(4), JsonSerializer.Deserialize<List<CutMember>>(row.GetString(5)) ?? [], Date(row.GetString(6))));
+            open.Add((row.GetString(0), Date(row.GetString(1)), row.GetString(2), Money.FromStorage(row.GetString(3)), row.GetDouble(4), JsonSerializer.Deserialize<List<CutMember>>(row.GetString(5)) ?? [], Date(row.GetString(6)),
+                row.IsDBNull(7) ? null : Money.FromStorage(row.GetString(7)), row.IsDBNull(8) ? null : Money.FromStorage(row.GetString(8))));
         }
 
         var held = new Dictionary<string, (DateOnly Entered, string Sector, decimal Entry, double Growth, List<CutMember> Cut)>(StringComparer.Ordinal);
+
+        // On the operator's ruling of 2026-11-14, clause 5, the day the index's live heavyweights rule was registered at the rules
+        // restart.
+        var restartedOn = Loop.PlanTrades.RegisteredOn(
+            await Loop.PlanTrades.RegisterRowsAsync(connection, transaction, cancellation),
+            row => Core.Candidates.FamilyRecords.IsLive(row.Candidate) && Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.IndexHeavyweightCandidate rule && rule.Index == index);
 
         foreach (var holding in open)
         {
@@ -1556,6 +1671,31 @@ public static class IndexHeavyweights
                 .ToList();
 
             await ExecuteAsync(connection, transaction, Carry, [("$index", index), ("$ticker", holding.Ticker), ("$entered_on", Stamp(holding.Entered)), ("$growth", growth), ("$cut", JsonSerializer.Serialize(cut)), ("$through", Stamp(night))], cancellation);
+
+            // On the operator's ruling of 2026-11-14, clause 5, a holding of the live book bought before the rules restart with no
+            // stop and no take-profit takes the book's exit from its own buy, stored with it from tonight.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            var (stop, takeProfit) = (holding.Stop, holding.TakeProfit);
+
+            if (restartedOn is { } restart && stop is null && takeProfit is null && holding.Entered < restart
+                && await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, holding.Ticker, holding.Entered, holding.Entry, IndexBookExit(index), cancellation) is { } added)
+            {
+                (stop, takeProfit) = (Statistic.ToPrice(added.Stop), added.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null);
+                await ExecuteAsync(connection, transaction, AddedExit, [("$index", index), ("$ticker", holding.Ticker), ("$entered_on", Stamp(holding.Entered)), ("$night", Stamp(night)), .. BookExitParameters(added)], cancellation);
+            }
+
+            // From the operator's order of 2026-11-14 one bought before tonight is sold at tonight's close under its stop or at
+            // or above its take-profit.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            if (CloseOn(holding.Ticker, night) is { } closed
+                && EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closed), stop is { } floor ? Statistic.FromPrice(floor) : null, takeProfit is { } aim ? Statistic.FromPrice(aim) : null) is { } exited)
+            {
+                await EndAsync(connection, transaction, index, holding.Ticker, holding.Entered, night, closed, exited, growth, cut, holding.Entry, cancellation);
+                ended++;
+
+                continue;
+            }
+
             held[holding.Ticker] = (holding.Entered, holding.Sector, holding.Entry, growth, cut);
         }
 
@@ -1595,8 +1735,9 @@ public static class IndexHeavyweights
             }
 
             var cut = leader.Cut.Select(ticker => new CutMember(ticker, 1.0, Stamp(night))).ToList();
+            var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, leader.Ticker, night, close, IndexBookExit(index), cancellation);
 
-            await ExecuteAsync(connection, transaction, Buy, [("$index", index), ("$ticker", leader.Ticker), ("$night", Stamp(night)), ("$sector", leader.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut)), ("$lead", rebalance.Leads.TryGetValue(leader.Ticker, out var lead) ? lead : DBNull.Value)], cancellation);
+            await ExecuteAsync(connection, transaction, Buy, [("$index", index), ("$ticker", leader.Ticker), ("$night", Stamp(night)), ("$sector", leader.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut)), ("$lead", rebalance.Leads.TryGetValue(leader.Ticker, out var lead) ? lead : DBNull.Value), .. BookExitParameters(exits)], cancellation);
             held[leader.Ticker] = (night, leader.Sector, close, 1.0, cut);
             entered++;
         }
@@ -1657,7 +1798,7 @@ public static class IndexHeavyweights
 
         if (at < 0)
         {
-            return ([], NoLeads, 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
+            return ([], NoLeads, 0, RuleWording.IndexFamilies.NoMemberClose(night));
         }
 
         if (HeavyweightRule.WaitsForSessions(setting.Reading, calendar.Length, night) is { } few)
@@ -1676,7 +1817,7 @@ public static class IndexHeavyweights
 
         if (!sessions.TryGetValue(at, out var session))
         {
-            return ([], NoLeads, 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
+            return ([], NoLeads, 0, RuleWording.IndexFamilies.NoMemberClose(night));
         }
 
         var kept = session.Members
@@ -1726,12 +1867,12 @@ public static class IndexHeavyweights
     }
 
     // The words a registered rule's holding ends on beside the book's own.
-    public const string UnderTheAverage = "a close under its 200-day average";
+    public const string UnderTheAverage = RuleWording.IndexFamilies.UnderTheAverage;
 
-    public const string NoLongerBought = "no longer among those it buys";
+    public const string NoLongerBought = RuleWording.IndexFamilies.NoLongerBought;
 
     // From 20.11 the reason a retired rule's book sells what it holds.
-    public const string RuleRetired = "its rule retired";
+    public const string RuleRetired = RuleWording.IndexFamilies.RuleRetired;
 
     const string UndoTheRuleNight = @"
         DELETE FROM index_heavyweight_rule_holding WHERE candidate = $candidate AND entered_on = $night;
@@ -1741,7 +1882,7 @@ public static class IndexHeavyweights
     ";
 
     const string RuleOpenHoldings = @"
-        SELECT ticker, entered_on, sector, entry_close, growth, cut, through FROM index_heavyweight_rule_holding
+        SELECT ticker, entered_on, sector, entry_close, growth, cut, through, stop, take_profit FROM index_heavyweight_rule_holding
         WHERE candidate = $candidate AND ended_on IS NULL AND entered_on < $night;
     ";
 
@@ -1759,8 +1900,8 @@ public static class IndexHeavyweights
     ";
 
     const string RuleBuy = @"
-        INSERT INTO index_heavyweight_rule_holding (candidate, index_code, ticker, entered_on, sector, entry_close, growth, cut, through, lead)
-        VALUES ($candidate, $index, $ticker, $night, $sector, $entry_close, 1.0, $cut, $night, $lead);
+        INSERT INTO index_heavyweight_rule_holding (candidate, index_code, ticker, entered_on, sector, entry_close, growth, cut, through, lead, stop, take_profit, take_profit_from)
+        VALUES ($candidate, $index, $ticker, $night, $sector, $entry_close, 1.0, $cut, $night, $lead, $stop, $take_profit, $take_profit_from);
     ";
 
     const string RuleNight = @"
@@ -1833,11 +1974,12 @@ public static class IndexHeavyweights
 
             await ExecuteAsync(connection, transaction, UndoTheRuleNight, key, cancellation);
 
-            var open = new List<(string Ticker, DateOnly Entered, string Sector, decimal Entry, double Growth, List<CutMember> Cut, DateOnly Through)>();
+            var open = new List<(string Ticker, DateOnly Entered, string Sector, decimal Entry, double Growth, List<CutMember> Cut, DateOnly Through, decimal? Stop, decimal? TakeProfit)>();
 
             await foreach (var row in RowsAsync(connection, transaction, RuleOpenHoldings, key, cancellation))
             {
-                open.Add((row.GetString(0), Date(row.GetString(1)), row.GetString(2), Money.FromStorage(row.GetString(3)), row.GetDouble(4), JsonSerializer.Deserialize<List<CutMember>>(row.GetString(5)) ?? [], Date(row.GetString(6))));
+                open.Add((row.GetString(0), Date(row.GetString(1)), row.GetString(2), Money.FromStorage(row.GetString(3)), row.GetDouble(4), JsonSerializer.Deserialize<List<CutMember>>(row.GetString(5)) ?? [], Date(row.GetString(6)),
+                    row.IsDBNull(7) ? null : Money.FromStorage(row.GetString(7)), row.IsDBNull(8) ? null : Money.FromStorage(row.GetString(8))));
             }
 
             var holding = new Dictionary<string, (DateOnly Entered, decimal Entry, double Growth, List<CutMember> Cut)>(StringComparer.Ordinal);
@@ -1864,6 +2006,17 @@ public static class IndexHeavyweights
                     .ToList();
 
                 await ExecuteAsync(connection, transaction, RuleCarry, [.. key, ("$ticker", one.Ticker), ("$entered_on", Stamp(one.Entered)), ("$growth", growth), ("$cut", JsonSerializer.Serialize(cut)), ("$through", Stamp(night))], cancellation);
+
+                // From the operator's order of 2026-11-14 one bought before tonight is sold at tonight's close under its stop or
+                // at or above its take-profit.
+                if (CloseOn(one.Ticker, night) is { } closedAt
+                    && EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closedAt), one.Stop is { } floor ? Statistic.FromPrice(floor) : null, one.TakeProfit is { } aim ? Statistic.FromPrice(aim) : null) is { } exited)
+                {
+                    await RuleEndAsync(connection, transaction, index, rule.Candidate, one.Ticker, one.Entered, night, closedAt, exited, growth, cut, one.Entry, cancellation);
+                    ended++;
+
+                    continue;
+                }
 
                 if (soldUnderAverage && CloseOn(one.Ticker, night) is { } close && HeavyweightRule.Broken(Statistic.FromPrice(close), Average200(byTicker[one.Ticker], night)))
                 {
@@ -1932,8 +2085,9 @@ public static class IndexHeavyweights
                     }
 
                     var cut = buy.Cut.Select(ticker => new CutMember(ticker, 1.0, Stamp(night))).ToList();
+                    var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, buy.Ticker, night, close, IndexBookExit(index), cancellation);
 
-                    await ExecuteAsync(connection, transaction, RuleBuy, [.. key, ("$index", index), ("$ticker", buy.Ticker), ("$sector", buy.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut)), ("$lead", leads.TryGetValue(buy.Ticker, out var lead) ? lead : DBNull.Value)], cancellation);
+                    await ExecuteAsync(connection, transaction, RuleBuy, [.. key, ("$index", index), ("$ticker", buy.Ticker), ("$sector", buy.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut)), ("$lead", leads.TryGetValue(buy.Ticker, out var lead) ? lead : DBNull.Value), .. BookExitParameters(exits)], cancellation);
                     holding[buy.Ticker] = (night, close, 1.0, cut);
                     bought++;
                 }
@@ -2211,7 +2365,7 @@ public static class IndexHeavyweights
                 ("$index", leaver.Index), ("$ticker", leaver.Ticker), ("$entered_on", Stamp(leaver.Entered)),
                 ("$exit_close", Money.ToStorage(close)), ("$cost", TradeCost.InPercent(value, leaver.Entry, close) / 100.0),
             ], cancellation);
-            written.Add(FormattableString.Invariant($"{leaver.Index} {leaver.Ticker} bought {leaver.Entered:yyyy-MM-dd} and sold {leaver.Sold:yyyy-MM-dd}, at {Money.ToStorage(leaver.Exit)} and now at {Money.ToStorage(close)}"));
+            written.Add(RuleWording.IndexFamilies.Resold(leaver.Index, leaver.Ticker, leaver.Entered, leaver.Sold, Money.ToStorage(leaver.Exit), Money.ToStorage(close)));
         }
 
         return written;
@@ -2316,6 +2470,9 @@ public static class IndexRuleTrades
         ORDER BY session_date, candidate, ticker;
     ";
 
+    // On the operator's ruling of 2026-11-14, clause 5, the take-profit a trade placed before the rules restart takes.
+    const string AddedTakeProfit = "UPDATE index_rule_trade SET plan = $plan WHERE candidate = $candidate AND ticker = $ticker AND session_date = $session;";
+
     const string BarsFrom = "SELECT session_date, close, raw_close, open, high FROM bar WHERE ticker = $ticker AND session_date >= $from AND session_date <= $night ORDER BY session_date;";
 
     // The company's value on a trade's own night as the member readings read it, none where they read none.
@@ -2418,9 +2575,15 @@ public static class IndexRuleTrades
                 var (entry, stop) = (answer.Entry!.Value, answer.Stop!.Value);
                 var risk = Statistic.FromPrice(entry - stop);
 
-                // From 23.10 a rule stating a plan keeps the order the plan places on the pick from its series tonight.
+                // From 23.10 a rule stating a plan keeps the order the plan places on the pick from its series tonight; from the
+                // operator's order of 2026-11-14 one taking profit reads the prices the stock turned down at over twenty years, as
+                // every step placing an order reads them.
+                // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+                var turnedDown = hooks.Plan is { TakeProfit: not null }
+                    ? await PlanTrades.TurnedDownAsync(connection, transaction, answer.Ticker, await PlanTrades.BarsAsync(connection, transaction, answer.Ticker, night, cancellation), night, cancellation)
+                    : null;
                 var order = hooks.Plan is { } combination
-                    ? PlanTrades.Place(combination, rule.Family, inputs.Series[name], IndexNightRead.BarOf(inputs.Series[name], inputs.At), Statistic.FromPrice(stop), answer.Target is { } aim ? Statistic.FromPrice(aim) : null, answer.Trail is { } distance ? Statistic.FromPrice(distance) : null, answer.Cap!.Value)
+                    ? PlanTrades.Place(combination, rule.Family, inputs.Series[name], IndexNightRead.BarOf(inputs.Series[name], inputs.At), Statistic.FromPrice(stop), answer.Target is { } aim ? Statistic.FromPrice(aim) : null, answer.Trail is { } distance ? Statistic.FromPrice(distance) : null, answer.Cap!.Value, turnedDown)
                         ?? PlanTrades.Unplaced(combination, Statistic.FromPrice(stop), answer.Cap!.Value)
                     : null;
 
@@ -2491,11 +2654,24 @@ public static class IndexRuleTrades
 
         var (ended, benchmarked) = (0, 0);
         double[][]? closes = null;
+        var taking = Loop.PlanTrades.LiveTakingProfit(await Loop.PlanTrades.RegisterRowsAsync(connection, transaction, cancellation), DateTimeOffset.MaxValue);
 
         foreach (var trade in pending)
         {
+            // On the operator's ruling of 2026-11-14, clause 5, an open trade or waiting order of a live rule placed before the rules
+            // restart with no take-profit takes its rule's, counted from the session after the restart, stored with it from now on.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            var plan = trade.Plan;
+
+            if (!trade.Ended && taking.TryGetValue(trade.Candidate, out var live)
+                && await Loop.PlanTrades.AddedAtRestartAsync(connection, transaction, plan, live, trade.Ticker, trade.Session, trade.Entry, trade.Stop, trade.Target, trade.Trail, trade.Cap, false, cancellation) is { } added)
+            {
+                await ExecuteAsync(connection, transaction, AddedTakeProfit, [("$candidate", trade.Candidate), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)), ("$plan", added.Json())], cancellation);
+                plan = added;
+            }
+
             // From 23.10 a trade kept under a plan is walked and benchmarked under it.
-            if (trade.Plan is { } order)
+            if (plan is { } order)
             {
                 if (!trade.Ended && await EndPlannedAsync(connection, transaction, inputs, trade.Candidate, trade.Ticker, trade.Session, trade.Entry, trade.Stop, order, cancellation))
                 {

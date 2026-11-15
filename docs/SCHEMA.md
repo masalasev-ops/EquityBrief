@@ -115,6 +115,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `loop_rule` | WalkForwardTester | none | none |
 | `loop_rule_year` | WalkForwardTester | none | none |
 | `loop_rule_unit` | WalkForwardTester | none | none |
+| `book_record` | WalkForwardTester | none | none |
 | `loop_pooled` | PooledTest | none | none |
 | `loop_link` | WalkForwardTester | none | none |
 | `release_answer_edge` | WalkForwardTester | none | none |
@@ -186,7 +187,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `long_dividend` | LongPricePull | none | LongPricePull |
 | `long_filing` | LongPricePull | none | LongPricePull |
 | `long_fact` | LongFactPull | none | LongFactPull |
-| `long_setup` | SetupLedger | none | none |
+| `long_setup` | SetupLedger | none | SetupLedger |
 | `long_reading` | SetupLedger | none | SetupLedger |
 | `long_outlier` | SetupLedger | none | SetupLedger |
 | `departed_setup` | SetupLedger | none | SetupLedger |
@@ -673,10 +674,19 @@ Grain: one row per index, family, stock and session of 2005 to 2018 a family's l
 | `last_settled` | INTEGER | 1 where the trade and its benchmark both ended at the last price |
 | `run_id` | TEXT | the run that wrote it |
 | `company_value` | REAL | the base-10 logarithm of the company's value on the session as the valuation reading works it, a statistic and never money, added last by the migration as `setup`'s was |
+| `stretch_days` | REAL | from migration 146, as `setup` carries it, after every column before it |
+| `stretch_share` | REAL | as `setup` carries it |
+| `gain_twenty` | REAL | as `setup` carries it |
+| `largest_gain` | REAL | as `setup` carries it |
+| `night_volume_ratio` | REAL | as `setup` carries it |
+| `gap_days` | REAL | as `setup` carries it |
+| `highest_since_years` | REAL | as `setup` carries it |
+| `older_days` | REAL | as `setup` carries it |
+| `one_off_share` | REAL | as `setup` carries it, null in the long years, which hold no results release |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`.
 
-**The long ledger, read by no card, hook or night** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes it a chunk of sessions at a time under the night's wait and the drain's lock, each setup read by the standing ledger's own build over the long reader's history and written under both readings in one row; a session it holds a setup of is frozen, and a build writes only the sessions it holds none of, so the table has no updater and no deleter until the restart writes it again. It reads `long_market_bar`, `long_filing`, `long_fact` and through the long reader `long_span`, `long_bar`, `bar`, `session_mark`, `long_print`, `pulled_earnings`, `calendar`, `pulled_surprise`, `membership`, `company` and `pulled_company`, and moves no row of `setup`. `ledger-check --long` and `long-ledger --measure` read it and write nothing but the check's row on `run_log`.
+**The long ledger, read by no card, hook or night** (see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price). From 23.6 `ledger-build --long` writes it a chunk of sessions at a time under the night's wait and the drain's lock, each setup read by the standing ledger's own build over the long reader's history and written under both readings in one row; a session it holds a setup of is frozen, and a build writes only the sessions it holds none of; from 23.10's second part `ledger-build --long --again` writes once more every session whose rows were not written under the catalogue's version now, clearing each one's rows and writing them again in the chunk's own transaction, so the table has no updater and that build is its one deleter (see: The long ledger is written once more at the second restart, each session replaced whole and resumed by its pin). It reads `long_market_bar`, `long_filing`, `long_fact` and through the long reader `long_span`, `long_bar`, `bar`, `session_mark`, `long_print`, `pulled_earnings`, `calendar`, `pulled_surprise`, `membership`, `company` and `pulled_company`, and moves no row of `setup`. `ledger-check --long` and `long-ledger --measure` read it and write nothing but the check's row on `run_log`.
 
 ### long_reading
 Grain: one row per index, family, year and reading of the long ledger's and the standing ledger's setups.
@@ -810,7 +820,7 @@ Grain: one row per run, index and price family the test of the buy and sell poin
 
 Primary key: `run_id`, `index_code`, `family`.
 
-**Written once by the test of the buy and sell points with its run, and never updated** (see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index). Every combination's figures by year, era and market regime stand in its report under the data root's loop folder; the store keeps the recommendation the Loop page draws. A recommendation is the best of every combination over 2005 to 2018, so its edge there reads high for having been chosen there, and its edge from 2019 stands beside it; from 2026-11-10 its stop's width and its entry's distance are kept where they do better from 2019, so that edge reads high too, and each plan's record from its registration is its test. From the 23.8 correction every edge is over the benchmark of its combination, the rule's own plan entered on every member at its own next open and walked under the combination's stop and sale, and each fund column is the second line beside it (see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line). Every figure is a statistic and stored as the double it is. No rule or plan reads it, and nothing is registered on it; from the 22.16 correction of 2026-11-10 the night's decision cards read each price family's newest recommendation on the index to price a pick's card at it, which changes no pick, plan or rule (see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded). From the 22.6 correction of 2026-11-09 the pages drawing a setup's record over the long history read the traded plan's mean edge and picks from 2019 off each family's newest row on the index, and draw no record from a row holding no count (see: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's).
+**Written once by the test of the buy and sell points with its run, and never updated** (see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index). Every combination's figures by year, era and market regime stand in its report under the data root's loop folder; the store keeps the recommendation the Loop page draws. A recommendation is the best of every combination over 2005 to 2018, so its edge there reads high for having been chosen there, and its edge from 2019 stands beside it; from 2026-11-10 its stop's width and its entry's distance are kept where they do better from 2019, so that edge reads high too, and each plan's record from its registration is its test. From the 23.8 correction every edge is over the benchmark of its combination, the rule's own plan entered on every member at its own next open and walked under the combination's stop and sale, and each fund column is the second line beside it (see: Every result over the long history is judged against the benchmark as ruled, with its index's own fund held over the same sessions as a second line). Every figure is a statistic and stored as the double it is. No rule or plan reads it, and nothing is registered on it; from the 22.16 correction of 2026-11-10 the night's decision cards read each price family's newest recommendation on the index to price a pick's card at it, which changes no pick, plan or rule (see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded). From the 22.6 correction of 2026-11-09 the pages drawing a setup's record over the long history read the traded plan's mean edge and picks from 2019 off each family's newest row on the index, and draw no record from a row holding no count (see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen).
 
 From the 23.10 correction of 2026-11-13 a run writes beside each family's recommendation the plan its live rule on the index states, walked over the family's setups from 2019: the mean move of its fills whose sale placed no price above them, from the fill to the sale as a fraction of the fill, before costs, and the share of them that sold above their fill, over how many fills, none where the live rule states no plan. For a plan selling on its time limit alone that is every fill; from the second 23.10 correction of 2026-11-13, for the staged sales and the first band above it is the fills their levels placed no price above, held to the stop or the time limit. A run given one family writes that family's row alone, the others' newest rows standing. The pages draw the two figures on a pick's card whose plan names no price above its buy, as that rule's record over every pick like it and never as the stock's own (see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at) (see: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath).
 
@@ -1071,7 +1081,7 @@ Grain: one row per ticker per session per pull that reached it.
 
 Primary key: `ticker`, `session_date`, `pull`, from migration 111.
 
-**This is not the bar table, and no night reads it but the chart averages step, the setup ledger's step and, on a night whose store's year holds too few sessions, the index families, the rule cards, the heavyweights' book and the member readings step**, the first for the chart's averages, each stock's typical earnings move and its long view (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull), and from 17.12 the second for the closes before each member's first stored session that its valuation reading reaches, from the newest pull holding that session and at the store's scale, the one reading of the ledger's that reads them (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). From the operator's ruling of 2026-10-20, on a night whose store's year holds fewer sessions than they read, the index families read the sessions the year falls short by before its first session, for each S&P 400 and 600 member the store holds from that session, for the breakout's year's high and the sector heavyweights' closes, the rule cards for the forming list's high and the setup ledger's step for its live passes as the night's own inputs read them, and the heavyweights' book the same for each S&P 500 member for its closes, from the newest pull holding the member's first stored session and at the store's scale, a day the exchange's table holds no session on passed over and, from the operator's ruling of 2026-10-21, a session the pull is missing ending the read, a member whose bars start after the year's first session or miss a session inside it reading no more than its own (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale). From the operator's ruling of 2026-10-21 the member readings step reads them the same way for the year's high of each member of the three indices holding a bar on the night, and the index families for a breakout rule's nearness to its year's high and recency of it, a member the pull holds too few for reading no year's high (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does). From 19.11 the read API reads one stock's rows by the table's key, the newest pull holding its first stored session and its sessions before it, when the chart page draws a weekly or monthly chart, never on a night, and brings them to the store's scale by the two closes of that session; and from the ruling of 2026-10-20 whether the table holds a session before the store's year to the night, for the heavyweights cards' next rebalance, reading no price. The operator's history pull asks every name the index held on any session from a date to tonight for its daily bars over that whole span, in the adjusted form `bar` holds, and stores them here. It reaches tonight rather than stopping where `bar` begins, because the fetcher drops `bar`'s oldest session every night, so a pull that stopped there would leave a hole between the two within a week; a reader holding both reads `bar` where `bar` holds the session.
+**This is not the bar table, and no night reads it but the chart averages step, the setup ledger's step and, on a night whose store's year holds too few sessions, the index families, the rule cards, the heavyweights' book and the member readings step, and from 23.10's second part every step placing a take-profit**, the first for the chart's averages, each stock's typical earnings move and its long view (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull), and from 17.12 the second for the closes before each member's first stored session that its valuation reading reaches, from the newest pull holding that session and at the store's scale, the one reading of the ledger's that reads them (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). From the operator's ruling of 2026-10-20, on a night whose store's year holds fewer sessions than they read, the index families read the sessions the year falls short by before its first session, for each S&P 400 and 600 member the store holds from that session, for the breakout's year's high and the sector heavyweights' closes, the rule cards for the forming list's high and the setup ledger's step for its live passes as the night's own inputs read them, and the heavyweights' book the same for each S&P 500 member for its closes, from the newest pull holding the member's first stored session and at the store's scale, a day the exchange's table holds no session on passed over and, from the operator's ruling of 2026-10-21, a session the pull is missing ending the read, a member whose bars start after the year's first session or miss a session inside it reading no more than its own (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale). From the operator's ruling of 2026-10-21 the member readings step reads them the same way for the year's high of each member of the three indices holding a bar on the night, and the index families for a breakout rule's nearness to its year's high and recency of it, a member the pull holds too few for reading no year's high (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does). From 19.11 the read API reads one stock's rows by the table's key, the newest pull holding its first stored session and its sessions before it, when the chart page draws a weekly or monthly chart, never on a night, and brings them to the store's scale by the two closes of that session; and from the ruling of 2026-10-20 whether the table holds a session before the store's year to the night, for the heavyweights cards' next rebalance, reading no price. From the operator's order of 2026-11-14 every step placing a take-profit, the family recorder, the rule cards, the index families, the dip's step, the decision cards, the heavyweights' book, Quality at a fair price's step, the Fundamentals family's step and the match check, reads one stock's highs and lows from the newest pull holding its first stored session over the twenty years before the night, at the store's scale, for the prices it turned down at, and hands them to no rule's choice of a stock (see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at). The operator's history pull asks every name the index held on any session from a date to tonight for its daily bars over that whole span, in the adjusted form `bar` holds, and stores them here. It reaches tonight rather than stopping where `bar` begins, because the fetcher drops `bar`'s oldest session every night, so a pull that stopped there would leave a hole between the two within a week; a reader holding both reads `bar` where `bar` holds the session.
 
 **`pull` is what removes a pull whole.** The pull's purge deletes every row one pull wrote and nothing else. No stored bar may be removed that way, and these rows may because no listing, score, rule or gate reads one but a rule an approval sets to read the ledger's valuation reading, and what a night reads of them, for the name page and for that reading, is read again from the newest pull still holding them. From migration 111, on the operator's ruling of 2026-10-25, a second pull keeps every session it is sent beside an earlier pull's rows, its whole span at its own scale, each row belonging to the pull that wrote it; every reader above reads the newest pull holding a stock's first stored session and its sessions before it, and the sweeps' history each session from the newest pull holding it, so the two pulls' shared sessions are compared before the older is removed (see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads).
 
@@ -1734,9 +1744,14 @@ Grain: one row per stock and the session the sector heavyweights bought it on.
 | `through` | TEXT | the session the holding's own growth was last carried to |
 | `ended_on` | TEXT | the session it was sold on, null while it is held |
 | `exit_close` | TEXT | decimal in code, the close it was sold at, null while held |
-| `reason` | TEXT | `no longer the leader`, `a close under its 200-day average` or `left the index`, null while held |
+| `reason` | TEXT | `no longer the leader`, `a close under its 200-day average` or `left the index`, and from 23.10's second part `a close under its stop` and `took profit`, null while held |
 | `result` | REAL | its growth less one at the sale, its return in percent of the buy as a fraction, null while held |
 | `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
+| `stop` | TEXT | decimal in code, from 23.10's second part the stop under the close it was bought at, the typical daily moves its book's exit states that night; null for a holding bought before |
+| `take_profit` | TEXT | decimal in code, the price it takes profit at from that close, a close at or above it selling it at that close, or half of it on a take-profit on half; null as `stop` is |
+| `take_profit_from` | TEXT | where that price came from: `turned down` and the session of the swing high, `risk` and the multiple, `half` and the multiple for a take-profit on half, or `own`; null as `stop` is |
+| `half_sold_on` | TEXT | from migration 148, the night its first half sold at its take-profit, its stop then standing at its buy and its result the mean of the two halves; null for a holding selling no half or none yet |
+| `exit_added_on` | TEXT | from migration 148, the night a holding bought before the rules restart was given its stop and take-profit from its own buy, its card saying so; null for one bought with them |
 
 Primary key: `ticker`, `entered_on`.
 
@@ -1781,9 +1796,13 @@ Grain: one row per registered heavyweights rule, stock and the session the rule 
 | `through` | TEXT | the session the holding's own growth was last carried to |
 | `ended_on` | TEXT | the session it was sold on, null while it is held |
 | `exit_close` | TEXT | decimal in code, the close it was sold at, null while held |
-| `reason` | TEXT | `no longer the leader`, `a close under its 200-day average` or `left the index`, and from the 20.11 correction of 2026-10-20 `its rule retired`, null while held |
+| `reason` | TEXT | `no longer the leader`, `a close under its 200-day average` or `left the index`, and from the 20.11 correction of 2026-10-20 `its rule retired`, and from 23.10's second part `a close under its stop` and `took profit`, null while held |
 | `result` | REAL | its growth less one at the sale, its return in percent of the buy as a fraction, null while held |
 | `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
+| `stop` | TEXT | decimal in code, from 23.10's second part the stop under the close it was bought at, the typical daily moves its book's exit states that night; null for a holding bought before |
+| `take_profit` | TEXT | decimal in code, the price it takes profit at from that close, a close at or above it selling it at that close, or half of it on a take-profit on half; null as `stop` is |
+| `take_profit_from` | TEXT | where that price came from: `turned down` and the session of the swing high, `risk` and the multiple, `half` and the multiple for a take-profit on half, or `own`; null as `stop` is |
+| `half_sold_on` | TEXT | from migration 148, the night its first half sold at its take-profit, its stop then standing at its buy and its result the mean of the two halves; null for a holding selling no half or none yet |
 
 Primary key: `candidate`, `ticker`, `entered_on`.
 
@@ -1898,6 +1917,10 @@ Grain: one row per index, stock and the session the index's sector heavyweights 
 | `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
 | `cost` | REAL | its round trip as a fraction of the buy at the published table, its company valued as the member readings read it under its index on its buy and one they read none for in the $1 to 2 billion band, null while held |
 | `lead` | REAL | its return over the look-back less its sector's members' mean in the index at the rebalance that bought it, null on a holding bought before the book stored one |
+| `stop` | TEXT | decimal in code, from 23.10's second part the stop under the close it was bought at, the typical daily moves its book's exit states that night, a close under it selling it at that close; null for a holding bought before |
+| `take_profit` | TEXT | decimal in code, the price it takes profit at from that close, a close at or above it selling it at that close; null as `stop` is |
+| `take_profit_from` | TEXT | where that price came from: `turned down` and the session of the swing high, `risk` and the multiple, or `own`; null as `stop` is |
+| `exit_added_on` | TEXT | from migration 148, the night a holding bought before the rules restart was given its stop and take-profit from its own buy; null for one bought with them |
 
 Primary key: `index_code`, `ticker`, `entered_on`.
 
@@ -1969,6 +1992,9 @@ Grain: one row per registered sector heavyweights rule of the S&P 400 or 600, st
 | `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
 | `cost` | REAL | its round trip as a fraction of the buy at the published table, its company valued as the member readings read it on its buy, null while held |
 | `lead` | REAL | for a design (a) rule, its return over the rule's look-back less its sector's members' mean in the index at the rebalance that bought it; null for a design (b) rule, which reads no lead over a sector |
+| `stop` | TEXT | decimal in code, from 23.10's second part the stop under the close it was bought at, the typical daily moves its book's exit states that night, a close under it selling it at that close; null for a holding bought before |
+| `take_profit` | TEXT | decimal in code, the price it takes profit at from that close, a close at or above it selling it at that close; null as `stop` is |
+| `take_profit_from` | TEXT | where that price came from: `turned down` and the session of the swing high, `risk` and the multiple, or `own`; null as `stop` is |
 
 Primary key: `candidate`, `ticker`, `entered_on`.
 
@@ -2058,22 +2084,22 @@ Grain: one row per rule, index, stock and session a dip list kept a trade on, fr
 | `result` | REAL | what it came to bought at the open in multiples of the risk its listing close set, before its cost, null while held |
 | `cost` | REAL | its round trip in multiples of that risk at the published table, its company valued as the member readings read it on its night, null while held |
 | `exit` | INTEGER | from 21.16, the exit of the menu its rule's approved change names in its sell dial's place, which the trade is walked under, sold at the next open after the menu's trigger and at its own close where the menu's time or the time limit ends it; null under the rule's own sell dial (see: Every change the engines propose is one its family's night reads, so each is put to the operator) |
-| `plan` | TEXT | from 23.10, JSON: the order the plan its rule's registration states placed at the night's close, as `family_trade` stores it, the trade bought at its plan's fill and sold at its plan's sale, and one never filled stored ended at its limit with no fill and no result; null for a rule stating no plan |
+| `plan` | TEXT | from 23.10, JSON: the order the plan its rule's registration states placed at the night's close, as `family_trade` stores it, the trade bought at its plan's fill and sold at its plan's sale, and one never filled stored ended at its limit with no fill and no result; from 23.10's second part its fill and `bought_on` stored from the night after the session it filled, the trade open until it ends; null for a rule stating no plan |
 
 Primary key: `rule`, `index_code`, `ticker`, `session_date`.
 
 **The dip's step writes it and is its own deleter** (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). Each night it first walks every trade not yet ended over its stock's bars since its listing at the scale the series has now, buying it at the next session's open through the core's one pricing function and selling it at the next open after a close above its average or under its stop, or at its last session's close, a sale whose next session is not stored left held; then it keeps each listed row of tonight's list, and from 22.3 each standing rule's under that rule's name, its exit read by the level it stored (see: A dip rule is registered as the family on its index and kept by the dip's own step alone). A night run again replaces the trades it kept for that night under every rule it keeps. The rows are never deleted otherwise: the dip's Past picks and its record read them.
 
 ### decision_card
-Grain: one row per index, night, family and stock the family listed or the index's sector heavyweights' book bought.
+Grain: one row per index, night, family and stock the family listed or the index's sector heavyweights' book bought, and from the operator's ruling of 2026-11-15 on the review of PR 699 Quality at a fair price or the Fundamentals family chose.
 
 | Column | Type | Notes |
 |---|---|---|
 | `index_code` | TEXT | the index the pick was listed on, `GSPC`, `MID` or `SML` |
 | `session_date` | TEXT | the night |
-| `family` | TEXT | the family that listed it, by the word it is stored under, `heavyweight` for a book's buy |
+| `family` | TEXT | the family that listed it, by the word it is stored under, `heavyweight` for a book's buy, and `quality` or `improving` for Quality at a fair price's or the Fundamentals family's |
 | `ticker` | TEXT | |
-| `place` | INTEGER | its place down the family's list, or among the book's buys of the night in the order of their sectors |
+| `place` | INTEGER | its place down the family's list, or among the book's buys of the night in the order of their sectors, or of their tickers for Quality at a fair price and the Fundamentals family |
 | `entry` | TEXT | decimal in code, the plan's buy, null where the row the card reads stores none |
 | `stop` | TEXT | decimal in code, the plan's stop, null for a rule setting none |
 | `target` | TEXT | decimal in code, the plan's target, null for a rule that trails or sets none |
@@ -2091,11 +2117,13 @@ Grain: one row per index, night, family and stock the family listed or the index
 | `similar` | TEXT | JSON: the setups like the pick under its rule on its index, the readings matched on, how many were matched of how many and their median distance, their mean edge with its interval's two ends and the rule's own mean, or why none were matched, on an S&P 400 or 600 card read by its frozen live rule the wait for the ledger's history built under that rule among the reasons; null for a family no learned score reaches and on a card written before 17.7 |
 | `approved` | TEXT | from 17.9, the words of the change an approval set on an S&P 400 or 600 family the card's rule stands at, in whose place the card reads no record, since the record stored for the family replays its setting before the change; null otherwise |
 | `alternative` | TEXT | from migration 141, JSON: a price family's pick priced at the plan its index's newest test of the buy and sell points recommends for the family, on the stock's own levels on the night: the combination in words, the close, the price it waits to dip to and the trading days it waits, its stop, its target, staged sales or trail where it sets one, whether it sells on the dip's bounce, its cap, prices as text, and the run's years, fills and mean edge from 2019 beside the traded plan's; where the levels place none of it, the combination, why and the same figures; null for a card of no price family, where no recommendation stands or it is the traded plan, and on a card written before migration 141 the command has not priced |
-| `plan` | TEXT | from 23.10, JSON: the order the plan its family's live rule states placed on the pick's trade that night, as `family_trade` stores it, which the card draws as the zone it buys at, how long it waits, its stop and its target, or as no buy where the stock's levels set no price that night; null where the live rule states no plan or kept no trade on the stock, and from the 23.10 correction of 2026-11-10 set on a price card holding none by the cards' pricing, the order its family's live rule's plan places on the card's night from the stock's own bars |
+| `plan` | TEXT | from 23.10, JSON: the order the plan its family's live rule states placed on the pick's trade that night, as `family_trade` stores it, which the card draws as the zone it buys at, how long it waits, its stop and its target, or as no buy where the stock's levels set no price that night; null where the live rule states no plan or kept no trade on the stock, and from the 23.10 correction of 2026-11-10 set on a price card holding none by the cards' pricing, the order its family's live rule's plan places on the card's night from the stock's own bars; from 23.10's second part an order taking profit carries its multiple of the risk and the prices the stock turned down at before the night above the lowest its stop could stand, the take-profit read from them at the buy |
+| `take_profit_from` | TEXT | from 23.10's second part, for a sector heavyweights' card, and from the review of PR 699 Quality at a fair price's and the Fundamentals family's, where the price it takes profit at, its `target`, came from: `turned down` and the session of the swing high, `risk` and the multiple, `half` and the multiple for a take-profit on half, or `own`, its `stop` the one the book adds under its buy; null for a card of any other setup, whose `plan` carries its take-profit, and on a card written before |
+| `held_again` | TEXT | from 23.10's second part, JSON: on the card of a stock a setup's rules met again tonight while a trade an earlier night's list made still holds it, written at place nought, the setup holding it, the night its list made the trade and that list's index; null on every other card |
 
 Primary key: `index_code`, `session_date`, `family`, `ticker`.
 
-**The decision cards write it in the night after every index's families and books, and are its own deleter** (see: A pick's card advises on the trade and removes no pick, and code computes every figure on it). A night run again deletes its own night's rows and writes them again, and no other night's; nothing else deletes a row, so an earlier night's cards stand as they were read, with the values they were read with. From the 22.16 correction of 2026-11-10 the cards are its only updater as well: after writing a night's cards they set each price card's `alternative`, and `card-plans` sets it again on a night named, touching no other column but, from the 23.10 correction of 2026-11-10, a price card's `plan` where it holds none and its family's live rule states one (see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded).
+**The decision cards write it in the night after every index's families and books, and are its own deleter** (see: A pick's card advises on the trade and removes no pick, and code computes every figure on it). From the operator's ruling of 2026-11-15 on the review of PR 699 they write Quality at a fair price's and the Fundamentals family's cards on a row of their own after the Fundamentals family's step, since those books choose after the cards are written, and `card-plans` writes them again for the night it prices; each part deletes and writes its own families' rows of the night alone (see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at). A night run again deletes its own night's rows and writes them again, and no other night's; nothing else deletes a row, so an earlier night's cards stand as they were read, with the values they were read with. From the 22.16 correction of 2026-11-10 the cards are its only updater as well: after writing a night's cards they set each price card's `alternative`, and `card-plans` sets it again on a night named, touching no other column but, from the 23.10 correction of 2026-11-10, a price card's `plan` where it holds none and its family's live rule states one (see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded).
 
 ### rule_record
 Grain: one row per index and family a card names on it.
@@ -2146,16 +2174,16 @@ Primary key: `index_code`, `session_date`, `family`, `rule`.
 **The rule cards stage writes the night's rows in the swing filter's step after the decision cards, and the record command's `--nights` form writes the history's through the same component, which is its own deleter: a night run again replaces its own rows, and a replay writes over the rule's history** (see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches). From the 17.2 correction of 2026-10-20 a night's own row stands in place of a replay's on its session, the night deleting the replay's row of the rule on it, and a replay leaves standing every row a night wrote the rule on, writing its history around them.
 
 ### rule_pick
-Grain: one row per index, rule, stock and night a rule whose list no other table keeps kept a pick on, the swing filter's variants.
+Grain: one row per index, rule, stock and night a rule whose list no other table keeps kept a pick on, the swing filter's variants and from 23.10's second part its live rule stating a plan, which keeps the page list's pullbacks of the night at their places as its own trades under it.
 
 | Column | Type | Notes |
 |---|---|---|
 | `index_code` | TEXT | `GSPC` |
-| `rule` | TEXT | the variant's name as the register holds it |
+| `rule` | TEXT | the rule's name as the register holds it |
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the night the pick was kept on, its plan set at that close and from 19.10 bought at the next session's open, its fill in `trade_fill` |
 | `family` | TEXT | `pullback` |
-| `place` | INTEGER | the pick's place on the variant's own list, counted from one, at most five |
+| `place` | INTEGER | the pick's place on the variant's own list, counted from one, at most five, and the live rule's its place on the page's list |
 | `entry` | TEXT | decimal in code, the night's close |
 | `stop` | TEXT | decimal in code, the stop of the plan the variant reads, the plan clear of the noise or the swing plan at the nearest bands |
 | `target` | TEXT | decimal in code, that plan's target, null where it names none |
@@ -2164,7 +2192,9 @@ Grain: one row per index, rule, stock and night a rule whose list no other table
 | `why` | TEXT | JSON: the figures the swing filter stored for the member on the night, each gate's values by name |
 | `ended_on` | TEXT | the session the walk ended it on, at a close through its stop, at its target or at its cap; null while it is open |
 | `result` | REAL | what it came to in multiples of its risk; null while open and where the closes ran out before its cap |
-| `plan` | TEXT | from 23.10, JSON: the order the plan its variant's registration states placed at the night's close, as `family_trade` stores it; null for a variant stating no plan, as every one does until the swing filter reads the hooks |
+| `plan` | TEXT | from 23.10, JSON: the order the plan its rule's registration states placed at the night's close, as `family_trade` stores it, the pick walked under it from 23.10's second part; null for a rule stating no plan |
+| `benchmark` | REAL | from 23.10's second part, for a pick kept under a plan: the same plan on every member the index held that night, each bought at its own next open at the pick's distance in its own typical moves, the mean of their results in the risk the plan sets on each, written once the pick's window and its cap have passed; null for a pick stating no plan, before then, and where no member's result was read |
+| `members` | INTEGER | how many members that benchmark is the mean of, nought where none was read; null until it is written |
 
 Primary key: `index_code`, `rule`, `ticker`, `session_date`.
 
@@ -2351,6 +2381,15 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `estimate_revision_month` | REAL | the current fiscal year's consensus earnings a share over its figure 30 days before, less 1, as the newest quarters fetch on or before the session states them; null before the first fetch or where either is missing |
 | `short_interest_share` | REAL | the shares short FINRA last reported before the session over the newest share count the filings' covers state; null while no store holds the reports |
 | `business_state_filed` | REAL | from 21.4 the business's state off the SEC's facts as first filed before the session, as the night's place for a state: 0 improving, where both of the two newest filed quarters grew their sales on the same quarter a year earlier and widened their operating margin, 3 deteriorating, where both shrank and narrowed, 1 steady otherwise; null where fewer than two quarters hold the four figures. The swing filter's version leaving off a deteriorating business reads it through the catalogue |
+| `stretch_days` | REAL | from migration 146 the entry check's readings, each through its own function over the member's bars to the session: the close over its 20-session average in typical days; null where fewer than 20 sessions or no typical move |
+| `stretch_share` | REAL | the share of the stored year's sessions holding the average that stood as far above it or further, in per cent |
+| `gain_twenty` | REAL | the gain over the 20 sessions to the session, in per cent |
+| `largest_gain` | REAL | 1 where the session's one-day gain is a rise larger than each of the 249 before it, 0 where not; null where fewer than 250 are held |
+| `night_volume_ratio` | REAL | the session's volume over the mean of the 50 sessions to it, the session's own among them |
+| `gap_days` | REAL | the gap up to the session, its low over the session before's high, in typical days; 0 where none; null where no typical move |
+| `highest_since_years` | REAL | the years since an earlier session last closed at or above the session's close, or since the history's first session where none did |
+| `older_days` | REAL | the nearest band above the close from the sessions before the stored year, its low over the close in typical days; null where none stands above |
+| `one_off_share` | REAL | the largest one-off item the newest results release accepted by the session names, its amount a share over the beat, where tied to earnings a share and a beat above nought is stored; 0 where the release names none; null where no release is stored or the share is not read |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by, and from migration 143 on `session_date` and `ticker`, which the filings refresh's second read of the night's rows updates and lists them by.
 
@@ -2633,6 +2672,25 @@ Grain: one row per per-rule test run, index, family, rule and unit of its eviden
 Primary key: `run_id`, `index_code`, `family`, `rule`, `unit`.
 
 **Written once by the walk-forward tester's per-rule test with its run**, from 23.2 in the same transaction as the run's `loop_rule` rows, every unit of each walked rule's evidence over the test years and none for a rule it could not walk, and read by the pooled test alone, which sums each family's units across the three indices (see: One verdict across the three indices stands beside each index's own, and an approval still changes one index's rule). Every figure is a statistic and stored as the double it is.
+
+### book_record
+Grain: one row per books' test run, index, book family and live rule, from migration 149.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run, `loop-books-` the index and its start |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | `heavyweight`, `quality` or `improving` |
+| `rule` | TEXT | the live rule, by the name its registration carries |
+| `exit_words` | TEXT | the exit the book trades, in words |
+| `from_year` | INTEGER | the year after its exit was chosen, 2019, and 2023 for a heavyweights book |
+| `through` | TEXT | the newest session the run read, as `yyyy-MM-dd` |
+| `months` | INTEGER | the months from `from_year` the book held something in at that exit |
+| `points` | REAL | their mean edge in percentage points a month, the book's holdings over what each was held against; null where it held nothing |
+
+Primary key: `run_id`, `index_code`, `family`, `rule`.
+
+**Written once by the walk-forward tester's books' test, `loop-rules --long --books` without `--print`, in one transaction**, on the operator's ruling of 2026-11-15 on the shapes, each live book walked at the exit it trades over the long history and no other exit, and read by every page drawing a book's record box, newest by the order its rows were written (see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen). Every figure is a statistic and stored as the double it is.
 
 ### loop_pooled
 Grain: one row per pooled run, family and kind, from migration 130.
@@ -3306,7 +3364,7 @@ Grain: one row per ticker per fetch per quarter.
 | `basis_close` | TEXT | decimal in code, that session's close, which tonight's close is brought to this fetch's basis by |
 | `shares` | TEXT | decimal in code, the shares outstanding the quarter's balance sheet files, on this fetch's split basis, null where it files none and on every row a fetch stored before the column existed |
 | `interest_expense` | TEXT | from 15.2, decimal in code, the quarter's interest expense as the income statement files it, with the sign the provider files it under, null where it files none |
-| `interest_read` | INTEGER | from 15.2, 1 where the fetch that stored the row read the income statement's interest expense, filed or not, and 0 on every row stored before, whose null says nothing about what was filed |
+| `interest_read` | INTEGER | from 15.2, 1 where the fetch that stored the row read the income statement's interest expense, filed or not, and 0 on every row stored before, whose null says nothing about what was filed; from 23.10's second part no rule reads it, the cover reading the interest each quarter's filing states |
 | `gross_profit` | TEXT | from 18.2, decimal in code, the quarter's gross profit as the income statement files it, null where it files none |
 | `capital_spending`, `free_cash_flow`, `dividends_paid` | TEXT | from 18.2, decimal in code, the quarter's capital spending, free cash flow and dividends paid as the cash flow statement files them, with the sign the provider files each under, null where it files none |
 | `lines_read` | INTEGER | from 18.2, 1 where the fetch that stored the row read the gross profit and the three cash flow lines, filed or not, and 0 on every row stored before, whose nulls say nothing about what was filed |
@@ -3376,7 +3434,7 @@ Grain: one row per ticker per night.
 
 Primary key: `ticker`, `session_date`.
 
-Kept forever: Past picks draws the state a trade carried on its listing night, and the order a night's list was drawn in is read from that night's rows. A night reads only the quarters fetched on the nights before it, so a night run again later never reads a quarter from its future. The reader's delete removes one night's set, the night it is writing, so a night run again replaces its own rows whole and a member no longer in the index keeps none on it (see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone).
+Kept forever: Past picks draws the state a trade carried on its listing night, and the order a night's list was drawn in is read from that night's rows. From 23.10's second part a night reads the quarters fetched by it, each quarter's lines for the trajectory and the earnings quality read from its filing as first filed before the session and otherwise from its results release readable on the night, and the record and the valuation from the fetches; a quarter filed or released after the session is never read, so a night run again later reads no quarter from its future (see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest). The reader's delete removes one night's set, the night it is writing, so a night run again replaces its own rows whole and a member no longer in the index keeps none on it (see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone).
 
 ### member_reading
 Grain: one row per index, session and member of the S&P 500, 400 and 600 on the night.
@@ -3391,8 +3449,8 @@ Grain: one row per index, session and member of the S&P 500, 400 and 600 on the 
 | `company_value` | TEXT | decimal in code, the company's value on the session from the count filed before it, null where none was filed |
 | `cost` | REAL | the round trip a trade bought and sold at the close pays, in per cent of it, at the published table's value |
 | `cost_double` | REAL | the same at double the table |
-| `profit` | INTEGER | 1 where the four newest quarters filed before the session sum their net income above nothing, 0 otherwise |
-| `coverage` | INTEGER | 1 where the same four hold operating income at least twice their interest expense or the company is a financial one, 0 where they do not, null where a quarter among them was stored before interest expense was read |
+| `profit` | INTEGER | 1 where the four newest quarters read before the session, each from its filing and otherwise its results release, sum their net income above nothing, 0 otherwise |
+| `coverage` | INTEGER | 1 where the four newest quarters read before the session whose filing states interest hold operating income at least twice their interest expense, or none states interest and the four newest hold operating income, or the company is a financial one, 0 otherwise; null only on rows written before 23.10's second part |
 | `state` | TEXT | the state the night's fundamental reading gave the member, null where it read none |
 | `year_high` | TEXT | decimal in code, the highest high of the 251 sessions before the session, read on a night whose store's year holds fewer over the ones before it from `pulled_bar` at the store's scale; null on a member's first bar and, on such a night, for a member the pull holds too few for |
 | `nearness` | REAL | the close over that high, as stored |
@@ -3405,7 +3463,7 @@ Grain: one row per index, session and member of the S&P 500, 400 and 600 on the 
 
 Primary key: `index_code`, `session_date`, `ticker`.
 
-**The member reader writes it in the night after the fundamental readings, and is its own deleter** (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it). A night run again for a session replaces that session's rows and no other's. Every reading is the one function the sweeps read it with, so a figure the page shows on a night is the one a sweep would have read there. Kept forever.
+**The member reader writes it in the night after the fundamental readings, and is its own deleter** (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it). A night run again for a session replaces that session's rows and no other's. From 23.10's second part the profit and the coverage read the member's quarters through the core's one reader of them, the quarters the fetches stored naming them and each read from its filer's `filed_fact` rows and otherwise its `release_document` (see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest). Every reading is the one function the sweeps read it with, so a figure the page shows on a night is the one a sweep would have read there. Kept forever.
 
 ### fundamental_score
 Grain: one row per index, session and member of the S&P 500, 400 and 600 holding a bar on the night, from 22.8.
@@ -3490,11 +3548,16 @@ Grain: one row per rule, index, stock and night it was chosen, from 22.9.
 | `through` | TEXT | the session its growth was carried to |
 | `ended_on` | TEXT | the session it was sold at, null while held |
 | `sale` | TEXT | decimal in code, its close on that session |
-| `end_reason` | TEXT | `open`, `no longer qualifies` or `left the index`, and from 21.16 `under its 200-day average` for a rule selling a holding bought before the night at a close under it |
+| `end_reason` | TEXT | `open`, `no longer qualifies` or `left the index`, and from 21.16 `under its 200-day average` for a rule selling a holding bought before the night at a close under it, and from 23.10's second part `a close under its stop` and `took profit` |
 | `result` | REAL | its growth less one less its gap, null while held or where it was sold before its buy |
 | `benchmark` | REAL | the members' mean carried growth from its choice to its sale less one less `bench_gap` |
 | `cost` | REAL | its round trip in per cent of its buy at the published table, its company valued as the member readings read it on the night it was chosen |
 | `edge` | REAL | its result less its benchmark in percentage points, less its round trip |
+| `stop` | TEXT | decimal in code, from 23.10's second part the stop under its fill, the typical daily moves its book's exit states on the night it was chosen; null for a holding bought before and until it is bought |
+| `take_profit` | TEXT | decimal in code, the price it takes profit at from its fill, a close at or above it selling it at that close, or half of it on a take-profit on half; null as `stop` is |
+| `take_profit_from` | TEXT | where that price came from: `turned down` and the session of the swing high, `risk` and the multiple, `half` and the multiple for a take-profit on half, or `own`; null as `stop` is |
+| `half_sold_on` | TEXT | from migration 148, the night its first half sold at its take-profit, its stop then standing at its fill and its result the mean of the two halves; null for a holding selling no half or none yet |
+| `exit_added_on` | TEXT | from migration 148, the night a live holding bought before the rules restart was given its stop and take-profit from its own fill, its card saying so; null for one bought with them |
 
 Primary key: `rule`, `index_code`, `ticker`, `chosen_on`.
 
@@ -3573,11 +3636,16 @@ Grain: one row per rule, index, stock and night it was chosen, from 22.13.
 | `sessions` | INTEGER | the sessions it was held to that session, its buy's counted first, each a session the store holds a bar of the stock for |
 | `ended_on` | TEXT | the session it was sold at, null while held |
 | `sale` | TEXT | decimal in code, its close on that session |
-| `end_reason` | TEXT | `open`, `score fell`, `time limit` or `left the index`, and from 21.16 `under its 200-day average` for a rule selling a trade bought before the night at a close under it |
+| `end_reason` | TEXT | `open`, `score fell`, `time limit` or `left the index`, and from 21.16 `under its 200-day average` for a rule selling a trade bought before the night at a close under it, and from 23.10's second part `a close under its stop` and `took profit` |
 | `result` | REAL | its growth less one less its gap, null while held or where it was sold before its buy |
 | `benchmark` | REAL | the members' mean carried growth from its choice to its sale less one less `bench_gap` |
 | `cost` | REAL | its round trip in per cent of its buy at the published table, its company valued as the member readings read it on the night it was chosen |
 | `edge` | REAL | its result less its benchmark in percentage points, less its round trip |
+| `stop` | TEXT | decimal in code, from 23.10's second part the stop under its fill, the typical daily moves its book's exit states on the night it was chosen; null for a trade bought before and until it is bought |
+| `take_profit` | TEXT | decimal in code, the price it takes profit at from its fill, a close at or above it selling it at that close, or half of it on a take-profit on half; null as `stop` is |
+| `take_profit_from` | TEXT | where that price came from: `turned down` and the session of the swing high, `risk` and the multiple, `half` and the multiple for a take-profit on half, or `own`; null as `stop` is |
+| `half_sold_on` | TEXT | from migration 148, the night its first half sold at its take-profit, its stop then standing at its fill and its result the mean of the two halves; null for a trade selling no half or none yet |
+| `exit_added_on` | TEXT | from migration 148, the night a live trade bought before the rules restart was given its stop and take-profit from its own fill, its card saying so; null for one bought with them |
 
 Primary key: `rule`, `index_code`, `ticker`, `chosen_on`.
 

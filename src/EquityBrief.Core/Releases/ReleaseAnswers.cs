@@ -1,4 +1,5 @@
 using System.Text.Json;
+using EquityBrief.Core.Families;
 
 namespace EquityBrief.Core.Releases;
 
@@ -32,12 +33,12 @@ public static class ReleaseAnswers
     // last an answer the pin's model did not give.
     public const string Empty = "empty";
     public const string CutOff = "cut off";
-    public const string NotOneObject = "not one object";
-    public const string MissingAnAnswer = "missing an answer";
-    public const string WordNotListed = "a word not listed";
-    public const string RuntimeRefused = "the runtime refused";
-    public const string NotAnsweredInTime = "not answered in time";
-    public const string NotThePins = "not the pin's model";
+    public const string NotOneObject = RuleWording.ReleaseAnswers.NotOneObject;
+    public const string MissingAnAnswer = RuleWording.ReleaseAnswers.MissingAnAnswer;
+    public const string WordNotListed = RuleWording.ReleaseAnswers.WordNotListed;
+    public const string RuntimeRefused = RuleWording.ReleaseAnswers.RuntimeRefused;
+    public const string NotAnsweredInTime = RuleWording.ReleaseAnswers.NotAnsweredInTime;
+    public const string NotThePins = RuleWording.ReleaseAnswers.NotThePins;
 
     public static IReadOnlyList<string> Causes { get; } =
         [Empty, CutOff, NotOneObject, MissingAnAnswer, WordNotListed, RuntimeRefused, NotAnsweredInTime, NotThePins];

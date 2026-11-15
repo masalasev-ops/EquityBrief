@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Families;
 
 namespace EquityBrief.Core.Sweep;
 
@@ -398,7 +399,7 @@ public readonly record struct DialSetting(
             $"depth {Number(grid.DepthLows[DepthLow])} to {Number(grid.DepthHighs[DepthHigh])}",
             double.IsPositiveInfinity(dryUp) ? "no dry-up ceiling" : $"dry-up under {Number(dryUp)}",
             $"fresh within {grid.Freshness[Freshness]}",
-            $"reward to risk {Number(grid.RewardToRiskFloors[RewardToRisk])}",
+            RuleWording.SweepAxes.RewardToRisk(Number(grid.RewardToRiskFloors[RewardToRisk])),
             $"stop {Number(grid.StopBounds[Stop].Low)} to {Number(grid.StopBounds[Stop].High)}",
             double.IsNegativeInfinity(market) ? "market off" : $"market {Number(market * 100)}%",
             $"band strength {grid.BandStrengths[Band]}");

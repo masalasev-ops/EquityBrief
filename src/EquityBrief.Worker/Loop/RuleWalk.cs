@@ -90,6 +90,17 @@ public sealed class RuleWalk(
 
     IReadOnlyList<ExitProcedures.Walked> Walk(IReadOnlyDictionary<string, double> change, Func<int, bool>? keep, Func<int, IReadOnlyList<double?>>? readings, TreeModel? fitted = null)
     {
+        // On the operator's ruling of 2026-11-14 an exit of the menu over a rule standing at a plan is walked in place of the
+        // plan's sale, the plan's buy kept, rather than composed into hooks stating the sale twice.
+        var overPlan = RuleHooks.Of(Standing).Plan is not null && change.TryGetValue(RuleHooks.ExitParameter, out var number)
+            ? RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { [RuleHooks.ExitParameter] = number }).ExitChoice
+            : null;
+
+        if (overPlan is not null)
+        {
+            change = change.Where(one => one.Key != RuleHooks.ExitParameter).ToDictionary(one => one.Key, one => one.Value, StringComparer.Ordinal);
+        }
+
         var hooks = Composed(change, Standing).With(key => fitted is not null && fitted.Key == key ? fitted : trees?.Invoke(key));
 
         if (hooks.ReadsReadings && readings is null)
@@ -103,7 +114,7 @@ public sealed class RuleWalk(
         }
 
         return walk(
-            hooks.ExitChoice,
+            overPlan ?? hooks.ExitChoice,
             keep,
             hooks.ReadsReadings || hooks.ReadsExpected ? night => hooks.Order(night, at => readings?.Invoke(at), at => ExpectedOf?.Invoke(at)) : null);
     }
@@ -190,7 +201,7 @@ public sealed class RuleWalk(
             if (arrange is null)
             {
                 return planned is not null
-                    ? ExitProcedures.WalkPlanned(read, planned, keep is null ? listed : [.. listed.Where((_, at) => keep(at))])
+                    ? ExitProcedures.WalkPlanned(read, planned, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], under: under)
                     : ExitProcedures.Walk(read, adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], under);
             }
 
@@ -207,7 +218,7 @@ public sealed class RuleWalk(
                 }
             }
 
-            return planned is not null ? ExitProcedures.WalkPlanned(read, planned, ordered) : ExitProcedures.Walk(read, adapter, closes, ordered, under);
+            return planned is not null ? ExitProcedures.WalkPlanned(read, planned, ordered, under: under) : ExitProcedures.Walk(read, adapter, closes, ordered, under);
         }
 
         // From 21.3 the same walk at the rule's own exit with a skip, the listings in the family's own order.
@@ -272,7 +283,7 @@ public sealed class RuleWalk(
             if (arrange is null)
             {
                 return planned is not null
-                    ? ExitProcedures.WalkPlanned(read, planned, keep is null ? listed : [.. listed.Where((_, at) => keep(at))])
+                    ? ExitProcedures.WalkPlanned(read, planned, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], under: under)
                     : ExitProcedures.Walk(read, own.Adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], under);
             }
 
@@ -289,7 +300,7 @@ public sealed class RuleWalk(
                 }
             }
 
-            return planned is not null ? ExitProcedures.WalkPlanned(read, planned, ordered) : ExitProcedures.Walk(read, own.Adapter, closes, ordered, under);
+            return planned is not null ? ExitProcedures.WalkPlanned(read, planned, ordered, under: under) : ExitProcedures.Walk(read, own.Adapter, closes, ordered, under);
         }
 
         return new RuleWalk(
@@ -439,7 +450,7 @@ public sealed class RuleWalk(
                 chosen = ordered;
             }
 
-            return planned is not null ? ExitProcedures.WalkPlanned(read, planned, chosen)
+            return planned is not null ? ExitProcedures.WalkPlanned(read, planned, chosen, under: under)
                 : under is null ? OwnWalk(chosen)
                 : ExitProcedures.Walk(read, Unwalked, closes, chosen, under);
         }
@@ -481,7 +492,7 @@ public sealed class RuleWalk(
         {
             if (planned is not null)
             {
-                return ExitProcedures.WalkPlanned(read, planned, [.. chosen]);
+                return ExitProcedures.WalkPlanned(read, planned, [.. chosen], under: under);
             }
 
             var held = new System.Collections.Concurrent.ConcurrentDictionary<(int Name, int Session), int>();
@@ -621,6 +632,12 @@ public sealed class RuleWalk(
         var hooks = standing?.Hooks ?? LoopChange.NoHooks;
         var standingExit = RuleHooks.Of(hooks).ExitChoice;
 
+        // From 23.10's second part a pullback standing at a plan is walked under it, each listing's order placed from its
+        // stock's series as the night places it and walked once, five a night in the list's own order with one open trade a
+        // stock, as the family's walk walks a family rule standing at one.
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+        var planned = Planned(read, hooks, family);
+
         // From 19.10 each trade and its benchmark are bought at the next session's open, from 21.14 each trade a close's
         // signal ends is sold at the open after that close, and from 21.17 the benchmark's members are sold the same way.
         var fills = new OpenFills(series, read.Members);
@@ -693,6 +710,11 @@ public sealed class RuleWalk(
 
         RuleListing Unit(IdeaListing listing)
         {
+            if (planned is not null)
+            {
+                return PlannedUnit(read, planned, PlanOf(listing));
+            }
+
             var (result, sessions, benchmark) = Standing(listing);
 
             return new RuleListing(
@@ -740,6 +762,12 @@ public sealed class RuleWalk(
 
                 kept = ordered;
                 order = IdeaOrder.RsiFall;
+            }
+
+            // A walk under a plan takes the night's listings in the order kept above, an arrangement's places first.
+            if (planned is not null)
+            {
+                return ExitProcedures.WalkPlanned(read, planned, [.. kept.Select(listing => order == IdeaOrder.RsiFall ? PlanOf(listing) with { Order = listing.RsiFall, ThenBy = 0 } : PlanOf(listing))], under: exit);
             }
 
             if (exit is null)

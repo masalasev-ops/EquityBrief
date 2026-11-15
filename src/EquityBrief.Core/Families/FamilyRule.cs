@@ -113,9 +113,9 @@ public readonly record struct MarketSwitches(int IndexAverageSessions, int VixLo
 
     public const string VixLookbackParameter = "vixLookbackSessions";
 
-    public const string IndexGate = "index over its average";
+    public const string IndexGate = RuleWording.FamilyRuleWords.IndexGate;
 
-    public const string VixGate = "VIX under its close before";
+    public const string VixGate = RuleWording.FamilyRuleWords.VixGate;
 
     public static MarketSwitches None => default;
 
@@ -126,8 +126,8 @@ public readonly record struct MarketSwitches(int IndexAverageSessions, int VixLo
 
     // The words a registration's name ends with for the switches it states, none where it states none.
     public string Words =>
-        (IndexAverageSessions > 0 ? FamilyRule.Invariant($", only on nights the index closes above its {IndexAverageSessions}-session average") : string.Empty)
-        + (VixLookbackSessions > 0 ? FamilyRule.Invariant($", only on nights the VIX closes under its close {VixLookbackSessions} sessions before") : string.Empty);
+        (IndexAverageSessions > 0 ? RuleWording.FamilyRuleWords.OnlyAboveItsAverage(IndexAverageSessions) : string.Empty)
+        + (VixLookbackSessions > 0 ? RuleWording.FamilyRuleWords.OnlyUnderItsCloseBefore(VixLookbackSessions) : string.Empty);
 
     // The family's answer with each switch the registration states read after its gates.
     public FamilyResult Read(FamilyResult result, MarketCloses? market) =>
@@ -161,9 +161,9 @@ public readonly record struct MarketSwitches(int IndexAverageSessions, int VixLo
             ? new Gate(
                 IndexGate,
                 held > mean,
-                FamilyRule.Invariant($"the index closed {held:0.##} {(held > mean ? "above" : "at or below")} the average of its {count} closes to the night, {mean:0.##}"),
+                RuleWording.FamilyRuleWords.IndexClosed(held, mean, count),
                 values)
-            : new Gate(IndexGate, false, FamilyRule.Invariant($"the index's stored closes do not hold all {count} sessions to the night"), values);
+            : new Gate(IndexGate, false, RuleWording.FamilyRuleWords.IndexClosesShort(count), values);
     }
 
     static Gate VixGateOn(MarketCloses closes, int count)
@@ -175,9 +175,9 @@ public readonly record struct MarketSwitches(int IndexAverageSessions, int VixLo
             ? new Gate(
                 VixGate,
                 held < earlier,
-                FamilyRule.Invariant($"the VIX closed {held:0.##} {(held < earlier ? "under" : "at or above")} its close {count} sessions before, {earlier:0.##}"),
+                RuleWording.FamilyRuleWords.VixClosed(held, earlier, count),
                 values)
-            : new Gate(VixGate, false, FamilyRule.Invariant($"the VIX's stored closes do not hold the night and the session {count} before it"), values);
+            : new Gate(VixGate, false, RuleWording.FamilyRuleWords.VixClosesShort(count), values);
     }
 }
 
@@ -211,10 +211,10 @@ public static class FamilyRule
     public const string Trade = SwingGates.Trade;
 
     // The trade gate's value naming the plan's reward to risk, where the family's plan has a target.
-    public const string RewardToRiskValue = "reward to risk";
+    public const string RewardToRiskValue = RuleWording.FamilyRuleWords.RewardToRiskValue;
 
     // The market gate where the night's swing filter stored none, which closes every family's list.
-    public static Gate NoMarketCheck { get; } = new(Market, false, "the swing filter stored no market check for the night", Values());
+    public static Gate NoMarketCheck { get; } = new(Market, false, RuleWording.FamilyRuleWords.NoMarketCheck, Values());
 
     // Whether a result failed the market check and no other gate, with nothing keeping it off.
     public static bool FailsOnTheMarketAlone(FamilyResult result) =>

@@ -43,7 +43,7 @@ public static class SwingFunnel
 
         parts.Add(FormattableString.Invariant($"{excluded} excluded"));
         parts.Add(FormattableString.Invariant($"{passing} passing"));
-        parts.Add(version == "none" ? "no filter version open, so section 17's proposed values" : "filter version " + version);
+        parts.Add(version == "none" ? Families.RuleWording.SwingFunnel.NoFilterVersion : "filter version " + version);
 
         return string.Join(", ", parts);
     }

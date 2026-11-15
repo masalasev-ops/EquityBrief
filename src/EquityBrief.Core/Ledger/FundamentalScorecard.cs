@@ -89,15 +89,15 @@ public static class FundamentalScorecard
     public static IReadOnlyList<int> NotForFinancials { get; } = [6, 8];
 
     // The lines a check names where it could not be read.
-    public const string NetIncomeLine = "net income";
-    public const string CashLine = "cash from operations";
-    public const string AssetsLine = "total assets";
-    public const string DebtLine = "long-term debt";
-    public const string CurrentAssetsLine = "current assets";
-    public const string CurrentLiabilitiesLine = "current liabilities";
-    public const string SharesLine = "share count";
-    public const string SalesLine = "sales";
-    public const string GrossProfitLine = "gross profit";
+    public const string NetIncomeLine = RuleWording.FundamentalScorecard.NetIncomeLine;
+    public const string CashLine = RuleWording.FundamentalScorecard.CashLine;
+    public const string AssetsLine = RuleWording.FundamentalScorecard.AssetsLine;
+    public const string DebtLine = RuleWording.FundamentalScorecard.DebtLine;
+    public const string CurrentAssetsLine = RuleWording.FundamentalScorecard.CurrentAssetsLine;
+    public const string CurrentLiabilitiesLine = RuleWording.FundamentalScorecard.CurrentLiabilitiesLine;
+    public const string SharesLine = RuleWording.FundamentalScorecard.SharesLine;
+    public const string SalesLine = RuleWording.FundamentalScorecard.SalesLine;
+    public const string GrossProfitLine = RuleWording.FundamentalScorecard.GrossProfitLine;
 
     public static ScorecardWord? WordOf(int passed, int applied) =>
         applied < FewestRead ? null

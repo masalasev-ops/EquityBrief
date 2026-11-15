@@ -84,7 +84,7 @@ public sealed class SeriesGapStop
         {
             parts.Add(
                 stopped.Count.ToString(CultureInfo.InvariantCulture)
-                + " stopped at a gap ("
+                + Core.Families.RuleWording.SeriesGapStop.StoppedAtAGap
                 + string.Join(
                     ", ",
                     stopped
@@ -96,7 +96,7 @@ public sealed class SeriesGapStop
 
         if (notChecked > 0)
         {
-            parts.Add(notChecked.ToString(CultureInfo.InvariantCulture) + " not checked for gaps");
+            parts.Add(notChecked.ToString(CultureInfo.InvariantCulture) + Core.Families.RuleWording.SeriesGapStop.NotCheckedForGaps);
         }
 
         return ", " + string.Join(", ", parts);

@@ -1,3 +1,4 @@
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
 
 namespace EquityBrief.Core.Loop;
@@ -26,18 +27,18 @@ public sealed record ExitChoice(int Number, ExitKind Kind, double K, double J, i
 {
     public string Words => Kind switch
     {
-        ExitKind.BreakEven => FormattableString.Invariant($"the stop raised to the buy once a close is {K:0.##} risks up"),
+        ExitKind.BreakEven => RuleWording.ExitMenu.BreakEven(K),
         ExitKind.Trail => J > 0
-            ? FormattableString.Invariant($"a trail {K:0.##} typical moves under the highest close once a close is {J:0.##} risks up, with no target")
-            : FormattableString.Invariant($"a trail {K:0.##} typical moves under the highest close from the buy, with no target"),
-        ExitKind.Target => FormattableString.Invariant($"a target at {K:0.##} risks"),
+            ? RuleWording.ExitMenu.TrailOnceUp(K, J)
+            : RuleWording.ExitMenu.TrailFromTheBuy(K),
+        ExitKind.Target => RuleWording.ExitMenu.Target(K),
         ExitKind.Time => X > 0
-            ? FormattableString.Invariant($"sold at the close {N} sessions in unless it is {X:0.##} risks up")
-            : FormattableString.Invariant($"sold at the close {N} sessions in unless it is above the buy"),
-        ExitKind.TimeStop => FormattableString.Invariant($"sold at the close {N} sessions in, whatever the trade stands at"),
-        ExitKind.HalfBreakEven => FormattableString.Invariant($"half sold once a close is {K:0.##} risks up, the stop raised to the buy on the rest"),
-        ExitKind.Standing => "the target standing as a sell order from the buy",
-        _ => FormattableString.Invariant($"half sold at the target and the rest trailed {K:0.##} typical moves under the highest close"),
+            ? RuleWording.ExitMenu.TimeUnlessUp(N, X)
+            : RuleWording.ExitMenu.TimeUnlessAboveTheBuy(N),
+        ExitKind.TimeStop => RuleWording.ExitMenu.TimeStop(N),
+        ExitKind.HalfBreakEven => RuleWording.ExitMenu.HalfBreakEven(K),
+        ExitKind.Standing => RuleWording.ExitMenu.Standing,
+        _ => RuleWording.ExitMenu.HalfTarget(K),
     };
 }
 
@@ -130,7 +131,7 @@ public static class ExitMenu
 
     // From 21.18 the words a variant at the standing target and its picks' cards say, in the operator's words of
     // 2026-11-01.
-    public const string StandingWords = "Sells at the target the moment the price touches it during the day, or at the open if the stock opens above it. Stops still sell at the next open after a close below them.";
+    public const string StandingWords = RuleWording.ExitMenu.StandingWords;
 
     // The exit a number names, none for a rule's own.
     public static ExitChoice? Of(int number) => number <= 0 ? null : Swing.FirstOrDefault(choice => choice.Number == number);

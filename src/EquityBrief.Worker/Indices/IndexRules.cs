@@ -28,7 +28,7 @@ public sealed record IndexRule(string Candidate, IndexRuleCandidate Evaluator, I
 // reaction can reach, by its ticker and report date, under each reading version a standing rule names; and from 20.11
 // each member's quarters' revenue as first filed, over the facts filed before the session before the night, which are
 // those the night's filings refresh had stored, read only where a standing drift rule reads it.
-// see: A member's coverage is read on the night only over quarters whose fetch read their interest expense
+// see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
 // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
 // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
 public sealed record IndexLevels(
@@ -716,9 +716,9 @@ public static class IndexRules
         var family = evaluator switch
         {
             IndexBreakoutCandidate => FormattableString.Invariant(
-                $"breakout rule at a {p[IndexBreakoutCandidate.HighSessionsParameter]}-session high, {Number(p[IndexBreakoutCandidate.VolumeMultipleParameter])} times the volume, ranges at {(p[IndexBreakoutCandidate.RangeCeilingParameter] == 0 ? "no ceiling" : Number(p[IndexBreakoutCandidate.RangeCeilingParameter]))} and the stop {Number(p[IndexBreakoutCandidate.StopMovesParameter])} typical moves beneath"),
+                $"breakout rule at a {p[IndexBreakoutCandidate.HighSessionsParameter]}-session high, {Number(p[IndexBreakoutCandidate.VolumeMultipleParameter])} times the volume, {RuleWording.TakeProfit.Ranges(p[IndexBreakoutCandidate.RangeCeilingParameter], Number(p[IndexBreakoutCandidate.RangeCeilingParameter]))} and the stop {RuleWording.TakeProfit.Moves(p[IndexBreakoutCandidate.StopMovesParameter], Number(p[IndexBreakoutCandidate.StopMovesParameter]))} beneath"),
             IndexDriftCandidate => FormattableString.Invariant(
-                $"drift rule within {p[IndexDriftCandidate.WindowSessionsParameter]} sessions, up {Number(p[IndexDriftCandidate.ReactionMovesParameter])} typical moves on {Number(p[IndexDriftCandidate.VolumeMultipleParameter])} times the volume, the target at {Number(p[IndexDriftCandidate.TargetMultipleParameter])} times the risk")
+                $"drift rule within {p[IndexDriftCandidate.WindowSessionsParameter]} sessions, up {RuleWording.TakeProfit.Moves(p[IndexDriftCandidate.ReactionMovesParameter], Number(p[IndexDriftCandidate.ReactionMovesParameter]))} on {Number(p[IndexDriftCandidate.VolumeMultipleParameter])} times the volume, the target at {Number(p[IndexDriftCandidate.TargetMultipleParameter])} times the risk")
                 + (p[IndexDriftCandidate.StopFloorParameter] > 0 ? FormattableString.Invariant($", the stop at least {Number(p[IndexDriftCandidate.StopFloorParameter])} typical move beneath") : string.Empty),
             IndexHeavyweightCandidate when p[IndexHeavyweightCandidate.DesignParameter] == IndexHeavyweightCandidate.DesignA => FormattableString.Invariant(
                 $"heavyweights rule of each sector's {(p[IndexHeavyweightCandidate.LargestParameter] == 0 ? "every member" : Number(p[IndexHeavyweightCandidate.LargestParameter]) + " largest members")} leading it {StrengthWords(p)}, {p[IndexHeavyweightCandidate.LeadersParameter]} leader(s) a sector{(p[IndexHeavyweightCandidate.BetaParameter] == 1 ? " with a beta of at least 1" : string.Empty)}, sold {ExitWords(p)}"),

@@ -23,7 +23,7 @@ public sealed class DriftCandidate : FamilyRuleEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "809d9540db6f";
+    public override string Version => "10729cac95d2";
 
     public override string Family => DriftRule.Name;
 

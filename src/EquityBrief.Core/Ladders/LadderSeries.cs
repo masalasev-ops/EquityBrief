@@ -1,3 +1,4 @@
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Levels;
 using EquityBrief.Core.Providers;
 
@@ -198,12 +199,12 @@ public static class LadderSeries
         // see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
         if (trendState is TrendState.Downtrend)
         {
-            return new Ladder([], [], null, "the trend is down, so no tranche is placed", []);
+            return new Ladder([], [], null, RuleWording.LadderSeries.TrendDown, []);
         }
 
         if (trendState is TrendState.NotClassified)
         {
-            return new Ladder([], [], null, "the trend state could not be classified, so no tranche is placed", []);
+            return new Ladder([], [], null, RuleWording.LadderSeries.TrendNotClassified, []);
         }
 
         // Support bands whose low edge is below the close, nearest first. The
@@ -229,8 +230,8 @@ public static class LadderSeries
                 [],
                 null,
                 eligible.Length == 0
-                    ? "no support band sits below the price"
-                    : "no support band below the price has an anchor other than a moving average",
+                    ? RuleWording.LadderSeries.NoSupportBelow
+                    : RuleWording.LadderSeries.NoAnchoredSupportBelow,
                 []);
         }
 
@@ -420,7 +421,7 @@ public static class LadderSeries
                     isTraded ? share : "0",
                     isTraded
                         ? null
-                        : FormattableString.Invariant($"closer than {nearExitInTypicalDays} typical days' moves to the blended entry"));
+                        : RuleWording.LadderSeries.CloserThan(nearExitInTypicalDays));
             }),
         ];
     }
@@ -473,9 +474,9 @@ public static class LadderSeries
             var entry = band.HighEdge;
 
             setups.Add(new EventSetup(
-                "a breakout before the print",
+                RuleWording.LadderSeries.BreakoutBeforeThePrint,
                 date,
-                FormattableString.Invariant($"a daily close above {band.HighEdge} on volume above its fifty-day average, with the print still ahead"),
+                RuleWording.LadderSeries.BreakoutTrigger(band.HighEdge),
                 entry,
                 StopBelow(band, typicalMove),
                 TargetAbove(resistance, entry, typicalMove)));
@@ -500,9 +501,9 @@ public static class LadderSeries
             var target = close > band.HighEdge ? close : band.HighEdge;
 
             setups.Add(new EventSetup(
-                "a flush after the print",
+                RuleWording.LadderSeries.FlushAfterThePrint,
                 date,
-                FormattableString.Invariant($"the session after the print closes down more than {NearExitInTypicalDays} typical days and inside {band.LowEdge} to {band.HighEdge}, and the next session holds its low"),
+                RuleWording.LadderSeries.FlushTrigger(NearExitInTypicalDays, band.LowEdge, band.HighEdge),
                 band.LowEdge,
                 StopBelow(band, typicalMove),
                 target));
@@ -518,9 +519,9 @@ public static class LadderSeries
             var entry = band.HighEdge + typicalMove;
 
             setups.Add(new EventSetup(
-                "a gap up after the print",
+                RuleWording.LadderSeries.GapUpAfterThePrint,
                 date,
-                FormattableString.Invariant($"the session after the print opens above {band.HighEdge} and closes above its own open"),
+                RuleWording.LadderSeries.GapTrigger(band.HighEdge),
                 entry,
                 StopBelow(band, typicalMove),
                 TargetAbove(resistance, entry, typicalMove)));
@@ -615,7 +616,7 @@ public static class LadderSeries
     {
         if (plan.Tranches.Count == 0)
         {
-            return Absent("no tranche is placed, so there is nothing to size");
+            return Absent(RuleWording.LadderSeries.NothingToSize);
         }
 
         var traded = plan.Exits.Where(exit => exit.Traded).ToArray();
@@ -630,14 +631,14 @@ public static class LadderSeries
         // see: An exit closer than two typical days' moves is listed but not traded
         if (traded.Length == 0)
         {
-            return Absent("no exit is traded, so there is no reward to measure");
+            return Absent(RuleWording.LadderSeries.NoRewardToMeasure);
         }
 
         var target = traded[0].LowEdge;
 
         if (first.Stop is not { } firstStop)
         {
-            return Absent("the first tranche has no stop, so there is no risk to measure");
+            return Absent(RuleWording.LadderSeries.NoRiskToMeasure);
         }
 
         var firstRisk = firstEntry - firstStop;

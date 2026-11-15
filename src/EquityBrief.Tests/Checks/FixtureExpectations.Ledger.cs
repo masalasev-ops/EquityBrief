@@ -84,11 +84,13 @@ public partial class FixtureExpectations
 
         // The catalogue names each column once, and from 20.8 holds the four release readings at its end, from 22.2 before
         // the short-term dip's nine, from 22.8 those before the fundamentals scorecard's nine, and from 21.4 those before the
-        // five readings the operator chose at 21.2 and the business's state off the SEC's facts after them.
+        // five readings the operator chose at 21.2 and the business's state off the SEC's facts after them, and from 23.10's
+        // second part those before the entry check's nine.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(100, LedgerReadings.Count);
-        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.SkipLast(24).TakeLast(4).Select(reading => reading.Column));
-        Assert.Equal(["relative_strength_high", "insider_cluster_buyers", "rating_actions_net", "estimate_revision_month", "short_interest_share", LedgerReadings.BusinessStateFiled], LedgerReadings.All.TakeLast(6).Select(reading => reading.Column));
+        Assert.Equal(109, LedgerReadings.Count);
+        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.SkipLast(33).TakeLast(4).Select(reading => reading.Column));
+        Assert.Equal(["relative_strength_high", "insider_cluster_buyers", "rating_actions_net", "estimate_revision_month", "short_interest_share", LedgerReadings.BusinessStateFiled], LedgerReadings.All.SkipLast(9).TakeLast(6).Select(reading => reading.Column));
+        Assert.Equal(["stretch_days", "stretch_share", "gain_twenty", "largest_gain", "night_volume_ratio", "gap_days", "highest_since_years", "older_days", "one_off_share"], LedgerReadings.All.TakeLast(9).Select(reading => reading.Column));
     }
 
     [Fact]

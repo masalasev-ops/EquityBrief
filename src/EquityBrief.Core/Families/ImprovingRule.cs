@@ -1,4 +1,3 @@
-using System.Globalization;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Releases;
@@ -9,9 +8,7 @@ namespace EquityBrief.Core.Families;
 // at or above, each stated in nine and read as a share of the checks that applied, and the most sessions a trade is held.
 public sealed record ImprovingSettings(int BuyInNine, int HoldInNine, int Sessions)
 {
-    public string Words => string.Create(
-        CultureInfo.InvariantCulture,
-        $"a newly read filing lifting its score to at least {BuyInNine} in 9 of the checks that apply and above its previous filing's, with its sales growth over a year faster than the quarter before; bought at the next open, held while its score stays at {HoldInNine} in 9 or better, and sold at the close of the night a new filing drops it below that, at the close of its {Sessions}th session or at its last close as a member");
+    public string Words => RuleWording.ImprovingRule.Words(BuyInNine, HoldInNine, Sessions);
 }
 
 // Whether a member whose newest filing was read on the night is bought, and why not where it is not.
@@ -30,10 +27,10 @@ public static class ImprovingRule
 
     public const string Label = "Fundamentals";
 
-    public const string Description = "Finds companies whose business is strong or getting stronger, read from their filings with the SEC and their results releases.";
+    public const string Description = RuleWording.ImprovingRule.Description;
 
     // The line its tile states what it looks for in.
-    public const string Looks = "A company whose business is strong or getting stronger, read from its filings and results release.";
+    public const string Looks = RuleWording.ImprovingRule.Looks;
 
     // The S&P 500's code in the store, the first of the three indices the family reads.
     public const string LargeIndex = "GSPC";
@@ -56,23 +53,23 @@ public static class ImprovingRule
     public const string Open = "open";
     public const string ScoreFell = "score fell";
     public const string TimeLimit = "time limit";
-    public const string LeftTheIndex = "left the index";
+    public const string LeftTheIndex = RuleWording.ImprovingRule.LeftTheIndex;
 
     // From 21.16 a trade of a rule selling under its 200-day average sold at a close under it.
-    public const string UnderItsAverage = "under its 200-day average";
+    public const string UnderItsAverage = RuleWording.ImprovingRule.UnderItsAverage;
 
     // Why a member whose newest filing was read on the night is not bought, in the rule's order.
-    public const string NoWord = "too few checks read for a score";
-    public const string NotHigher = "no higher than its previous filing's score";
-    public const string UnderTheBar = "a score under the bar";
-    public const string GrowthNotRead = "its sales growth not read";
-    public const string NotFaster = "its sales growth not faster than the quarter before";
-    public const string NoFlagBefore = "no flag stood the night before";
+    public const string NoWord = RuleWording.ImprovingRule.NoWord;
+    public const string NotHigher = RuleWording.ImprovingRule.NotHigher;
+    public const string UnderTheBar = RuleWording.ImprovingRule.UnderTheBar;
+    public const string GrowthNotRead = RuleWording.ImprovingRule.GrowthNotRead;
+    public const string NotFaster = RuleWording.ImprovingRule.NotFaster;
+    public const string NoFlagBefore = RuleWording.ImprovingRule.NoFlagBefore;
 
     // What every frozen card of the family adds beneath the line its recorded answer gives, on the operator's answers of
     // 2026-10-28: the readings its history was tested on were read by a model whose training may hold what followed them.
     // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
-    public const string ReadingsCaveat = "Its release readings before February 2025 were read by a model trained after them, so its history may flatter it; its record from today is what counts.";
+    public const string ReadingsCaveat = RuleWording.ImprovingRule.ReadingsCaveat;
 
     // A flag: a release accepted after the newest filing the scorecard reads, reading results better and an outlook
     // raised or kept. A flag buys nothing.

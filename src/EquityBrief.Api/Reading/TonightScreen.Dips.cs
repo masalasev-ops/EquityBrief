@@ -14,16 +14,28 @@ namespace EquityBrief.Api.Reading;
 // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public static partial class TonightScreen
 {
-    // The dip's market setting in words, which its own check and the market line read, and on a night its part failed
-    // that it lists nothing for that.
+    const string DipFailedWords = "the short-term dip's part of the night failed, so it lists nothing tonight and the Run page names the cause";
+
+    // From the operator's order of 2026-11-14 the sentence on the dip's own check, in plain words: what it needs before it buys,
+    // and whether it held tonight; on their review of PR 699 the same on the market line, its tile and its card.
     public static string DipSettingWords(DipNightRow night) =>
         night.Fault is not null
-            ? "the short-term dip's part of the night failed, so it lists nothing tonight and the Run page names the cause"
-            : night.Market == DipRule.MarketOff
+            ? DipFailedWords
+            : DipRule.MarketLevels(night.Index).FirstOrDefault(level => level.Key == night.Market) is not { } level || level.Key == DipRule.MarketOff
                 ? RuleOf(night) == ProvisionalDip
-                    ? "the short-term dip reads its own market setting, none while it is provisional, and its list is open"
-                    : "the short-term dip reads its own market setting, none, and its list is open"
-                : $"the short-term dip reads its own market setting, {DipRule.MarketWordsOn(night.Index, night.Market)}, which {(night.MarketOpen ? "left its list open" : "closed its list")}";
+                    ? "the short-term dip uses no market check while it is provisional, so it could buy tonight"
+                    : "the short-term dip uses no market check of its own, so it could buy tonight"
+                : $"the short-term dip uses its own check instead: it buys only when {DipCondition(night.Index, level)}. Tonight it {(night.MarketOpen ? "is, so the dip could buy" : "is not, so the dip could not buy")}";
+
+    // A dip's market level as what it needs in plain words, each a thing that is or is not so tonight.
+    static string DipCondition(string index, DipMarketLevel level) => level.Reads switch
+    {
+        DipRule.ReadsVix => "the VIX is above its typical level of the past year",
+        DipRule.ReadsLargeBreadth => FormattableString.Invariant($"the share of S&P 500 stocks above their 200-day average is at least {level.Floor * 100:0.#}%"),
+        DipRule.ReadsOwnBreadth => FormattableString.Invariant($"the share of {Universes.ByCode(index)?.Name ?? index} stocks above their 200-day average is at least {level.Floor * 100:0.#}%"),
+        DipRule.ReadsFund => $"the index's fund, {DipRule.FundOf(index)}, is above its 200-day average",
+        _ => level.Condition,
+    };
 
     // The rule the dip's card is drawn by on a night, as its night's settings name it: the provisional rule before a
     // freeze and from 22.3 the live rule after one.
@@ -273,7 +285,9 @@ public static partial class TonightScreen
 
         if (!night.MarketOpen)
         {
-            return $"Its own market setting closed this setup's list tonight: {DipSettingWords(night)}.";
+            var said = DipSettingWords(night);
+
+            return char.ToUpperInvariant(said[0]) + said[1..] + ".";
         }
 
         if (results.Count == 0)

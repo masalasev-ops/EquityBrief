@@ -8,7 +8,7 @@ namespace EquityBrief.Tests.Checks;
 
 // fixture-expectations, 22.18: the close at which a breakout's rising give-up price first reaches its buy, worked by hand
 // over a constructed plan in the fixture's expectation, against the rule's own trailing exit walked over the same closes.
-// see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
+// see: A plan selling on a rising give-up price draws that price and the price at which it can no longer lose, and no card says it has no fixed target
 public partial class FixtureExpectations
 {
     [Fact]

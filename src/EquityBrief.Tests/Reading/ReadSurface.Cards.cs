@@ -199,13 +199,13 @@ public partial class ReadSurface
         Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>How this setup has done</h5><p class=\"degraded\">No record yet", rows["S1"], StringComparison.Ordinal);
 
         // From the 18.4 correction of 2026-10-28 the short version code writes for M1, which no trade gate read a plan for,
-        // says its trade is the breakout's, drawn on its card below, where it said no plan was stored above that card; M3,
-        // whose page draws no card, still says none is.
+        // says its trade is the breakout's, drawn on its card below, where it said no plan was stored above that card. From the
+        // operator's order of 2026-11-14 M3, met again while its pullback trade is open, has its card too, and says the same.
         var m1Plan = Part(CodeSummary(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}"))), "plan");
 
         Assert.StartsWith("Its trade is the one the breakout picked it for, in at about ", m1Plan, StringComparison.Ordinal);
         Assert.EndsWith(", drawn on its card below with its exit.", m1Plan, StringComparison.Ordinal);
-        Assert.Equal("No plan with an entry, a stop and a target is stored for this night.", Part(CodeSummary(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M3/{IndexNight}"))), "plan"));
+        Assert.StartsWith("Its trade is the one the pullback picked it for", Part(CodeSummary(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M3/{IndexNight}"))), "plan"), StringComparison.Ordinal);
 
         // The S&P 500's Tonight, whose families drew nothing on the night, draws no card, and M3, which no family listed,
         // has none on its page.
@@ -517,7 +517,9 @@ public partial class ReadSurface
         Assert.DoesNotContain("(s)", gates + why, StringComparison.Ordinal);
     }
 
-    // The cards the night stored, each line read off the stored lines by the test's own reading.
+    // The cards the night stored for its picks, each line read off the stored lines by the test's own reading. From the
+    // operator's order of 2026-11-14 a card for a stock met again while held stands in a group of its own, which the wording
+    // guard reads back, so none of these.
     static IReadOnlyList<StoredCard> StoredCards(TemporaryStore store)
     {
         var cards = new List<StoredCard>();
@@ -525,7 +527,7 @@ public partial class ReadSurface
         using var connection = store.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT index_code, family, ticker, lines, record FROM decision_card ORDER BY index_code, family, ticker;";
+        command.CommandText = "SELECT index_code, family, ticker, lines, record FROM decision_card WHERE held_again IS NULL ORDER BY index_code, family, ticker;";
 
         using var reader = command.ExecuteReader();
 

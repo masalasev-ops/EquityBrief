@@ -146,7 +146,7 @@ public sealed class FamilyLister : IComponent
 
         if (night is not { } session)
         {
-            await AppendAsync(connection, null, runId, startedAt, 0, "no session is stored, so no list was drawn", cancellation);
+            await AppendAsync(connection, null, runId, startedAt, 0, RuleWording.FamilyLister.NoSession, cancellation);
 
             return new FamilyListOutcome(null, 0, 0, 0, 0, []);
         }
@@ -158,7 +158,7 @@ public sealed class FamilyLister : IComponent
 
             if (Convert.ToInt32(await ran.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture) == 0)
             {
-                await AppendAsync(connection, null, runId, startedAt, 0, FormattableString.Invariant($"the swing filter stored no result for {session:yyyy-MM-dd}, so no list was drawn"), cancellation);
+                await AppendAsync(connection, null, runId, startedAt, 0, RuleWording.FamilyLister.NoFilterResult(session), cancellation);
 
                 return new FamilyListOutcome(null, 0, 0, 0, 0, []);
             }
@@ -274,10 +274,10 @@ public sealed class FamilyLister : IComponent
 
     // What the stage's row says: the list's size, each family's share of it, and what was held back.
     public static string Detail(FamilyListOutcome outcome) =>
-        FormattableString.Invariant($"{outcome.Listed} listed for {outcome.Night:yyyy-MM-dd}: ")
-        + string.Join(", ", outcome.Families.Select(family => FormattableString.Invariant($"{family.Listed} of the {family.Qualified} the {family.Family} family passed")))
-        + FormattableString.Invariant($"; {outcome.OpenTrade} held back by a trade still open, {outcome.UnderAnother} listed under another family, {outcome.PastFive} past a family's {SetupFamilies.ListedANight}")
-        + (outcome.IndexTradesFault is { } fault ? $"; the S&P 400's and 600's trades could not be read, so none held a stock back: {fault}" : string.Empty);
+        RuleWording.FamilyLister.ListedFor(outcome.Listed, outcome.Night)
+        + string.Join(", ", outcome.Families.Select(family => RuleWording.FamilyLister.FamilyPassed(family.Listed, family.Qualified, family.Family)))
+        + RuleWording.FamilyLister.HeldBack(outcome.OpenTrade, outcome.UnderAnother, outcome.PastFive, SetupFamilies.ListedANight)
+        + (outcome.IndexTradesFault is { } fault ? RuleWording.FamilyLister.IndexTradesUnread(fault) : string.Empty);
 
     // The names a family passed on the night, in its own order.
     static async Task<IReadOnlyList<string>> QualifiersAsync(SqliteConnection connection, SetupFamily family, DateOnly night, CancellationToken cancellation)

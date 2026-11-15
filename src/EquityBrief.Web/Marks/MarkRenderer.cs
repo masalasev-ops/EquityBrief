@@ -275,10 +275,11 @@ public static class PickStatus
 
     public static IReadOnlyList<string> Filters { get; } = [Open, ToBuy, Target, Stopped, Time];
 
-    public static string Words(string status) => status switch
+    // A pick to buy is bought at the open of the trading calendar's next session after its night, named from the calendar.
+    public static string Words(string status, DateOnly? night = null) => status switch
     {
         Open => "Open",
-        ToBuy => "To buy at tomorrow's open",
+        ToBuy => "To buy at " + MarkRenderer.OpenDay(night) + " open",
         Waiting => "Waiting for its price",
         NotFilled => "Not filled, no trade",
         Target => "Reached target",
@@ -326,6 +327,10 @@ public sealed record PicksSummary(
     int StillWaiting = 0,
     int NotFilled = 0)
 {
+    // From the operator's order of 2026-11-14 the night the counts stand at, whose next session's open a pick is bought and a
+    // fired trade sold at, named from the trading calendar.
+    public DateOnly? Night { get; init; }
+
     public int Finished => Target + Stopped + Time;
 
     public int Of(string status) => status switch
@@ -378,7 +383,9 @@ public sealed record MemberReadingsView(
     double? IndustryQuarter,
     double? PeerSurprise,
     RatingsView? Ratings = null,
-    DateOnly? SharesFiledOn = null);
+    DateOnly? SharesFiledOn = null,
+    DateOnly? CoverTo = null,
+    bool CoverFilingNotIn = false);
 
 // A company's analysts' rating counts as its newest fetch filed them, with the day of the fetch and their total.
 public sealed record RatingsView(DateOnly Fetched, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell, int? Total, bool BeforeCounts = false);
@@ -3355,7 +3362,7 @@ public sealed partial class MarkRenderer : IComponent
                     ? Formatted($"{Price(now)} on {DayOf(on)}, {against}")
                     : Formatted($"no close stored to place, {against}"),
                 PickStatus.Missing => Formatted($"no outcome stored, {against}; read as open until its sessions run out"),
-                _ => Formatted($"{PickStatus.Words(trade.Status).ToLowerInvariant()} at this close, {against}; free again from the next night"),
+                _ => Formatted($"{PickStatus.Words(trade.Status, trade.Night).ToLowerInvariant()} at this close, {against}; free again from the next night"),
             };
         }
     }
@@ -4696,7 +4703,7 @@ public sealed partial class MarkRenderer : IComponent
         // A stock a family holds a trade in opens on that trade, before why it is or is not listed.
         // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
         var holding = card is null && held is { } trade
-            ? FormattableString.Invariant($"Held on the trade the {SetupOf(trade.Card.Family)} picked it for on {trade.Pick.Night:yyyy-MM-dd}, {PickStatus.Words(trade.Pick.Status).ToLowerInvariant()}{(trade.Pick.Buy is { } fill ? ", bought at " + Price(fill) : string.Empty)}{(trade.RewardToRisk is { } heldRatio ? FormattableString.Invariant($", its reward to risk at the fill {heldRatio:0.00}") : string.Empty)}. ")
+            ? FormattableString.Invariant($"Held on the trade the {SetupOf(trade.Card.Family)} picked it for on {trade.Pick.Night:yyyy-MM-dd}, {PickStatus.Words(trade.Pick.Status, trade.Pick.Night).ToLowerInvariant()}{(trade.Pick.Buy is { } fill ? ", bought at " + Price(fill) : string.Empty)}{(trade.RewardToRisk is { } heldRatio ? FormattableString.Invariant($", its reward to risk at the fill {heldRatio:0.00}") : string.Empty)}. ")
             : string.Empty;
 
         var why = holding + (passed is { } through
@@ -6997,6 +7004,15 @@ public sealed partial class MarkRenderer : IComponent
         var noBar = Short("not read: it holds no bar on the night, or its stored series holds a hole");
         var barred = view.Close is not null;
 
+        // From 23.10's second part the quarters the cover reads where they are older than the profit check's: its interest
+        // and its operating income both from the four newest quarters whose filing states interest, the newest quarter read
+        // from its results release while its filing is not in, or from a filing stating no interest.
+        // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
+        static string CoverNote(MemberReadingsView read) =>
+            read.CoverTo is { } to
+                ? Formatted($" <small class=\"cover-to\" data-cover-to=\"{DayOf(to)}\">Interest cover read from the quarters to {DayOf(to)}; the newest quarter's {(read.CoverFilingNotIn ? "filing is not in yet" : "filing states no interest")}.</small>")
+                : string.Empty;
+
         Row("close", "Its close as traded", Stored(view.Close), view.Close is { } close ? Price(close) : noBar);
         Row(
             "dollar-volume",
@@ -7037,7 +7053,8 @@ public sealed partial class MarkRenderer : IComponent
                 true => "at or above it: the coverage passes",
                 false => Formatted($"under it, or fewer than {MemberReadings.Quarters} quarters filed with an operating income: the coverage fails"),
                 null => Short("not read: a quarter it reads was fetched before its interest expense was stored"),
-            });
+            }
+            + CoverNote(view));
         Row(
             "state",
             "Its reported quarters' state",
@@ -7300,7 +7317,7 @@ public sealed partial class MarkRenderer : IComponent
 
             default:
                 mark.Append(Invariant, $"<circle class=\"tl-done\" cx=\"{Number(At(pick.Along!.Value))}\" cy=\"{Middle}\" r=\"4.5\"/>");
-                mark.Append(Invariant, $"<title>{plan}; {PickStatus.Words(pick.Status).ToLowerInvariant()} on {(pick.EndedOn is { } ended ? DayOf(ended) : "none")}, {(pick.ReturnPct is { } made ? made.ToString("+0.00;-0.00;0.00", Invariant) : "none")}% from the buy</title>");
+                mark.Append(Invariant, $"<title>{plan}; {PickStatus.Words(pick.Status, pick.Night).ToLowerInvariant()} on {(pick.EndedOn is { } ended ? DayOf(ended) : "none")}, {(pick.ReturnPct is { } made ? made.ToString("+0.00;-0.00;0.00", Invariant) : "none")}% from the buy</title>");
                 break;
         }
 
@@ -7399,7 +7416,7 @@ public sealed partial class MarkRenderer : IComponent
     // name's, the buy, the stop and the target each whole on its cell, the trade line, the status in words,
     // the sessions held and the result as a signed multiple of the risk, or open. A table on a name's own
     // page leaves the stock out and links the night to that night's page instead.
-    public string PicksTable(IReadOnlyList<PickCell> rows, bool named)
+    public string PicksTable(IReadOnlyList<PickCell> rows, bool named, DateOnly? night = null)
     {
         var table = new StringBuilder();
 
@@ -7452,7 +7469,7 @@ public sealed partial class MarkRenderer : IComponent
             // The status, and on a listing that repeated a trade still open, the mark saying so: the row is
             // drawn as the night stored it and counted in no total.
             // see: A repeat listing made before the rule reached the filter is marked and counted once
-            table.Append(Invariant, $"<td class=\"status\">{(row.FiredWords is { } fired ? Formatted($"{Escaped(TradeGroupsView.SellsWords)}: {Escaped(fired)}") : PickStatus.Words(row.Status))}{(row.Sale is { } sale ? Formatted($", sold at {Price(sale)}") : string.Empty)}{(row.RepeatOf is { } repeated ? Formatted($"<span class=\"listed-again\" data-repeat-of=\"{DayOf(repeated)}\">listed again while the trade from {DayOf(repeated)} was open</span>") : string.Empty)}</td>");
+            table.Append(Invariant, $"<td class=\"status\">{(row.FiredWords is { } fired ? Formatted($"{Escaped(TradeGroupsView.SellsWords(night))}: {Escaped(fired)}") : PickStatus.Words(row.Status, row.Night))}{(row.Sale is { } sale ? Formatted($", sold at {Price(sale)}") : string.Empty)}{(row.RepeatOf is { } repeated ? Formatted($"<span class=\"listed-again\" data-repeat-of=\"{DayOf(repeated)}\">listed again while the trade from {DayOf(repeated)} was open</span>") : string.Empty)}</td>");
             table.Append(Invariant, $"<td class=\"r num\" data-sessions=\"{(row.Sessions is { } counted ? counted.ToString(Invariant) : "none")}\">{(row.Sessions is { } sessions ? sessions.ToString(Invariant) : "<span class=\"degraded\">not counted</span>")}</td>");
             table.Append(row.Status == PickStatus.Open
                 ? "<td class=\"r res open\" data-result=\"open\">open</td>"
@@ -7493,9 +7510,9 @@ public sealed partial class MarkRenderer : IComponent
             .. summary.NotFilled > 0 ? [(PlanOrderWords.NotFilledHeading, summary.NotFilled)] : Array.Empty<(string, int)>(),
         ];
 
-        foreach (var (words, count) in new[] { ("To buy at tomorrow's open", summary.ToBuy) }.Concat(waiting).Concat([("Still open", summary.Open), ("Finished", summary.Finished), ("Reached target", summary.Target), ("Stopped out", summary.Stopped), ("Ran out of time", summary.Time)]))
+        foreach (var (words, count) in new[] { (PickStatus.Words(PickStatus.ToBuy, summary.Night), summary.ToBuy) }.Concat(waiting).Concat([("Still open", summary.Open), ("Finished", summary.Finished), ("Reached target", summary.Target), ("Stopped out", summary.Stopped), ("Ran out of time", summary.Time)]))
         {
-            counts.Append(Invariant, $"<div><dt>{words}</dt><dd>{count}{(words == "Still open" && summary.Selling > 0 ? Formatted($"<span class=\"grp\">{Escaped(TradeGroupsView.Selling(summary.Selling))}</span>") : string.Empty)}</dd></div>");
+            counts.Append(Invariant, $"<div><dt>{Escaped(words)}</dt><dd>{count}{(words == "Still open" && summary.Selling > 0 ? Formatted($"<span class=\"grp\">{Escaped(TradeGroupsView.Selling(summary.Selling, summary.Night))}</span>") : string.Empty)}</dd></div>");
         }
 
         counts.Append("</dl>");
@@ -8152,7 +8169,7 @@ public sealed partial class MarkRenderer : IComponent
     // tiles Past picks draws: how many it listed, how many are open and how many decided against the count a share waits on.
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     public string TradesLine(PicksSummary summary, string picks) =>
-        Formatted($"<p class=\"run-trades\" data-listed=\"{summary.Listed}\" data-open=\"{summary.Open}\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\" data-to-buy=\"{summary.ToBuy}\">The pullback's trades under every version, part of {TradeGroupsView.SystemWords}: {summary.Listed - summary.ToBuy} bought, {summary.Open} still open{(summary.Selling > 0 ? ", " + TradeGroupsView.Selling(summary.Selling) : string.Empty)}, {summary.Decided} decided of the {summary.MinimumDecided} a share waits on{(summary.ToBuy > 0 ? Formatted($", and {summary.ToBuy} {TradeGroupsView.ToBuyWords}") : string.Empty)}. <a href=\"{Escaped(picks)}\">Open their trade log &#8594;</a> This version's alone are on <a href=\"#/paper\">Paper trading</a>.</p>");
+        Formatted($"<p class=\"run-trades\" data-listed=\"{summary.Listed}\" data-open=\"{summary.Open}\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\" data-to-buy=\"{summary.ToBuy}\">The pullback's trades under every version, part of {TradeGroupsView.SystemWords}: {summary.Listed - summary.ToBuy} bought, {summary.Open} still open{(summary.Selling > 0 ? ", " + TradeGroupsView.Selling(summary.Selling, summary.Night) : string.Empty)}, {summary.Decided} decided of the {summary.MinimumDecided} a share waits on{(summary.ToBuy > 0 ? Formatted($", and {summary.ToBuy} {TradeGroupsView.ToBuyWords(summary.Night)}") : string.Empty)}. <a href=\"{Escaped(picks)}\">Open their trade log &#8594;</a> This version's alone are on <a href=\"#/paper\">Paper trading</a>.</p>");
 
     // Is the list finding new stocks, section 15.10's fifth region: a bar for each evening up to the night, the
     // part new that evening and the part also on the list the evening before, and the night's split in words.

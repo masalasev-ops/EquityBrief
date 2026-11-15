@@ -34,7 +34,7 @@ public static class PlanScreen
                     Unfilled =
                     [
                         .. unfilled.Select(one => byKey.TryGetValue((owner, one.Ticker, one.Listed), out var row) && row.Fill is null
-                            ? (one.Ticker, one.Listed, row.NotFilled ? PlanOrderWords.NotFilled : WaitingWords(row))
+                            ? (one.Ticker, one.Listed, row.NotFilled ? PlanOrderWords.NotFilledOf(row.Order) : WaitingWords(row))
                             : one),
                     ],
                 }
@@ -73,11 +73,19 @@ public static class PlanScreen
             ? Statistic.ToPrice(placed)
             : row.Stop;
 
-    // How a filled plan trade ended, read off its sale against its target and its stop, time otherwise.
+    // How a filled plan trade ended, read off its sale against its target and its stop, time otherwise; from the operator's order
+    // of 2026-11-14 its target the price its walk took profit at from its fill.
     static string Ending(PlannedTradeRow row, decimal? stop) =>
-        row.Sale is { } sale && row.Order.Target is { } target && sale >= Statistic.ToPrice(target) ? PickStatus.Target
+        row.Sale is { } sale && TargetOf(row, stop) is { } target && sale >= target ? PickStatus.Target
         : row.Sale is { } sold && stop is { } floor && sold <= floor ? PickStatus.Stopped
         : PickStatus.Time;
+
+    static decimal? TargetOf(PlannedTradeRow row, decimal? stop) =>
+        (row.Fill is { } fill && stop is { } floor
+            ? row.Order.SaleFrom(Statistic.FromPrice(fill), Statistic.FromPrice(floor)).Target
+            : row.Order.Target) is { } target
+            ? Statistic.ToPrice(target)
+            : null;
 
     // The S&P 500's page list's cells with each a planned live rule listed drawn as its plan's trade.
     public static IReadOnlyList<PickCell> Cells(IReadOnlyList<PickCell> cells, IReadOnlyList<PlannedTradeRow> planned, DateOnly asOf)
@@ -105,7 +113,7 @@ public static class PlanScreen
                 NowOn = null,
                 NowClose = null,
                 Past = null,
-                Unfilled = row.NotFilled ? PlanOrderWords.NotFilled : WaitingWords(row),
+                Unfilled = row.NotFilled ? PlanOrderWords.NotFilledOf(row.Order) : WaitingWords(row),
                 Waiting = false,
                 FilledOn = null,
                 FiredAs = null,
@@ -188,7 +196,7 @@ public static class PlanScreen
             row.Fill is not null ? row.Result : null,
             null,
             row.Fill,
-            row.Fill is not null ? null : row.NotFilled ? PlanOrderWords.NotFilled : WaitingWords(row),
+            row.Fill is not null ? null : row.NotFilled ? PlanOrderWords.NotFilledOf(row.Order) : WaitingWords(row),
             null,
             row.Fill is not null ? row.Sale : null)
         {

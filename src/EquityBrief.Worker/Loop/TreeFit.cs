@@ -16,7 +16,7 @@ public static class TreeFit
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "a1398ec3803b";
+    public const string Version = "c9580a6cf9b2";
 
     // The trees, the leaves a tree holds at most, the fewest rows a leaf is fitted over, the learning rate, the share
     // of the rows each tree is fitted on and the seed that draws it.

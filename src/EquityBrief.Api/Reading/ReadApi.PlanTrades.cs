@@ -36,9 +36,11 @@ public sealed record PlannedTradeRow(
 
 public sealed partial class ReadApi
 {
-    // The S&P 500's registered rules' trades kept under a plan, their fill and sale as the fill step stored them; the S&P
-    // 400's and 600's the same; and every index's dip rules', the dip's own step storing a fill and an end once the trade
-    // ends. A fill or an end after the night asked for is read as not yet come.
+    // The S&P 500's registered rules' trades kept under a plan, their fill and sale as the fill step stored them, and from
+    // 23.10's second part the swing filter's rules' the same; the S&P 400's and 600's the same; and every index's dip rules',
+    // the dip's own step storing a fill and an end once the trade ends. A fill or an end after the night asked for is read as
+    // not yet come.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
     const string PlannedUpTo = @"
         SELECT t.candidate, 'GSPC', t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.target, NULL, t.cap, t.plan,
                CASE WHEN f.filled_on <= $on THEN f.filled_on END, CASE WHEN f.filled_on <= $on THEN f.fill END,
@@ -47,6 +49,14 @@ public sealed partial class ReadApi
         FROM family_trade t
         LEFT JOIN trade_fill f ON f.source = 'family_trade' AND f.index_code = 'GSPC' AND f.owner = t.candidate AND f.ticker = t.ticker AND f.session_date = t.session_date
         WHERE $index = 'GSPC' AND t.plan IS NOT NULL AND t.session_date <= $on
+        UNION ALL
+        SELECT t.rule, t.index_code, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.target, NULL, t.cap, t.plan,
+               CASE WHEN f.filled_on <= $on THEN f.filled_on END, CASE WHEN f.filled_on <= $on THEN f.fill END,
+               CASE WHEN f.reason IS NOT NULL AND f.filled_on IS NULL THEN 1 ELSE 0 END,
+               CASE WHEN f.sold_on <= $on THEN f.sold_on END, CASE WHEN f.sold_on <= $on THEN f.result END, CASE WHEN f.sold_on <= $on THEN f.sale END
+        FROM rule_pick t
+        LEFT JOIN trade_fill f ON f.source = 'rule_pick' AND f.index_code = t.index_code AND f.owner = t.rule AND f.ticker = t.ticker AND f.session_date = t.session_date
+        WHERE t.index_code = $index AND t.plan IS NOT NULL AND t.session_date <= $on
         UNION ALL
         SELECT t.candidate, t.index_code, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.target, t.trail, t.cap, t.plan,
                CASE WHEN f.filled_on <= $on THEN f.filled_on END, CASE WHEN f.filled_on <= $on THEN f.fill END,

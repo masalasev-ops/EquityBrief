@@ -225,6 +225,38 @@ public sealed class LongHistoryReader : IComponent
         return found;
     }
 
+    // On the operator's answer of 2026-11-14 to item 15 each filer's facts as first filed by the history's end, the standing
+    // table's and the long one's, whose periods meet and do not overlap, which the books' long test scores and values each
+    // member from as the quality and Fundamentals families' history tests do from the standing table alone.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<Core.Ledger.FiledFactRow>>> FiledFactsAsync(IEnumerable<string> ciks, DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        var facts = new Dictionary<string, IReadOnlyList<Core.Ledger.FiledFactRow>>(StringComparer.Ordinal);
+
+        foreach (var cik in ciks.Distinct(StringComparer.Ordinal))
+        {
+            var rows = new List<Core.Ledger.FiledFactRow>();
+
+            foreach (var table in new[] { "filed_fact", "long_fact" })
+            {
+                await foreach (var row in RowsAsync(
+                    connection,
+                    $"SELECT concept, period_start, period_end, dollars, filed, form, accession FROM {table} WHERE cik = $cik AND filed <= $through;",
+                    [("$cik", cik), ("$through", Text(through))],
+                    cancellation))
+                {
+                    rows.Add(new Core.Ledger.FiledFactRow(row.GetString(0), Day(row.GetString(1)), Day(row.GetString(2)), Money.FromStorage(row.GetString(3)), Day(row.GetString(4)), row.GetString(5), row.GetString(6)));
+                }
+            }
+
+            facts[cik] = rows;
+        }
+
+        return facts;
+    }
+
     public const string LongPull = "long";
 
     // From the 23.8 correction each code's quarters of net income, operating income and interest expense off the SEC's facts

@@ -86,7 +86,7 @@ public sealed partial class MarkRenderer
         var open = page.Groups?.ThisVersion.Open ?? page.Open.Count + skippedOpen.Length;
         var closed = page.Groups?.ThisVersion.Closed ?? page.Closed.Count + skippedClosed.Length;
         var selling = page.Groups?.ThisVersion.Selling ?? page.Open.Count(trade => trade.Selling is not null);
-        var after = (selling > 0 ? ", " + TradeGroupsView.Selling(selling) : string.Empty) + NotBoughtWords(skippedOpen);
+        var after = (selling > 0 ? ", " + TradeGroupsView.Selling(selling, page.Groups?.Night) : string.Empty) + NotBoughtWords(skippedOpen);
 
         return open + closed == 0
             ? "No live setup has bought a trade under its current version yet."

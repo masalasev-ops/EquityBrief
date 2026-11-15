@@ -1,7 +1,7 @@
 namespace EquityBrief.Core.Readings;
 
-// One quarter's income as filed: the quarter it closes, the day it was filed, and its net income, operating income and
-// interest expense, each none where the filing states none.
+// One quarter's income as read: the quarter it closes, the day it became known, read by every session after it, and its
+// net income, operating income and interest expense, each none where the document it is read from states none.
 public sealed record FiledIncome(DateOnly PeriodEnd, DateOnly FilingDate, decimal? NetIncome, decimal? OperatingIncome, decimal? InterestExpense);
 
 // The readings a 400 or 600 rule's floors and quality read, each as it stood on a session from what was filed before
@@ -133,9 +133,12 @@ public static class MemberReadings
         return weight > 0 ? weighted / weight : null;
     }
 
-    // The coverage: operating income over the four newest quarters at least twice their interest expense. A company
-    // filing no interest expense on any of them passes, a financial company passes, and fewer than four filed or one
-    // stating no operating income does not.
+    // The coverage: operating income at least twice the interest expense, both read from the four newest quarters stating
+    // their interest, so a quarter holding no interest figure, one read from its results release among them, never lowers
+    // the total. A company stating no interest on any quarter read before the session passes where its four newest state
+    // their operating income, a financial company passes, and fewer than four stating interest, or one of them stating no
+    // operating income, does not.
+    // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
     public static bool Coverage(IEnumerable<FiledIncome> quarters, DateOnly session, string? sector)
     {
         if (string.Equals(sector, Financials, StringComparison.Ordinal))
@@ -143,15 +146,37 @@ public static class MemberReadings
             return true;
         }
 
-        var read = FiledBefore(quarters, session);
+        var read = ReadBefore(quarters, session);
 
-        if (read.Count < Quarters || read.Any(quarter => quarter.OperatingIncome is null))
+        if (read.All(quarter => quarter.InterestExpense is null))
+        {
+            return read.Count >= Quarters && read.Take(Quarters).All(quarter => quarter.OperatingIncome is not null);
+        }
+
+        var cover = CoverQuarters(read, session);
+
+        if (cover.Count < Quarters || cover.Any(quarter => quarter.OperatingIncome is null))
         {
             return false;
         }
 
-        var interest = read.Sum(quarter => Math.Abs(quarter.InterestExpense ?? 0m));
+        var interest = cover.Sum(quarter => Math.Abs(quarter.InterestExpense!.Value));
 
-        return interest == 0m || read.Sum(quarter => quarter.OperatingIncome!.Value) >= CoverageFloor * interest;
+        return interest == 0m || cover.Sum(quarter => quarter.OperatingIncome!.Value) >= CoverageFloor * interest;
     }
+
+    // The quarters the coverage reads on a session, newest first: the four newest read before it that state their
+    // interest, each as first read.
+    public static IReadOnlyList<FiledIncome> CoverQuarters(IEnumerable<FiledIncome> quarters, DateOnly session) =>
+        [.. ReadBefore(quarters, session).Where(quarter => quarter.InterestExpense is not null).Take(Quarters)];
+
+    // Every quarter read before the session, newest first, one read twice read as first read.
+    static IReadOnlyList<FiledIncome> ReadBefore(IEnumerable<FiledIncome> quarters, DateOnly session) =>
+    [
+        .. quarters
+            .Where(quarter => quarter.FilingDate < session)
+            .GroupBy(quarter => quarter.PeriodEnd)
+            .Select(filings => filings.OrderBy(quarter => quarter.FilingDate).First())
+            .OrderByDescending(quarter => quarter.PeriodEnd),
+    ];
 }

@@ -147,7 +147,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
     const string IndexRuleTrades = "SELECT index_code, candidate, ticker, session_date, entry, stop, target, risk_moves, result, benchmark, ended_on, cap, exit, trail, plan FROM index_rule_trade;";
 
-    const string RulePicks = "SELECT index_code, rule, ticker, session_date, entry, stop, target, result, ended_on, cap, plan FROM rule_pick;";
+    const string RulePicks = "SELECT index_code, rule, ticker, session_date, entry, stop, target, result, ended_on, cap, plan, benchmark FROM rule_pick;";
 
     const string LargeBook = "SELECT ticker, entered_on, entry_close, result, cut_return, cut FROM heavyweight_holding;";
 
@@ -568,7 +568,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             Plan = reader.IsDBNull(14) ? null : PlanOrder.FromJson(reader.GetString(14)),
         });
         await ReadAsync(RulePicks, reader => new StoredTrade("rule_pick", reader.GetString(0), reader.GetString(1), reader.GetString(2), Date(reader.GetString(3)),
-            Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), null, Real(reader, 7), null, null)
+            Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), null, Real(reader, 7), Real(reader, 11), null)
         {
             EndedOn = DateOf(reader, 8), Cap = Whole(reader, 9),
             Plan = reader.IsDBNull(10) ? null : PlanOrder.FromJson(reader.GetString(10)),

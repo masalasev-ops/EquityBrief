@@ -55,6 +55,7 @@ public sealed class DipFamily : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.SeriesState, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
@@ -86,7 +87,7 @@ public sealed class DipFamily : IComponent
     public const string ProvisionalRule = "provisional";
 
     // Why a registered rule was not kept on a night: its evaluator's code moved since it was registered.
-    public const string Moved = "its evaluator's code moved since it was registered, so it is kept no further until it is registered again";
+    public const string Moved = RuleWording.DipFamily.Moved;
 
     // The indices the step reads, in the page's order of indices.
     public static IReadOnlyList<string> AllIndices { get; } = [IndexFamilies.LargeIndex, .. IndexFamilies.Indices];
@@ -136,6 +137,9 @@ public sealed class DipFamily : IComponent
         WHERE index_code = $index AND end_reason = 'open' AND session_date < $night
         ORDER BY session_date, ticker;
     ";
+
+    // On the operator's ruling of 2026-11-14, clause 5, the take-profit a trade placed before the rules restart takes.
+    const string AddedTakeProfit = "UPDATE dip_trade SET plan = $plan WHERE rule = $rule AND index_code = $index AND ticker = $ticker AND session_date = $session;";
 
     const string WalkTrade = @"
         UPDATE dip_trade SET bought_on = $bought_on, fill = $fill, past = $past, ended_on = $ended_on, sale = $sale,
@@ -257,7 +261,7 @@ public sealed class DipFamily : IComponent
 
             if (await ScalarAsync(connection, null, NewestSession, [], cancellation) is not string newest)
             {
-                await AppendAsync(connection, runId, startedAt, 0, Ok, "no session: the store holds no bar", cancellation);
+                await AppendAsync(connection, runId, startedAt, 0, Ok, RuleWording.DipFamily.NoSession, cancellation);
 
                 return new DipOutcome(null, []);
             }
@@ -303,7 +307,7 @@ public sealed class DipFamily : IComponent
                 .. AllIndices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => new DipIndexOutcome(index, 0, 0, 0, 0, 0, 0, 0, fault)),
             ];
 
-            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
+            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + RuleWording.DipFamily.StoppedOn(fault), cancellation);
 
             return new DipOutcome(read, all);
         }
@@ -327,9 +331,8 @@ public sealed class DipFamily : IComponent
     // What the step's row says for each index.
     public static string Detail(IReadOnlyList<DipIndexOutcome> outcomes) =>
         string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
-            ? $"{outcome.Index}: not computed tonight, {fault}"
-            : FormattableString.Invariant(
-                $"{outcome.Index}: {outcome.Members} member(s) read, {outcome.Passed} passed, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.UnderAnother} listed under another family, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended{(outcome.Rules > 1 ? FormattableString.Invariant($", {outcome.Rules} rules kept") : string.Empty)}")));
+            ? RuleWording.DipFamily.NotComputedTonight(outcome.Index, fault)
+            : RuleWording.DipFamily.OnTheIndex(outcome.Index, outcome.Members, outcome.Passed, outcome.Listed, outcome.HeldByATrade, outcome.UnderAnother, outcome.TradesKept, outcome.TradesEnded, outcome.Rules)));
 
     // The settings the night read the dip by on an index, the rule its card draws and the words its card states the rule
     // in, its market setting in the index's words.
@@ -338,7 +341,7 @@ public sealed class DipFamily : IComponent
         rule,
         setting = setting.Short,
         words = setting.WordsOn(index),
-        floors = "the price and dollar volume floors the index families read",
+        floors = RuleWording.DipFamily.Floors,
     });
 
     // What a market setting reads on an index on the night, read once for every rule: the S&P 500's breadth, and the
@@ -573,21 +576,21 @@ public sealed class DipFamily : IComponent
 
         if (DipRule.MarketLevels(index).FirstOrDefault(level => level.Key == key) is not { } level || market is null)
         {
-            return new Gate(DipRule.MarketGate, false, $"its market setting {key} is no level the index reads", FamilyRule.Values(("setting", key)));
+            return new Gate(DipRule.MarketGate, false, RuleWording.DipFamily.NoLevel(key), FamilyRule.Values(("setting", key)));
         }
 
         var at = market.Calendar.ToList().IndexOf(night);
 
         return level.Reads switch
         {
-            DipRule.ReadsOwnBreadth => DipRule.MarketOn(level, inputs?.Breadth >= level.Floor, "the index's own breadth at " + FamilyRule.Figure(inputs?.Breadth)),
-            DipRule.ReadsLargeBreadth => DipRule.MarketOn(level, market.LargeBreadth >= level.Floor, "the S&P 500's breadth at " + FamilyRule.Figure(market.LargeBreadth)),
+            DipRule.ReadsOwnBreadth => DipRule.MarketOn(level, inputs?.Breadth >= level.Floor, RuleWording.DipFamily.OwnBreadthRead(FamilyRule.Figure(inputs?.Breadth))),
+            DipRule.ReadsLargeBreadth => DipRule.MarketOn(level, market.LargeBreadth >= level.Floor, RuleWording.DipFamily.LargeBreadthRead(FamilyRule.Figure(market.LargeBreadth))),
             DipRule.ReadsFund => at >= 0 && DipRule.FundAboveItsAverage(market.Calendar, market.Fund)[at] is var above
-                ? DipRule.MarketOn(level, above, $"{DipRule.FundOf(index)} {(above ? "above" : "not above")} its average on the night")
-                : DipRule.MarketOn(level, false, "no session of the night in the market series"),
+                ? DipRule.MarketOn(level, above, RuleWording.DipFamily.FundOnTheNight(DipRule.FundOf(index), above))
+                : DipRule.MarketOn(level, false, RuleWording.DipFamily.NoSessionInTheSeries),
             _ => at >= 0 && DipRule.VixAboveItsMedian(market.Calendar, market.Vix)[at] is var over
-                ? DipRule.MarketOn(level, over, $"the VIX {(over ? "above" : "not above")} its median on the night")
-                : DipRule.MarketOn(level, false, "no session of the night in the market series"),
+                ? DipRule.MarketOn(level, over, RuleWording.DipFamily.VixOnTheNight(over))
+                : DipRule.MarketOn(level, false, RuleWording.DipFamily.NoSessionInTheSeries),
         };
     }
 
@@ -839,18 +842,51 @@ public sealed class DipFamily : IComponent
         }
 
         var ended = 0;
+        var taking = PlanTrades.LiveTakingProfit(await PlanTrades.RegisterRowsAsync(connection, transaction, cancellation), DateTimeOffset.MaxValue);
 
         foreach (var trade in trades)
         {
+            // On the operator's ruling of 2026-11-14, clause 5, an open trade or waiting order of a live rule placed before the rules
+            // restart under a plan with no take-profit takes its rule's, counted from the session after the restart, stored with it
+            // from now on; one with no plan sells on its own exit and keeps it.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            var plan = trade.Plan;
+
+            if (plan is not null && taking.TryGetValue(trade.Rule, out var live)
+                && await PlanTrades.AddedAtRestartAsync(connection, transaction, plan, live, trade.Ticker, trade.Session, trade.Entry, trade.Stop, null, null, trade.Limit, true, cancellation) is { } added)
+            {
+                await ExecuteAsync(connection, transaction, AddedTakeProfit, [("$rule", trade.Rule), ("$index", index), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)), ("$plan", added.Json())], cancellation);
+                plan = added;
+            }
+
             // From 23.10 a trade kept under a plan is bought, held and sold as its plan does: its fill where its level trades
             // within its window, its sale where the plan sells, and its result in the risk its listing close set; one never
             // filled ends at its window's last session with no fill and no result.
-            if (trade.Plan is { } order)
+            if (plan is { } order)
             {
                 var planBars = PlanBars.Of(await PlanTrades.BarsAsync(connection, transaction, trade.Ticker, night, cancellation));
 
-                if (PlanTrades.Ended(order, trade.Entry, trade.Stop, trade.Session, planBars) is not { } end)
+                if (PlanTrades.Where(order, trade.Entry, trade.Stop, trade.Session, planBars) is not { } where)
                 {
+                    continue;
+                }
+
+                // From 23.10's second part a trade its plan has filled and not yet ended keeps its fill and the session it
+                // filled on, so every page draws it bought from then; the step had stored a fill only with its trade's end.
+                if (where.End is not { } end)
+                {
+                    if (where is { FilledOn: { } heldFrom, Fill: { } held })
+                    {
+                        await ExecuteAsync(connection, transaction, WalkTrade,
+                        [
+                            ("$rule", trade.Rule), ("$index", index), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)),
+                            ("$bought_on", Stamp(heldFrom)), ("$fill", Money.ToStorage(Statistic.ToPrice(held))), ("$past", DBNull.Value),
+                            ("$ended_on", DBNull.Value), ("$sale", DBNull.Value), ("$end", DipEnd.Open),
+                            ("$sessions", Math.Max(0, planBars.Sessions.Length - planBars.IndexOf(heldFrom))),
+                            ("$result", DBNull.Value), ("$cost", DBNull.Value),
+                        ], cancellation);
+                    }
+
                     continue;
                 }
 

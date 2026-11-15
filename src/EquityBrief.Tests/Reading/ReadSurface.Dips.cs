@@ -83,7 +83,7 @@ public partial class ReadSurface
         // open.
         Assert.Contains("data-dip=\"open\"", line, StringComparison.Ordinal);
         Assert.Contains(
-            "<b class=\"market-closed\">The market check is closed: no new buys tonight but the short-term dip's own.</b> 42.0% of S&P 400 stocks are above their 200-day average. The setups only buy when at least 45% are, because buying when most stocks are falling has lost money in the past. The short-term dip reads its own market setting, none while it is not yet tested, and its list is open.",
+            "<b class=\"market-closed\">The market check is closed: no new buys tonight but the short-term dip's own.</b> 42.0% of S&P 400 stocks are above their 200-day average. The setups only buy when at least 45% are, because buying when most stocks are falling has lost money in the past. The short-term dip uses no market check while it is not yet tested, so it could buy tonight.",
             line,
             StringComparison.Ordinal);
 
@@ -299,7 +299,7 @@ public partial class ReadSurface
             Regex.Matches(Assert.Single(Blocks(picks, "<nav class=\"universe-filters picks-filters picks-setups\".*?</nav>")), "data-value=\"([a-z]+)\"[^>]*>[^<]+<span class=\"n\">([0-9]+)</span>")
                 .Where(match => match.Groups[1].Value != "all")
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
-        Assert.Contains("Showing 4 of 4 S&P 400 trades, 1 open, 1 to buy at tomorrow's open", picks, StringComparison.Ordinal);
+        Assert.Contains("Showing 4 of 4 S&P 400 trades, 1 open, 1 to buy at Monday's open", picks, StringComparison.Ordinal);
 
         // Each chip keeps the S&P 400 in its link, so a press filters this index's trades and not the S&P 500's.
         Assert.Equal(
@@ -313,7 +313,7 @@ public partial class ReadSurface
         var dipsOnly = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400&setup=dip"));
 
         Assert.Equal(["M2", "M1"], Regex.Matches(Assert.Single(Blocks(dipsOnly, "<table class=\"list-table index-trades\".*?</table>")), "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Contains("Showing 2 of 4 S&P 400 trades, 0 open, 1 to buy at tomorrow's open", dipsOnly, StringComparison.Ordinal);
+        Assert.Contains("Showing 2 of 4 S&P 400 trades, 0 open, 1 to buy at Monday's open", dipsOnly, StringComparison.Ordinal);
 
         // The S&P 500's: the dip's card beneath the lists' trades with AAA held, and the dip chosen drawing that card alone.
         var large = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks"));

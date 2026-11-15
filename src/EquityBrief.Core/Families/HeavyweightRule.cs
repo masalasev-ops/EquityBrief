@@ -105,7 +105,7 @@ public static class HeavyweightRule
     // history the night read before it holding fewer together than the setting's readings need; none where they do.
     public static string? WaitsForSessions(HeavyweightSettings settings, int held, DateOnly night) =>
         held < SessionsNeeded(settings)
-            ? FormattableString.Invariant($"the rebalance waits for a night the store's year and the pulled history before it hold the {SessionsNeeded(settings)} sessions its readings need, since they hold {held} to {night:yyyy-MM-dd}")
+            ? RuleWording.HeavyweightRuleWords.WaitsForSessions(SessionsNeeded(settings), held, night)
             : null;
 
     // Why a rebalance read nothing it could rank by, whatever the cause: no ranked company of any sector reading a lead,
@@ -116,9 +116,9 @@ public static class HeavyweightRule
         var ranked = sectors.SelectMany(sector => sector.Largest).ToArray();
 
         return !ranked.Any(one => one.Lead is not null)
-            ? FormattableString.Invariant($"the rebalance waits, since no sector's largest companies read a lead on {night:yyyy-MM-dd}")
+            ? RuleWording.HeavyweightRuleWords.NoLead(night)
             : settings.HighBeta && !ranked.Any(one => betaOf(one.Ticker) is not null)
-                ? FormattableString.Invariant($"the rebalance waits, since no sector's largest companies read a beta on {night:yyyy-MM-dd}")
+                ? RuleWording.HeavyweightRuleWords.NoBeta(night)
                 : null;
     }
 
@@ -204,8 +204,11 @@ public static class HeavyweightRule
     // sector above nothing and passing the trend gate, the largest lead first and the ticker settling a tie. A member
     // filing no sector stands in none, and a member with no value stands in its sector's mean and in no rank. Where
     // a sector's return is handed in, as the sweep hands in its fund's, the lead is read over that and none where it
-    // is none; where the settings ask for a beta, a leader holds one at the floor or above.
-    public static IReadOnlyList<HeavyweightSector> Read(IReadOnlyList<HeavyweightMember> members, HeavyweightSettings settings, IReadOnlyDictionary<string, double?>? sectorReturns = null)
+    // is none; where the settings ask for a beta, a leader holds one at the floor or above. From 23.10's second part a book
+    // whose rule states a book's hooks hands in their order, which keeps the members its conditions pass among those eligible
+    // to lead, in its score's order where it states one and the rule's own otherwise, before the leaders are taken.
+    // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+    public static IReadOnlyList<HeavyweightSector> Read(IReadOnlyList<HeavyweightMember> members, HeavyweightSettings settings, IReadOnlyDictionary<string, double?>? sectorReturns = null, Func<IReadOnlyList<string>, IReadOnlyList<string>>? order = null)
     {
         var sectors = new List<HeavyweightSector>();
 
@@ -229,13 +232,15 @@ public static class HeavyweightRule
                 })
                 .ToArray();
 
-            var leaders = largest
-                .Where(ranked => ranked.Lead > 0 && ranked.Trend && (!settings.HighBeta || ranked.Member.Beta >= BetaFloor))
-                .OrderByDescending(ranked => ranked.Lead)
-                .ThenBy(ranked => ranked.Listing.Ticker, StringComparer.Ordinal)
-                .Take(settings.Leaders)
-                .Select(ranked => ranked.Listing.Ticker)
-                .ToArray();
+            IReadOnlyList<string> eligible =
+            [
+                .. largest
+                    .Where(ranked => ranked.Lead > 0 && ranked.Trend && (!settings.HighBeta || ranked.Member.Beta >= BetaFloor))
+                    .OrderByDescending(ranked => ranked.Lead)
+                    .ThenBy(ranked => ranked.Listing.Ticker, StringComparer.Ordinal)
+                    .Select(ranked => ranked.Listing.Ticker),
+            ];
+            var leaders = (order?.Invoke(eligible) ?? eligible).Take(settings.Leaders).ToArray();
 
             sectors.Add(new HeavyweightSector(
                 sector.Key,

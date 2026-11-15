@@ -7,7 +7,7 @@ namespace EquityBrief.Web.Marks;
 // mean edge a pick offered against the ruled benchmark from 2019 through the newest session its run read, in dollars for each
 // dollar risked, with the picks it is over; or, for a setup the test of the buy and sell points does not read, the year the
 // filings it reads reach back to. The traded plan is whichever plan the setup trades.
-// see: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's
+// see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
 public sealed record SetupLongRecord(string Index, string Family, double? EdgePerPick, int? Picks, int From, int Through, int? ReachesBack = null)
 {
     // From the 23.10 correction of 2026-11-13 the plan its live rule states, walked over its setups from 2019: its fills' mean
@@ -20,18 +20,39 @@ public sealed record SetupLongRecord(string Index, string Family, double? EdgePe
 
     public int? LiveFills { get; init; }
 
+    // On the operator's ruling of 2026-11-15 on the shapes a live book's record: its mean month at the exit it trades, in
+    // percentage points over what it is held against, and the months it is over; none for any other setup.
+    // see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
+    public double? Points { get; init; }
+
+    public int? Months { get; init; }
+
+    // A book's months rounding to nothing, said as about the same.
+    public bool Same => Points is { } points && Math.Round(Math.Abs(points), 2) == 0;
+
     // A record of a figure: an edge over at least the picks a record needs.
     public bool Measured => ReachesBack is null && EdgePerPick is not null && Picks >= EquityBrief.Core.Cards.TakenWalk.RecordMinimum;
 
-    public bool Made => Measured && EdgePerPick > 0;
+    public bool Made => (Measured && EdgePerPick > 0) || (Points > 0 && !Same);
 
-    public bool Lost => Measured && EdgePerPick <= 0;
+    public bool Lost => (Measured && EdgePerPick <= 0) || (Points < 0 && !Same);
 
     // A record of an edge over fewer picks than a record needs, drawn as its count against the minimum alone.
     public bool Short => ReachesBack is null && EdgePerPick is not null && Picks is { } picks && picks < EquityBrief.Core.Cards.TakenWalk.RecordMinimum;
 
     // What the record says, as the page marks it.
-    public string State => Made ? "made" : Lost ? "lost" : Short ? "short" : ReachesBack is not null ? "none" : "unread";
+    public string State => Made ? "made" : Lost ? "lost" : Same ? "same" : Short ? "short" : ReachesBack is not null ? "none" : "unread";
+
+    // What a book is held against, in the operator's words: each sector's 10 largest stocks for the heavyweights, the index's
+    // stocks for the others, each in equal amounts.
+    public string HeldAgainst => Family == EquityBrief.Core.Families.HeavyweightRule.Name ? "each sector's 10 largest stocks" : "the index's stocks";
+
+    // The book's box line, on the operator's ruling of 2026-11-15 on the shapes; none for any other setup.
+    public string? BookLine => Points is not { } points
+        ? null
+        : Same
+            ? FormattableString.Invariant($"From {From} to {Through}, this book made about the same as holding {HeldAgainst} in equal amounts.")
+            : FormattableString.Invariant($"From {From} to {Through}, this book made {Math.Abs(points):0.00} percentage points a month {(points < 0 ? "less" : "more")} than holding {HeldAgainst} in equal amounts, about {Math.Abs(points) * 12:0.0}% a year.");
 
     // The setups whose filings the test of the buy and sell points cannot read, none of them selling at a price set in advance.
     public static IReadOnlyList<string> FilingFamilies { get; } =
@@ -93,7 +114,7 @@ public sealed partial class MarkRenderer
     // The box beneath a pick's entry check line, headed with the setup and its index: what picks like it made or lost for each
     // dollar risked against the index's other stocks bought the same way, over how many, or that it has no long record yet;
     // and beneath it that this is the rule's record and not the stock's chance. None where the record is unread.
-    // see: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's
+    // see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
     public static string SetupRecordBox(SetupLongRecord? record)
     {
         if (record is null || record.State == "unread")
@@ -103,14 +124,27 @@ public sealed partial class MarkRenderer
 
         var line = record switch
         {
+            { BookLine: { } book } => Escaped(book),
             { Made: true } => Formatted($"From {record.From} to {record.Through}, picks like this made about <b class=\"made\">{Escaped(RecordDollars(record.EdgePerPick!.Value))}</b> more for every $1 risked than buying the index's other stocks the same way, over {record.Picks!.Value.ToString("N0", CultureInfo.InvariantCulture)} picks."),
             { Lost: true } => Formatted($"From {record.From} to {record.Through}, picks like this lost about <b class=\"lost\">{Escaped(RecordDollars(record.EdgePerPick!.Value))}</b> for every $1 risked, compared with buying the index's other stocks the same way, over {record.Picks!.Value.ToString("N0", CultureInfo.InvariantCulture)} picks."),
             { Short: true } => Formatted($"From {record.From} to {record.Through}, {record.Picks!.Value} picks like this, short of the {EquityBrief.Core.Cards.TakenWalk.RecordMinimum} a record needs."),
-            _ => Formatted($"<b class=\"none\">No long record yet:</b> the filings this setup reads reach back only to {record.ReachesBack}, so its record starts with its live trades."),
+            _ => Formatted($"<b class=\"none\">No long record yet:</b> {Escaped(FilingsUntested(record))}"),
         };
 
-        return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span><span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
+        // On the operator's ruling of 2026-11-15 on the review of PR 699 a drift's or a breakout's figure says that its plan's buy
+        // price and stop were set partly from the years it reads.
+        // see: The drift and the breakout buy only on a pullback to their buy price within 20 trading days, and their record says it reads high
+        var high = record is { Made: true } or { Lost: true } && ReadsHigh(record.Family)
+            ? Formatted($"<span class=\"rec-sub\" data-reads-high>{Escaped(ReadsHighLine)}</span>")
+            : string.Empty;
+
+        return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span>{high}<span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
     }
+
+    // The line a drift's and a breakout's record box says beneath its figure, in the operator's words.
+    public const string ReadsHighLine = "The buy price and stop were set partly from these same years, so this figure reads high.";
+
+    public static bool ReadsHigh(string family) => family is EquityBrief.Core.Families.DriftRule.Name or EquityBrief.Core.Families.BreakoutRule.Name;
 
     // The line at the foot of a setup's tile on Tonight: what its plan as it stands made or lost for each dollar risked on the
     // index from 2019, or that it has no long record yet; none where the record is unread.
@@ -124,11 +158,22 @@ public sealed partial class MarkRenderer
 
         var line = record switch
         {
+            { BookLine: { } book } => Formatted($"{record.From} to {record.Through} on the {Escaped(IndexNamed(record.Index))}, with its exit as it stands: {Escaped(book[(book.IndexOf(", ", StringComparison.Ordinal) + 2)..])}"),
             { Made: true } or { Lost: true } => Formatted($"{record.From} to {record.Through} on the {Escaped(IndexNamed(record.Index))}, with its plan as it stands: <b class=\"{record.State}\">{record.State} {Escaped(RecordDollars(record.EdgePerPick!.Value))}</b> per $1 risked against the index's stocks bought the same way."),
             { Short: true } => Formatted($"{record.From} to {record.Through} on the {Escaped(IndexNamed(record.Index))}: {record.Picks!.Value} picks, short of the {EquityBrief.Core.Cards.TakenWalk.RecordMinimum} a record needs."),
-            _ => Formatted($"<b class=\"none\">No long record yet:</b> the filings it reads reach back only to {record.ReachesBack}."),
+            _ => Formatted($"<b class=\"none\">No long record yet:</b> {Escaped(FilingsUntestedShort(record))}"),
         };
 
         return Formatted($"<span class=\"tile-record\" data-record=\"{record.State}\">{line}</span>");
     }
+
+    // From the operator's order of 2026-11-14 why a setup reading filings has no record here from 2019: the walk that gives the
+    // other setups theirs replays prices alone, and its filings reach back only so far; its own per-rule test over the long
+    // history judges it from its first test year on the index, three learning years after its filings cover the index, on the
+    // Monthly check-up.
+    public static string FilingsUntested(SetupLongRecord record) => FormattableString.Invariant(
+        $"the walk that gives the other setups their record from {EquityBrief.Core.History.LongLedger.StandingFrom.Year} replays prices alone, and this setup buys on filings, which reach back only to {record.ReachesBack}. Its own test over the long history judges it from {EquityBrief.Core.Loop.LongTest.FirstTestYear(record.Family, record.Index)}, on the Monthly check-up.");
+
+    public static string FilingsUntestedShort(SetupLongRecord record) => FormattableString.Invariant(
+        $"the walk from {EquityBrief.Core.History.LongLedger.StandingFrom.Year} replays prices alone, and this setup buys on filings; its own test over the long history judges it from {EquityBrief.Core.Loop.LongTest.FirstTestYear(record.Family, record.Index)}.");
 }

@@ -100,7 +100,7 @@ public sealed record GateResult(
 public static class SwingGates
 {
     public const string Market = "market";
-    public const string Trend = "trend and strength";
+    public const string Trend = Families.RuleWording.SwingGates.Trend;
     public const string Setup = "setup";
     public const string Trigger = "trigger";
     public const string Trade = "trade";
@@ -113,7 +113,7 @@ public static class SwingGates
     // see: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record
     public const string Pullback = "pullback";
 
-    public const string EarningsExclusion = "earnings inside the holding window";
+    public const string EarningsExclusion = Families.RuleWording.SwingGates.EarningsExclusion;
     public const string SuspectExclusion = "suspect series";
     public const string GapExclusion = "gap";
 
@@ -122,7 +122,7 @@ public static class SwingGates
     // The setup's value naming whether the close sat inside an anchored support band, which the shape
     // proposer recounts from: it is not a threshold, so a count under another setting keeps it as the
     // night found it.
-    public const string PullbackBandValue = "inside an anchored support band";
+    public const string PullbackBandValue = Families.RuleWording.SwingGates.PullbackBandValue;
 
     // The trigger's value naming the session its event arrived on inside the window, or none, which the
     // shape proposer recounts from: no threshold moves it.
@@ -179,8 +179,8 @@ public static class SwingGates
                 Market,
                 false,
                 inputs.Breadth is { } held
-                    ? Invariant($"breadth is not available: {held.Counted} of the {held.Members} members hold a close and a 200-day average, fewer than half")
-                    : "no market reading is stored for the night",
+                    ? Families.RuleWording.SwingGates.BreadthNotAvailable(held.Counted, held.Members)
+                    : Families.RuleWording.SwingGates.NoMarketReading,
                 Values());
         }
 
@@ -189,7 +189,7 @@ public static class SwingGates
         return new Gate(
             Market,
             passed,
-            Invariant($"breadth {share * 100:0.0}% {(passed ? "at or above" : "below")} its floor of {settings.BreadthFloor * 100:0.#}%"),
+            Families.RuleWording.SwingGates.BreadthAgainstFloor(share, passed, settings.BreadthFloor),
             Values(("breadth", Figure(share)), ("floor", Figure(settings.BreadthFloor)), ("counted", Whole(breadth.Counted))));
     }
 
@@ -201,7 +201,7 @@ public static class SwingGates
 
         if (inputs.TrendState is null)
         {
-            return new Gate(Trend, false, "no trend state is stored for the night", values);
+            return new Gate(Trend, false, Families.RuleWording.SwingGates.NoTrendState, values);
         }
 
         if (inputs.Strength is not { } strength)
@@ -209,7 +209,7 @@ public static class SwingGates
             return new Gate(
                 Trend,
                 false,
-                inputs.ReadingNote ?? Invariant($"no place among the members' returns: {inputs.Reading?.Bars ?? 0} bars, too few for a return over both spans"),
+                inputs.ReadingNote ?? Families.RuleWording.SwingGates.NoPlace(inputs.Reading?.Bars ?? 0),
                 values);
         }
 
@@ -219,7 +219,7 @@ public static class SwingGates
         return new Gate(
             Trend,
             up && strong,
-            Invariant($"{(up ? "an uptrend" : inputs.TrendState.Replace('_', ' ') + ", not an uptrend")}; strength {strength:0.000} {(strong ? "at or above" : "below")} its floor of {settings.StrengthFloor:0.000}"),
+            Families.RuleWording.SwingGates.TrendAndStrength(up, inputs.TrendState, strength, strong, settings.StrengthFloor),
             values);
     }
 
@@ -242,7 +242,7 @@ public static class SwingGates
 
         if (reading is null)
         {
-            return (new Gate(Setup, false, inputs.ReadingNote ?? "no swing readings are stored for the night", Values()), null);
+            return (new Gate(Setup, false, inputs.ReadingNote ?? Families.RuleWording.SwingGates.NoReadings, Values()), null);
         }
 
         var depthIn = reading.Depth is { } depth && depth >= settings.DepthLow && depth <= settings.DepthHigh;
@@ -252,11 +252,11 @@ public static class SwingGates
         var family = pullback ? Pullback : null;
 
         var reason = pullback
-            ? "a pullback into an anchored support band"
+            ? Families.RuleWording.SwingGates.PullbackIntoTheBand
             : "no pullback: " + string.Join(", ", Missing(
-                (depthIn, reading.Depth is { } d ? Invariant($"depth {d:0.00} outside {settings.DepthLow:0.##} to {settings.DepthHigh:0.##} typical moves") : "no depth"),
-                (dry, reading.DryUp is { } v ? Invariant($"dry-up {v:0.00} not below {settings.DryUpCeiling:0.##}") : reading.PullbackSessions == 0 ? "the high was made on the night" : "no dry-up"),
-                (pullbackBand is not null, "the close is inside no anchored support band")));
+                (depthIn, reading.Depth is { } d ? Families.RuleWording.SwingGates.DepthOutside(d, settings.DepthLow, settings.DepthHigh) : "no depth"),
+                (dry, reading.DryUp is { } v ? Families.RuleWording.SwingGates.DryUpNotBelow(v, settings.DryUpCeiling) : reading.PullbackSessions == 0 ? Families.RuleWording.SwingGates.HighOnTheNight : "no dry-up"),
+                (pullbackBand is not null, Families.RuleWording.SwingGates.InsideNoBand)));
 
         return (
             new Gate(
@@ -335,47 +335,47 @@ public static class SwingGates
         string On(int back) =>
             back == 0 ? "tonight"
             : back - 1 < sessions.Count && sessions[back - 1] is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-            : back == 1 ? "the session before"
-            : Invariant($"the session {back} before tonight");
+            : back == 1 ? Families.RuleWording.SwingGates.TheSessionBefore
+            : Families.RuleWording.SwingGates.SessionsBeforeTonight(back);
 
         var (at, unread) = Arrival(tonight, fired, window);
         var values = Values(
             ("event tonight", tonight is { } happened ? (happened ? "yes" : "no") : "none"),
-            ("event the session before", inputs.TriggerFiredTheSessionBefore is { } earlier ? (earlier ? "yes" : "no") : "none"),
+            (Families.RuleWording.SwingGates.EventTheSessionBefore, inputs.TriggerFiredTheSessionBefore is { } earlier ? (earlier ? "yes" : "no") : "none"),
             ("previous high", Price(inputs.PreviousHigh)),
             ("arrival window", Whole(window)),
             (ArrivedValue, at is { } back ? On(back) : "none"));
 
         if (at is 0)
         {
-            return (new Gate(Trigger, true, $"the trigger fired tonight and not on {On(1)}", values), tonight);
+            return (new Gate(Trigger, true, Families.RuleWording.SwingGates.FiredTonight(On(1)), values), tonight);
         }
 
         if (at is { } arrived)
         {
-            return (new Gate(Trigger, true, Invariant($"the trigger first fired on {On(arrived)}, {arrived} session(s) before tonight, inside the {window}-session window"), values), tonight);
+            return (new Gate(Trigger, true, Families.RuleWording.SwingGates.FirstFired(On(arrived), arrived, window), values), tonight);
         }
 
         if (unread is 0)
         {
-            return (new Gate(Trigger, false, "no previous session's high to read the trigger against", values), null);
+            return (new Gate(Trigger, false, Families.RuleWording.SwingGates.NoPreviousHigh, values), null);
         }
 
         if (unread is { } missing)
         {
-            return (new Gate(Trigger, false, $"no gate result is stored for {On(missing)}, so the trigger's arrival cannot be read", values), tonight);
+            return (new Gate(Trigger, false, Families.RuleWording.SwingGates.NoResultFor(On(missing)), values), tonight);
         }
 
         if (window == 1)
         {
             return tonight == true
-                ? (new Gate(Trigger, false, $"the trigger fired on {On(1)} too, so tonight is not its arrival", values), true)
-                : (new Gate(Trigger, false, "the close is not above the previous session's high and did not come back into the band", values), tonight);
+                ? (new Gate(Trigger, false, Families.RuleWording.SwingGates.FiredBeforeToo(On(1)), values), true)
+                : (new Gate(Trigger, false, Families.RuleWording.SwingGates.NoEvent, values), tonight);
         }
 
         return tonight == true
-            ? (new Gate(Trigger, false, Invariant($"the trigger fired on every session back to {On(window)}, so it did not arrive in the last {window} sessions"), values), true)
-            : (new Gate(Trigger, false, Invariant($"the trigger did not arrive in the last {window} sessions"), values), tonight);
+            ? (new Gate(Trigger, false, Families.RuleWording.SwingGates.FiredOnEverySession(On(window), window), values), true)
+            : (new Gate(Trigger, false, Families.RuleWording.SwingGates.DidNotArrive(window), values), tonight);
     }
 
     // The ladder's first tranche, as the listing kept it, with the stop's distance in typical moves.
@@ -383,7 +383,7 @@ public static class SwingGates
     {
         if (inputs.Ladder is not { } plan)
         {
-            return new TradeReading(null, null, null, null, null, "no plan is stored for the night");
+            return new TradeReading(null, null, null, null, null, Families.RuleWording.SwingGates.NoPlan);
         }
 
         return new TradeReading(
@@ -392,7 +392,7 @@ public static class SwingGates
             plan.Target,
             plan.RewardToRisk,
             Moves(plan.Entry, plan.Stop, inputs.TypicalMove),
-            plan.RewardToRisk is null ? plan.Absent ?? "the plan's arithmetic computes no reward to risk" : null);
+            plan.RewardToRisk is null ? plan.Absent ?? Families.RuleWording.SwingGates.PlanComputesNoRatio : null);
     }
 
     // Section 10's two distances in typical daily moves: a stop closer than one below the entry is inside
@@ -411,17 +411,17 @@ public static class SwingGates
     {
         if (inputs.Close is not { } close)
         {
-            return new TradeReading(null, null, null, null, null, "no close is stored for the night");
+            return new TradeReading(null, null, null, null, null, Families.RuleWording.SwingGates.NoClose);
         }
 
         if (setupBand is null)
         {
-            return new TradeReading(close, null, null, null, null, "no setup band to set a stop at");
+            return new TradeReading(close, null, null, null, null, Families.RuleWording.SwingGates.NoSetupBand);
         }
 
         if (inputs.TypicalMove is not { } move || move <= 0)
         {
-            return new TradeReading(close, null, null, null, null, "no typical move to place the stop and the target by");
+            return new TradeReading(close, null, null, null, null, Families.RuleWording.SwingGates.NoTypicalMove);
         }
 
         var stop = Statistic.FromPrice(close - setupBand.LowEdge) / move < ClearStopMoves
@@ -432,7 +432,7 @@ public static class SwingGates
 
         if (stop is not { } placed)
         {
-            return new TradeReading(close, null, null, null, null, "the setup band's low edge is less than a typical move below the entry and no support band sits beneath it to set a stop at");
+            return new TradeReading(close, null, null, null, null, Families.RuleWording.SwingGates.NoBandBeneath);
         }
 
         var target = inputs.Bands
@@ -441,7 +441,7 @@ public static class SwingGates
 
         if (target is not { } above)
         {
-            return new TradeReading(close, placed, null, null, Moves(close, placed, move), "no band sits two typical moves or more above the close to set a target at");
+            return new TradeReading(close, placed, null, null, Moves(close, placed, move), Families.RuleWording.SwingGates.NoBandClearAbove);
         }
 
         return new TradeReading(
@@ -459,12 +459,12 @@ public static class SwingGates
     {
         if (inputs.Close is not { } close)
         {
-            return new TradeReading(null, null, null, null, null, "no close is stored for the night");
+            return new TradeReading(null, null, null, null, null, Families.RuleWording.SwingGates.NoClose);
         }
 
         if (setupBand is null)
         {
-            return new TradeReading(close, null, null, null, null, "no setup band to set a stop at");
+            return new TradeReading(close, null, null, null, null, Families.RuleWording.SwingGates.NoSetupBand);
         }
 
         var stop = setupBand.LowEdge;
@@ -472,14 +472,14 @@ public static class SwingGates
 
         if (bandsAbove.Length == 0)
         {
-            return new TradeReading(close, stop, null, null, Moves(close, stop, inputs.TypicalMove), "no band above the close to set a target at");
+            return new TradeReading(close, stop, null, null, Moves(close, stop, inputs.TypicalMove), Families.RuleWording.SwingGates.NoBandAbove);
         }
 
         var above = bandsAbove.Min(band => band.LowEdge);
 
         if (close <= stop)
         {
-            return new TradeReading(close, stop, above, null, null, "the stop is not below the entry");
+            return new TradeReading(close, stop, above, null, null, Families.RuleWording.SwingGates.StopNotBelow);
         }
 
         return new TradeReading(
@@ -500,17 +500,17 @@ public static class SwingGates
     {
         var values = Values(
             (TradeInputValue, FilterSettings.Word(settings.Trade)),
-            ("reward to risk", trade.RewardToRisk is { } ratio ? ratio.ToString(CultureInfo.InvariantCulture) : "none"),
-            ("stop in typical moves", Figure(trade.StopInMoves)));
+            (Families.RuleWording.SwingGates.RewardToRiskValue, trade.RewardToRisk is { } ratio ? ratio.ToString(CultureInfo.InvariantCulture) : "none"),
+            (Families.RuleWording.SwingGates.StopInMovesValue, Figure(trade.StopInMoves)));
 
         if (trade.RewardToRisk is not { } rewardToRisk)
         {
-            return new Gate(Trade, false, trade.Absent ?? "no reward to risk", values);
+            return new Gate(Trade, false, trade.Absent ?? Families.RuleWording.SwingGates.NoRewardToRisk, values);
         }
 
         if (trade.StopInMoves is not { } moves)
         {
-            return new Gate(Trade, false, "no typical move to read the stop's distance in", values);
+            return new Gate(Trade, false, Families.RuleWording.SwingGates.NoStopDistance, values);
         }
 
         var enough = Statistic.FromRatio(rewardToRisk) >= settings.RewardToRiskFloor;
@@ -519,7 +519,7 @@ public static class SwingGates
         return new Gate(
             Trade,
             enough && placed,
-            Invariant($"reward to risk {rewardToRisk} {(enough ? "at or above" : "below")} {settings.RewardToRiskFloor:0.##}; the stop {moves:0.00} typical moves below the entry, {(placed ? "inside" : "outside")} {settings.StopLow:0.##} to {settings.StopHigh:0.##}"),
+            Families.RuleWording.SwingGates.RewardAndStop(rewardToRisk, enough, settings.RewardToRiskFloor, moves, placed, settings.StopLow, settings.StopHigh),
             values);
     }
 
@@ -546,11 +546,11 @@ public static class SwingGates
         }
         else if (inputs.NextEarnings is null)
         {
-            notes.Add("no earnings date is on file, so none is excluded for one");
+            notes.Add(Families.RuleWording.SwingGates.NoEarningsDate);
         }
         else if (inputs.SessionsToEarnings is null)
         {
-            notes.Add("the next earnings date is past the end of the closure table, so its sessions are not counted");
+            notes.Add(Families.RuleWording.SwingGates.EarningsPastTheTable);
         }
 
         return (exclusions, notes);
@@ -579,6 +579,4 @@ public static class SwingGates
     static string Whole(int value) => value.ToString(CultureInfo.InvariantCulture);
 
     static string Price(decimal? value) => value is { } held ? held.ToString(CultureInfo.InvariantCulture) : "none";
-
-    static string Invariant(FormattableString text) => FormattableString.Invariant(text);
 }

@@ -111,7 +111,140 @@ public sealed record DecisionCardView(
     // From the 22.16 correction of 2026-11-09 the zone its traded plan buys at, none before 23.10.
     public ZoneBuy? Zone { get; init; }
 
+    // From the operator's order of 2026-11-14 the price it takes profit at and where it came from, and for a setup with no
+    // stop of its own the stop the order added, in typical daily moves under the buy.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public TakeProfitView? TakeProfit { get; init; }
+
+    // From the operator's order of 2026-11-14 the trade holding a stock its setup's rules met again tonight, which the card is
+    // drawn under; none for any other card.
+    // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
+    public HeldAgainView? HeldAgain { get; init; }
+
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
+}
+
+// From the operator's order of 2026-11-14 the trade holding a stock its setup's rules met again: the setup that bought it, the
+// night its list made it and the index, and where the page holds them its fill, its stop, the price it takes profit at and the
+// last close; the card's label and its line in the operator's words.
+public sealed record HeldAgainView(string Family, DateOnly? Night, string Index)
+{
+    public const string Label = "Already held, not bought again";
+
+    public const string Group = "Met the rules again, already held";
+
+    // The group as the note beneath a setup's picks names it, in the operator's words of 2026-11-14.
+    public const string NoteGroup = "Met the rules again";
+
+    public decimal? Fill { get; init; }
+
+    public DateOnly? BoughtOn { get; init; }
+
+    public decimal? Stop { get; init; }
+
+    public decimal? TakeProfit { get; init; }
+
+    public decimal? LastClose { get; init; }
+
+    static string Setup(string family) => (EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family).ToLowerInvariant();
+
+    static string Capital(string words) => words.Length == 0 ? words : char.ToUpperInvariant(words[0]) + words[1..];
+
+    // "ROP met the earnings drift rules again tonight. Earnings drift bought it on 26 Oct and that trade is still open, so paper
+    // trading will not buy it again until it ends."
+    public string Line(string ticker, string matched) =>
+        FormattableString.Invariant($"{ticker} met the {Setup(matched)} rules again tonight. {Capital(Setup(Family))} bought it on {Night?.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture) ?? "an earlier night"} and that trade is still open, so paper trading will not buy it again until it ends.");
+
+    public static HeldAgainView? Of(string? stored)
+    {
+        if (stored is null)
+        {
+            return null;
+        }
+
+        using var document = System.Text.Json.JsonDocument.Parse(stored);
+        var root = document.RootElement;
+
+        return new HeldAgainView(
+            root.GetProperty("family").GetString() ?? string.Empty,
+            root.TryGetProperty("night", out var night) && night.GetString() is { } day ? DateOnly.ParseExact(day, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) : null,
+            root.TryGetProperty("index", out var index) ? index.GetString() ?? string.Empty : string.Empty);
+    }
+}
+
+// From the operator's order of 2026-11-14 a pick's take-profit price as a card draws it: the price, where it came from, the
+// month the stock turned down at it where it did, the multiple of the risk and the buy and stop it was worked from where it
+// came from the risk, and for a setup with no stop of its own the typical daily moves the stop added stands under the buy.
+// see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+public sealed record TakeProfitView(decimal Price, EquityBrief.Core.Loop.TakeProfitSource Source, DateOnly? TurnedDownOn = null, double? Multiple = null, decimal? Buy = null, decimal? Stop = null, double? AddedStopMoves = null)
+{
+    public const string Label = "Take profit at";
+
+    // On the operator's rulings of 2026-11-14 a take-profit on half, and the line saying how the other half sells.
+    public const string HalfLabel = "Take profit on half at";
+
+    public const string OtherHalfLabel = "Sell the other half";
+
+    public const string AddedStopLabel = "Sell if it closes below";
+
+    // On the operator's ruling of 2026-11-15 on the shapes whether half sells at the price, and how a whole sale's price is
+    // placed: today's nearest price above the buy it turned down at, the multiple of the risk alone, or the first price it turned
+    // down at that far above the buy or more.
+    public bool Half { get; init; }
+
+    public EquityBrief.Core.Loop.TakeProfitPlacing Placing { get; init; }
+
+    // How the other half of a take-profit on half sells, in the operator's words: after its trading days, when its filings
+    // weaken, or if it leaves the book at the monthly reshuffle; none for a whole sale.
+    public string? OtherHalf { get; init; }
+
+    public string LabelText => Half ? HalfLabel : Label;
+
+    // On the operator's ruling of 2026-11-14, clause 5, the rules restart a take-profit was added at to a trade or an order placed
+    // before it; none for one placed with it.
+    public DateOnly? AddedOn { get; init; }
+
+    // The line beneath the price: where it came from, and where the take-profit was added at the rules restart, that it was.
+    public string? Line => AddedOn is { } added
+        ? FormattableString.Invariant($"{(From is { } said ? said + " " : string.Empty)}Take-profit added at the rules restart of {added.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)}.")
+        : From;
+
+    // Where the price came from, in the operator's words; none for the setup's own sale.
+    public string? From => Source switch
+    {
+        EquityBrief.Core.Loop.TakeProfitSource.TurnedDown when TurnedDownOn is { } on =>
+            FormattableString.Invariant($"A price where it turned down before, in {on.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)}."),
+        EquityBrief.Core.Loop.TakeProfitSource.Risk when Multiple is { } times && Buy is { } buy && Stop is { } stop && buy > stop =>
+            Half || Placing == EquityBrief.Core.Loop.TakeProfitPlacing.Risk
+                ? FormattableString.Invariant($"{times:0.##} times the risk: {Usd(Price - buy)} up for {Usd(buy - stop)} down.")
+                : Placing == EquityBrief.Core.Loop.TakeProfitPlacing.Beyond
+                    ? FormattableString.Invariant($"No earlier high {times:0.##} times the risk or more above the buy, so it aims for {times:0.##} times the risk: {Usd(Price - buy)} up for {Usd(buy - stop)} down.")
+                    : FormattableString.Invariant($"No earlier high above the buy, so it aims for {times:0.##} times the risk: {Usd(Price - buy)} up for {Usd(buy - stop)} down."),
+        _ => null,
+    };
+
+    // On the operator's review of PR 699 the other half of a plan that trails, in their words: on a close under its give-up price
+    // as it stands once the first half sells at the take-profit, the take-profit less the trail's distance and never under the
+    // buy, with the line saying the price rises and the stop sits at the buy until then.
+    public const string TrailingHalfLine = "A give-up price that rises behind its highest close. Its stop sits at the buy until then.";
+
+    public static string TrailingHalf(decimal takeProfit, decimal buy, decimal distance) => "on a close under " + Usd(Math.Max(buy, takeProfit - distance));
+
+    public bool OtherHalfTrails { get; init; }
+
+    // The line beneath how the other half sells.
+    public string? OtherHalfLine => !Half ? null
+        : OtherHalfTrails ? TrailingHalfLine
+        : Buy is { } held ? $"Its stop moves up to the buy, {Usd(held)}, once the first half sells." : null;
+
+    // The other half's words for a book, by its family, on the operator's ruling of 2026-11-14 on the books.
+    public static string BookOtherHalf(string family) =>
+        family == EquityBrief.Core.Families.ImprovingRule.Name ? "when its filings weaken" : "if it leaves the book at the monthly reshuffle";
+
+    // The line beneath a stop the order added for a setup with none of its own.
+    public string? AddedStopLine => AddedStopMoves is { } moves ? FormattableString.Invariant($"{moves:0.##} typical daily moves under the buy.") : null;
+
+    static string Usd(decimal amount) => "$" + amount.ToString("N2", System.Globalization.CultureInfo.InvariantCulture);
 }
 
 // The S&P 500's live drift rule replayed beside the same rule skipping a fill whose reward to risk at the open is under the
@@ -281,7 +414,7 @@ public sealed partial class MarkRenderer
         // From the 23.10 correction of 2026-11-13 a plan buying at a price draws the sale it was registered with, as the app does.
         // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
         body.Append(card.Zone?.Sale is { } sale ? SaleTiles(sale, card)
-            : card.Target is { } target ? PlanTile("target", "Sell if it reaches", Price(target), null, "gain")
+            : card.Target is { } target ? PlanTile("target", TakeProfitView.Label, Price(target), null, "gain")
             : TargetTile(card, pick));
         body.Append("</div>");
         body.Append(TrailLines(card, pick));
@@ -299,6 +432,8 @@ public sealed partial class MarkRenderer
     public static string SetupOf(string family) =>
         family == EquityBrief.Core.Families.HeavyweightRule.Name
             ? "sector heavyweights"
+            : family == EquityBrief.Core.Families.QualityRule.Name ? EquityBrief.Core.Families.QualityRule.Label.ToLowerInvariant()
+            : family == EquityBrief.Core.Families.ImprovingRule.Name ? EquityBrief.Core.Families.ImprovingRule.Label.ToLowerInvariant()
             : (EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family).ToLowerInvariant();
 
     // The card's opening sentence: the setup that picked the stock and the night, the buy at the next trading day's open at
@@ -401,7 +536,7 @@ public sealed partial class MarkRenderer
             ("Stop", card.Stop is { } stop ? "a close below " + Price(stop) : "none"),
             ("Target", card.Target is { } target ? Price(target) : DipExit(card) is { } exit ? "none, it sells " + exit : "none, its stop trails the price"),
             ("Last day", card.Cap is { } cap ? Formatted($"after {cap} trading days") + (card.Hits is { } hits ? FormattableString.Invariant($", about {hits.Through:d MMM yyyy}") : string.Empty) : "its setup states no limit"),
-            ("Status", PickStatus.Words(pick.Status) + (pick.Sessions is { } sessions ? Formatted($", {sessions} {(sessions == 1 ? "session" : "sessions")} held") : string.Empty)),
+            ("Status", PickStatus.Words(pick.Status, pick.Night) +(pick.Sessions is { } sessions ? Formatted($", {sessions} {(sessions == 1 ? "session" : "sessions")} held") : string.Empty)),
             ("Reward to risk planned at the close", held.PlannedRewardToRisk is { } planned ? planned.ToString("0.00", Invariant) + (card.Entry is { } close ? ", struck at the close of " + Price(close) : string.Empty) : "not stated, its plan names no target"),
             ("Reward to risk at the fill", held.RewardToRisk is { } ratio ? ratio.ToString("0.00", Invariant) + (ratio < 1m ? ", under 1: the open left less reward than risk" : string.Empty) : "not stated, the fill not stored or outside the stop and the target"),
         };
@@ -518,16 +653,13 @@ public sealed partial class MarkRenderer
     public static bool StandsAtTheTarget(string? rule) =>
         rule is not null && rule.Contains(EquityBrief.Core.Loop.ExitMenu.Swing.Single(choice => choice.Kind == EquityBrief.Core.Loop.ExitKind.Standing).Words, StringComparison.Ordinal);
 
-    // From 22.18 what an idea selling on a rising give-up price with no target says, in the operator's words.
-    // see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
-    public const string NoFixedTarget = "No fixed target";
 
     public const string RunsWords = "Breakouts earn most from the few that keep running, so the rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.";
 
     public const string RisingWords = "rising as the stock makes new highs; it never moves down.";
 
     // What a plan says under a give-up price its family's rule never moves.
-    // see: A card's line under its sell price is worded from its family's own exit rule
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
     public const string StaysWords = "The give-up price stays where it is.";
 
     public const string NotTheStocksChance = "That is the rule's record, not this stock's chance.";
@@ -543,7 +675,7 @@ public sealed partial class MarkRenderer
     // give-up price on a family whose rule sets one that never moves or none, a line of one staying put on a family whose rule
     // raises it or sets none, and a price to fall to on the Fundamentals family, which sets none. Each is named by its family,
     // its stock and the line.
-    // see: A card's line under its sell price is worded from its family's own exit rule
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
     public static IReadOnlyList<string> SellLinesContradictingTheirRule(string page)
     {
         string[] rising = ["The give-up price rises as the stock climbs", "rising as the stock makes new highs"];
@@ -647,7 +779,10 @@ public sealed partial class MarkRenderer
     // The plan's stop tile: a close below the stop, from 22.18 a rising give-up price in the operator's words where the plan
     // sells on one with no target, or none.
     static string StopTile(DecisionCardView card, FamilyPickCell? pick = null) =>
-        card.Stop is { } stop
+        // From the operator's order of 2026-11-14 a stop the order added for a setup with none of its own, and how far under the buy.
+        card.TakeProfit is { AddedStopLine: { } added } && card.Stop is { } addedStop
+            ? PlanTile("stop", TakeProfitView.AddedStopLabel, Price(addedStop), added, "loss")
+        : card.Stop is { } stop
             ? TrailOf(card, pick) is not null && TrailsByItsRule(card)
                 ? PlanTile("stop", "Sell if it falls to", Usd(stop), RisingWords, "loss")
                 : PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null && card.Zone?.Sale is null ? "raised after each higher close, never lowered, and sold at the next day's open" : StaysUnlessChanged(card) is { } stays ? stays + " Sold at the next day's open." : "sold at the next day's open", "loss")
@@ -662,12 +797,18 @@ public sealed partial class MarkRenderer
     // The plan's target tile: the target, or from 22.18 no fixed target and why for a plan selling on a rising give-up price,
     // the dip's exit or the heavyweights' reshuffle where the rule sets none.
     static string TargetTile(DecisionCardView card, FamilyPickCell? pick) =>
+        // From the operator's order of 2026-11-14 every pick takes profit at a price, and the card says where it came from.
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+        card.TakeProfit is { } taking
+            ? PlanTile("target", taking.LabelText, Price(taking.Price), taking.Line ?? (StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open"), "gain")
+                // On the operator's ruling of 2026-11-14 on the books how the other half of a take-profit on half sells.
+                + (taking is { Half: true, OtherHalf: { } other } ? PlanTile("other-half", TakeProfitView.OtherHalfLabel, other, taking.OtherHalfLine) : string.Empty)
         // From 21.18 a pick of a rule at the target standing as a sell order says how that order sells, in the operator's words.
         // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
-        card.Target is { } target
-            ? PlanTile("target", "Sell if it reaches", Price(target), StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open", "gain")
+        : card.Target is { } target
+            ? PlanTile("target", TakeProfitView.Label, Price(target), StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open", "gain")
             : card.Trail is not null || pick?.Trailing == true
-                ? PlanTile("target", "Aim to sell at", NoFixedTarget, TrailsByItsRule(card) ? RunsWords : "The rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.")
+                ? PlanTile("target", TrailLabel, TrailValue, TrailsByItsRule(card) ? RunsWords : "The rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.")
                 : card.Family == EquityBrief.Core.Families.DipRule.Name
                     ? PlanTile("target", "No target", "Its exit", pick?.Exit is { } exit ? ReaderWords.Plain(exit) : "a close back above its short average")
                     : card.Family == EquityBrief.Core.Families.HeavyweightRule.Name

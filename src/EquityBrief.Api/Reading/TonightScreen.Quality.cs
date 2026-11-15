@@ -11,6 +11,32 @@ namespace EquityBrief.Api.Reading;
 // see: A quality holding's edge is its return less an equal-weighted hold of its index's members over the same sessions, after its round trip
 public static partial class TonightScreen
 {
+    // From the operator's order of 2026-11-14 a book's holding's take-profit as its step stored it at the buy, with the stop the
+    // book added under the buy; none for one bought before.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public static TakeProfitView? BookTakeProfit(decimal? price, string? from, decimal? buy, decimal? stop, string family, string index, DateOnly? addedOn = null)
+    {
+        if (price is not { } taking)
+        {
+            return null;
+        }
+
+        var (source, on, multiple) = EquityBrief.Core.Loop.TakeProfit.FromStored(from);
+
+        // On the operator's rulings of 2026-11-14 and 2026-11-15 the exit the book trades, its stop's moves and its shape.
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+        var exit = EquityBrief.Core.Loop.BookExits.Of(family, index);
+        var half = EquityBrief.Core.Loop.TakeProfit.IsHalf(from);
+
+        return new TakeProfitView(taking, source, on, multiple, buy, stop, stop is null ? null : exit.Moves)
+        {
+            Half = half,
+            Placing = exit.Placing,
+            OtherHalf = half ? TakeProfitView.BookOtherHalf(family) : null,
+            AddedOn = addedOn,
+        };
+    }
+
     // The card on a night: the holdings open at its close, each with its score and its place tonight, its change since it
     // was bought and tonight's line; what the last reshuffle chose and each holding sold since it; the holdings' change
     // since that reshuffle beside an equal-weighted hold of the members answered on it; the next names in line; and the
@@ -54,7 +80,11 @@ public static partial class TonightScreen
                     TonightLine(holding, now, night, AnswerOn(lastReshuffle ?? holding.ChosenOn, holding.Ticker)),
                     holding.Fill,
                     holding.BoughtOn,
-                    cellByTicker.TryGetValue(holding.Ticker, out var closing) ? closing.Close : null);
+                    cellByTicker.TryGetValue(holding.Ticker, out var closing) ? closing.Close : null)
+                {
+                    Stop = holding.Stop,
+                    TakeProfit = BookTakeProfit(holding.TakeProfit, holding.TakeProfitFrom, holding.Fill, holding.Stop, QualityRule.Name, index, holding.ExitAddedOn),
+                };
             }),
         ];
 

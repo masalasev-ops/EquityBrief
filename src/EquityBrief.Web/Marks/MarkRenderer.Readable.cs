@@ -131,7 +131,7 @@ public sealed partial class MarkRenderer
                 parts.Add("sold " + (exits.Count == 1 ? exits[0] : string.Join(", ", exits.Take(exits.Count - 1)) + " or " + exits[^1]) + ", whichever comes first");
             }
 
-            parts.Add(PickStatus.Words(trade.Status).ToLowerInvariant() + (trade.Sessions is { } sessions ? Formatted($" after {sessions} {(sessions == 1 ? "session" : "sessions")}") : string.Empty));
+            parts.Add(PickStatus.Words(trade.Status, trade.Night).ToLowerInvariant() + (trade.Sessions is { } sessions ? Formatted($" after {sessions} {(sessions == 1 ? "session" : "sessions")}") : string.Empty));
 
             if (holding.RewardToRisk is { } ratio)
             {

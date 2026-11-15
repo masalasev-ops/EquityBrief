@@ -55,7 +55,12 @@ public static partial class TonightScreen
                     reading?.Session,
                     close?.Close,
                     close?.Average200,
-                    close is { Close: { } shut, Average200: { } average } && HeavyweightRule.Broken(Statistic.FromPrice(shut), average));
+                    close is { Close: { } shut, Average200: { } average } && HeavyweightRule.Broken(Statistic.FromPrice(shut), average))
+                {
+                    ExitsRead = holding.Exit.Read,
+                    Stop = holding.Exit.Stop,
+                    TakeProfit = holding.Exit.Read ? BookTakeProfit(holding.Exit.TakeProfit, holding.Exit.TakeProfitFrom, holding.Fill, holding.Exit.Stop, HeavyweightRule.Name, "GSPC", holding.Exit.AddedOn) : null,
+                };
             }),
         ];
 

@@ -26,7 +26,7 @@ public partial class ReadSurface
         var home = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(SetupFamilies.Pullback, "BMY", null, "A dip.", 49.20m, 47.50m, 58m, false, null, EntryCheck: EntryFlagged(), Zone: zone)], IdeasCount = 1 }, string.Empty);
         var card = Regex.Match(home, "<article class=\"home-idea.*?</article>", RegexOptions.Singleline).Value;
 
-        Assert.Contains("Buy if it dips to about$49.20Sell if it closes below$47.50Aim to sell at$58.00", Read(card), StringComparison.Ordinal);
+        Assert.Contains("Buy if it dips to about$49.20Sell if it closes below$47.50Take profit at$58.00", Read(card), StringComparison.Ordinal);
         Assert.Equal(Waits, Read(Regex.Match(card, "<p class=\"home-cond\">.*?</p>").Value));
         Assert.True(card.IndexOf("home-cond", StringComparison.Ordinal) < card.IndexOf("entry-card-line", StringComparison.Ordinal));
 

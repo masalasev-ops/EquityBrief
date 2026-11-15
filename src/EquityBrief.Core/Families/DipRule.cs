@@ -45,21 +45,21 @@ public sealed record DipSetting(double RsiUnder, bool FiftyOverLong, int DropSes
     // The same chips each under the dial it states, which a version's tab names the dials it differs on by.
     public IReadOnlyList<(string Key, string Words)> KeyedChipsOn(string index) =>
     [
-        .. Readings.MemberReadings.DollarVolumeFloor(index) is not null ? [("dollars", "dollar floor 1 times")] : Array.Empty<(string, string)>(),
-        ("close", FormattableString.Invariant($"close at least ${Readings.MemberReadings.LowestPrice:0.##}")),
-        ("trend", FormattableString.Invariant($"above its {DipRule.TrendSessions}-session average")),
-        .. FiftyOverLong ? [("fifty", FormattableString.Invariant($"its {DipRule.FiftySessions}-session above it"))] : Array.Empty<(string, string)>(),
+        .. Readings.MemberReadings.DollarVolumeFloor(index) is not null ? [("dollars", RuleWording.DipRule.DollarFloorChip)] : Array.Empty<(string, string)>(),
+        ("close", RuleWording.DipRule.CloseChip(Readings.MemberReadings.LowestPrice)),
+        ("trend", RuleWording.DipRule.TrendChip(DipRule.TrendSessions)),
+        .. FiftyOverLong ? [("fifty", RuleWording.DipRule.FiftyChip(DipRule.FiftySessions))] : Array.Empty<(string, string)>(),
         ("drop", FallMoves is { } fall
-            ? FormattableString.Invariant($"down {fall:0.##} moves in {DipRule.DropFallSessions} sessions")
-            : FormattableString.Invariant($"{DipRule.RsiSessions}-session RSI under {RsiUnder:0.##}")),
-        .. VolumeUnder is { } volume ? [("volume", FormattableString.Invariant($"drop volume under {volume:0.##} times its {DipRule.VolumeSessions}-session average"))] : Array.Empty<(string, string)>(),
-        ("report", FormattableString.Invariant($"no report in {DropSessions} sessions or ahead")),
-        ("stop", FormattableString.Invariant($"stop {StopMoves:0.##} moves")),
+            ? RuleWording.DipRule.FallChip(fall, DipRule.DropFallSessions)
+            : RuleWording.DipRule.RsiChip(DipRule.RsiSessions, RsiUnder)),
+        .. VolumeUnder is { } volume ? [("volume", RuleWording.DipRule.VolumeChip(volume, DipRule.VolumeSessions))] : Array.Empty<(string, string)>(),
+        ("report", RuleWording.DipRule.ReportChip(DropSessions)),
+        ("stop", RuleWording.DipRule.StopChip(StopMoves)),
         ("exit", ExitRsiAbove is { } rsi
-            ? FormattableString.Invariant($"sold when its {DipRule.RsiSessions}-session RSI closes over {rsi}")
-            : ExitOnUpClose ? "sold on its first up close" : FormattableString.Invariant($"sold over its {ExitAverage}-session average")),
-        ("limit", FormattableString.Invariant($"{TimeLimit} sessions at most")),
-        ("market", Market == DipRule.MarketOff ? "market setting off" : "market setting " + DipRule.MarketWordsOn(index, Market)),
+            ? RuleWording.DipRule.RsiExitChip(DipRule.RsiSessions, rsi)
+            : ExitOnUpClose ? RuleWording.DipRule.UpCloseExitChip : RuleWording.DipRule.AverageExitChip(ExitAverage)),
+        ("limit", RuleWording.DipRule.LimitChip(TimeLimit)),
+        ("market", Market == DipRule.MarketOff ? RuleWording.DipRule.MarketOffChip : RuleWording.DipRule.MarketChip(DipRule.MarketWordsOn(index, Market))),
     ];
 
     // A setting read back from its short form, none where the form does not state every dial.
@@ -86,19 +86,19 @@ public sealed record DipSetting(double RsiUnder, bool FiftyOverLong, int DropSes
     public string Words => WordsOn(null);
 
     public string WordsOn(string? index) =>
-        FormattableString.Invariant($"A stock closing above its {DipRule.TrendSessions}-session average")
-        + (FiftyOverLong ? FormattableString.Invariant($", its {DipRule.FiftySessions}-session average above that,") : string.Empty)
+        RuleWording.DipRule.ClosingAbove(DipRule.TrendSessions)
+        + (FiftyOverLong ? RuleWording.DipRule.FiftyAbove(DipRule.FiftySessions) : string.Empty)
         + (FallMoves is { } fall
-            ? FormattableString.Invariant($" that fell at least {fall:0.##} typical moves over the {DipRule.DropFallSessions} sessions to the listing")
-            : FormattableString.Invariant($" whose {DipRule.RsiSessions}-session relative strength index closes under {RsiUnder:0.##} after a sharp drop"))
-        + (VolumeUnder is { } volume ? FormattableString.Invariant($" on a mean volume under {volume:0.##} times its {DipRule.VolumeSessions}-session average") : string.Empty)
-        + FormattableString.Invariant($", with no report on any of the {DropSessions} sessions to the listing nor one due before its time limit ends")
-        + (Market == DipRule.MarketOff || index is null ? string.Empty : ", listed only on a session " + DipRule.MarketConditionOn(index, Market))
-        + FormattableString.Invariant($". Bought at the next session's open, its stop {StopMoves:0.##} typical moves under the listing close and no target; sold at the next open after ")
+            ? RuleWording.DipRule.FellAtLeast(fall, DipRule.DropFallSessions)
+            : RuleWording.DipRule.RsiClosesUnder(DipRule.RsiSessions, RsiUnder))
+        + (VolumeUnder is { } volume ? RuleWording.DipRule.OnAMeanVolume(volume, DipRule.VolumeSessions) : string.Empty)
+        + RuleWording.DipRule.NoReportIn(DropSessions)
+        + (Market == DipRule.MarketOff || index is null ? string.Empty : RuleWording.DipRule.ListedOnlyOn(DipRule.MarketConditionOn(index, Market)))
+        + RuleWording.DipRule.BoughtAtTheOpen(StopMoves)
         + (ExitRsiAbove is { } rsi
-            ? FormattableString.Invariant($"its {DipRule.RsiSessions}-session RSI first closes back above {rsi}")
-            : ExitOnUpClose ? "its first close above the close before" : FormattableString.Invariant($"the first close above its {ExitAverage}-session average of closes"))
-        + FormattableString.Invariant($" or a close under its stop, and at the close of its {TimeLimit}th session where neither came.");
+            ? RuleWording.DipRule.RsiClosesBackAbove(DipRule.RsiSessions, rsi)
+            : ExitOnUpClose ? RuleWording.DipRule.FirstUpClose : RuleWording.DipRule.FirstCloseAboveAverage(ExitAverage))
+        + RuleWording.DipRule.OrAStop(TimeLimit);
 }
 
 // One member as the dip reads it on one night: its stored closes to the night, oldest first; its typical move on the
@@ -251,23 +251,23 @@ public static class DipRule
     // the VIX above its own median of the 252 sessions before.
     public static IReadOnlyList<DipMarketLevel> MarketLevels(string index) =>
     [
-        new(MarketOff, "no market setting", "of any market", MarketOff),
+        new(MarketOff, RuleWording.DipRule.OffWords, RuleWording.DipRule.OffCondition, MarketOff),
         .. OwnBreadthFloors.Select(floor => new DipMarketLevel(
             FormattableString.Invariant($"own {floor:0.00}"),
-            FormattableString.Invariant($"the index's own breadth at {floor * 100:0} per cent"),
-            FormattableString.Invariant($"the index's own breadth stands at {floor * 100:0} per cent or above"),
+            RuleWording.DipRule.OwnBreadthWords(floor),
+            RuleWording.DipRule.OwnBreadthCondition(floor),
             ReadsOwnBreadth,
             floor)),
         .. index is FundHoldings.MidCapIndex or FundHoldings.SmallCapIndex
             ? [new DipMarketLevel(
                 FormattableString.Invariant($"S&P 500 {LargeBreadthFloor:0.00}"),
-                FormattableString.Invariant($"the S&P 500's breadth at {LargeBreadthFloor * 100:0} per cent"),
-                FormattableString.Invariant($"the S&P 500's breadth stands at {LargeBreadthFloor * 100:0} per cent or above"),
+                RuleWording.DipRule.LargeBreadthWords(LargeBreadthFloor),
+                RuleWording.DipRule.LargeBreadthCondition(LargeBreadthFloor),
                 ReadsLargeBreadth,
                 LargeBreadthFloor)]
             : Array.Empty<DipMarketLevel>(),
-        new("fund trend", FormattableString.Invariant($"{FundOf(index)} above its {FundTrendSessions}-session average"), FormattableString.Invariant($"{FundOf(index)} closes above its {FundTrendSessions}-session average"), ReadsFund),
-        new("VIX", FormattableString.Invariant($"the VIX above its own median of the {VixMedianSessions} sessions before"), FormattableString.Invariant($"the VIX closes above its median of the {VixMedianSessions} sessions before"), ReadsVix),
+        new("fund trend", RuleWording.DipRule.FundWords(FundOf(index), FundTrendSessions), RuleWording.DipRule.FundCondition(FundOf(index), FundTrendSessions), ReadsFund),
+        new("VIX", RuleWording.DipRule.VixWords(VixMedianSessions), RuleWording.DipRule.VixCondition(VixMedianSessions), ReadsVix),
     ];
 
     // A market level's words and its condition on an index, the key itself where the index holds no such level.
@@ -293,7 +293,7 @@ public static class DipRule
     public static Gate MarketOn(DipMarketLevel level, bool open, string read) =>
         level.Key == MarketOff
             ? NoMarket
-            : new(MarketGate, open, open ? string.Empty : FormattableString.Invariant($"its market setting, {level.Words}, closed: {read}"), FamilyRule.Values(("setting", level.Key), ("read", read)));
+            : new(MarketGate, open, open ? string.Empty : RuleWording.DipRule.MarketSettingClosed(level.Words, read), FamilyRule.Values(("setting", level.Key), ("read", read)));
 
     // The gates in the rule's order, by the names the funnel draws them under.
     public const string MarketGate = "market";
@@ -313,28 +313,28 @@ public static class DipRule
     public static IReadOnlyList<string> Gates { get; } = [MarketGate, FloorsGate, HistoryGate, TrendGate, DropGate, ReportGate, MoveGate];
 
     // The reasons a member failing a gate is named by.
-    public const string MarketClosed = "the market setting closed";
+    public const string MarketClosed = RuleWording.DipRule.MarketClosed;
 
-    public const string UnderTheFloors = "under the price or dollar volume floor";
+    public const string UnderTheFloors = RuleWording.DipRule.UnderTheFloors;
 
-    public const string ShortHistory = "fewer than 200 sessions stored";
+    public const string ShortHistory = RuleWording.DipRule.ShortHistory;
 
-    public const string Gapped = "a session missing from its stored year";
+    public const string Gapped = RuleWording.DipRule.Gapped;
 
-    public const string SuspectSeries = "its series marked suspect";
+    public const string SuspectSeries = RuleWording.DipRule.SuspectSeries;
 
-    public const string NoTrend = "not above its 200-session average";
+    public const string NoTrend = RuleWording.DipRule.NoTrend;
 
-    public const string NoDrop = "the 2-session RSI not under its floor";
+    public const string NoDrop = RuleWording.DipRule.NoDrop;
 
-    public const string ReportNear = "a report in the drop or before the time limit";
+    public const string ReportNear = RuleWording.DipRule.ReportNear;
 
-    public const string NoMove = "no typical move to place its stop by";
+    public const string NoMove = RuleWording.DipRule.NoMove;
 
-    public const string StopUnderNothing = "its stop at or under nothing";
+    public const string StopUnderNothing = RuleWording.DipRule.StopUnderNothing;
 
     // The market setting when the family reads none, which every member passes.
-    public static Gate NoMarket { get; } = new(MarketGate, true, "the dip reads no market setting", FamilyRule.Values(("setting", MarketOff)));
+    public static Gate NoMarket { get; } = new(MarketGate, true, RuleWording.DipRule.NoMarketSetting, FamilyRule.Values(("setting", MarketOff)));
 
     // Wilder's relative strength index over a run of closes, oldest first, at the given sessions: the first average gain
     // and loss the simple means of the window's first changes and each later one smoothed by the window, none before the
@@ -467,7 +467,7 @@ public static class DipRule
         gates.Add(new Gate(
             TrendGate,
             trend,
-            trend ? string.Empty : average is null ? "its average not read" : FamilyRule.Invariant($"closed {close:0.##} against its {TrendSessions}-session average of {average:0.##}"),
+            trend ? string.Empty : average is null ? RuleWording.DipRule.AverageNotRead : RuleWording.DipRule.ClosedAgainst(close, TrendSessions, average),
             FamilyRule.Values(("close", FamilyRule.Figure(close)), ("average", FamilyRule.Figure(average)), ("fifty", FamilyRule.Figure(fifty)))));
 
         gates.Add(DropOf(member, setting, whole, night, rsi));
@@ -487,8 +487,8 @@ public static class DipRule
             MoveGate,
             above,
             above ? string.Empty
-                : move is not null ? FamilyRule.Invariant($"a stop {setting.StopMoves:0.##} typical moves of {move:0.##} under its close of {close:0.##} falls at or under nothing")
-                : whole ? NoMove : "its typical move not read",
+                : move is not null ? RuleWording.DipRule.StopFallsUnderNothing(setting.StopMoves, move, close)
+                : whole ? NoMove : RuleWording.DipRule.MoveNotRead,
             FamilyRule.Values(("move", FamilyRule.Figure(whole ? member.TypicalMove : null)))));
 
         var failed = gates.FirstOrDefault(gate => !gate.Passed);
@@ -516,7 +516,7 @@ public static class DipRule
             return new Gate(
                 DropGate,
                 dropped,
-                dropped ? string.Empty : rsi is null ? "its 2-session RSI not read" : FamilyRule.Invariant($"its 2-session RSI of {rsi:0.#} not under {setting.RsiUnder:0.##}"),
+                dropped ? string.Empty : rsi is null ? RuleWording.DipRule.RsiNotRead : RuleWording.DipRule.RsiNotUnder(rsi, setting.RsiUnder),
                 FamilyRule.Values(("rsi", FamilyRule.Figure(rsi)), ("floor", FamilyRule.Figure(setting.RsiUnder))));
         }
 
@@ -526,11 +526,11 @@ public static class DipRule
         var quiet = setting.VolumeUnder is not { } under || (volume is { } ratio && ratio < under);
         var reason =
             setting.FallMoves is { } floor && !deep
-                ? rsi is null ? "its 2-session RSI not read" : fall is null ? "its fall over the drop not read" : FamilyRule.Invariant($"a fall of {fall:0.##} typical moves over its {DropFallSessions} sessions, under {floor:0.##}")
+                ? rsi is null ? RuleWording.DipRule.RsiNotRead : fall is null ? RuleWording.DipRule.FallNotRead : RuleWording.DipRule.FallUnder(fall, DropFallSessions, floor)
             : !deep
-                ? rsi is null ? "its 2-session RSI not read" : FamilyRule.Invariant($"its 2-session RSI of {rsi:0.#} not under {setting.RsiUnder:0.##}")
+                ? rsi is null ? RuleWording.DipRule.RsiNotRead : RuleWording.DipRule.RsiNotUnder(rsi, setting.RsiUnder)
             : !quiet
-                ? volume is null ? "its drop's volume not read" : FamilyRule.Invariant($"its drop's mean volume at {volume:0.##} times its {VolumeSessions}-session average, not under {setting.VolumeUnder:0.##}")
+                ? volume is null ? RuleWording.DipRule.VolumeNotRead : RuleWording.DipRule.VolumeNotUnder(volume, VolumeSessions, setting.VolumeUnder)
             : string.Empty;
 
         return new Gate(
@@ -563,10 +563,10 @@ public static class DipRule
     // sessions it holds against those its average reads.
     static string HistoryWords(DipMember member) =>
         member.Gap is { } missing
-            ? "its stored year missing the session of " + missing.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ", so nothing is read across it"
+            ? RuleWording.DipRule.MissingSession(missing)
             : member.Suspect
-                ? "its series marked suspect, its corporate action's refetch not stored, so nothing is read from it"
-                : FamilyRule.Invariant($"{member.Closes.Count} sessions stored, fewer than the {TrendSessions} its average reads");
+                ? RuleWording.DipRule.MarkedSuspect
+                : RuleWording.DipRule.FewerThan(member.Closes.Count, TrendSessions);
 
     // The reason a failed gate names the member by.
     static string? ReasonOf(Gate? failed, DipMember member) => failed?.Name switch
@@ -587,9 +587,9 @@ public static class DipRule
 
         return inside switch
         {
-            0 => "a report on the night",
-            < 0 => FamilyRule.Invariant($"a report {-inside} session{(inside == -1 ? string.Empty : "s")} back, inside the drop"),
-            _ => FamilyRule.Invariant($"a report due in {inside} session{(inside == 1 ? string.Empty : "s")}, before its time limit ends"),
+            0 => RuleWording.DipRule.ReportOnTheNight,
+            < 0 => RuleWording.DipRule.ReportBack(inside),
+            _ => RuleWording.DipRule.ReportDue(inside),
         };
     }
 

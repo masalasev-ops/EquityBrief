@@ -17,7 +17,8 @@ public partial class ArchitectureConformance
     // long history reader and long ledger reader, their three stores, section 17's row, section 18's row and the History
     // page's row; 23.7's section 17 row of the long test and paper trading's row of the verdict over the long history; 23.8's
     // long search and plan point test, their stores, section 17's two rows and the Loop page's row; 23.9's sector splits
-    // reader, section 17's two rows and the History page's labels row; and none at 23.10, its correction or 23.11.
+    // reader, section 17's two rows and the History page's labels row; at 23.10's second part the match check's catalogue and
+    // matrix rows, section 14's step asking for the reported quarters taken out; and none at its correction or 23.11.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseTwentyThreeLanded =>
     [
         ("23.0", [], []),
@@ -31,7 +32,7 @@ public partial class ArchitectureConformance
         ("23.7", [.. FixtureExpectations.LongTestRows], []),
         ("23.8", [.. FixtureExpectations.LongSearchRows], []),
         ("23.9", [.. FixtureExpectations.SectorSplitsRows], []),
-        ("23.10", [], []),
+        ("23.10", [.. MatchCheckRows], [CheckReach.Key(NightlyRunSteps.Heading, RetiredQuartersStep)]),
         ("23.10 correction", [], []),
         ("23.11", [], []),
     ];
@@ -53,9 +54,11 @@ public partial class ArchitectureConformance
     // six; 23.3, fifteen of nine; 23.4, twelve of eleven, and its correction one, which no count held; 23.5, eight as counted;
     // 23.6, eleven of nine; 23.8, nine of three; 23.9, five of three: each component's catalogue and matrix rows, each store
     // and each of section 17's settings landing as a row of its own where the plan counted them together. 23.7, two of four,
-    // its monthly step and its store landing as words in rows that stood. 23.10, none of seven: the swing filter's and the
-    // book's hooks, the profit check and the conditions were tabled for phase 24, and the plans, the marks and the cards' zones
-    // landed as words in rows that stood; its correction none. 23.11, none of one.
+    // its monthly step and its store landing as words in rows that stood. 23.10, one of seven: the swing filter's and the
+    // book's hooks, the profit check and the conditions were tabled for phase 24 and from its second part landed as words in
+    // rows that stood, as the plans, the marks and the cards' zones did, its second part adding the match check's catalogue
+    // and matrix rows and retiring section 14's step asking for the reported quarters, whose fetch asks inside the swing
+    // filter's step; its correction none. 23.11, none of one.
     static readonly (string Checkpoint, int More)[] PhaseTwentyThreeMore =
     [
         ("23.0", 0),
@@ -69,7 +72,7 @@ public partial class ArchitectureConformance
         ("23.7", -2),
         ("23.8", 6),
         ("23.9", 2),
-        ("23.10", -7),
+        ("23.10", -6),
         ("23.10 correction", 0),
         ("23.11", -1),
     ];
@@ -130,6 +133,6 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1534, 1602, 1580, 1625, 1618, 6), (before, predicted, low, high, actual, BesidePhaseTwentyThree.Length));
+        Assert.Equal((1534, 1602, 1580, 1625, 1619, 6), (before, predicted, low, high, actual, BesidePhaseTwentyThree.Length));
     }
 }

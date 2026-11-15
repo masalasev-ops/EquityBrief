@@ -60,6 +60,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             new StoreTouch(Store.LoopRule, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LoopRuleYear, Touch.Insert),
             new StoreTouch(Store.LoopRuleUnit, Touch.Insert),
+            new StoreTouch(Store.BookRecord, Touch.Insert),
             new StoreTouch(Store.LoopLink, Touch.Insert),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
@@ -87,6 +88,12 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     public static IReadOnlyList<string> Indices { get; } = ["GSPC", "MID", "SML"];
 
     public const string LargeIndex = "GSPC";
+
+    // On the operator's ruling of 2026-11-15 on the shapes each live book's record box, written by the books' test.
+    // see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
+    const string InsertBookRecord = @"
+        INSERT INTO book_record (run_id, index_code, family, rule, exit_words, from_year, through, months, points)
+        VALUES ($run_id, $index, $family, $rule, $exit, $from, $through, $months, $points);";
 
     static readonly TimeSpan Poll = TimeSpan.FromSeconds(30);
 
@@ -688,7 +695,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // of those against its benchmark, written whole; with print, printed and nothing written. It adopts and retires
     // nothing.
     // see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
-    public async Task<int> RulesAsync(string index, string? month, CancellationToken cancellation = default, bool print = false, bool longRun = false, long draws = 0)
+    public async Task<int> RulesAsync(string index, string? month, CancellationToken cancellation = default, bool print = false, bool longRun = false, long draws = 0, bool books = false)
     {
         if (!Indices.Contains(index, StringComparer.Ordinal))
         {
@@ -774,6 +781,13 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         }
 
         var standingRules = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started);
+
+        // On the operator's answer of 2026-11-14 to item 15 the live books alone, measured per dollar risked, printed and written
+        // nowhere.
+        if (books)
+        {
+            return await BooksAsync(index, read, history, longHistory, through, standingRules, cancellation, print);
+        }
 
         // From 23.7 the long test walks the families its record reaches alone: the books laid over the standing facts, the
         // dip's and the sweeps' own reads of the standing pull's market series, and the like setups and the ranking off the
@@ -895,7 +909,10 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             improvingLay,
             own,
             Like: standingOnly ? null : like,
-            Ranked: standingOnly ? null : family => ranked.GetValueOrDefault(family));
+            Ranked: standingOnly ? null : family => ranked.GetValueOrDefault(family),
+            Revenues: index is EquityBrief.Worker.Indices.IndexFamilies.LargeIndex or Core.Providers.FundHoldings.MidCapIndex
+                ? await PlanPointTest.QuarterRevenuesAsync(databaseFile, [.. read.Series.Select(one => one.Name.Ticker)], cancellation)
+                : null);
         var rules = standingOnly ? [.. RuleTests.Walk(ruleInputs).Select(StandingAlone)] : RuleTests.Walk(ruleInputs);
         var tested = standingOnly
             ? RuleTests.JudgeLong(read, rules, await NewestCutoffAsync(cancellation), draws)
@@ -951,6 +968,22 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         foreach (var one in tested.Where(one => one.Rule.StandingTarget is not null))
         {
             output.WriteLine(RuleTests.StandingLine(one.Rule, InTestYears));
+        }
+
+        // From 23.10's second part each walk beside a live rule its family has no room or no word to register, unregistered
+        // and written nowhere: the S&P 500 pullback's today's plan, graded exposure, standing target, two widenings and
+        // tight-stop skip among them.
+        // see: The S&P 500's swing filter reads the hooks its night keeps a pick under, and its heavyweight book a book's
+        foreach (var line in tested.SelectMany(one => RuleTests.BesideLines(one.Rule, InTestYears)))
+        {
+            output.WriteLine(line);
+        }
+
+        // On the operator's ruling of 2026-11-14, item 4, each live book's stop and take-profit chosen on the test years from its
+        // family's first test year on the index to the year before 2019 and judged from 2019 beside its own, printed alone.
+        foreach (var one in tested.Where(one => one.Rule.BookBeside is { Count: > 0 }))
+        {
+            output.WriteLine(RuleTests.BookChoiceLine(one.Rule, read.Index, read.Calendar, InTestYears));
         }
 
         // From 21.14, on the operator's ruling of 2026-10-30, each graded exposure, a rule's own or the one walked beside a

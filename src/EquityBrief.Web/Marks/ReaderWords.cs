@@ -207,7 +207,8 @@ public static class ReaderWords
             (@"\brebalanced\b", "reshuffled"),
             (@"\brebalances\b", "reshuffles"),
             (@"\brebalance\b", "reshuffle"),
-            (@"\bheld\b", "kept"),
+            // From the operator's order of 2026-11-14 a stock already held is said in their words.
+            (@"(?<!\b" + AlreadyHeldLead + @" )\bheld\b", "kept"),
             (@"\bthe listing close\b", "the close the night it was picked"),
             (@"\bthe listing\b", "the night it was picked"),
             (@"\blistings\b", "picks"),
@@ -249,6 +250,12 @@ public static class ReaderWords
             (@"\bnear miss\b", "one step short"),
         }.Select(rewrite => (new System.Text.RegularExpressions.Regex(rewrite.Phrase, System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant), rewrite.Words)),
     ];
+
+    // The operator's phrase of 2026-11-14 for a stock a trade holds that its setup's rules met again, which a page draws in their
+    // words although the glossary's "held" is the drift's step: the label, the group's heading and the summary's line say it.
+    public const string AlreadyHeld = "already held";
+
+    const string AlreadyHeldLead = "already";
 
     // A sentence the core or the night wrote, said in the reader's words: each phrasing of the build's above rewritten in
     // any case, a phrase opening on a capital rewritten to words opening on one, and a word written all in capitals left

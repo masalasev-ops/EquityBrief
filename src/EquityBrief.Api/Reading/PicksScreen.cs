@@ -350,7 +350,10 @@ public static class PicksScreen
             counted.Count(cell => cell.FiredAs is not null),
             counted.Count(cell => cell.Status == PickStatus.Waiting && cell.Night >= drawn),
             counted.Count(cell => cell.Status == PickStatus.Waiting && cell.Night < drawn),
-            counted.Count(cell => cell.Status == PickStatus.NotFilled));
+            counted.Count(cell => cell.Status == PickStatus.NotFilled))
+        {
+            Night = drawn == DateOnly.MinValue ? null : drawn,
+        };
     }
 
     // The stored outcome a status stands for, which the run page's own test of a scored setup reads.

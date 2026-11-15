@@ -1,4 +1,4 @@
-using System.Globalization;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
 
 namespace EquityBrief.Core.Loop;
@@ -90,10 +90,12 @@ public sealed record RuleHooks(
     // The files a hooked rule's list and trades are read through, which every family rule's version pins beside its own.
     // From 23.10 the plan's reading and its walk, which a hooked rule's trades are bought and sold through, and the marks every
     // rule's read of the pull reads under. A book states no plan, so its rules pin the reading and not the walk, nor the
-    // bands, the ladder and the volume profile a plan's order is placed at, read as the night reads them.
+    // bands, the ladder and the volume profile a plan's order is placed at, read as the night reads them. From the operator's
+    // order of 2026-11-14 the take-profit the plan's sale carries, read off the stock's swings before the night.
     public static IReadOnlyList<string> PlanWalkSources { get; } =
     [
         "src/EquityBrief.Worker/Loop/PlanTrades.cs",
+        "src/EquityBrief.Core/Swings/SwingSeries.cs",
         "src/EquityBrief.Core/Ladders/LadderSeries.cs",
         "src/EquityBrief.Core/Levels/LevelSeries.cs",
         "src/EquityBrief.Core/Volume/VolumeProfileSeries.cs",
@@ -101,7 +103,7 @@ public sealed record RuleHooks(
         "src/EquityBrief.Worker/Levels/LevelBuilder.cs",
     ];
 
-    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs", "src/EquityBrief.Core/Loop/PlanHook.cs", "src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Core/Loop/PlanPrices.cs", .. PlanWalkSources, "src/EquityBrief.Core/Chart/SessionMarking.cs"];
+    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs", "src/EquityBrief.Core/Loop/PlanHook.cs", "src/EquityBrief.Core/Loop/PlanPoints.cs", "src/EquityBrief.Core/Loop/PlanPrices.cs", "src/EquityBrief.Core/Loop/TakeProfit.cs", .. PlanWalkSources, "src/EquityBrief.Core/Chart/SessionMarking.cs"];
 
     public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null && Exposure is null && Ranking == 0 && !ByExpected && Plan is null;
 
@@ -119,7 +121,7 @@ public sealed record RuleHooks(
     // exposure, the ranking or the expected-value order, which pick a night's trades.
     public bool AreABooks => Exit == 0 && Exposure is null && Ranking == 0 && !ByExpected && Plan is null;
 
-    public const string NotABooks = "a book reads conditions on the catalogue's readings and an order by a score alone";
+    public const string NotABooks = RuleWording.RuleHooks.NotABooks;
 
     public ExitChoice? ExitChoice => ExitMenu.Of(Exit);
 
@@ -373,34 +375,34 @@ public sealed record RuleHooks(
             parts.Add("plan: " + plan.Words);
         }
 
-        parts.AddRange(Also.Select(condition => FormattableString.Invariant($"also requires {condition.Column} {(condition.Above ? "at or above" : "at or under")} {condition.Level.ToString("0.####", CultureInfo.InvariantCulture)}")));
+        parts.AddRange(Also.Select(condition => RuleWording.RuleHooks.AlsoRequires(condition.Column, condition.Above, condition.Level)));
 
-        var floor = ScoreFloor is { } least ? FormattableString.Invariant($", a score under {least.ToString("0.####", CultureInfo.InvariantCulture)} left off") : string.Empty;
+        var floor = ScoreFloor is { } least ? RuleWording.RuleHooks.ScoreFloor(least) : string.Empty;
 
         if (Trees is { } key)
         {
-            parts.Add(FormattableString.Invariant($"ordered by the learned trees {key:x12}") + floor);
+            parts.Add(RuleWording.RuleHooks.OrderedByTrees(key) + floor);
         }
         else if (Score.Count > 0)
         {
-            parts.Add("ordered by a score over " + string.Join(", ", Score.Keys.Order().Select(reading => LedgerReadings.All[reading].Column)) + floor);
+            parts.Add(RuleWording.RuleHooks.OrderedByAScoreOver + string.Join(", ", Score.Keys.Order().Select(reading => LedgerReadings.All[reading].Column)) + floor);
         }
         else if (Ranking == RankingByScore)
         {
-            parts.Add(FormattableString.Invariant($"ranked over the family's setups at the ledger's loose gates by the index's newest learned score, the best {RankingPicks}"));
+            parts.Add(RuleWording.RuleHooks.RankedByScore(RankingPicks));
         }
         else if (Ranking == RankingByExpected)
         {
-            parts.Add(FormattableString.Invariant($"ranked over the family's setups at the ledger's loose gates by the expected value of the setups like each, the best {RankingPicks}"));
+            parts.Add(RuleWording.RuleHooks.RankedByExpected(RankingPicks));
         }
         else if (ByExpected)
         {
-            parts.Add("ordered by the expected value of the setups like each, highest first");
+            parts.Add(RuleWording.RuleHooks.OrderedByExpected);
         }
 
         if (Exposure is { } breadth)
         {
-            parts.Add(FormattableString.Invariant($"exposure: {ExposureFull} picks where the index's breadth is at or above {breadth.ToString("0.####", CultureInfo.InvariantCulture)} and the VIX at or under its median of the {LedgerReadings.VixMedianSessions} sessions before, {ExposureHalf} where one holds and none where neither, in the market check's place"));
+            parts.Add(RuleWording.RuleHooks.Exposure(ExposureFull, breadth, LedgerReadings.VixMedianSessions, ExposureHalf));
         }
 
         return string.Join("; ", parts);

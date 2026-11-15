@@ -19377,3 +19377,187 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 23.10 ruling - the parts tabled for phase 24 built as 23.10's second part, the second and last restart of phase 23   2026-11-13
+
+Not a checkpoint entry: it records the operator's order building the parts 23.10 tabled for phase 24 as 23.10's second part,
+and lands nothing.
+Ruled:      the operator's order of 2026-11-13, word for word with their answers in
+            `prompts/2026-11-13-23.10-second-restart-order.md`: "The parts 23.10 tabled for phase 24 (BUILD_PLAN.md, "Tabled for
+            phase 24") are built now as 23.10's second part, not left for phase 24, on my word: it is the second and last
+            restart of phase 23, because the first left these parts out and phase 24 is not planned yet."
+Moved:      the build plan's list tabled for phase 24 into 23.10 as its second part with a done condition of its own, and the
+            phase's paragraph on its restart, their prior text in the changelog. Beside the tabled parts the second part holds
+            the dip's step storing a plan trade's fill when it fills, item (b) of the order, which moves the dip rules' pins,
+            and the S&P 500's Quality rule made live again at its setting before the approval the operator withdrew, the undo
+            their answer on item (d) puts at this restart.
+Not ready:  why each tabled part was not ready on 2026-11-10. The order of that day asked the restart "on my word now, without
+            stopping", its remedy from main and the three standing ledgers written again before the night at 00:00 UTC. The plan
+            hook, the marks, the plan point test's live plan, the card's zone and the loop's walk of a plan were built from
+            09:15 to 10:30 UTC, the pull request merged at 11:14 UTC, its remedy ran from 12:07 to 13:07 UTC and the ledgers
+            after it, and none of these was begun by then. The wording: about 469 sentences in 35 files, each to move word for
+            word with every stored key kept, restarting every rule pinning those files. The swing filter's and the book's hooks
+            with the S&P 500 pullback's plan: the swing filter read no hook, the registrar refused it a hook and a plan, and its
+            live list stored no order. The profit check's quarter: the night's step order and the day the history reads a
+            quarter from, which the operator's answer of 2026-11-13 settles. The entry readings with the skip and the six
+            conditions: their catalogue entry needs the standing and the long ledgers written again, and the skip stood in no
+            code. The provider's quarters: the members', the fundamentals' and the S&P 400's and 600's readers read the
+            provider's quarters, and the reader taking a quarter from its filing, then its release, stood for the cards alone.
+            The long ledger written once more: it waited on the readings it was to walk, and its nine to eleven hours could not
+            end before that night.
+Owed:       23.10's second part, one pull request a commit a part, every rule that restarts named with its record's length
+            before its merge, on the operator's go.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: a dip trade under a plan keeps its fill on the session it fills, so every page draws it bought from then   2026-11-13
+
+Corrects:   23.10's restart of 2026-11-10: the dip's step stored a plan trade's fill only with its end, so a dip order that had
+            filled read as waiting on every page until its trade ended; item (b) of the operator's order of 2026-11-13. No page
+            drew it so that day: since the restart one planned dip order stood, HALO's on the S&P 400, and its levels placed no
+            price, so it can never fill.
+Label:      23.10, whose restart gave the dip its plan; built first in 23.10's second part on the operator's answer, since the
+            dip's step is a source every dip rule pins and the second part restarts them anyway.
+Ruled:      the operator's order and answer of 2026-11-13, word for word in `prompts/2026-11-13-23.10-second-restart-order.md`.
+Built:      the dip's step, walking a trade under a plan, stores its fill and the session it filled once it has filled, the
+            trade open until its plan sells it, and every page reads it bought from then off the stored fill; the schema says
+            so.
+Tests:      1 new: a dip trade under a plan filled on its first session and held, worked by hand, its fill and session stored
+            with the trade open, and the read surface's planned trades reading it bought from then.
+Claims:     none new.
+Pins:       every dip rule's: the dip's step is a source each pins, registered again by the second part's remedy.
+Mutated:    the rule as above. b1 the open trade's fill left unstored, predicted red at the new test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 ruling - the last restart of a live rule: no version goes live before the monthly run of 6 Feb 2027, a defect the one exception   2026-11-14
+
+Not a checkpoint entry: it records the operator's ruling of 2026-11-14 making this restart the last restart of a live rule,
+and lands nothing.
+Ruled:      the operator's ruling of 2026-11-14, clause 17 of their rulings on the report replaced by their amendment, word
+            for word in `prompts/2026-11-14-23.10-rulings-amendment-clause-17.md`: "This is the last restart of a live rule."
+            (a) A change that does not change a rule's trades never restarts its record. (b) A trade-changing change never
+            replaces the live rule: it becomes a background version, and at a monthly run a winner goes live on the operator's
+            word and carries its own record. (c) No version goes live before the monthly run of Sat 6 Feb 2027. (d) A defect
+            making a live rule trade on wrong data is the one exception: it is brought to the operator with what it changes and
+            how many trades it touches, nothing restarts without their word, and a ruling entry names the exception. (e) Beside
+            every "This version since <date>" the page says the rules are frozen until 6 Feb 2027. (f) A check fails where a
+            live rule's record restarts without a ruling entry naming the exception. Clause 7's "goes live only at a monthly
+            run, on my word" is read under this ruling.
+In this PR: (e) and (f): each of the four places a card says "This version since <date>" adds "rules frozen until 6 Feb
+            2027" for a version from the restart on; and a check refuses any remedy dated from 2026-11-15 that runs a register
+            command unless a ruling entry of this record names its file and the exception. This restart's remedy is dated
+            2026-11-14, before the freeze.
+3 November: why the replay kept so few records that night. It read 57 of the S&P 500's family records: 17 carried and 40
+            restarted, 39 of them the S&P 400's and 600's rules, which the replay does not read, and the S&P 500's breakout at
+            251 sessions, whose replay did not match its trades. The other 80 rules have no replay at all: the swing filter's
+            versions, the eight ladder windows, the candidates and the books. About 120 of 137 restarted.
+Owed:       (a)'s replay, built right after this restart and before any other change to a file a version pins, covering every
+            kind of rule, the family rules, the swing filter's versions, the ladder rules, the candidates and the books, each
+            reading each night's inputs as stored, and naming any kind it cannot cover with why.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - the second restart: the parts tabled for phase 24, each rule taking profit in the shape its test chose, each book trading its own exit, and the rule freeze   2026-11-15
+
+Built:      23.10's second part, the second and last restart of phase 23, on the operator's order of 2026-11-13 and their
+            rulings of 2026-11-14 and 2026-11-15, word for word in `prompts/`. The parts tabled for phase 24: the screen wording
+            of every file the wording check named moved to the wording file; the S&P 500's swing filter and its heavyweight book
+            reading the hooks, the swing filter's live rule stating a plan; the profit check reading the quarter stored that
+            night; the entry check's readings joining the catalogue, the tight-stop skip and the drift's conditions and sales
+            check walked beside the live rules; each quarter read from its filing and then its release, the cover from the four
+            newest quarters stating interest; the long ledger written once more, resumed by its pin; and `register --withdraw`.
+            On the rulings: Home, Tonight and Past picks in the operator's words; every pick taking profit at a price, chosen by
+            its test among three shapes, the multiple of the risk alone, the first price it turned down at that far above the
+            buy, or half at the multiple with the stop on the other half then moved up to the buy, today's nearest turned-down
+            price walked beside them and never chosen, the shape a registration's seventh plan parameter; each of the nine books
+            trading the stop and take-profit its own books' test chose in points a month, on 2019 to 2022 for the heavyweights,
+            stated by family and index, a book's half selling at the night's close and its result the mean of the two halves;
+            a plan's staged level selling no more than is held; a book's record box in points a month from the year after its
+            exit was chosen, written to `book_record` by the books' test; clause 5, an open trade or waiting order of a live rule
+            placed before the restart taking its rule's take-profit from its own buy, counted from the session after, and a live
+            book's holding bought before it taking the book's exit, each card saying "Take-profit added at the rules restart
+            of" the date; clause 6, an S&amp;P 400 or 600 rule stating no plan taking its family's take-profit as it registers
+            again; clause 9, rule names in plain words; clause 10, an order its levels place no price for not placed; clause
+            17, the rule freeze beside every version and its check; clause 18, the monthly loop walking a planned rule under each
+            exit of the menu; and F2, the S&amp;P 400's and 600's long search judged against each index's own setting. The
+            ledger's builds still read one session at a time: on the operator's question of 2026-11-15 they were made to compute
+            a chunk's sessions across the machine's cores, and on the operator's ruling of that evening, word for word in
+            `prompts/2026-11-15-23.10-ruling-on-item-5.md`, they read one at a time again, as before it, since over the S&amp;P
+            600's long ledger 59 of its 338,061 setups, on HZO, RGR and SAIA, read another fundamentals score and share fall
+            than one at a time: a stock's scorecard is kept by the count of its facts filed before a session and worked with
+            the first session to ask, whose day decides which share counts stand before it. On the operator's review of PR 699
+            of 2026-11-15, word for word
+            in `prompts/2026-11-15-23.10-review-of-pr-699.md`: the short-term dip's own check in the ruled words on its tile and
+            its card; no card saying "No fixed target", a plan that trails drawing its rising give-up price, a trailing half
+            selling on a close under the take-profit less the trail's distance and never under the buy, and every profit row
+            "Take profit at", superseding the decision that drew "Aim to sell at: No fixed target"; the freeze check refusing
+            only a remedy changing a live rule or registering one again; the heavyweights' card drawing each live holding's
+            stop and take-profit with the restart's line; and the drift report reading the S&amp;P 500 breakout beside the drift.
+            On the operator's rulings on that report of 2026-11-15, word for word in
+            `prompts/2026-11-15-23.10-rulings-on-the-review-report.md`: both waiting plans kept, the drift's and the breakout's
+            lines saying they buy only on a pullback to the buy price within 20 trading days and their record box that its
+            figure reads high; the seven live families with room keeping their live plan without its take-profit in the
+            background, the five full left without one; every book's buy drawing the stop and take-profit its exit places
+            from the close it was chosen at, Quality at a fair price's and the Fundamentals family's cards written on a row of
+            their own after the Fundamentals family's step and by `card-plans`, on Home, Tonight's buys and each book's card,
+            superseding the two decisions that drew how such a buy sells in their place; and "Take profit at" where a target's
+            tile read "Sell if it reaches".
+Chosen:     families on 2005 to 2018 per $1 risked, judged from 2019 against today's plan: S&amp;P 500 pullback at the risk 2,
+            breakout half 3, drift beyond 2, dip at the risk 2; S&amp;P 400 pullback half 1.5, breakout beyond 3, drift half 3, dip
+            half 3; S&amp;P 600 pullback half 1.5, breakout half 3, drift half 2, dip beyond 1.5; from 2019 none beats today's plan
+            by more than 0.001 a pick per $1 risked and the widest falls short by 0.028. Books in points a month from 2019 (from
+            2023 for the heavyweights) against their own exit: S&amp;P 500 Fundamentals half stop 2 at 1.5 -0.06 against +0.13,
+            heavyweights half stop 2 at 3 -0.13 against -0.04, Quality half stop 4 at 3 -0.36 against -0.12; S&amp;P 400
+            Fundamentals beyond stop 4 at 3 +0.07 against +0.10, heavyweights beyond stop 4 at 3 +0.42 against +0.78, Quality
+            beyond stop 3 at 2 -0.01 against +0.16; S&amp;P 600 Fundamentals half stop 2 at 1.5 +0.92 against +0.06, heavyweights
+            beyond stop 2 at 1.5 +0.63 against +0.55, Quality beyond stop 4 at 2 -0.32 against +0.30.
+Remedy:     `tools/remedies/2026-11-14-23.10-the-second-restart.txt`, dated before the freeze, from main after the merge with the
+            off-peak and local runs held: migrate; the S&amp;P 500 Quality rule the operator did not approve withdrawn; each of the
+            twelve price families' live rules given its plan and take-profit; every moved version registered again; seven live
+            plans kept without their take-profit in the background; the cards' plans and the books' cards; the standing and the
+            long ledger written once more; the buy and sell points on each index; each live book's
+            record box. Rehearsed whole on a copy of the store on the C: drive.
+Tests:      16 new: a take-profit placed by its shape; the shape read back and refused without a multiple; a staged level after a
+            half selling no more than is held; a take-profit added at the restart counting from the session after; an open
+            trade of a live rule placed before the restart taking its rule's and no other; an S&amp;P 400 or 600 rule stating no
+            plan taking its family's; both tests choosing among the three shapes and never today's; each book's exit, its half
+            and its stop; the book's box in points a month; the half's card lines; a trailing half's line and a trail with no
+            take-profit; a remedy
+            registering background versions alone passing the freeze and one touching a live rule named, each form; the
+            heavyweights' card drawing each holding's exit and the restart's line; a book's buy drawing the stop and
+            take-profit its exit places from the close on Home, Tonight's buys and its book's card, the night's cards written
+            again leaving the books' standing, and the guard naming a book's pick drawn with none; the drift's and the
+            breakout's lines and their record's line. Ten read-surface expectations brought to the ruled labels, the wording
+            guard refusing "No fixed target", "Aim to sell at" and "Sell if it reaches" and failing a book's pick with no
+            profit row, and two night expectations reading the books' cards' row after the Fundamentals family's. Two
+            expectations earlier commits of this part left stale brought to the code: the swing filter's unplaceable order
+            ending on its night, and "1 typical day".
+Pins:       every family rule's, book's and the swing filter's version raised to its pin, and the ledger readings' version;
+            migrations 148, the half sold and the exit added at the restart, and 149, `book_record`.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored to the file's
+            text. BookChosen taking today's full: red. Choosable taking today's full: red. A book's step selling no half: red. A
+            staged level selling its whole share: survived the first test, whose flat closes let the oversold share cancel at the
+            same price, an unreachable boundary; the test reworked to fall to its stop after the levels, red. The added
+            take-profit's target counted from the fill: red. The box at ten times a month: red. A trade placed on the restart's
+            day taking the take-profit: red. A rule stating no plan given none: red. The trailing half's give-up price let
+            under the buy: red.
+            The freeze check refusing every register line, as it did: red. The freeze check passing a line naming a live rule:
+            red. The heavyweights' restart date not read: red. The books' cards placing no take-profit: red. Tonight's row of
+            a book's buy drawing how it sells beside its card's prices: red. The night's own cards clearing the books' cards
+            with theirs: red. The line saying a record reads high drawn for every setup: red.
+Owed:       (a)'s replay, as the ruling entry above states it; the heavyweights' long read from the funds pulled from 2018,
+            raised with the operator after the restart; the long search's S&amp;P 400 breakout row naming "any range" at its next
+            run; on the operator's rulings of 2026-11-15, built with the replay fix of clause 17a, `register` refusing to restart
+            a live record during the freeze so `--moved` passes the freeze check, and as the first job after it the books'
+            own exit as background versions for the nine books once a pin move changing no live trade keeps its record, the
+            retirement choice for Quality at a fair price and the Fundamentals family brought to the operator then; clause
+            19's monthly test on a copy of the store after the remedy, reported before 5 Dec; on the operator's ruling on item
+            5, the ledger's builds computing their sessions across the machine's cores again only with a test that builds the
+            same sessions twice, one at a time and across the cores, on all three indexes and failing on any row that differs;
+            and, with the replay fix's pull request, a later session reading the scorecard its filings' count was first worked
+            with, its share check missing a count dated after that first session, which only readings over the history read,
+            the ledger's builds and the monthly run's tests, each night's readings worked from a store of figures of their own
+            asked for that night alone.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3770 of 3770 tests ran with none failed, migrations 0 to 149 with none
+            pending, schema version 149, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
+            passing, none out of scope and none unexamined, 1640 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

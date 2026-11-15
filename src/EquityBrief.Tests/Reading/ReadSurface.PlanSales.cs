@@ -28,8 +28,8 @@ public partial class ReadSurface
     // at each and aim at their mean of 43.00, $1.50; and the time limit alone of 5 trading days aims at nothing.
     public static TheoryData<string, string, string[], string?> RegisteredSales => new()
     {
-        { "the rule's target", Ordered(PlanPoints.TypicalStop(2), PlanPoints.RuleSale, target: 45), ["Aim to sell at$45.00", "Otherwise sell after60 trading days"], "2.50" },
-        { "the first band above", Ordered(PlanPoints.RuleStop, PlanPoints.FirstBand, target: 46), ["Aim to sell at$46.00the first price above the buy where it has turned down before", "Otherwise sell after60 trading days"], "2.00" },
+        { "the rule's target", Ordered(PlanPoints.TypicalStop(2), PlanPoints.RuleSale, target: 45), ["Take profit at$45.00", "Otherwise sell after60 trading days"], "2.50" },
+        { "the first band above", Ordered(PlanPoints.RuleStop, PlanPoints.FirstBand, target: 46), ["Take profit at$46.00the first price above the buy where it has turned down before", "Otherwise sell after60 trading days"], "2.00" },
         { "the first band above, none above the buy", Ordered(PlanPoints.RuleStop, PlanPoints.FirstBand), ["No price above tonight's close where it has turned down before:it holds for 60 trading days unless the stop sells it first."], null },
         { "the staged sales", Ordered(PlanPoints.TypicalStop(2), PlanPoints.StagedSales, staged: [44, 39, 42]), ["Sell a third at$42.00", "Sell a third at$44.00", "Keep the last thirduntil a close below the stop", "Otherwise sell after60 trading days"], "1.50" },
         { "the staged sales, none above the buy", Ordered(PlanPoints.TypicalStop(2), PlanPoints.StagedSales, staged: [39]), ["No price level above tonight's close to sell at:it is near its highs for the past year, so it holds for 60 trading days unless the stop sells it first."], null },
@@ -143,7 +143,7 @@ public partial class ReadSurface
                     Assert.Equal([line], Tiles(drawn, "<div class=\"plan-tile\" data-tile=\"(?:target|stage|keep|limit)\".*?</div>"));
                     Assert.Equal(said, Read(Assert.Single(Tiles(drawn, "<p class=\"time-record\".*?</p>"))));
                     Assert.DoesNotContain("Sell a share at", Read(drawn), StringComparison.Ordinal);
-                    Assert.DoesNotContain("Aim to sell at", Read(drawn), StringComparison.Ordinal);
+                    Assert.DoesNotContain("Take profit at", Read(drawn), StringComparison.Ordinal);
                 }
 
                 var home = new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Reading = Universes.Mid, Ideas = [new HomeIdea(family, "BHF", null, "Beat.", view.Zone!.Price, view.Stop, null, false, null, LongRecord: records.Of("MID", family), Zone: view.Zone)], IdeasCount = 1 }, string.Empty);

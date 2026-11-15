@@ -15,9 +15,7 @@ public sealed record ImprovingSweepSetting(int BuyInNine, bool FlagFirst, bool R
         CultureInfo.InvariantCulture,
         $"buy={BuyInNine}|flag={(FlagFirst ? "first" : "off")}|rise={(Rise ? "on" : "off")}|faster={(Faster ? "on" : "off")}|hold={HoldInNine}|limit={Sessions}{(SoldUnderAverage ? "|average=on" : string.Empty)}");
 
-    public string Words => string.Create(
-        CultureInfo.InvariantCulture,
-        $"a newly read filing lifting its score to at least {BuyInNine} in 9{(Rise ? " and above its previous filing's" : string.Empty)}{(Faster ? ", its sales growth faster than the quarter before's" : string.Empty)}{(FlagFirst ? ", a flag standing the night before" : string.Empty)}; held while its score stays at {HoldInNine} in 9 or better, at most {Sessions} sessions{(SoldUnderAverage ? ", and sold at a close under its 200-day average" : string.Empty)}");
+    public string Words => RuleWording.ImprovingGrid.Words(BuyInNine, Rise, Faster, FlagFirst, HoldInNine, Sessions, SoldUnderAverage);
 
     // How many dials a setting stands from another.
     public int Changes(ImprovingSweepSetting other) =>

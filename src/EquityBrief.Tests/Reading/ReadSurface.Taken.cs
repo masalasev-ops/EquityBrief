@@ -176,7 +176,7 @@ public partial class ReadSurface
         Assert.Equal(
             [
                 "Sell at the next trading day's open after a day that closes below the stop, 47.30 at the buy, raised after each close to that close less 2.70 and never lowered.",
-                "No target: the trade is ended by its stop or its time limit.",
+                "Take profit at a price set from the buy: the nearest price above it where the stock turned down before, or a multiple of the risk above it.",
                 "Otherwise sell at the close 63 trading days after the buy.",
             ],
             ManagementOf(await CardRowOf(client, "MID", "breakout", "M1")));
@@ -184,13 +184,14 @@ public partial class ReadSurface
             [
                 "Kept while it leads its sector: sell at the close of a month's reshuffle, its first trading day or the first after it whose stored year holds the closes the rule reads, where the rule would no longer buy it.",
                 "Sell at its last close as a member if it leaves the index.",
-                "No stop and no target: nothing sells it at a price set in advance, so the whole position is at risk.",
+                "Its stop is set when it is bought, 3 typical daily moves under the buy, and it sells at the close of a day that closes below it.",
+                "Its take profit is set with its stop: the nearest price above the buy where the stock turned down before, or 2 times the risk above the buy.",
             ],
             ManagementOf(await CardRowOf(client, "MID", HeavyweightRule.Name, "M2")));
         Assert.Equal(
             [
                 "Sell at the next trading day's open after a day that closes below the stop, 47.00 at the buy, raised after each close to that close less 3.00 and never lowered.",
-                "No target: the trade is ended by its stop or its time limit.",
+                "Take profit at a price set from the buy: the nearest price above it where the stock turned down before, or a multiple of the risk above it.",
                 "Otherwise sell at the close 63 trading days after the buy.",
             ],
             ManagementOf(await CardRowOf(client, "SML", "breakout", "S1")));
@@ -231,11 +232,12 @@ public partial class ReadSurface
             [
                 "Kept while it leads its sector: sell at the close of a month's reshuffle, its first trading day or the first after it whose stored year holds the closes the rule reads, where the rule would no longer buy it.",
                 "Sell at its last close as a member if it leaves the index.",
-                "No stop and no target: nothing sells it at a price set in advance, so the whole position is at risk.",
+                "Its stop is set when it is bought, 3 typical daily moves under the buy, and it sells at the close of a day that closes below it.",
+                "Its take profit is set with its stop: the nearest price above the buy where the stock turned down before, or 2 times the risk above the buy.",
             ],
             ManagementOf(await CardRowOf(largeClient, "GSPC", HeavyweightRule.Name, "HW", TheSwitch)));
 
-        var plans = WatchRows(large, $"SELECT family || '|' || ticker || '|' || entry || '|' || stop || '|' || IFNULL(target, '') FROM decision_card WHERE index_code = 'GSPC' AND family <> '{HeavyweightRule.Name}' ORDER BY family, ticker;");
+        var plans = WatchRows(large, $"SELECT family || '|' || ticker || '|' || entry || '|' || stop || '|' || IFNULL(target, '') FROM decision_card WHERE index_code = 'GSPC' AND family <> '{HeavyweightRule.Name}' AND held_again IS NULL ORDER BY family, ticker;");
 
         Assert.Equal(["breakout", "drift", "pullback"], plans.Select(plan => plan.Split('|')[0]).Distinct());
         Assert.Equal(8, plans.Count);
@@ -256,7 +258,7 @@ public partial class ReadSurface
                 ]
                 : [
                     FormattableString.Invariant($"Sell at the next trading day's open after a day that closes below the stop, {stop:0.00} at the buy, raised after each close to that close less {entry - stop:0.00} and never lowered."),
-                    "No target: the trade is ended by its stop or its time limit.",
+                    "Take profit at a price set from the buy: the nearest price above it where the stock turned down before, or a multiple of the risk above it.",
                     FormattableString.Invariant($"Otherwise sell at the close {cap} trading days after the buy."),
                 ];
 

@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Releases;
 using Microsoft.Data.Sqlite;
@@ -20,10 +21,10 @@ public sealed record NewestReading(string Accession, DateTimeOffset Accepted, Re
 // see: A release reading is readable from the first night whose late slot starts after the release was accepted
 public static class ReleaseReadings
 {
-    public const string NotPlaced = "the calendar places no session before the print's report date";
-    public const string NoRelease = "no release the SEC accepted from the print's window is readable on the night";
-    public const string NotRead = "the release is not yet read under the reading version";
-    public const string RefusedWhy = "the release's reading was refused";
+    public const string NotPlaced = RuleWording.ReleaseReadings.NotPlaced;
+    public const string NoRelease = RuleWording.ReleaseReadings.NoRelease;
+    public const string NotRead = RuleWording.ReleaseReadings.NotRead;
+    public const string RefusedWhy = RuleWording.ReleaseReadings.RefusedWhy;
 
     // A filer's releases from the print's window on, newest first, each with its reading under the version where one is
     // held; which of them the night may read is the core's one rule, asked of each. From the 20.3 correction of
@@ -109,7 +110,7 @@ public static class ReleaseReadings
     // Each stock's filer as its newest company row files it.
     const string Filers = "SELECT ticker, cik FROM company WHERE cik IS NOT NULL ORDER BY fetched_at;";
 
-    public const string NoFiler = "the store matches no filer to the stock";
+    public const string NoFiler = RuleWording.ReleaseReadings.NoFiler;
 
     // From 20.4 each stock's filer padded to ten digits, by its newest company row filing one.
     public static async Task<IReadOnlyDictionary<string, string>> FilersAsync(SqliteConnection connection, CancellationToken cancellation = default)
@@ -228,7 +229,7 @@ public static class ReleaseReadings
 
             return reader.GetString(2) == "read"
                 ? new PrintReading(accession, accepted, new ReleaseAnswer(reader.GetString(4), reader.GetString(5), reader.GetString(6), reader.GetString(7)), null)
-                : new PrintReading(accession, accepted, null, RefusedWhy + ": " + (reader.IsDBNull(3) ? "no cause stated" : reader.GetString(3)));
+                : new PrintReading(accession, accepted, null, RefusedWhy + ": " + (reader.IsDBNull(3) ? RuleWording.ReleaseReadings.NoCauseStated : reader.GetString(3)));
         }
 
         return new PrintReading(null, null, null, NoRelease);

@@ -107,8 +107,9 @@ public sealed class ImprovingLay
     }
 
     // The history laid once for every setting: the tape, each month's first session from the first scored, and every
-    // member's scorecards and newly read filings.
-    public static async Task<ImprovingLay> ReadAsync(LoopRead read, SweepHistory history, IReadOnlyDictionary<string, IReadOnlyList<ImprovingRelease>> releases, DateOnly through, Action<string> progress, CancellationToken cancellation)
+    // member's scorecards and newly read filings; from the operator's answer of 2026-11-14 to item 15 the facts read by the
+    // reader a run hands it, the long history's over the long years, and the standing table's otherwise.
+    public static async Task<ImprovingLay> ReadAsync(LoopRead read, SweepHistory history, IReadOnlyDictionary<string, IReadOnlyList<ImprovingRelease>> releases, DateOnly through, Action<string> progress, CancellationToken cancellation, Func<IEnumerable<string>, Task<IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>>>? factsOf = null)
     {
         var months = HeavyweightSweep.Rebalances(read.Calendar, read.FirstScored, HeavyweightPeriod.Month);
         var (tape, _) = HeavyweightSweep.Lay(read.Inputs, read.Companies, null, new HashSet<int>(), read.FirstScored);
@@ -116,7 +117,7 @@ public sealed class ImprovingLay
 
         progress("reading every member's filings as first filed");
 
-        var facts = await history.FiledFactsAsync(ciks, through, cancellation);
+        var facts = factsOf is null ? await history.FiledFactsAsync(ciks, through, cancellation) : await factsOf(ciks);
 
         progress(FormattableString.Invariant($"replaying {read.Series.Length} name(s) night by night from {read.Calendar[read.FirstScored]:yyyy-MM-dd}"));
 
@@ -251,11 +252,16 @@ public sealed class ImprovingLay
         IReadOnlyList<IReadOnlyDictionary<int, ImprovingScore>> scores,
         ImprovingSweepSetting setting,
         bool soldUnderAverage = false,
-        Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
+        Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null,
+        (double Moves, double Multiple)? stops = null,
+        bool half = false,
+        Core.Loop.TakeProfitPlacing placing = Core.Loop.TakeProfitPlacing.Turned)
     {
         var trades = new List<HeavyweightTrade>();
         var chosen = new Dictionary<int, HeavyweightRebalance>();
         var open = new SortedDictionary<int, (int Entry, ImprovingScore Score, int Held)>();
+        var exits = new Dictionary<int, (double Stop, double? TakeProfit)>();
+        var halves = new Dictionary<int, int>();
         var bySession = filings
             .SelectMany((one, name) => one.Select(filing => (Name: name, Filing: filing)))
             .GroupBy(one => one.Filing.Session)
@@ -267,6 +273,7 @@ public sealed class ImprovingLay
             var sold = tape.LastMemberClose[name][session];
             var cut = chosen[entry].Sectors[0].Cut;
             var bought = sold > entry;
+            int? halfAt = halves.Remove(name, out var at) && at <= sold ? at : null;
 
             // A trade sold before it was bought, its stock gone the session after its night, holds no result.
             trades.Add(new HeavyweightTrade(
@@ -275,11 +282,11 @@ public sealed class ImprovingLay
                 entry,
                 sold,
                 reason,
-                bought ? Return(tape, name, entry, sold) : null,
+                !bought ? null : halfAt is { } h ? HeavyweightSweep.HalfResult(tape, name, entry, h, sold) : Return(tape, name, entry, sold),
                 bought && cut.Length > 0 ? cut.Average(one => Return(tape, one, entry, tape.LastMemberClose[one][sold]) ?? 0.0) : null,
                 null,
                 null,
-                tape.Calendar[sold].Year - SweepColumns.FirstScored.Year));
+                tape.Calendar[sold].Year - SweepColumns.FirstScored.Year) { HalfAt = halfAt });
             open.Remove(name);
         }
 
@@ -315,6 +322,27 @@ public sealed class ImprovingLay
                 open[name] = (entry, score, held);
 
                 var fell = score.Applied > 0 && !FundamentalScorecard.Clears(score.Passed, score.Applied, setting.HoldInNine);
+
+                // From the operator's order of 2026-11-14 a close under its stop or at or above its take-profit, beside its
+                // filing exit.
+                // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+                if (!fell && held < setting.Sessions && session > entry && exits.TryGetValue(name, out var placed)
+                    && BookHalf.Step(tape.Close[name][session], tape.Close[name][entry], placed, half, halves.ContainsKey(name)) is var step
+                    && (step.Ended is not null || step.SoldHalf))
+                {
+                    if (step.SoldHalf)
+                    {
+                        halves[name] = session;
+                        exits[name] = step.Placed;
+
+                        continue;
+                    }
+
+                    End(name, session, step.Ended!);
+                    sold.Add(name);
+
+                    continue;
+                }
 
                 if (fell || held >= setting.Sessions)
                 {
@@ -358,6 +386,11 @@ public sealed class ImprovingLay
             foreach (var name in buys)
             {
                 open[name] = (session, scores[name].GetValueOrDefault(session), 0);
+
+                if (stops is { } asked && tape.ExitsAt(name, session, asked.Moves, asked.Multiple, placing) is { } placed)
+                {
+                    exits[name] = BookHalf.Placed(placed, tape.Close[name][session], asked.Multiple, half);
+                }
             }
         }
 
@@ -371,15 +404,17 @@ public sealed class ImprovingLay
 
     // One setting's book: its walk, each trade and its members bought at the open after its night and the trade charged
     // its round trip, and its months.
-    public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
+    public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null, bool half = false, Core.Loop.TakeProfitPlacing placing = Core.Loop.TakeProfitPlacing.Turned)
     {
-        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage || setting.SoldUnderAverage, arrange);
+        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops, half, placing);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,
                 trade.End,
                 Cost(trade),
-                (from, to) => from == trade.Entry ? FromFill(trade.Name, from, tape.LastMemberClose[trade.Name][to]) : Return(tape, trade.Name, from, tape.LastMemberClose[trade.Name][to]),
+                (from, to) => trade.HalfAt is { } h
+                    ? BookHalf.Return(tape, trade.Name, trade.Entry, from, tape.LastMemberClose[trade.Name][to], h, FillOver)
+                    : from == trade.Entry ? FromFill(trade.Name, from, tape.LastMemberClose[trade.Name][to]) : Return(tape, trade.Name, from, tape.LastMemberClose[trade.Name][to]),
                 (from, to) => CutReturn(chosen[trade.Entry].Sectors[0].Cut, from, to, bought: from == trade.Entry)))
             .ToArray();
 

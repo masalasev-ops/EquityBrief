@@ -43,6 +43,7 @@ public sealed class ImprovingFamily : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
@@ -70,7 +71,7 @@ public sealed class ImprovingFamily : IComponent
     public const string ProvisionalRule = "provisional";
 
     // Why a registered rule was not kept on a night: its evaluator's code moved since it was registered.
-    public const string Moved = "its evaluator's code moved since it was registered, so it is kept no further until it is registered again";
+    public const string Moved = RuleWording.ImprovingFamily.Moved;
 
     // The register as it stands, read whole and held at an instant by the code every family's rules are read by.
     const string ReadRegister = @"
@@ -136,13 +137,28 @@ public sealed class ImprovingFamily : IComponent
         DELETE FROM improving_trade WHERE rule = $rule AND index_code = $index AND chosen_on = $night;
         UPDATE improving_trade SET ended_on = NULL, sale = NULL, end_reason = 'open', result = NULL, benchmark = NULL, cost = NULL, edge = NULL
         WHERE rule = $rule AND index_code = $index AND ended_on = $night;
+        UPDATE improving_trade SET half_sold_on = NULL WHERE rule = $rule AND index_code = $index AND half_sold_on = $night;
+        UPDATE improving_trade SET stop = NULL, take_profit = NULL, take_profit_from = NULL, exit_added_on = NULL
+        WHERE rule = $rule AND index_code = $index AND exit_added_on = $night;
+    ";
+
+    // On the operator's ruling of 2026-11-14, clause 5, the book's exit a live trade bought before the rules restart takes.
+    const string AddedExit = @"
+        UPDATE improving_trade SET stop = $stop, take_profit = $take_profit, take_profit_from = $take_profit_from, exit_added_on = $night
+        WHERE rule = $rule AND index_code = $index AND ticker = $ticker AND chosen_on = $chosen_on;
+    ";
+
+    // On the operator's ruling of 2026-11-14 on the books the night a trade's first half sold at its take-profit.
+    const string SellHalf = @"
+        UPDATE improving_trade SET half_sold_on = $night
+        WHERE rule = $rule AND index_code = $index AND ticker = $ticker AND chosen_on = $chosen_on;
     ";
 
     // Each member's 200-session average on the night, which a rule selling under it reads its close against.
     const string AveragesOn = "SELECT ticker, value FROM indicator WHERE session_date = $night AND name = $name AND value IS NOT NULL;";
 
     const string OpenTrades = @"
-        SELECT ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, growth, through
+        SELECT ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, growth, through, stop, take_profit, take_profit_from, half_sold_on
         FROM improving_trade WHERE rule = $rule AND index_code = $index AND end_reason = 'open'
         ORDER BY chosen_on, ticker;
     ";
@@ -181,7 +197,8 @@ public sealed class ImprovingFamily : IComponent
     ";
 
     const string FillTrade = @"
-        UPDATE improving_trade SET bought_on = $bought_on, fill = $fill, gap = $gap, bench_gap = $bench_gap, members = $members
+        UPDATE improving_trade SET bought_on = $bought_on, fill = $fill, gap = $gap, bench_gap = $bench_gap, members = $members,
+            stop = $stop, take_profit = $take_profit, take_profit_from = $take_profit_from
         WHERE rule = $rule AND index_code = $index AND ticker = $ticker AND chosen_on = $chosen_on;
     ";
 
@@ -220,7 +237,14 @@ public sealed class ImprovingFamily : IComponent
         double Carried);
 
     // One open trade as stored.
-    sealed record Trade(string Ticker, DateOnly ChosenOn, decimal BuyClose, DateOnly? BoughtOn, decimal? Fill, double? Gap, double? BenchGap, double Growth, DateOnly Through);
+    sealed record Trade(string Ticker, DateOnly ChosenOn, decimal BuyClose, DateOnly? BoughtOn, decimal? Fill, double? Gap, double? BenchGap, double Growth, DateOnly Through, decimal? Stop = null, decimal? TakeProfit = null, string? TakeProfitFrom = null, DateOnly? HalfSoldOn = null)
+    {
+        // On the operator's ruling of 2026-11-14 on the books a trade selling half at its take-profit, and the stop it stands at:
+        // its own, or its fill once its first half has sold.
+        public bool Half => EquityBrief.Core.Loop.TakeProfit.IsHalf(TakeProfitFrom);
+
+        public decimal? StopNow => HalfSoldOn is not null && Fill is { } fill ? fill : Stop;
+    }
 
     readonly IClock clock;
     readonly string databaseFile;
@@ -274,7 +298,7 @@ public sealed class ImprovingFamily : IComponent
 
             if (await ScalarAsync(connection, null, NewestSession, [], cancellation) is not string newest)
             {
-                await AppendAsync(connection, runId, startedAt, 0, Ok, "no session: the store holds no bar", cancellation);
+                await AppendAsync(connection, runId, startedAt, 0, Ok, RuleWording.ImprovingFamily.NoSession, cancellation);
 
                 return new ImprovingOutcome(null, []);
             }
@@ -338,7 +362,7 @@ public sealed class ImprovingFamily : IComponent
                 .. AllIndices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => new ImprovingIndexOutcome(index, 0, 0, 0, 0, [], 0, [], 0, 0, fault)),
             ];
 
-            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
+            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + RuleWording.ImprovingFamily.StoppedOn + fault, cancellation);
 
             return new ImprovingOutcome(read, all);
         }
@@ -347,9 +371,8 @@ public sealed class ImprovingFamily : IComponent
     // What the step's row says for each index.
     public static string Detail(IReadOnlyList<ImprovingIndexOutcome> outcomes) =>
         string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
-            ? $"{outcome.Index}: not computed tonight, {fault}"
-            : FormattableString.Invariant(
-                $"{outcome.Index}: {outcome.Members} member(s) read, {outcome.Scored} scored, {outcome.FirstRead} newly read filing(s), {outcome.Improved} raising the score, {outcome.Bought.Count} bought, {outcome.Flagged} flagged, {outcome.Sold.Count} sold, {outcome.Held} held, {outcome.Waiting} waiting for their next session")));
+            ? RuleWording.ImprovingFamily.NotComputedTonight(outcome.Index, fault)
+            : RuleWording.ImprovingFamily.IndexRead(outcome.Index, outcome.Members, outcome.Scored, outcome.FirstRead, outcome.Improved, outcome.Bought.Count, outcome.Flagged, outcome.Sold.Count, outcome.Held, outcome.Waiting)));
 
     // The settings the night read a rule by, each of the grid's six dials, and the words its card states the rule in: the
     // family's starting rule's for the provisional rule, which runs at no other setting, and its grid setting's for a
@@ -551,7 +574,11 @@ public sealed class ImprovingFamily : IComponent
                 row.IsDBNull(5) ? null : row.GetDouble(5),
                 row.IsDBNull(6) ? null : row.GetDouble(6),
                 row.GetDouble(7),
-                Date(row.GetString(8))));
+                Date(row.GetString(8)),
+                row.IsDBNull(9) ? null : Money.FromStorage(row.GetString(9)),
+                row.IsDBNull(10) ? null : Money.FromStorage(row.GetString(10)),
+                row.IsDBNull(11) ? null : row.GetString(11),
+                row.IsDBNull(12) ? null : Date(row.GetString(12))));
         }
 
         var sold = new List<string>();
@@ -574,9 +601,42 @@ public sealed class ImprovingFamily : IComponent
             }
         }
 
+        // On the operator's ruling of 2026-11-14, clause 5, the day the live rule was registered at the rules restart, from which a
+        // trade it bought before with no stop and no take-profit takes the book's exit; a background version's keep their own.
+        var restartedOn = Core.Candidates.FamilyRecords.IsLive(rule)
+            ? EquityBrief.Worker.Loop.PlanTrades.RegisteredOn(await EquityBrief.Worker.Loop.PlanTrades.RegisterRowsAsync(connection, transaction, cancellation), rule)
+            : null;
+
         foreach (var open in trades)
         {
             var trade = open;
+
+            // On the operator's ruling of 2026-11-14, clause 5, a live trade bought before the rules restart with no stop and no
+            // take-profit takes the book's exit from its own fill, stored with it from tonight.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            if (restartedOn is { } restart && trade is { Stop: null, TakeProfit: null, Fill: { } paid } && trade.ChosenOn < restart)
+            {
+                var exit = EquityBrief.Core.Loop.BookExits.Of(ImprovingRule.Name, index);
+
+                if (await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, trade.Ticker, trade.ChosenOn, paid, exit, cancellation) is { } placed)
+                {
+                    trade = trade with
+                    {
+                        Stop = Statistic.ToPrice(placed.Stop),
+                        TakeProfit = placed.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null,
+                        TakeProfitFrom = placed.TakeProfit is { } stated ? exit.Half ? EquityBrief.Core.Loop.TakeProfit.StoredHalf(exit.Multiple) : EquityBrief.Core.Loop.TakeProfit.Stored(stated) : null,
+                    };
+
+                    await ExecuteAsync(connection, transaction, AddedExit,
+                    [
+                        ("$rule", rule), ("$index", index), ("$ticker", trade.Ticker), ("$chosen_on", Stamp(trade.ChosenOn)), ("$night", Stamp(night)),
+                        ("$stop", Money.ToStorage(trade.Stop!.Value)),
+                        ("$take_profit", trade.TakeProfit is { } placedAim ? Money.ToStorage(placedAim) : DBNull.Value),
+                        ("$take_profit_from", (object?)trade.TakeProfitFrom ?? DBNull.Value),
+                    ], cancellation);
+                    written++;
+                }
+            }
 
             // A stock no longer a member is carried no further: it is sold at its last close as one, the close it was
             // carried to.
@@ -620,9 +680,24 @@ public sealed class ImprovingFamily : IComponent
             // tonight's close, as the history test sells it.
             var below = !gone && !fell && !ended && trade.BoughtOn is { } boughtOn && boughtOn < night && trade.Through == night && under.Contains(trade.Ticker);
 
-            if (gone || fell || ended || below)
+            // From the operator's order of 2026-11-14 one bought by tonight is sold at tonight's close under its stop or at or
+            // above its take-profit; on their ruling of 2026-11-14 on the books one selling half sells half there, its stop on
+            // the other half moved up to the buy.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            var step = !gone && !fell && !ended && !below && trade.BoughtOn is { } boughtBy && boughtBy <= night && trade.Through == night && Close(bars, trade.Ticker, night) is { } closed
+                ? EquityBrief.Core.Loop.TakeProfit.BookStepOf(Statistic.FromPrice(closed), trade.StopNow is { } floor ? Statistic.FromPrice(floor) : null, trade.TakeProfit is { } aim ? Statistic.FromPrice(aim) : null, trade.Half, trade.HalfSoldOn is not null)
+                : ((string? Ended, bool SellsHalf)?)null;
+            var exited = step?.Ended;
+
+            if (step is { SellsHalf: true })
             {
-                await EndAsync(connection, transaction, index, rule, trade, gone ? trade.Through : night, gone ? LeftTheIndex : fell ? ScoreFell : below ? ImprovingRule.UnderItsAverage : TimeLimit, bars, tonight, night, cancellation);
+                await ExecuteAsync(connection, transaction, SellHalf, [("$rule", rule), ("$index", index), ("$ticker", trade.Ticker), ("$chosen_on", Stamp(trade.ChosenOn)), ("$night", Stamp(night))], cancellation);
+                written++;
+            }
+
+            if (gone || fell || ended || below || exited is not null)
+            {
+                await EndAsync(connection, transaction, index, rule, trade, gone ? trade.Through : night, gone ? LeftTheIndex : fell ? ScoreFell : below ? ImprovingRule.UnderItsAverage : exited ?? TimeLimit, bars, tonight, night, cancellation);
                 sold.Add(trade.Ticker);
                 written++;
 
@@ -757,12 +832,20 @@ public sealed class ImprovingFamily : IComponent
             return null;
         }
 
+        // From the operator's order of 2026-11-14 its stop placed under the fill in the stock's typical moves on the night it was
+        // chosen, and the price it takes profit at, beside its filing exit.
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+        var exit = EquityBrief.Core.Loop.BookExits.Of(ImprovingRule.Name, index);
+        var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, trade.Ticker, trade.ChosenOn, next.Day.Open, exit, cancellation);
         var filled = trade with
         {
             BoughtOn = next.Session,
             Fill = next.Day.Open,
             Gap = fill.Result is { } result ? -result : null,
             BenchGap = fill.Benchmark is { } benchmark ? -benchmark : null,
+            Stop = exits is { } placed ? Statistic.ToPrice(placed.Stop) : null,
+            TakeProfit = exits?.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null,
+            TakeProfitFrom = exits?.TakeProfit is { } stated ? exit.Half ? EquityBrief.Core.Loop.TakeProfit.StoredHalf(exit.Multiple) : EquityBrief.Core.Loop.TakeProfit.Stored(stated) : null,
         };
 
         await ExecuteAsync(connection, transaction, FillTrade,
@@ -770,6 +853,9 @@ public sealed class ImprovingFamily : IComponent
             ("$rule", rule), ("$index", index), ("$ticker", trade.Ticker), ("$chosen_on", Stamp(trade.ChosenOn)),
             ("$bought_on", Stamp(next.Session)), ("$fill", Money.ToStorage(next.Day.Open)),
             ("$gap", (object?)filled.Gap ?? DBNull.Value), ("$bench_gap", (object?)filled.BenchGap ?? DBNull.Value), ("$members", fill.Members),
+            ("$stop", filled.Stop is { } stop ? Money.ToStorage(stop) : DBNull.Value),
+            ("$take_profit", filled.TakeProfit is { } aim ? Money.ToStorage(aim) : DBNull.Value),
+            ("$take_profit_from", (object?)filled.TakeProfitFrom ?? DBNull.Value),
         ], cancellation);
 
         return filled;
@@ -801,7 +887,11 @@ public sealed class ImprovingFamily : IComponent
 
         if (trade is { BoughtOn: { } bought, Fill: { } fill, Gap: { } gap } && sale is { } sold)
         {
-            result = trade.Growth - 1.0 - gap;
+            // On the operator's ruling of 2026-11-14 on the books a trade whose first half sold at its take-profit counts that half
+            // at it from its fill and the other half to its sale.
+            result = trade is { HalfSoldOn: not null, TakeProfit: { } half } && fill > 0m
+                ? (0.5 * (Statistic.FromRatio(half / fill) - 1.0)) + (0.5 * (trade.Growth - 1.0 - gap))
+                : trade.Growth - 1.0 - gap;
 
             var growths = new List<double>();
 

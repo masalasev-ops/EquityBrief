@@ -1090,9 +1090,9 @@ public static class RunScreen
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "late-bars", "market-series", "actions", "dividends", "calendar"]),
         ("Indicators and levels", ["indicators", "chart-averages", "page-history", "chart-check", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves", "entry-readings", "split-names"]),
-        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "fundamental-scores", "listings", "swing-filter", "estimates", "trends", "family-rules", "families", "family-records", "heavyweights", "loop-apply", "index-families", "dip-family", "decision-cards", "rule-cards", "live-alarm", "taken-follower", "ledger", "shape-proposal"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "fundamental-scores", "listings", "swing-filter", "estimates", "trends", "family-rules", "families", "family-records", "heavyweights", "loop-apply", "index-families", "dip-family", "decision-cards", "rule-cards", "match-check", "live-alarm", "taken-follower", "ledger", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "fills", "news-pulse", "rule-versions", "close"]),
-        ("After the close", ["quarters", "filings", "fundamental-scores-again", "quality", "improving", "treasury", QueueStage, "report", "label-news", "backup"]),
+        ("After the close", ["quarters", "filings", "fundamental-scores-again", "quality", "improving", "book-cards", "treasury", QueueStage, "report", "label-news", "backup"]),
     ];
 
     // The words a night's stop is written with, beside `ok`. The read surface holds no reference to the

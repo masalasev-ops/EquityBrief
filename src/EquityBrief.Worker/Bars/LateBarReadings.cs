@@ -46,6 +46,7 @@ public sealed class LateBarReadings : IComponent
             new StoreTouch(Store.MemberReading, Touch.Read | Touch.Update),
             new StoreTouch(Store.LateBarAsk, Touch.Update),
             new StoreTouch(Store.SecTicker, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
@@ -61,6 +62,13 @@ public sealed class LateBarReadings : IComponent
         "series_state", "run_log", "source_document", "rule_night", "setup_night", "loop_reference", "loop_link", "loop_test",
         "release_answer_edge", "release_probe", "release_day", "theme_section", "filed_fact_pull", "filing_day", "insider_read",
     };
+
+    // The filers of the stocks read: those the SEC's ticker list names and, from 23.10's second part, those their company rows
+    // name, which the one reader of a member's quarters reads each quarter's filing and release under.
+    // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
+    const string LateFilers =
+        "SELECT cik FROM live.sec_ticker WHERE ticker IN (SELECT ticker FROM late_names) " +
+        "UNION SELECT cik FROM live.company WHERE cik IS NOT NULL AND ticker IN (SELECT ticker FROM late_names)";
 
     // A stock with no bar on the night holds none of these for it, and a swing it holds stands as it was found.
     const string CopyIndicators = "INSERT INTO indicator SELECT * FROM scratch.indicator WHERE ticker = $ticker AND session_date = $session ON CONFLICT DO NOTHING;";
@@ -265,8 +273,8 @@ public sealed class LateBarReadings : IComponent
         {
             var columns = await ColumnsAsync(connection, table, cancellation);
             var condition = columns.Contains("ticker", StringComparer.Ordinal) ? table is "membership" or "company" ? string.Empty : "WHERE ticker IN (SELECT ticker FROM late_names)"
-                : columns.Contains("cik", StringComparer.Ordinal) ? "WHERE cik IN (SELECT cik FROM live.sec_ticker WHERE ticker IN (SELECT ticker FROM late_names))"
-                : columns.Contains("accession", StringComparer.Ordinal) ? "WHERE accession IN (SELECT accession FROM live.release_document WHERE cik IN (SELECT cik FROM live.sec_ticker WHERE ticker IN (SELECT ticker FROM late_names)))"
+                : columns.Contains("cik", StringComparer.Ordinal) ? "WHERE cik IN (" + LateFilers + ")"
+                : columns.Contains("accession", StringComparer.Ordinal) ? "WHERE accession IN (SELECT accession FROM live.release_document WHERE cik IN (" + LateFilers + "))"
                 : string.Empty;
             var list = string.Join(", ", columns.Select(column => "\"" + column + "\""));
 

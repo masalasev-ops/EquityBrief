@@ -41,16 +41,16 @@ public static class RuleRows
     // From 20.11 the reason the drift's revenue level keeps a listed member off on an S&P 400 or 600 night, as the index
     // families' step names it.
     // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
-    public const string RevenueNotAbove = "its print's revenue not above the same quarter's a year before";
+    public const string RevenueNotAbove = RuleWording.RuleRows.RevenueNotAbove;
 
     // The reason a member fails each part, as the index families' step names it, against the part.
     static readonly Dictionary<string, string> PartOfReason = new(StringComparer.Ordinal)
     {
-        ["the market check closed"] = Market,
+        [RuleWording.RuleRows.MarketCheckClosed] = Market,
         ["no setup"] = Setup,
-        ["under the price or dollar volume floor"] = Floors,
-        ["the profit check"] = Profit,
-        ["the interest cover check"] = Cover,
+        [RuleWording.RuleRows.UnderTheFloors] = Floors,
+        [RuleWording.RuleRows.ProfitCheck] = Profit,
+        [RuleWording.RuleRows.CoverCheck] = Cover,
         [FundamentalsRule.NoReadings] = Readings,
         [FundamentalsRule.NoProfit] = Profit,
         [FundamentalsRule.NoRevenue] = Revenue,

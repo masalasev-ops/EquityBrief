@@ -64,7 +64,7 @@ public partial class FixtureExpectations
             breakout.Select(row => row.Key + " " + PartsLine(row.Value.Gates)));
         Assert.Equal(IndexNightRead.NoSetup, breakout["NH"].Gates[1].Reason);
         Assert.Equal("closed at 102.00 with 5,095,000 a session over the 50 sessions to tonight, against the least close of 5.00 and its floor of 10,000,000", breakout["FL"].Gates[2].Reason);
-        Assert.Equal("net income of -10 over its 4 newest quarters as filed, not above nothing", breakout["PR"].Gates[3].Reason);
+        Assert.Equal("net income of -10 over its 4 newest quarters as read from their filings and releases, not above nothing", breakout["PR"].Gates[3].Reason);
         Assert.All(breakout.Values.SelectMany(row => row.Gates).Where(gate => gate.Passed), gate => Assert.Equal(string.Empty, gate.Reason));
 
         // No member's pullback or drift setup lists with the check open: the breakouts close above every high before, NH 0.3
@@ -128,6 +128,6 @@ public partial class FixtureExpectations
             ],
             answers.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => pair.Key + " " + PartsLine(pair.Value.Gates!)));
         Assert.Equal("the index's own breadth 40.0% below its floor of 45%", answers["AAA"].Gates![0].Reason);
-        Assert.Equal("0 of the 4 quarters the profit check sums filed with their net income before tonight", answers["Z0"].Gates![3].Reason);
+        Assert.Equal("0 of the 4 quarters the profit check sums read with their net income from a filing or a results release before tonight", answers["Z0"].Gates![3].Reason);
     }
 }

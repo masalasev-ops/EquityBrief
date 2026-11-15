@@ -19,7 +19,16 @@ public sealed record HeavyweightHoldingCell(
     DecisionCardView? Card = null,
     string? NoLead = null,
     double? SinceBought = null,
-    EquityBrief.Core.Families.HeavyweightStanding? Standing = null);
+    EquityBrief.Core.Families.HeavyweightStanding? Standing = null)
+{
+    // On the operator's review of PR 699, item 6, the live book's stop and take-profit for this holding, its take-profit saying
+    // the rules restart it was added at where it was; not read for a variant's book.
+    public bool ExitsRead { get; init; }
+
+    public decimal? Stop { get; init; }
+
+    public TakeProfitView? TakeProfit { get; init; }
+}
 
 // The four tiles a heavyweights card opens on: its holdings, the sectors holding one of the eleven, its return since its
 // last rebalance beside the equal-weighted return of the funds of the sectors it holds over the same sessions, and the
@@ -91,7 +100,8 @@ public sealed partial class MarkRenderer
         (LeadHeading, "How far its return over the year beat its sector fund's when it was last checked, in percentage points, as a bar."),
         ("Against its 200-day", "Tonight's close above or below its 200-day average, in per cent of the average."),
         ("Since bought", "Its return from its buy to tonight's close, in per cent of the buy."),
-        ("Tonight", "Whether it still leads its sector tonight, read off tonight's closes. This sells nothing: a stock is sold only at a reshuffle."),
+        ("Stop and take profit", "A close under its stop, or at or above its take-profit price, sells it at that close before the next reshuffle."),
+        ("Tonight", "Whether it still leads its sector tonight, read off tonight's closes. This sells nothing: a stock is sold at a reshuffle, or on its stop or its take-profit."),
     ];
 
     // The sector heavyweights' card's header, as a setup card's: its name, whether it is live, tonight's holdings, the two
@@ -338,7 +348,8 @@ public sealed partial class MarkRenderer
         cells.Append(holding.SinceBought is { } bought
             ? Formatted($"<td class=\"r num heavyweight-since\">{SignedFigure(bought * 100, 1, Formatted($"{Unsigned(bought * 100, 1):+0.0;-0.0;0.0}%"))}</td>")
             : "<td class=\"r num heavyweight-since\"><span class=\"degraded\">not read</span></td>");
-        cells.Append(Invariant, $"<td class=\"heavyweight-standing\"><span class=\"hw-pill\" data-standing=\"{Escaped(standing?.Word ?? EquityBrief.Core.Families.HeavyweightStandings.NotRead)}\" title=\"information only: a stock is sold only at a reshuffle\">{Escaped(StandingWords(standing?.Word))}</span></td></tr>");
+        cells.Append(holding.ExitsRead ? BookExitCell(holding.Stop, holding.TakeProfit) : "<td class=\"book-exit\"><span class=\"degraded\">not read for this book</span></td>");
+        cells.Append(Invariant, $"<td class=\"heavyweight-standing\"><span class=\"hw-pill\" data-standing=\"{Escaped(standing?.Word ?? EquityBrief.Core.Families.HeavyweightStandings.NotRead)}\" title=\"information only: a stock is sold at a reshuffle, or on its stop or its take-profit\">{Escaped(StandingWords(standing?.Word))}</span></td></tr>");
 
         return cells.ToString();
     }

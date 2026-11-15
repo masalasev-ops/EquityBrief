@@ -64,7 +64,7 @@ public static class TrailingExit
     // From 22.18 the close at which the rising stop first reaches the buy, so the trade can no longer lose: the stop follows
     // the highest close at the plan's distance and is never lowered, so it stands at the buy once a close reaches the buy
     // and that distance above it, and the distance is fixed at the buy, so no later day moves it.
-    // see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
+    // see: A plan selling on a rising give-up price draws that price and the price at which it can no longer lose, and no card says it has no fixed target
     public static decimal NoLossAt(decimal buy, decimal trail) => buy + trail;
 
     // What the plan put at risk from the buy, as a percentage of it, which is what a result is divided by

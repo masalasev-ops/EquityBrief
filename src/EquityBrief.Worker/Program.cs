@@ -108,8 +108,29 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "plan-points" => await PlanPointsRun(args),
     "card-plans" => await CardPlansRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
+    "quarters-moved" => await QuartersMovedRun(args),
     _ => NoVerb(),
 };
+
+// What reading each quarter from its filing and then its results release moves on each index's lists over the nights from a
+// day, read against what each night stored, writing nothing and asking nothing of anyone.
+// see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
+static async Task<int> QuartersMovedRun(string[] args)
+{
+    if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--from") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var from))
+    {
+        Console.Error.WriteLine("quarters-moved: give '--from <yyyy-MM-dd>'.");
+
+        return 2;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    await EquityBrief.Worker.Quarters.QuartersMoved.RunAsync(store.DatabaseFile, from, Console.Out);
+
+    return 0;
+}
 
 // A year asked for by hand for each stock named, through the corporate action check's own replacement, the provider's
 // series read with the store's joins. One request a name.
@@ -313,7 +334,7 @@ static async Task<int> PlanPointsRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Loop.PlanPointTest(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
-        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal), driftChecks: args.Contains("--drift-checks", StringComparer.Ordinal), only: VerbArguments.Value(args, "--family"));
+        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal), driftChecks: args.Contains("--drift-checks", StringComparer.Ordinal), only: VerbArguments.Value(args, "--family"), driftReport: args.Contains("--drift-report", StringComparer.Ordinal));
 }
 
 // Each price family's pick on the newest night's cards, or on a session named, priced again at its family's recommended plan
@@ -345,12 +366,25 @@ static async Task<int> CardPlansRun(string[] args)
         return 2;
     }
 
-    var (night, priced) = await new EquityBrief.Worker.Cards.DecisionCards(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
-        .PriceAsync(session);
+    var cards = new EquityBrief.Worker.Cards.DecisionCards(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile);
+    var (night, priced) = await cards.PriceAsync(session);
 
     Console.WriteLine(night is { } read
         ? FormattableString.Invariant($"card-plans: {priced} card(s) of {read:yyyy-MM-dd} priced at their family's recommended plan")
         : "card-plans: the store holds no card");
+
+    // On the operator's ruling of 2026-11-15 on the review of PR 699 the books' cards of the night, written again.
+    if (night is { } booked)
+    {
+        var books = await cards.BooksOnAsync(booked);
+
+        Console.WriteLine(FormattableString.Invariant($"card-plans: {books.Sum(index => index.Cards)} book card(s) of {booked:yyyy-MM-dd} written: ") + EquityBrief.Worker.Cards.DecisionCards.Detail(books));
+
+        if (books.Any(index => index.Fault is not null))
+        {
+            return 1;
+        }
+    }
 
     return 0;
 }
@@ -848,7 +882,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 79 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 80 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -952,7 +986,8 @@ static int NoVerb()
         "'plan-points --index <GSPC, MID or SML>' walks every flagged setup of the four price families under every entry, " +
         "stop and sale, '--family <pullback, breakout, drift or dip>' walking and writing that family alone, each with '--print' writing nothing, and with '--drift-checks' walking the drift as traded beside its " +
         "first-pullback entry and its sales check alone and together, writing nothing, " +
-        "'card-plans' prices each price family's pick on the newest night's cards at its family's recommended plan again, " +
+        "'card-plans' prices each price family's pick on the newest night's cards at its family's recommended plan again " +
+        "and writes the night's cards of Quality at a fair price's and the Fundamentals family's buys again, " +
         "'--session <yyyy-MM-dd>' a night named, " +
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
         "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +
@@ -1006,7 +1041,10 @@ static int NoVerb()
         "'loop-rules --index <GSPC, MID or SML>' walks every family rule standing on the index at its own settings over " +
         "the test years and stores each variant's verdict against its live or provisional rule and each of those against " +
         "its benchmark, a rule the history cannot walk stored with why, with '--month <yyyy-MM>' and '--print' as " +
-        "'loop-test' reads them, " +
+        "'loop-test' reads them, and '--books' printing the live books alone at the nine stops and take-profits, today's full " +
+        "exit beside the full at the risk alone, the full beyond and the half, chosen in points a month among the last three " +
+        "and each per dollar risked against the index's other stocks bought the same way, or without '--print' writing each " +
+        "live book's record box at the exit it trades and nothing else, " +
         "'loop-pooled --month <yyyy-MM>' sums each family's rules across the three indices' per-rule tests of the month " +
         "into one verdict, and each kind of change registered on two or more indices beside it, and stores each, with " +
         "'--print' printing each verdict and writing nothing, '--long' on either reading the long history from each " +
@@ -1103,6 +1141,10 @@ static int NoVerb()
         "'long-facts' asks the SEC once for each long filer's facts with '--capture --into <folder>', after stating what it asks, and with " +
         "'--write <folder>' writes the periods before the standing table's first whole, '--print <folder>' writing nothing, " +
         "and '--measure' reading each filing-based family's and the drift's first test year on each index, writing nothing, " +
+        "'quarters-moved --from <yyyy-MM-dd>' reads again each S&P 400 and 600 member's profit and cover parts and each S&P 500 " +
+        "member's state over its quarters read from their filings and then their results releases on every night from that day, " +
+        "draws each index's list again five a family with the trades each night held and prints the picks it adds and removes " +
+        "and the parts of EW, OHI, SBRA and LTC on 2026-11-05, writing nothing, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
@@ -1556,8 +1598,10 @@ static async Task<int> LedgerBuildRun(string[] args)
             return 1;
         }
 
+        // From 23.10's second part `--again` writes the long ledger once more, resuming by the rows' pin.
+        // see: The long ledger is written once more at the second restart, each session replaced whole and resumed by its pin
         return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
-            .LongBuildAsync(store.DataRoot, index, Console.Out);
+            .LongBuildAsync(store.DataRoot, index, Console.Out, again: args.Contains("--again", StringComparer.Ordinal));
     }
 
     if (index is null || from is null || through is null
@@ -1810,7 +1854,7 @@ static async Task<int> LoopRulesRun(string[] args)
     // From 23.7 '--long' walks the rules over the long history, each family from its own first test year.
     // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
     return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
-        .RulesAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal), longRun: args.Contains("--long", StringComparer.Ordinal));
+        .RulesAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal), longRun: args.Contains("--long", StringComparer.Ordinal), books: args.Contains("--books", StringComparer.Ordinal));
 }
 
 // The one verdict across the three indices by hand for a month, each index's newest per-rule test of the month summed,

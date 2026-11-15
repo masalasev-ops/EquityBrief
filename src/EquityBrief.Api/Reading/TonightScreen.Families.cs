@@ -487,7 +487,8 @@ public static partial class TonightScreen
                 ? $"its {(SetupFamilies.Named(holder)?.Label ?? holder).ToLowerInvariant()} trade from {from}{where}"
                 : $"its trade from {from}{where}";
 
-            notes.Add($"{held.Ticker} qualified again tonight but {whose} is still open, so it is not listed. One stock, one trade.");
+            // From the operator's order of 2026-11-14 its ending in their words, the card drawn in the group beneath.
+            notes.Add($"{held.Ticker} qualified again tonight but {whose} is still open, so it is not bought again; its card is under {HeldAgainView.NoteGroup}.");
         }
 
         foreach (var shared in own.Where(pick => pick.State == FamilyList.UnderAnother).OrderBy(pick => pick.Ticker, StringComparer.Ordinal))
@@ -798,16 +799,26 @@ public static partial class TonightScreen
     public static EndedTonightView EndedTonight(DateOnly night, IReadOnlyList<PickCell> trades, IEnumerable<IndexTradeRow> others)
     {
         // A trade whose exit fired tonight is open until tomorrow's open sells it, and what fired is what the line says.
-        (string Status, bool Tonight)[] ended = [.. trades
+        (string Status, bool Tonight, string Ticker)[] ended = [.. trades
             .Where(trade => trade.Night < night && trade.RepeatOf is null)
-            .Select(trade => (trade.FiredAs ?? trade.Status, (trade.FiredOn ?? trade.EndedOn) == night))
+            .Select(trade => (trade.FiredAs ?? trade.Status, (trade.FiredOn ?? trade.EndedOn) == night, trade.Ticker))
             .Where(one => one.Item2)];
+        string[] otherIndexes = [.. others.Where(trade => trade.EndedOn == night && trade.Listed < night).Select(trade => trade.Ticker)];
 
-        return new EndedTonightView(
-            ended.Count(trade => trade.Status == PickStatus.Target),
-            ended.Count(trade => trade.Status == PickStatus.Stopped),
-            ended.Count(trade => trade.Status == PickStatus.Time),
-            ended.Count(trade => trade.Status is not (PickStatus.Target or PickStatus.Stopped or PickStatus.Time)) + others.Count(trade => trade.EndedOn == night && trade.Listed < night));
+        string[] Of(Func<string, bool> status) => [.. ended.Where(trade => status(trade.Status)).Select(trade => trade.Ticker)];
+
+        var target = Of(status => status == PickStatus.Target);
+        var stop = Of(status => status == PickStatus.Stopped);
+        var limit = Of(status => status == PickStatus.Time);
+        string[] other = [.. Of(status => status is not (PickStatus.Target or PickStatus.Stopped or PickStatus.Time)), .. otherIndexes];
+
+        return new EndedTonightView(target.Length, stop.Length, limit.Length, other.Length)
+        {
+            TargetTickers = target,
+            StopTickers = stop,
+            LimitTickers = limit,
+            OtherTickers = other,
+        };
     }
 
     // How far the members got down a family's gates, each count the members passing that gate and every

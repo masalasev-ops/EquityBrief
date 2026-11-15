@@ -29,7 +29,7 @@ internal static class SourcesReached
 
         while (pending.TryDequeue(out var method))
         {
-            if (!Ours(method.DeclaringType) || !seen.Add(method))
+            if (!Ours(method.DeclaringType) || Worded(method.DeclaringType) || !seen.Add(method))
             {
                 continue;
             }
@@ -60,6 +60,22 @@ internal static class SourcesReached
         type?.Assembly.GetName().Name is { } name
         && name.StartsWith("EquityBrief.", StringComparison.Ordinal)
         && name != "EquityBrief.Tests";
+
+    // From 23.10's second part a rule's screen words are written by the wording file, which no rule's version pins by design,
+    // so a walk follows no call into it or its nested classes.
+    // see: A rule's screen wording sits outside the sources its version pins and a file still holding it waits for a restart already happening
+    static bool Worded(Type? type)
+    {
+        for (var at = type; at is not null; at = at.DeclaringType)
+        {
+            if (at == typeof(EquityBrief.Core.Families.RuleWording))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     static IEnumerable<MethodBase> Methods(Type type) =>
         type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)

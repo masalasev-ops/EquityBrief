@@ -532,7 +532,11 @@ public partial class FixtureExpectations
 
         Assert.True(pinned.Length >= 30, $"Read {pinned.Length} pinned source(s), expected at least 30.");
         Assert.All(ScorecardSources, path => Assert.True(File.Exists(Path.Combine(Repository.Root, path)), path));
-        Assert.Empty(ScorecardSources.Intersect(pinned, StringComparer.Ordinal));
+        // From 23.10's second part the sector heavyweights' book pins the catalogue its hooks read, and every index rule the
+        // facts the one reader of a member's quarters reads each quarter's filing from, each a move of every pin that restart
+        // makes and registers every rule again for.
+        // see: The rules read each quarter from its filing and then its release from the moment the SEC made it public, and the cover from the four newest quarters stating interest
+        Assert.Equal(["src/EquityBrief.Core/Ledger/FiledFacts.cs", "src/EquityBrief.Core/Ledger/LedgerReadings.cs"], ScorecardSources.Intersect(pinned, StringComparer.Ordinal).Order(StringComparer.Ordinal));
         Assert.Equal(new[] { "src/EquityBrief.Core/Ledger/LedgerReadings.cs" }, ScorecardSources.Intersect(dip, StringComparer.Ordinal).ToArray());
         Assert.Contains("src/EquityBrief.Core/Families/FirstFiledRevenue.cs", pinned);
         Assert.NotEmpty(new[] { "src/EquityBrief.Worker/Indices/IndexFamilies.cs" }.Intersect(pinned, StringComparer.Ordinal));

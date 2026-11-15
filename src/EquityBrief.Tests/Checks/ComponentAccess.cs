@@ -468,6 +468,8 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Decision cards"),
             CheckReach.Key(Scope.CatalogueTable, "Rule cards"),
             CheckReach.Key(Scope.MatrixTable, "Rule cards"),
+            CheckReach.Key(Scope.CatalogueTable, "Match check"),
+            CheckReach.Key(Scope.MatrixTable, "Match check"),
             CheckReach.Key(Scope.CatalogueTable, "Rule recorder"),
 
             // 17.3, the setup ledger and the filings refresher.

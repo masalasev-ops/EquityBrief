@@ -63,6 +63,15 @@ public static class PlanPrices
 
         var parts = words.Split(", ");
 
+        // From the operator's order of 2026-11-14 the parts after the third name the take-profit, its multiple of the risk and, on
+        // their ruling of 2026-11-15 on the shapes, how it is placed: read as the combination whose words they are.
+        if (parts.Length >= 4 && Named(string.Join(", ", parts[..3])) is { } before)
+        {
+            return TakeProfit.Multiples
+                .SelectMany(multiple => new[] { before.Taking(multiple), before.TakingAtRisk(multiple), before.TakingBeyond(multiple), before.Halving(multiple) })
+                .FirstOrDefault(taking => taking.Words == words);
+        }
+
         if (parts.Length != 3)
         {
             return null;
@@ -79,9 +88,10 @@ public static class PlanPrices
 
         var read = new PlanCombination(entry, window, parts[1], parts[2]);
         var entered = entry == PlanPoints.NextOpen || entry == PlanPoints.Average || entry == PlanPoints.FirstPullback || PlanPoints.Zones.Contains(entry) || PlanPoints.DistanceOf(entry) is not null;
-        var stopped = parts[1] is PlanPoints.RuleStop or PlanPoints.ZoneStop || PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).Any(days => PlanPoints.TypicalStop(days) == parts[1]);
+        var stopped = parts[1] is PlanPoints.RuleStop or PlanPoints.ZoneStop || PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).Any(days => PlanPoints.NamesStop(parts[1], days));
+        var named = PlanPoints.TypicalDays.Concat(PlanPoints.WiderDays).FirstOrDefault(one => PlanPoints.NamesStop(parts[1], one)) is var stopDays and > 0 ? read with { Stop = PlanPoints.TypicalStop(stopDays) } : read;
 
-        return entered && stopped && PlanPoints.Sales.Contains(parts[2]) && read.Words == words ? read : null;
+        return entered && stopped && PlanPoints.Sales.Contains(parts[2]) && read.Words == words ? named : null;
     }
 
     // Whether a combination is the traded plan itself, the next open at the rule's stop and sale.

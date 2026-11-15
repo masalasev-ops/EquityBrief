@@ -236,7 +236,7 @@ public partial class FixtureExpectations
         "src/EquityBrief.Web/App/SinglePageApp.LongYears.cs",
     ];
 
-    // The long ledger writes only its own tables, a session once written frozen, and no row of `setup` moves; no card, hook or
+    // The long ledger writes only its own tables, a session once written frozen until the restart writes it again, and no row of `setup` moves; no card, hook or
     // night reads them, the History page's read and the measures alone, from 23.9 the sector splits' and from 23.8 the buy and sell points' among them; and no source a rule's version or the readings'
     // version pins is one 23.6 writes.
     [Fact]
@@ -246,12 +246,18 @@ public partial class FixtureExpectations
         var ledger = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Ledger", "SetupLedger.cs"));
 
         // The long build's own source runs none of the standing ledger's writes but through its statements, every one of
-        // which names a long table or the standing ones the night writes, and nothing anywhere updates or removes a long setup.
+        // which names a long table or the standing ones the night writes; nothing anywhere updates a long setup, and from
+        // 23.10's second part the one statement removing any is the build writing the ledger once more clearing a session in
+        // the chunk's own transaction, which it then writes again.
+        // see: The long ledger is written once more at the second restart, each session replaced whole and resumed by its pin
         Assert.DoesNotMatch(new Regex(@"\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+setup\b", RegexOptions.IgnoreCase), longBuild);
         Assert.DoesNotMatch(new Regex(@"\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+setup\b", RegexOptions.IgnoreCase), Regex.Match(ledger, "static readonly string InsertLongSetup.*?const string InsertLongReading.*?;\";", RegexOptions.Singleline).Value);
-        Assert.DoesNotMatch(new Regex(@"\b(UPDATE|DELETE\s+FROM)\s+long_setup\b", RegexOptions.IgnoreCase), longBuild + ledger);
+        Assert.DoesNotMatch(new Regex(@"\bUPDATE\s+long_setup\b", RegexOptions.IgnoreCase), longBuild + ledger);
+        Assert.Equal(
+            ["DELETE FROM long_setup WHERE index_code = $index AND session_date = $session"],
+            Regex.Matches(longBuild + ledger, @"DELETE\s+FROM\s+long_setup\b[^;]*", RegexOptions.IgnoreCase).Select(match => match.Value));
         Assert.All(new[] { "ClearTheNight", "ClearTheNightsRows", "InsertSetup", "Settle", "InsertNight" }, statement => Assert.DoesNotMatch($@"\b{statement}\b", longBuild));
-        Assert.Equal(Core.Components.Touch.Read | Core.Components.Touch.Insert, SetupLedger.Access.Stores.Single(touch => touch.Store == Core.Components.Store.LongSetup).Touch);
+        Assert.Equal(Core.Components.Touch.Read | Core.Components.Touch.Insert | Core.Components.Touch.Delete, SetupLedger.Access.Stores.Single(touch => touch.Store == Core.Components.Store.LongSetup).Touch);
 
         var readers = Directory.EnumerateFiles(Path.Combine(Repository.Root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}EquityBrief.Tests{Path.DirectorySeparatorChar}", StringComparison.Ordinal) && !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))

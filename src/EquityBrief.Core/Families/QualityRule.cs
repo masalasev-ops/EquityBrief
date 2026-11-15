@@ -21,15 +21,13 @@ public enum QualityValuation
 // on, the book menu's change an approval may set.
 public sealed record QualitySettings(int ScoreFloorInNine, QualityValuation Valuation, bool Trend, int Holdings, bool SellOnFiling, bool SoldUnderAverage = false)
 {
-    public string Words => string.Create(
-        CultureInfo.InvariantCulture,
-        $"a score of at least {ScoreFloorInNine} in 9 of the checks that apply, {ValuationWords}{(Trend ? ", the close above its 200-day average" : string.Empty)}, the top {Holdings} kept, each sold at {(SellOnFiling ? "a reshuffle or on a filing dropping its score" : "a reshuffle")} where it no longer qualifies{(SoldUnderAverage ? " and at a close under its 200-day average" : string.Empty)}");
+    public string Words => RuleWording.QualityRule.Words(ScoreFloorInNine, ValuationWords, Trend, Holdings, SellOnFiling, SoldUnderAverage);
 
     string ValuationWords => Valuation switch
     {
-        QualityValuation.Off => "its price over earnings not read",
-        QualityValuation.AtOrBelowMedian => "its price over earnings at or below its own median of 12 quarters",
-        _ => "its price over earnings in the cheapest third of its own 12 quarters",
+        QualityValuation.Off => RuleWording.QualityRule.ValuationOff,
+        QualityValuation.AtOrBelowMedian => RuleWording.QualityRule.ValuationAtOrBelowMedian,
+        _ => RuleWording.QualityRule.ValuationCheapestThird,
     };
 
     // The setting as the history test's grid names it: the floor, the valuation, the trend, the book and the sale, and the
@@ -64,12 +62,12 @@ public static class QualityRule
 {
     public const string Name = "quality";
 
-    public const string Label = "Quality at a fair price";
+    public const string Label = RuleWording.QualityRule.Label;
 
     // The S&P 500's code in the store, the first of the three indices the family reads.
     public const string LargeIndex = "GSPC";
 
-    public const string Description = "Holds the companies with the strongest fundamentals that are not expensive against their own history, reshuffled monthly.";
+    public const string Description = RuleWording.QualityRule.Description;
 
     // The valuation's place, the share of its own twelve quarters' earnings yields the newest stands above, a tie
     // counting half: at or above a half its price over earnings stands at or below its own median, and at or above two
@@ -135,12 +133,12 @@ public static class QualityRule
 
     static int Up(int numerator) => (numerator + SweepFigures.Years - 1) / SweepFigures.Years;
 
-    public const string NoWord = "too few checks read for a score";
-    public const string UnderTheFloor = "a score under the floor";
-    public const string NotValued = "no price over earnings read";
-    public const string TooDear = "dearer than its own median";
-    public const string NotCheapest = "not in the cheapest third of its own range";
-    public const string UnderTheAverage = "a close under its 200-day average";
+    public const string NoWord = RuleWording.QualityRule.NoWord;
+    public const string UnderTheFloor = RuleWording.QualityRule.UnderTheFloor;
+    public const string NotValued = RuleWording.QualityRule.NotValued;
+    public const string TooDear = RuleWording.QualityRule.TooDear;
+    public const string NotCheapest = RuleWording.QualityRule.NotCheapest;
+    public const string UnderTheAverage = RuleWording.QualityRule.UnderTheAverage;
 
     public static QualityAnswer Answer(int passed, int applied, double? place, bool? aboveAverage, QualitySettings settings) =>
         applied < FundamentalScorecard.FewestRead ? new(false, NoWord)

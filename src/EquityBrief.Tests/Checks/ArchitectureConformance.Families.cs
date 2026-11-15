@@ -431,9 +431,10 @@ public partial class ArchitectureConformance
         // correction of 2026-11-09, a pick's card's and Home's idea's record over the long history, and 1621 from its next, a
         // setup's record on its tile, and 1622 from the 22.16 correction of 2026-11-09, Home's picks watched and not drawn, and
         // 1623 from its next, a plan that buys at a zone, and 1624 from the 22.17 correction of 2026-11-09, the records and the
-        // picks watched on the read-only copy.
+        // picks watched on the read-only copy, and 1625 from 23.10's second part, the match check's catalogue and matrix rows
+        // less section 14's step asking for the reported quarters.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1624),
+            (789, 853, 6, 4, 855, 876, 1625),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

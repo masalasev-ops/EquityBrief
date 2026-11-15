@@ -1,4 +1,5 @@
 using System.Numerics;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Sweep;
 
@@ -225,19 +226,19 @@ public static class SweepIdeas
     // The thirteen ideas, each setting fixed before any result was read.
     public static IReadOnlyList<Idea> All { get; } =
     [
-        new("a1", "the share of members above their own 200-day average higher than ten sessions before", "Zaremba and others (2021): country indices with high breadth beat those with low breadth by 1.19% a month, a comparison of markets that times none. Weak evidence.", IdeaKind.Market, Switch(MarketSwitch.BreadthRising)),
-        new("a2", "more members making a new 252-session high than a new 252-session low", "Practitioner use only, from Fosback (1979); no peer-reviewed support was found. Judgement.", IdeaKind.Market, Switch(MarketSwitch.HighsOverLows)),
-        new("a3", "the index closing above its 50-session average", "No study was found for the shorter average. Judgement.", IdeaKind.Market, Switch(MarketSwitch.IndexOverFifty)),
-        new("a4", "the index closing above its 200-session average", "Faber (2007): a 10-month average rule cut the worst fall from 83.66% to 42.24% with a similar return. Cooper, Gutierrez and Hameed (2004): momentum made 0.93% a month after up markets and lost 0.37% after down markets, 1929 to 1995. Evidence.", IdeaKind.Market, Switch(MarketSwitch.IndexOverTwoHundred)),
-        new("a5", "the VIX closing under 20", "Wang and Xu (2015): momentum profits are larger when market volatility is low, 1929 to 2009. Daniel and Moskowitz (2016): momentum crashes follow market falls when volatility is high. Barroso and Santa-Clara (2015): scaling by realised volatility raised the Sharpe ratio from 0.53 to 0.97. All three read realised volatility and not the VIX. Evidence for the direction; the level of 20 is judgement.", IdeaKind.Market, Switch(MarketSwitch.VixUnderTwenty)),
-        new("a6", "the VIX closing under its close ten sessions before", "The same three studies of realised volatility as a5. Evidence for the direction; the ten sessions are judgement.", IdeaKind.Market, Switch(MarketSwitch.VixFalling)),
-        new("b", "after the buy, a session opening under the stop sells at its open and one whose low touches the stop sells at the stop, the stop read before the target, which stays on closes", "Han, Zhou and Zhu (2016): a 10% stop on momentum stocks, sold when the open or the close crossed it, cut the worst month from -49.79% to -11.36% and more than doubled the Sharpe ratio, 1926 to 2013. Kaminski and Lo (2014): stops add where returns persist and subtract under a random walk. Lo and Remorov (2017): tight stops underperform on US stocks after costs. Evidence for a stop; a touch at the day's low is judgement.", IdeaKind.Exit, rule => rule with { Exit = IdeaExit.TouchedStop }),
-        new("c", "only the first three of the night's list, after a stock's open trade has kept it off, in the list's own order: reward to risk, then strength, then band strength, then ticker", "No study was found. Judgement.", IdeaKind.Selection, rule => rule with { PerNight = BestOf }),
-        new("d2", "no target: the stop the higher of the plan's stop and the highest close since the buy less 2 typical moves, never lowered, sold at the first close under it, 63 sessions at most", "Dai, Marshall, Nguyen and Visaltanachoti (2021): trailing stops give a lower average return than holding and cut downside risk, and wider ones survive costs. Evidence, which predicts a lower average; the 2 typical moves are judgement.", IdeaKind.Exit, rule => rule with { Exit = IdeaExit.TrailTwo }),
-        new("d3", "the same trailing stop at 3 typical moves", "The same study as d2. Evidence, which predicts a lower average; the 3 typical moves are judgement.", IdeaKind.Exit, rule => rule with { Exit = IdeaExit.TrailThree }),
-        new("e", "the stop no closer than one typical move: the stop setting of 1 to 4", "Lo and Remorov (2017), on tight stops, loosely. Judgement.", IdeaKind.Selection, rule => rule with { Setting = rule.Setting with { Stop = AtLeastAMove } }),
-        new("h10", "the base's own exit held at most 10 sessions", "No study of so short a hold was looked up. Judgement, the operator's idea of 2026-10-01.", IdeaKind.Exit, rule => rule with { Exit = IdeaExit.HoldTen }),
-        new("h20", "the base's own exit held at most 20 sessions", "No study of so short a hold was looked up. Judgement, the operator's idea of 2026-10-01.", IdeaKind.Exit, rule => rule with { Exit = IdeaExit.HoldTwenty }),
+        new("a1", RuleWording.SweepIdeas.BreadthRising, RuleWording.SweepIdeas.BreadthRisingEvidence, IdeaKind.Market, Switch(MarketSwitch.BreadthRising)),
+        new("a2", RuleWording.SweepIdeas.HighsOverLows, RuleWording.SweepIdeas.HighsOverLowsEvidence, IdeaKind.Market, Switch(MarketSwitch.HighsOverLows)),
+        new("a3", RuleWording.SweepIdeas.IndexOverFifty, RuleWording.SweepIdeas.IndexOverFiftyEvidence, IdeaKind.Market, Switch(MarketSwitch.IndexOverFifty)),
+        new("a4", RuleWording.SweepIdeas.IndexOverTwoHundred, RuleWording.SweepIdeas.IndexOverTwoHundredEvidence, IdeaKind.Market, Switch(MarketSwitch.IndexOverTwoHundred)),
+        new("a5", RuleWording.SweepIdeas.VixUnderTwenty, RuleWording.SweepIdeas.VixUnderTwentyEvidence, IdeaKind.Market, Switch(MarketSwitch.VixUnderTwenty)),
+        new("a6", RuleWording.SweepIdeas.VixFalling, RuleWording.SweepIdeas.VixFallingEvidence, IdeaKind.Market, Switch(MarketSwitch.VixFalling)),
+        new("b", RuleWording.SweepIdeas.TouchedStop, RuleWording.SweepIdeas.TouchedStopEvidence, IdeaKind.Exit, rule => rule with { Exit = IdeaExit.TouchedStop }),
+        new("c", RuleWording.SweepIdeas.BestOfThree, RuleWording.SweepIdeas.BestOfThreeEvidence, IdeaKind.Selection, rule => rule with { PerNight = BestOf }),
+        new("d2", RuleWording.SweepIdeas.TrailTwo, RuleWording.SweepIdeas.TrailTwoEvidence, IdeaKind.Exit, rule => rule with { Exit = IdeaExit.TrailTwo }),
+        new("d3", RuleWording.SweepIdeas.TrailThree, RuleWording.SweepIdeas.TrailThreeEvidence, IdeaKind.Exit, rule => rule with { Exit = IdeaExit.TrailThree }),
+        new("e", RuleWording.SweepIdeas.StopAtLeastAMove, RuleWording.SweepIdeas.StopAtLeastAMoveEvidence, IdeaKind.Selection, rule => rule with { Setting = rule.Setting with { Stop = AtLeastAMove } }),
+        new("h10", RuleWording.SweepIdeas.HoldTen, RuleWording.SweepIdeas.ShortHoldEvidence, IdeaKind.Exit, rule => rule with { Exit = IdeaExit.HoldTen }),
+        new("h20", RuleWording.SweepIdeas.HoldTwenty, RuleWording.SweepIdeas.ShortHoldEvidence, IdeaKind.Exit, rule => rule with { Exit = IdeaExit.HoldTwenty }),
     ];
 
     // The series each switch reads, none for the two read off the members' own bars.
@@ -446,8 +447,8 @@ public static class SweepIdeas
         {
             var all = new Idea(
                 string.Join("+", switches.Select(reading => reading.Idea.Key)),
-                "the passing switches together: " + string.Join("; ", switches.Select(reading => reading.Idea.Rule)),
-                "Each as its own idea states.",
+                RuleWording.SweepIdeas.TogetherOpening + string.Join("; ", switches.Select(reading => reading.Idea.Rule)),
+                RuleWording.SweepIdeas.TogetherEvidence,
                 IdeaKind.Market,
                 rule => switches.Aggregate(rule, (held, reading) => reading.Idea.Apply(held)));
             var figures = evaluate(all.Key, all.Apply(BaseRule));
@@ -517,7 +518,7 @@ public static class SweepIdeas
         }
 
         var start = baseIsVariant ? TodaysRule : Applied(kept);
-        var startFigures = baseIsVariant ? today : kept.Count == 0 ? baseFigures : evaluate("the starting point", start);
+        var startFigures = baseIsVariant ? today : kept.Count == 0 ? baseFigures : evaluate(RuleWording.SweepIdeas.TheStartingPoint, start);
         var inStart = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var reading in kept)
@@ -529,16 +530,16 @@ public static class SweepIdeas
 
         if (baseIsVariant)
         {
-            variants.Add(new IdeaVariant("the base", "the reward-to-risk floor at 2", baseFigures));
+            variants.Add(new IdeaVariant("the base", RuleWording.SweepIdeas.BaseVariant, baseFigures));
         }
 
         foreach (var reading in readings.Where(reading => !inStart.Contains(reading.Idea.Key) && Higher(reading, baseFigures)))
         {
-            variants.Add(new IdeaVariant(reading.Idea.Key, reading.Idea.Rule, evaluate(reading.Idea.Key + " on the starting point", reading.Idea.Apply(start))));
+            variants.Add(new IdeaVariant(reading.Idea.Key, reading.Idea.Rule, evaluate(reading.Idea.Key + RuleWording.SweepIdeas.OnTheStartingPoint, reading.Idea.Apply(start))));
         }
 
-        variants.Add(new IdeaVariant("market 50%", "the market floor at 50%", evaluate("market 50% on the starting point", start with { Setting = start.Setting with { Market = MarketAtFifty } })));
-        variants.Add(new IdeaVariant("depth 1.5", "the pullback's depth from 1.5 typical moves", evaluate("depth 1.5 on the starting point", start with { Setting = start.Setting with { DepthLow = DepthFromOneAndAHalf } })));
+        variants.Add(new IdeaVariant("market 50%", RuleWording.SweepIdeas.MarketVariant, evaluate(RuleWording.SweepIdeas.MarketVariantOnTheStartingPoint, start with { Setting = start.Setting with { Market = MarketAtFifty } })));
+        variants.Add(new IdeaVariant("depth 1.5", RuleWording.SweepIdeas.DepthVariant, evaluate(RuleWording.SweepIdeas.DepthVariantOnTheStartingPoint, start with { Setting = start.Setting with { DepthLow = DepthFromOneAndAHalf } })));
 
         return new IdeasProposal(
             today,
