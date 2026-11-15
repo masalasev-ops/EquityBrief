@@ -7,6 +7,30 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-15 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md and docs/BUILD_PLAN.md - each rule takes profit in the shape its test chose, the books trade their own exits, and a book's record box reads in points a month
+Decision: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at; A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
+Was:
+> CLAUDE.md, Bars are append-only: ... the price a rule's trade sells at and never a choice of a stock (see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk); ...
+
+> ARCHITECTURE.html, the plan a family rule states and the card's parts: ... (see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk) ...
+
+> ARCHITECTURE.html, The setup's record over the long history and An idea's record over the long history: ... (see: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's)
+
+> SCHEMA.md, heavyweight_holding and heavyweight_rule_holding: `stop` ... the stop under the close it was bought at, 3 typical daily moves that night; null for a holding bought before | `take_profit` ... a close at or above it selling it at that close; null as `stop` is | `take_profit_from` ... `turned down` and the session of the swing high, `risk` and the multiple, or `own`; null as `stop` is
+
+> SCHEMA.md, index_heavyweight_holding and index_heavyweight_rule_holding: `stop` ... the stop under the close it was bought at, 3 typical daily moves that night, a close under it selling it at that close; null for a holding bought before
+
+> SCHEMA.md, quality_holding and improving_trade: `stop` ... the stop under its fill, 3 typical daily moves on the night it was chosen; null for a holding (a trade) bought before and until it is bought | `take_profit` ... a close at or above it selling it at that close; null as `stop` is | `take_profit_from` ... `risk` and the multiple, or `own`; null as `stop` is
+
+> SCHEMA.md, the history pulled and plan_point's writer: ... (see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk) ... (see: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's)
+
+> RUNBOOK.md, The take-profit's multiple: ... (see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk)
+
+> BUILD_PLAN.md, 23.10's second part: ... (see: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's)
+Now:
+> every citation of the two names reads the two decisions that supersede them; SCHEMA.md's book holdings state the typical daily moves its book's exit states, a take-profit on half as `half` and the multiple, and two new columns, `half_sold_on` and `exit_added_on`, and a table `book_record` the books' test writes without `--print`; ARCHITECTURE.html adds a paragraph on the take-profit's three shapes, the books' exits, clause 5 and clause 6 after the plan a family rule states, and one on the half's card lines, the restart's line and the book's record box before the card's parts; RUNBOOK.md adds the books' test's two full exits beside today's, the heavyweights chosen on 2019 to 2022, today's never chosen and its writing run.
+Why: the operator's rulings of 2026-11-14 on the books, on the tables and on the report's clauses 5 and 6, and of 2026-11-15 on the shapes and the book's record box, word for word in `prompts/`.
+
 ### 2026-11-14 - docs/ARCHITECTURE.html - Home, Tonight and the cards in the operator's words of 2026-11-14: the open named from the calendar, the held stock's card, the take profit and why a filing setup has no long record
 Decision: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing; Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk; Home says in plain words why a pick is an idea to buy or watched and how it was tested, too few past picks said in the operator's words
 Was:

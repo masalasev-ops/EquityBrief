@@ -13,7 +13,7 @@ public sealed record PlanSaleView(string Kind, decimal Buy, decimal? Stop, decim
     // From the operator's order of 2026-11-14 the price the plan takes profit at, worked from the price it buys at: its own
     // target or first band above, the price above its last staged level what is left sells at, or where its sale names none
     // above the buy the price it turned down at before or the multiple of its risk; none for a plan placed before the order.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public TakeProfitView? TakeProfit { get; init; }
 
     // A plan selling on its time limit alone, which names no price to sell at.
@@ -134,10 +134,29 @@ public sealed partial class MarkRenderer
 
         // From the operator's order of 2026-11-14 a plan taking profit draws the price beside its other ways out: staged levels
         // keep their shares and what is left takes profit at its price; a trail or the dip's bounce stand beside it.
-        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+        // On the operator's ruling of 2026-11-14, clause 2, a take-profit on half: half at its price, the other half by the plan's own
+        // way out, at its target or band above the buy, its staged levels, its trail or bounce, or after its trading days, the
+        // stop on it moved up to the buy once the first half sells.
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+        if (sale.TakeProfit is { Half: true } half)
+        {
+            var other = sale.Target is { } aim && aim > sale.Buy ? "at " + SaleDollars(aim) : "after " + after;
+
+            return
+            [
+                .. sale.Kind == PlanPoints.StagedSales ? sale.Stages.Select(stage => new PlanSaleLine("stage", "Sell " + PlanSaleView.SharesOf(sale.Stages.Count).Each + " at", SaleDollars(stage))) : [],
+                new PlanSaleLine("target", TakeProfitView.HalfLabel, SaleDollars(half.Price), half.Line),
+                new PlanSaleLine("other-half", TakeProfitView.OtherHalfLabel, other, half.OtherHalfLine),
+                .. sale.Trail is { } distance && sale.Target is null ? [new PlanSaleLine("trail", "Or sell on a close under", "a give-up price that rises", FormattableString.Invariant($"{SaleDollars(distance)} behind its highest close."))] : Array.Empty<PlanSaleLine>(),
+                .. sale.RsiAbove is { } level ? [new PlanSaleLine("bounce", "Or sell", "When it bounces back", FormattableString.Invariant($"A close whose {EquityBrief.Core.Families.DipRule.RsiSessions}-session RSI stands above {level:0} sells it at the next day's open."))] : Array.Empty<PlanSaleLine>(),
+                .. other.StartsWith("after ", StringComparison.Ordinal) ? Array.Empty<PlanSaleLine>() : [backstop],
+            ];
+        }
+
         if (sale.TakeProfit is { } taking)
         {
-            var take = new PlanSaleLine("target", TakeProfitView.Label, SaleDollars(taking.Price), taking.Line ?? (sale.Kind == PlanPoints.FirstBand ? FirstBandWords : null));
+            var take = new PlanSaleLine("target", taking.LabelText, SaleDollars(taking.Price), taking.Line ?? (sale.Kind == PlanPoints.FirstBand ? FirstBandWords : null));
 
             if (sale.Kind == PlanPoints.StagedSales && sale.Stages.Count > 0)
             {

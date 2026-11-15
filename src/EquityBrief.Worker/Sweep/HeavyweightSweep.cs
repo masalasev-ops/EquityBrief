@@ -141,7 +141,7 @@ public sealed class HeavyweightTape
 
     // From the operator's order of 2026-11-14 each name's series as the night's functions read it, laid only where a walk asks
     // for a holding's stop and take-profit: its typical daily moves and the swings it confirmed by each bar.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public Lazy<SweepSeries>[]? Series { get; init; }
 
     // A holding's stop and take-profit from its buy at a session's close: the stop the moves under it in the stock's typical
@@ -579,7 +579,7 @@ public static class HeavyweightSweep
         // From the operator's order of 2026-11-14 each holding's stop and take-profit where the walk is asked for them, a
         // close under the stop or at or above the take-profit selling it at that close; and from their ruling on the books, under
         // a half exit, half sold at the take-profit and the stop on the other half moved up to the buy.
-        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
         var exits = new Dictionary<int, (double Stop, double? TakeProfit)>();
         var halves = new Dictionary<int, int>();
 

@@ -73,9 +73,10 @@ public partial class NightlyRun
             Texts(store, $"SELECT rule || '|' || ticker || '|' || place || '|' || entry || '|' || stop || '|' || target || '|' || (plan IS NOT NULL) FROM rule_pick WHERE session_date = '{RuleNight}' ORDER BY rule;"));
         Assert.Equal(combination.Words, PlanOrder.FromJson(Texts(store, $"SELECT plan FROM rule_pick WHERE session_date = '{RuleNight}' AND rule = '{LiveFilter}';").Single())!.Words);
 
-        // The order whose window passed unfilled ends on its window's last session, the fifth after its night, with no result;
-        // it is benchmarked over the two members, none read, and tonight's, its window and cap still ahead, is not.
-        Assert.Equal(["2026-10-05||0"], Texts(store, "SELECT ended_on || '|' || COALESCE(result, '') || '|' || COALESCE(benchmark, '') || members FROM rule_pick WHERE session_date = '2026-09-28';"));
+        // The order holding no level is not placed and ends on its own night with no result, on the operator's ruling of
+        // 2026-11-14, clause 10; it is benchmarked over the two members, none read, and tonight's, its window and cap still
+        // ahead, is not.
+        Assert.Equal(["2026-09-28||0"], Texts(store, "SELECT ended_on || '|' || COALESCE(result, '') || '|' || COALESCE(benchmark, '') || members FROM rule_pick WHERE session_date = '2026-09-28';"));
         Assert.Equal(["1|1"], Texts(store, $"SELECT (benchmark IS NULL) || '|' || (members IS NULL) FROM rule_pick WHERE session_date = '{RuleNight}' AND rule = '{LiveFilter}';"));
 
         // The fill step prices each from the rule picks: the one not filled, and none for the one still waiting; and the

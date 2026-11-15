@@ -78,7 +78,7 @@ public static class CardScreen
 
         // From the operator's order of 2026-11-14 the price the card's plan takes profit at: a plan buying at a price works it
         // from that price, and one buying at the next open from tonight's close and the stop placed from it.
-        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
         var takeProfit = BookTakeProfit(row)
             ?? zone?.Zone.Sale?.TakeProfit
             ?? (zone is null && EquityBrief.Core.Loop.PlanOrder.FromJson(row.Plan) is { TakeProfit: not null } order && row.Entry is { } close
@@ -196,9 +196,9 @@ public static class CardScreen
 
     // From the operator's order of 2026-11-14 the price an order takes profit at from a buy and the stop placed from it, through
     // the core's one function the walk sells at; none for an order placed before, which takes profit at none.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public static TakeProfitView? TakeProfitOf(EquityBrief.Core.Loop.PlanOrder order, double buy, double stop) =>
-        order.TakeProfit is { } multiple && EquityBrief.Core.Loop.TakeProfit.Placed(order.Sale, buy, stop, order.TurnedDown, multiple) is { } placed
+        order.TakeProfitFrom(buy, stop) is { } placed
             ? new TakeProfitView(
                 EquityBrief.Core.Prices.Statistic.ToPrice(placed.Price),
                 placed.Source,
@@ -206,6 +206,13 @@ public static class CardScreen
                 placed.Multiple,
                 EquityBrief.Core.Prices.Statistic.ToPrice(buy),
                 EquityBrief.Core.Prices.Statistic.ToPrice(stop))
+            {
+                // On the operator's rulings of 2026-11-14 and 2026-11-15 its shape, and for a half how the other half sells.
+                Half = order.Half,
+                Placing = order.Placing,
+                OtherHalf = order.Half ? FormattableString.Invariant($"after {order.Cap} trading days") : null,
+                AddedOn = order.TakeProfitAddedOn,
+            }
             : null;
 
     // A book's card's take-profit as its night stored it, its target that price and its stop the one the book added under the
@@ -219,7 +226,17 @@ public static class CardScreen
 
         var (source, on, multiple) = EquityBrief.Core.Loop.TakeProfit.FromStored(stored);
 
-        return new TakeProfitView(price, source, on, multiple, row.Entry, row.Stop, EquityBrief.Core.Loop.TakeProfit.MiddleStopMoves);
+        // On the operator's rulings of 2026-11-14 and 2026-11-15 the exit the book trades, its stop's moves and its shape.
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+        var exit = EquityBrief.Core.Loop.BookExits.Of(row.Family, row.Index);
+        var half = EquityBrief.Core.Loop.TakeProfit.IsHalf(stored);
+
+        return new TakeProfitView(price, source, on, multiple, row.Entry, row.Stop, exit.Moves)
+        {
+            Half = half,
+            Placing = exit.Placing,
+            OtherHalf = half ? TakeProfitView.BookOtherHalf(row.Family) : null,
+        };
     }
 
     // What could hit the trade, as the night stored it on the card.

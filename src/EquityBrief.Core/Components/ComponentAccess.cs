@@ -140,6 +140,7 @@ public enum Store
     LoopRule,
     LoopRuleYear,
     LoopRuleUnit,
+    BookRecord,
     LoopPooled,
     LoopLink,
     LoopDecision,

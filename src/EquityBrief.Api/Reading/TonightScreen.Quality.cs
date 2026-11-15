@@ -13,8 +13,8 @@ public static partial class TonightScreen
 {
     // From the operator's order of 2026-11-14 a book's holding's take-profit as its step stored it at the buy, with the stop the
     // book added under the buy; none for one bought before.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
-    public static TakeProfitView? BookTakeProfit(decimal? price, string? from, decimal? buy, decimal? stop)
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public static TakeProfitView? BookTakeProfit(decimal? price, string? from, decimal? buy, decimal? stop, string family, string index, DateOnly? addedOn = null)
     {
         if (price is not { } taking)
         {
@@ -23,7 +23,18 @@ public static partial class TonightScreen
 
         var (source, on, multiple) = EquityBrief.Core.Loop.TakeProfit.FromStored(from);
 
-        return new TakeProfitView(taking, source, on, multiple, buy, stop, stop is null ? null : EquityBrief.Core.Loop.TakeProfit.MiddleStopMoves);
+        // On the operator's rulings of 2026-11-14 and 2026-11-15 the exit the book trades, its stop's moves and its shape.
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+        var exit = EquityBrief.Core.Loop.BookExits.Of(family, index);
+        var half = EquityBrief.Core.Loop.TakeProfit.IsHalf(from);
+
+        return new TakeProfitView(taking, source, on, multiple, buy, stop, stop is null ? null : exit.Moves)
+        {
+            Half = half,
+            Placing = exit.Placing,
+            OtherHalf = half ? TakeProfitView.BookOtherHalf(family) : null,
+            AddedOn = addedOn,
+        };
     }
 
     // The card on a night: the holdings open at its close, each with its score and its place tonight, its change since it
@@ -72,7 +83,7 @@ public static partial class TonightScreen
                     cellByTicker.TryGetValue(holding.Ticker, out var closing) ? closing.Close : null)
                 {
                     Stop = holding.Stop,
-                    TakeProfit = BookTakeProfit(holding.TakeProfit, holding.TakeProfitFrom, holding.Fill, holding.Stop),
+                    TakeProfit = BookTakeProfit(holding.TakeProfit, holding.TakeProfitFrom, holding.Fill, holding.Stop, QualityRule.Name, index, holding.ExitAddedOn),
                 };
             }),
         ];

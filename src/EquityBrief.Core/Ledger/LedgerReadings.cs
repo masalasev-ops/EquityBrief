@@ -19,7 +19,7 @@ public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "75f41e575f4e";
+    public const string Version = "02445bdcf327";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;

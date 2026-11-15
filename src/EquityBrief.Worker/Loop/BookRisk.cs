@@ -14,7 +14,7 @@ namespace EquityBrief.Worker.Loop;
 // the buy's close. Its benchmark is the same for the index's other members on the buy's session, each bought at the same open
 // with its own stop and take-profit at the same moves and multiple and sold at the first close past either or on the session
 // the pick was sold, uncharged as the book's own benchmark is. A pick's edge is its result less its benchmark's mean.
-// see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+// see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
 public static class BookRisk
 {
     // Each ended pick's buy session and its edge per dollar risked, none where its stop or its fill is not read or no other

@@ -139,7 +139,7 @@ public partial class ReadSurface
                 ('GSPC', '{night}', 'pullback', 'TST', 2, '62.95', '61', '70', 'r', '{{}}', '[]', 63),
                 ('GSPC', '{night}', 'improving', 'TST', 3, '62.95', NULL, NULL, 'r', '{{}}', '[]', NULL);
             INSERT INTO plan_point (run_id, index_code, family, through, setups, combination, later_fills, later_edge_per_pick, traded_later_edge_per_pick) VALUES
-                ('p1', 'GSPC', 'drift', '{night}', 10, 'the next open, 1 typical days under the buy, the time limit alone', 500, 0.05, -0.1),
+                ('p1', 'GSPC', 'drift', '{night}', 10, 'the next open, 1 typical day under the buy, the time limit alone', 500, 0.05, -0.1),
                 ('p1', 'GSPC', 'pullback', '{night}', 10, 'the next open, the rule''s stop, the rule''s sale', 500, 0.2, 0.1);");
 
         var (read, priced) = await new EquityBrief.Worker.Cards.DecisionCards(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).PriceAsync(null);
@@ -159,7 +159,7 @@ public partial class ReadSurface
         using var drift = JsonDocument.Parse(Alternative("drift")!);
         var root = drift.RootElement;
 
-        Assert.Equal("the next open, 1 typical days under the buy, the time limit alone", root.GetProperty("combination").GetString());
+        Assert.Equal("the next open, 1 typical day under the buy, the time limit alone", root.GetProperty("combination").GetString());
         Assert.Equal(62.95m, decimal.Parse(root.GetProperty("close").GetString()!, CultureInfo.InvariantCulture));
         Assert.Equal(61.95, double.Parse(root.GetProperty("stop").GetString()!, CultureInfo.InvariantCulture), 3);
         Assert.Equal(JsonValueKind.Null, root.GetProperty("buy").ValueKind);
@@ -197,13 +197,13 @@ public partial class ReadSurface
         Assert.Contains("it also did worse than simply buying other S&P 500 stocks on the same days, about 4 cents worse for every $1 put at risk, against about 19 cents worse with the plan the rules use. The rules do not trade it.", less, StringComparison.Ordinal);
 
         // A next-open plan rising behind its highest close, and a dip's bounce.
-        Assert.Contains("Buy at the next open, as the rules do, and sell it differently. The give-up price rises behind its highest close by $1.20, and it is sold after 63 trading days at the latest.", Block(AlternativeJson("the next open, 1 typical days under the buy, the rule's sale", null, "61", trail: "1.2")), StringComparison.Ordinal);
-        Assert.Contains("Aim to sellWhen it bounces back", Block(AlternativeJson("the next open, 1 typical days under the buy, the rule's sale", null, "61", bounce: true)), StringComparison.Ordinal);
-        Assert.Contains("No price target:this plan sells after 63 trading days", Block(AlternativeJson("the next open, 1 typical days under the buy, the time limit alone", null, "61")), StringComparison.Ordinal);
+        Assert.Contains("Buy at the next open, as the rules do, and sell it differently. The give-up price rises behind its highest close by $1.20, and it is sold after 63 trading days at the latest.", Block(AlternativeJson("the next open, 1 typical day under the buy, the rule's sale", null, "61", trail: "1.2")), StringComparison.Ordinal);
+        Assert.Contains("Aim to sellWhen it bounces back", Block(AlternativeJson("the next open, 1 typical day under the buy, the rule's sale", null, "61", bounce: true)), StringComparison.Ordinal);
+        Assert.Contains("No price target:this plan sells after 63 trading days", Block(AlternativeJson("the next open, 1 typical day under the buy, the time limit alone", null, "61")), StringComparison.Ordinal);
 
         // One the stock's levels place none of tonight says why; one that did no better than the traded plan says so.
         Assert.StartsWith("A plan that did better: " + SinglePageApp.UnplacedZone, Block(AlternativeJson("the second zone within 10 sessions, 2 typical days under the buy, the time limit alone", null, "0", unplaced: "zone", edge: 0.022, traded: -0.038)), StringComparison.Ordinal);
-        Assert.Equal(SinglePageApp.NoBetterPlan, Block(AlternativeJson("the next open, 1 typical days under the buy, the time limit alone", null, "61", edge: -0.2, traded: -0.1)));
+        Assert.Equal(SinglePageApp.NoBetterPlan, Block(AlternativeJson("the next open, 1 typical day under the buy, the time limit alone", null, "61", edge: -0.2, traded: -0.1)));
 
         // The cents both ways.
         Assert.Equal(["about 4 cents better", "less than 1 cent worse"], new[] { (0.037, "better"), (-0.003, "worse") }.Select(one => SinglePageApp.Cents(one.Item1, one.Item2)));

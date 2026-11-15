@@ -3,7 +3,7 @@ namespace EquityBrief.Worker.Sweep;
 // On the operator's ruling of 2026-11-14 on the books, item 3, a book's half exit: half a holding's shares sell at the first close
 // at or above its take-profit, the stop on the other half then moving up to the buy's close, and the other half sells by the
 // book's own exit or a close under the buy. Returns are fractions of the sum a span opens on, as a book's holdings read them.
-// see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+// see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
 public static class BookHalf
 {
     // What a close does to a holding with its stop and take-profit placed: under a half exit, its first close at or above the

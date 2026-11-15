@@ -9,7 +9,7 @@ public sealed partial class MarkRenderer
 {
     // A Quality at a fair price holding's row on Tonight opens on its buy and how it is kept: from the operator's order of
     // 2026-11-14 sold at the close under its stop or at its take profit, and otherwise kept while it qualifies.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public static string QualityBoughtSaid(QualityHoldingCell cell, DateOnly? next) =>
         (cell.Fill is { } fill && cell.BoughtOn is { } on
             ? Formatted($"Bought at {Figures.Price(fill)} on {on.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture)}. ")

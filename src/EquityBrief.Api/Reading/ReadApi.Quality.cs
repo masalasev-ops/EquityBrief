@@ -36,6 +36,9 @@ public sealed record QualityHoldingRow(
     public decimal? TakeProfit { get; init; }
 
     public string? TakeProfitFrom { get; init; }
+
+    // On the operator's ruling of 2026-11-14, clause 5, the night its stop and take-profit were added at the rules restart.
+    public DateOnly? ExitAddedOn { get; init; }
 }
 
 // What the read surface reads of the quality family's own rows, which its step alone writes.
@@ -80,8 +83,10 @@ public sealed partial class ReadApi
                CASE WHEN ended_on <= $on THEN end_reason ELSE 'open' END,
                CASE WHEN ended_on <= $on THEN result END, CASE WHEN ended_on <= $on THEN benchmark END,
                CASE WHEN ended_on <= $on THEN cost END, CASE WHEN ended_on <= $on THEN edge END,
-               CASE WHEN bought_on <= $on THEN stop END, CASE WHEN bought_on <= $on THEN take_profit END,
-               CASE WHEN bought_on <= $on THEN take_profit_from END
+               CASE WHEN bought_on <= $on AND (exit_added_on IS NULL OR exit_added_on <= $on) THEN stop END,
+               CASE WHEN bought_on <= $on AND (exit_added_on IS NULL OR exit_added_on <= $on) THEN take_profit END,
+               CASE WHEN bought_on <= $on AND (exit_added_on IS NULL OR exit_added_on <= $on) THEN take_profit_from END,
+               CASE WHEN exit_added_on <= $on THEN exit_added_on END
         FROM quality_holding
         WHERE rule = $rule AND index_code = $index AND chosen_on <= $on AND (ended_on IS NULL OR ended_on >= $since)
         ORDER BY chosen_on, ticker;
@@ -207,6 +212,7 @@ public sealed partial class ReadApi
                 Stop = reader.IsDBNull(13) ? null : Money.FromStorage(reader.GetString(13)),
                 TakeProfit = reader.IsDBNull(14) ? null : Money.FromStorage(reader.GetString(14)),
                 TakeProfitFrom = reader.IsDBNull(15) ? null : reader.GetString(15),
+                ExitAddedOn = reader.IsDBNull(16) ? null : QualityDate(reader.GetString(16)),
             });
         }
 

@@ -270,7 +270,7 @@ public sealed partial class MarkRenderer
             // A buy carries its entry check's line as every pick's card does.
             // see: Every Fundamentals buy carries its entry check's line on Tonight and on Home, as every pick's card does
             // From the operator's order of 2026-11-14 a trade bought carries its stop and its take-profit beside its filing exit.
-            // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
             var exits = cell.Stop is null && cell.TakeProfit is null ? string.Empty : BookExitCell(cell.Stop, cell.TakeProfit).Replace("<td class=\"book-exit\"", "<span class=\"book-exit\"", StringComparison.Ordinal).Replace("</td>", "</span>", StringComparison.Ordinal);
 
             body.Append(Invariant, $"<td class=\"improving-status\" data-state=\"{state}\"><b>{Escaped(cell.Status)}</b><span>{Escaped(cell.Line)}</span>{exits}{(state == "bought" ? EntryCheckLine(cell.EntryCheck, cell.Ticker) : string.Empty)}</td></tr>");

@@ -64,7 +64,7 @@ public static class PlanTrades
     // From the operator's order of 2026-11-14 the newest pull holding a stock's first stored session and its close there, and
     // that pull's highs and lows before it over the take-profit's years, as marked, which the take-profit's turned-down prices
     // are read from at the store's scale.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     const string PullHoldingFirst = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
 
     const string PulledHighsBefore = @"
@@ -136,8 +136,13 @@ public static class PlanTrades
     // From the operator's order of 2026-11-14 a book's holding's or a Fundamentals trade's stop and take-profit placed from its
     // buy on a session: the stock's typical daily move as the night's indicators stored it on the session and the prices it
     // turned down at before it; none where no typical move is stored.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
-    public static async Task<(double Stop, TakeProfitPrice? TakeProfit)?> BookExitAsync(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction? transaction, string ticker, DateOnly session, decimal buy, CancellationToken cancellation)
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public static async Task<(double Stop, TakeProfitPrice? TakeProfit)?> BookExitAsync(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction? transaction, string ticker, DateOnly session, decimal buy, CancellationToken cancellation) =>
+        await BookExitAsync(connection, transaction, ticker, session, buy, BookExit.Middle, cancellation);
+
+    // On the operator's rulings of 2026-11-14 and 2026-11-15 the same at the exit its book trades.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public static async Task<(double Stop, TakeProfitPrice? TakeProfit)?> BookExitAsync(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction? transaction, string ticker, DateOnly session, decimal buy, BookExit exit, CancellationToken cancellation)
     {
         double typical;
 
@@ -159,7 +164,126 @@ public static class PlanTrades
 
         var bars = await BarsAsync(connection, transaction, ticker, session, cancellation);
 
-        return TakeProfit.ForBook(Statistic.FromPrice(buy), typical, await TurnedDownAsync(connection, transaction, ticker, bars, session, cancellation));
+        return TakeProfit.ForBook(Statistic.FromPrice(buy), typical, await TurnedDownAsync(connection, transaction, ticker, bars, session, cancellation), exit);
+    }
+
+    // On the operator's ruling of 2026-11-14, clause 5, each live rule standing now whose plan takes profit, with that plan and the
+    // day it was registered on, which a trade or an order it placed before takes its take-profit from.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public static IReadOnlyDictionary<string, (PlanCombination Plan, DateOnly Since)> LiveTakingProfit(IReadOnlyList<Core.Candidates.RegisterRow> rows, DateTimeOffset at)
+    {
+        var live = new Dictionary<string, (PlanCombination Plan, DateOnly Since)>(StringComparer.Ordinal);
+
+        foreach (var row in Core.Candidates.CandidateFamily.Standing(rows, at).Where(row => Core.Candidates.FamilyRecords.IsLive(row.Candidate)))
+        {
+            if (PlanHook.Of(Core.Candidates.CandidateEvaluator.Read(row.Parameters)) is { TakeProfit: not null } plan)
+            {
+                live[row.Candidate] = (plan, DateOnly.FromDateTime(row.RegisteredAt.UtcDateTime));
+            }
+        }
+
+        return live;
+    }
+
+    const string RegisterRowsRead = "SELECT id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence FROM candidate_register ORDER BY id;";
+
+    // On the operator's ruling of 2026-11-14, clause 5, the register over a connection a step already holds, which the day each
+    // live rule was registered at the rules restart is read from.
+    public static async Task<IReadOnlyList<Core.Candidates.RegisterRow>> RegisterRowsAsync(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction? transaction, CancellationToken cancellation)
+    {
+        var rows = new List<Core.Candidates.RegisterRow>();
+
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = RegisterRowsRead;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            rows.Add(new Core.Candidates.RegisterRow(
+                reader.GetInt64(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5),
+                reader.GetString(6),
+                reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8),
+                DateTimeOffset.ParseExact(reader.GetString(9), "yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal),
+                reader.IsDBNull(10) ? null : reader.GetString(10)));
+        }
+
+        return rows;
+    }
+
+    // On the operator's ruling of 2026-11-14, clause 5, the day a rule standing now was registered on, none where none stands.
+    public static DateOnly? RegisteredOn(IReadOnlyList<Core.Candidates.RegisterRow> rows, string candidate) =>
+        RegisteredOn(rows, row => row.Candidate == candidate);
+
+    public static DateOnly? RegisteredOn(IReadOnlyList<Core.Candidates.RegisterRow> rows, Func<Core.Candidates.RegisterRow, bool> which) =>
+        Core.Candidates.CandidateFamily.Standing(rows, DateTimeOffset.MaxValue).LastOrDefault(which) is { } standing
+            ? DateOnly.FromDateTime(standing.RegisteredAt.UtcDateTime)
+            : null;
+
+    // On the operator's ruling of 2026-11-14, clause 5, an open trade or a waiting order of a live rule placed before its rule was
+    // registered at the rules restart, with no take-profit, takes the one its rule's plan now states: worked from its own buy by
+    // the same steps, the prices its stock turned down at before its night read at its night's scale, and counted from the
+    // session after the restart. None where it holds one, was placed since, or its rule's plan takes none. An order stored with
+    // no plan is its rule's own: the next open at its own stop and sale.
+    public static async Task<PlanOrder?> AddedAtRestartAsync(
+        Microsoft.Data.Sqlite.SqliteConnection connection,
+        Microsoft.Data.Sqlite.SqliteTransaction? transaction,
+        PlanOrder? order,
+        (PlanCombination Plan, DateOnly Since) live,
+        string ticker,
+        DateOnly night,
+        decimal entry,
+        decimal stop,
+        decimal? target,
+        decimal? trail,
+        int cap,
+        bool dip,
+        CancellationToken cancellation)
+    {
+        if (night >= live.Since || order?.TakeProfit is not null || live.Plan.TakeProfit is not { } multiple || !(entry > 0m))
+        {
+            return null;
+        }
+
+        var ruleStop = Statistic.FromPrice(stop);
+        var held = order ?? new PlanOrder(
+            new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale).Words, PlanPoints.NextOpen, null, 0, PlanPoints.RuleStop, ruleStop, null, 0,
+            target is { } aim ? Statistic.FromPrice(aim) : null, [], trail is { } behind ? Statistic.FromPrice(behind) : null,
+            dip ? PlanPoints.DipSale.RsiAbove : null, cap);
+        IReadOnlyList<TurnedDown> turnedDown = [];
+
+        if (!live.Plan.Half)
+        {
+            var bars = await BarsAsync(connection, transaction, ticker, night, cancellation);
+            var at = bars.Count - 1;
+
+            while (at >= 0 && bars[at].Session != night)
+            {
+                at--;
+            }
+
+            var factor = at >= 0 && bars[at].Close > 0m ? Statistic.FromPrice(bars[at].Close) / Statistic.FromPrice(entry) : 1.0;
+            var lowest = new[] { held.RuleStop, held.ZoneStop ?? held.RuleStop, (held.Level ?? Statistic.FromPrice(entry)) - (PlanPoints.WiderDays.Max() * held.TypicalDay) }.Min();
+
+            turnedDown = [.. (await TurnedDownAsync(connection, transaction, ticker, bars, night, cancellation)).Select(turned => turned with { Price = turned.Price / factor }).Where(turned => turned.Price > lowest)];
+        }
+
+        return held with
+        {
+            TakeProfit = multiple,
+            Placing = live.Plan.Placing,
+            Half = live.Plan.Half,
+            TurnedDown = turnedDown,
+            TakeProfitAddedOn = live.Since,
+        };
     }
 
     // The prices a series' stock turned down at before a bar's session, from the swings the series confirmed by it.
@@ -355,7 +479,9 @@ public static class PlanTrades
         var scaled = order.Scaled(factor);
         var rulesRisk = bars.Closes[pick] - (Statistic.FromPrice(ruleStop) * factor);
         var rsi = scaled.RsiAbove is null ? default : PlanPoints.RsiOf(bars.Closes);
-        var state = PlanHook.Walk(scaled, bars.Opens, bars.Lows, bars.Closes, pick, rsi);
+        // On the operator's ruling of 2026-11-14, clause 5, a take-profit added at the rules restart counts from the session after.
+        var takeProfitFrom = order.TakeProfitAddedOn is { } added ? Array.FindIndex(bars.Sessions, session => session > added) is var at && at >= 0 ? at : bars.Sessions.Length : 0;
+        var state = PlanHook.Walk(scaled, bars.Opens, bars.Lows, bars.Closes, pick, rsi, takeProfitFrom);
 
         if (state.Waiting)
         {
@@ -461,7 +587,7 @@ public static class PlanTrades
 
             PlanSale? SaleAt(double fill) =>
                 Own(fill) is { } sale && combination.TakeProfit is { } multiple && StopAt(fill) is { } stop
-                    ? TakeProfit.SaleWith(sale, fill, stop, turnedDown, multiple)
+                    ? TakeProfit.Shaped(sale, fill, stop, turnedDown, multiple, combination.Placing, combination.Half)
                     : Own(fill);
 
             results.Add(PlanPoints.MemberResult(closes, opens, bar, risk, StopAt, SaleAt, cap, PlanPoints.RsiOf(closes)));

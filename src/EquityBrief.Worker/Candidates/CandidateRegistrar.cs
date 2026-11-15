@@ -613,10 +613,14 @@ public sealed class CandidateRegistrar : IComponent
             taken.Add(row with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = row.Candidate, RegisteredAt = startedAt, Evidence = evidence });
         }
 
+        // On the operator's ruling of 2026-11-14, clause 6, the take-profit each family's live rule on the S&P 400 and 600 trades now.
+        var taking = EquityBrief.Worker.Loop.PlanTrades.LiveTakingProfit(rows, startedAt);
+
         foreach (var row in moved)
         {
-            // From 21.4 a dip rule registered before, its sell dial named exit, is written again with the dial under its name.
-            var parameters = Renamed(row.Evaluator, CandidateEvaluator.Read(row.Parameters));
+            // From 21.4 a dip rule registered before, its sell dial named exit, is written again with the dial under its name; on
+            // the operator's ruling of 2026-11-14, clause 6, an S&P 400 or 600 rule stating no plan takes its family's take-profit.
+            var parameters = WithFamilyTakeProfit(row, Renamed(row.Evaluator, CandidateEvaluator.Read(row.Parameters)), standing, taking);
 
             if ((Unstated(row.Rule, row.Test) ?? Refusal(taken, row.Candidate, row.Evaluator, parameters, startedAt)) is { } refusal)
             {
@@ -743,6 +747,39 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Registered, null, detail);
     }
 
+    // On the operator's ruling of 2026-11-14, clause 6, an S&P 400 or 600 rule of a price family stating no plan at all takes the
+    // take-profit its family's live rule on its index trades, at its multiple and in its shape, its own buy at the next open, stop
+    // and sale kept; one stating a plan, the plan stated off among them, keeps it, one stating an exit of the menu keeps that as
+    // its one sale, and so does every other rule.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public static IReadOnlyDictionary<string, double> WithFamilyTakeProfit(RegisterRow row, IReadOnlyDictionary<string, double> parameters, IReadOnlyList<RegisterRow> standing, IReadOnlyDictionary<string, (PlanCombination Plan, DateOnly Since)> taking)
+    {
+        static (string Index, string Family)? Of(RegisterRow one) => CandidateEvaluators.Find(one.Evaluator) switch
+        {
+            IndexRuleCandidate rule when rule.Index != EquityBrief.Worker.Loop.WalkForwardTester.LargeIndex => (rule.Index, rule.SetupFamily),
+            DipCandidate dip when dip.Index != EquityBrief.Worker.Loop.WalkForwardTester.LargeIndex => (dip.Index, PlanPoints.DipName),
+            _ => null,
+        };
+
+        if (FamilyRecords.IsLive(row.Candidate) || Of(row) is not { } mine || PlanHook.Parameters.Any(parameters.ContainsKey)
+            || parameters.GetValueOrDefault(RuleHooks.ExitParameter) != 0
+            || standing.FirstOrDefault(one => FamilyRecords.IsLive(one.Candidate) && Of(one) == mine) is not { } live
+            || !taking.TryGetValue(live.Candidate, out var family) || family.Plan.TakeProfit is not { } multiple)
+        {
+            return parameters;
+        }
+
+        var own = new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale) { TakeProfit = multiple, Half = family.Plan.Half, Placing = family.Plan.Placing };
+        var stated = new Dictionary<string, double>(parameters, StringComparer.Ordinal);
+
+        foreach (var (name, value) in PlanHook.ParametersOf(own))
+        {
+            stated[name] = value;
+        }
+
+        return stated;
+    }
+
     // From 23.10 the words a variant of a live rule is named with: the live rule's own name, its opening words "the live" read
     // as "the", with what the variant buys and sells by.
     public static string VariantOf(string live, string buysBy) =>
@@ -848,7 +885,13 @@ public sealed class CandidateRegistrar : IComponent
             said.Add($"'{live}' registered again bought and sold by {combination.Words}");
         }
 
-        if (room > 0)
+        // From 23.10's second part a live rule given its plan again at the second restart keeps the variant its first gave it, which
+        // stands already and is registered again by nothing.
+        if (standing.Any(one => one.Candidate == variantName))
+        {
+            said.Add($"'{variantName}' stands already as a variant");
+        }
+        else if (room > 0)
         {
             if (Refusal(taken, variantName, row.Evaluator, variantParameters, startedAt) is { } refusal)
             {

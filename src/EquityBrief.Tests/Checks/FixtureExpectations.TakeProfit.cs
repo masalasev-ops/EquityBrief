@@ -6,7 +6,7 @@ namespace EquityBrief.Tests.Checks;
 
 // From the operator's order of 2026-11-14 every pick takes profit at a price: its own sale's above the buy, else the nearest
 // price above the buy it turned down at before over twenty years, else the buy plus a multiple of its risk. Worked by hand.
-// see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+// see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
 public partial class FixtureExpectations
 {
     static readonly DateOnly ProfitNight = new(2026, 11, 13);

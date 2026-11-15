@@ -52,7 +52,7 @@ public sealed record RuleUnderTest(
 
     // From the operator's order of 2026-11-14 a live book's walks beside it at each stop and take-profit the test states, its
     // months the unit, unregistered and written nowhere; none for any other rule.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public IReadOnlyList<(string Words, IReadOnlyList<(int Opens, double? Edge)> Months)>? BookBeside { get; init; }
 }
 
@@ -82,9 +82,29 @@ public static class BookStops
     // takes: a stop 3 typical days under the buy and the take-profit at 2 times the risk alone.
     public static (double Moves, double Multiple) Middle { get; } = (Core.Loop.TakeProfit.MiddleStopMoves, Core.Loop.TakeProfit.MiddleMultiple);
 
-    // A live book's walks at each, from a book walked at a stop and a take-profit.
-    public static IReadOnlyList<(string Words, IReadOnlyList<(int Opens, double? Edge)> Months)> Beside(Func<(double Moves, double Multiple), IReadOnlyList<(int Opens, double? Edge)>> walked) =>
-        [.. Grid.Select(stops => (Words(stops), walked(stops)))];
+    // On the operator's ruling of 2026-11-15 on the shapes the exits a book chooses among: the full take-profit at the multiple of
+    // the risk alone, the full one at the first price it turned down at that far above the buy or more, and the half; today's
+    // full take-profit, the nearest price above the buy it turned down at, is walked as a reference and never chosen.
+    public static IReadOnlyList<(bool Half, Core.Loop.TakeProfitPlacing Placing, Func<(double Moves, double Multiple), string> Words)> Choosable { get; } =
+    [
+        (false, Core.Loop.TakeProfitPlacing.Risk, AtRiskWords),
+        (false, Core.Loop.TakeProfitPlacing.Beyond, BeyondWords),
+        (true, Core.Loop.TakeProfitPlacing.Turned, HalfWords),
+    ];
+
+    // The words of the exit a book trades.
+    public static string WordsOf(Core.Loop.BookExit exit) =>
+        exit.Half ? HalfWords((exit.Moves, exit.Multiple))
+        : exit.Placing == Core.Loop.TakeProfitPlacing.Risk ? AtRiskWords((exit.Moves, exit.Multiple))
+        : exit.Placing == Core.Loop.TakeProfitPlacing.Beyond ? BeyondWords((exit.Moves, exit.Multiple))
+        : Words((exit.Moves, exit.Multiple));
+
+    // Whether an exit's words name today's full take-profit at a stop of the grid, which no book chooses.
+    public static bool IsTodaysFull(string words) => Grid.Any(stops => Words(stops) == words);
+
+    // A live book's walks at each exit it chooses among, from a book walked at a stop, a take-profit and its shape.
+    public static IReadOnlyList<(string Words, IReadOnlyList<(int Opens, double? Edge)> Months)> Beside(Func<(double Moves, double Multiple), bool, Core.Loop.TakeProfitPlacing, IReadOnlyList<(int Opens, double? Edge)>> walked) =>
+        [.. Choosable.SelectMany(shape => Grid.Select(stops => (shape.Words(stops), walked(stops, shape.Half, shape.Placing))))];
 }
 
 // From 23.10's second part what each walk beside the S&P 500 pullback's live rule changes, as the run prints it.
@@ -395,9 +415,9 @@ public static class RuleTests
             .. Swings(inputs, BreakoutRule.Name),
             .. Swings(inputs, DriftRule.Name),
             .. Heavyweights(inputs),
-            .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting).Months, (setting, stops) => lay.Book(setting, stops: stops).Months) : []),
+            .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting, stops: (Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => lay.Book(setting, stops: stops, half: half, placing: placing).Months) : []),
             .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters, inputs)) : []),
-            .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting).Months, (setting, stops) => improving.Book(setting, stops: stops).Months) : []),
+            .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting, stops: (Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => improving.Book(setting, stops: stops, half: half, placing: placing).Months) : []),
         ];
 
         walked = [.. walked.Select(rule => inputs.Standing.FirstOrDefault(row => row.Candidate == rule.Rule) is { } row && RuleHooks.Of(CandidateEvaluator.Read(row.Parameters)).Exposure is not null ? rule with { Graded = true } : rule)];
@@ -542,7 +562,7 @@ public static class RuleTests
     // history test's own lay at its setting, its months the unit, the live rule first; none before a freeze, so the
     // monthly run reads the family from its next run after one.
     // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
-    public static IEnumerable<RuleUnderTest> Improving(IReadOnlyList<RegisterRow> standing, string index, Func<ImprovingSweepSetting, IReadOnlyList<(int Opens, double? Edge)>> months, Func<ImprovingSweepSetting, (double Moves, double Multiple), IReadOnlyList<(int Opens, double? Edge)>>? withStops = null)
+    public static IEnumerable<RuleUnderTest> Improving(IReadOnlyList<RegisterRow> standing, string index, Func<ImprovingSweepSetting, IReadOnlyList<(int Opens, double? Edge)>> months, Func<ImprovingSweepSetting, (double Moves, double Multiple), bool, Core.Loop.TakeProfitPlacing, IReadOnlyList<(int Opens, double? Edge)>>? withStops = null)
     {
         foreach (var row in LiveFirst(standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is ImprovingCandidate rule && rule.Index == index)))
         {
@@ -552,7 +572,7 @@ public static class RuleTests
             // and written nowhere, for the split on each side of the local model's cutoff the operator asked for.
             yield return new RuleUnderTest(ImprovingRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting), Unflagged: setting.FlagFirst ? months(setting with { FlagFirst = false }) : null)
             {
-                BookBeside = withStops is { } walk && FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside(stops => walk(setting, stops)) : null,
+                BookBeside = withStops is { } walk && FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside((stops, half, placing) => walk(setting, stops, half, placing)) : null,
             };
         }
     }
@@ -671,7 +691,7 @@ public static class RuleTests
     // history test's own lay at its setting, its months the unit, the live rule first; none before a freeze, so the
     // monthly run reads the family from its next run after one.
     // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
-    public static IEnumerable<RuleUnderTest> Quality(IReadOnlyList<RegisterRow> standing, string index, Func<QualitySettings, IReadOnlyList<(int Opens, double? Edge)>> months, Func<QualitySettings, (double Moves, double Multiple), IReadOnlyList<(int Opens, double? Edge)>>? withStops = null)
+    public static IEnumerable<RuleUnderTest> Quality(IReadOnlyList<RegisterRow> standing, string index, Func<QualitySettings, IReadOnlyList<(int Opens, double? Edge)>> months, Func<QualitySettings, (double Moves, double Multiple), bool, Core.Loop.TakeProfitPlacing, IReadOnlyList<(int Opens, double? Edge)>>? withStops = null)
     {
         foreach (var row in LiveFirst(standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is QualityCandidate rule && rule.Index == index)))
         {
@@ -679,7 +699,7 @@ public static class RuleTests
 
             yield return new RuleUnderTest(QualityRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting))
             {
-                BookBeside = withStops is { } walk && FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside(stops => walk(setting, stops)) : null,
+                BookBeside = withStops is { } walk && FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside((stops, half, placing) => walk(setting, stops, half, placing)) : null,
             };
         }
     }
@@ -1654,12 +1674,13 @@ public static class RuleTests
     }
 
     // The stop and take-profit a live book chooses in points a month on its months from its family's first test year on the index
-    // to 2018, none where no choice holds a month there.
+    // to 2018, none where no choice holds a month there; on the operator's ruling of 2026-11-15 on the shapes never today's full
+    // take-profit, which is walked beside as a reference.
     public static string? BookChosen(RuleUnderTest rule, string index, IReadOnlyList<DateOnly> calendar, Func<int, bool> inTestYears)
     {
         var early = BookYears(rule.Family, index, calendar, inTestYears).Early;
 
-        return (rule.BookBeside ?? []).Where(one => BookMean(one.Months, early) is not null).OrderByDescending(one => BookMean(one.Months, early)).Select(one => one.Words).FirstOrDefault();
+        return (rule.BookBeside ?? []).Where(one => !BookStops.IsTodaysFull(one.Words) && BookMean(one.Months, early) is not null).OrderByDescending(one => BookMean(one.Months, early)).Select(one => one.Words).FirstOrDefault();
     }
 
     // A book's years: the first it chooses on and the first it is judged on, and whether a month opening on a session falls in the
@@ -2011,11 +2032,12 @@ public static class RuleTests
             foreach (var row in LiveFirst(inputs.Standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is SectorHeavyweightCandidate)))
             {
                 var setting = SettingOf(CandidateEvaluator.Read(row.Parameters));
-                var book = inputs.Lay.BookOf(setting, row.Rule);
+                var exit = Core.Loop.BookExits.Of(HeavyweightRule.Name, WalkForwardTester.LargeIndex);
+                var book = inputs.Lay.BookOf(setting, row.Rule, (exit.Moves, exit.Multiple), exit.Half, exit.Placing);
 
                 yield return new RuleUnderTest(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: book.Months)
                 {
-                    BookBeside = FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside(stops => inputs.Lay.BookOf(setting, row.Rule, stops).Months) : null,
+                    BookBeside = FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside((stops, half, placing) => inputs.Lay.BookOf(setting, row.Rule, stops, half, placing).Months) : null,
                 };
             }
 
@@ -2039,9 +2061,9 @@ public static class RuleTests
 
             yield return six is null
                 ? BookOffTheSix(inputs.Lay, row, p, designA)
-                : new RuleUnderTest(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: inputs.Lay.Book(six, designA).Months)
+                : new RuleUnderTest(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: inputs.Lay.Book(six, designA, (BookExitOf(inputs.Read.Index).Moves, BookExitOf(inputs.Read.Index).Multiple), BookExitOf(inputs.Read.Index).Half, BookExitOf(inputs.Read.Index).Placing).Months)
                 {
-                    BookBeside = FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside(stops => inputs.Lay.Book(six, designA, stops).Months) : null,
+                    BookBeside = FamilyRecords.IsLive(row.Candidate) ? BookStops.Beside((stops, half, placing) => inputs.Lay.Book(six, designA, stops, half, placing).Months) : null,
                 };
         }
     }
@@ -2052,6 +2074,9 @@ public static class RuleTests
     // skipping the latest month, which the record command replays at no setting, through the six settings' own reader at
     // the registration's quality and floors, design (b)'s at the base window and industries alone.
     // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+    // On the operator's ruling of 2026-11-15 on the shapes the exit a heavyweights book on an index trades.
+    static Core.Loop.BookExit BookExitOf(string index) => Core.Loop.BookExits.Of(HeavyweightRule.Name, index);
+
     public static RuleUnderTest BookOffTheSix(HeavyweightLay lay, RegisterRow row, IReadOnlyDictionary<string, double> p, bool designA)
     {
         RuleUnderTest Of(IReadOnlyList<(int Opens, double? Edge)> months) => new(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: months);
@@ -2088,9 +2113,13 @@ public static class RuleTests
             return Kept(refused!);
         }
 
+        // On the operator's ruling of 2026-11-15 on the shapes walked at the stop and take-profit its book trades.
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+        var exit = Core.Loop.BookExits.Of(HeavyweightRule.Name, lay.Index);
+        var stops = (exit.Moves, exit.Multiple);
         var book = at.Setting is { } setting
-            ? lay.BookFrom(lay.RebalancesA(setting, at.Quality, at.Floors), setting.Exit, at.Key)
-            : lay.BookFrom(lay.RebalancesB(at.Window, at.Industries, at.Members, at.Quality, at.Floors), HeavyweightExit.Drop, at.Key);
+            ? lay.BookFrom(lay.RebalancesA(setting, at.Quality, at.Floors), setting.Exit, at.Key, stops, exit.Half, exit.Placing)
+            : lay.BookFrom(lay.RebalancesB(at.Window, at.Industries, at.Members, at.Quality, at.Floors), HeavyweightExit.Drop, at.Key, stops, exit.Half, exit.Placing);
 
         return Of(book.Months);
     }

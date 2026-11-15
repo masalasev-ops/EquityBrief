@@ -124,6 +124,9 @@ public sealed class FamilyRecorder : IComponent
 
     const string Benchmarked = "UPDATE family_trade SET benchmark = $benchmark, members = $members WHERE candidate = $candidate AND ticker = $ticker AND session_date = $session;";
 
+    // On the operator's ruling of 2026-11-14, clause 5, the take-profit a trade placed before the rules restart takes.
+    const string AddedTakeProfit = "UPDATE family_trade SET plan = $plan WHERE candidate = $candidate AND ticker = $ticker AND session_date = $session;";
+
     const string Insert = @"
         INSERT INTO family_trade (
             candidate, ticker, session_date, family, place, entry, stop, target, risk_moves, reward_to_risk, cap, exit, plan)
@@ -215,9 +218,24 @@ public sealed class FamilyRecorder : IComponent
 
         var ended = 0;
         var benchmarked = 0;
+        var taking = PlanTrades.LiveTakingProfit(standing, DateTimeOffset.MaxValue);
 
-        foreach (var trade in pending)
+        foreach (var pendingTrade in pending)
         {
+            var trade = pendingTrade;
+
+            // On the operator's ruling of 2026-11-14, clause 5, an open trade or waiting order of a live rule placed before the rules
+            // restart with no take-profit takes its rule's, counted from the session after the restart, stored with it from now on;
+            // one stored with no plan that names no target trails a stop this table does not keep, and keeps its own walk.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            if (trade.EndedOn is null && (trade.Plan is not null || trade.Target is not null) && taking.TryGetValue(trade.Candidate, out var live)
+                && await PlanTrades.AddedAtRestartAsync(connection, transaction, trade.Order, live, trade.Ticker, trade.Session, trade.Entry, trade.Stop, trade.Target, null, trade.Cap, false, cancellation) is { } added)
+            {
+                await ExecuteAsync(connection, transaction, AddedTakeProfit, cancellation,
+                    ("$plan", added.Json()), ("$candidate", trade.Candidate), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)));
+                trade = trade with { Plan = added.Json() };
+            }
+
             // From 23.10 a trade kept under a plan is walked under it: filled where its level trades within its window, or
             // never, and sold as the plan sells, its result in the risk its rule's own plan set at the night's close.
             if (trade.EndedOn is null && trade.Order is { } order)

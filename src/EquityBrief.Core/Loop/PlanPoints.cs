@@ -8,7 +8,7 @@ public sealed record PlanCombination(string Entry, int Window, string Stop, stri
 {
     // From the operator's order of 2026-11-14 the multiple of the risk its take-profit price falls back to, named after its
     // sale's words; none for a plan walked as it stood before.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public double? TakeProfit { get; init; }
 
     // On the operator's ruling of 2026-11-14 the take-profit on half: half the shares sell at the multiple of the risk, the
@@ -53,6 +53,12 @@ public sealed record PlanSale(double? Target, double? Trail, IReadOnlyList<doubl
     // On the operator's ruling of 2026-11-14 the price a close must reach for half the shares to sell at the next open, the
     // stop on the other half moved up to the buy from then; none for a plan selling no half.
     public double? HalfAt { get; init; }
+
+    // On the operator's ruling of 2026-11-14, clause 5, a take-profit added at the rules restart to a trade or an order placed
+    // before it counts from this bar on: the half's price, and the target where the take-profit set it; nought for every other.
+    public int TakeProfitFromBar { get; init; }
+
+    public bool TargetIsTakeProfit { get; init; }
 }
 
 // How one filled pick ended: its result in its own risk before costs, the price each share sold at weighted by its share,
@@ -442,17 +448,20 @@ public static class PlanPoints
                 return Ended(sold + (held * open), session, Stopped);
             }
 
-            if (halfAt is { } half && close >= half)
+            if (halfAt is { } half && close >= half && session >= sale.TakeProfitFromBar)
             {
                 (sold, held, halfAt, standing) = (sold + (held / 2 * open), held / 2, null, Math.Max(standing, fill));
             }
 
+            // A staged level sells its share or what is left where a half sold before it left less, never more than is held.
             while (next < levels.Length && close >= levels[next])
             {
-                (sold, held, next) = (sold + (share * open), held - share, next + 1);
+                var taken = Math.Min(share, held);
+
+                (sold, held, next) = (sold + (taken * open), held - taken, next + 1);
             }
 
-            if (sale.Target is { } target && close >= target)
+            if (sale.Target is { } target && close >= target && (!sale.TargetIsTakeProfit || session >= sale.TakeProfitFromBar))
             {
                 return Ended(sold + (held * open), session, Reached);
             }

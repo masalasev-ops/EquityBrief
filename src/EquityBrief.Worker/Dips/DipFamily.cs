@@ -138,6 +138,9 @@ public sealed class DipFamily : IComponent
         ORDER BY session_date, ticker;
     ";
 
+    // On the operator's ruling of 2026-11-14, clause 5, the take-profit a trade placed before the rules restart takes.
+    const string AddedTakeProfit = "UPDATE dip_trade SET plan = $plan WHERE rule = $rule AND index_code = $index AND ticker = $ticker AND session_date = $session;";
+
     const string WalkTrade = @"
         UPDATE dip_trade SET bought_on = $bought_on, fill = $fill, past = $past, ended_on = $ended_on, sale = $sale,
             end_reason = $end, sessions = $sessions, result = $result, cost = $cost
@@ -839,13 +842,27 @@ public sealed class DipFamily : IComponent
         }
 
         var ended = 0;
+        var taking = PlanTrades.LiveTakingProfit(await PlanTrades.RegisterRowsAsync(connection, transaction, cancellation), DateTimeOffset.MaxValue);
 
         foreach (var trade in trades)
         {
+            // On the operator's ruling of 2026-11-14, clause 5, an open trade or waiting order of a live rule placed before the rules
+            // restart under a plan with no take-profit takes its rule's, counted from the session after the restart, stored with it
+            // from now on; one with no plan sells on its own exit and keeps it.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            var plan = trade.Plan;
+
+            if (plan is not null && taking.TryGetValue(trade.Rule, out var live)
+                && await PlanTrades.AddedAtRestartAsync(connection, transaction, plan, live, trade.Ticker, trade.Session, trade.Entry, trade.Stop, null, null, trade.Limit, true, cancellation) is { } added)
+            {
+                await ExecuteAsync(connection, transaction, AddedTakeProfit, [("$rule", trade.Rule), ("$index", index), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)), ("$plan", added.Json())], cancellation);
+                plan = added;
+            }
+
             // From 23.10 a trade kept under a plan is bought, held and sold as its plan does: its fill where its level trades
             // within its window, its sale where the plan sells, and its result in the risk its listing close set; one never
             // filled ends at its window's last session with no fill and no result.
-            if (trade.Plan is { } order)
+            if (plan is { } order)
             {
                 var planBars = PlanBars.Of(await PlanTrades.BarsAsync(connection, transaction, trade.Ticker, night, cancellation));
 

@@ -275,12 +275,14 @@ public sealed partial class MarkRenderer
 
     // From the operator's order of 2026-11-14 a book's holding's stop and take-profit in one cell: the stop the book added under
     // its buy and how far, and the price it takes profit at and where it came from; for one bought before, that none was set.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public static string BookExitCell(decimal? stop, TakeProfitView? takeProfit) =>
         stop is null && takeProfit is null
             ? "<td class=\"book-exit\"><span class=\"degraded\">bought before a stop and a take-profit were set</span></td>"
             : Formatted($"<td class=\"book-exit\" data-stop=\"{StoredPrice(stop)}\" data-take-profit=\"{StoredPrice(takeProfit?.Price)}\">")
                 + (stop is { } floor ? Formatted($"<span class=\"exit-line\">{Escaped(TakeProfitView.AddedStopLabel)} {Escaped(Price(floor))}</span>{(takeProfit?.AddedStopLine is { } moved ? Formatted($"<span class=\"exit-note\">{Escaped(moved)}</span>") : string.Empty)}") : string.Empty)
-                + (takeProfit is { } taking ? Formatted($"<span class=\"exit-line\">{Escaped(TakeProfitView.Label)} {Escaped(Price(taking.Price))}</span>{(taking.Line is { } said ? Formatted($"<span class=\"exit-note\">{Escaped(said)}</span>") : string.Empty)}") : string.Empty)
+                + (takeProfit is { } taking ? Formatted($"<span class=\"exit-line\">{Escaped(taking.LabelText)} {Escaped(Price(taking.Price))}</span>{(taking.Line is { } said ? Formatted($"<span class=\"exit-note\">{Escaped(said)}</span>") : string.Empty)}") : string.Empty)
+                // On the operator's ruling of 2026-11-14 on the books how the other half of a take-profit on half sells.
+                + (takeProfit is { Half: true, OtherHalf: { } other } half ? Formatted($"<span class=\"exit-line\">{Escaped(TakeProfitView.OtherHalfLabel)} {Escaped(other)}</span>{(half.OtherHalfLine is { } moves ? Formatted($"<span class=\"exit-note\">{Escaped(moves)}</span>") : string.Empty)}") : string.Empty)
                 + "</td>";
 }

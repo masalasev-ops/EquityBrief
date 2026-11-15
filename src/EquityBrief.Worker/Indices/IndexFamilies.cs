@@ -1553,8 +1553,16 @@ public static class IndexHeavyweights
         WHERE index_code = $index AND ended_on IS NULL AND entered_on < $night;
     ";
 
+    // On the operator's ruling of 2026-11-15 on the shapes the exit an S&P 400 or 600 heavyweights book trades, a full take-profit:
+    // neither index's book chose the half, which their holdings do not carry.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    static EquityBrief.Core.Loop.BookExit IndexBookExit(string index) =>
+        EquityBrief.Core.Loop.BookExits.Of(Core.Families.HeavyweightRule.Name, index) is { Half: false } exit
+            ? exit
+            : throw new InvalidOperationException($"The {index} heavyweights book's exit sells half, which its holdings do not carry.");
+
     // From the operator's order of 2026-11-14 a holding's stop, take-profit and where it came from as a buy stores them.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     static IEnumerable<(string, object)> BookExitParameters((double Stop, EquityBrief.Core.Loop.TakeProfitPrice? TakeProfit)? exits) =>
     [
         ("$stop", exits is { } placed ? Money.ToStorage(Statistic.ToPrice(placed.Stop)) : DBNull.Value),
@@ -1566,6 +1574,8 @@ public static class IndexHeavyweights
         DELETE FROM index_heavyweight_holding WHERE index_code = $index AND entered_on = $night;
         UPDATE index_heavyweight_holding SET ended_on = NULL, exit_close = NULL, reason = NULL, result = NULL, cut_return = NULL, cost = NULL
         WHERE index_code = $index AND ended_on = $night;
+        UPDATE index_heavyweight_holding SET stop = NULL, take_profit = NULL, take_profit_from = NULL, exit_added_on = NULL
+        WHERE index_code = $index AND exit_added_on = $night;
     ";
 
     const string Carry = @"
@@ -1592,6 +1602,12 @@ public static class IndexHeavyweights
 
     const string SoldAgain = @"
         UPDATE index_heavyweight_holding SET exit_close = $exit_close, cost = $cost
+        WHERE index_code = $index AND ticker = $ticker AND entered_on = $entered_on;
+    ";
+
+    // On the operator's ruling of 2026-11-14, clause 5, the book's exit a live holding bought before the rules restart takes.
+    const string AddedExit = @"
+        UPDATE index_heavyweight_holding SET stop = $stop, take_profit = $take_profit, take_profit_from = $take_profit_from, exit_added_on = $night
         WHERE index_code = $index AND ticker = $ticker AND entered_on = $entered_on;
     ";
 
@@ -1627,6 +1643,12 @@ public static class IndexHeavyweights
 
         var held = new Dictionary<string, (DateOnly Entered, string Sector, decimal Entry, double Growth, List<CutMember> Cut)>(StringComparer.Ordinal);
 
+        // On the operator's ruling of 2026-11-14, clause 5, the day the index's live heavyweights rule was registered at the rules
+        // restart.
+        var restartedOn = Loop.PlanTrades.RegisteredOn(
+            await Loop.PlanTrades.RegisterRowsAsync(connection, transaction, cancellation),
+            row => Core.Candidates.FamilyRecords.IsLive(row.Candidate) && Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.IndexHeavyweightCandidate rule && rule.Index == index);
+
         foreach (var holding in open)
         {
             if (!members.Contains(holding.Ticker))
@@ -1650,11 +1672,23 @@ public static class IndexHeavyweights
 
             await ExecuteAsync(connection, transaction, Carry, [("$index", index), ("$ticker", holding.Ticker), ("$entered_on", Stamp(holding.Entered)), ("$growth", growth), ("$cut", JsonSerializer.Serialize(cut)), ("$through", Stamp(night))], cancellation);
 
+            // On the operator's ruling of 2026-11-14, clause 5, a holding of the live book bought before the rules restart with no
+            // stop and no take-profit takes the book's exit from its own buy, stored with it from tonight.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            var (stop, takeProfit) = (holding.Stop, holding.TakeProfit);
+
+            if (restartedOn is { } restart && stop is null && takeProfit is null && holding.Entered < restart
+                && await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, holding.Ticker, holding.Entered, holding.Entry, IndexBookExit(index), cancellation) is { } added)
+            {
+                (stop, takeProfit) = (Statistic.ToPrice(added.Stop), added.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null);
+                await ExecuteAsync(connection, transaction, AddedExit, [("$index", index), ("$ticker", holding.Ticker), ("$entered_on", Stamp(holding.Entered)), ("$night", Stamp(night)), .. BookExitParameters(added)], cancellation);
+            }
+
             // From the operator's order of 2026-11-14 one bought before tonight is sold at tonight's close under its stop or at
             // or above its take-profit.
-            // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
             if (CloseOn(holding.Ticker, night) is { } closed
-                && EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closed), holding.Stop is { } floor ? Statistic.FromPrice(floor) : null, holding.TakeProfit is { } aim ? Statistic.FromPrice(aim) : null) is { } exited)
+                && EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closed), stop is { } floor ? Statistic.FromPrice(floor) : null, takeProfit is { } aim ? Statistic.FromPrice(aim) : null) is { } exited)
             {
                 await EndAsync(connection, transaction, index, holding.Ticker, holding.Entered, night, closed, exited, growth, cut, holding.Entry, cancellation);
                 ended++;
@@ -1701,7 +1735,7 @@ public static class IndexHeavyweights
             }
 
             var cut = leader.Cut.Select(ticker => new CutMember(ticker, 1.0, Stamp(night))).ToList();
-            var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, leader.Ticker, night, close, cancellation);
+            var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, leader.Ticker, night, close, IndexBookExit(index), cancellation);
 
             await ExecuteAsync(connection, transaction, Buy, [("$index", index), ("$ticker", leader.Ticker), ("$night", Stamp(night)), ("$sector", leader.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut)), ("$lead", rebalance.Leads.TryGetValue(leader.Ticker, out var lead) ? lead : DBNull.Value), .. BookExitParameters(exits)], cancellation);
             held[leader.Ticker] = (night, leader.Sector, close, 1.0, cut);
@@ -2051,7 +2085,7 @@ public static class IndexHeavyweights
                     }
 
                     var cut = buy.Cut.Select(ticker => new CutMember(ticker, 1.0, Stamp(night))).ToList();
-                    var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, buy.Ticker, night, close, cancellation);
+                    var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, buy.Ticker, night, close, IndexBookExit(index), cancellation);
 
                     await ExecuteAsync(connection, transaction, RuleBuy, [.. key, ("$index", index), ("$ticker", buy.Ticker), ("$sector", buy.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut)), ("$lead", leads.TryGetValue(buy.Ticker, out var lead) ? lead : DBNull.Value), .. BookExitParameters(exits)], cancellation);
                     holding[buy.Ticker] = (night, close, 1.0, cut);
@@ -2436,6 +2470,9 @@ public static class IndexRuleTrades
         ORDER BY session_date, candidate, ticker;
     ";
 
+    // On the operator's ruling of 2026-11-14, clause 5, the take-profit a trade placed before the rules restart takes.
+    const string AddedTakeProfit = "UPDATE index_rule_trade SET plan = $plan WHERE candidate = $candidate AND ticker = $ticker AND session_date = $session;";
+
     const string BarsFrom = "SELECT session_date, close, raw_close, open, high FROM bar WHERE ticker = $ticker AND session_date >= $from AND session_date <= $night ORDER BY session_date;";
 
     // The company's value on a trade's own night as the member readings read it, none where they read none.
@@ -2541,7 +2578,7 @@ public static class IndexRuleTrades
                 // From 23.10 a rule stating a plan keeps the order the plan places on the pick from its series tonight; from the
                 // operator's order of 2026-11-14 one taking profit reads the prices the stock turned down at over twenty years, as
                 // every step placing an order reads them.
-                // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+                // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
                 var turnedDown = hooks.Plan is { TakeProfit: not null }
                     ? await PlanTrades.TurnedDownAsync(connection, transaction, answer.Ticker, await PlanTrades.BarsAsync(connection, transaction, answer.Ticker, night, cancellation), night, cancellation)
                     : null;
@@ -2617,11 +2654,24 @@ public static class IndexRuleTrades
 
         var (ended, benchmarked) = (0, 0);
         double[][]? closes = null;
+        var taking = Loop.PlanTrades.LiveTakingProfit(await Loop.PlanTrades.RegisterRowsAsync(connection, transaction, cancellation), DateTimeOffset.MaxValue);
 
         foreach (var trade in pending)
         {
+            // On the operator's ruling of 2026-11-14, clause 5, an open trade or waiting order of a live rule placed before the rules
+            // restart with no take-profit takes its rule's, counted from the session after the restart, stored with it from now on.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            var plan = trade.Plan;
+
+            if (!trade.Ended && taking.TryGetValue(trade.Candidate, out var live)
+                && await Loop.PlanTrades.AddedAtRestartAsync(connection, transaction, plan, live, trade.Ticker, trade.Session, trade.Entry, trade.Stop, trade.Target, trade.Trail, trade.Cap, false, cancellation) is { } added)
+            {
+                await ExecuteAsync(connection, transaction, AddedTakeProfit, [("$candidate", trade.Candidate), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)), ("$plan", added.Json())], cancellation);
+                plan = added;
+            }
+
             // From 23.10 a trade kept under a plan is walked and benchmarked under it.
-            if (trade.Plan is { } order)
+            if (plan is { } order)
             {
                 if (!trade.Ended && await EndPlannedAsync(connection, transaction, inputs, trade.Candidate, trade.Ticker, trade.Session, trade.Entry, trade.Stop, order, cancellation))
                 {

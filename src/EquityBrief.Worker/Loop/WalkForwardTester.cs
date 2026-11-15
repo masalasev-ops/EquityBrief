@@ -60,6 +60,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             new StoreTouch(Store.LoopRule, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LoopRuleYear, Touch.Insert),
             new StoreTouch(Store.LoopRuleUnit, Touch.Insert),
+            new StoreTouch(Store.BookRecord, Touch.Insert),
             new StoreTouch(Store.LoopLink, Touch.Insert),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
@@ -87,6 +88,12 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     public static IReadOnlyList<string> Indices { get; } = ["GSPC", "MID", "SML"];
 
     public const string LargeIndex = "GSPC";
+
+    // On the operator's ruling of 2026-11-15 on the shapes each live book's record box, written by the books' test.
+    // see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
+    const string InsertBookRecord = @"
+        INSERT INTO book_record (run_id, index_code, family, rule, exit_words, from_year, through, months, points)
+        VALUES ($run_id, $index, $family, $rule, $exit, $from, $through, $months, $points);";
 
     static readonly TimeSpan Poll = TimeSpan.FromSeconds(30);
 
@@ -779,7 +786,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // nowhere.
         if (books)
         {
-            return await BooksAsync(index, read, history, longHistory, through, standingRules, cancellation);
+            return await BooksAsync(index, read, history, longHistory, through, standingRules, cancellation, print);
         }
 
         // From 23.7 the long test walks the families its record reaches alone: the books laid over the standing facts, the

@@ -15,7 +15,7 @@ namespace EquityBrief.Web.App;
 public sealed record HomeIdea(string Family, string Ticker, string? Company, string Why, decimal? Buy, decimal? Stop, decimal? Target, bool Rises, decimal? RewardPerRisk, decimal? Trail = null, EquityBrief.Core.Cards.PaperWinners? Record = null, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, bool StopMoves = false, ImprovingSweepSetting? Setting = null, SetupLongRecord? LongRecord = null, ZoneBuy? Zone = null, AlternativePlan? Alternative = null)
 {
     // From the operator's order of 2026-11-14 the price it takes profit at and where it came from, off its card.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public TakeProfitView? TakeProfit { get; init; }
 }
 
@@ -596,9 +596,10 @@ public sealed partial class SinglePageApp
             : Invariant($"<div><span>Sell if it falls to</span><b class=\"stop\">{(idea.Stop is { } stop ? Dollars(stop) : NoFigure)}</b></div>"));
 
         // From the operator's order of 2026-11-14 the price it takes profit at, and the line saying where it came from.
-        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
         card.Append(idea.TakeProfit is { } taking
-            ? Invariant($"<div><span>{TakeProfitView.Label}</span><b class=\"aim\">{Dollars(taking.Price)}</b>{(taking.Line is { } said ? Invariant($"<span class=\"aim-from\">{Escaped(said)}</span>") : string.Empty)}</div>")
+            ? Invariant($"<div><span>{taking.LabelText}</span><b class=\"aim\">{Dollars(taking.Price)}</b>{(taking.Line is { } said ? Invariant($"<span class=\"aim-from\">{Escaped(said)}</span>") : string.Empty)}</div>")
+                + (taking is { Half: true, OtherHalf: { } other } ? Invariant($"<div><span>{TakeProfitView.OtherHalfLabel}</span><b class=\"aim\">{Escaped(other)}</b>{(taking.OtherHalfLine is { } moves ? Invariant($"<span class=\"aim-from\">{Escaped(moves)}</span>") : string.Empty)}</div>") : string.Empty)
             : Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
         card.Append("</div>");
 

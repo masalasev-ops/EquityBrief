@@ -325,7 +325,7 @@ public sealed class ImprovingLay
 
                 // From the operator's order of 2026-11-14 a close under its stop or at or above its take-profit, beside its
                 // filing exit.
-                // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+                // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
                 if (!fell && held < setting.Sessions && session > entry && exits.TryGetValue(name, out var placed)
                     && BookHalf.Step(tape.Close[name][session], tape.Close[name][entry], placed, half, halves.ContainsKey(name)) is var step
                     && (step.Ended is not null || step.SoldHalf))

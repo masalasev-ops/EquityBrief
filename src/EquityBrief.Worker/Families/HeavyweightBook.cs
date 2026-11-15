@@ -152,14 +152,27 @@ public sealed class HeavyweightBook : IComponent
     // again on the next night that can.
     const string LastRebalance = "SELECT MAX(session_date) FROM heavyweight_night WHERE session_date < $night AND lead IS NOT NULL;";
 
-    const string Open = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through, stop, take_profit FROM heavyweight_holding WHERE ended_on IS NULL ORDER BY ticker;";
+    const string Open = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through, stop, take_profit, take_profit_from, half_sold_on FROM heavyweight_holding WHERE ended_on IS NULL ORDER BY ticker;";
 
-    // A night run again: what it entered goes, what it ended opens again, and its reading is written again.
+    // A night run again: what it entered goes, what it ended opens again, a half it sold is held again, and its reading is
+    // written again.
     const string ClearTheNight = @"
         DELETE FROM heavyweight_night WHERE session_date = $night;
         DELETE FROM heavyweight_holding WHERE entered_on = $night;
         UPDATE heavyweight_holding SET ended_on = NULL, exit_close = NULL, reason = NULL, result = NULL, cut_return = NULL WHERE ended_on = $night;
+        UPDATE heavyweight_holding SET half_sold_on = NULL WHERE half_sold_on = $night;
+        UPDATE heavyweight_holding SET stop = NULL, take_profit = NULL, take_profit_from = NULL, exit_added_on = NULL WHERE exit_added_on = $night;
     ";
+
+    // On the operator's ruling of 2026-11-14, clause 5, the book's exit a holding bought before the rules restart takes.
+    const string AddedExit = @"
+        UPDATE heavyweight_holding SET stop = $stop, take_profit = $take_profit, take_profit_from = $take_profit_from, exit_added_on = $night
+        WHERE ticker = $ticker AND entered_on = $entered_on;";
+
+    // On the operator's ruling of 2026-11-14 on the books the night a holding's first half sold at its take-profit.
+    const string SellHalf = "UPDATE heavyweight_holding SET half_sold_on = $night WHERE ticker = $ticker AND entered_on = $entered_on;";
+
+    const string SellRuleHalf = "UPDATE heavyweight_rule_holding SET half_sold_on = $night WHERE candidate = $candidate AND ticker = $ticker AND entered_on = $entered_on;";
 
     const string InsertRead = @"
         INSERT INTO heavyweight_night (session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader, beta)
@@ -182,13 +195,14 @@ public sealed class HeavyweightBook : IComponent
     // Each registered rule's book, the same statements over the rule's own rows.
     const string LastRuleRebalance = "SELECT MAX(session_date) FROM heavyweight_rule_night WHERE candidate = $candidate AND session_date < $night AND lead IS NOT NULL;";
 
-    const string OpenRule = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through, stop, take_profit FROM heavyweight_rule_holding WHERE candidate = $candidate AND ended_on IS NULL ORDER BY ticker;";
+    const string OpenRule = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through, stop, take_profit, take_profit_from, half_sold_on FROM heavyweight_rule_holding WHERE candidate = $candidate AND ended_on IS NULL ORDER BY ticker;";
 
     // One rule's night run again, undone for a rule whose book the night keeps.
     const string ClearTheRulesNight = @"
         DELETE FROM heavyweight_rule_night WHERE candidate = $candidate AND session_date = $night;
         DELETE FROM heavyweight_rule_holding WHERE candidate = $candidate AND entered_on = $night;
         UPDATE heavyweight_rule_holding SET ended_on = NULL, exit_close = NULL, reason = NULL, result = NULL, cut_return = NULL WHERE candidate = $candidate AND ended_on = $night;
+        UPDATE heavyweight_rule_holding SET half_sold_on = NULL WHERE candidate = $candidate AND half_sold_on = $night;
     ";
 
     const string InsertRuleRead = @"
@@ -236,7 +250,19 @@ public sealed class HeavyweightBook : IComponent
     // A size cut member's growth since the buy and the session it was carried to.
     public sealed record CutMember(string Ticker, double Growth, DateOnly On);
 
-    sealed record Holding(string Ticker, DateOnly EnteredOn, string Sector, string Company, decimal EntryClose, double Growth, IReadOnlyList<CutMember> Cut, DateOnly Through, decimal? Stop = null, decimal? TakeProfit = null);
+    sealed record Holding(string Ticker, DateOnly EnteredOn, string Sector, string Company, decimal EntryClose, double Growth, IReadOnlyList<CutMember> Cut, DateOnly Through, decimal? Stop = null, decimal? TakeProfit = null, string? TakeProfitFrom = null, DateOnly? HalfSoldOn = null)
+    {
+        // On the operator's ruling of 2026-11-14 on the books a holding selling half at its take-profit, and the stop it stands at:
+        // its own, or the buy once its first half has sold.
+        public bool Half => EquityBrief.Core.Loop.TakeProfit.IsHalf(TakeProfitFrom);
+
+        public decimal? StopNow => HalfSoldOn is not null ? EntryClose : Stop;
+
+        // Its result at its sale: its growth less one, or where its first half sold at its take-profit the mean of the two halves.
+        public double Result => HalfSoldOn is not null && TakeProfit is { } half && EntryClose > 0
+            ? EquityBrief.Core.Loop.TakeProfit.HalfResult(1.0, Statistic.FromRatio(half / EntryClose), Growth)
+            : Growth - 1.0;
+    }
 
     // A member as every book reads it on a rebalance, before a setting's look-back picks its return: its company and
     // sector, its value, its dollars, its close and averages, its beta, and its bars to the night.
@@ -328,6 +354,13 @@ public sealed class HeavyweightBook : IComponent
         var faults = new List<string>();
         var written = 0;
 
+        // On the operator's ruling of 2026-11-14, clause 5, the day the live sector heavyweights rule was registered at the rules
+        // restart, and the exit its book trades.
+        var restartedOn = rules is null
+            ? null
+            : EquityBrief.Worker.Loop.PlanTrades.RegisteredOn(rules, row => Core.Candidates.FamilyRecords.IsLive(row.Candidate) && Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.SectorHeavyweightCandidate);
+        var bookExit = EquityBrief.Core.Loop.BookExits.Of(HeavyweightRule.Name, "GSPC");
+
         // Each book in turn, the page's first.
         async Task<(HeavyweightRuleOutcome Outcome, int Valued, int Written)> KeepAsync(Ledger ledger)
         {
@@ -361,15 +394,47 @@ public sealed class HeavyweightBook : IComponent
                     ("$entered_on", Stamp(carried.EnteredOn)),
                 ], cancellation);
 
-                // From the operator's order of 2026-11-14 one bought before tonight is sold at tonight's close under its stop or
-                // at or above its take-profit.
-                if (carried.EnteredOn < night && CloseOn(carried.Ticker, night) is { } closed
-                    && EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closed), carried.Stop is { } floor ? Statistic.FromPrice(floor) : null, carried.TakeProfit is { } aim ? Statistic.FromPrice(aim) : null) is { } exited)
+                // On the operator's ruling of 2026-11-14, clause 5, a holding of the page's book, the live rule's, bought before the
+                // rules restart with no stop and no take-profit takes the book's exit from its own buy, stored with it from tonight;
+                // a registered version's keep their own.
+                // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+                if (ledger.Candidate is null && restartedOn is { } restart && carried is { Stop: null, TakeProfit: null } && carried.EnteredOn < restart
+                    && await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, carried.Ticker, carried.EnteredOn, carried.EntryClose, bookExit, cancellation) is { } added)
                 {
-                    await EndAsync(connection, transaction, ledger, carried, night, closed, exited, cancellation);
-                    ended.Add($"{carried.Ticker}: {exited}");
+                    carried = carried with
+                    {
+                        Stop = Statistic.ToPrice(added.Stop),
+                        TakeProfit = added.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null,
+                        TakeProfitFrom = added.TakeProfit is { } stated ? bookExit.Half ? EquityBrief.Core.Loop.TakeProfit.StoredHalf(bookExit.Multiple) : EquityBrief.Core.Loop.TakeProfit.Stored(stated) : null,
+                    };
 
-                    continue;
+                    await ExecuteAsync(connection, transaction, AddedExit,
+                    [
+                        ("$night", Stamp(night)), ("$ticker", carried.Ticker), ("$entered_on", Stamp(carried.EnteredOn)),
+                        ("$stop", Money.ToStorage(carried.Stop!.Value)),
+                        ("$take_profit", carried.TakeProfit is { } placedAim ? Money.ToStorage(placedAim) : DBNull.Value),
+                        ("$take_profit_from", (object?)carried.TakeProfitFrom ?? DBNull.Value),
+                    ], cancellation);
+                }
+
+                // From the operator's order of 2026-11-14 one bought before tonight is sold at tonight's close under its stop or
+                // at or above its take-profit; on their ruling of 2026-11-14 on the books one selling half sells half there, its
+                // stop on the other half moved up to the buy.
+                if (carried.EnteredOn < night && CloseOn(carried.Ticker, night) is { } closed
+                    && EquityBrief.Core.Loop.TakeProfit.BookStepOf(Statistic.FromPrice(closed), carried.StopNow is { } floor ? Statistic.FromPrice(floor) : null, carried.TakeProfit is { } aim ? Statistic.FromPrice(aim) : null, carried.Half, carried.HalfSoldOn is not null) is var step)
+                {
+                    if (step.SellsHalf)
+                    {
+                        await ExecuteAsync(connection, transaction, ledger.Candidate is null ? SellHalf : SellRuleHalf,
+                            [.. Owned(ledger), ("$night", Stamp(night)), ("$ticker", carried.Ticker), ("$entered_on", Stamp(carried.EnteredOn))], cancellation);
+                    }
+                    else if (step.Ended is { } exited)
+                    {
+                        await EndAsync(connection, transaction, ledger, carried, night, closed, exited, cancellation);
+                        ended.Add($"{carried.Ticker}: {exited}");
+
+                        continue;
+                    }
                 }
 
                 if (ledger.Settings.SoldUnderAverage
@@ -471,8 +536,9 @@ public sealed class HeavyweightBook : IComponent
 
                     // From the operator's order of 2026-11-14 its stop under the close it is bought at in its typical moves
                     // tonight, and the price it takes profit at, beside the reshuffle.
-                    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
-                    var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, leader, night, close, cancellation);
+                    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+                    var exit = EquityBrief.Core.Loop.BookExits.Of(HeavyweightRule.Name, "GSPC");
+                    var exits = await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, leader, night, close, exit, cancellation);
 
                     rows += await ExecuteAsync(connection, transaction, ledger.Candidate is null ? Enter : EnterRule,
                     [
@@ -485,7 +551,7 @@ public sealed class HeavyweightBook : IComponent
                         ("$cut", Cut([.. sector.Largest.Select(one => new CutMember(one.Ticker, 1.0, night))])),
                         ("$stop", exits is { } placed ? Money.ToStorage(Statistic.ToPrice(placed.Stop)) : DBNull.Value),
                         ("$take_profit", exits?.TakeProfit is { } taking ? Money.ToStorage(Statistic.ToPrice(taking.Price)) : DBNull.Value),
-                        ("$take_profit_from", exits?.TakeProfit is { } from ? EquityBrief.Core.Loop.TakeProfit.Stored(from) : DBNull.Value),
+                        ("$take_profit_from", exits?.TakeProfit is { } from ? exit.Half ? EquityBrief.Core.Loop.TakeProfit.StoredHalf(exit.Multiple) : EquityBrief.Core.Loop.TakeProfit.Stored(from) : DBNull.Value),
                     ], cancellation);
                     entered.Add(leader);
                 }
@@ -653,7 +719,7 @@ public sealed class HeavyweightBook : IComponent
             ("$ended_on", Stamp(on)),
             ("$exit_close", Money.ToStorage(close)),
             ("$reason", reason),
-            ("$result", holding.Growth - 1.0),
+            ("$result", holding.Result),
             ("$cut_return", holding.Cut.Count > 0 ? holding.Cut.Average(member => member.Growth) - 1.0 : (object)DBNull.Value),
             ("$ticker", holding.Ticker),
             ("$entered_on", Stamp(holding.EnteredOn)),
@@ -903,7 +969,9 @@ public sealed class HeavyweightBook : IComponent
                 CutOf(row.GetString(6)),
                 Day(row.GetString(7)),
                 row.IsDBNull(8) ? null : Money.FromStorage(row.GetString(8)),
-                row.IsDBNull(9) ? null : Money.FromStorage(row.GetString(9))));
+                row.IsDBNull(9) ? null : Money.FromStorage(row.GetString(9)),
+                row.IsDBNull(10) ? null : row.GetString(10),
+                row.IsDBNull(11) ? null : Day(row.GetString(11))));
         }
 
         return holdings;

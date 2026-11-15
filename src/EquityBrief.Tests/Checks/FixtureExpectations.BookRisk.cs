@@ -10,7 +10,7 @@ namespace EquityBrief.Tests.Checks;
 // there, one past neither sold on the pick's session less its gap at the open, one past either only after the pick's sale sold
 // on the pick's session, and a member the index does not hold on the buy left out; then the line's years and the box's
 // sentence.
-// see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+// see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
 public partial class FixtureExpectations
 {
     // Six sessions in March 2016. P is the pick, A reaches its take-profit at the third session, B closes under its stop at the

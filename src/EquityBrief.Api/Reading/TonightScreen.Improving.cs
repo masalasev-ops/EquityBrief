@@ -81,7 +81,7 @@ public static partial class TonightScreen
                 // From the operator's order of 2026-11-14 the open trade's stop and take-profit, none before its buy.
                 Stop = trades.FirstOrDefault(trade => trade.Ticker == row.Ticker && trade.EndedOn is null)?.Stop,
                 TakeProfit = trades.FirstOrDefault(trade => trade.Ticker == row.Ticker && trade.EndedOn is null) is { } open
-                    ? BookTakeProfit(open.TakeProfit, open.TakeProfitFrom, open.Fill, open.Stop)
+                    ? BookTakeProfit(open.TakeProfit, open.TakeProfitFrom, open.Fill, open.Stop, ImprovingRule.Name, index, open.ExitAddedOn)
                     : null,
             }),
         ];

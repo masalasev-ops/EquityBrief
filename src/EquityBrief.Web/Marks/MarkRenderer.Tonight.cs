@@ -445,7 +445,7 @@ public sealed partial class MarkRenderer
                 body.Append(PriceCell("stop", pick.Stop, null));
 
                 // From the operator's order of 2026-11-14 the price its plan takes profit at, where its card holds one.
-                // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+                // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
                 body.Append(pick.Card?.TakeProfit is { } taking
                     ? PriceCell("target", taking.Price, null)
                     : PriceCell("target", pick.Target, pick.Trailing ? "rising stop, no target" : pick.Exit is { } exit ? ReaderWords.Plain(exit) : null));

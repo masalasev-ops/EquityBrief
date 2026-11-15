@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Reading;
 // The 22.6 correction of 2026-11-09: a pick's card, on the stock page, beneath its row on Tonight, on Home and on the read-only
 // copy, draws its setup's record over the long history beneath its entry check line, read off the newest run of the test of
 // the buy and sell points on its index, or the year a filing-based setup's filings reach back to.
-// see: A pick's card draws its setup's record over the long history under its entry check, the rule's record and never the stock's
+// see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
 public partial class ReadSurface
 {
     internal static string[] SetupRecordRows =>

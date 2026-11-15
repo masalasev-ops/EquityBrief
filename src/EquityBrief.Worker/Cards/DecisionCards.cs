@@ -788,11 +788,12 @@ public sealed class DecisionCards : IComponent
         foreach (var buy in bought)
         {
             // From the operator's order of 2026-11-14 the stop the book places under its buy and the price it takes profit at.
-            // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
-            var exits = buy.Entry is { } bookBuy ? await PlanTrades.BookExitAsync(connection, transaction, buy.Ticker, night, bookBuy, cancellation) : null;
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            var exit = BookExits.Of(Core.Families.HeavyweightRule.Name, index);
+            var exits = buy.Entry is { } bookBuy ? await PlanTrades.BookExitAsync(connection, transaction, buy.Ticker, night, bookBuy, exit, cancellation) : null;
             var plan = new Plan(buy.Entry, exits is { } placed ? Statistic.ToPrice(placed.Stop) : null, exits?.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null, null, [FormattableString.Invariant($"it led {buy.Sector} at the rebalance of {night:yyyy-MM-dd}, its trend and its beta passing")])
             {
-                TakeProfitFrom = exits?.TakeProfit is { } from ? TakeProfit.Stored(from) : null,
+                TakeProfitFrom = exits?.TakeProfit is { } from ? exit.Half ? TakeProfit.StoredHalf(exit.Multiple) : TakeProfit.Stored(from) : null,
             };
             var market = large
                 ? await LargeMarketAsync(connection, transaction, buy.Ticker, night, false, cancellation)

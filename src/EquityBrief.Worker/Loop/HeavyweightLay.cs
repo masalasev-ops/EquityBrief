@@ -43,6 +43,9 @@ public sealed class HeavyweightLay
 
     public HeavyweightTape Tape => tape;
 
+    // The index the lay reads.
+    public string Index => read.Index;
+
     // The S&P 500's book reads its index's own series, and the S&P 400's and 600's their funds'; every month's first
     // session and every week's are laid, so a book rebalancing weekly reads its sessions as a monthly one does.
     public static async Task<HeavyweightLay> ReadAsync(LoopRead read, SweepHistory history, DateOnly through, Action<string> progress, CancellationToken cancellation, SweepHistoryInputs? largeRead = null)

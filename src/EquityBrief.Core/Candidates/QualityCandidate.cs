@@ -16,7 +16,7 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
     public const string BookParameter = "book";
     public const string SaleParameter = "sale";
 
-    public override string Version => "79294c7c782f";
+    public override string Version => "8b2b219f5538";
 
     public override string SetupFamily => QualityRule.Name;
 
@@ -50,7 +50,7 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
 
         // From the operator's order of 2026-11-14 the stop and the take-profit each holding is bought with: the price it
         // turned down at before, read off its swings over its stored and pulled history, and its typical daily move.
-        // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+        // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
         "src/EquityBrief.Worker/Loop/PlanTrades.cs",
         "src/EquityBrief.Core/Swings/SwingSeries.cs",
         "src/EquityBrief.Core/Levels/LevelSeries.cs",

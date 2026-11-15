@@ -24,10 +24,20 @@ public sealed record PlanOrder(
     // From the operator's order of 2026-11-14 the multiple of the risk the take-profit price falls back to, and the prices the
     // stock turned down at before its night above the lowest its stop could stand, which the take-profit is read from at the
     // fill; none for an order placed before, which sells as it did.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public double? TakeProfit { get; init; }
 
     public IReadOnlyList<TurnedDown> TurnedDown { get; init; } = [];
+
+    // On the operator's ruling of 2026-11-15 on the shapes how the take-profit is placed and whether it sells half; today's
+    // full take-profit for an order placed before, which sells as it did.
+    public TakeProfitPlacing Placing { get; init; }
+
+    public bool Half { get; init; }
+
+    // On the operator's ruling of 2026-11-14, clause 5, the rules restart a take-profit was added at to a trade or an order placed
+    // before it, which counts from the session after; none for an order placed with it.
+    public DateOnly? TakeProfitAddedOn { get; init; }
 
     static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -42,9 +52,23 @@ public sealed record PlanOrder(
     // it ends on its own night unfilled and buys nothing.
     public bool PlacesNoPrice() => Level is null && Entry != PlanPoints.NextOpen && Entry != PlanPoints.FirstPullback;
 
-    // The sale walked from a fill: its own, with the take-profit price beside it where the order takes profit.
+    // The sale walked from a fill: its own, with the take-profit price beside it as its shape places it where the order takes
+    // profit.
     public PlanSale SaleFrom(double fill, double stop) =>
-        TakeProfit is { } multiple ? Loop.TakeProfit.SaleWith(Sale, fill, stop, TurnedDown, multiple) : Sale;
+        TakeProfit is { } multiple ? Loop.TakeProfit.Shaped(Sale, fill, stop, TurnedDown, multiple, Placing, Half) : Sale;
+
+    // The sale a walk sells by from a fill: where the take-profit was added at the rules restart, it counts from the bar the walk
+    // names, the half's price and the target where the take-profit set it.
+    public PlanSale SaleWalked(double fill, double stop, int takeProfitFrom) =>
+        TakeProfitAddedOn is null || takeProfitFrom <= 0
+            ? SaleFrom(fill, stop)
+            : SaleFrom(fill, stop) is var sale && sale.Target != Sale.Target
+                ? sale with { TakeProfitFromBar = takeProfitFrom, TargetIsTakeProfit = true }
+                : sale with { TakeProfitFromBar = takeProfitFrom };
+
+    // The take-profit price a card draws from a fill, as the walk above places it; none where the order takes no profit.
+    public TakeProfitPrice? TakeProfitFrom(double fill, double stop) =>
+        TakeProfit is { } multiple ? Loop.TakeProfit.PlacedShaped(Sale, fill, stop, TurnedDown, multiple, Placing, Half) : null;
 
     // The order at the scale the stock's closes are stored at now, an adjustment since its night moving every price by the
     // same factor, the night's close over the close it was set at.
@@ -89,10 +113,19 @@ public static class PlanHook
 
     // From the operator's order of 2026-11-14 the multiple of the risk the take-profit price falls back to, one of those the
     // test walks; off where none is stated.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public const string TakeProfitParameter = "plan_take_profit";
 
-    public static IReadOnlyList<string> Parameters { get; } = [EntryParameter, DistanceParameter, WindowParameter, StopParameter, SaleParameter, TakeProfitParameter];
+    // On the operator's ruling of 2026-11-15 on the shapes how the take-profit is placed: 0 today's, the nearest price above the
+    // buy it turned down at; 1 the multiple of the risk alone; 2 the first price it turned down at that far above the buy or
+    // more; 3 half the shares at the multiple, the stop on the other half then moved up to the buy. Off where none is stated.
+    public const string TakeProfitShapeParameter = "plan_take_profit_shape";
+
+    public const int AtTheRisk = 1;
+    public const int Beyond = 2;
+    public const int OnHalf = 3;
+
+    public static IReadOnlyList<string> Parameters { get; } = [EntryParameter, DistanceParameter, WindowParameter, StopParameter, SaleParameter, TakeProfitParameter, TakeProfitShapeParameter];
 
     // The entries by number: 0 the next open, 1 to 3 the zones, 4 the 20-session average, 5 a distance under the close in
     // typical days and 6 the first pullback.
@@ -166,9 +199,22 @@ public static class PlanHook
             throw new ArgumentException(FormattableString.Invariant($"The plan's take-profit states {takeProfit} times the risk, and it states 0 for none or one of {string.Join(", ", TakeProfit.Multiples)}."), nameof(parameters));
         }
 
+        // On the operator's ruling of 2026-11-15 on the shapes how the take-profit is placed, stated only beside a multiple.
+        var shape = parameters.GetValueOrDefault(TakeProfitShapeParameter);
+
+        if (shape is not (0 or AtTheRisk or Beyond or OnHalf) || (shape != 0 && takeProfit == 0))
+        {
+            throw new ArgumentException(FormattableString.Invariant($"The plan's take-profit shape states {shape}, and it states 0 for today's, {AtTheRisk} for the multiple of the risk alone, {Beyond} for the first price it turned down at that far above the buy or {OnHalf} for half, beside a multiple."), nameof(parameters));
+        }
+
         // The plan stated off, the next open at the rule's own stop and sale, is the rule's own plan, which its own walk trades:
         // a variant keeping today's plan beside a planned live rule states it so.
-        var combination = new PlanCombination(entry, window, stop, Sales[saleNumber]) { TakeProfit = takeProfit > 0 ? takeProfit : null };
+        var combination = new PlanCombination(entry, window, stop, Sales[saleNumber])
+        {
+            TakeProfit = takeProfit > 0 ? takeProfit : null,
+            Half = shape == OnHalf,
+            Placing = shape switch { AtTheRisk => TakeProfitPlacing.Risk, Beyond => TakeProfitPlacing.Beyond, _ => TakeProfitPlacing.Turned },
+        };
 
         return PlanPrices.Traded(combination) ? null : combination;
     }
@@ -199,6 +245,11 @@ public static class PlanHook
         if (combination.TakeProfit is { } multiple)
         {
             stated[TakeProfitParameter] = multiple;
+
+            if (combination.Half || combination.Placing != TakeProfitPlacing.Turned)
+            {
+                stated[TakeProfitShapeParameter] = combination.Half ? OnHalf : combination.Placing == TakeProfitPlacing.Risk ? AtTheRisk : Beyond;
+            }
         }
 
         return stated;
@@ -232,7 +283,9 @@ public static class PlanHook
         return new PlanOrder(combination.Words, combination.Entry, level, combination.Window, combination.Stop, ruleStop, zoneRead?.Stop, typicalDay, sale.Target, [.. sale.Staged.Order()], sale.Trail, sale.RsiAbove, cap)
         {
             TakeProfit = combination.TakeProfit,
-            TurnedDown = combination.TakeProfit is null ? [] : [.. (turnedDown ?? []).Where(turned => turned.Price > lowest)],
+            TurnedDown = combination.TakeProfit is null || combination.Half ? [] : [.. (turnedDown ?? []).Where(turned => turned.Price > lowest)],
+            Placing = combination.Placing,
+            Half = combination.Half,
         };
     }
 
@@ -240,7 +293,7 @@ public static class PlanHook
     // without a fill, never filled once it has, and filled at the bar and price the test fills at with its stop placed from
     // that price, walked to its sale as the test walks it, the outcome none while it is held. A fill at or under its stop is
     // never filled, as the test leaves it.
-    public static PlanTradeState Walk(PlanOrder order, ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, ReadOnlySpan<double> closes, int pick, ReadOnlySpan<double> rsi = default)
+    public static PlanTradeState Walk(PlanOrder order, ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, ReadOnlySpan<double> closes, int pick, ReadOnlySpan<double> rsi = default, int takeProfitFrom = 0)
     {
         var fill = order.Entry == PlanPoints.FirstPullback
             ? PlanPoints.PullbackFillOf(closes, opens, pick, order.Window)
@@ -258,6 +311,6 @@ public static class PlanHook
             return new PlanTradeState(false, null, null, null, null);
         }
 
-        return new PlanTradeState(false, filled.Bar, filled.Price, stop, PlanPoints.Walk(closes, opens, filled.Bar, filled.Price, stop, order.SaleFrom(filled.Price, stop), order.Cap, rsi));
+        return new PlanTradeState(false, filled.Bar, filled.Price, stop, PlanPoints.Walk(closes, opens, filled.Bar, filled.Price, stop, order.SaleWalked(filled.Price, stop, takeProfitFrom), order.Cap, rsi));
     }
 }

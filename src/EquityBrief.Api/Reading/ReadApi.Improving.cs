@@ -43,6 +43,9 @@ public sealed record ImprovingTradeRow(string Ticker, DateOnly ChosenOn, DateOnl
     public decimal? TakeProfit { get; init; }
 
     public string? TakeProfitFrom { get; init; }
+
+    // On the operator's ruling of 2026-11-14, clause 5, the night its stop and take-profit were added at the rules restart.
+    public DateOnly? ExitAddedOn { get; init; }
 }
 
 // One member's scorecard on a night as the Fundamentals card reads it: its count, its gross profit over its assets and its
@@ -85,8 +88,11 @@ public sealed partial class ReadApi
                CASE WHEN bought_on <= $on THEN bench_gap END,
                CASE WHEN ended_on <= $on THEN ended_on END,
                CASE WHEN ended_on <= $on THEN end_reason ELSE 'open' END,
-               CASE WHEN bought_on <= $on THEN fill END, CASE WHEN bought_on <= $on THEN stop END,
-               CASE WHEN bought_on <= $on THEN take_profit END, CASE WHEN bought_on <= $on THEN take_profit_from END
+               CASE WHEN bought_on <= $on THEN fill END,
+               CASE WHEN bought_on <= $on AND (exit_added_on IS NULL OR exit_added_on <= $on) THEN stop END,
+               CASE WHEN bought_on <= $on AND (exit_added_on IS NULL OR exit_added_on <= $on) THEN take_profit END,
+               CASE WHEN bought_on <= $on AND (exit_added_on IS NULL OR exit_added_on <= $on) THEN take_profit_from END,
+               CASE WHEN exit_added_on <= $on THEN exit_added_on END
         FROM improving_trade
         WHERE rule = $rule AND index_code = $index AND chosen_on <= $on AND (ended_on IS NULL OR ended_on >= $on)
         ORDER BY chosen_on, ticker;
@@ -216,6 +222,7 @@ public sealed partial class ReadApi
                 Stop = reader.IsDBNull(10) ? null : Money.FromStorage(reader.GetString(10)),
                 TakeProfit = reader.IsDBNull(11) ? null : Money.FromStorage(reader.GetString(11)),
                 TakeProfitFrom = reader.IsDBNull(12) ? null : reader.GetString(12),
+                ExitAddedOn = reader.IsDBNull(13) ? null : DateOnly.ParseExact(reader.GetString(13), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             });
         }
 

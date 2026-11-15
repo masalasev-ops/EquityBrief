@@ -1408,6 +1408,10 @@ public static class RuleWording
 
         public const string TookProfit = "took profit";
 
+        // On the operator's ruling of 2026-11-14 on the books a holding whose first half sold at its take-profit, said beside how
+        // the other half ended.
+        public const string TookProfitOnHalf = "took profit on half";
+
         public const string TakingOpening = "taking profit at ";
 
         public const string TakingClosing = " times the risk";

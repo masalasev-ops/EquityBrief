@@ -149,6 +149,9 @@ public sealed class RuleCards : IComponent
 
     const string EndPick = "UPDATE rule_pick SET ended_on = $ended_on, result = $result WHERE index_code = $index AND rule = $rule AND ticker = $ticker AND session_date = $session;";
 
+    // On the operator's ruling of 2026-11-14, clause 5, the take-profit a pick placed before the rules restart takes.
+    const string AddedTakeProfit = "UPDATE rule_pick SET plan = $plan WHERE index_code = $index AND rule = $rule AND ticker = $ticker AND session_date = $session;";
+
     // A rule's picks still open before the night, which the night walks and which hold their stock off its list.
     const string OpenPicks = @"
         SELECT rule, ticker, session_date, entry, stop, target, cap, plan
@@ -924,9 +927,23 @@ public sealed class RuleCards : IComponent
         var calendar = await FamilyRecorder.SessionsAsync(connection, from, cancellation);
         var closes = await FamilyRecorder.ClosesAsync(connection, from, cancellation);
         var at = calendar.Select((session, place) => (session, place)).ToDictionary(pair => pair.session, pair => pair.place);
+        var taking = EquityBrief.Worker.Loop.PlanTrades.LiveTakingProfit(await EquityBrief.Worker.Loop.PlanTrades.RegisterRowsAsync(connection, transaction, cancellation), DateTimeOffset.MaxValue);
 
-        foreach (var pick in open)
+        foreach (var openPick in open)
         {
+            var pick = openPick;
+
+            // On the operator's ruling of 2026-11-14, clause 5, an open pick or waiting order of a live rule placed before the rules
+            // restart with no take-profit takes its rule's, counted from the session after the restart, stored with it from now on.
+            // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+            if ((pick.Plan is not null || pick.Target is not null) && taking.TryGetValue(pick.Rule, out var live)
+                && await EquityBrief.Worker.Loop.PlanTrades.AddedAtRestartAsync(connection, transaction, pick.Order, live, pick.Ticker, pick.Session, pick.Entry, pick.Stop, pick.Target, null, pick.Cap, false, cancellation) is { } added)
+            {
+                await ExecuteAsync(connection, transaction, AddedTakeProfit,
+                    [("$plan", added.Json()), ("$index", index), ("$rule", pick.Rule), ("$ticker", pick.Ticker), ("$session", Stamp(pick.Session))], cancellation);
+                pick = pick with { Plan = added.Json() };
+            }
+
             if (pick.Order is { } order)
             {
                 var bars = EquityBrief.Worker.Loop.PlanBars.Of(await EquityBrief.Worker.Loop.PlanTrades.BarsAsync(connection, transaction, pick.Ticker, night, cancellation));

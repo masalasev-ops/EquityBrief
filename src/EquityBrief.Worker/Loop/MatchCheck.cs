@@ -174,8 +174,8 @@ public sealed class MatchCheck : IComponent
             return FormattableString.Invariant($"{ticker}'s stop stored {(stop is { } a ? a.ToString("0.00", CultureInfo.InvariantCulture) : "none")} and placed again {(againStop is { } b ? b.ToString("0.00", CultureInfo.InvariantCulture) : "none")}");
         }
 
-        var taking = stored.TakeProfit is { } multiple ? TakeProfit.Placed(stored.Sale, buy, held, stored.TurnedDown, multiple)?.Price : null;
-        var takingAgain = placed.TakeProfit is { } again2 ? TakeProfit.Placed(placed.Sale, againBuy, again, placed.TurnedDown, again2)?.Price : null;
+        var taking = stored.TakeProfitFrom(buy, held)?.Price;
+        var takingAgain = placed.TakeProfitFrom(againBuy, again)?.Price;
 
         return taking is null && takingAgain is null || taking is { } x && takingAgain is { } y && Math.Abs(x - y) <= Within
             ? null

@@ -19454,3 +19454,63 @@ Owed:       (a)'s replay, built right after this restart and before any other ch
             kind of rule, the family rules, the swing filter's versions, the ladder rules, the candidates and the books, each
             reading each night's inputs as stored, and naming any kind it cannot cover with why.
 Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - the second restart: the parts tabled for phase 24, each rule taking profit in the shape its test chose, each book trading its own exit, and the rule freeze   2026-11-15
+
+Built:      23.10's second part, the second and last restart of phase 23, on the operator's order of 2026-11-13 and their
+            rulings of 2026-11-14 and 2026-11-15, word for word in `prompts/`. The parts tabled for phase 24: the screen wording
+            of every file the wording check named moved to the wording file; the S&P 500's swing filter and its heavyweight book
+            reading the hooks, the swing filter's live rule stating a plan; the profit check reading the quarter stored that
+            night; the entry check's readings joining the catalogue, the tight-stop skip and the drift's conditions and sales
+            check walked beside the live rules; each quarter read from its filing and then its release, the cover from the four
+            newest quarters stating interest; the long ledger written once more, resumed by its pin; and `register --withdraw`.
+            On the rulings: Home, Tonight and Past picks in the operator's words; every pick taking profit at a price, chosen by
+            its test among three shapes, the multiple of the risk alone, the first price it turned down at that far above the
+            buy, or half at the multiple with the stop on the other half then moved up to the buy, today's nearest turned-down
+            price walked beside them and never chosen, the shape a registration's seventh plan parameter; each of the nine books
+            trading the stop and take-profit its own books' test chose in points a month, on 2019 to 2022 for the heavyweights,
+            stated by family and index, a book's half selling at the night's close and its result the mean of the two halves;
+            a plan's staged level selling no more than is held; a book's record box in points a month from the year after its
+            exit was chosen, written to `book_record` by the books' test; clause 5, an open trade or waiting order of a live rule
+            placed before the restart taking its rule's take-profit from its own buy, counted from the session after, and a live
+            book's holding bought before it taking the book's exit, each card saying "Take-profit added at the rules restart
+            of" the date; clause 6, an S&amp;P 400 or 600 rule stating no plan taking its family's take-profit as it registers
+            again; clause 9, rule names in plain words; clause 10, an order its levels place no price for not placed; clause
+            17, the rule freeze beside every version and its check; clause 18, the monthly loop walking a planned rule under each
+            exit of the menu; and F2, the S&amp;P 400's and 600's long search judged against each index's own setting.
+Chosen:     families on 2005 to 2018 per $1 risked, judged from 2019 against today's plan: S&amp;P 500 pullback at the risk 2,
+            breakout half 3, drift beyond 2, dip at the risk 2; S&amp;P 400 pullback half 1.5, breakout beyond 3, drift half 3, dip
+            half 3; S&amp;P 600 pullback half 1.5, breakout half 3, drift half 2, dip beyond 1.5; from 2019 none beats today's plan
+            by more than 0.001 a pick per $1 risked and the widest falls short by 0.028. Books in points a month from 2019 (from
+            2023 for the heavyweights) against their own exit: S&amp;P 500 Fundamentals half stop 2 at 1.5 -0.06 against +0.13,
+            heavyweights half stop 2 at 3 -0.13 against -0.04, Quality half stop 4 at 3 -0.36 against -0.12; S&amp;P 400
+            Fundamentals beyond stop 4 at 3 +0.07 against +0.10, heavyweights beyond stop 4 at 3 +0.42 against +0.78, Quality
+            beyond stop 3 at 2 -0.01 against +0.16; S&amp;P 600 Fundamentals half stop 2 at 1.5 +0.92 against +0.06, heavyweights
+            beyond stop 2 at 1.5 +0.63 against +0.55, Quality beyond stop 4 at 2 -0.32 against +0.30.
+Remedy:     `tools/remedies/2026-11-14-23.10-the-second-restart.txt`, dated before the freeze, from main after the merge with the
+            off-peak and local runs held: migrate; the S&amp;P 500 Quality rule the operator did not approve withdrawn; each of the
+            twelve price families' live rules given its plan and take-profit; every moved version registered again; the cards'
+            plans; the standing and the long ledger written once more; the buy and sell points on each index; each live book's
+            record box. Rehearsed whole on a copy of the store on the C: drive.
+Tests:      11 new: a take-profit placed by its shape; the shape read back and refused without a multiple; a staged level after a
+            half selling no more than is held; a take-profit added at the restart counting from the session after; an open
+            trade of a live rule placed before the restart taking its rule's and no other; an S&amp;P 400 or 600 rule stating no
+            plan taking its family's; both tests choosing among the three shapes and never today's; each book's exit, its half
+            and its stop; the book's box in points a month; the half's card lines. Two expectations earlier commits of this part
+            left stale brought to the code: the swing filter's unplaceable order ending on its night, and "1 typical day".
+Pins:       every family rule's, book's and the swing filter's version raised to its pin, and the ledger readings' version;
+            migrations 148, the half sold and the exit added at the restart, and 149, `book_record`.
+Mutated:    the rule, stated before the run: the smallest edit undoing each property, filtered to its test, restored to the file's
+            text. BookChosen taking today's full: red. Choosable taking today's full: red. A book's step selling no half: red. A
+            staged level selling its whole share: survived the first test, whose flat closes let the oversold share cancel at the
+            same price, an unreachable boundary; the test reworked to fall to its stop after the levels, red. The added
+            take-profit's target counted from the fill: red. The box at ten times a month: red. A trade placed on the restart's
+            day taking the take-profit: red. A rule stating no plan given none: red.
+Owed:       (a)'s replay, as the ruling entry above states it; the heavyweights' long read from the funds pulled from 2018,
+            raised with the operator after the restart; the long search's S&amp;P 400 breakout row naming "any range" at its next
+            run; the S&amp;P 500's and the index books' holdings listed without the restart's line on the heavyweights' card.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, x of x tests ran with none failed, migrations 0 to 149 with none
+            pending, schema version 149, against `data-ci` and never `data`; the phase report x tables, x claims, x passing,
+            none out of scope and none unexamined, x placements and verdicts reconciled against a floor of 34, x checks on the
+            roster run and passed.

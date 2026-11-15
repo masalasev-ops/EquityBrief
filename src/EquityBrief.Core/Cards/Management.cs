@@ -48,7 +48,7 @@ public static class Management
     // From the operator's order of 2026-11-14 every pick takes profit at a price, so no card says it has none: a sale naming no
     // target of its own sells at its take-profit price, and the heavyweights' book sells at the night's close under its stop or
     // at its take-profit beside its reshuffle.
-    // see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
     public static IReadOnlyList<string> For(decimal? stop, decimal? target, decimal? trail, int? cap, bool heavyweights, decimal? takeProfit = null)
     {
         if (heavyweights)

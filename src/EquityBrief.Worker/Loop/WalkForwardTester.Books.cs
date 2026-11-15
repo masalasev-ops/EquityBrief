@@ -8,11 +8,13 @@ namespace EquityBrief.Worker.Loop;
 // On the operator's answer of 2026-11-14 to item 15 each live book's stops and take-profits measured per dollar risked over the
 // history the run reads, the long one with the long facts beside the standing ones, its points a month beside, printed and
 // written nowhere.
-// see: Every pick takes profit at its own sale's price, a price it turned down at before or a multiple of its risk
+// see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
 public sealed partial class WalkForwardTester
 {
-    async Task<int> BooksAsync(string index, LoopRead read, SweepHistory history, History.LongHistoryReader? longHistory, DateOnly through, IReadOnlyList<RegisterRow> standing, CancellationToken cancellation)
+    async Task<int> BooksAsync(string index, LoopRead read, SweepHistory history, History.LongHistoryReader? longHistory, DateOnly through, IReadOnlyList<RegisterRow> standing, CancellationToken cancellation, bool print = true)
     {
+        var records = new List<(string Family, string Rule, string Exit, int From, int Months, double? Points)>();
+
         Func<IEnumerable<string>, Task<IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>>>? factsOf = longHistory is null
             ? null
             : ciks => longHistory.FiledFactsAsync(ciks, through, cancellation);
@@ -38,17 +40,32 @@ public sealed partial class WalkForwardTester
                 continue;
             }
 
+            // On the operator's ruling of 2026-11-15 on the shapes a run that writes keeps each live book's record box, its months at
+            // the exit it trades in points a month from the year after its exit was chosen, and walks no other exit.
+            // see: A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
+            if (!print)
+            {
+                var exit = BookExits.Of(family, index);
+                var from = RuleTests.BookSplit(family, index).From;
+                var kept = book((exit.Moves, exit.Multiple), exit.Half, exit.Placing).Months
+                    .Where(month => InTestYears(month.Opens) && read.Calendar[month.Opens].Year >= from && month.Edge is not null)
+                    .ToArray();
+                double? points = kept.Length > 0 ? kept.Average(month => month.Edge!.Value) * 100 : null;
+                var words = BookStops.WordsOf(exit);
+
+                records.Add((family, rule, words, from, kept.Length, points));
+                output.WriteLine(FormattableString.Invariant($"book record: {family}, {rule}: at {words}, {(points is { } shown ? shown.ToString("+0.00;-0.00;0.00", System.Globalization.CultureInfo.InvariantCulture) : "none")} points a month from {from} over {kept.Length} month(s)"));
+
+                continue;
+            }
+
             // On the operator's ruling of 2026-11-14 on the books the nine full exits and the nine half exits, chosen in points a month,
             // the book's own exit beside them as the reference and not a choice, each read per dollar risked beside.
             // On the operator's answer of 2026-11-14 on the tables three full take-profits beside the half: today's, the multiple of
-            // the risk alone, and the first price the stock turned down at that far above the buy or more.
+            // the risk alone, and the first price the stock turned down at that far above the buy or more; on their ruling of
+            // 2026-11-15 on the shapes today's walked as a reference the book never chooses.
             (bool Half, Core.Loop.TakeProfitPlacing Placing, Func<(double Moves, double Multiple), string> Words)[] shapes =
-            [
-                (false, Core.Loop.TakeProfitPlacing.Turned, BookStops.Words),
-                (false, Core.Loop.TakeProfitPlacing.Risk, BookStops.AtRiskWords),
-                (false, Core.Loop.TakeProfitPlacing.Beyond, BookStops.BeyondWords),
-                (true, Core.Loop.TakeProfitPlacing.Turned, BookStops.HalfWords),
-            ];
+                [(false, Core.Loop.TakeProfitPlacing.Turned, BookStops.Words), .. BookStops.Choosable];
             var walked = shapes
                 .SelectMany(shape => BookStops.Grid.Select(stops => (Stops: stops, shape.Half, shape.Placing, Words: shape.Words(stops))))
                 .Select(one => (one.Stops, one.Half, one.Placing, one.Words, Book: book(one.Stops, one.Half, one.Placing)))
@@ -82,6 +99,36 @@ public sealed partial class WalkForwardTester
             }
 
             output.WriteLine(BookRisk.Line(family, rule, index, read.Calendar, [.. walked.Select(one => (one.Words, BookRisk.Edges(tape, read.Series, one.Book.Costed, one.Stops, one.Half, one.Placing)))], chosen, boxFromFirst: middle));
+        }
+
+        if (!print && records.Count > 0)
+        {
+            var runId = FormattableString.Invariant($"loop-books-{index}-{clock.UtcNow:yyyyMMddTHHmmssZ}");
+
+            await using var connection = new Microsoft.Data.Sqlite.SqliteConnection(EquityBrief.Data.StoreConnection.For(databaseFile));
+            await connection.OpenAsync(cancellation);
+            await using var transaction = (Microsoft.Data.Sqlite.SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+            foreach (var record in records)
+            {
+                await using var command = connection.CreateCommand();
+
+                command.Transaction = transaction;
+                command.CommandText = InsertBookRecord;
+                command.Parameters.AddWithValue("$run_id", runId);
+                command.Parameters.AddWithValue("$index", index);
+                command.Parameters.AddWithValue("$family", record.Family);
+                command.Parameters.AddWithValue("$rule", record.Rule);
+                command.Parameters.AddWithValue("$exit", record.Exit);
+                command.Parameters.AddWithValue("$from", record.From);
+                command.Parameters.AddWithValue("$through", through.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$months", record.Months);
+                command.Parameters.AddWithValue("$points", (object?)record.Points ?? DBNull.Value);
+                await command.ExecuteNonQueryAsync(cancellation);
+            }
+
+            await transaction.CommitAsync(cancellation);
+            output.WriteLine(FormattableString.Invariant($"book record: {records.Count} live book(s) written under {runId}"));
         }
 
         return 0;

@@ -81,7 +81,7 @@ public sealed class SwingFilterRule : GateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "5e2e01716eb0";
+    public override string Version => "9f604c57322b";
 
     // From 23.10's second part the hooks' reading and the plan's walk, which a swing filter rule's list is ordered and its
     // picks bought and sold through, beside the shared evaluation sources.
