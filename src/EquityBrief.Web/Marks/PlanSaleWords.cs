@@ -13,6 +13,12 @@ public sealed record PlanSaleView(string Kind, decimal Buy, decimal? Stop, decim
     // A plan selling on its time limit alone, which names no price to sell at.
     public bool OnTimeAlone => Kind == PlanPoints.TimeLimit;
 
+    // From the second 23.10 correction of 2026-11-13 a plan naming no price above its buy to sell at, held to its stop or its
+    // time limit: the time limit alone, and the staged sales or the first band above where its levels place none above it.
+    // see: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath
+    public bool HoldsToItsLimit =>
+        OnTimeAlone || (Kind == PlanPoints.StagedSales && Stages.Count == 0) || (Kind == PlanPoints.FirstBand && Target is null);
+
     // What the sale aims at, which what the plan risks for what it aims at reads: its target, or the staged levels' mean; none
     // where it names no price above the buy.
     public decimal? Aim =>
@@ -88,12 +94,18 @@ public sealed partial class MarkRenderer
 
     public const string FirstBandWords = "the first price above the buy where it has turned down before";
 
+    // From the second 23.10 correction of 2026-11-13 what a staged sale or the first band above says where its levels place no
+    // price above the buy, as one line, with the record of picks like it beneath.
+    public const string NoStagedLevelAbove = "No price level above tonight's close to sell at:";
+
+    public const string NoBandAbove = "No price above tonight's close where it has turned down before:";
+
     // A price as a sale line draws it.
     static string SaleDollars(decimal price) => "$" + price.ToString("N2", CultureInfo.InvariantCulture);
 
     // A plan's sale in lines, as every card draws it: the rule's target or the first band above with the backstop after it, each
     // staged level's share with the part kept and the backstop, or the time limit alone; where the plan's levels place no price
-    // above the buy for a staged sale or the first band, it says so.
+    // above the buy for a staged sale or the first band, one line saying so and how long it holds.
     // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
     public static IReadOnlyList<PlanSaleLine> PlanSaleLines(PlanSaleView sale, string seller = "this rule")
     {
@@ -109,11 +121,7 @@ public sealed partial class MarkRenderer
         {
             if (sale.Stages.Count == 0)
             {
-                return
-                [
-                    new PlanSaleLine("stage", "Sell a share at", "No level above the buy", FormattableString.Invariant($"Its levels place no price above the buy to sell a share at, so it sells after {after} unless the stop sells it first.")),
-                    backstop,
-                ];
+                return [new PlanSaleLine("limit", NoStagedLevelAbove, "it is near its highs for the past year, so it holds for " + after + " unless the stop sells it first.")];
             }
 
             var (each, last) = PlanSaleView.SharesOf(sale.Stages.Count);
@@ -130,7 +138,7 @@ public sealed partial class MarkRenderer
         {
             return sale.Target is { } band
                 ? [new PlanSaleLine("target", "Aim to sell at", SaleDollars(band), FirstBandWords), backstop]
-                : [new PlanSaleLine("target", "Aim to sell at", "No price above the buy", FormattableString.Invariant($"Its levels hold no price above the buy where it has turned down before, so it sells after {after} unless the stop sells it first.")), backstop];
+                : [new PlanSaleLine("limit", NoBandAbove, "it holds for " + after + " unless the stop sells it first.")];
         }
 
         return sale.Target is { } target ? [new PlanSaleLine("target", "Aim to sell at", SaleDollars(target)), backstop]
@@ -139,9 +147,9 @@ public sealed partial class MarkRenderer
             : [backstop];
     }
 
-    // A plan selling on its time limit alone: the rule's record over every pick like it from 2019 through the newest year its
-    // test read, how far they moved by their sale on average and how many of them were up, said as the rule's record and not the
-    // stock's chance; until the test has written it, that it is being worked out.
+    // A plan naming no price above its buy, held to its stop or its time limit: the rule's record over every pick like it from
+    // 2019 through the newest year its test read, how far they moved by their sale on average and how many of them were up, said
+    // as the rule's record and not the stock's chance; until the test has written it, that it is being worked out.
     // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
     public static string TimeLimitRecordWords(SetupLongRecord? record)
     {

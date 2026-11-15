@@ -40,7 +40,11 @@ public sealed partial class SinglePageApp
     public string MarkingRegion(MarkingView view)
     {
         var region = new StringBuilder();
-        var open = view.Jumps.Concat(view.Ends).Count(row => row.Marked is null);
+
+        // From the second 23.10 correction of 2026-11-13 a session that is both an unexplained jump and an end no filing settles
+        // holds one mark, as the marks' key is the stock and the session: it is counted once and chosen once, on its jump's row,
+        // which offers both proposals, its end's row saying so, where before each row drew a select of the one name.
+        var open = view.Jumps.Concat(view.Ends).Where(row => row.Marked is null).Select(row => row.Key).Distinct().Count();
 
         region.Append("<section class=\"marking\">");
         region.Append(Cards.Masthead("Marking", "<span class=\"m-screen\">Marking</span>", Invariant($"{open:N0} to mark")));
@@ -50,8 +54,12 @@ public sealed partial class SinglePageApp
         body.Append(Invariant($"<form class=\"marking-press\" action=\"{MarkingPostRoute}\" method=\"post\">"));
         body.Append("<p class=\"marking-said\" role=\"status\"></p>");
         body.Append("<p><button type=\"submit\" name=\"all\" value=\"1\">Confirm every mark as chosen below</button></p>");
-        Table(body, "Unexplained jumps", "jumps", view.Jumps);
-        Table(body, "Ends no filing settles", "ends", view.Ends);
+
+        var endsByKey = view.Ends.GroupBy(row => row.Key).ToDictionary(group => group.Key, group => group.First());
+        var jumpsByKey = view.Jumps.GroupBy(row => row.Key).ToDictionary(group => group.Key, group => group.First());
+
+        Table(body, "Unexplained jumps", "jumps", view.Jumps, endsByKey, holdsTheChoice: true);
+        Table(body, "Ends no filing settles", "ends", view.Ends, jumpsByKey, holdsTheChoice: false);
         body.Append("<p><button type=\"submit\" name=\"all\" value=\"1\">Confirm every mark as chosen above</button></p>");
         body.Append("</form>");
 
@@ -75,7 +83,9 @@ public sealed partial class SinglePageApp
         return region.ToString();
     }
 
-    static void Table(StringBuilder body, string title, string list, IReadOnlyList<MarkingRow> rows)
+    // One table of sessions to mark. A session listed in both tables, its partner the other table's row, draws its one select
+    // where it holds the choice, offering both proposals, and a line naming the other row where it does not.
+    static void Table(StringBuilder body, string title, string list, IReadOnlyList<MarkingRow> rows, IReadOnlyDictionary<string, MarkingRow> partners, bool holdsTheChoice)
     {
         body.Append(Invariant($"<h3>{Escaped(title)}: {rows.Count:N0}</h3>"));
         body.Append(Invariant($"<div class=\"tbl-wrap\"><table class=\"loop-table\" data-table=\"{list}\"><thead><tr><th>#</th><th>Stock</th><th>Day</th><th>The days around it</th><th>Filings beside it</th><th>Mark</th></tr></thead><tbody>"));
@@ -96,21 +106,40 @@ public sealed partial class SinglePageApp
 
             body.Append(FormattableString.Invariant($"<tr data-mark=\"{Escaped(row.Key)}\"><td class=\"n\">{number}</td><td>{Escaped(row.Ticker)}</td><td class=\"n\">{row.Session:yyyy-MM-dd}</td><td class=\"muted\">{around}<br>{median}{(row.Says is { } says ? "<br>" + Escaped(says) : string.Empty)}</td><td>{filings}</td><td>"));
 
+            var partner = partners.GetValueOrDefault(row.Key);
+
             if (row.Marked is { } marked)
             {
                 body.Append(Invariant($"marked: {Escaped(marked)}"));
+            }
+            else if (partner is not null && !holdsTheChoice)
+            {
+                body.Append(Invariant($"<span data-one-mark=\"{Escaped(row.Key)}\">One mark covers this session and its jump in the table above: choose it there.</span>"));
+                body.Append(Invariant($"<br><span class=\"muted\">{Escaped(row.ProposedSays)}</span>"));
             }
             else
             {
                 body.Append(FormattableString.Invariant($"<select name=\"m|{Escaped(row.Key)}\" aria-label=\"Mark for {Escaped(row.Ticker)} {row.Session:yyyy-MM-dd}\">"));
 
-                foreach (var kind in new[] { row.Proposed }.Concat(MarkProposals.Kinds.Where(kind => kind != row.Proposed)).Append(Unmarked))
+                var other = partner?.Proposed is { } proposed && proposed != row.Proposed ? proposed : null;
+
+                foreach (var kind in new[] { row.Proposed }.Concat(other is null ? [] : [other]).Concat(MarkProposals.Kinds.Where(kind => kind != row.Proposed && kind != other)).Append(Unmarked))
                 {
-                    body.Append(Invariant($"<option value=\"{Escaped(kind == Unmarked ? string.Empty : kind)}\"{(kind == row.Proposed ? " selected" : string.Empty)}>{Escaped(kind == row.Proposed ? kind + " (proposed)" : kind)}</option>"));
+                    var label = kind == row.Proposed ? kind + (other is null ? " (proposed)" : " (proposed for its jump)")
+                        : kind == other ? kind + " (proposed for its end)"
+                        : kind;
+
+                    body.Append(Invariant($"<option value=\"{Escaped(kind == Unmarked ? string.Empty : kind)}\"{(kind == row.Proposed ? " selected" : string.Empty)}>{Escaped(label)}</option>"));
                 }
 
                 body.Append("</select>");
                 body.Append(Invariant($"<br><span class=\"muted\">{Escaped(row.ProposedSays)}</span>"));
+
+                if (partner is not null)
+                {
+                    body.Append(Invariant($"<br><span class=\"muted\" data-one-mark=\"{Escaped(row.Key)}\">One mark covers this jump and its end in the table below, which proposes: {Escaped(partner.ProposedSays)}</span>"));
+                }
+
                 body.Append(Invariant($"<br><button type=\"submit\" name=\"only\" value=\"{Escaped(row.Key)}\">Confirm this one</button>"));
             }
 

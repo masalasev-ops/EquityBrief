@@ -7,6 +7,52 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-13 - docs/SCHEMA.md and docs/RUNBOOK.md - the recommended plans' figures from 2019 were read in choosing them
+Corrects: item (g) of the operator's order of 2026-11-13: "the recommended plans' figures from 2019 were also used on 2026-11-10 to choose the stop width and the entry distance, so they read high, and each plan's record from its registration is its test." Each run since the order of 2026-11-10 keeps a wider stop or a level's distance where it does better from 2019, so those years are not ones the recommendation was not chosen on.
+Was:
+> | `later_fills` | INTEGER | the recommended combination's fills from 2019, years it was not chosen on |
+> ... so its edge there reads high for having been chosen there, and its edge from 2019, years it was not chosen on, stands beside it.
+> (RUNBOOK) ... and each one's edge from 2019, years the recommendation was not chosen on, to `plan_point` (see: ...)
+Now:
+> | `later_fills` | INTEGER | the recommended combination's fills from 2019, years its combination was not chosen on, though from 2026-11-10 its stop's width and its entry's distance are kept where they do better there |
+> ... so its edge there reads high for having been chosen there, and its edge from 2019 stands beside it; from 2026-11-10 its stop's width and its entry's distance are kept where they do better from 2019, so that edge reads high too, and each plan's record from its registration is its test.
+> (RUNBOOK) ... and each one's edge from 2019, to `plan_point`; since the refinements below keep a wider stop or a level's distance where it does better from 2019, that edge was read in choosing the recommendation and reads high, and each plan's record from its registration is its test (see: ...)
+Why: the same; the Loop page's card of the long history says it in the same words.
+
+### 2026-11-13 - docs/RUNBOOK.md - a read-back sends nothing that writes
+Decision: A write reaches the store only from a person's press on a page, and the read surface refuses one from a script or a headless browser
+Was:
+> ... since a read of the store while a writer runs holds the lock the writer waits on (see: A branch build is served over a copy of the store, and its server refuses to start on the live store).
+Now:
+> ... since a read of the store while a writer runs holds the lock the writer waits on (see: A branch build is served over a copy of the store, and its server refuses to start on the live store). A read-back reads pages and sends nothing that writes: from the second 23.10 correction of 2026-11-13 the read surface refuses any request that is not a read where it names no person's browser, a script's, a command line's, a windowless browser's or none, with "Nothing was written" and why, so a press wanted on the operator's word is theirs to make in their own browser (see: ...).
+Why: item (d) of the operator's order of 2026-11-13 and their answer: "add a guard: no read-back, sweep or test run against 5152 may send an approval, a rejection or any other request that writes".
+
+### 2026-11-13 - docs/ARCHITECTURE.html - the read surface refuses a write from a script, and an approval the operator withdrew reads as withdrawn
+Decision: A write reaches the store only from a person's press on a page, and the read surface refuses one from a script or a headless browser; An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's remedy
+Was:
+> ... and a press writes one row of the decisions under the page's own header and nothing else, a decline with its reason (see: ...). At the start of the next night's swing filter step, ...
+Now:
+> ... and a press writes one row of the decisions under the page's own header and nothing else, a decline with its reason (see: ...). From the second 23.10 correction of 2026-11-13 a request that writes is refused, before any route reads it, where it names no person's browser, a script's, a windowless browser's or none, so no read-back, sweep or test run against the read surface writes (see: ...); and an approval the operator withdrew on their word is drawn as withdrawn and never as approved on the Loop page and the Monthly check-up, the register keeping the rule the approval registered until the next restart's remedy registers the earlier rule again (see: ...). At the start of the next night's swing filter step, ...
+Why: item (d) of the operator's order of 2026-11-13 and their answers: the S&P 500 Quality learned score's approval of 2026-11-09 is one they did not give, and no read-back may write.
+
+### 2026-11-13 - docs/SCHEMA.md - the plan point test's record of a plan naming no price above its buy
+Decision: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath
+Was:
+> | `live_later_move` | REAL | from migration 144, the mean move of the live rule's plan's fills from 2019 from each fill to its sale, as a fraction of the fill, before costs; null where the family's live rule on the index states no plan, no fill from 2019 has ended, or the run was written before it |
+> ... walked over the family's setups from 2019: its fills' mean move from the fill to the sale as a fraction of the fill, before costs, and the share of them that sold above their fill, over how many fills, none where the live rule states no plan. A run given one family writes that family's row alone, the others' newest rows standing. The pages draw the two figures on a pick's card whose plan sells on its time limit alone, as that rule's record over every pick like it and never as the stock's own (see: ...).
+Now:
+> | `live_later_move` | REAL | from migration 144, the mean move of the live rule's plan's fills from 2019 whose sale placed no price above them, ... every fill of a plan selling on its time limit alone, and from the second 23.10 correction of 2026-11-13 those of the staged sales or the first band above with no level above the fill; null where ... no such fill from 2019 has ended, or the run was written before it |
+> ... the mean move of its fills whose sale placed no price above them, ... For a plan selling on its time limit alone that is every fill; from the second 23.10 correction of 2026-11-13, for the staged sales and the first band above it is the fills their levels placed no price above, held to the stop or the time limit. ... The pages draw the two figures on a pick's card whose plan names no price above its buy, ... (see: ...) (see: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath).
+Why: item (a) of the operator's order of 2026-11-13: a staged sale whose levels place nothing above the close draws the record of picks like it, read from the plan point test for its family, as the dip does; the figure is over the fills that, like it, had no price above to sell at.
+
+### 2026-11-13 - docs/ARCHITECTURE.html - a card whose plan's levels place no price above its buy says so in one line
+Decision: A plan whose levels place no price above its buy says so in one line and draws the record of picks like it beneath
+Was:
+> ... each staged level above the buy selling an equal share with the share kept to the stop or the time limit, said in words where the levels place none above the buy, or the time limit alone with the rule's record beneath, ... the record being worked out until its run has written them.
+Now:
+> ... each staged level above the buy selling an equal share with the share kept to the stop or the time limit, or the time limit alone with the rule's record beneath, ... the record being worked out until its run has written them. From the second 23.10 correction of that day a staged sale or the first band above whose levels place no price above the buy draws one line saying there is no price above tonight's close to sell at and the days it holds unless the stop sells it first, and beneath it the same record over the live plan's fills from 2019 its levels placed no price above, held to the stop or the time limit (see: ...).
+Why: the same; the S&P 400 drift's BHF, AMG, PCTY and NXST of 2026-11-12 drew "Sell a share at" with "No level above the buy" run into it.
+
 ### 2026-11-11 - docs/RUNBOOK.md - an approved change registers whatever the hour, and a night run again for an earlier session answers none
 Decision: An approved change answered after midnight UTC registers that night and is first read the night after, and a night run again for an earlier session answers none
 Was:

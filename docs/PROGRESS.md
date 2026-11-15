@@ -19196,3 +19196,184 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
             1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
             57 checks on the roster run and passed.
+
+### 23.10 - correction: a staged sale or the first band above whose levels place no price above the buy says so in one line, with the record of picks like it beneath   2026-11-13
+
+Corrects:   the 23.10 correction of 2026-11-13 drawing a card's registered sale: a staged sale whose levels place nothing above
+            the close drew "Sell a share at" with "No level above the buy" run into it, while each closed well above its buy,
+            the S&P 400 drift's BHF, AMG, PCTY and NXST of 2026-11-12 among them, BHF at $44.10 against $40.87. Found by the
+            operator reading PR 696's work back on 5152.
+Label:      23.10, the checkpoint whose plans the cards draw, as the operator asked.
+Ruled:      item (a) of the operator's order of 2026-11-13, word for word in
+            `prompts/2026-11-13-23.10-second-restart-order.md`, its words in **A plan whose levels place no price above its buy
+            says so in one line and draws the record of picks like it beneath**.
+Read back:  item (c) first. PR 696's remedy, the dip's buy and sell points on each index, ran from main and ended at 22:42 UTC
+            with exit 0: the dip's live plan from 2019 moved +0.3% on average by its time limit over 13,936 fills on the S&P
+            500, 55% of them up, +0.5% over 12,863 on the S&P 400, 53% up, and +0.7% over 14,455 on the S&P 600, 55% up. Every
+            planned card since the restart read back against its registered plan on 5152: 18 of 18 drew their plan's sale,
+            TTWO's target of $250.52 the page's own rounding of 250.515, and the 8 cards of the newest nights and the watched
+            cards' better plan the same; no card changed, and no dip card holds a buy, so none draws the dip's record yet.
+Counted:    staged orders since the restart with no level above the buy, through the night of 2026-11-13: the S&P 500 none,
+            no live rule there selling by staged levels; the S&P 400 11 of the drift's 14, BILL, VNT and CTRE of 2026-11-10,
+            PRI, RBA and AHR of 2026-11-11, BHF, AMG, PCTY and NXST of 2026-11-12 and TTEK of 2026-11-13; the S&P 600 none, its
+            breakout placing no order. No index placed an order selling at the first band above.
+Built:      a staged sale whose levels place no price above the buy draws one line, "No price level above tonight's close to
+            sell at: it is near its highs for the past year, so it holds for" its days "unless the stop sells it first.", and
+            the first band above with no band above, the same fault, "No price above tonight's close where it has turned down
+            before: it holds for" its days "unless the stop sells it first.", each with the record of picks like it beneath, on
+            Home, Tonight's row and its folded card, the stock page and the read-only copy, Tonight's columns saying the same.
+            The plan point test's record of a family's live plan counts the fills its sale placed no price above: every fill
+            under the time limit alone, so the dip's three rows stand, and the fills held to the stop or the time limit under
+            the staged sales and the first band above. The decision, the schema, the architecture and the guide say so.
+Remedy:     `tools/remedies/2026-11-13-23.10-correction-the-records-of-picks-like-it.txt`, from main after the merge while
+            nothing else writes: the buy and sell points of the S&P 400 drift and breakout, the S&P 600 breakout and the S&P 500
+            breakout, each its family alone.
+Tests:      2 new: a staged sale and the first band with no level above, each one line with the record read and being worked
+            out beneath on the card, the copy and Home, Tonight's columns, and a staged sale with levels drawing none; the
+            record over the fills a sale placed no price above, worked by hand, with which sales place none. The card test's
+            two rows of no level above move with the words.
+Claims:     none new.
+Pins:       none move: the read surface and the plan point test are pinned by no rule.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered to its
+            own test and restored from the file's own bytes. a1 the record line drawn for the time limit alone, a2 the staged
+            sale's old line, a3 the record over every fill, a4 a first band with a band read as none above, a5 Tonight's row
+            saying none above the buy; each predicted red at its test, and each red as predicted.
+Owed:       the remedy's four runs, and each card holding no price above its buy read back once they have written.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: an approval the operator did not give is drawn as withdrawn on their word, and the read surface refuses a write from a script or a headless browser   2026-11-13
+
+Corrects:   the S&P 500's Monthly check-up drawing Quality at a fair price's learned score, "the learned score, ordering the
+            list" of the monthly run of 2026-11-07, as "Approved and live", "Approved on 2026-11-09", where the operator says
+            they did not approve it; item (d) of the order of 2026-11-13.
+Label:      23.10, whose restart registered the learned score as a variant on each index and whose second restart undoes the
+            approval, as the operator asked.
+Ruled:      the operator's answers of 2026-11-13, word for word in `prompts/2026-11-13-23.10-second-restart-order.md`: "Undo it
+            at the restart, as you recommend ... the page shows the 11-09 approval as withdrawn on my word of 11-13; the
+            register stays append-only. I did not press Approve. Find from the run log, the read surface's request log and each
+            session's record what sent that approval at 2:46 pm ET on 2026-11-09, and say so in PROGRESS. Then add a guard";
+            kept in **An approval the operator withdraws is drawn as withdrawn on their word and undone by the next restart's
+            remedy** and **A write reaches the store only from a person's press on a page, and the read surface refuses one
+            from a script or a headless browser**.
+Found:      what sent the approval, read on 2026-11-13. The decision row: approved at 19:46:39 UTC on 2026-11-09 on run
+            `loop-test-GSPC-20261107T192031Z`, written by the Loop page's Approve route, which needs the page's own header. The
+            run log holds no row from 19:30 to 20:00 UTC that day, a press writing its decision alone. The read surface keeps
+            its request times in memory alone, and the server then running, started at 05:28 UTC, restarted at 21:49 UTC that
+            day, so none survives. The sessions' records: the phase 21 sign-off session's holds the operator's "yes i approve
+            it. Should i just press the button" at 19:44:16 UTC, and its answers, PR 676 having merged, taking "it" as the
+            Quality change without asking: "Yes, just press Approve", and at 19:46:18 UTC "Go ahead and press Approve"; its two
+            scripts read the Loop page with no header and wrote nothing. At 19:46:56 UTC the operator sent it a screenshot
+            showing the press's own answer, "Approved. The change is applied at the start of the next night", which only the
+            browser that pressed draws. The press came from a browser on that session's answer, not from a script or a
+            read-back; the fault is the session's reading of "it". No other session's record holds a call to the read surface
+            between 19:25 and 20:05 UTC.
+Built:      the code holds each approval the operator withdrew, here the one above, withdrawn on 2026-11-13, and every place
+            the Loop page and the Monthly check-up draw the operator's word draws it as withdrawn on their word and never as
+            approved: its decision line, its row among the decisions, the count of their word, the check-up's opening and its
+            state, saying the earlier rule is made live again at the next restart of the rules; the decision row stands. The
+            read surface refuses every request that is not a read, before any route reads it, where it names no person's
+            browser: a script's, a command line's, a windowless browser's or none; the suite's hosts name a browser as a page
+            does. The decisions, the architecture and the runbook say so.
+Remedy:     none: the read surface reads it from its restart on the merge; the register's undo is the second restart's.
+Tests:      3 new: the withdrawn approval on the Loop page and the check-up beside an approval given on another index; every
+            one of the 16 routes that write refusing Python, curl, Windows PowerShell, node, a headless Chrome and a client
+            naming nothing, with the page's header, and writing nothing; and no script or skill under `tools/` or `.claude/`
+            carrying the page's header, the reader shown to find a planted line.
+Claims:     none new.
+Pins:       none move: the read surface and the loop's rows and decisions are pinned by no rule, tests holding the latter so.
+Mutated:    the rule as above. d1 the check-up's state drawn approved, d2 the decision line drawn approved, d3 the count reading
+            a withdrawn approval as approved, d4 the reader attaching no withdrawal, each predicted red at the withdrawal test;
+            d5 the guard letting every request through and d6 a write read as a read, each predicted red at the routes test;
+            d7 the header's reader finding nothing, predicted red at the scripts test. Each red as predicted but d1, which
+            survived its first run: the Loop page the test's store draws holds no change block, so the check-up's state was a
+            property no assertion named, a missing property; the test now draws the withdrawn approval's change block itself,
+            and d1 run again is red at it.
+Owed:       the second restart's remedy registering the earlier S&P 500 Quality rule live again, the learned score kept as a
+            variant on each index.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: the off-peak run was not disabled on 2026-11-10, and the early local run fired that day at 13:05 UTC   2026-11-13
+
+Corrects:   the 23.10 ruling of 2026-11-10 reading the overnight order, whose item 9 says "The off-peak run's scheduled task
+            was disabled by the operator on 2026-11-10 while the records' remedy ran, so no story is labelled until it runs
+            again", and the session's report that day that the early local run did not fire. Asked by the operator, item (e) of
+            the order of 2026-11-13: "Why the off-peak run was thought disabled while it ran and wrote 6 paid reports on
+            2026-11-10, and why the early local run did not fire that day; both run as scheduled."
+Label:      23.10, the checkpoint whose ruling the record corrects.
+Found:      read from the run log and the session's notes. The operator disabled the off-peak run's task on 2026-11-09 during
+            that day's remedy of the records; the session of 2026-11-10 carried that state forward from its notes and wrote it
+            into the ruling's entry without reading the scheduler, while the task stood enabled: the off-peak run of 10:05 UTC
+            ran, its labeller from 10:09:59 to 10:30:22 UTC labelling 1,021 stories and its drain writing the 6 reports the
+            night had queued, AMCR's, ATRC's, BDX's, VCEL's, TMDX's and VRSK's, from 10:35 to 11:06 UTC. The early local run
+            fired at 13:05:49 UTC and finished at 13:07:35 UTC, reading 2 releases. It fired at 12:05 UTC every day through
+            2026-11-07 and at 13:05 UTC on each weekday from 2026-11-09, its task's trigger having become a weekly one of the
+            weekdays, which fires an hour after its stated 07:05 since the clocks went back, as the night's does; the session
+            read the task's last run before 13:05 UTC, saw 2026-11-09's, and took the slot as missed. Both ran as scheduled.
+Built:      nothing: the record's correction alone.
+Tests:      none.
+Claims:     none new.
+Pins:       none move.
+Mutated:    none: no assertion was added.
+Owed:       the operator's word on the early slot's time: `CLAUDE.md` and the runbook state 12:05 UTC every day, and its trigger
+            now fires at 13:05 UTC on weekdays.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: the two double-keyed marks written and DWDP's end settled from its 8-K, and the Marking page chooses a session once   2026-11-13
+
+Corrects:   the 23.4 correction's marking page, whose session holding both an unexplained jump and an end no filing settles
+            drew a select of one name on each row, so the form sent both, and the two such sessions left unmarked on 2026-11-10,
+            OCAI's of 2007-01-12 and DWDP's of 2019-06-28; item (f) of the order of 2026-11-13.
+Label:      23.10, whose restart wrote the marks of 2026-11-10, as the operator asked.
+Ruled:      the operator's answer of 2026-11-13, word for word in `prompts/2026-11-13-23.10-second-restart-order.md`: OCAI
+            2007-01-12 "history ends", its revocation settling it and its last move real; DWDP 2019-06-28 "bad print", and DWDP's
+            end settled "from the company's own 8-K of that date rather than sending it to my list: DWDP's history ends on its
+            last session under that code, marked as a ticker change to DD, the consolidation applied as a split, and the history
+            carries on under DD."
+Found:      DowDuPont's 8-K of 2019-06-03, accession 0001193125-19-163322, items 1.01, 2.01, 5.02, 5.03, 8.01 and 9.01,
+            reports the distribution of Corteva and the name changed to DuPont de Nemours, settling the end: DWDP's last session
+            under its code is 2019-05-31, a raw close of 30.52, which its series reads as 91.56 after the 1-for-3 consolidation
+            the provider records as DWDP's split of 2019-06-03. The DWDP rows of 2019-06-03 at 76.10 and 2019-06-04 at 74.11 are
+            DD's own first two sessions at DD's raw scale after the consolidation, its raw closes equal to the cent; DD's series
+            carries them at 83.07 and 80.90, its scale today, and the company's sessions before them, the consolidation and the
+            distribution applied as its split of 2019-06-03, so its history carries on under DD with no join. The row of
+            2019-06-28 repeats 2019-05-31's raw close of 30.52 and nearly its volume.
+Built:      a session listed both as a jump and as an end is chosen once under its one name, on its jump's row, which offers
+            the jump's proposal and the end's, its end's row naming that choice; the marks owed count it once.
+Remedy:     `tools/remedies/2026-11-13-23.10-correction-the-two-marks.txt`, from main after the merge: `session-mark` writes
+            OCAI's of 2007-01-12 as its history's end, DWDP's of 2019-06-28 as a bad print, and DWDP's of 2019-05-31 as its
+            history's end, naming the ticker change to DD and the 8-K.
+Tests:      1 new: a session both a jump and an end drawn with one select offering both proposals, counted once, and its one
+            confirm writing its one mark.
+Claims:     none new.
+Pins:       none move: the marks are the store's and the read surface is pinned by no rule; the marks are read by the sweeps'
+            and the rules' reads of the pull from their next read.
+Mutated:    the rule as above. f1 the end's row drawing its own select, f2 the marks owed counted a row each, f3 the jump's
+            select offering its own proposal alone; each predicted red at the new test, and each red as predicted.
+Owed:       the remedy.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull request.
+
+### 23.10 - correction: the long history's card says the recommended plans' figures from 2019 were read in choosing them   2026-11-13
+
+Corrects:   the Monthly check-up's card of the long history, which said the columns from 2019 "cover years it was not picked
+            on", and the schema and the runbook saying the same: on 2026-11-10 the recommended plans' figures from 2019 were also
+            used to choose the stop's width and the entry's distance, each kept where it did better from 2019, so they read
+            high; item (g) of the order of 2026-11-13.
+Label:      23.10, the checkpoint whose plans those figures chose.
+Ruled:      the operator's order of 2026-11-13, word for word in `prompts/2026-11-13-23.10-second-restart-order.md`: "In
+            PROGRESS and on the Monthly check-up's long card: the recommended plans' figures from 2019 were also used on
+            2026-11-10 to choose the stop width and the entry distance, so they read high, and each plan's record from its
+            registration is its test."
+Recorded:   so stated here: every figure from 2019 the 23.10 ruling of 2026-11-10 reading the overnight order and the restart's
+            table of that day give for a recommended plan was read in choosing its stop's width and its entry's distance, and
+            reads high for it; each plan's record from its registration on 2026-11-10 is its test.
+Built:      the card's note says so in those words, and the schema's and the runbook's sentences with it.
+Remedy:     none.
+Tests:      none new: the long history's page test reads the note's two sentences and that the old words are gone.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule as above. g1 the note's old words, predicted red at the page test, and red as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 3721 of 3721 tests ran with none failed, migrations 0 to 144
+            with none pending, schema version 144, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims,
+            1624 passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34,
+            57 checks on the roster run and passed.

@@ -636,7 +636,7 @@ public partial class ReadSurface
         }
     }
 
-    sealed class LoggedHost(string root, CapturedLog log) : WebApplicationFactory<ReadApi>
+    sealed class LoggedHost(string root, CapturedLog log) : PageFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {

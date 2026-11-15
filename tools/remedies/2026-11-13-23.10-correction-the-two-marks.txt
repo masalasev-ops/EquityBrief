@@ -1,0 +1,9 @@
+# The remedy of the 23.10 correction of 2026-11-13, item (f) of the operator's order of that day, on their answer: the two
+# sessions each both an unexplained jump and an end no filing settles, OCAI's of 2007-01-12 marked its history's end and DWDP's
+# of 2019-06-28 a bad print, and DWDP's end settled from DowDuPont's 8-K of 2019-06-03 as its last session under that code, a
+# ticker change to DD, whose own series carries the company on. It asks nothing of anyone, calls no model, registers nothing
+# and moves no pin. Run from main after the merge, when no night, off-peak run, local run, ledger build or monthly run is
+# writing; a few seconds.
+session-mark --ticker OCAI --session 2007-01-12 --kind "history ends" --says "history ends on the operator's word of 2026-11-13: the SEC revoked its registration on 2007-01-12, its last session, and its last move, 0.015 to 0.01, is real"
+session-mark --ticker DWDP --session 2019-06-28 --kind "bad print" --says "bad print on the operator's word of 2026-11-13: the row stands 17 sessions after the one before it, its close of 30.52 and volume of 16,206,399 repeat 2019-05-31's raw close and nearly its volume"
+session-mark --ticker DWDP --session 2019-05-31 --kind "history ends" --says "a ticker change to DD, on the operator's word of 2026-11-13: DowDuPont's 8-K of 2019-06-03 (0001193125-19-163322, items 2.01 and 5.03) reports the distribution of Corteva and its name changed to DuPont de Nemours, trading as DD from 2019-06-03 after a 1-for-3 consolidation, which the provider applies as a split; its history carries on under DD"

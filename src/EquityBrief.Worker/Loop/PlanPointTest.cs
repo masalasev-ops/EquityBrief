@@ -102,6 +102,10 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     public sealed record Worked(PlanCombination Combination, double? Level, double? Fill, double? Stop, string Sale, PlanPick? Pick, string Words)
     {
         public double? Move { get; init; }
+
+        // From the second 23.10 correction of 2026-11-13, whether its sale placed no price above the fill, so it was held to its
+        // stop or its time limit: the time limit alone, the staged sales with no level above it, the first band above with none.
+        public bool NoPriceAbove { get; init; }
     }
 
     // From the 23.10 correction of 2026-11-13 a plan's fills over a group of setups: their mean move from the fill to the sale as
@@ -336,8 +340,9 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             refinements.Add($"The {family} trades {live.Words} from its live rule's registration, which its figures here are read against.");
         }
 
-        // From the 23.10 correction of 2026-11-13 the live plan's fills from 2019, their mean move from the fill to the sale and
-        // the share that sold above the fill, which a card whose plan sells on its time limit alone draws as the rule's record.
+        // From the 23.10 correction of 2026-11-13 the live plan's fills from 2019 its sale placed no price above, their mean move
+        // from the fill to the sale and the share that sold above the fill, which a card whose plan names no price above its buy
+        // draws as the rule's record: every fill of a plan selling on its time limit alone.
         // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
         var liveMoves = new Dictionary<string, PlanMoves?>(StringComparer.Ordinal);
 
@@ -349,7 +354,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
 
             if (liveMoves[family] is { } moved)
             {
-                refinements.Add(FormattableString.Invariant($"The {family}'s live plan from {LongLedger.StandingFrom.Year}: {moved.Fills} fill(s) moved {moved.Move * 100:+0.0;-0.0;0.0}% on average from the fill to the sale, before costs, {moved.Up * 100:0}% of them up."));
+                refinements.Add(FormattableString.Invariant($"The {family}'s live plan from {LongLedger.StandingFrom.Year}: {moved.Fills} fill(s) its sale placed no price above moved {moved.Move * 100:+0.0;-0.0;0.0}% on average from the fill to the sale, before costs, {moved.Up * 100:0}% of them up."));
             }
         }
 
@@ -709,17 +714,34 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         return tallied;
     }
 
-    // A plan's fills over setups, each walked as the plan point test walks it: their mean move from the fill to the sale and
-    // the share that sold above the fill; none where no fill ended with a result.
+    // A plan's fills over setups, each walked as the plan point test walks it, those its sale placed no price above: their mean
+    // move from the fill to the sale and the share that sold above the fill; none where no such fill ended with a result.
+    // From the second 23.10 correction of 2026-11-13 a fill whose sale placed a price above it counts in none of it, so a card
+    // whose plan names no price above its buy draws the record of picks like it.
+    // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
     public static PlanMoves? MovesOf(Walker walker, IReadOnlyList<FlaggedSetup> setups, PlanCombination combination, CancellationToken cancellation)
     {
-        var moves = new double?[setups.Count];
+        var worked = new Worked?[setups.Count];
 
         Parallel.For(0, setups.Count, new ParallelOptions { CancellationToken = cancellation }, at =>
-            moves[at] = walker.WorkedUnder(setups[at], [combination]) is [{ Pick: { Filled: true, Result: not null }, Move: { } move }] ? move : null);
+            worked[at] = walker.WorkedUnder(setups[at], [combination]) is [var one] ? one : null);
 
-        return Moves([.. moves.OfType<double>()]);
+        return MovesOver(worked.OfType<Worked>());
     }
+
+    // The moves of the fills that ended with a result and whose sale placed no price above them.
+    public static PlanMoves? MovesOver(IEnumerable<Worked> worked) =>
+        Moves([.. worked.Where(one => one is { Pick: { Filled: true, Result: not null }, Move: not null, NoPriceAbove: true }).Select(one => one.Move!.Value)]);
+
+    // Whether a sale placed no price above a fill, so the fill was held to its stop or its time limit: the time limit alone, the
+    // staged sales with no level above the fill, and the first band above with no band above it.
+    public static bool NoPriceAboveOf(string sale, PlanSale placed, double fill) => sale switch
+    {
+        PlanPoints.TimeLimit => true,
+        PlanPoints.StagedSales => !placed.Staged.Any(level => level > fill),
+        PlanPoints.FirstBand => placed.Target is null,
+        _ => false,
+    };
 
     // The mean of moves and the share above nought, none over no move.
     public static PlanMoves? Moves(IReadOnlyList<double> moves) =>
@@ -1131,6 +1153,7 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                 worked.Add(new Worked(combination, level, fill.Price, stop, saleWords, pick, FormattableString.Invariant($"{outcome.End} after {outcome.Sessions} session(s), {result:+0.00;-0.00} risks after costs"))
                 {
                     Move = (outcome.Sold - fill.Price) / fill.Price,
+                    NoPriceAbove = NoPriceAboveOf(combination.Exit, sale, fill.Price),
                 });
             }
 

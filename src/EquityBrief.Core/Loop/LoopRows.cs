@@ -61,7 +61,11 @@ public sealed record LoopProposalRow(
 // The operator's word on a proposal or on a restore as the read surface stored it, with what the apply step did with it
 // once it answered: the run, family and proposal, approved or declined, the reason given, when, the apply's outcome, its
 // words and when, none until it answers, and the blocks the proposal was tested over and its change.
-public sealed record LoopDecisionRow(string Run, string Family, string Proposal, string Decision, string? Reason, string DecidedAt, string? Outcome, string? Words, string? AppliedAt, int? Blocks, string? Change = null);
+public sealed record LoopDecisionRow(string Run, string Family, string Proposal, string Decision, string? Reason, string DecidedAt, string? Outcome, string? Words, string? AppliedAt, int? Blocks, string? Change = null)
+{
+    // From the second 23.10 correction of 2026-11-13 the operator's withdrawal of an approval, none where it stands.
+    public LoopDecisions.Withdrawal? Withdrawal { get; init; }
+}
 
 // A setting an approval stored for a family on an index, a row a change: its id, family, words, when it was set and the
 // run and proposal it came from.

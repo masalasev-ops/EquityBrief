@@ -1,0 +1,10 @@
+# The remedy of the 23.10 correction of 2026-11-13, item (a) of the operator's order of that day: a staged sale or the first
+# band above whose levels place no price above its buy says so in one line and draws the record of picks like it beneath. The
+# buy and sell points of the families whose live plan sells by levels, the staged sales or the first band above, each its
+# family alone, the other families' rows standing, so such a card draws that record in place of "The record for this is being
+# worked out". It asks nothing of anyone, calls no model, registers nothing and moves no pin. Run from main after the merge,
+# when no night, off-peak run, local run, ledger build or monthly run is writing, each about half an hour to an hour.
+plan-points --index MID --family drift
+plan-points --index SML --family breakout
+plan-points --index GSPC --family breakout
+plan-points --index MID --family breakout

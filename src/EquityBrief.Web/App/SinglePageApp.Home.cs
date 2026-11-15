@@ -549,7 +549,7 @@ public sealed partial class SinglePageApp
             }
 
             card.Append("</div>");
-            card.Append(zone.Sale is { OnTimeAlone: true } ? Invariant($"<p class=\"home-cond\" data-time-record>{Escaped(MarkRenderer.TimeLimitRecordWords(idea.LongRecord))}</p>") : string.Empty);
+            card.Append(zone.Sale is { HoldsToItsLimit: true } ? Invariant($"<p class=\"home-cond\" data-time-record>{Escaped(MarkRenderer.TimeLimitRecordWords(idea.LongRecord))}</p>") : string.Empty);
             card.Append(Invariant($"<p class=\"home-cond\">{Escaped(MarkRenderer.ZoneWaitLine(zone))}</p>"));
         }
         else

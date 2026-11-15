@@ -1041,7 +1041,7 @@ public class CorporateActions
 
     // The API over a test store, in process, for the routes the name page and the file are
     // served from.
-    sealed class SurfaceHost(string root) : WebApplicationFactory<ReadApi>
+    sealed class SurfaceHost(string root) : PageFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
