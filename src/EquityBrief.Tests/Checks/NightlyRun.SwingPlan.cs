@@ -79,14 +79,15 @@ public partial class NightlyRun
         Assert.Equal(["2026-09-28||0"], Texts(store, "SELECT ended_on || '|' || COALESCE(result, '') || '|' || COALESCE(benchmark, '') || members FROM rule_pick WHERE session_date = '2026-09-28';"));
         Assert.Equal(["1|1"], Texts(store, $"SELECT (benchmark IS NULL) || '|' || (members IS NULL) FROM rule_pick WHERE session_date = '{RuleNight}' AND rule = '{LiveFilter}';"));
 
-        // The fill step prices each from the rule picks: the one not filled, and none for the one still waiting; and the
-        // pages read both as the live rule's trades under its plan.
+        // The fill step prices each from the rule picks, both not filled: tonight's order on BBB holds no level either, so it is
+        // not placed, on the operator's ruling of 2026-11-14, clause 10; and the pages read both as the live rule's trades
+        // under its plan.
         await new TradeFiller(clock, store.DatabaseFile).RunAsync("night-fills");
 
         var trades = await new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, clock).PlannedTradesAsync("GSPC", new DateOnly(2026, 10, 7));
 
         Assert.Equal(
-            [("AAA", new DateOnly(2026, 9, 28), true, true, (DateOnly?)null), ("BBB", new DateOnly(2026, 10, 7), true, false, (DateOnly?)null)],
+            [("AAA", new DateOnly(2026, 9, 28), true, true, (DateOnly?)null), ("BBB", new DateOnly(2026, 10, 7), true, true, (DateOnly?)null)],
             trades.Select(row => (row.Ticker, row.Listed, row.Live, row.NotFilled, row.FilledOn)));
         Assert.All(trades, row => Assert.Equal((LiveFilter, "pullback"), (row.Owner, row.Family)));
         Assert.Empty(await new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, clock).PlannedTradesAsync("MID", new DateOnly(2026, 10, 7)));

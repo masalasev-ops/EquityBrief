@@ -19510,7 +19510,7 @@ Owed:       (a)'s replay, as the ruling entry above states it; the heavyweights'
             raised with the operator after the restart; the long search's S&amp;P 400 breakout row naming "any range" at its next
             run; the S&amp;P 500's and the index books' holdings listed without the restart's line on the heavyweights' card.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
-            that run: all six steps, 0 warnings, 0 errors, x of x tests ran with none failed, migrations 0 to 149 with none
-            pending, schema version 149, against `data-ci` and never `data`; the phase report x tables, x claims, x passing,
-            none out of scope and none unexamined, x placements and verdicts reconciled against a floor of 34, x checks on the
-            roster run and passed.
+            that run: all six steps, 0 warnings, 0 errors, 3765 of 3765 tests ran with none failed, migrations 0 to 149 with none
+            pending, schema version 149, against `data-ci` and never `data`; the phase report 66 tables, 1624 claims, 1624
+            passing, none out of scope and none unexamined, 1639 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
