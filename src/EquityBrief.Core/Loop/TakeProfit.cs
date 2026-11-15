@@ -15,6 +15,16 @@ public enum TakeProfitSource
 // A price the stock turned down at before: a swing high's price and the session it was made on.
 public sealed record TurnedDown(double Price, DateOnly On);
 
+// On the operator's answer of 2026-11-14 on the tables how a full take-profit is placed, walked beside one another: today's,
+// the nearest price above the buy it turned down at else the multiple of the risk; the multiple of the risk alone; and the
+// first price it turned down at standing the multiple of the risk or more above the buy, else the multiple.
+public enum TakeProfitPlacing
+{
+    Turned,
+    Risk,
+    Beyond,
+}
+
 // A pick's take-profit price: the price, where it came from, the session the stock turned down at where it came from one, and
 // the multiple of the risk where it came from the risk.
 public sealed record TakeProfitPrice(double Price, TakeProfitSource Source, DateOnly? TurnedDownOn = null, double? Multiple = null);
@@ -103,6 +113,17 @@ public static class TakeProfit
 
         return nearest is { } found ? new TurnedDown(Statistic.FromPrice(found.Price), found.SessionDate) : null;
     }
+
+    // On the operator's answer of 2026-11-14 on the tables the nearest price a stock turned down at above a price as a full
+    // take-profit's placing reads it: as it stands for today's take-profit; none at the multiple of the risk alone, so the
+    // multiple stands; and from the buy plus the multiple of the risk up for the first price it turned down at that far away or
+    // more, so the multiple stands where none is.
+    public static Func<double, TurnedDown?> NearestFor(Func<double, TurnedDown?> nearestAbove, TakeProfitPlacing placing, double buy, double stop, double multiple) => placing switch
+    {
+        TakeProfitPlacing.Risk => _ => null,
+        TakeProfitPlacing.Beyond => price => nearestAbove(Math.Max(price, Math.BitDecrement(buy + (multiple * (buy - stop))))),
+        _ => nearestAbove,
+    };
 
     // The take-profit price of a pick bought at a price: its own sale's where above the buy, else the nearest price above the buy
     // it turned down at before, else the buy plus the multiple of the risk; none where none of them places one, a pick with no

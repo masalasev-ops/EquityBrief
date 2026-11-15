@@ -179,7 +179,8 @@ public sealed class QualityLay
         bool soldUnderAverage = false,
         Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null,
         (double Moves, double Multiple)? stops = null,
-        bool half = false)
+        bool half = false,
+        TakeProfitPlacing placing = TakeProfitPlacing.Turned)
     {
         var trades = new List<HeavyweightTrade>();
         var rebalances = new Dictionary<int, HeavyweightRebalance>();
@@ -277,7 +278,7 @@ public sealed class QualityLay
             {
                 open[name] = session;
 
-                if (stops is { } asked && tape.ExitsAt(name, session, asked.Moves, asked.Multiple) is { } placed)
+                if (stops is { } asked && tape.ExitsAt(name, session, asked.Moves, asked.Multiple, placing) is { } placed)
                 {
                     exits[name] = BookHalf.Placed(placed, tape.Close[name][session], asked.Multiple, half);
                 }
@@ -300,9 +301,9 @@ public sealed class QualityLay
 
     // One setting's book: its walk, each holding and its members bought at the open after its reshuffle and the holding
     // charged its round trip, and its months.
-    public QualityBook Book(QualitySettings setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null, bool half = false)
+    public QualityBook Book(QualitySettings setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null, bool half = false, TakeProfitPlacing placing = TakeProfitPlacing.Turned)
     {
-        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops, half);
+        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops, half, placing);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,

@@ -40,27 +40,48 @@ public sealed partial class WalkForwardTester
 
             // On the operator's ruling of 2026-11-14 on the books the nine full exits and the nine half exits, chosen in points a month,
             // the book's own exit beside them as the reference and not a choice, each read per dollar risked beside.
-            var walked = new[] { false, true }
-                .SelectMany(half => BookStops.Grid.Select(stops => (Stops: stops, Half: half, Words: half ? BookStops.HalfWords(stops) : BookStops.Words(stops))))
-                .Select(one => (one.Stops, one.Half, one.Words, Book: book(one.Stops, one.Half)))
+            // On the operator's answer of 2026-11-14 on the tables three full take-profits beside the half: today's, the multiple of
+            // the risk alone, and the first price the stock turned down at that far above the buy or more.
+            (bool Half, Core.Loop.TakeProfitPlacing Placing, Func<(double Moves, double Multiple), string> Words)[] shapes =
+            [
+                (false, Core.Loop.TakeProfitPlacing.Turned, BookStops.Words),
+                (false, Core.Loop.TakeProfitPlacing.Risk, BookStops.AtRiskWords),
+                (false, Core.Loop.TakeProfitPlacing.Beyond, BookStops.BeyondWords),
+                (true, Core.Loop.TakeProfitPlacing.Turned, BookStops.HalfWords),
+            ];
+            var walked = shapes
+                .SelectMany(shape => BookStops.Grid.Select(stops => (Stops: stops, shape.Half, shape.Placing, Words: shape.Words(stops))))
+                .Select(one => (one.Stops, one.Half, one.Placing, one.Words, Book: book(one.Stops, one.Half, one.Placing)))
                 .ToArray();
-            var own = new RuleUnderTest(family, rule, RuleTests.Live, rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: book(null, false).Months)
+            var own = new RuleUnderTest(family, rule, RuleTests.Live, rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: book(null, false, Core.Loop.TakeProfitPlacing.Turned).Months)
             {
                 BookBeside = [.. walked.Select(one => (one.Words, one.Book.Months))],
             };
 
             output.WriteLine(RuleTests.BookChoiceLine(own, index, read.Calendar, InTestYears));
 
+            // On the operator's answer of 2026-11-14 on the tables a heavyweights book holding no month before its judged years takes
+            // the middle exit, its box counting from its first month.
+            var chosen = RuleTests.BookChosen(own, index, read.Calendar, InTestYears);
+            var middle = chosen is null && family == Core.Families.HeavyweightRule.Name;
+
+            if (middle)
+            {
+                chosen = BookStops.AtRiskWords(BookStops.Middle);
+                output.WriteLine($"book choice: {family}, {rule}: holding no month before {RuleTests.HeavyweightsJudgedFrom}, it takes the middle exit, {chosen}");
+            }
+
             // What each exit's trades came to, beside the book's own: how many ended, why, their mean result after the round trip,
             // and how many sold half first, so a choice's figure can be read back to the trades behind it.
-            foreach (var (words, costed) in walked.Select(one => (one.Words, one.Book.Costed)).Prepend(("its own exit", book(null, false).Costed)))
+            foreach (var (words, costed) in walked.Select(one => (one.Words, one.Book.Costed)).Prepend(("its own exit", book(null, false, Core.Loop.TakeProfitPlacing.Turned).Costed)))
             {
                 var ended = costed.Where(trade => trade.End is not null && trade.Result is not null).ToArray();
                 var reasons = string.Join(", ", ended.GroupBy(trade => trade.Reason ?? "none").OrderByDescending(group => group.Count()).Select(group => FormattableString.Invariant($"{group.Key} {group.Count()}")));
 
                 output.WriteLine(FormattableString.Invariant($"book trades: {family}, {words}: {ended.Length} ended, {ended.Count(trade => trade.HalfAt is not null)} selling half first, a mean result of {(ended.Length > 0 ? ended.Average(trade => trade.Result!.Value) * 100 : 0):+0.00;-0.00;0.00}% and a median of {(ended.Length > 0 ? ended.Select(trade => trade.Result!.Value).Order().ElementAt(ended.Length / 2) * 100 : 0):+0.00;-0.00;0.00}%; {reasons}"));
             }
-            output.WriteLine(BookRisk.Line(family, rule, index, read.Calendar, [.. walked.Select(one => (one.Words, BookRisk.Edges(tape, read.Series, one.Book.Costed, one.Stops, one.Half)))], RuleTests.BookChosen(own, index, read.Calendar, InTestYears)));
+
+            output.WriteLine(BookRisk.Line(family, rule, index, read.Calendar, [.. walked.Select(one => (one.Words, BookRisk.Edges(tape, read.Series, one.Book.Costed, one.Stops, one.Half, one.Placing)))], chosen, boxFromFirst: middle));
         }
 
         return 0;

@@ -1421,5 +1421,10 @@ public static class RuleWording
         public static string Moves(double moves, string number) => number + (moves == 1 ? " typical move" : " typical moves");
 
         public static string TakingHalf(double multiple) => FormattableString.Invariant($"taking profit on half at {multiple:0.##}{TakingClosing}, the stop on the other half then moved up to the buy");
+
+        // On the operator's answer of 2026-11-14 on the tables the two full take-profits walked beside today's.
+        public static string TakingAtRisk(double multiple) => FormattableString.Invariant($"taking profit at {multiple:0.##}{TakingClosing} alone");
+
+        public static string TakingBeyond(double multiple) => FormattableString.Invariant($"taking profit at the first price it turned down at {multiple:0.##}{TakingClosing} or more above the buy");
     }
 }

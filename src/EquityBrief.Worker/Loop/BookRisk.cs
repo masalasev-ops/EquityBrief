@@ -19,8 +19,8 @@ public static class BookRisk
 {
     // Each ended pick's buy session and its edge per dollar risked, none where its stop or its fill is not read or no other
     // member of the index is.
-    public static IReadOnlyList<(int Entry, double? Edge)> Edges(HeavyweightTape tape, IReadOnlyList<SweepSeries> series, IReadOnlyList<HeavyweightTrade> costed, (double Moves, double Multiple) stops, bool half = false) =>
-        Edges(tape, costed, (name, entry) => Placed(tape, series, name, entry, stops, half), half);
+    public static IReadOnlyList<(int Entry, double? Edge)> Edges(HeavyweightTape tape, IReadOnlyList<SweepSeries> series, IReadOnlyList<HeavyweightTrade> costed, (double Moves, double Multiple) stops, bool half = false, TakeProfitPlacing placing = TakeProfitPlacing.Turned) =>
+        Edges(tape, costed, (name, entry) => Placed(tape, series, name, entry, stops, half, placing), half);
 
     // The same over a placement handed in: each member's risk, stop, take-profit and fill at a buy session, none where none is;
     // under a half exit each member walked the same way, half sold at its take-profit and its stop then moved up to its buy.
@@ -60,11 +60,11 @@ public static class BookRisk
     // A member's stop and take-profit placed at a session's close as the book places a holding's, its risk a fraction of that
     // close, and its fill at the next open over that close; none where the index does not hold it, it has no close, no stop is
     // placed or no open follows.
-    static (double Risk, double Stop, double? TakeProfit, double Fill)? Placed(HeavyweightTape tape, IReadOnlyList<SweepSeries> series, int name, int entry, (double Moves, double Multiple) stops, bool half)
+    static (double Risk, double Stop, double? TakeProfit, double Fill)? Placed(HeavyweightTape tape, IReadOnlyList<SweepSeries> series, int name, int entry, (double Moves, double Multiple) stops, bool half, TakeProfitPlacing placing)
     {
         var close = tape.Close[name][entry];
 
-        if (!tape.Member[name][entry] || !(close > 0) || tape.ExitsAt(name, entry, stops.Moves, stops.Multiple) is not { } placed || !(placed.Stop < close))
+        if (!tape.Member[name][entry] || !(close > 0) || tape.ExitsAt(name, entry, stops.Moves, stops.Multiple, placing) is not { } placed || !(placed.Stop < close))
         {
             return null;
         }
@@ -143,10 +143,9 @@ public static class BookRisk
 
     // A book's line beside its choice in points a month: each stop and take-profit's edge per dollar risked from its family's
     // first test year on the index to 2018 and from 2019, and the record box's sentence at the one chosen in points a month.
-    public static string Line(string family, string rule, string index, IReadOnlyList<DateOnly> calendar, IReadOnlyList<(string Words, IReadOnlyList<(int Entry, double? Edge)> Edges)> choices, string? chosen)
+    public static string Line(string family, string rule, string index, IReadOnlyList<DateOnly> calendar, IReadOnlyList<(string Words, IReadOnlyList<(int Entry, double? Edge)> Edges)> choices, string? chosen, bool boxFromFirst = false)
     {
-        var first = LongTest.FirstTestYear(family, index);
-        var from = Core.History.LongLedger.StandingFrom.Year;
+        var (first, from) = RuleTests.BookSplit(family, index);
         bool Early(int entry) => calendar[entry].Year >= first && calendar[entry].Year < from;
         bool Late(int entry) => calendar[entry].Year >= from;
         static string Shown((double? Mean, int Picks) figure) => figure.Mean is { } mean ? FormattableString.Invariant($"{mean:+0.000;-0.000;0.000} over {figure.Picks}") : FormattableString.Invariant($"none over {figure.Picks}");
@@ -156,15 +155,15 @@ public static class BookRisk
         return FormattableString.Invariant($"book risk: {family}, {rule}, per $1 risked against the index's other stocks bought the same way: ")
             + string.Join("; ", choices.Select(one => FormattableString.Invariant($"{one.Words} {Shown(Mean(one.Edges, Early))} {years}, {Shown(Mean(one.Edges, Late))} from {from}")))
             + (chosen is not null && at.Edges is not null
-                ? FormattableString.Invariant($"; at the choice in points a month, {chosen}: ") + Box(at.Edges, calendar)
+                ? (boxFromFirst ? FormattableString.Invariant($"; at the middle exit, holding no month before {from}, {chosen}: ") : FormattableString.Invariant($"; at the choice in points a month, {chosen}: ")) + Box(at.Edges, calendar, boxFromFirst ? 0 : from)
                 : "; no choice in points a month");
     }
 
     // On the operator's ruling of 2026-11-14 on the books, item 1, the record box's sentence for a book at one stop and take-profit:
-    // the picks bought from 2019, the years after the choice was made, a mean under nothing said as less.
-    public static string Box(IReadOnlyList<(int Entry, double? Edge)> edges, IReadOnlyList<DateOnly> calendar)
+    // the picks bought from the year after the choice was made, or from a book's first where it takes the middle exit; a mean
+    // under nothing said as less, and on their answer on the tables one rounding to nothing said as about the same.
+    public static string Box(IReadOnlyList<(int Entry, double? Edge)> edges, IReadOnlyList<DateOnly> calendar, int from)
     {
-        var from = Core.History.LongLedger.StandingFrom.Year;
         var kept = edges.Where(one => one.Edge is not null && calendar[one.Entry].Year >= from).ToArray();
 
         if (kept.Length == 0)
@@ -173,13 +172,16 @@ public static class BookRisk
         }
 
         var mean = kept.Average(one => one.Edge!.Value);
+        var start = kept.Min(one => calendar[one.Entry].Year);
 
-        return FormattableString.Invariant($"From {from} to {calendar[^1].Year}, picks like this made ${Math.Abs(mean).ToString("0.00", CultureInfo.InvariantCulture)} {(mean < 0 ? "less" : "more")} for every $1 risked than buying the index's other stocks the same way, over {kept.Length} picks.");
+        return Math.Round(Math.Abs(mean), 2) == 0
+            ? FormattableString.Invariant($"From {start} to {calendar[^1].Year}, picks like this made about the same for every $1 risked as buying the index's other stocks the same way, over {kept.Length} picks.")
+            : FormattableString.Invariant($"From {start} to {calendar[^1].Year}, picks like this made ${Math.Abs(mean).ToString("0.00", CultureInfo.InvariantCulture)} {(mean < 0 ? "less" : "more")} for every $1 risked than buying the index's other stocks the same way, over {kept.Length} picks.");
     }
 
     // Each live book on the index and its walk at a stop and take-profit or at none, the trades costed and the months, built as the
     // per-rule test builds it; a live S&P 400 or 600 heavyweights rule off its design's six settings is named with no walk.
-    public static IEnumerable<(string Family, string Rule, HeavyweightTape? Tape, Func<(double Moves, double Multiple)?, bool, (IReadOnlyList<HeavyweightTrade> Costed, IReadOnlyList<(int Opens, double? Edge)> Months)>? Book)> LiveBooks(
+    public static IEnumerable<(string Family, string Rule, HeavyweightTape? Tape, Func<(double Moves, double Multiple)?, bool, TakeProfitPlacing, (IReadOnlyList<HeavyweightTrade> Costed, IReadOnlyList<(int Opens, double? Edge)> Months)>? Book)> LiveBooks(
         IReadOnlyList<RegisterRow> standing, string index, HeavyweightLay heavyweights, QualityLay? quality, ImprovingLay? improving)
     {
         foreach (var row in standing.Where(row => FamilyRecords.IsLive(row.Candidate)).OrderBy(row => row.Id))
@@ -193,9 +195,9 @@ public static class BookRisk
                     var setting = RuleTests.SettingOf(p);
                     var words = row.Rule;
 
-                    yield return (HeavyweightRule.Name, row.Candidate, heavyweights.Tape, (stops, half) =>
+                    yield return (HeavyweightRule.Name, row.Candidate, heavyweights.Tape, (stops, half, placing) =>
                     {
-                        var book = heavyweights.BookOf(setting, words, stops, half);
+                        var book = heavyweights.BookOf(setting, words, stops, half, placing);
 
                         return (book.Costed, book.Months);
                     });
@@ -216,9 +218,9 @@ public static class BookRisk
                             : heavyweights.RebalancesB(own.Window, own.Industries, own.Members, own.Quality, own.Floors);
                         var exit = own.Setting?.Exit ?? HeavyweightExit.Drop;
 
-                        yield return (HeavyweightRule.Name, row.Candidate, heavyweights.Tape, (stops, half) =>
+                        yield return (HeavyweightRule.Name, row.Candidate, heavyweights.Tape, (stops, half, placing) =>
                         {
-                            var book = heavyweights.BookFrom(rebalances, exit, own.Key, stops, half);
+                            var book = heavyweights.BookFrom(rebalances, exit, own.Key, stops, half, placing);
 
                             return (book.Costed, book.Months);
                         });
@@ -229,9 +231,9 @@ public static class BookRisk
                     }
                     else
                     {
-                        yield return (HeavyweightRule.Name, row.Candidate, heavyweights.Tape, (stops, half) =>
+                        yield return (HeavyweightRule.Name, row.Candidate, heavyweights.Tape, (stops, half, placing) =>
                         {
-                            var book = heavyweights.Book(six, designA, stops, half);
+                            var book = heavyweights.Book(six, designA, stops, half, placing);
 
                             return (book.Costed, book.Months);
                         });
@@ -244,9 +246,9 @@ public static class BookRisk
                 {
                     var setting = QualityCandidate.SettingsOf(p);
 
-                    yield return (QualityRule.Name, row.Candidate, quality.Tape, (stops, half) =>
+                    yield return (QualityRule.Name, row.Candidate, quality.Tape, (stops, half, placing) =>
                     {
-                        var book = quality.Book(setting, stops: stops, half: half);
+                        var book = quality.Book(setting, stops: stops, half: half, placing: placing);
 
                         return (book.Costed, book.Months);
                     });
@@ -257,9 +259,9 @@ public static class BookRisk
                 {
                     var setting = ImprovingCandidate.SettingsOf(p);
 
-                    yield return (ImprovingRule.Name, row.Candidate, improving.Tape, (stops, half) =>
+                    yield return (ImprovingRule.Name, row.Candidate, improving.Tape, (stops, half, placing) =>
                     {
-                        var book = improving.Book(setting, stops: stops, half: half);
+                        var book = improving.Book(setting, stops: stops, half: half, placing: placing);
 
                         return (book.Costed, book.Months);
                     });

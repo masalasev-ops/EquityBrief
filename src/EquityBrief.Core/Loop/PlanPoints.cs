@@ -15,16 +15,30 @@ public sealed record PlanCombination(string Entry, int Window, string Stop, stri
     // stop on the other half then moved up to the buy and the other half sold by the plan's own sale.
     public bool Half { get; init; }
 
+    // On the operator's answer of 2026-11-14 on the tables how a full take-profit is placed; today's where none is named.
+    public TakeProfitPlacing Placing { get; init; }
+
     public string Words => (Window > 0
         ? FormattableString.Invariant($"{Entry} within {Window} sessions, {Stop}, {Exit}")
         : FormattableString.Invariant($"{Entry}, {Stop}, {Exit}"))
-        + (TakeProfit is { } multiple ? ", " + (Half ? EquityBrief.Core.Families.RuleWording.TakeProfit.TakingHalf(multiple) : EquityBrief.Core.Loop.TakeProfit.Words(multiple)) : string.Empty);
+        + (TakeProfit is { } multiple ? ", " + (Half ? EquityBrief.Core.Families.RuleWording.TakeProfit.TakingHalf(multiple) : Placing switch
+        {
+            TakeProfitPlacing.Risk => EquityBrief.Core.Families.RuleWording.TakeProfit.TakingAtRisk(multiple),
+            TakeProfitPlacing.Beyond => EquityBrief.Core.Families.RuleWording.TakeProfit.TakingBeyond(multiple),
+            _ => EquityBrief.Core.Loop.TakeProfit.Words(multiple),
+        }) : string.Empty);
 
     // The same plan taking profit at a multiple of its risk.
-    public PlanCombination Taking(double multiple) => this with { TakeProfit = multiple, Half = false };
+    public PlanCombination Taking(double multiple) => this with { TakeProfit = multiple, Half = false, Placing = TakeProfitPlacing.Turned };
+
+    // The same plan taking profit at the multiple of its risk alone, and at the first price it turned down at that far above the
+    // buy or more, beside today's.
+    public PlanCombination TakingAtRisk(double multiple) => this with { TakeProfit = multiple, Half = false, Placing = TakeProfitPlacing.Risk };
+
+    public PlanCombination TakingBeyond(double multiple) => this with { TakeProfit = multiple, Half = false, Placing = TakeProfitPlacing.Beyond };
 
     // The same plan taking profit on half its shares at a multiple of its risk.
-    public PlanCombination Halving(double multiple) => this with { TakeProfit = multiple, Half = true };
+    public PlanCombination Halving(double multiple) => this with { TakeProfit = multiple, Half = true, Placing = TakeProfitPlacing.Turned };
 }
 
 // What the sale reads: a target the close must reach, a trail the stop follows the highest close by, the staged levels

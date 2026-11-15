@@ -66,8 +66,37 @@ public partial class FixtureExpectations
         Assert.Equal(0.45 - (1.1 / 3), edges[1].Edge!.Value, 9);
         Assert.Null(edges[2].Edge);
 
-        // The box counts the picks from 2019 alone, the years after the choice was made, and this tape holds none.
-        Assert.Equal("no pick from 2019 to measure", BookRisk.Box(edges, BookRiskTape().Calendar));
+        // The box counts the picks from the year after the choice was made alone, and this tape holds none from 2019.
+        Assert.Equal("no pick from 2019 to measure", BookRisk.Box(edges, BookRiskTape().Calendar, 2019));
+    }
+
+    // On the operator's answers on the tables: a box whose mean rounds to nothing says the picks made about the same; a heavyweights
+    // book's box counts from 2023, the year after it chooses on 2019 to 2022; and one taking the middle exit, holding no month
+    // to choose on, counts from its first pick.
+    [Fact]
+    public void ABooksBoxSaysAboutTheSameWhereItRoundsToNothingAndAHeavyweightsBookCountsFrom2023()
+    {
+        DateOnly[] calendar = [new(2019, 6, 3), new(2021, 6, 1), new(2023, 6, 1), new(2024, 6, 3)];
+        (int Entry, double? Edge)[] edges = [(0, 0.5), (1, 0.3), (2, 0.004), (3, 0.004)];
+
+        Assert.Equal(
+            "From 2023 to 2024, picks like this made about the same for every $1 risked as buying the index's other stocks the same way, over 2 picks.",
+            BookRisk.Box(edges, calendar, 2023));
+        Assert.Equal(
+            "From 2019 to 2024, picks like this made $0.20 more for every $1 risked than buying the index's other stocks the same way, over 4 picks.",
+            BookRisk.Box(edges, calendar, 0));
+
+        (string, IReadOnlyList<(int Entry, double? Edge)>)[] choices = [("X", edges)];
+
+        Assert.EndsWith(
+            "at the choice in points a month, X: From 2023 to 2024, picks like this made about the same for every $1 risked as buying the index's other stocks the same way, over 2 picks.",
+            BookRisk.Line(HeavyweightRule.Name, "the live rule", "SML", calendar, choices, "X"),
+            StringComparison.Ordinal);
+        Assert.Contains("X +0.400 over 2 from 2019 to 2022, +0.004 over 2 from 2023", BookRisk.Line(HeavyweightRule.Name, "the live rule", "SML", calendar, choices, "X"), StringComparison.Ordinal);
+        Assert.EndsWith(
+            "at the middle exit, holding no month before 2023, X: From 2019 to 2024, picks like this made $0.20 more for every $1 risked than buying the index's other stocks the same way, over 4 picks.",
+            BookRisk.Line(HeavyweightRule.Name, "the live rule", "SML", calendar, choices, "X", boxFromFirst: true),
+            StringComparison.Ordinal);
     }
 
     // On the S&P 400 Quality is judged from 2016, so X's 2014 pick is not read; the line reads each choice per dollar risked

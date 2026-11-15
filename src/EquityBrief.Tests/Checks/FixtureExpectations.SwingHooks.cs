@@ -162,27 +162,36 @@ public partial class FixtureExpectations
 
     // On the operator's ruling of 2026-11-14, item 4: a book's stop and take-profit chosen on its months from its family's first
     // test year on the index to 2018 and judged from 2019, by the calendar year of each month's opening session. The S&P 400's
-    // heavyweights are judged from 2015, so the choice doing well in 2014 alone is not chosen; the S&P 500's from 2023, so
-    // nothing is chosen and the months from 2019 are still judged. Worked by hand in points a month, an edge times 100.
+    // Quality is judged from 2016, so the choice doing well in 2014 alone is not chosen. On their answer on the tables a
+    // heavyweights book, which holds no month before 2019, chooses on 2019 to 2022 and is judged from 2023. Worked by hand in points
+    // a month, an edge times 100.
     [Fact]
     public void ABooksStopAndTakeProfitAreChosenFromItsFirstTestYearTo2018AndJudgedFrom2019ByCalendarYear()
     {
-        DateOnly[] calendar = [new(2012, 6, 1), new(2014, 6, 2), new(2015, 6, 1), new(2016, 6, 1), new(2018, 6, 1), new(2019, 6, 3), new(2021, 6, 1)];
-        var book = new RuleUnderTest(HeavyweightRule.Name, "the live rule", "live", "words", LoopProcedures.Points, 21, Months: [(1, 0.05), (2, 0.01), (3, 0.03), (5, 0.02), (6, -0.04)])
-        {
-            BookBeside = [("A", [(1, 0.50), (2, -0.01), (3, -0.01), (5, 0.10), (6, 0.10)]), ("B", [(1, -0.50), (2, 0.02), (3, 0.02), (5, -0.10), (6, 0.00)])],
-        };
+        DateOnly[] calendar = [new(2012, 6, 1), new(2014, 6, 2), new(2015, 6, 1), new(2016, 6, 1), new(2018, 6, 1), new(2019, 6, 3), new(2021, 6, 1), new(2023, 6, 1)];
+        (int, double?)[] own = [(1, 0.05), (2, 0.01), (3, 0.03), (5, 0.02), (6, -0.04), (7, 0.06)];
+        (string, IReadOnlyList<(int Opens, double? Edge)>)[] beside =
+        [
+            ("A", [(1, 0.50), (2, -0.01), (3, -0.01), (5, 0.10), (6, 0.10), (7, -0.02)]),
+            ("B", [(1, -0.50), (2, 0.02), (3, 0.02), (5, -0.10), (6, 0.00), (7, 0.01)]),
+        ];
+        var quality = new RuleUnderTest(QualityRule.Name, "the live rule", "live", "words", LoopProcedures.Points, 21, Months: own) { BookBeside = beside };
+        var heavyweights = new RuleUnderTest(HeavyweightRule.Name, "the live rule", "live", "words", LoopProcedures.Points, 21, Months: own) { BookBeside = beside };
 
+        // Quality on the S&P 400: chosen on 2016's month alone, B at +2.00 against A's -1.00; judged on 2019, 2021 and 2023.
         Assert.Equal(
-            "book choice: heavyweight, the live rule: its own +2.00 from 2015 to 2018 over 2 month(s), -1.00 from 2019 over 2; A -1.00 before, +10.00 from; B +2.00 before, -5.00 from; chosen from 2015 to 2018: B, -5.00 points a month from 2019 against its own -1.00, 4.00 points a month short of its own exit from 2019",
-            RuleTests.BookChoiceLine(book, "MID", calendar, _ => true));
+            "book choice: quality, the live rule: its own +3.00 from 2016 to 2018 over 1 month(s), +1.33 from 2019 over 3; A -1.00 before, +6.00 from; B +2.00 before, -3.00 from; chosen from 2016 to 2018: B, -3.00 points a month from 2019 against its own +1.33, 4.33 points a month short of its own exit from 2019",
+            RuleTests.BookChoiceLine(quality, "MID", calendar, _ => true));
+        Assert.Contains("no choice holds a month from 2016 to 2018", RuleTests.BookChoiceLine(quality, "MID", calendar, opens => opens >= 5), StringComparison.Ordinal);
+
+        // The heavyweights on any index: chosen on 2019 and 2021, A at +10.00 against B's -5.00; judged on 2023 alone.
         Assert.Equal(
-            "book choice: heavyweight, the live rule: its own none before 2019 over 0 month(s), -1.00 from 2019 over 2; A none before, +10.00 from; B none before, -5.00 from; no choice holds a month before 2019, its family's first test year on the index being 2023",
-            RuleTests.BookChoiceLine(book, "GSPC", calendar, _ => true));
-        Assert.Contains("no choice holds a month from 2015 to 2018", RuleTests.BookChoiceLine(book, "MID", calendar, opens => opens >= 5), StringComparison.Ordinal);
+            "book choice: heavyweight, the live rule: its own -1.00 from 2019 to 2022 over 2 month(s), +6.00 from 2023 over 1; A +10.00 before, -2.00 from; B -5.00 before, +1.00 from; chosen from 2019 to 2022: A, -2.00 points a month from 2023 against its own +6.00, 8.00 points a month short of its own exit from 2023",
+            RuleTests.BookChoiceLine(heavyweights, "GSPC", calendar, _ => true));
+        Assert.Equal(RuleTests.BookChoiceLine(heavyweights, "GSPC", calendar, _ => true)["book choice: heavyweight".Length..], RuleTests.BookChoiceLine(heavyweights, "MID", calendar, _ => true)["book choice: heavyweight".Length..]);
 
         // A month's edge under nothing that rounds to nothing is shown as nothing, not as "-+0.00".
-        var flat = new RuleUnderTest(HeavyweightRule.Name, "the live rule", "live", "words", LoopProcedures.Points, 21, Months: [(5, -0.00001)]);
+        var flat = new RuleUnderTest(QualityRule.Name, "the live rule", "live", "words", LoopProcedures.Points, 21, Months: [(5, -0.00001)]);
 
         Assert.Contains(", 0.00 from 2019 over 1; ", RuleTests.BookChoiceLine(flat, "MID", calendar, _ => true), StringComparison.Ordinal);
     }

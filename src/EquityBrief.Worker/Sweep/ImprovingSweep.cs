@@ -254,7 +254,8 @@ public sealed class ImprovingLay
         bool soldUnderAverage = false,
         Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null,
         (double Moves, double Multiple)? stops = null,
-        bool half = false)
+        bool half = false,
+        Core.Loop.TakeProfitPlacing placing = Core.Loop.TakeProfitPlacing.Turned)
     {
         var trades = new List<HeavyweightTrade>();
         var chosen = new Dictionary<int, HeavyweightRebalance>();
@@ -386,7 +387,7 @@ public sealed class ImprovingLay
             {
                 open[name] = (session, scores[name].GetValueOrDefault(session), 0);
 
-                if (stops is { } asked && tape.ExitsAt(name, session, asked.Moves, asked.Multiple) is { } placed)
+                if (stops is { } asked && tape.ExitsAt(name, session, asked.Moves, asked.Multiple, placing) is { } placed)
                 {
                     exits[name] = BookHalf.Placed(placed, tape.Close[name][session], asked.Multiple, half);
                 }
@@ -403,9 +404,9 @@ public sealed class ImprovingLay
 
     // One setting's book: its walk, each trade and its members bought at the open after its night and the trade charged
     // its round trip, and its months.
-    public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null, bool half = false)
+    public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null, (double Moves, double Multiple)? stops = null, bool half = false, Core.Loop.TakeProfitPlacing placing = Core.Loop.TakeProfitPlacing.Turned)
     {
-        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops, half);
+        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage || setting.SoldUnderAverage, arrange, stops, half, placing);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,

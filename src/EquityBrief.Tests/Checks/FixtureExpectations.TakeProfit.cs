@@ -71,6 +71,34 @@ public partial class FixtureExpectations
         Assert.Null(TakeProfit.StopUnder(100, 0, 3));
     }
 
+    // On the operator's answer of 2026-11-14 on the tables the three full take-profits walked beside one another, worked by hand
+    // over the prices the stock turned down at, 110 in March 2024 and 120 in 2010.
+    [Fact]
+    public void AFullTakeProfitIsPlacedAtTheNearestTurnAtTheRiskAloneOrAtTheFirstTurnThatFarAway()
+    {
+        var turned = TakeProfit.Before(ProfitSwings(), ProfitNight);
+        TurnedDown? Nearest(double price) => TakeProfit.NearestAbove(price, turned);
+        TakeProfitPrice? Placed(double buy, double stop, double multiple, TakeProfitPlacing placing) =>
+            TakeProfit.Of(buy, stop, null, TakeProfit.NearestFor(Nearest, placing, buy, stop, multiple), multiple);
+
+        // Bought at 100 with its stop at 95, three times the risk is 115: today's sells at the nearest turn, 110; the risk alone at
+        // 115; and the first turn 115 or more above, 120 of 2010.
+        Assert.Equal(new TakeProfitPrice(110, TakeProfitSource.TurnedDown, new DateOnly(2024, 3, 4)), Placed(100, 95, 3, TakeProfitPlacing.Turned));
+        Assert.Equal(new TakeProfitPrice(115, TakeProfitSource.Risk, Multiple: 3), Placed(100, 95, 3, TakeProfitPlacing.Risk));
+        Assert.Equal(new TakeProfitPrice(120, TakeProfitSource.TurnedDown, new DateOnly(2010, 6, 1)), Placed(100, 95, 3, TakeProfitPlacing.Beyond));
+
+        // Twice the risk is 110 itself, a turn at least that far away; bought at 125, no turn stands above, so the multiple.
+        Assert.Equal(new TakeProfitPrice(110, TakeProfitSource.TurnedDown, new DateOnly(2024, 3, 4)), Placed(100, 95, 2, TakeProfitPlacing.Beyond));
+        Assert.Equal(new TakeProfitPrice(135, TakeProfitSource.Risk, Multiple: 2), Placed(125, 120, 2, TakeProfitPlacing.Beyond));
+
+        var plan = new PlanCombination(PlanPoints.NextOpen, 0, PlanPoints.RuleStop, PlanPoints.RuleSale);
+
+        Assert.Equal("the next open, the rule's stop, the rule's sale, taking profit at 2 times the risk alone", plan.TakingAtRisk(2).Words);
+        Assert.Equal("the next open, the rule's stop, the rule's sale, taking profit at the first price it turned down at 2 times the risk or more above the buy", plan.TakingBeyond(2).Words);
+        Assert.Equal(TakeProfitPlacing.Turned, plan.TakingBeyond(2).Taking(2).Placing);
+        Assert.Equal(["full", "full at the risk", "full beyond", "half"], new[] { plan.Taking(2), plan.TakingAtRisk(2), plan.TakingBeyond(2), plan.Halving(2) }.Select(Worker.Loop.PlanPointTest.ShapeOf));
+    }
+
     [Fact]
     public void APlanTakingProfitNamesItsMultipleInItsWordsAndItsParametersAndTheWalkSellsAtItsPrice()
     {

@@ -147,7 +147,7 @@ public sealed class HeavyweightTape
     // A holding's stop and take-profit from its buy at a session's close: the stop the moves under it in the stock's typical
     // daily moves that session, and the price it takes profit at from the swing highs confirmed by it; none where the tape
     // lays no series or the session holds no typical move.
-    public (double Stop, double? TakeProfit)? ExitsAt(int name, int entry, double moves, double multiple)
+    public (double Stop, double? TakeProfit)? ExitsAt(int name, int entry, double moves, double multiple, EquityBrief.Core.Loop.TakeProfitPlacing placing = EquityBrief.Core.Loop.TakeProfitPlacing.Turned)
     {
         if (Series is null || !(Close[name][entry] is var buy && buy > 0))
         {
@@ -168,7 +168,11 @@ public sealed class HeavyweightTape
         var swings = series.Swings;
         var confirmed = series.Confirmed[bar];
         var session = series.Bars[bar].Session;
-        var taking = EquityBrief.Core.Loop.TakeProfit.Of(Statistic.FromPrice(series.Bars[bar].Close), stopAtBar, null, price => EquityBrief.Core.Loop.TakeProfit.NearestAbove(price, swings, confirmed, session), multiple);
+        var atBar = Statistic.FromPrice(series.Bars[bar].Close);
+
+        // On the operator's answer of 2026-11-14 on the tables the full take-profit placed as the walk asks: today's, the multiple
+        // of the risk alone, or the first price it turned down at that far above the buy or more.
+        var taking = EquityBrief.Core.Loop.TakeProfit.Of(atBar, stopAtBar, null, EquityBrief.Core.Loop.TakeProfit.NearestFor(price => EquityBrief.Core.Loop.TakeProfit.NearestAbove(price, swings, confirmed, session), placing, atBar, stopAtBar, multiple), multiple);
 
         return (stopAtBar * scale, taking?.Price * scale);
     }
@@ -566,7 +570,8 @@ public static class HeavyweightSweep
         HeavyweightExit exit,
         Func<int, int, double?>? everyMember = null,
         (double Moves, double Multiple)? stops = null,
-        bool half = false)
+        bool half = false,
+        EquityBrief.Core.Loop.TakeProfitPlacing placing = EquityBrief.Core.Loop.TakeProfitPlacing.Turned)
     {
         var trades = new List<HeavyweightTrade>();
         var open = new SortedDictionary<int, (int Entry, string Sector, int[] Cut)>();
@@ -643,7 +648,7 @@ public static class HeavyweightSweep
                 {
                     open[leader] = (session, sector, cut);
 
-                    if (stops is { } asked && tape.ExitsAt(leader, session, asked.Moves, asked.Multiple) is { } placed)
+                    if (stops is { } asked && tape.ExitsAt(leader, session, asked.Moves, asked.Multiple, placing) is { } placed)
                     {
                         exits[leader] = BookHalf.Placed(placed, tape.Close[leader][session], asked.Multiple, half);
                     }

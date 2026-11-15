@@ -71,6 +71,17 @@ public static class BookStops
     public static string HalfWords((double Moves, double Multiple) stops) =>
         FormattableString.Invariant($"a stop {stops.Moves:0.##} typical days under the buy and {Core.Families.RuleWording.TakeProfit.TakingHalf(stops.Multiple)}");
 
+    // On the operator's answer of 2026-11-14 on the tables the two full take-profits walked beside today's.
+    public static string AtRiskWords((double Moves, double Multiple) stops) =>
+        FormattableString.Invariant($"a stop {stops.Moves:0.##} typical days under the buy and {Core.Families.RuleWording.TakeProfit.TakingAtRisk(stops.Multiple)}");
+
+    public static string BeyondWords((double Moves, double Multiple) stops) =>
+        FormattableString.Invariant($"a stop {stops.Moves:0.##} typical days under the buy and {Core.Families.RuleWording.TakeProfit.TakingBeyond(stops.Multiple)}");
+
+    // On the operator's answer of 2026-11-14 on the tables the exit a heavyweights book holding no month before its judged years
+    // takes: a stop 3 typical days under the buy and the take-profit at 2 times the risk alone.
+    public static (double Moves, double Multiple) Middle { get; } = (Core.Loop.TakeProfit.MiddleStopMoves, Core.Loop.TakeProfit.MiddleMultiple);
+
     // A live book's walks at each, from a book walked at a stop and a take-profit.
     public static IReadOnlyList<(string Words, IReadOnlyList<(int Opens, double? Edge)> Months)> Beside(Func<(double Moves, double Multiple), IReadOnlyList<(int Opens, double? Edge)>> walked) =>
         [.. Grid.Select(stops => (Words(stops), walked(stops)))];
@@ -1651,15 +1662,24 @@ public static class RuleTests
         return (rule.BookBeside ?? []).Where(one => BookMean(one.Months, early) is not null).OrderByDescending(one => BookMean(one.Months, early)).Select(one => one.Words).FirstOrDefault();
     }
 
-    // A book's years: its family's first test year on the index, 2019, and whether a month opening on a session falls in the
-    // test years from the first to 2018 or from 2019, by the calendar year of its opening session.
+    // A book's years: the first it chooses on and the first it is judged on, and whether a month opening on a session falls in the
+    // years it chooses on or those it is judged on, by the calendar year of its opening session.
     static (int First, int From, Func<int, bool> Early, Func<int, bool> Late) BookYears(string family, string index, IReadOnlyList<DateOnly> calendar, Func<int, bool> inTestYears)
     {
-        var first = LongTest.FirstTestYear(family, index);
-        var from = Core.History.LongLedger.StandingFrom.Year;
+        var (first, from) = BookSplit(family, index);
 
         return (first, from, opens => inTestYears(opens) && calendar[opens].Year >= first && calendar[opens].Year < from, opens => inTestYears(opens) && calendar[opens].Year >= from);
     }
+
+    // The years a live book chooses its stop and take-profit on and is judged from: its family's first test year on the index to
+    // 2018 and from 2019; and on the operator's answer of 2026-11-14 on the tables a heavyweights book, whose history test holds no
+    // month before 2019, 2019 to 2022 and from 2023.
+    public static (int First, int From) BookSplit(string family, string index) =>
+        family == HeavyweightRule.Name
+            ? (Core.History.LongLedger.StandingFrom.Year, HeavyweightsJudgedFrom)
+            : (LongTest.FirstTestYear(family, index), Core.History.LongLedger.StandingFrom.Year);
+
+    public const int HeavyweightsJudgedFrom = 2023;
 
     // A book's mean edge in points a month over the months a test holds, none where none holds an edge.
     static double? BookMean(IReadOnlyList<(int Opens, double? Edge)> months, Func<int, bool> on) =>
