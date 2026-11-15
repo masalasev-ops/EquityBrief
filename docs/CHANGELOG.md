@@ -7,6 +7,11 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-15 - docs/ARCHITECTURE.html - the heavyweights' card draws each holding's stop and take-profit with the restart line, on the operator's review of PR 699
+Decision: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+Was:
+> ARCHITECTURE.html, The sector heavyweights' card: ... The holdings table's columns are Stock; Sector; Ahead of its sector over a year; Against its 200-day; Since bought; and Tonight in words such as still leading its sector or below its 200-day average and sold at the next reshuffle if it stops leading. ...
+
 ### 2026-11-15 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md and docs/BUILD_PLAN.md - each rule takes profit in the shape its test chose, the books trade their own exits, and a book's record box reads in points a month
 Decision: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at; A book's record box reads its months at the exit it trades in points a month from the year after its exit was chosen
 Was:

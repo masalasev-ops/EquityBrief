@@ -223,8 +223,19 @@ public sealed record TakeProfitView(decimal Price, EquityBrief.Core.Loop.TakePro
         _ => null,
     };
 
+    // On the operator's review of PR 699 the other half of a plan that trails, in their words: on a close under its give-up price
+    // as it stands once the first half sells at the take-profit, the take-profit less the trail's distance and never under the
+    // buy, with the line saying the price rises and the stop sits at the buy until then.
+    public const string TrailingHalfLine = "A give-up price that rises behind its highest close. Its stop sits at the buy until then.";
+
+    public static string TrailingHalf(decimal takeProfit, decimal buy, decimal distance) => "on a close under " + Usd(Math.Max(buy, takeProfit - distance));
+
+    public bool OtherHalfTrails { get; init; }
+
     // The line beneath how the other half sells.
-    public string? OtherHalfLine => Half && Buy is { } held ? $"Its stop moves up to the buy, {Usd(held)}, once the first half sells." : null;
+    public string? OtherHalfLine => !Half ? null
+        : OtherHalfTrails ? TrailingHalfLine
+        : Buy is { } held ? $"Its stop moves up to the buy, {Usd(held)}, once the first half sells." : null;
 
     // The other half's words for a book, by its family, on the operator's ruling of 2026-11-14 on the books.
     public static string BookOtherHalf(string family) =>
@@ -640,9 +651,6 @@ public sealed partial class MarkRenderer
     public static bool StandsAtTheTarget(string? rule) =>
         rule is not null && rule.Contains(EquityBrief.Core.Loop.ExitMenu.Swing.Single(choice => choice.Kind == EquityBrief.Core.Loop.ExitKind.Standing).Words, StringComparison.Ordinal);
 
-    // From 22.18 what an idea selling on a rising give-up price with no target says, in the operator's words.
-    // see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
-    public const string NoFixedTarget = "No fixed target";
 
     public const string RunsWords = "Breakouts earn most from the few that keep running, so the rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.";
 
@@ -798,7 +806,7 @@ public sealed partial class MarkRenderer
         : card.Target is { } target
             ? PlanTile("target", "Sell if it reaches", Price(target), StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open", "gain")
             : card.Trail is not null || pick?.Trailing == true
-                ? PlanTile("target", "Aim to sell at", NoFixedTarget, TrailsByItsRule(card) ? RunsWords : "The rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.")
+                ? PlanTile("target", TrailLabel, TrailValue, TrailsByItsRule(card) ? RunsWords : "The rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.")
                 : card.Family == EquityBrief.Core.Families.DipRule.Name
                     ? PlanTile("target", "No target", "Its exit", pick?.Exit is { } exit ? ReaderWords.Plain(exit) : "a close back above its short average")
                     : card.Family == EquityBrief.Core.Families.HeavyweightRule.Name

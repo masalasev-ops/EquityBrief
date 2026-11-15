@@ -4,11 +4,11 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Tests.Reading;
 
-// read-surface, 22.18: a breakout's pick card says it has no fixed target and why, its give-up price rising and never
-// moving down, the close past which it can no longer lose and its rule's record under the rule's name, with no bar and no
-// reward against risk; the record's two forms and its count off a rule's paper trades worked by hand; and the copy's plain
-// card saying the same.
-// see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
+// read-surface, 22.18: a breakout's pick card says it sells on a close under a give-up price that rises and why, never "No
+// fixed target" from the operator's review of PR 699, its give-up price rising and never moving down, the close past which it
+// can no longer lose and its rule's record under the rule's name, with no bar and no reward against risk; the record's two
+// forms and its count off a rule's paper trades worked by hand; and the copy's plain card saying the same.
+// see: A plan selling on a rising give-up price draws that price and the price at which it can no longer lose, and no card says it has no fixed target
 public partial class ReadSurface
 {
     // A breakout bought at 50 with its give-up price 4 beneath and no target, its rule holding 3 finished trades.
@@ -28,12 +28,14 @@ public partial class ReadSurface
         Winners: winners);
 
     [Fact]
-    public void ABreakoutsCardSaysItHasNoFixedTargetHowItsGiveUpPriceRisesAndThePricePastWhichItCanNoLongerLose()
+    public void ABreakoutsCardSaysItSellsUnderAGiveUpPriceThatRisesAndThePricePastWhichItCanNoLongerLose()
     {
         var card = new MarkRenderer().DecisionCard(BreakoutCard(new PaperWinners(3, 300, null)));
 
         Assert.Contains(">Sell if it falls to</span><b class=\"loss\">$46.00</b><span class=\"tile-under\">rising as the stock makes new highs; it never moves down.</span>", card, StringComparison.Ordinal);
-        Assert.Contains(">Aim to sell at</span><b>No fixed target</b><span class=\"tile-under\">Breakouts earn most from the few that keep running, so the rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.</span>", card, StringComparison.Ordinal);
+        Assert.Contains(">Sell on a close under</span><b>a give-up price that rises</b><span class=\"tile-under\">Breakouts earn most from the few that keep running, so the rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.</span>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("No fixed target", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("Aim to sell at", card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"card-noloss\" data-no-loss=\"54\">The trade can no longer lose once the stock reaches about $54.00.</p>", card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"card-winners\" data-finished=\"3\" data-needed=\"300\">The breakout rule has 3 of the 300 finished trades its record needs.</p>", card, StringComparison.Ordinal);
 

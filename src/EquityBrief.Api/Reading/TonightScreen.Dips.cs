@@ -14,21 +14,10 @@ namespace EquityBrief.Api.Reading;
 // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public static partial class TonightScreen
 {
-    // The dip's market setting in words, which its own check reads, and on a night its part failed that it lists nothing
-    // for that.
-    public static string DipOwnSettingWords(DipNightRow night) =>
-        night.Fault is not null
-            ? DipFailedWords
-            : night.Market == DipRule.MarketOff
-                ? RuleOf(night) == ProvisionalDip
-                    ? "the short-term dip reads its own market setting, none while it is provisional, and its list is open"
-                    : "the short-term dip reads its own market setting, none, and its list is open"
-                : $"the short-term dip reads its own market setting, {DipRule.MarketWordsOn(night.Index, night.Market)}, which {(night.MarketOpen ? "left its list open" : "closed its list")}";
-
     const string DipFailedWords = "the short-term dip's part of the night failed, so it lists nothing tonight and the Run page names the cause";
 
-    // From the operator's order of 2026-11-14 the market line's sentence on the dip's own check, in plain words: what it needs
-    // before it buys, and whether it held tonight.
+    // From the operator's order of 2026-11-14 the sentence on the dip's own check, in plain words: what it needs before it buys,
+    // and whether it held tonight; on their review of PR 699 the same on the market line, its tile and its card.
     public static string DipSettingWords(DipNightRow night) =>
         night.Fault is not null
             ? DipFailedWords
@@ -148,7 +137,7 @@ public static partial class TonightScreen
     // The dip's own market check as the page's top reads each family's, so its tile and the line say its own and never
     // the swing families' check.
     public static MarketCheckView DipCheck(DipNightRow night) =>
-        new(DipRule.Name, SetupFamilies.Dips.Label, night.MarketOpen, DipOwnSettingWords(night));
+        new(DipRule.Name, SetupFamilies.Dips.Label, night.MarketOpen, DipSettingWords(night));
 
     // The dip's card on an index's night, none where its step did not read the night, each pick's business state as the
     // night stored it.
@@ -296,7 +285,9 @@ public static partial class TonightScreen
 
         if (!night.MarketOpen)
         {
-            return $"Its own market setting closed this setup's list tonight: {DipOwnSettingWords(night)}.";
+            var said = DipSettingWords(night);
+
+            return char.ToUpperInvariant(said[0]) + said[1..] + ".";
         }
 
         if (results.Count == 0)

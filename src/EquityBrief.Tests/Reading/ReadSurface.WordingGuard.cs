@@ -13,8 +13,10 @@ namespace EquityBrief.Tests.Reading;
 // see: A stock a setup's rules met again while a trade holds it is drawn as a full card of its own, bought again by nothing and counted in nothing
 public partial class ReadSurface
 {
-    // The words the order retired from Home, Tonight and a stock's page.
-    internal static readonly string[] RetiredWords = ["some setup", "in none of the trades", "this version's", "waiting for its price"];
+    // The words the order retired from Home, Tonight and a stock's page, and from the operator's review of PR 699 "No fixed target"
+    // and "Aim to sell at".
+    // see: A plan selling on a rising give-up price draws that price and the price at which it can no longer lose, and no card says it has no fixed target
+    internal static readonly string[] RetiredWords = ["some setup", "in none of the trades", "this version's", "waiting for its price", "No fixed target", "Aim to sell at"];
 
     [Fact]
     public async Task OnAFridayWithAHeldStockMetAgainTheRetiredWordsAreGoneAndItsCardStandsApartCountedInNothing()

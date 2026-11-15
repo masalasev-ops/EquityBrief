@@ -28,8 +28,6 @@ public partial class ReadSurface
             "Buy at about",
             "Sell when",
             "its filings weaken",
-            "Aim to sell at",
-            "No fixed target",
             "This setup's record on the S&P 400",
             "No long record yet: the walk that gives the other setups their record from 2019 replays prices alone, and this setup buys on filings, which reach back only to 2013. Its own test over the long history judges it from 2016, on the Monthly check-up.",
             "The rule's record over every stock it bought, not this stock's chance.",

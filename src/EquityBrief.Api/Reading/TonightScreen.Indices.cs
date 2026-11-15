@@ -452,7 +452,14 @@ public static partial class TonightScreen
                         close?.Close,
                         close?.Average200,
                         close is { Close: { } shut, Average200: { } average } && HeavyweightRule.Broken(Statistic.FromPrice(shut), average),
-                        NoLead: BoughtBeforeALead);
+                        NoLead: BoughtBeforeALead)
+                    {
+                        // On the operator's review of PR 699, item 6, the live book's stop and take-profit, and the rules restart
+                        // they were added at where they were.
+                        ExitsRead = holding.Exit.Read,
+                        Stop = holding.Exit.Stop,
+                        TakeProfit = holding.Exit.Read ? BookTakeProfit(holding.Exit.TakeProfit, holding.Exit.TakeProfitFrom, holding.Fill, holding.Exit.Stop, HeavyweightRule.Name, holding.Index, holding.Exit.AddedOn) : null,
+                    };
                 }),
         ];
 

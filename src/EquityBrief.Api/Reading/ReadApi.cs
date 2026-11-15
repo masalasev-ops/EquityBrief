@@ -660,7 +660,19 @@ public sealed record IndexTradeRow(string Index, string Family, string Ticker, D
 // One holding an index's sector heavyweights kept, as of a night: where it ended by the night, why, its result, its
 // size cut's and its cost, each a fraction of its buy and none while it is held on the night, and the lead it was bought
 // on, none where its book stored none, and its growth carried to the night, none where the book carried it to another.
-public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly EnteredOn, string Sector, decimal EntryClose, DateOnly? EndedOn, decimal? ExitClose, string? Reason, double? Result, double? CutReturn, double? Cost, double? Lead = null, double? Growth = null, decimal? Fill = null);
+public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly EnteredOn, string Sector, decimal EntryClose, DateOnly? EndedOn, decimal? ExitClose, string? Reason, double? Result, double? CutReturn, double? Cost, double? Lead = null, double? Growth = null, decimal? Fill = null)
+{
+    // On the operator's review of PR 699, item 6, the live book's stop and take-profit as of the night and the rules restart
+    // they were added at, read for the live book alone.
+    public HoldingExit Exit { get; init; } = HoldingExit.None;
+}
+
+// A live book's holding's stop and take-profit as of a night, where it came from and the rules restart they were added at;
+// none read for a variant's book.
+public sealed record HoldingExit(bool Read, decimal? Stop, decimal? TakeProfit, string? TakeProfitFrom, DateOnly? AddedOn)
+{
+    public static HoldingExit None { get; } = new(false, null, null, null, null);
+}
 
 // One sector heavyweight holding as the book stored it as of a night: the stock, the session it was bought on, its
 // sector and company, its buy close, and where it had ended by the night, its sale close, why, its result and its
@@ -678,7 +690,10 @@ public sealed record HeavyweightHoldingRow(
     double? Result,
     double? CutReturn,
     double? Growth = null,
-    decimal? Fill = null);
+    decimal? Fill = null)
+{
+    public HoldingExit Exit { get; init; } = HoldingExit.None;
+}
 
 // One of a sector's largest companies as the book read it at a rebalance: its place by value, its value, its
 // return over the look-back, the sector's, its lead over the sector's, whether it passed the trend gate,
@@ -4867,7 +4882,12 @@ public sealed partial class ReadApi : IComponent
                CASE WHEN h.ended_on <= $on THEN h.cost END,
                h.lead,
                CASE WHEN h.through = $on THEN h.growth END,
-               f.fill
+               f.fill,
+               1,
+               CASE WHEN h.exit_added_on IS NULL OR h.exit_added_on <= $on THEN h.stop END,
+               CASE WHEN h.exit_added_on IS NULL OR h.exit_added_on <= $on THEN h.take_profit END,
+               CASE WHEN h.exit_added_on IS NULL OR h.exit_added_on <= $on THEN h.take_profit_from END,
+               CASE WHEN h.exit_added_on <= $on THEN h.exit_added_on END
         FROM index_heavyweight_holding h
         {Filled("index_heavyweight_holding", "h", "h.index_code", "''", "entered_on")}
         WHERE h.index_code = $index AND h.entered_on <= $on
@@ -4890,7 +4910,8 @@ public sealed partial class ReadApi : IComponent
                CASE WHEN h.ended_on <= $on THEN h.cost END,
                h.lead,
                CASE WHEN h.through = $on THEN h.growth END,
-               f.fill
+               f.fill,
+               0, NULL, NULL, NULL, NULL
         FROM index_heavyweight_rule_holding h
         {Filled("index_heavyweight_rule_holding", "h", "h.index_code", "h.candidate", "entered_on")}
         WHERE h.candidate = $candidate AND h.entered_on <= $on
@@ -4953,11 +4974,22 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(10) ? null : reader.GetDouble(10),
                 reader.IsDBNull(11) ? null : reader.GetDouble(11),
                 GrowthAtFill(reader.IsDBNull(12) ? null : reader.GetDouble(12), fill is { } bought && entry > 0m ? EquityBrief.Core.Prices.Statistic.FromRatio((bought - entry) / entry) : null),
-                fill));
+                fill) { Exit = ExitOf(reader, 14) });
         }
 
         return rows;
     }
+
+    // A holding's stop and take-profit read from the column given on, the flag saying whether its book's exits are read first.
+    static HoldingExit ExitOf(Microsoft.Data.Sqlite.SqliteDataReader reader, int at) =>
+        reader.GetInt32(at) == 0
+            ? HoldingExit.None
+            : new HoldingExit(
+                true,
+                reader.IsDBNull(at + 1) ? null : Money.FromStorage(reader.GetString(at + 1)),
+                reader.IsDBNull(at + 2) ? null : Money.FromStorage(reader.GetString(at + 2)),
+                reader.IsDBNull(at + 3) ? null : reader.GetString(at + 3),
+                reader.IsDBNull(at + 4) ? null : DateOnly.ParseExact(reader.GetString(at + 4), "yyyy-MM-dd", CultureInfo.InvariantCulture));
 
     // Each of an index's holdings open on a night, its close there and its 200-session average there.
     const string IndexHoldingClosesOn = @"
@@ -5174,7 +5206,12 @@ public sealed partial class ReadApi : IComponent
                CASE WHEN h.ended_on <= $on THEN f.result END,
                CASE WHEN h.ended_on <= $on THEN f.benchmark END,
                CASE WHEN h.through = $on THEN h.growth END,
-               f.fill
+               f.fill,
+               1,
+               CASE WHEN h.exit_added_on IS NULL OR h.exit_added_on <= $on THEN h.stop END,
+               CASE WHEN h.exit_added_on IS NULL OR h.exit_added_on <= $on THEN h.take_profit END,
+               CASE WHEN h.exit_added_on IS NULL OR h.exit_added_on <= $on THEN h.take_profit_from END,
+               CASE WHEN h.exit_added_on <= $on THEN h.exit_added_on END
         FROM heavyweight_holding h
         {Filled("heavyweight_holding", "h", "'GSPC'", "''", "entered_on")}
         WHERE h.entered_on <= $on
@@ -5194,7 +5231,8 @@ public sealed partial class ReadApi : IComponent
                CASE WHEN h.ended_on <= $on THEN f.result END,
                CASE WHEN h.ended_on <= $on THEN f.benchmark END,
                CASE WHEN h.through = $on THEN h.growth END,
-               f.fill
+               f.fill,
+               0, NULL, NULL, NULL, NULL
         FROM heavyweight_rule_holding h
         {Filled("heavyweight_rule_holding", "h", "'GSPC'", "h.candidate", "entered_on")}
         WHERE h.candidate = $candidate AND h.entered_on <= $on
@@ -5250,7 +5288,7 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(8) ? null : reader.GetDouble(8),
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
                 GrowthAtFill(reader.IsDBNull(10) ? null : reader.GetDouble(10), fill is { } bought && entry > 0m ? EquityBrief.Core.Prices.Statistic.FromRatio((bought - entry) / entry) : null),
-                fill));
+                fill) { Exit = ExitOf(reader, 12) });
         }
 
         return rows;

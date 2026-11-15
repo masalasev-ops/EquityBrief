@@ -143,7 +143,8 @@ public partial class ReadSurface
         Assert.Contains("<b class=\"aim\">$125.00</b>", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"home-rr\" role=\"img\" aria-label=\"Risks $1 to make about $2.50\"><div class=\"risk\" style=\"flex:10\"></div><div class=\"reward\" style=\"flex:25\"></div></div>", page, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(page, "class=\"home-rr\""));
-        Assert.Contains("<b class=\"aim\">No fixed target</b>", page, StringComparison.Ordinal);
+        Assert.Contains("<span>Sell on a close under</span><b class=\"aim\">a give-up price that rises</b>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("No fixed target", page, StringComparison.Ordinal);
 
         // The breakout alone says the one line, and nothing else of how it rises.
         Assert.Single(Regex.Matches(text, Regex.Escape("The give-up price rises as the stock climbs, so a winner can keep running.")));

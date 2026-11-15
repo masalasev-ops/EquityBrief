@@ -184,7 +184,7 @@ public partial class ReadSurface
 
         Assert.Equal(
             "A plan that did better: Wait for a lower price: buy only if it dips to the price below within 20 trading days; if it never does, there is no trade. It is sold after 63 trading days at the latest."
-            + "Buy if it dips to about$60.00Sell if it falls to$56.42Aim to sell at$64.62the first price above the buy where it has turned down beforeOtherwise sell after63 trading days"
+            + "Buy if it dips to about$60.00Sell if it falls to$56.42Take profit at$64.62the first price above the buy where it has turned down beforeOtherwise sell after63 trading days"
             + "We tested this plan on S&P 500 stocks from 2019 to 2026 the same way: picks like this did about 4 cents better for every $1 put at risk than simply buying other S&P 500 stocks on the same days, against about 12 cents worse with the plan the rules use. The rules do not trade it yet.",
             better);
 

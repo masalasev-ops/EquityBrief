@@ -633,19 +633,32 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     // On the operator's order of 2026-11-14, item 2, read-only: the S&P 500 drift's signals under the plan its live rule trades
     // since 10 Nov and under the next-open plan it traded before, over 2019 to 2026 and over 2020 to 2026: how many signals
     // there were and how many filled, the mean fall from the signal's close to the fill, and the mean result of the fills per
-    // $1 risked and their mean edge over the ruled benchmark, beside the same signals bought at the next open. Prints and
-    // writes nothing, and changes neither the plan nor the setup's words.
+    // $1 risked and their mean edge over the ruled benchmark, beside the same signals bought at the next open; on their review
+    // of PR 699 the breakout's beside it. Prints and writes nothing, and changes neither the plan nor the setup's words.
     async Task<int> DriftReportAsync(string index, IReadOnlyList<FlaggedSetup> setups, Walker walker, CancellationToken cancellation)
     {
-        var drift = setups.Where(one => one.Family == Core.Families.DriftRule.Name).ToArray();
+        var plans = LivePlans(await RegisterAsync(cancellation), clock.UtcNow, index);
+
+        foreach (var family in new[] { Core.Families.DriftRule.Name, Core.Families.BreakoutRule.Name })
+        {
+            ReportFamily(index, family, setups, walker, plans.GetValueOrDefault(family));
+        }
+
+        output.WriteLine($"{Verb}: printed alone, nothing written");
+
+        return 0;
+    }
+
+    void ReportFamily(string index, string family, IReadOnlyList<FlaggedSetup> setups, Walker walker, PlanCombination? live)
+    {
+        var drift = setups.Where(one => one.Family == family).ToArray();
         var next = PlanPoints.Combinations.First(PlanPrices.Traded);
-        var live = LivePlans(await RegisterAsync(cancellation), clock.UtcNow, index).GetValueOrDefault(Core.Families.DriftRule.Name);
 
         if (live is null)
         {
-            output.WriteLine($"{Verb}: the drift's live rule on the {DecisionCards.NameOf(index)} states no plan, so there is no waiting plan to report on");
+            output.WriteLine($"{Verb}: the {family}'s live rule on the {DecisionCards.NameOf(index)} states no plan, so there is no waiting plan to report on");
 
-            return 0;
+            return;
         }
 
         foreach (var from in new[] { 2019, 2020 })
@@ -663,12 +676,8 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
                 return FormattableString.Invariant($"{name}: {worked.Length} signal(s), {fills.Length} filled, the fill {(falls.Length == 0 ? "not read" : $"{falls.Average() * 100:+0.0;-0.0}% from the signal's close on average")}; per $1 risked {(results.Length == 0 ? "none ended" : $"{results.Average():+0.000;-0.000} result")} and {(edges.Length == 0 ? "no benchmark read" : $"{edges.Average():+0.000;-0.000} against the benchmark")} over {results.Length} ended fill(s)");
             }
 
-            output.WriteLine(FormattableString.Invariant($"{Verb}: the S&P 500 drift from {from} through {Text(drift.Select(one => one.Session).DefaultIfEmpty().Max())}: {Line($"the waiting plan, {live.Words}", 0)}; {Line($"the next open, {next.Words}", 1)}"));
+            output.WriteLine(FormattableString.Invariant($"{Verb}: the {DecisionCards.NameOf(index)} {family} from {from} through {Text(drift.Select(one => one.Session).DefaultIfEmpty().Max())}: {Line($"the waiting plan, {live.Words}", 0)}; {Line($"the next open, {next.Words}", 1)}"));
         }
-
-        output.WriteLine($"{Verb}: printed alone, nothing written");
-
-        return 0;
     }
 
     // Each stock's quarters of revenue as first filed in the SEC's facts the store holds, the long facts, the standing facts

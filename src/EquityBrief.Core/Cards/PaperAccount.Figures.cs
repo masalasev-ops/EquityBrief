@@ -400,7 +400,7 @@ public static partial class PaperAccount
 
     // From 22.18 a rule's winning trades as its record reads them: its finished trades, counted as its progress counts them,
     // against the count a verdict needs, and the mean result of those that made money only once it holds that count.
-    // see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose
+    // see: A plan selling on a rising give-up price draws that price and the price at which it can no longer lose, and no card says it has no fixed target
     public static PaperWinners Winners(IReadOnlyList<(PaperTrade Trade, double? Result)> trades)
     {
         var finished = trades.Where(one => one.Trade.Ended is not null).ToArray();

@@ -210,7 +210,11 @@ public static class CardScreen
                 // On the operator's rulings of 2026-11-14 and 2026-11-15 its shape, and for a half how the other half sells.
                 Half = order.Half,
                 Placing = order.Placing,
-                OtherHalf = order.Half ? FormattableString.Invariant($"after {order.Cap} trading days") : null,
+                OtherHalf = !order.Half ? null
+                    : order.Target is { } aim && aim > buy ? "at $" + EquityBrief.Core.Prices.Statistic.ToPrice(aim).ToString("N2", System.Globalization.CultureInfo.InvariantCulture)
+                    : order.Trail is { } distance ? TakeProfitView.TrailingHalf(EquityBrief.Core.Prices.Statistic.ToPrice(placed.Price), EquityBrief.Core.Prices.Statistic.ToPrice(buy), EquityBrief.Core.Prices.Statistic.ToPrice(distance))
+                    : FormattableString.Invariant($"after {order.Cap} trading days"),
+                OtherHalfTrails = order.Half && !(order.Target is { } own && own > buy) && order.Trail is not null,
                 AddedOn = order.TakeProfitAddedOn,
             }
             : null;

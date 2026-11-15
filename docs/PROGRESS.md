@@ -19484,7 +19484,13 @@ Built:      23.10's second part, the second and last restart of phase 23, on the
             same, 14,015 setups and 868 night rows on the S&amp;P 400's standing ledger, 9,397 and 445 on the S&amp;P 500's, all
             eight families among them, and 12,795 and 10,837 setups of the long ledger on the S&amp;P 400 and the S&amp;P 500; the
             S&amp;P 400's chunks took 30 to 36 seconds against 70 to 75 on the standing ledger and 95 to 97 against 172 to 181 on
-            the long one, each pair run beside the same load.
+            the long one, each pair run beside the same load. On the operator's review of PR 699 of 2026-11-15, word for word
+            in `prompts/2026-11-15-23.10-review-of-pr-699.md`: the short-term dip's own check in the ruled words on its tile and
+            its card; no card saying "No fixed target", a plan that trails drawing its rising give-up price, a trailing half
+            selling on a close under the take-profit less the trail's distance and never under the buy, and every profit row
+            "Take profit at", superseding the decision that drew "Aim to sell at: No fixed target"; the freeze check refusing
+            only a remedy changing a live rule or registering one again; the heavyweights' card drawing each live holding's
+            stop and take-profit with the restart's line; and the drift report reading the S&amp;P 500 breakout beside the drift.
 Chosen:     families on 2005 to 2018 per $1 risked, judged from 2019 against today's plan: S&amp;P 500 pullback at the risk 2,
             breakout half 3, drift beyond 2, dip at the risk 2; S&amp;P 400 pullback half 1.5, breakout beyond 3, drift half 3, dip
             half 3; S&amp;P 600 pullback half 1.5, breakout half 3, drift half 2, dip beyond 1.5; from 2019 none beats today's plan
@@ -19499,12 +19505,15 @@ Remedy:     `tools/remedies/2026-11-14-23.10-the-second-restart.txt`, dated befo
             twelve price families' live rules given its plan and take-profit; every moved version registered again; the cards'
             plans; the standing and the long ledger written once more; the buy and sell points on each index; each live book's
             record box. Rehearsed whole on a copy of the store on the C: drive.
-Tests:      12 new: a take-profit placed by its shape; the shape read back and refused without a multiple; a staged level after a
+Tests:      15 new: a take-profit placed by its shape; the shape read back and refused without a multiple; a staged level after a
             half selling no more than is held; a take-profit added at the restart counting from the session after; an open
             trade of a live rule placed before the restart taking its rule's and no other; an S&amp;P 400 or 600 rule stating no
             plan taking its family's; both tests choosing among the three shapes and never today's; each book's exit, its half
             and its stop; the book's box in points a month; the half's card lines; a build's sessions computed across the cores
-            kept in their places, the earliest failure raised. Two expectations earlier commits of this part
+            kept in their places, the earliest failure raised; a trailing half's line and a trail with no take-profit; a remedy
+            registering background versions alone passing the freeze and one touching a live rule named, each form; the
+            heavyweights' card drawing each holding's exit and the restart's line. Seven read-surface expectations brought to
+            the ruled labels, and the wording guard refusing "No fixed target" and "Aim to sell at". Two expectations earlier commits of this part
             left stale brought to the code: the swing filter's unplaceable order ending on its night, and "1 typical day".
 Pins:       every family rule's, book's and the swing filter's version raised to its pin, and the ledger readings' version;
             migrations 148, the half sold and the exit added at the restart, and 149, `book_record`.
@@ -19514,12 +19523,14 @@ Mutated:    the rule, stated before the run: the smallest edit undoing each prop
             same price, an unreachable boundary; the test reworked to fall to its stop after the levels, red. The added
             take-profit's target counted from the fill: red. The box at ten times a month: red. A trade placed on the restart's
             day taking the take-profit: red. A rule stating no plan given none: red. The sessions computed across the cores
-            raising the last failure in place of the earliest: red.
+            raising the last failure in place of the earliest: red. The trailing half's give-up price let under the buy: red.
+            The freeze check refusing every register line, as it did: red. The freeze check passing a line naming a live rule:
+            red. The heavyweights' restart date not read: red.
 Owed:       (a)'s replay, as the ruling entry above states it; the heavyweights' long read from the funds pulled from 2018,
             raised with the operator after the restart; the long search's S&amp;P 400 breakout row naming "any range" at its next
-            run; the S&amp;P 500's and the index books' holdings listed without the restart's line on the heavyweights' card.
+            run.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
-            that run: all six steps, 0 warnings, 0 errors, 3766 of 3766 tests ran with none failed, migrations 0 to 149 with none
+            that run: all six steps, 0 warnings, 0 errors, 3769 of 3769 tests ran with none failed, migrations 0 to 149 with none
             pending, schema version 149, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
             passing, none out of scope and none unexamined, 1640 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.

@@ -563,7 +563,7 @@ public sealed partial class SinglePageApp
             else
             {
                 card.Append(idea.Target is { } aimed
-                    ? Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{Dollars(aimed)}</b></div>")
+                    ? Invariant($"<div><span>{TakeProfitView.Label}</span><b class=\"aim\">{Dollars(aimed)}</b></div>")
                     : Invariant($"<div><span>Otherwise sell after</span><b class=\"aim\">{(zone.Sessions is { } sessions ? Invariant($"{sessions} trading days") : NoFigure)}</b></div>"));
             }
 
@@ -600,7 +600,9 @@ public sealed partial class SinglePageApp
         card.Append(idea.TakeProfit is { } taking
             ? Invariant($"<div><span>{taking.LabelText}</span><b class=\"aim\">{Dollars(taking.Price)}</b>{(taking.Line is { } said ? Invariant($"<span class=\"aim-from\">{Escaped(said)}</span>") : string.Empty)}</div>")
                 + (taking is { Half: true, OtherHalf: { } other } ? Invariant($"<div><span>{TakeProfitView.OtherHalfLabel}</span><b class=\"aim\">{Escaped(other)}</b>{(taking.OtherHalfLine is { } moves ? Invariant($"<span class=\"aim-from\">{Escaped(moves)}</span>") : string.Empty)}</div>") : string.Empty)
-            : Invariant($"<div><span>Aim to sell at</span><b class=\"aim\">{(idea.Rises || idea.Target is null ? MarkRenderer.NoFixedTarget : Dollars(idea.Target.Value))}</b></div>"));
+            : idea.Rises
+                ? Invariant($"<div><span>{MarkRenderer.TrailLabel}</span><b class=\"aim\">{MarkRenderer.TrailValue}</b></div>")
+                : idea.Target is { } target ? Invariant($"<div><span>{TakeProfitView.Label}</span><b class=\"aim\">{Dollars(target)}</b></div>") : string.Empty);
         card.Append("</div>");
 
         return card.ToString();

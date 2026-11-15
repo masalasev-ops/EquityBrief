@@ -120,6 +120,11 @@ public sealed partial class MarkRenderer
 
     public const string NoBandAbove = "No price above tonight's close where it has turned down before:";
 
+    // On the operator's review of PR 699 a plan selling on a rising give-up price draws that price and never "No fixed target".
+    public const string TrailLabel = "Sell on a close under";
+
+    public const string TrailValue = "a give-up price that rises";
+
     // A price as a sale line draws it.
     static string SaleDollars(decimal price) => "$" + price.ToString("N2", CultureInfo.InvariantCulture);
 
@@ -141,14 +146,17 @@ public sealed partial class MarkRenderer
         // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
         if (sale.TakeProfit is { Half: true } half)
         {
-            var other = sale.Target is { } aim && aim > sale.Buy ? "at " + SaleDollars(aim) : "after " + after;
+            var aims = sale.Target is { } aim && aim > sale.Buy;
+            var trails = !aims && sale.Trail is not null;
+            var other = aims ? "at " + SaleDollars(sale.Target!.Value)
+                : trails ? TakeProfitView.TrailingHalf(half.Price, sale.Buy, sale.Trail!.Value)
+                : "after " + after;
 
             return
             [
                 .. sale.Kind == PlanPoints.StagedSales ? sale.Stages.Select(stage => new PlanSaleLine("stage", "Sell " + PlanSaleView.SharesOf(sale.Stages.Count).Each + " at", SaleDollars(stage))) : [],
                 new PlanSaleLine("target", TakeProfitView.HalfLabel, SaleDollars(half.Price), half.Line),
-                new PlanSaleLine("other-half", TakeProfitView.OtherHalfLabel, other, half.OtherHalfLine),
-                .. sale.Trail is { } distance && sale.Target is null ? [new PlanSaleLine("trail", "Or sell on a close under", "a give-up price that rises", FormattableString.Invariant($"{SaleDollars(distance)} behind its highest close."))] : Array.Empty<PlanSaleLine>(),
+                new PlanSaleLine("other-half", TakeProfitView.OtherHalfLabel, other, trails ? TakeProfitView.TrailingHalfLine : half.OtherHalfLine),
                 .. sale.RsiAbove is { } level ? [new PlanSaleLine("bounce", "Or sell", "When it bounces back", FormattableString.Invariant($"A close whose {EquityBrief.Core.Families.DipRule.RsiSessions}-session RSI stands above {level:0} sells it at the next day's open."))] : Array.Empty<PlanSaleLine>(),
                 .. other.StartsWith("after ", StringComparison.Ordinal) ? Array.Empty<PlanSaleLine>() : [backstop],
             ];
@@ -204,12 +212,12 @@ public sealed partial class MarkRenderer
         if (sale.Kind == PlanPoints.FirstBand)
         {
             return sale.Target is { } band
-                ? [new PlanSaleLine("target", "Aim to sell at", SaleDollars(band), FirstBandWords), backstop]
+                ? [new PlanSaleLine("target", TakeProfitView.Label, SaleDollars(band), FirstBandWords), backstop]
                 : [new PlanSaleLine("limit", NoBandAbove, "it holds for " + after + " unless the stop sells it first.")];
         }
 
-        return sale.Target is { } target ? [new PlanSaleLine("target", "Aim to sell at", SaleDollars(target)), backstop]
-            : sale.Trail is { } trail ? [new PlanSaleLine("target", "Aim to sell at", NoFixedTarget, FormattableString.Invariant($"It sells on a close under a give-up price that rises behind its highest close, {SaleDollars(trail)} under it.")), backstop]
+        return sale.Target is { } target ? [new PlanSaleLine("target", TakeProfitView.Label, SaleDollars(target)), backstop]
+            : sale.Trail is { } trail ? [new PlanSaleLine("trail", TrailLabel, TrailValue, FormattableString.Invariant($"{SaleDollars(trail)} behind its highest close.")), backstop]
             : sale.RsiAbove is { } bounce ? [new PlanSaleLine("target", "Aim to sell", "When it bounces back", FormattableString.Invariant($"A close whose {EquityBrief.Core.Families.DipRule.RsiSessions}-session RSI stands above {bounce:0} sells it at the next day's open.")), backstop]
             : [backstop];
     }

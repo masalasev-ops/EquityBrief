@@ -128,7 +128,7 @@ public partial class ReadSurface
 
         Assert.Contains("<div><span>Sell when</span><b class=\"stop\">its filings weaken</b></div>", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"home-odds\" data-sell-line>No price is set in advance: it sells when a new filing drops its score below 6 in every 9 of the checks that apply, or after 252 trading days.</div>", page, StringComparison.Ordinal);
-        Assert.Contains("<b class=\"aim\">No fixed target</b>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("No fixed target", page, StringComparison.Ordinal);
         Assert.DoesNotContain("Sell if it falls to", page, StringComparison.Ordinal);
         Assert.DoesNotContain("200-day", page, StringComparison.Ordinal);
         Assert.DoesNotContain("give-up price", page, StringComparison.Ordinal);
