@@ -37,17 +37,23 @@ public sealed record SetupWordsView(string Plain, string About);
 public sealed partial class MarkRenderer
 {
     // Each setup in the reader's words, by its family's word.
+    public const string DriftPlain = "A stock jumps after beating earnings. It is bought only if it pulls back to the buy price within 20 trading days, so most signals are never bought.";
+
+    public const string BreakoutPlain = "A stock breaks above its recent high on heavy volume. It is bought only if it pulls back to the buy price within 20 trading days, so most signals are never bought.";
+
     public static IReadOnlyDictionary<string, SetupWordsView> SetupWords { get; } = new Dictionary<string, SetupWordsView>(StringComparer.Ordinal)
     {
         [EquityBrief.Core.Families.SetupFamilies.Pullback] = new(
             "A strong stock dips to a price where it has bounced before.",
             "A strong stock in an uptrend dips to a price where it has bounced before, and turns back up. It is sold at its target, at its stop or when its time runs out."),
+        // On the operator's ruling of 2026-11-15 on the review of PR 699 the drift's and the breakout's lines say what their plans do.
+        // see: The drift and the breakout buy only on a pullback to their buy price within 20 trading days, and their record says it reads high
         [EquityBrief.Core.Families.BreakoutRule.Name] = new(
-            "A stock breaks above its recent high on heavy volume.",
-            "A stock closes above its highest price of recent months on heavy volume, after a quiet spell. It is sold on a stop that rises as the price climbs, with no fixed target."),
+            BreakoutPlain,
+            "A stock closes above its highest price of recent months on heavy volume, after a quiet spell. It is bought only if it pulls back to the buy price within 20 trading days, so most signals are never bought."),
         [EquityBrief.Core.Families.DriftRule.Name] = new(
-            "A stock jumps after beating earnings; bought to ride the follow-through.",
-            "Stocks that just beat their earnings estimate and jumped on heavy volume, bought to ride the follow-through. Prices often keep drifting the same way for weeks after a strong report."),
+            DriftPlain,
+            "A stock just beat its earnings estimate and jumped on heavy volume. It is bought only if it pulls back to the buy price within 20 trading days, so most signals are never bought."),
         [EquityBrief.Core.Families.FundamentalsRule.Name] = new(
             "A growing, profitable company dips in an uptrend.",
             "A growing, profitable company whose cash backs its earnings, bought when it dips in an uptrend. It buys at the pullback's buy point."),
@@ -356,7 +362,7 @@ public sealed partial class MarkRenderer
 
     // Every buy on the index in the order the page draws its setups: the setups' buy points, the Fundamentals family's buys
     // in its slot after the drift's and before the dip's, the dip's, then the monthly books', each set in its own order.
-    // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+    // see: Tonight's buys name every buy on the index, a book's buy drawn with its stop and take-profit where its card placed them
     public static IReadOnlyList<(BuyPointView? Point, PlanlessBuyView? Planless)> BuysInOrder(IReadOnlyList<BuyPointView> points, IReadOnlyList<PlanlessBuyView> planless) =>
     [
         .. points.Where(point => point.Family != EquityBrief.Core.Families.DipRule.Name).Select(point => ((BuyPointView?)point, (PlanlessBuyView?)null)),
@@ -464,9 +470,11 @@ public sealed partial class MarkRenderer
         body.Append("</tbody></table></div>");
         body.Append("<p class=\"buys-read\">The business is how the company's reported quarters read: improving, steady or getting worse. News counts the stories of the last 30 days the labeller read as good or bad for the company. Open a row for its full plan, what could go wrong and how its setup has done. Each pick is bought at ");
         body.Append(opens);
-        body.Append(rows.Any(row => row.Planless is not null)
+        body.Append(rows.Any(row => row.Planless is { Stop: null })
             ? " open, with its stop and target where tonight's close set them; a Fundamentals buy and a monthly book's set none, and How it sells opens its row on its own card.</p>"
-            : " open, with its stop and target where tonight's close set them.</p>");
+            : rows.Any(row => row.Planless is not null)
+                ? " open, with its stop and target where tonight's close set them; a Fundamentals buy's and a monthly book's are placed again from the price it is bought at, and How it sells opens its row on its own card.</p>"
+                : " open, with its stop and target where tonight's close set them.</p>");
 
         return body.ToString();
     }
@@ -487,9 +495,10 @@ public sealed partial class MarkRenderer
                 : Formatted($"<td class=\"r num plan-target\" data-target=\"none\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(sale.OnTimeAlone ? "none: sells after " + after : sale.Trail is not null ? "rising stop, no target" : sale.RsiAbove is not null ? "sells on a bounce" : "none above tonight's close: holds for " + after)}</td>");
     }
 
-    // A buy no plan sells, as a row of tomorrow's buys: its stock with the link to its row on its own card, its setup, why
-    // it qualified with its entry check's line, its business, tonight's close, how it sells across the stop's and the
-    // target's columns, and no reward to risk or news count of its own.
+    // A book's buy, as a row of tomorrow's buys: its stock with the link to its row on its own card, its setup, why it
+    // qualified with its entry check's line, its business, tonight's close, its stop, its take-profit and what it risks for
+    // what that aims at where its card placed them and how it sells across the stop's and the target's columns where none
+    // did, and no news count of its own.
     string PlanlessRow(PlanlessBuyView buy, int number)
     {
         var row = new StringBuilder();
@@ -500,8 +509,22 @@ public sealed partial class MarkRenderer
         row.Append(Invariant, $"<td class=\"why\">{Escaped(buy.Why)}{EntryCheckLine(buy.EntryCheck, buy.Ticker)}{SetupRecordBox(buy.LongRecord)}</td>");
         row.Append(Invariant, $"<td class=\"business-cell\">{Escaped(buy.Business)}</td>");
         row.Append(PriceCell("buy", buy.Close, null));
-        row.Append(Invariant, $"<td class=\"r plan-sells\" colspan=\"2\" data-sells>{Escaped(buy.Sells)}</td>");
-        row.Append("<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">no stop or target</span></td>");
+
+        // On the operator's ruling of 2026-11-15 on the review of PR 699 its stop and its take-profit where its card placed them.
+        // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+        if (buy is { Stop: { } stop, TakeProfit: { } taking })
+        {
+            row.Append(PriceCell("stop", stop, null));
+            row.Append(PriceCell("target", taking.Price, null));
+            row.Append(buy.Close is { } close && close > stop && taking.Price > close
+                ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{((taking.Price - close) / (close - stop)).ToString(Invariant)}\">${Figures.Ratio((taking.Price - close) / (close - stop))}</td>")
+                : "<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">none above the buy</span></td>");
+        }
+        else
+        {
+            row.Append(Invariant, $"<td class=\"r plan-sells\" colspan=\"2\" data-sells>{Escaped(buy.Sells)}</td>");
+            row.Append("<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">no stop or target</span></td>");
+        }
         row.Append("<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">not counted</span></td>");
 
         return row.Append("</tr>").ToString();

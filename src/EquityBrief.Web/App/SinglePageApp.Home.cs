@@ -93,20 +93,24 @@ public sealed partial class SinglePageApp
     // The line under a card's sell price, from its family's own exit rule: the Fundamentals family's filings and time limit,
     // from the 22.17 correction of 2026-11-09 with its figures on the read-only copy as on the app, a give-up price rising or
     // staying where it is; none where a plan holds no give-up price or an exit changed on the Loop page moves it.
-    // see: A card's line under its sell price is worded from its family's own exit rule
     // see: The read-only copy draws each pick's record and the picks watched as the app does, and its check still refuses the method
     public static string? SellLine(HomeIdea idea, bool copying)
     {
+        // On the operator's ruling of 2026-11-15 on the review of PR 699 a book's buy with its stop and take-profit placed sells
+        // on them as well as by its own rule.
+        // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+        var opens = idea.Stop is null ? "No price is set in advance: it sells when " : "It also sells when ";
+
         if (idea.Family == ImprovingRule.Name)
         {
             var setting = idea.Setting ?? ImprovingGrid.Starting;
 
-            return Invariant($"No price is set in advance: it sells when a new filing drops its score below {MarkRenderer.InEveryNine(setting.HoldInNine)},{(setting.SoldUnderAverage ? " on a close under its 200-day average," : string.Empty)} or after {setting.Sessions} trading days.");
+            return Invariant($"{opens}a new filing drops its score below {MarkRenderer.InEveryNine(setting.HoldInNine)},{(setting.SoldUnderAverage ? " on a close under its 200-day average," : string.Empty)} or after {setting.Sessions} trading days.");
         }
 
         if (Planless(idea.Family))
         {
-            return "No price is set in advance: it sells when " + ReshuffleDrops + ".";
+            return opens + ReshuffleDrops + ".";
         }
 
         return idea.Rises || idea.Trail is not null ? RisesLine
@@ -123,6 +127,19 @@ public sealed partial class SinglePageApp
             .Where(line => line.Groups[2].Value is not ("home-ticker" or "home-co"))
             .Select(line => System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(line.Groups[3].Value, "<[^>]+>", string.Empty)).Trim())
             .Where(line => line.Length > 0 && (char.IsLower(line[0]) || char.IsPunctuation(line[0]) && line[0] is not ('(' or '"' or '\'')))];
+
+    // On the operator's ruling of 2026-11-15 on the review of PR 699 each book's pick a page draws with no price it takes profit
+    // at: a card of Home's with no profit row, and a row of Tonight's buys with no take-profit in its target's column.
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+    public static IReadOnlyList<string> BookPicksWithNoProfitRow(string page) =>
+    [
+        .. System.Text.RegularExpressions.Regex.Matches(page, "<article class=\"home-idea[^\"]*\" data-family=\"(improving|quality|heavyweight)\" data-ticker=\"([^\"]+)\">.*?</article>", System.Text.RegularExpressions.RegexOptions.Singleline)
+            .Where(card => !card.Value.Contains("<span>" + TakeProfitView.Label + "</span>", StringComparison.Ordinal) && !card.Value.Contains("<span>" + TakeProfitView.HalfLabel + "</span>", StringComparison.Ordinal))
+            .Select(card => "Home " + card.Groups[1].Value + " " + card.Groups[2].Value),
+        .. System.Text.RegularExpressions.Regex.Matches(page, "<tr data-ticker=\"([^\"]+)\" data-family=\"([a-z]+)\" data-place=\"[0-9]+\" data-planless>.*?</tr>", System.Text.RegularExpressions.RegexOptions.Singleline)
+            .Where(row => !System.Text.RegularExpressions.Regex.IsMatch(row.Value, "data-target=\"[0-9]"))
+            .Select(row => "Tonight " + row.Groups[2].Value + " " + row.Groups[1].Value),
+    ];
 
     public const string FootLine = "Want every number, every rule and every version being tested?";
 
@@ -589,7 +606,12 @@ public sealed partial class SinglePageApp
 
         card.Append("<div class=\"home-prices\">");
         card.Append(Invariant($"<div><span>{buying} at about</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
-        card.Append(idea.Family == ImprovingRule.Name
+        // On the operator's ruling of 2026-11-15 on the review of PR 699 a book's buy draws the stop its card placed, and how it
+        // sells only on a night before its card held one.
+        // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+        card.Append(Planless(idea.Family) && idea.Stop is { } placed
+            ? Invariant($"<div><span>{TakeProfitView.AddedStopLabel}</span><b class=\"stop\">{Dollars(placed)}</b>{(idea.TakeProfit?.AddedStopLine is { } under ? Invariant($"<span class=\"aim-from\">{Escaped(under)}</span>") : string.Empty)}</div>")
+            : idea.Family == ImprovingRule.Name
             ? Invariant($"<div><span>Sell when</span><b class=\"stop\">{FilingsWeaken}</b></div>")
             : Planless(idea.Family)
             ? Invariant($"<div><span>Sell when</span><b class=\"stop\">{ReshuffleDrops}</b></div>")

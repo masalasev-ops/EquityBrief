@@ -16,7 +16,7 @@ public partial class ReadSurface
     // The words the order retired from Home, Tonight and a stock's page, and from the operator's review of PR 699 "No fixed target"
     // and "Aim to sell at".
     // see: A plan selling on a rising give-up price draws that price and the price at which it can no longer lose, and no card says it has no fixed target
-    internal static readonly string[] RetiredWords = ["some setup", "in none of the trades", "this version's", "waiting for its price", "No fixed target", "Aim to sell at"];
+    internal static readonly string[] RetiredWords = ["some setup", "in none of the trades", "this version's", "waiting for its price", "No fixed target", "Aim to sell at", "Sell if it reaches"];
 
     [Fact]
     public async Task OnAFridayWithAHeldStockMetAgainTheRetiredWordsAreGoneAndItsCardStandsApartCountedInNothing()
@@ -45,6 +45,9 @@ public partial class ReadSurface
         foreach (var (name, page) in new[] { ("Tonight", tonight), ("Home", home), ("HELD's page", held) })
         {
             Assert.All(RetiredWords, words => Assert.False(page.Contains(words, StringComparison.Ordinal), $"{name} draws \"{words}\""));
+
+            // On the operator's ruling of 2026-11-15 on the review of PR 699 a book's pick with no profit row fails.
+            Assert.Empty(EquityBrief.Web.App.SinglePageApp.BookPicksWithNoProfitRow(page));
         }
 
         // A Friday's next session is Monday's, so no page names tomorrow's open.

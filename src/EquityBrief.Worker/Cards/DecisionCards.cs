@@ -89,12 +89,23 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.FamilyTrade, Touch.Read),
             new StoreTouch(Store.IndexRuleTrade, Touch.Read),
             new StoreTouch(Store.DipTrade, Touch.Read),
+            new StoreTouch(Store.QualityNight, Touch.Read),
+            new StoreTouch(Store.QualityHolding, Touch.Read),
+            new StoreTouch(Store.ImprovingNight, Touch.Read),
+            new StoreTouch(Store.ImprovingTrade, Touch.Read),
             new StoreTouch(Store.DecisionCard, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
 
     public const string Stage = "decision-cards";
+
+    // The stage of the books' cards, written after Quality at a fair price's and the Fundamentals family's steps, which run
+    // after the cards.
+    public const string BookStage = "book-cards";
+
+    // The books whose buys are chosen after the cards are written, each with its live rule on a night and what it chose.
+    public static IReadOnlyList<string> LateBooks { get; } = [QualityRule.Name, ImprovingRule.Name];
 
     // The word a card of the sector heavyweights is stored under, the family's own.
     public static string Heavyweights => HeavyweightRule.Name;
@@ -109,7 +120,40 @@ public sealed class DecisionCards : IComponent
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
 
-    const string ClearTheNight = "DELETE FROM decision_card WHERE session_date = $night;";
+    const string ClearTheNight = "DELETE FROM decision_card WHERE session_date = $night AND family NOT IN ('quality', 'improving');";
+
+    const string ClearTheBooks = "DELETE FROM decision_card WHERE index_code = $index AND session_date = $night AND family IN ('quality', 'improving');";
+
+    // The rule a book's card on a night draws, its live rule where the night kept one and the provisional rule otherwise, and
+    // what that rule chose on the night and had not bought by it, with the close it was chosen at.
+    const string QualityLiveOn = @"
+        SELECT rule FROM quality_night
+        WHERE index_code = $index AND session_date = $night AND substr(rule, 1, length($live)) = $live
+        ORDER BY rule LIMIT 1;
+    ";
+
+    const string ImprovingLiveOn = @"
+        SELECT rule FROM improving_night
+        WHERE index_code = $index AND session_date = $night AND substr(rule, 1, length($live)) = $live
+        ORDER BY rule LIMIT 1;
+    ";
+
+    const string QualityChosen = @"
+        SELECT ticker, buy_close FROM quality_holding
+        WHERE rule = $rule AND index_code = $index AND chosen_on = $night AND (bought_on IS NULL OR bought_on > $night)
+            AND (ended_on IS NULL OR ended_on > $night)
+        ORDER BY ticker;
+    ";
+
+    const string ImprovingChosen = @"
+        SELECT ticker, buy_close FROM improving_trade
+        WHERE rule = $rule AND index_code = $index AND chosen_on = $night AND (bought_on IS NULL OR bought_on > $night)
+            AND (ended_on IS NULL OR ended_on > $night)
+        ORDER BY ticker;
+    ";
+
+    // The rule a book's night is kept under before a freeze registers one.
+    const string ProvisionalBook = "provisional";
 
     const string LargePicks = @"
         SELECT ticker, family, place FROM family_pick
@@ -437,6 +481,145 @@ public sealed class DecisionCards : IComponent
         }
     }
 
+    // On the operator's ruling of 2026-11-15 on the review of PR 699, after Quality at a fair price's and the Fundamentals
+    // family's steps, a card for each stock either book chose on the night on each index: its buy the close it was chosen at,
+    // its stop and its take-profit placed from that close at the exit its book trades, as the sector heavyweights' cards
+    // are, the fill at the next open placing them again. A failure in an index's part undoes it and is named on the stage's
+    // row, and the night goes on.
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+    public async Task<int> BooksAsync(string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        IReadOnlyList<IndexCards> written = [];
+
+        try
+        {
+            await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+            await connection.OpenAsync(cancellation);
+
+            if (await ScalarAsync(connection, NewestSession, [], cancellation) is not string newest)
+            {
+                await AppendAsync(connection, runId, startedAt, 0, Ok, "no session: the store holds no bar", cancellation, BookStage);
+
+                return 0;
+            }
+
+            written = await BooksOnAsync(connection, Date(newest), cancellation);
+
+            await AppendAsync(connection, runId, startedAt, written.Sum(index => index.Cards), written.Any(index => index.Fault is not null) ? NotComputed : Ok, Detail(written), cancellation, BookStage);
+
+            return written.Sum(index => index.Cards);
+        }
+        catch (Exception failure) when (!cancellation.IsCancellationRequested)
+        {
+            await AppendAfterAFailureAsync(runId, startedAt, written.Sum(index => index.Cards), "the step stopped on " + IndexFamilies.Cause(failure), cancellation, BookStage);
+
+            return written.Sum(index => index.Cards);
+        }
+    }
+
+    // The books' cards of a night named, as `card-plans` writes them again.
+    public async Task<IReadOnlyList<IndexCards>> BooksOnAsync(DateOnly night, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        return await BooksOnAsync(connection, night, cancellation);
+    }
+
+    async Task<IReadOnlyList<IndexCards>> BooksOnAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    {
+        var written = new List<IndexCards>();
+
+        foreach (var index in Indices)
+        {
+            await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+            try
+            {
+                await ExecuteAsync(connection, transaction, ClearTheBooks, [("$index", index), ("$night", Stamp(night))], cancellation);
+
+                var cards = await BooksAsync(connection, transaction, index, night, cancellation);
+
+                await transaction.CommitAsync(cancellation);
+                written.Add(new IndexCards(index, cards));
+            }
+            catch (Exception failure) when (!cancellation.IsCancellationRequested)
+            {
+                await transaction.RollbackAsync(CancellationToken.None);
+                written.Add(new IndexCards(index, 0, IndexFamilies.Cause(failure)));
+            }
+        }
+
+        return written;
+    }
+
+    // One index's books' cards: each stock Quality at a fair price and the Fundamentals family chose on the night under the
+    // rule each card draws, in its book's order of tickers.
+    async Task<int> BooksAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
+    {
+        var large = index == IndexFamilies.LargeIndex;
+        var chosen = new List<(string Family, string Rule, string Ticker, decimal? Close)>();
+
+        foreach (var family in LateBooks)
+        {
+            var quality = family == QualityRule.Name;
+            var rule = await ScalarAsync(connection, quality ? QualityLiveOn : ImprovingLiveOn, [("$index", index), ("$night", Stamp(night)), ("$live", FamilyRecords.LivePrefix)], cancellation, transaction) as string ?? ProvisionalBook;
+
+            await using var command = Command(connection, transaction, quality ? QualityChosen : ImprovingChosen, [("$rule", rule), ("$index", index), ("$night", Stamp(night))]);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                chosen.Add((family, rule, reader.GetString(0), reader.IsDBNull(1) ? null : Money(reader.GetString(1))));
+            }
+        }
+
+        if (chosen.Count == 0)
+        {
+            return 0;
+        }
+
+        var sectors = await SectorsAsync(connection, transaction, cancellation);
+        var ranks = await RanksAsync(connection, transaction, index, night, sectors, cancellation);
+        var (breadth, floor, _) = large ? (null, 0d, null) : await IndexNightAsync(connection, transaction, index, night, cancellation);
+        var written = 0;
+
+        foreach (var family in LateBooks)
+        {
+            var place = 0;
+            var exit = BookExits.Of(family, index);
+
+            foreach (var (_, rule, ticker, close) in chosen.Where(one => one.Family == family))
+            {
+                var exits = close is { } buy ? await PlanTrades.BookExitAsync(connection, transaction, ticker, night, buy, exit, cancellation) : null;
+                var plan = new Plan(close, exits is { } placed ? Statistic.ToPrice(placed.Stop) : null, exits?.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null, null, [BookGate(family, night)])
+                {
+                    TakeProfitFrom = exits?.TakeProfit is { } from ? exit.Half ? TakeProfit.StoredHalf(exit.Multiple) : TakeProfit.Stored(from) : null,
+                };
+                var market = large
+                    ? await LargeMarketAsync(connection, transaction, ticker, night, false, cancellation)
+                    : new MarketReading(breadth, floor, false);
+
+                written += await WriteAsync(connection, transaction, index, night, family, ticker, ++place, plan, market, sectors, ranks, null, cancellation, live: rule);
+            }
+        }
+
+        return written;
+    }
+
+    // The gate a book's card's first line names: what chose the stock on the night.
+    static string BookGate(string family, DateOnly night) =>
+        family == QualityRule.Name
+            ? FormattableString.Invariant($"chosen at the reshuffle of {night:yyyy-MM-dd}, a strong business at a price below its own usual one")
+            : FormattableString.Invariant($"bought on {night:yyyy-MM-dd} because its newest filing lifted its scorecard to the buy");
+
+    // The words a card names its family by: a setup's label, a book's, and the sector heavyweights' heading.
+    static string WordsOf(string family) =>
+        family == QualityRule.Name ? QualityRule.Label.ToLowerInvariant()
+        : family == ImprovingRule.Name ? ImprovingRule.Label.ToLowerInvariant()
+        : SetupFamilies.Named(family)?.Label.ToLowerInvariant() ?? SetupFamilies.SectorHeavyweights.Heading.ToLowerInvariant();
+
     static string PricedDetail(int priced, string? unpriced) =>
         unpriced is not null ? "; no card priced at its family's recommended plan: " + unpriced
         : priced > 0 ? FormattableString.Invariant($"; {priced} card(s) priced at their family's recommended plan")
@@ -656,7 +839,7 @@ public sealed class DecisionCards : IComponent
         });
     }
 
-    static string Detail(IReadOnlyList<IndexCards> indices) =>
+    public static string Detail(IReadOnlyList<IndexCards> indices) =>
         string.Join("; ", indices.Select(index => index.Fault is null
             ? FormattableString.Invariant($"{index.Cards} card(s) on the {NameOf(index.Index)}")
             : $"the {NameOf(index.Index)}'s cards not computed tonight: {index.Fault}"));
@@ -828,7 +1011,7 @@ public sealed class DecisionCards : IComponent
     async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null, string? approved = null, string? live = null, string? heldAgain = null)
     {
         var named = NameOf(index);
-        var words = SetupFamilies.Named(family)?.Label.ToLowerInvariant() ?? SetupFamilies.SectorHeavyweights.Heading.ToLowerInvariant();
+        var words = WordsOf(family);
         var (state, dollarVolume, value) = await ReadingAsync(connection, transaction, index, ticker, night, cancellation);
         var quarters = await QuartersAsync(connection, transaction, ticker, night, cancellation);
         var sector = sectors.GetValueOrDefault(ticker);
@@ -1799,11 +1982,11 @@ public sealed class DecisionCards : IComponent
             reader.GetString(10));
     }
 
-    async Task AppendAsync(SqliteConnection connection, string runId, DateTimeOffset startedAt, int rows, string outcome, string detail, CancellationToken cancellation) =>
+    async Task AppendAsync(SqliteConnection connection, string runId, DateTimeOffset startedAt, int rows, string outcome, string detail, CancellationToken cancellation, string stage = Stage) =>
         await ExecuteAsync(connection, null, AppendRun,
         [
             ("$run_id", runId),
-            ("$stage", Stage),
+            ("$stage", stage),
             ("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)),
             ("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)),
             ("$outcome", outcome),
@@ -1813,13 +1996,13 @@ public sealed class DecisionCards : IComponent
 
     // The stage's row after a failure outside any index's cards, on a connection of its own, and none where the store will
     // not take it: recording the failure is never what stops the night.
-    async Task AppendAfterAFailureAsync(string runId, DateTimeOffset startedAt, int rows, string detail, CancellationToken cancellation)
+    async Task AppendAfterAFailureAsync(string runId, DateTimeOffset startedAt, int rows, string detail, CancellationToken cancellation, string stage = Stage)
     {
         try
         {
             await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
             await connection.OpenAsync(cancellation);
-            await AppendAsync(connection, runId, startedAt, rows, NotComputed, detail, cancellation);
+            await AppendAsync(connection, runId, startedAt, rows, NotComputed, detail, cancellation, stage);
         }
         catch (Exception) when (!cancellation.IsCancellationRequested)
         {

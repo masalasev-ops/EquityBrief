@@ -128,9 +128,11 @@ public sealed partial class SinglePageApp
         return region.ToString();
     }
 
-    // The buys no plan with a stop and a target sells: the Fundamentals family's in its card's order, then the sector
-    // heavyweights' and Quality at a fair price's holdings chosen and not yet bought, each linking to its row on its card.
-    // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+    // The books' buys: the Fundamentals family's in its card's order, then the sector heavyweights' and Quality at a fair
+    // price's holdings chosen and not yet bought, each linking to its row on its card, with the stop and take-profit its card
+    // placed where it holds them.
+    // see: Tonight's buys name every buy on the index, a book's buy drawn with its stop and take-profit where its card placed them
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
     public static IReadOnlyList<PlanlessBuyView> PlanlessBuys(string universe, ImprovingCardView? improving, HeavyweightCardView? heavyweights, QualityCardView? quality, SetupRecords? records = null) =>
     [
         .. PlanlessOf(universe, improving, heavyweights, quality).Select(buy => buy with { LongRecord = records?.Of(Universes.Of(universe).Code, buy.Family) }),
@@ -148,7 +150,7 @@ public sealed partial class SinglePageApp
             row.Close,
             MarkRenderer.SellsOnFilings,
             TonightHref(universe, EquityBrief.Core.Families.ImprovingRule.Name, row.Ticker),
-            row.EntryCheck)),
+            row.EntryCheck) { Stop = row.Stop, TakeProfit = row.TakeProfit }),
         .. (heavyweights?.Holdings ?? []).Where(holding => holding.SinceBought is null).Select(holding => new PlanlessBuyView(
             EquityBrief.Core.Families.HeavyweightRule.Name,
             "Sector heavyweights",
@@ -158,7 +160,7 @@ public sealed partial class SinglePageApp
             "not read",
             holding.Close,
             MarkRenderer.SellsAtAReshuffle,
-            TonightHref(universe, EquityBrief.Core.Families.HeavyweightRule.Name, holding.Ticker))),
+            TonightHref(universe, EquityBrief.Core.Families.HeavyweightRule.Name, holding.Ticker)) { Stop = holding.Stop ?? holding.Card?.Stop, TakeProfit = holding.TakeProfit ?? holding.Card?.TakeProfit }),
         .. (quality?.Cells ?? []).Where(cell => cell.SinceBought is null).Select(cell => new PlanlessBuyView(
             EquityBrief.Core.Families.QualityRule.Name,
             EquityBrief.Core.Families.QualityRule.Label,
@@ -168,7 +170,7 @@ public sealed partial class SinglePageApp
             cell is { Passed: { } passed, Applied: { } applied } ? MarkRenderer.ChecksApply(passed, applied) : "not read",
             cell.Close,
             MarkRenderer.SellsAtAReshuffle,
-            TonightHref(universe, EquityBrief.Core.Families.QualityRule.Name, cell.Ticker))),
+            TonightHref(universe, EquityBrief.Core.Families.QualityRule.Name, cell.Ticker)) { Stop = cell.Stop, TakeProfit = cell.TakeProfit }),
     ];
 
     // Why the Fundamentals family bought a stock, in the reader's words: its rule and the checks its newest filing passes.

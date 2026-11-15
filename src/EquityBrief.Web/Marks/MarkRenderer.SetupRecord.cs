@@ -131,8 +131,20 @@ public sealed partial class MarkRenderer
             _ => Formatted($"<b class=\"none\">No long record yet:</b> {Escaped(FilingsUntested(record))}"),
         };
 
-        return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span><span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
+        // On the operator's ruling of 2026-11-15 on the review of PR 699 a drift's or a breakout's figure says that its plan's buy
+        // price and stop were set partly from the years it reads.
+        // see: The drift and the breakout buy only on a pullback to their buy price within 20 trading days, and their record says it reads high
+        var high = record is { Made: true } or { Lost: true } && ReadsHigh(record.Family)
+            ? Formatted($"<span class=\"rec-sub\" data-reads-high>{Escaped(ReadsHighLine)}</span>")
+            : string.Empty;
+
+        return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span>{high}<span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
     }
+
+    // The line a drift's and a breakout's record box says beneath its figure, in the operator's words.
+    public const string ReadsHighLine = "The buy price and stop were set partly from these same years, so this figure reads high.";
+
+    public static bool ReadsHigh(string family) => family is EquityBrief.Core.Families.DriftRule.Name or EquityBrief.Core.Families.BreakoutRule.Name;
 
     // The line at the foot of a setup's tile on Tonight: what its plan as it stands made or lost for each dollar risked on the
     // index from 2019, or that it has no long record yet; none where the record is unread.

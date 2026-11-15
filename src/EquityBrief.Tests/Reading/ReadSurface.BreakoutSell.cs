@@ -42,7 +42,7 @@ public partial class ReadSurface
         // No bar, no reward against risk and nothing that reads as a target.
         Assert.DoesNotContain("card-reward", card, StringComparison.Ordinal);
         Assert.DoesNotContain("Rising stop", card, StringComparison.Ordinal);
-        Assert.DoesNotContain("Sell if it reaches", card, StringComparison.Ordinal);
+        Assert.DoesNotContain(TakeProfitView.Label, card, StringComparison.Ordinal);
 
         // The copy's plain card says the same.
         var copy = new MarkRenderer { Copying = true }.DecisionCard(BreakoutCard(new PaperWinners(3, 300, null)));
@@ -55,7 +55,7 @@ public partial class ReadSurface
         var targeted = new MarkRenderer().DecisionCard(BreakoutCard(null) with { Family = SetupFamilies.Pullback, Target = 58m, Trail = null });
 
         Assert.DoesNotContain("card-noloss", targeted, StringComparison.Ordinal);
-        Assert.Contains("Sell if it reaches", targeted, StringComparison.Ordinal);
+        Assert.Contains(TakeProfitView.Label, targeted, StringComparison.Ordinal);
     }
 
     [Fact]

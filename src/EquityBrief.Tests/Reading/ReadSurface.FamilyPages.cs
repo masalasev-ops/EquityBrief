@@ -328,7 +328,7 @@ public partial class ReadSurface
             planned.IndexOf("<section class=\"card-plan\"", StringComparison.Ordinal) is var plan and >= 0 && plan < planned.IndexOf("<section class=\"card-levels\"", StringComparison.Ordinal),
             "F3's entry and exit plan is not drawn beneath its setup's own plan.");
         Assert.Single(Regex.Matches(planned, "<div class=\"plan-tile\" data-tile=\"stop\"><span class=\"tile-label\">Sell if it closes below</span><b class=\"loss\">96.00</b>"));
-        Assert.Single(Regex.Matches(planned, "<div class=\"plan-tile\" data-tile=\"target\"><span class=\"tile-label\">Sell if it reaches</span><b class=\"gain\">110.00</b>"));
+        Assert.Single(Regex.Matches(planned, "<div class=\"plan-tile\" data-tile=\"target\"><span class=\"tile-label\">Take profit at</span><b class=\"gain\">110.00</b>"));
         Assert.Contains($"<p class=\"card-note\">{EquityBrief.Web.Marks.MarkRenderer.OnePlanSays("pullback", below: true)}</p>", planned, StringComparison.Ordinal);
         Assert.StartsWith("<section class=\"card-levels\" data-ticker=\"F3\" data-plan-rows=\"3\" data-traded=\"false\"><h5>Entry and exit plan: another way in, worked from the support and resistance levels, not traded</h5><div class=\"plan-grid\"><div class=\"fig\"><svg class=\"plan-column\"", levels, StringComparison.Ordinal);
         Assert.Contains("<p class=\"another-stops\">Its stop, 94.00, is its own: the pullback's trade is sold on a close below 96.00.</p></section>", levels, StringComparison.Ordinal);

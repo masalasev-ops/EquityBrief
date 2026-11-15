@@ -317,6 +317,35 @@ public static class CardScreen
         ];
     }
 
+    // On the operator's ruling of 2026-11-15 on the review of PR 699 each stock the Fundamentals family or Quality at a fair
+    // price chose and has not bought yet, with the stop and the take-profit its card placed from the close it was chosen at;
+    // a stock with its own stop, one bought, keeps it.
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+    public static ImprovingCardView WithBookCards(ImprovingCardView card, IReadOnlyList<DecisionCardRow> stored)
+    {
+        var byTicker = BookCards(stored, EquityBrief.Core.Families.ImprovingRule.Name);
+
+        return card with
+        {
+            Improving = [.. card.Improving.Select(row => row.Stop is null && byTicker.TryGetValue(row.Ticker, out var booked) ? row with { Stop = booked.Stop, TakeProfit = BookTakeProfit(booked) } : row)],
+        };
+    }
+
+    public static QualityCardView WithBookCards(QualityCardView card, IReadOnlyList<DecisionCardRow> stored)
+    {
+        var byTicker = BookCards(stored, EquityBrief.Core.Families.QualityRule.Name);
+
+        return card with
+        {
+            Cells = [.. card.Cells.Select(cell => cell.Stop is null && cell.SinceBought is null && byTicker.TryGetValue(cell.Ticker, out var booked) ? cell with { Stop = booked.Stop, TakeProfit = BookTakeProfit(booked) } : cell)],
+        };
+    }
+
+    static Dictionary<string, DecisionCardRow> BookCards(IReadOnlyList<DecisionCardRow> stored, string family) =>
+        stored.Where(row => row.Family == family && row.HeldAgain is null && row.Stop is not null)
+            .GroupBy(row => row.Ticker, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+
     // The sector heavyweights' holdings, each with the card of the night its book bought it on.
     public static HeavyweightCardView WithCards(HeavyweightCardView card, IReadOnlyList<DecisionCardRow> bought, CardContext? context = null)
     {

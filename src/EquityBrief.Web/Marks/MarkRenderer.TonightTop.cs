@@ -15,8 +15,16 @@ public sealed record BuyPointView(string Family, string Label, FamilyPickCell Pi
 // every setup draws it: the setup's word and label, the stock and its company, why it qualified and its business in the
 // reader's words, tonight's close it is bought at about, how it sells, the link to its row on its own card, and its entry
 // check's reading.
-// see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
-public sealed record PlanlessBuyView(string Family, string Label, string Ticker, string? Company, string Why, string Business, decimal? Close, string Sells, string Href, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, SetupLongRecord? LongRecord = null);
+// see: Tonight's buys name every buy on the index, a book's buy drawn with its stop and take-profit where its card placed them
+public sealed record PlanlessBuyView(string Family, string Label, string Ticker, string? Company, string Why, string Business, decimal? Close, string Sells, string Href, EquityBrief.Core.EntryCheck.EntryReading? EntryCheck = null, SetupLongRecord? LongRecord = null)
+{
+    // On the operator's ruling of 2026-11-15 on the review of PR 699 the stop and the take-profit its book's exit placed from
+    // the close it was chosen at, as its card stored them; none on a night before its card held them.
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+    public decimal? Stop { get; init; }
+
+    public TakeProfitView? TakeProfit { get; init; }
+}
 
 // The parts tomorrow's buys shares with a setup's card: each row's fold and the control opening it, and the reward
 // against the risk as the plan states it.

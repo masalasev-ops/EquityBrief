@@ -15,7 +15,7 @@ namespace EquityBrief.Tests.Reading;
 // Tonight and the read-only copy, and the three parts of the entry check's fixes the operator's read-back of 2026-11-05 found
 // not done: an analysts' figure fetched before the newest report labelled on every page drawing it, no sentence saying no
 // resistance band stands above, and the chart page's market value the stock page's and never the provider's.
-// see: A card's line under its sell price is worded from its family's own exit rule
+// see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
 public partial class ReadSurface
 {
     // One idea of a family buying at 100 with its give-up price at 90, as Home is handed it.

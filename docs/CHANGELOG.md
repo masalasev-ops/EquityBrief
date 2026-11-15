@@ -7,6 +7,32 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-15 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md and docs/BUILD_PLAN.md - a book's buy draws the stop and take-profit its exit places from the close it was chosen at, and a target's tile reads "Take profit at", on the operator's ruling on the report of that day
+Decision: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at; Tonight's buys name every buy on the index, a book's buy drawn with its stop and take-profit where its card placed them
+Was:
+> ARCHITECTURE.html, Decision cards' catalogue row: nightly, once, in the swing filter's step after the index families | ... plan points, family trades, index rule trades, dip trades, decision cards | decision cards | writes one card for each stock a family listed ... a failure named on the stage's row and leaving every card as written (see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded)
+
+> ARCHITECTURE.html, the night's step reading the Fundamentals family: ... and store tonight's buys and flags; each index's part is one transaction whose failure is named on its row while the step goes on (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better).
+
+> ARCHITECTURE.html, Tonight's buy points: ... such a row carries How it sells opening its row on its own card and draws tonight's close as its buy and how it sells across the stop's and the target's columns; and the Fundamentals card opens with its buys named, marking each on its table and drawing every buy among its rows drawn open (see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place).
+
+> ARCHITECTURE.html, Home's ideas: ... its three prices with a trailing plan's line in the target's place; from 22.18 for a plan selling on a rising give-up price no fixed target and one line saying its give-up price rises, and from the 22.42 correction every other card's line under its sell price worded from its family's own exit rule (see: A card's line under its sell price is worded from its family's own exit rule); ...
+
+> ARCHITECTURE.html, Decision cards' store row: one row per index, night, family and stock a family listed or an index's sector heavyweights' book bought: its place, ...
+
+> ARCHITECTURE.html, the card's figure: the target's tile labelled "Sell if it reaches"
+
+> SCHEMA.md, decision_card: Grain: one row per index, night, family and stock the family listed or the index's sector heavyweights' book bought. | `family` ... `heavyweight` for a book's buy | `place` ... or among the book's buys of the night in the order of their sectors | `take_profit_from` ... from 23.10's second part, for a sector heavyweights' card, where the price it takes profit at, its `target`, came from: `turned down` and the session of the swing high, `risk` and the multiple, or `own`, ... | **The decision cards write it in the night after every index's families and books, and are its own deleter** (see: ...). A night run again deletes its own night's rows and writes them again, and no other night's; ...
+
+> RUNBOOK.md, a pick's recommended plan on its card: ... so it draws the plan its rule trades and not the next open's prices.
+
+> BUILD_PLAN.md, 22.47: ... (see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place).
+
+> BUILD_PLAN.md, 22.18: ... (see: A breakout idea says it sells on a rising give-up price with no fixed target and names the price at which it can no longer lose) ...
+
+> ARCHITECTURE.html, The sector heavyweights' card: ... Since bought; from the operator's review of PR 699 Stop and take profit, the live book's stop under each holding's buy and the price it takes profit at, with the rules restart they were added at where they were, a variant's book saying it is not read for that book; and Tonight ...
+Why: the operator's ruling of 2026-11-15, item 2, word for word in `prompts/2026-11-15-23.10-rulings-on-the-review-report.md`: every book trades the stop and take-profit its test chose and its card draws them, and a profit price has one label everywhere. The two decisions the cards drew under are superseded. The 22.18 citation is the review of PR 699's: the decision it named was superseded that morning by **A plan selling on a rising give-up price draws that price and the price at which it can no longer lose, and no card says it has no fixed target**, and the plan still cited it. The heavyweights' card's column is reworded so the screens' parts reader takes it as one part, which its read-surface test holds; the list of four it read as parts had no verdict of their own.
+
 ### 2026-11-15 - docs/ARCHITECTURE.html - the heavyweights' card draws each holding's stop and take-profit with the restart line, on the operator's review of PR 699
 Decision: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
 Was:

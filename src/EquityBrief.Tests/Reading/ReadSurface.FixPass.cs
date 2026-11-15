@@ -25,7 +25,7 @@ public partial class ReadSurface
     // The S&P 600's buys of the night: LTC's drift and the Fundamentals family's PARR and HCC, where the page read "3 stocks to
     // buy at tomorrow's open, at about tonight's close: these 1 and the fundamentals' 2 on their own card below." with LTC its
     // one row.
-    // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+    // see: Tonight's buys name every buy on the index, a book's buy drawn with its stop and take-profit where its card placed them
     [Fact]
     public void TonightsBuysNameEveryBuyTheFundamentalsInTheirSlotWithHowEachSells()
     {

@@ -414,7 +414,7 @@ public sealed partial class MarkRenderer
         // From the 23.10 correction of 2026-11-13 a plan buying at a price draws the sale it was registered with, as the app does.
         // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
         body.Append(card.Zone?.Sale is { } sale ? SaleTiles(sale, card)
-            : card.Target is { } target ? PlanTile("target", "Sell if it reaches", Price(target), null, "gain")
+            : card.Target is { } target ? PlanTile("target", TakeProfitView.Label, Price(target), null, "gain")
             : TargetTile(card, pick));
         body.Append("</div>");
         body.Append(TrailLines(card, pick));
@@ -432,6 +432,8 @@ public sealed partial class MarkRenderer
     public static string SetupOf(string family) =>
         family == EquityBrief.Core.Families.HeavyweightRule.Name
             ? "sector heavyweights"
+            : family == EquityBrief.Core.Families.QualityRule.Name ? EquityBrief.Core.Families.QualityRule.Label.ToLowerInvariant()
+            : family == EquityBrief.Core.Families.ImprovingRule.Name ? EquityBrief.Core.Families.ImprovingRule.Label.ToLowerInvariant()
             : (EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family).ToLowerInvariant();
 
     // The card's opening sentence: the setup that picked the stock and the night, the buy at the next trading day's open at
@@ -657,7 +659,7 @@ public sealed partial class MarkRenderer
     public const string RisingWords = "rising as the stock makes new highs; it never moves down.";
 
     // What a plan says under a give-up price its family's rule never moves.
-    // see: A card's line under its sell price is worded from its family's own exit rule
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
     public const string StaysWords = "The give-up price stays where it is.";
 
     public const string NotTheStocksChance = "That is the rule's record, not this stock's chance.";
@@ -673,7 +675,7 @@ public sealed partial class MarkRenderer
     // give-up price on a family whose rule sets one that never moves or none, a line of one staying put on a family whose rule
     // raises it or sets none, and a price to fall to on the Fundamentals family, which sets none. Each is named by its family,
     // its stock and the line.
-    // see: A card's line under its sell price is worded from its family's own exit rule
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
     public static IReadOnlyList<string> SellLinesContradictingTheirRule(string page)
     {
         string[] rising = ["The give-up price rises as the stock climbs", "rising as the stock makes new highs"];
@@ -804,7 +806,7 @@ public sealed partial class MarkRenderer
         // From 21.18 a pick of a rule at the target standing as a sell order says how that order sells, in the operator's words.
         // see: The target as a sell order standing from the buy is an exit of the menu, and its variant registers where its family has room
         : card.Target is { } target
-            ? PlanTile("target", "Sell if it reaches", Price(target), StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open", "gain")
+            ? PlanTile("target", TakeProfitView.Label, Price(target), StandsAtTheTarget(card.Rule) ? EquityBrief.Core.Loop.ExitMenu.StandingWords : "on a close at or above it, sold at the next day's open", "gain")
             : card.Trail is not null || pick?.Trailing == true
                 ? PlanTile("target", TrailLabel, TrailValue, TrailsByItsRule(card) ? RunsWords : "The rule lets a winner run and sells only when the price closes below a give-up price that rises behind it.")
                 : card.Family == EquityBrief.Core.Families.DipRule.Name

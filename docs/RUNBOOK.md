@@ -2180,7 +2180,7 @@ dotnet run --project src/EquityBrief.Worker -- card-plans
 dotnet run --project src/EquityBrief.Worker -- card-plans --session 2026-11-09
 ```
 
-It prints how many cards it priced, asks nothing of anyone, calls no model, changes no pick, plan or rule, and is refused while a night holds the store. From the 23.10 correction of 2026-11-10 it reads the plan each family's live rule trades: a recommendation that is that plan is stored as none, since it is no alternative to it, and a card stored before its rule stated the plan is handed the order the plan places on the card's night from the stock's own bars, so it draws the plan its rule trades and not the next open's prices.
+It prints how many cards it priced, asks nothing of anyone, calls no model, changes no pick, plan or rule, and is refused while a night holds the store. From the 23.10 correction of 2026-11-10 it reads the plan each family's live rule trades: a recommendation that is that plan is stored as none, since it is no alternative to it, and a card stored before its rule stated the plan is handed the order the plan places on the card's night from the stock's own bars, so it draws the plan its rule trades and not the next open's prices. From the operator's ruling of 2026-11-15 on the review of PR 699 it writes that night's cards of Quality at a fair price's and the Fundamentals family's buys again as well, each with the stop and take-profit its book's exit places from the close it was chosen at, printing how many on each index, and exits 1 where an index's part failed (see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at).
 
 ## Store maintenance
 

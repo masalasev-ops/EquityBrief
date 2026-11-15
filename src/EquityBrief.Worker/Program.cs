@@ -366,12 +366,25 @@ static async Task<int> CardPlansRun(string[] args)
         return 2;
     }
 
-    var (night, priced) = await new EquityBrief.Worker.Cards.DecisionCards(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
-        .PriceAsync(session);
+    var cards = new EquityBrief.Worker.Cards.DecisionCards(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile);
+    var (night, priced) = await cards.PriceAsync(session);
 
     Console.WriteLine(night is { } read
         ? FormattableString.Invariant($"card-plans: {priced} card(s) of {read:yyyy-MM-dd} priced at their family's recommended plan")
         : "card-plans: the store holds no card");
+
+    // On the operator's ruling of 2026-11-15 on the review of PR 699 the books' cards of the night, written again.
+    if (night is { } booked)
+    {
+        var books = await cards.BooksOnAsync(booked);
+
+        Console.WriteLine(FormattableString.Invariant($"card-plans: {books.Sum(index => index.Cards)} book card(s) of {booked:yyyy-MM-dd} written: ") + EquityBrief.Worker.Cards.DecisionCards.Detail(books));
+
+        if (books.Any(index => index.Fault is not null))
+        {
+            return 1;
+        }
+    }
 
     return 0;
 }
@@ -973,7 +986,8 @@ static int NoVerb()
         "'plan-points --index <GSPC, MID or SML>' walks every flagged setup of the four price families under every entry, " +
         "stop and sale, '--family <pullback, breakout, drift or dip>' walking and writing that family alone, each with '--print' writing nothing, and with '--drift-checks' walking the drift as traded beside its " +
         "first-pullback entry and its sales check alone and together, writing nothing, " +
-        "'card-plans' prices each price family's pick on the newest night's cards at its family's recommended plan again, " +
+        "'card-plans' prices each price family's pick on the newest night's cards at its family's recommended plan again " +
+        "and writes the night's cards of Quality at a fair price's and the Fundamentals family's buys again, " +
         "'--session <yyyy-MM-dd>' a night named, " +
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
         "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +

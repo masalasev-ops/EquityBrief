@@ -173,7 +173,7 @@ public sealed partial class MarkRenderer
         else
         {
             // The rows drawn open are the first of the rule's order and every buy, so no buy sits behind the fold.
-            // see: Tonight's buys name every buy on the index, a buy no plan sells drawn with how it sells in its stop's and target's place
+            // see: Tonight's buys name every buy on the index, a book's buy drawn with its stop and take-profit where its card placed them
             var shown = card.Improving.Where((row, at) => at < ImprovingShown || row.Status == BoughtWords).ToArray();
             var folded = card.Improving.Except(shown).ToArray();
 

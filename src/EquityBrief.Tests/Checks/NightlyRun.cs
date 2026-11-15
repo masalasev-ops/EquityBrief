@@ -49,7 +49,7 @@ public partial class NightlyRun
 
     // Section 14's step after Quality at a fair price's, from 22.13, as the document states it.
     internal const string ImprovingStep =
-        "From 22.13, read the Fundamentals family on each of the three indices over every member holding a bar on the night, on its scorecard as the night's last scoring stored it, and for a member whose newest filing is read for the first time the score its filing before held through the core's one scorecard over the filings as first filed, with its newest results release through the one reader of the release readings: carry each trade by the night's close, buy each one chosen before at the open of the first session after its choice the store holds, sell a trade at the night's close where its score fell under the hold floor or its last session closed and one whose stock left the index at its last close as a member, and store tonight's buys and flags; each index's part is one transaction whose failure is named on its row while the step goes on (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better).";
+        "From 22.13, read the Fundamentals family on each of the three indices over every member holding a bar on the night, on its scorecard as the night's last scoring stored it, and for a member whose newest filing is read for the first time the score its filing before held through the core's one scorecard over the filings as first filed, with its newest results release through the one reader of the release readings: carry each trade by the night's close, buy each one chosen before at the open of the first session after its choice the store holds, sell a trade at the night's close where its score fell under the hold floor or its last session closed and one whose stock left the index at its last close as a member, and store tonight's buys and flags; each index's part is one transaction whose failure is named on its row while the step goes on (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better); then, from the operator's ruling of 2026-11-15 on the review of PR 699, write a card for each stock Quality at a fair price and the Fundamentals family chose tonight on each index, its stop and its take-profit placed from the close it was chosen at at the exit its book trades, on a row of its own, a failure in an index's part named there while the night goes on (see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at).";
 
     // The rows the 3.1 correction adds: the step, its component's catalogue and matrix rows, its store and the chart's
     // part drawing what it stores.
@@ -1413,16 +1413,17 @@ public partial class NightlyRun
         // From 22.8 the filings step writes its refresh's row and then the scorecards' written again, from 22.9 the
         // quality family's row follows them, and from 22.13 the Fundamentals family's follows that; from 23.10's second part
         // the quarters fetch's row sits in the swing filter's step, after the S&P 500's heavyweights' book and before the S&P
-        // 400's and 600's families.
+        // 400's and 600's families; and from the review of PR 699 the books' cards' row follows the Fundamentals family's.
         Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^1]);
         Assert.Equal(NewsLabeller.NightStage, stages[^2]);
         Assert.Equal("report", stages[^3]);
         Assert.Equal(EquityBrief.Worker.Treasury.TreasuryReader.Stage, stages[^4]);
-        Assert.Equal(EquityBrief.Worker.Improving.ImprovingFamily.Stage, stages[^5]);
-        Assert.Equal(EquityBrief.Worker.Quality.QualityFamily.Stage, stages[^6]);
-        Assert.Equal(EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, stages[^7]);
-        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^8]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^9]);
+        Assert.Equal(EquityBrief.Worker.Cards.DecisionCards.BookStage, stages[^5]);
+        Assert.Equal(EquityBrief.Worker.Improving.ImprovingFamily.Stage, stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Quality.QualityFamily.Stage, stages[^7]);
+        Assert.Equal(EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, stages[^8]);
+        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^9]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^10]);
         Assert.Equal(
             [EquityBrief.Worker.Families.HeavyweightBook.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, EquityBrief.Worker.Indices.IndexFamilies.Stage],
             stages.Where(stage => stage is EquityBrief.Worker.Families.HeavyweightBook.Stage or EquityBrief.Worker.Quarters.QuarterFetcher.Stage or EquityBrief.Worker.Indices.IndexFamilies.Stage));

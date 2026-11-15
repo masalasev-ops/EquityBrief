@@ -3,11 +3,13 @@
 # the operator did not approve, its earlier rule live again; gives each price family's live rule on each index the plan its
 # long test recommends with the take-profit shape its test chose on 2005 to 2018, today's nearest turned-down price never
 # chosen; registers every moved version again, an S&P 400 or 600 version stating no plan taking its family's take-profit;
-# places tonight's cards' plans again; writes the standing ledger and the long ledger once more; reads each family's buy and
-# sell points over the long history; and writes each live book's record box at the exit it trades. It asks nothing of anyone,
-# calls no model and moves the pins the restart's commits moved. Run from main after the merge, when no night, off-peak run,
-# local run, ledger build or monthly run is writing, the off-peak and local runs held while it writes; about 15 hours on the
-# E: disk, measured on a copy before the merge.
+# keeps the live plan of each of the seven families with room without its take-profit in the background, on the operator's
+# review of PR 699; places tonight's cards' plans again and writes the books' cards; writes the standing ledger and the long
+# ledger once more; reads each family's buy and sell points over the long history; and writes each live book's record box at
+# the exit it trades. It asks nothing of anyone, calls no model and moves the pins the restart's commits moved. Run from main
+# after the merge, when no night, off-peak run, local run, ledger build or monthly run is writing, the off-peak and local runs
+# held while it writes; about 8 hours on the E: disk, and 12.5 at most, from a rehearsal on a copy on the C: disk read by the
+# two drives' ratio measured on the same steps.
 migrate
 register --withdraw "the live S&P 500 quality rule at a score of 7 in 9, at or below its own median, the trend off, 10 held, sold at reshuffles; ordered by a score over close_over_twenty, close_over_fifty, close_over_long, fifty_over_long, move_share, rsi, rsi_up, volume_ratio, return_quarter, return_half_year, return_twelve_less_one, strength, strength_twelve_less_one, high_ratio, since_high, depth, gap_down, rsi_low, tightness, liquidity, surprise_sessions, surprise_percent, breadth, highs_less_lows, index_over_long, vix, vix_change, mid_over_large, small_over_large, credit_over_fifty, profit, coverage, return_week, return_month, largest_return, volatility_month, residual_volatility, beta, skewness, close_place, up_volume_share, price_volume_correlation, illiquidity, overnight_less_intraday, low_ratio, streak, volume_slope, alpha_one, alpha_two, alpha_three, alpha_four, alpha_six, insider_buyers, insider_officer_buy, rsi_two, drop_fall, drop_largest, drop_volume, drop_against_sector, fund_over_long, vix_over_median" --evidence "23.10: the operator's answer (d) of 2026-11-13, they did not approve the learned score on 2026-11-09; the earlier rule live again"
 register --plan "the live swing filter, version 5" --combination "1.13 typical days under the close within 20 sessions, 4 typical days under the buy, the first band above, taking profit at 2 times the risk alone" --evidence "23.10: the second restart, the shapes ruled on 2026-11-15"

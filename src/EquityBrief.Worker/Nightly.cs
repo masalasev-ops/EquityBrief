@@ -892,6 +892,17 @@ public static class Nightly
 
                 return Improving.ImprovingFamily.Detail(outcome.Indices);
             }, [Improving.ImprovingFamily.Stage]),
+            // The end of the Fundamentals family's step in section 14's list. A card for each stock Quality at a fair price and the
+            // Fundamentals family chose tonight on each index, which the cards before them could not read, its stop and its
+            // take-profit placed from the close it was chosen at at the exit its book trades. It makes no request, and a
+            // failure in an index's part is named on its row while the step goes on.
+            // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+            new(DecisionCards.BookStage, async () =>
+            {
+                var written = await new DecisionCards(clock, store.DatabaseFile).BooksAsync(runId);
+
+                return FormattableString.Invariant($"{written} book card(s)");
+            }, [DecisionCards.BookStage]),
             // Section 14's step 27, after the Fundamentals family. The Treasury's 10-year par yield for the session's year, one free
             // request to the Treasury and none to the provider, every session to the night's kept that the store does not
             // hold. It is handed no token from the night's deadline, and a refused or unreadable answer keeps nothing and

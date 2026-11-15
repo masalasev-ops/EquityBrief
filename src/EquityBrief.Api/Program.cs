@@ -2781,7 +2781,11 @@ async Task<QualityCardView> QualityCardAsync(ReadApi read, string index, DateOnl
         fixedView = TonightScreen.QualityFixed(liveSince.Value, answer);
     }
 
-    return TonightScreen.Quality(index, night, await read.QualityNightAsync(index, night, rule), last, holdings, await read.QualityResultsAsync(index, night, rule), answersOn, cells, liveSince, fixedView);
+    // On the operator's ruling of 2026-11-15 on the review of PR 699 each stock chosen tonight with the stop and take-profit its card placed.
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+    return CardScreen.WithBookCards(
+        TonightScreen.Quality(index, night, await read.QualityNightAsync(index, night, rule), last, holdings, await read.QualityResultsAsync(index, night, rule), answersOn, cells, liveSince, fixedView),
+        await read.DecisionCardsAsync(index, night));
 }
 
 // The Fundamentals family's card on an index as of a night, read off its own rows: its night, tonight's answers, the
@@ -2855,7 +2859,9 @@ async Task<ImprovingCardView> ImprovingCardAsync(ReadApi read, string index, Dat
     // see: Every count of trades names its group and one function works the four groups
     var accounts = await PaperAccountsAsync(read, Universes.ByCode(index) ?? Universes.Large, night, null);
 
-    return improvingCard with
+    // On the operator's ruling of 2026-11-15 on the review of PR 699 each buy tonight with the stop and take-profit its card placed.
+    // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+    return CardScreen.WithBookCards(improvingCard, await read.DecisionCardsAsync(index, night)) with
     {
         HeldByThisVersion = TradeGroups.Of(accounts.Sources, night, accounts.Close, await read.RegisteredCandidatesAsync(), index, EquityBrief.Core.Families.ImprovingRule.Name).ThisVersion.Open,
     };
@@ -2974,13 +2980,18 @@ async Task<IResult> HomeAsync(
         buy.Company ?? cells.GetValueOrDefault(buy.Ticker)?.Name,
         buy.Why,
         buy.Close ?? cells.GetValueOrDefault(buy.Ticker)?.Close,
-        null,
+        buy.Stop,
         null,
         false,
         null,
         EntryCheck: buy.EntryCheck,
         Setting: buy.Family == EquityBrief.Core.Families.ImprovingRule.Name && improving?.Setting is { } setting ? setting with { SoldUnderAverage = improving.Rule.Contains(EquityBrief.Core.Families.ImprovingRule.UnderItsAverage, StringComparison.Ordinal) } : null,
-        LongRecord: longRecords.Of(reading.Code, buy.Family));
+        LongRecord: longRecords.Of(reading.Code, buy.Family))
+    {
+        // On the operator's ruling of 2026-11-15 on the review of PR 699 the take-profit its book's card placed.
+        // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+        TakeProfit = buy.TakeProfit,
+    };
 
     // Every buy in Tonight's order, read by the one function Tonight's buys draw them in; each is an idea to buy unless its
     // setup's record over the long history lost, and then it is watched.
