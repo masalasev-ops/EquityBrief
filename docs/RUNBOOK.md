@@ -1920,6 +1920,20 @@ dotnet run --project src/EquityBrief.Worker -- register --moved --evidence "the 
 
 It retires every standing candidate whose evaluator the code no longer carries at the version it was registered with, on the evidence given, and registers each again with its name, rule, test, evaluator and parameters as they stood and the version the code now carries, all at one instant or none. A setup family rule among them is replayed first, as the family registered again replays each of its rules, and prints the same line a rule, its record carrying on where the replay reproduces every trade and restarting otherwise; every other candidate registered again this way starts its record again, as any new registration does. It is refused where no standing candidate's evaluator has moved, and whole where one's evaluator is no longer carried at all, which is a retirement to write first.
 
+**The replay over two copies**, from the replay fix of 23.10, answers whether a change that moved a pin changes any rule's trades, for every kind of rule, by running the build of the commit the standing versions were registered under and the build of main's own HEAD night by night over two copies of the store and comparing their trades rule by rule (see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same). Run it from main after the merge that moved the pin, when no night, off-peak run, local run, ledger build or monthly run is writing, into a folder outside the data root on the faster disk; the first night is the session after the earliest registration among the standing rules whose version moved:
+
+```
+tools/replay.ps1 --old <the commit the versions were registered under> --from <yyyy-MM-dd> --into C:\EquityBrief-replay
+```
+
+The worker copies the store twice through SQLite's own backup while it holds the night's lock, about 11 GB each and a minute and a half from the store's disk; prepares each copy for the first night, the 28 tables the deciding steps read and never write read through views capped at the night replayed and their own tables stood as on the evening before, the new build's copy with each moved rule registered again at its own instant and each open ladder window hashed as it applies it; runs each night's deciding steps under both builds at once, asking nothing of a feed and calling no model, about two minutes a night on C:; compares the two copies' trades, holdings, waiting orders, fills and version scores; keeps the comparison under the data root's `replays` folder; and removes both copies, saying the space freed. An old build that cannot prepare or run its copy stops the replay, the copies removed and nothing compared. The kept record is then what the registration reads, refused where the store has a session or a registration the copies were not made through:
+
+```
+dotnet run --project src/EquityBrief.Worker -- register --moved --evidence "<what moved the pin>" --replayed <the record under data/replays>
+```
+
+Inside the rule freeze a moved live rule the record does not reproduce refuses the command whole (see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce). The commit the second restart registered under, cb28080f, carries no replay verb, so the first replay is the next change that moves a pin, against the build that carries it.
+
 **21.4's one move of the pins** is written by one remedy, run from main after the merge, when no night, local run, drain, labeller, history read, ledger build or monthly run is writing (see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again):
 
 ```

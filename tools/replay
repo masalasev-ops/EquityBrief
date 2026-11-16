@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+# The replay a change that moves a pin runs before `register --moved`, on the operator's rulings of 2026-11-16: the build
+# of the commit the standing versions were registered under and the build of the main checkout's own HEAD, each a clean
+# copy of its commit built once in Release under the replay's folder, run night by night over two copies of the store and
+# their trades compared rule by rule.
+#
+#   tools/replay --old <commit> --from <yyyy-MM-dd> --into <folder>
+#   tools/replay ... --check    print what a run would build and run, and run nothing
+#
+# The folder is outside the data root, on another disk where one is faster. The worker makes both copies from the store at
+# one moment while the night's lock is held, so no night writes while it reads; each copy is prepared for the first night,
+# the new build's with each moved rule registered again at its own instant; each night from it to the newest is run by both
+# builds, asking nothing of a feed; the comparison is written under the data root's replays folder; and both copies are
+# then removed whole, the space they held said. The operator's store is only ever read. An old build that cannot run over
+# its copy stops the replay, the copies removed, and no record is kept without a comparison.
+# see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && (pwd -W 2>/dev/null || pwd))"
+cd "$root"
+
+data="${EquityBrief__DataRoot:-$root/data}"
+case "$data" in
+    /*|[A-Za-z]:*) ;;
+    *) data="$root/$data" ;;
+esac
+
+old=""
+from=""
+into=""
+check=0
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --old) old="${2:-}"; shift 2 ;;
+        --from) from="${2:-}"; shift 2 ;;
+        --into) into="${2:-}"; shift 2 ;;
+        --check) check=1; shift ;;
+        *) echo "replay: '$1' is not an argument it takes" >&2; exit 1 ;;
+    esac
+done
+
+refuse() {
+    echo "replay: refused before any copy exists: $1" >&2
+    exit 1
+}
+
+[ -n "$old" ] && [ -n "$from" ] && [ -n "$into" ] || refuse "it takes '--old <commit> --from <yyyy-MM-dd> --into <folder>'"
+
+branch="$(git symbolic-ref --short -q HEAD || true)"
+
+if [ "$branch" != "main" ]; then
+    refuse "the checkout is on '${branch:-no branch}' and not on main, so the new build is not main's"
+fi
+
+new="$(git rev-parse HEAD)"
+old="$(git rev-parse --verify -q "$old^{commit}" || true)"
+
+[ -n "$old" ] || refuse "the old commit is not one this repository holds"
+
+builds="$into/builds"
+copies="$into/copies"
+
+worker_in() {
+    find "$1/src/EquityBrief.Worker/bin/Release" -name EquityBrief.Worker.dll 2>/dev/null | head -n 1 || true
+}
+
+build_of() {
+    local commit="$1" copy="$builds/${1:0:12}"
+
+    if [ -z "$(worker_in "$copy")" ]; then
+        mkdir -p "$copy"
+        git archive "$commit" | tar -x -C "$copy"
+        dotnet build "$copy/src/EquityBrief.Worker" -c Release --nologo -v quiet >&2
+    fi
+
+    worker_in "$copy"
+}
+
+if [ "$check" = 1 ]; then
+    echo "replay: would compare ${old:0:12} with ${new:0:12} from $from"
+    echo "replay: builds under $builds, copies under $copies, the store read from $data"
+    exit 0
+fi
+
+started=$SECONDS
+old_worker="$(build_of "$old")"
+new_worker="$(build_of "$new")"
+
+[ -n "$old_worker" ] && [ -n "$new_worker" ] || refuse "a build left no worker assembly under $builds"
+
+EquityBrief__DataRoot="$data" dotnet "$new_worker" replay-copy --into "$copies"
+
+forget() {
+    local held
+    held="$(du -sh "$copies" 2>/dev/null | cut -f1 || echo unknown)"
+    rm -rf "$copies"
+    echo "replay: both copies removed, $held freed"
+}
+
+if ! prepared="$(EquityBrief__DataRoot="$copies/old" dotnet "$old_worker" replay-prepare --from "$from")"; then
+    forget
+    echo "replay: the old build ${old:0:12} would not prepare its copy, so nothing was compared and no record is kept by this replay" >&2
+    exit 1
+fi
+
+echo "$prepared"
+EquityBrief__DataRoot="$copies/new" dotnet "$new_worker" replay-prepare --from "$from" --as-the-code-is
+nights="${prepared##*nights: }"
+count="$(wc -w <<< "$nights")"
+
+echo "replay: $count night(s) to run under each build, about $((count * 2)) minute(s) on a fast disk with both builds at once"
+
+for night in $nights; do
+    EquityBrief__DataRoot="$copies/old" dotnet "$old_worker" replay-night --session "$night" > "$into/old-$night.log" 2>&1 &
+    first=$!
+    EquityBrief__DataRoot="$copies/new" dotnet "$new_worker" replay-night --session "$night" > "$into/new-$night.log" 2>&1 &
+    second=$!
+
+    if ! wait "$first" || ! wait "$second"; then
+        forget
+        echo "replay: the night of $night stopped under a build, its logs in $into, so nothing was compared and no record is kept by this replay" >&2
+        exit 1
+    fi
+
+    echo "replay: $night run under both builds"
+done
+
+mkdir -p "$data/replays"
+record="$data/replays/$(date -u +%Y%m%dT%H%M%SZ)-${old:0:12}-${new:0:12}.txt"
+outcome=0
+dotnet "$new_worker" replay-compare --old "$copies/old/equitybrief.db" --new "$copies/new/equitybrief.db" > "$record" || outcome=$?
+
+cat "$record"
+forget
+echo "replay: compared in $(((SECONDS - started) / 60)) minute(s), the comparison kept at $record"
+exit "$outcome"

@@ -100,7 +100,9 @@ public class StoreNeverDeleted
         // removes its own saved candidates where the history moved under them. StoreBackup, in the copies'
         // folder alone, removes an unfinished copy an earlier run left, names a finished copy by moving it from
         // its unfinished name, and removes a copy older than the newest two once each of those has opened and
-        // read; the store itself it only reads, through SQLite's own backup.
+        // read; the store itself it only reads, through SQLite's own backup. From the replay fix ReplayCopy writes the mark beside
+        // each of a replay's two copies, in a folder outside the data root that held no copy, the store read through SQLite's
+        // own backup alone.
         Assert.Equal(
             [
                 "AccountPlan.cs: File.Move(next)",
@@ -159,6 +161,8 @@ public class StoreNeverDeleted
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",
                 "NightLock.cs: FileOptions.DeleteOnClose(path)",
+                "ReplayCopy.cs: File.WriteAllTextAsync(newMark)",
+                "ReplayCopy.cs: File.WriteAllTextAsync(oldMark)",
                 "ResearchRunner.cs: FileOptions.DeleteOnClose(path)",
                 "SearchMeasurementRun.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
                 "SearchMeasurementRun.cs: File.WriteAllTextAsync(file)",
@@ -247,7 +251,8 @@ public class StoreNeverDeleted
         // script each remove a partial or stale copy of their commit in the same folder; tools/nights-keep, which the
         // five call, removes every folder there but the three it keeps, and refuses any folder not named nights; the
         // phase report removes its own artifacts, the suite's result and its stamp among them only where it runs the
-        // suite itself.
+        // suite itself; and from the replay fix the replay's script removes its two copies whole, made by the worker in a
+        // folder outside the data root that held no copy before.
         Assert.Equal(
             [
                 "ci.ps1: Step \"drop the store\"  { if (Test-Path data-ci) { Remove-Item -Recurse -Force data-ci } }",
@@ -265,6 +270,7 @@ public class StoreNeverDeleted
                 "nights-keep: rm -rf \"$folder\" 2>/dev/null || echo \"nights: could not remove $folder\" >&2",
                 "offpeak: rm -rf \"$copy\" \"$copy.partial\"",
                 "offpeak: mv \"$copy.partial\" \"$copy\"",
+                "replay: rm -rf \"$copies\"",
                 "verify-phase: rm -f artifacts/phase-report.html artifacts/phase-report.json",
                 "verify-phase: rm -f artifacts/suite.trx artifacts/suite.commit artifacts/phase-report.html artifacts/phase-report.json",
             ],

@@ -303,7 +303,15 @@ public class StoreWrites
         // found none has asserted nothing. It was zero until 1.1.
         Assert.True(found.Length >= 2, $"Found {found.Length} writes against a declared table, expected at least 2.");
 
+        // A replay's copy is not the store (SCHEMA's paragraph of that name): the replay's own source writes the copies alone,
+        // and each of its three writing paths refuses a store carrying no copy's mark before it opens one, which is read here.
+        // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+        var replay = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Replay", "ReplayCopy.cs"));
+
+        Assert.Equal(3, System.Text.RegularExpressions.Regex.Matches(replay, @"if \(!IsACopy\(databaseFile\)").Count);
+
         var undeclared = found
+            .Where(write => write.Type != "ReplayCopy")
             .Where(write => !AnyComponentMay(write.Table, write.Operation))
             .Where(write => !RebuildsInPlace(write))
             .Where(write => !declared.Any(row =>

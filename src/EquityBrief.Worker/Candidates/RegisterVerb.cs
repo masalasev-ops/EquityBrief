@@ -1,3 +1,4 @@
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Time;
 using EquityBrief.Worker.Families;
 using Microsoft.Data.Sqlite;
@@ -29,6 +30,9 @@ public static class RegisterVerb
     // The flag that registers again, unchanged and at one instant, every standing candidate whose
     // evaluator a code change moved, on the evidence given.
     public const string Moved = "--moved";
+
+    // From the replay fix, the record `tools/replay` kept, which `--moved` reads in place of the replay it runs itself.
+    public const string Replayed = "--replayed";
 
     // The flag that registers the swing family again whole at one instant under the filter version already
     // open, on the evidence given, which is how a rule joins it.
@@ -116,7 +120,7 @@ public static class RegisterVerb
         new("--retire", ["--retire", "--evidence"], [], []),
         new(TheThree, [], [], [TheThree]),
         new(TheFamily, [], [], [TheFamily]),
-        new(Moved, ["--evidence"], [], [Moved]),
+        new(Moved, ["--evidence"], [Replayed], [Moved]),
         new(Family, [Family], [], []),
         new(TheFamilyAgain, ["--evidence"], [], [TheFamilyAgain]),
         new(FamilyAgain, [FamilyAgain, "--evidence"], [], []),
@@ -154,7 +158,7 @@ public static class RegisterVerb
 
         try
         {
-            return await FormAsync(args, registrar, replay, runId, clock.UtcNow, output, error);
+            return await FormAsync(args, registrar, replay, runId, clock.UtcNow, output, error, databaseFile);
         }
         catch (SqliteException collided) when (collided.SqliteErrorCode == 19 && collided.Message.Contains("run_log", StringComparison.Ordinal))
         {
@@ -172,7 +176,8 @@ public static class RegisterVerb
         string runId,
         DateTimeOffset at,
         TextWriter output,
-        TextWriter error)
+        TextWriter error,
+        string databaseFile)
     {
         var (form, refusal) = VerbArguments.FormOf(args, Forms);
 
@@ -209,7 +214,43 @@ public static class RegisterVerb
         // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
         if (form.Flag == Moved)
         {
-            await ReplayedAsync(await replay.MovedAsync(), output);
+            // From the replay fix, the record of the replay that ran the old build and the new over two copies of the store,
+            // refused where the store has a session or a registration the copies were not made through.
+            // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+            IReadOnlyList<FamilyReplayed> replayed;
+
+            if (Given(Replayed) is { Length: > 0 } recordFile)
+            {
+                var record = File.Exists(recordFile) ? EquityBrief.Worker.Replay.ReplayCompare.Read(await File.ReadAllTextAsync(recordFile)) : null;
+                var newest = EquityBrief.Worker.Nights.NightSession.NewestStored(databaseFile)?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "none";
+                var register = (await registrar.RowsAsync()).Select(row => row.Id).DefaultIfEmpty(0).Max();
+
+                if (record is not { } read)
+                {
+                    return await RefusedAsync(registrar, runId, $"'{recordFile}' is no replay's record, so nothing was registered.", error);
+                }
+
+                if (read.Session != newest || read.Register != register)
+                {
+                    return await RefusedAsync(registrar, runId, FormattableString.Invariant($"the replay's record was made through {read.Session} and register id {read.Register}, and the store now holds {newest} and id {register}, so nothing was registered: run the replay again."), error);
+                }
+
+                replayed = await replay.FromRecordAsync(read.Differing);
+            }
+            else
+            {
+                replayed = await replay.MovedAsync();
+            }
+
+            await ReplayedAsync(replayed, output);
+
+            // On the operator's rulings of 2026-11-15 a live rule's record never restarts inside the freeze: where a moved live
+            // rule's replay did not reproduce every trade, nothing is registered and the refusal names each.
+            // see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce
+            if (RuleFreezeDates.Holds(DateOnly.FromDateTime(at.UtcDateTime)) && LiveRestarts(await registrar.RowsAsync(), replayed, at) is { Count: > 0 } restarting)
+            {
+                return await RefusedAsync(registrar, runId, FreezeRefusal(restarting), error);
+            }
 
             return await Said(await registrar.RegisterMovedAgainAsync(Given("--evidence"), runId), output, error);
         }
@@ -581,6 +622,33 @@ public static class RegisterVerb
     }
 
     // What each replayed rule's record does, a line a rule.
+    // The live rules `--moved` would register again whose records would restart: each standing rule an evaluator the code moved
+    // keeps, live among the rules its evaluator keeps, and no replay reproducing every trade of it, in the register's order.
+    public static IReadOnlyList<string> LiveRestarts(IReadOnlyList<Core.Candidates.RegisterRow> rows, IReadOnlyList<FamilyReplayed> replayed, DateTimeOffset at)
+    {
+        var standing = Core.Candidates.CandidateFamily.Standing(rows, at);
+
+        return
+        [
+            .. standing
+                .Where(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is { } evaluator && !string.Equals(evaluator.Version, row.EvaluatorVersion, StringComparison.Ordinal))
+                .Where(row => IsLive(row, standing))
+                .Where(row => !replayed.Any(one => string.Equals(one.Candidate, row.Candidate, StringComparison.Ordinal) && one.Reproduced))
+                .Select(row => row.Candidate)
+                .Distinct(StringComparer.Ordinal),
+        ];
+    }
+
+    // A rule live among the standing rules its own evaluator keeps: the family's live rule, or the swing filter's.
+    static bool IsLive(Core.Candidates.RegisterRow row, IReadOnlyList<Core.Candidates.RegisterRow> standing) =>
+        Core.Filter.SwingFamily.IsLive(row.Candidate)
+        || Core.Candidates.FamilyRecords.IsLiveAmong(row.Candidate, standing.Where(other => string.Equals(other.Evaluator, row.Evaluator, StringComparison.Ordinal)));
+
+    public static string FreezeRefusal(IReadOnlyList<string> restarting) =>
+        "the rules are frozen until " + RuleFreezeDates.Until.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)
+        + ", and a live rule's record never restarts inside the freeze: the replay did not reproduce every trade of "
+        + string.Join("; ", restarting) + ", so nothing was registered.";
+
     static async Task ReplayedAsync(IReadOnlyList<FamilyReplayed> replayed, TextWriter output)
     {
         foreach (var one in replayed)

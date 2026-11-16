@@ -11,9 +11,10 @@ namespace EquityBrief.Tests.Checks;
 // one exception the ruling allows. On their review of PR 699 a remedy registering background versions alone passes: a
 // candidate, a family's variants, a ranking, an exposure, an order, a standing target or a plan registered as a variant, or the
 // retirement of a version that is not live. A line refused names a live rule, or is a form that registers or retires one itself:
-// a family or a freeze registered whole, a live rule given a plan, withdrawn or registered again without its flag, and every
-// version a code change moved registered again, the live rules among them, whose records the replay alone at the time it runs
-// can say are kept, which no reading of a remedy's words can.
+// a family or a freeze registered whole, or a live rule given a plan, withdrawn or registered again without its flag. From the
+// replay fix every version a code change moved registered again passes, since `register --moved` itself refuses inside the
+// freeze where the replay at the time it runs does not reproduce every trade of a live rule, which no reading of a remedy's
+// words can say.
 public sealed class RuleFreezeCheck
 {
     static readonly Regex Dated = new(@"^(\d{4}-\d{2}-\d{2})-", RegexOptions.CultureInvariant);
@@ -31,7 +32,6 @@ public sealed class RuleFreezeCheck
         EquityBrief.Worker.Candidates.RegisterVerb.IndexFamily,
         EquityBrief.Worker.Candidates.RegisterVerb.WithoutFlag,
         EquityBrief.Worker.Candidates.RegisterVerb.Withdraw,
-        EquityBrief.Worker.Candidates.RegisterVerb.Moved,
     ];
 
     // A remedy line's arguments as the remedy runner splits them, a double-quoted argument kept whole.
@@ -111,9 +111,9 @@ public sealed class RuleFreezeCheck
     {
         (string, string)[] remedies =
         [
-            ("2026-12-01-24.1-a-change.txt", "migrate\nregister --moved\n"),
-            ("2026-12-02-24.1-wording.txt", "card-plans\n"),
-            ("2026-11-14-23.10-the-second-restart.txt", "register --moved\n"),
+            ("2026-12-01-24.1-a-change.txt", "migrate\nregister --family-again drift --evidence \"x\"\n"),
+            ("2026-12-02-24.1-wording.txt", "card-plans\nregister --moved --evidence \"a pinned source moved\"\n"),
+            ("2026-11-14-23.10-the-second-restart.txt", "register --family-again drift --evidence \"x\"\n"),
         ];
 
         Assert.Equal(["2026-12-01-24.1-a-change.txt"], Unnamed(remedies, "### 23.11 - a checkpoint   2026-11-20\n\nBuilt: nothing.\n"));
@@ -132,6 +132,7 @@ public sealed class RuleFreezeCheck
             + "register --plan \"the live S&P 400 pullback rule at a strength of 0.75\" --combination \"2 typical days under the close within 20 sessions\" --variant-only --evidence \"its plan without its take-profit\"\n"
             + "register --ranked --index SML --by score\nregister --exposed --index MID\nregister --ordered --index SML\nregister --standing --index MID\n"
             + "register --retire \"the S&P 400 pullback at a strength of 0.5\" --evidence \"a version that is not live\"\n"
+            + "register --moved --evidence \"a pinned source moved\"\n"
             + "card-plans\n";
 
         Assert.All(Background.Split('\n'), line => Assert.False(TouchesALiveRule(line), line));
@@ -143,7 +144,6 @@ public sealed class RuleFreezeCheck
             "register --withdraw \"the live S&P 500 quality rule at a score of 7 in 9\" --evidence \"withdrawn\"",
             "register --retire \"the live S&P 400 pullback rule at a strength of 0.75\" --evidence \"retired\"",
             "register --candidate \"the live S&P 600 drift rule within 3 sessions\" --rule r --test t --evaluator drift-600 --parameters a=1",
-            "register --moved --evidence \"a pinned source moved\"",
             "register --index-family pullback --index MID --parameters strength=0.75",
             "register --family breakout",
             "register --family-again drift --evidence \"x\"",
