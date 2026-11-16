@@ -30,6 +30,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 
 **The suite is exempt.** It writes to throwaway stores in temporary directories, because a check that reads the live store is a check whose result depends on last night. `writer-ownership` reads the shipped source, and nothing in the suite reaches the configured data root.
 
+**A replay's copy is not the store.** From 23.10's replay fix the replay writes two copies of the store in a folder outside the data root, each marked by a file beside it, and on those copies alone it renames the 28 tables the deciding steps read and never write behind views capped at the night replayed, stands the deciding steps' own tables as on the evening before the first night by the steps' own undo of a night, registers each moved rule again at its own instant on the new build's copy, through the register's own writer, and hashes the open ladder windows there as the new build applies them; then each build's night writes its copy as a night writes the store (see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same). None of it is an operation on the store this file declares owners for: every write it makes refuses a store carrying no copy's mark beside it, the copying reads the store through SQLite's own backup alone, and the copies are removed whole once compared.
+
 | Table | Insert | Update | Delete |
 |---|---|---|---|
 | `membership` | MembershipLoader | MembershipLoader | none |
