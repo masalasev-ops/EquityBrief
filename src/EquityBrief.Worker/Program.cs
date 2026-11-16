@@ -43,6 +43,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "quarters" => await QuartersRun(args),
     "members" => await MembersRun(args),
     "index-families" => await IndexFamiliesRun(args),
+    "replay-night" => await ReplayNightRun(args),
     "measure-sources" => await MeasureSources(args),
     "measure-search" => await MeasureSearch(args),
     "sweep" => await SweepRun(args),
@@ -3176,6 +3177,45 @@ static async Task<int> NightlyRun(string[] args)
         forming: EquityBrief.Core.Cards.FormingSettings.From(key => configuration[key]),
         adopt: configuration[EquityBrief.Core.Loop.LoopDecisions.AdoptSetting],
         registerAt: registerAt);
+}
+
+// One night of the replay over a copy of the store capped at its ceiling session: the migration and the night's deciding
+// steps alone, on that session's evening, over feeds that refuse every ask, so it reaches no network and calls no model.
+// A store holding no ceiling is not a replay's copy and is refused before anything is opened for writing.
+// see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+static async Task<int> ReplayNightRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (EquityBrief.Worker.Replay.ReplayCopy.CeilingOf(store.DatabaseFile) is not { } session)
+    {
+        Console.Error.WriteLine($"replay-night: '{store.DatabaseFile}' holds no '{EquityBrief.Worker.Replay.ReplayCopy.CeilingTable}', so it is not a replay's copy and nothing was run.");
+
+        return 1;
+    }
+
+    var clock = new ReplayClock(
+        new DateTimeOffset(session.ToDateTime(new TimeOnly(21, 10)), TimeSpan.Zero),
+        SessionZones.ResolveSessionZone(SessionZones.UnitedStates));
+
+    // The register read as it stands now rather than as the session's evening stood, for a check that every kind computes.
+    DateTimeOffset? registerAt = args.Contains(Nightly.RegisterNow) ? SystemClock.ForUnitedStatesSessions().UtcNow : null;
+
+    return await Nightly.RunAsync(
+        store,
+        EquityBrief.Worker.Replay.ReplayFeed.None(),
+        Argument(args, "--index") ?? "GSPC",
+        clock,
+        Console.Out,
+        Console.Error,
+        FormattableString.Invariant($"replay-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}-for-{session:yyyy-MM-dd}"),
+        askForTheFirstName: false,
+        tries: Nightly.TryPlan.Once,
+        cards: EquityBrief.Core.Cards.CardSettings.From(key => configuration[key]),
+        forming: EquityBrief.Core.Cards.FormingSettings.From(key => configuration[key]),
+        registerAt: registerAt,
+        replaying: Nightly.ReplayedSteps);
 }
 
 // A night refused before its first step, on stderr and on the run log.

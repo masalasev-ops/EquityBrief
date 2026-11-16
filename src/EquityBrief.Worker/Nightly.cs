@@ -136,6 +136,14 @@ public static class Nightly
             adopt: adopt);
     }
 
+    // The steps a replayed night runs, in the night's order: those that decide a rule's picks, trades, holdings and fills,
+    // each reading what the steps before them stored as the copy holds it.
+    // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+    public static IReadOnlySet<string> ReplayedSteps { get; } = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "swing-filter", "ledger", "forward-returns", "rule-versions", "quality", "improving",
+    };
+
     // `runId` is the id of the night's first try, and `tryNumber` the try this run starts as: one for a
     // night, and the next for a run of the rest of one, which `resume` starts from the first step the
     // night's tries have not finished.
@@ -157,7 +165,8 @@ public static class Nightly
         CardSettings? cards = null,
         FormingSettings? forming = null,
         string? adopt = null,
-        DateTimeOffset? registerAt = null)
+        DateTimeOffset? registerAt = null,
+        IReadOnlySet<string>? replaying = null)
     {
         // The night's deadline, and the thing that can cancel it.
         //
@@ -526,21 +535,32 @@ public static class Nightly
                 var applyStartedAt = clock.UtcNow;
                 DateTimeOffset? wroteFrom;
 
-                try
+                // A replay over a copy applies no approved change, since an application registers and the replay compares
+                // two builds over one register.
+                // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+                if (replaying is not null)
                 {
-                    var applying = await new EquityBrief.Worker.Loop.LoopApply(clock, store.DatabaseFile, adopt, answers: askForTheFirstName).NightAsync(runId, night.Token);
-
-                    applied = (applying.Applications.Count == 0 ? "no approved change waiting" : $"{applying.Applied} approved change(s) applied and {applying.Refused} refused")
-                        + (applying.Waiting == 0 ? string.Empty : $", {applying.Waiting} S&P 500 change(s) left for the next night")
-                        + (applying.Retired is { Count: > 0 } retired ? $", {retired.Count} replaced rule(s) retired" : string.Empty);
-                    wroteFrom = applying.WroteFrom;
+                    applied = "no approved change applied on a replay";
+                    wroteFrom = null;
                 }
-                catch (Exception failed) when (failed is Microsoft.Data.Sqlite.SqliteException or ArgumentException or InvalidOperationException)
+                else
                 {
-                    applied = "the approved changes not applied tonight, " + failed.Message;
+                    try
+                    {
+                        var applying = await new EquityBrief.Worker.Loop.LoopApply(clock, store.DatabaseFile, adopt, answers: askForTheFirstName).NightAsync(runId, night.Token);
 
-                    // A registration the step committed before it failed is read as one it finished.
-                    wroteFrom = applyStartedAt;
+                        applied = (applying.Applications.Count == 0 ? "no approved change waiting" : $"{applying.Applied} approved change(s) applied and {applying.Refused} refused")
+                            + (applying.Waiting == 0 ? string.Empty : $", {applying.Waiting} S&P 500 change(s) left for the next night")
+                            + (applying.Retired is { Count: > 0 } retired ? $", {retired.Count} replaced rule(s) retired" : string.Empty);
+                        wroteFrom = applying.WroteFrom;
+                    }
+                    catch (Exception failed) when (failed is Microsoft.Data.Sqlite.SqliteException or ArgumentException or InvalidOperationException)
+                    {
+                        applied = "the approved changes not applied tonight, " + failed.Message;
+
+                        // A registration the step committed before it failed is read as one it finished.
+                        wroteFrom = applyStartedAt;
+                    }
                 }
 
                 // The register as it stood when the night started, or for the newest session run again the morning after a
@@ -1008,6 +1028,18 @@ public static class Nightly
 
         // The close's place in the night: a step after it is not tried again, since the list is drawn.
         var closeAt = Array.FindIndex(steps, step => step.Name == NightClose.Stage);
+
+        // A replay over a copy runs the migration and the deciding steps it names alone, once, in the night's order.
+        // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+        if (replaying is not null)
+        {
+            var (code, _, _) = await RunStepsAsync([0, .. Enumerable.Range(1, steps.Length - 1).Where(index => replaying.Contains(steps[index].Name))]);
+
+            night.Dispose();
+            output.WriteLine(code == 0 ? $"nightly: replayed {session.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}, 0 model calls, {feeds.Requests} request(s)" : $"nightly: the replay of {session.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)} stopped");
+
+            return code;
+        }
 
         while (true)
         {
