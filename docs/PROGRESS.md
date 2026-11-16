@@ -19561,3 +19561,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 149, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
             passing, none out of scope and none unexamined, 1640 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: the Quality and Fundamentals books' tables admit a close under the stop and a take-profit as end reasons   2026-11-16
+
+Corrects:   23.10's second part, PR 699: on the operator's order of 2026-11-14 the Quality and Fundamentals books sell a holding
+            at a close under its stop or at its take-profit, and the schema states `a close under its stop` and `took profit`
+            among both tables' end reasons, but no migration rebuilt the two tables' checks, which still admitted neither. The
+            first holding of either book to close under its stop or reach its take-profit would have stopped that index's book
+            with "not computed tonight", and again every night after while the holding stayed open. Found on 2026-11-16 by the
+            replay fix's test over a scratch copy, whose night of 2026-11-12 failed the check on the S&P 400 in both books. No
+            night has written either reason: on the store, read that afternoon, no open holding of either book yet carried a
+            stop or a take-profit, the night of 2026-11-16 being the first to place them.
+Label:      23.10, whose second part gave the two books their stop and take-profit.
+Ruled:      the operator's answer of 2026-11-16, "Fix before 7 pm".
+Built:      migration 150 rebuilds `quality_holding` and `improving_trade` with both reasons admitted, every row and every column
+            copied across before the old table goes, as 21.16's rebuild of the same two did; the store-never-deleted check names
+            the two drops among the stated rebuilds.
+Tests:      2 new: every reason each book ends a holding with, read from the constants its step writes, inserted into a
+            migrated store, and a reason neither writes refused; and a store migrated to 149 holding a row of each table with
+            its stop, take-profit, half sold and exit added read back the same after migration 150.
+Claims:     none new.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: the property the correction adds, that each table admits every reason its step writes. m1 `took profit`
+            left out of the rebuilt Quality check: red at the reasons test, 1 failed and 1 passed of the two new, reverted
+            before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3772 of 3772 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
+            passing, none out of scope and none unexamined, 1640 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
