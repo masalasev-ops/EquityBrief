@@ -100,7 +100,9 @@ public class StoreNeverDeleted
         // removes its own saved candidates where the history moved under them. StoreBackup, in the copies'
         // folder alone, removes an unfinished copy an earlier run left, names a finished copy by moving it from
         // its unfinished name, and removes a copy older than the newest two once each of those has opened and
-        // read; the store itself it only reads, through SQLite's own backup.
+        // read; the store itself it only reads, through SQLite's own backup. From the replay fix ReplayCopy writes the mark beside
+        // each of a replay's two copies, in a folder outside the data root that held no copy, the store read through SQLite's
+        // own backup alone.
         Assert.Equal(
             [
                 "AccountPlan.cs: File.Move(next)",
@@ -159,6 +161,8 @@ public class StoreNeverDeleted
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",
                 "NightLock.cs: FileOptions.DeleteOnClose(path)",
+                "ReplayCopy.cs: File.WriteAllTextAsync(newMark)",
+                "ReplayCopy.cs: File.WriteAllTextAsync(oldMark)",
                 "ResearchRunner.cs: FileOptions.DeleteOnClose(path)",
                 "SearchMeasurementRun.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
                 "SearchMeasurementRun.cs: File.WriteAllTextAsync(file)",

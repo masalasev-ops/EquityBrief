@@ -46,6 +46,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "replay-night" => await ReplayNightRun(args),
     "replay-prepare" => await ReplayPrepareRun(args),
     "replay-compare" => await ReplayCompareRun(args),
+    "replay-copy" => await ReplayCopyRun(args),
     "measure-sources" => await MeasureSources(args),
     "measure-search" => await MeasureSearch(args),
     "sweep" => await SweepRun(args),
@@ -885,7 +886,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 83 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 84 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -934,7 +935,8 @@ static int NoVerb()
         "400's and 600's provisional rules read by the sweep's own code into their tables and asking for nothing, with " +
         "'--leavers' instead selling again each holding the books sold on leaving the index at its stock's stored close on " +
         "the session it was sold, its round trip from that close, " +
-        "'replay-prepare --from <yyyy-MM-dd>' prepares a replay's copy, one carrying the copying's mark beside it, for the first " +
+        "'replay-copy --into <folder>' copies the store twice for a replay while the night's lock is held, to a folder outside " +
+        "the data root, 'replay-prepare --from <yyyy-MM-dd>' prepares a replay's copy, one carrying the copying's mark beside it, for the first " +
         "night the replay runs, 'replay-night --session <yyyy-MM-dd>' runs that night's deciding steps over the copy with its " +
         "ceiling moved to it, asking nothing of a feed, and 'replay-compare --old <store> --new <store>' compares the two " +
         "replayed copies' trades rule by rule, each refusing a store that is no replay's copy, " +
@@ -3244,6 +3246,34 @@ static async Task<int> ReplayNightRun(string[] args)
         forming: EquityBrief.Core.Cards.FormingSettings.From(key => configuration[key]),
         registerAt: registerAt,
         replaying: Nightly.ReplayedSteps);
+}
+
+// The replay's two copies of the operator's store made under a folder outside the data root, while the night's lock is held.
+// see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+static async Task<int> ReplayCopyRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (Argument(args, "--into") is not { Length: > 0 } folder)
+    {
+        Console.Error.WriteLine("replay-copy: it takes '--into <folder>', a folder outside the data root holding no copy yet.");
+
+        return 1;
+    }
+
+    try
+    {
+        Console.Out.WriteLine("replay-copy: " + await EquityBrief.Worker.Replay.ReplayCopy.CopyAsync(store.DatabaseFile, store.DataRoot, folder));
+
+        return 0;
+    }
+    catch (InvalidOperationException refused)
+    {
+        Console.Error.WriteLine("replay-copy: " + refused.Message);
+
+        return 1;
+    }
 }
 
 // A replay's copy prepared for the first night it replays, refused for a store carrying no copy's mark beside it.

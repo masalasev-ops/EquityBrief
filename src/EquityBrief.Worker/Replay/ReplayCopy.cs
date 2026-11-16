@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -229,9 +230,79 @@ public static class ReplayCopy
             await ScalarAsync($"CREATE VIEW {cap.Table} AS SELECT * FROM {cap.Table}_all WHERE {cap.Column} <= (SELECT {bound} FROM {CeilingTable});");
         }
 
+        var nights = new List<string>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = "SELECT DISTINCT session_date FROM bar_all WHERE session_date >= $first ORDER BY session_date;";
+            command.Parameters.AddWithValue("$first", stamp);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                nights.Add(reader.GetString(0));
+            }
+        }
+
         await transaction.CommitAsync(cancellation);
 
-        return FormattableString.Invariant($"prepared for {stamp}: {rows} row(s) of the deciding steps' tables stood as on the evening of {before}, {Caps.Count} table(s) capped");
+        return FormattableString.Invariant($"prepared for {stamp}: {rows} row(s) of the deciding steps' tables stood as on the evening of {before}, {Caps.Count} table(s) capped; nights: {string.Join(' ', nights)}");
+    }
+
+    // The two copies a replay runs over, `old` and `new` under a folder outside the data root that holds neither yet: the
+    // operator's store read once through SQLite's own copy while the night's lock is held, so no night writes while it is
+    // read, and the first copy read again for the second, so both are the one store at one moment. Each is marked as a copy.
+    // The operator's store is opened for reading alone, and nothing is written beside it.
+    public static async Task<string> CopyAsync(string databaseFile, string dataRoot, string folder, CancellationToken cancellation = default)
+    {
+        var root = Path.GetFullPath(dataRoot);
+        var into = Path.GetFullPath(folder);
+
+        if (into.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"'{into}' is under the data root, so no copy was made there.");
+        }
+
+        var old = Path.Combine(into, "old", StoreLocation.DatabaseFileName);
+        var again = Path.Combine(into, "new", StoreLocation.DatabaseFileName);
+
+        if (File.Exists(old) || File.Exists(again))
+        {
+            throw new InvalidOperationException($"'{into}' already holds a copy, so none was made over it.");
+        }
+
+        using var held = NightLock.Take(dataRoot, "replay-copy")
+            ?? throw new InvalidOperationException($"{NightLock.Holder(dataRoot) ?? "a night"} holds the night's lock, so no copy was made while it writes.");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(old)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(again)!);
+
+        static async Task CopyOneAsync(string from, string to, CancellationToken cancellation)
+        {
+            await using var source = new SqliteConnection(StoreConnection.For(from) + ";Mode=ReadOnly;Pooling=False");
+            await source.OpenAsync(cancellation);
+
+            var target = StoreConnection.Builder(to);
+
+            target.Pooling = false;
+
+            await using var copy = new SqliteConnection(target.ConnectionString);
+
+            await copy.OpenAsync(cancellation);
+            source.BackupDatabase(copy);
+        }
+
+        await CopyOneAsync(databaseFile, old, cancellation);
+        await CopyOneAsync(old, again, cancellation);
+        var oldMark = Path.Combine(Path.GetDirectoryName(old)!, CopyMark);
+        var newMark = Path.Combine(Path.GetDirectoryName(again)!, CopyMark);
+
+        await File.WriteAllTextAsync(oldMark, "the old build's copy of a replay", cancellation);
+        await File.WriteAllTextAsync(newMark, "the new build's copy of a replay", cancellation);
+
+        return FormattableString.Invariant($"copied the store to '{old}' and '{again}', {new FileInfo(old).Length} bytes each");
     }
 
     // The new build's copy alone: each open ladder window's hash and code version written as this build applies its

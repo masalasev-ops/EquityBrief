@@ -96,6 +96,30 @@ public sealed class ReplayCopies
     }
 
     [Fact]
+    public async Task TheTwoCopiesAreOneStoreAtOneMomentOutsideTheDataRootAndNeitherIsMadeOverAnother()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var elsewhere = new TemporaryStore();
+
+        store.Execute(Bars);
+
+        var folder = Path.Combine(elsewhere.Root, "replay");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ReplayCopy.CopyAsync(store.DatabaseFile, store.Root, Path.Combine(store.Root, "replay")));
+
+        Assert.StartsWith("copied the store", await ReplayCopy.CopyAsync(store.DatabaseFile, store.Root, folder), StringComparison.Ordinal);
+
+        var old = Path.Combine(folder, "old", EquityBrief.Core.Configuration.StoreLocation.DatabaseFileName);
+        var again = Path.Combine(folder, "new", EquityBrief.Core.Configuration.StoreLocation.DatabaseFileName);
+
+        Assert.True(ReplayCopy.IsACopy(old) && ReplayCopy.IsACopy(again));
+        Assert.False(ReplayCopy.IsACopy(store.DatabaseFile));
+        Assert.All(await ReplayCompare.CompareAsync(old, again), one => Assert.True(one.Same));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ReplayCopy.CopyAsync(store.DatabaseFile, store.Root, folder));
+    }
+
+    [Fact]
     public void AStoreHoldingNoCeilingIsNoReplaysCopy()
     {
         using var store = new TemporaryStore().Migrated();
