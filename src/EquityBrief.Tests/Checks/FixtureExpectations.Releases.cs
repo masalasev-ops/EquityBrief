@@ -398,6 +398,40 @@ public partial class FixtureExpectations
 
         Assert.Equal((LocalRun.FetchRefused, "The archive refused DailyIndex with status 403.", 0, 1), (refused.Outcome, refused.Why, refused.Fetched, refused.Requests));
         Assert.Equal(1L, Scalar(store, "SELECT COUNT(*) FROM release_document;"));
+
+        // From the 23.10 correction of 2026-11-16: a request the SEC's connection cut off mid-read, as the late slot of that
+        // day met, is a refusal the slot's row names, and stops nothing with an unhandled exception.
+        var friday = FixedClock.At(Utc(2026, 8, 21, 12, 5, 0), SessionZones.UnitedStates);
+        var cut = await new LocalRun(ReadingFeedOver(untouched, settings), settings, friday, store.DatabaseFile, store.Root, NoWait, new ReleaseFetch(new TimingOutReleaseFeed(), friday, store.DatabaseFile, store.Root, NoWait))
+            .SlotAsync(LocalSlots.Early, TextWriter.Null);
+
+        Assert.Equal((LocalRun.FetchRefused, "The operation was canceled.", 0), (cut.Outcome, cut.Why, cut.Fetched));
+        Assert.Equal(1L, Scalar(store, "SELECT COUNT(*) FROM release_document;"));
+    }
+
+    // An archive whose connection is cut off mid-read on every request, as HttpClient reports a request's own timeout.
+    sealed class TimingOutReleaseFeed : IReleaseArchiveFeed
+    {
+        public int Documents { get; private set; }
+
+        Task<string?> Cut()
+        {
+            Documents++;
+
+            throw new TaskCanceledException("The operation was canceled.", new IOException("Unable to read data from the transport connection."));
+        }
+
+        public Task<string?> CurrentAsync(int start, CancellationToken cancellation = default) => Cut();
+
+        public Task<string?> DailyIndexAsync(DateOnly day, CancellationToken cancellation = default) => Cut();
+
+        public Task<string?> FilingPageAsync(string cik, string accession, CancellationToken cancellation = default) => Cut();
+
+        public Task<string?> ExhibitAsync(string cik, string accession, string file, CancellationToken cancellation = default) => Cut();
+
+        public Task<string?> SubmissionsAsync(string cik, CancellationToken cancellation = default) => Cut();
+
+        public Task<string?> SubmissionsPageAsync(string name, CancellationToken cancellation = default) => Cut();
     }
 
     // ---- the release fetch's own helpers ----

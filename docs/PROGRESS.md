@@ -19621,6 +19621,27 @@ Mutated:    the rule: each property the replay adds that decides a verdict. m1 `
             rewind: red at the preparation test; each reverted before anything was committed.
 Carried:    the component catalogue's rows for the replay, the stale share figure with its row count, and the local run's stop
             on an SEC request cut off mid-read, each to the next pull request.
+
+### 23.10 - correction: the local run's release fetch names a request the SEC's connection cut off as a refusal, and stops with no unhandled exception   2026-11-16
+
+Corrects:   20.2's release fetch: on 2026-11-16 the late slot's ask of the SEC's current feed was cut off mid-read, HttpClient
+            reporting it as a canceled task, which the fetch's five catches did not read as a refusal, so the slot stopped with
+            an unhandled exception and wrote no row saying why. Nothing was lost: the next slot reads the feed back to the last
+            slot that read it.
+Label:      23.10, under the operator's order of 2026-11-16 to fix everything open.
+Built:      the fetch reads a request the connection cut off or that timed out, and not the caller's own cancellation, as the
+            archive refusing it, its slot's row naming it as every refusal is named.
+Tests:      the slot's refusal test extended: an archive cutting off every request leaves the slot refused with the message
+            named and nothing stored.
+Claims:     none new.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: the property the correction adds. m1 the old catch put back: red at the slot test, reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3782 of 3782 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
+            passing, none out of scope and none unexamined, 1640 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
             that run: all six steps, 0 warnings, 0 errors, 3782 of 3782 tests ran with none failed, migrations 0 to 150 with none
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
