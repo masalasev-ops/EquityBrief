@@ -83,12 +83,12 @@ public sealed record WaitingOrderView(string Family, string Ticker, DateOnly Lis
 // a live version's first session from that restart on, and before the freeze ends, the page says so.
 public static class RuleFreeze
 {
-    public static DateOnly From { get; } = new(2026, 11, 15);
+    public static DateOnly From => EquityBrief.Core.Candidates.RuleFreezeDates.From;
 
-    public static DateOnly Until { get; } = new(2027, 2, 6);
+    public static DateOnly Until => EquityBrief.Core.Candidates.RuleFreezeDates.Until;
 
     public static string Beside(DateOnly since) =>
-        since >= From && since < Until ? "; rules frozen until " + Until.ToString("d MMM yyyy", CultureInfo.InvariantCulture) : string.Empty;
+        EquityBrief.Core.Candidates.RuleFreezeDates.Holds(since) ? "; rules frozen until " + Until.ToString("d MMM yyyy", CultureInfo.InvariantCulture) : string.Empty;
 }
 
 // From the operator's order of 2026-11-14 a company's name as a sentence reads it, its trailing legal words left off.
