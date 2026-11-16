@@ -770,7 +770,91 @@ public static class SchemaMigrations
         new Migration(147, "add the stop and the take-profit to the books' holdings and the Fundamentals family's trades, and the held-again mark to decision_card", AddBookExits),
         new Migration(148, "add the night a holding's first half sold and the night its exit was added at the rules restart to the books' holdings and the Fundamentals family's trades", AddHalfSold),
         new Migration(149, "create book_record", CreateBookRecord),
+        new Migration(150, "rebuild quality_holding and improving_trade so their end reasons admit a close under its stop and a take-profit", AdmitTheBookExits),
     ];
+
+    // From the 23.10 correction of 2026-11-16: the Quality and Fundamentals books' holdings sold at a close under their stop or at
+    // their take-profit, on the operator's order of 2026-11-14, which the two tables' end reasons admit only once rebuilt, since
+    // SQLite cannot change a check in place, every row and every column copied across before the old table goes.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    const string AdmitTheBookExits = @"
+        CREATE TABLE quality_holding_rebuilt (
+            rule              TEXT NOT NULL,
+            index_code        TEXT NOT NULL,
+            ticker            TEXT NOT NULL,
+            chosen_on         TEXT NOT NULL,
+            buy_close         TEXT NOT NULL,
+            bought_on         TEXT,
+            fill              TEXT,
+            gap               REAL,
+            bench_gap         REAL,
+            members           INTEGER,
+            growth            REAL NOT NULL,
+            through           TEXT NOT NULL,
+            ended_on          TEXT,
+            sale              TEXT,
+            end_reason        TEXT NOT NULL CHECK (end_reason IN ('open', 'no longer qualifies', 'left the index', 'under its 200-day average', 'a close under its stop', 'took profit')),
+            result            REAL,
+            benchmark         REAL,
+            cost              REAL,
+            edge              REAL,
+            stop              TEXT,
+            take_profit       TEXT,
+            take_profit_from  TEXT,
+            half_sold_on      TEXT,
+            exit_added_on     TEXT,
+            PRIMARY KEY (rule, index_code, ticker, chosen_on)
+        ) STRICT;
+
+        INSERT INTO quality_holding_rebuilt (rule, index_code, ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, ended_on, sale, end_reason, result, benchmark, cost, edge, stop, take_profit, take_profit_from, half_sold_on, exit_added_on)
+        SELECT rule, index_code, ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, ended_on, sale, end_reason, result, benchmark, cost, edge, stop, take_profit, take_profit_from, half_sold_on, exit_added_on FROM quality_holding;
+
+        DROP TABLE quality_holding;
+
+        ALTER TABLE quality_holding_rebuilt RENAME TO quality_holding;
+
+        CREATE TABLE improving_trade_rebuilt (
+            rule              TEXT NOT NULL,
+            index_code        TEXT NOT NULL,
+            ticker            TEXT NOT NULL,
+            chosen_on         TEXT NOT NULL,
+            filed             TEXT NOT NULL,
+            released          TEXT,
+            passed_checks     INTEGER NOT NULL,
+            applied           INTEGER NOT NULL,
+            before_passed     INTEGER NOT NULL,
+            before_applied    INTEGER NOT NULL,
+            buy_close         TEXT NOT NULL,
+            bought_on         TEXT,
+            fill              TEXT,
+            gap               REAL,
+            bench_gap         REAL,
+            members           INTEGER,
+            growth            REAL NOT NULL,
+            through           TEXT NOT NULL,
+            sessions          INTEGER NOT NULL,
+            ended_on          TEXT,
+            sale              TEXT,
+            end_reason        TEXT NOT NULL CHECK (end_reason IN ('open', 'score fell', 'time limit', 'left the index', 'under its 200-day average', 'a close under its stop', 'took profit')),
+            result            REAL,
+            benchmark         REAL,
+            cost              REAL,
+            edge              REAL,
+            stop              TEXT,
+            take_profit       TEXT,
+            take_profit_from  TEXT,
+            half_sold_on      TEXT,
+            exit_added_on     TEXT,
+            PRIMARY KEY (rule, index_code, ticker, chosen_on)
+        ) STRICT;
+
+        INSERT INTO improving_trade_rebuilt (rule, index_code, ticker, chosen_on, filed, released, passed_checks, applied, before_passed, before_applied, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, sessions, ended_on, sale, end_reason, result, benchmark, cost, edge, stop, take_profit, take_profit_from, half_sold_on, exit_added_on)
+        SELECT rule, index_code, ticker, chosen_on, filed, released, passed_checks, applied, before_passed, before_applied, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, sessions, ended_on, sale, end_reason, result, benchmark, cost, edge, stop, take_profit, take_profit_from, half_sold_on, exit_added_on FROM improving_trade;
+
+        DROP TABLE improving_trade;
+
+        ALTER TABLE improving_trade_rebuilt RENAME TO improving_trade;
+    ";
 
     // On the operator's ruling of 2026-11-15 on the shapes a live book's record box in points a month: its months at the exit it
     // trades from the year after its exit was chosen through the newest session the run read, written by the books' test.
