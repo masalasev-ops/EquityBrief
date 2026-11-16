@@ -21,17 +21,71 @@ public static class ReplayCompare
         ("family_trade", "candidate"),
         ("index_rule_trade", "candidate"),
         ("index_family_trade", "index_code || ' ' || family"),
-        ("dip_trade", "rule || ' on ' || index_code"),
-        ("quality_holding", "rule || ' on ' || index_code"),
-        ("improving_trade", "rule || ' on ' || index_code"),
+        ("dip_trade", "rule || ' | ' || index_code"),
+        ("quality_holding", "rule || ' | ' || index_code"),
+        ("improving_trade", "rule || ' | ' || index_code"),
         ("heavyweight_holding", "'the S&P 500 heavyweights book'"),
         ("heavyweight_rule_holding", "candidate"),
         ("index_heavyweight_holding", "'the ' || index_code || ' heavyweights book'"),
         ("index_heavyweight_rule_holding", "candidate"),
-        ("rule_pick", "rule || ' on ' || index_code"),
-        ("trade_fill", "owner || ' on ' || index_code"),
+        ("rule_pick", "rule || ' | ' || index_code"),
+        ("trade_fill", "owner || ' | ' || index_code"),
         ("version_score", "rule || ', ' || version"),
     ];
+
+    // The rule an owner names: an owner naming its index after the separator names the rule before it.
+    public static string RuleOf(string owner) =>
+        owner.LastIndexOf(" | ", StringComparison.Ordinal) is var at and >= 0 ? owner[..at] : owner;
+
+    // The rules whose rows differ on any table, which a registration reads as not reproduced.
+    public static IReadOnlySet<string> Differing(IEnumerable<ReplayCompared> compared) =>
+        compared.Where(one => !one.Same).Select(one => RuleOf(one.Owner)).ToHashSet(StringComparer.Ordinal);
+
+    // The line a comparison's record opens with: the newest session and the newest registration the old build's copy held,
+    // the store as the copies were made from it. A registration reading the record refuses where the store has moved past it.
+    public const string RecordOpening = "replay-compare: over the store through ";
+
+    public const string DiffersOpening = "replay-compare: differs: ";
+
+    // A record read back: the session and the registration it was made through, and the rules whose rows differ; none where
+    // the record does not open with its header.
+    public static (string Session, long Register, IReadOnlySet<string> Differing)? Read(string record)
+    {
+        var lines = record.Split('\n').Select(line => line.TrimEnd('\r')).ToArray();
+        var header = System.Text.RegularExpressions.Regex.Match(lines.FirstOrDefault() ?? string.Empty, "^" + System.Text.RegularExpressions.Regex.Escape(RecordOpening) + @"(\S+), its register to id (\d+)$");
+
+        if (!header.Success)
+        {
+            return null;
+        }
+
+        var differing = lines
+            .Where(line => line.StartsWith(DiffersOpening, StringComparison.Ordinal))
+            .Select(line => line[DiffersOpening.Length..].Split('\t'))
+            .Where(parts => parts.Length >= 2)
+            .Select(parts => RuleOf(parts[1]))
+            .ToHashSet(StringComparer.Ordinal);
+
+        return (header.Groups[1].Value, long.Parse(header.Groups[2].Value, CultureInfo.InvariantCulture), differing);
+    }
+
+    public static string Header(string session, long register) =>
+        FormattableString.Invariant($"{RecordOpening}{session}, its register to id {register}");
+
+    public static async Task<string> HeaderOfAsync(string databaseFile, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile) + ";Mode=ReadOnly;Pooling=False");
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT (SELECT MAX(session_date) FROM bar_all), (SELECT MAX(id) FROM candidate_register);";
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        await reader.ReadAsync(cancellation);
+
+        return Header(reader.IsDBNull(0) ? "none" : reader.GetString(0), reader.IsDBNull(1) ? 0 : reader.GetInt64(1));
+    }
 
     // A column holding the instant a row was written, which no comparison reads; a window's opening instant names the window.
     public static bool Written(string column) => column.EndsWith("_at", StringComparison.Ordinal) && column != "opened_at";

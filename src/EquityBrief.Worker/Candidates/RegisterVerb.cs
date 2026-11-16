@@ -31,6 +31,9 @@ public static class RegisterVerb
     // evaluator a code change moved, on the evidence given.
     public const string Moved = "--moved";
 
+    // From the replay fix, the record `tools/replay` kept, which `--moved` reads in place of the replay it runs itself.
+    public const string Replayed = "--replayed";
+
     // The flag that registers the swing family again whole at one instant under the filter version already
     // open, on the evidence given, which is how a rule joins it.
     // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
@@ -117,7 +120,7 @@ public static class RegisterVerb
         new("--retire", ["--retire", "--evidence"], [], []),
         new(TheThree, [], [], [TheThree]),
         new(TheFamily, [], [], [TheFamily]),
-        new(Moved, ["--evidence"], [], [Moved]),
+        new(Moved, ["--evidence"], [Replayed], [Moved]),
         new(Family, [Family], [], []),
         new(TheFamilyAgain, ["--evidence"], [], [TheFamilyAgain]),
         new(FamilyAgain, [FamilyAgain, "--evidence"], [], []),
@@ -155,7 +158,7 @@ public static class RegisterVerb
 
         try
         {
-            return await FormAsync(args, registrar, replay, runId, clock.UtcNow, output, error);
+            return await FormAsync(args, registrar, replay, runId, clock.UtcNow, output, error, databaseFile);
         }
         catch (SqliteException collided) when (collided.SqliteErrorCode == 19 && collided.Message.Contains("run_log", StringComparison.Ordinal))
         {
@@ -173,7 +176,8 @@ public static class RegisterVerb
         string runId,
         DateTimeOffset at,
         TextWriter output,
-        TextWriter error)
+        TextWriter error,
+        string databaseFile)
     {
         var (form, refusal) = VerbArguments.FormOf(args, Forms);
 
@@ -210,7 +214,33 @@ public static class RegisterVerb
         // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
         if (form.Flag == Moved)
         {
-            var replayed = await replay.MovedAsync();
+            // From the replay fix, the record of the replay that ran the old build and the new over two copies of the store,
+            // refused where the store has a session or a registration the copies were not made through.
+            // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+            IReadOnlyList<FamilyReplayed> replayed;
+
+            if (Given(Replayed) is { Length: > 0 } recordFile)
+            {
+                var record = File.Exists(recordFile) ? EquityBrief.Worker.Replay.ReplayCompare.Read(await File.ReadAllTextAsync(recordFile)) : null;
+                var newest = EquityBrief.Worker.Nights.NightSession.NewestStored(databaseFile)?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "none";
+                var register = (await registrar.RowsAsync()).Select(row => row.Id).DefaultIfEmpty(0).Max();
+
+                if (record is not { } read)
+                {
+                    return await RefusedAsync(registrar, runId, $"'{recordFile}' is no replay's record, so nothing was registered.", error);
+                }
+
+                if (read.Session != newest || read.Register != register)
+                {
+                    return await RefusedAsync(registrar, runId, FormattableString.Invariant($"the replay's record was made through {read.Session} and register id {read.Register}, and the store now holds {newest} and id {register}, so nothing was registered: run the replay again."), error);
+                }
+
+                replayed = await replay.FromRecordAsync(read.Differing);
+            }
+            else
+            {
+                replayed = await replay.MovedAsync();
+            }
 
             await ReplayedAsync(replayed, output);
 

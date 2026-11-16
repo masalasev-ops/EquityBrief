@@ -128,6 +128,59 @@ public sealed class FamilyReplay : IComponent
     public Task<IReadOnlyList<FamilyReplayed>> MovedAsync(CancellationToken cancellation = default) =>
         RunAsync(rule => CandidateEvaluators.Find(rule.Evaluator) is { } evaluator && !string.Equals(evaluator.Version, rule.EvaluatorVersion, StringComparison.Ordinal), cancellation);
 
+    // From the replay fix: every standing rule whose evaluator a change of code moved, of every kind, read from the record of
+    // the replay that ran the old build and the new over two copies of the store, reproduced where no table's rows differ for
+    // it, one row on the run log a rule as the in-process replay writes.
+    // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+    public const string ReproducedOnTheCopies = "the old build and the new kept the same rows over every night the replay ran on the two copies";
+
+    public const string DiffersOnTheCopies = "the new build's rows differ from the old build's on the two copies, the first difference named in the replay's record";
+
+    public async Task<IReadOnlyList<FamilyReplayed>> FromRecordAsync(IReadOnlySet<string> differing, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var register = await RegisterAsync(connection, cancellation);
+        var replays = await ReplaysAsync(connection, cancellation);
+        var found = CandidateFamily.Standing(register, startedAt)
+            .Where(rule => CandidateEvaluators.Find(rule.Evaluator) is { } evaluator && !string.Equals(evaluator.Version, rule.EvaluatorVersion, StringComparison.Ordinal))
+            .Select(rule => new FamilyReplayed(
+                rule.Candidate,
+                CandidateEvaluators.Find(rule.Evaluator)!.Version,
+                FamilyRecords.ReplayFrom(register, rule, replays),
+                0,
+                0,
+                0,
+                !differing.Contains(rule.Candidate),
+                differing.Contains(rule.Candidate) ? DiffersOnTheCopies : ReproducedOnTheCopies))
+            .ToArray();
+
+        await RecordAsync(connection, RunIdAt(startedAt), startedAt, found, cancellation);
+
+        return found;
+    }
+
+    async Task RecordAsync(SqliteConnection connection, string runId, DateTimeOffset startedAt, IReadOnlyList<FamilyReplayed> found, CancellationToken cancellation)
+    {
+        foreach (var one in found)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = AppendRun;
+            command.Parameters.AddWithValue("$run_id", runId);
+            command.Parameters.AddWithValue("$stage", FamilyRecords.ReplayStageOf(one.Candidate));
+            command.Parameters.AddWithValue("$started_at", Instant(startedAt));
+            command.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
+            command.Parameters.AddWithValue("$outcome", one.Reproduced ? FamilyRecords.ReplayReproduced : FamilyRecords.ReplayDiffers);
+            command.Parameters.AddWithValue("$detail", FamilyRecords.ReplayDetail(one.Candidate, one.Version, one.From, one.Nights, one.Stored, one.Replayed, one.Said));
+
+            await command.ExecuteNonQueryAsync(cancellation);
+        }
+    }
+
     async Task<IReadOnlyList<FamilyReplayed>> RunAsync(Func<RegisterRow, bool> which, CancellationToken cancellation)
     {
         var startedAt = clock.UtcNow;
@@ -166,20 +219,7 @@ public sealed class FamilyReplay : IComponent
                 false,
                 CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator ? NotReplayed : NotReplayedOnItsIndex)));
 
-        foreach (var one in found)
-        {
-            await using var command = connection.CreateCommand();
-
-            command.CommandText = AppendRun;
-            command.Parameters.AddWithValue("$run_id", runId);
-            command.Parameters.AddWithValue("$stage", FamilyRecords.ReplayStageOf(one.Candidate));
-            command.Parameters.AddWithValue("$started_at", Instant(startedAt));
-            command.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
-            command.Parameters.AddWithValue("$outcome", one.Reproduced ? FamilyRecords.ReplayReproduced : FamilyRecords.ReplayDiffers);
-            command.Parameters.AddWithValue("$detail", FamilyRecords.ReplayDetail(one.Candidate, one.Version, one.From, one.Nights, one.Stored, one.Replayed, one.Said));
-
-            await command.ExecuteNonQueryAsync(cancellation);
-        }
+        await RecordAsync(connection, runId, startedAt, found, cancellation);
 
         return found;
     }

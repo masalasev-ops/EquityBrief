@@ -3335,9 +3335,12 @@ static async Task<int> ReplayCompareRun(string[] args)
 
     var compared = await EquityBrief.Worker.Replay.ReplayCompare.CompareAsync(oldFile, newFile);
 
+    Console.Out.WriteLine(await EquityBrief.Worker.Replay.ReplayCompare.HeaderOfAsync(oldFile));
+
+    // A rule's name may carry commas, so the table, the owner and what differed are kept apart by tabs.
     foreach (var one in compared.Where(one => !one.Same))
     {
-        Console.Out.WriteLine(FormattableString.Invariant($"replay-compare: differs: {one.Table}, {one.Owner}: {one.Old} row(s) old, {one.New} new; {one.First ?? "the counts differ"}"));
+        Console.Out.WriteLine(FormattableString.Invariant($"{EquityBrief.Worker.Replay.ReplayCompare.DiffersOpening}{one.Table}\t{one.Owner}\t{one.Old} row(s) old, {one.New} new; {one.First ?? "the counts differ"}"));
     }
 
     Console.Out.WriteLine(FormattableString.Invariant($"replay-compare: {compared.Count(one => one.Same)} of {compared.Count} rule and book table(s) the same"));

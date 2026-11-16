@@ -36,6 +36,51 @@ public partial class FixtureExpectations
         Assert.Equal(6, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
     }
 
+    // From the replay fix `--moved` reads the record the replay over two copies kept: one the store has moved past is refused,
+    // one naming the live rule among those whose rows differ is refused inside the freeze, and one reproducing it registers,
+    // each rule's replay row written from the record.
+    // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+    [Fact]
+    public async Task MovedReadsTheReplaysRecordAndRegistersOnlyWhereItReproducesEveryLiveRule()
+    {
+        var threeAt = new DateTimeOffset(2026, 11, 16, 22, 0, 0, TimeSpan.Zero);
+
+        using var store = await FamilyStore(threeAt);
+
+        store.Execute(
+            "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) " +
+            "SELECT 4, 'the live rule on a moved evaluator', rule, test, evaluator, parameters, 'moved000000', 'registered', NULL, '2026-11-16T23:00:00Z', NULL FROM candidate_register WHERE id = 1;");
+
+        var newest = EquityBrief.Worker.Nights.NightSession.NewestStored(store.DatabaseFile)!.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        var file = Path.Combine(store.Root, "replay-record.txt");
+
+        async Task<(int Code, string Said)> MovedWith(string record, int days)
+        {
+            await File.WriteAllTextAsync(file, record);
+
+            return await RegisterVerbAt(store, threeAt.AddDays(days), RegisterVerb.Moved, "--evidence", "a pinned source moved", RegisterVerb.Replayed, file);
+        }
+
+        var stale = await MovedWith(EquityBrief.Worker.Replay.ReplayCompare.Header("2020-01-02", 4) + "\n", 2);
+
+        Assert.Equal(1, stale.Code);
+        Assert.Contains("run the replay again", stale.Said, StringComparison.Ordinal);
+
+        var differs = await MovedWith(
+            EquityBrief.Worker.Replay.ReplayCompare.Header(newest, 4) + "\n"
+            + EquityBrief.Worker.Replay.ReplayCompare.DiffersOpening + "family_trade\tthe live rule on a moved evaluator\t1 row(s) old, 0 new; only the old build's: ticker=AAA\n", 3);
+
+        Assert.Equal(1, differs.Code);
+        Assert.Contains("the replay did not reproduce every trade of the live rule on a moved evaluator", differs.Said, StringComparison.Ordinal);
+        Assert.Equal(4, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
+
+        var same = await MovedWith(EquityBrief.Worker.Replay.ReplayCompare.Header(newest, 4) + "\nreplay-compare: 12 of 12 rule and book table(s) the same\n", 4);
+
+        Assert.True(same.Code == 0, same.Said);
+        Assert.Equal(6, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
+        Assert.True(Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE outcome = '{EquityBrief.Core.Candidates.FamilyRecords.ReplayReproduced}' AND detail LIKE '%{EquityBrief.Worker.Families.FamilyReplay.ReproducedOnTheCopies}%';") >= 1);
+    }
+
     [Fact]
     public void InsideTheFreezeOnlyAMovedLiveRuleNoReplayReproducesIsNamed()
     {
