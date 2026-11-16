@@ -19590,3 +19590,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
             passing, none out of scope and none unexamined, 1640 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - the replay fix: the old build and the new run night by night over two capped copies of the store and their trades compared, and register refusing a live rule's restart inside the freeze   2026-11-16
+
+Ruled:      clause 17's (a) of 2026-11-14, the operator's item 4 on the review of PR 699 of 2026-11-15, and their answers of
+            2026-11-16 choosing the old build against the new over two copies and then capped copies, each on their terms.
+Built:      `register --moved` refusing, inside the rule freeze, a moved live rule no replay reproduces; the worker's
+            `replay-copy`, `replay-prepare`, `replay-night` and `replay-compare`, `register --moved --replayed <record>` and
+            `tools/replay`: both copies made from the store at one moment under the night's lock outside the data root, the 28
+            tables the deciding steps read and never write capped by views at the night replayed and their own tables stood as on
+            the evening before the first night by the steps' own undo of a night, the new build's copy with each moved rule
+            registered again at its own instant and each open ladder window hashed as it applies it, each night's deciding steps
+            run under both builds asking nothing of a feed, 13 trade, holding, order, fill and version-score tables compared rule
+            by rule, and the copies removed. No pinned source moved. Every kind standing is covered; carried figures such as a
+            book's growth are not rewound, the same in both copies. The commit the second restart registered under carries no
+            replay verb, so the first replay is the next change moving a pin.
+Corrects:   the second restart's remedy, which left out the ladder windows' close and reopen, run on 2026-11-16 as the remedy
+            file this pull request carries; and two of the heavyweights' card defects the read-back of 2026-11-16 found, a stop and
+            take-profit cell drawing its prices on one line and every book's card stating the default's distances.
+Tests:      10 new: the freeze refusal and who it names (2), the book exit cell and the shared sentence (2), the copies' marks,
+            caps, rewind and comparison (4), the new build's copy registering at the rule's own instant (1), and `--moved`
+            reading a record, a stale one refused (1).
+Measured:   on the scratch copy of 2026-11-16, 12 and 13 Nov replayed for every kind, 0 requests and 0 model calls; over two
+            fresh copies of the store with this build as old and new, 2 nights in 115 s and 83 s with both at once, 262 of 262
+            rule and book tables the same, 20.3 GB freed and the store not written.
+Claims:     none new.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: each property the replay adds that decides a verdict. m1 `result` read as a written instant in the
+            comparison: red at the comparison test; m2 the reopening of a family trade ended from the first night dropped from the
+            rewind: red at the preparation test; each reverted before anything was committed.
+Carried:    the component catalogue's rows for the replay, the stale share figure with its row count, and the local run's stop
+            on an SEC request cut off mid-read, each to the next pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3782 of 3782 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
+            passing, none out of scope and none unexamined, 1640 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
