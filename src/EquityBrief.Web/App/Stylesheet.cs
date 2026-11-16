@@ -299,6 +299,8 @@ main{padding-block:8px 64px}
 .improving-table td.improving-score b,.improving-table td.improving-status b{display:block;font-weight:600;color:var(--ink)}
 .improving-from{display:block;font-size:12.5px;color:var(--up)}
 .improving-status span,.improving-quality{display:block;font-size:12.5px;color:var(--ink-2)}
+/* a book's stop and take-profit cell: each price on a line of its own with its note beneath it, on every book's card */
+.book-exit .exit-line{display:block} .book-exit .exit-note{display:block;font-size:12.5px;color:var(--ink-2)}
 .improving-table td.improving-status[data-state=bought] b{color:var(--sup-ink)} .improving-table td.improving-status[data-state=flagged] b{color:var(--warn)}
 /* a Fundamentals buy marked on its row and named in the list its card opens with; a buy no plan sells, in tomorrow's buys,
    saying how it sells across the stop's and the target's columns */

@@ -19,9 +19,10 @@ public sealed partial class MarkRenderer
             : BookExitSaid + " Otherwise it is kept while it qualifies, checked at each monthly reshuffle")
         + (next is { } reshuffle ? Formatted($", next on {reshuffle.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture)}.") : ".");
 
-    // How a book's stop and take profit are set, where a holding's are not drawn.
-    public static string BookExitSaid => FormattableString.Invariant(
-        $"It sells at the close of a day that closes {EquityBrief.Core.Loop.TakeProfit.MiddleStopMoves:0.#} typical daily moves under its buy, or at its take profit: the nearest price above the buy where it turned down before, or {EquityBrief.Core.Loop.TakeProfit.MiddleMultiple:0.#} times that risk above the buy.");
+    // How a book's stop and take profit are set, in words every index's book shares: each index's test chose its own distances,
+    // so the sentence names none and each holding's row states its own prices.
+    public const string BookExitSaid =
+        "It sells at the close of a day that closes under its stop, or at its take profit: the nearest price above the buy where it turned down before, or a multiple of the risk above the buy, each set from its buy as its index's own test chose.";
 
     // A setup tile's quiet nights on Tonight: how many nights in a row it has found nothing and the longest run its history
     // holds, none on a night it found picks.
