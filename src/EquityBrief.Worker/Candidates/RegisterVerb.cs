@@ -615,8 +615,9 @@ public static class RegisterVerb
         || Core.Candidates.FamilyRecords.IsLiveAmong(row.Candidate, standing.Where(other => string.Equals(other.Evaluator, row.Evaluator, StringComparison.Ordinal)));
 
     public static string FreezeRefusal(IReadOnlyList<string> restarting) =>
-        FormattableString.Invariant(
-            $"the rules are frozen until {RuleFreezeDates.Until:d MMM yyyy}, and a live rule's record never restarts inside the freeze: the replay did not reproduce every trade of {string.Join("; ", restarting)}, so nothing was registered.");
+        "the rules are frozen until " + RuleFreezeDates.Until.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)
+        + ", and a live rule's record never restarts inside the freeze: the replay did not reproduce every trade of "
+        + string.Join("; ", restarting) + ", so nothing was registered.";
 
     static async Task ReplayedAsync(IReadOnlyList<FamilyReplayed> replayed, TextWriter output)
     {

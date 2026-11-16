@@ -44,6 +44,8 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "members" => await MembersRun(args),
     "index-families" => await IndexFamiliesRun(args),
     "replay-night" => await ReplayNightRun(args),
+    "replay-prepare" => await ReplayPrepareRun(args),
+    "replay-compare" => await ReplayCompareRun(args),
     "measure-sources" => await MeasureSources(args),
     "measure-search" => await MeasureSearch(args),
     "sweep" => await SweepRun(args),
@@ -883,7 +885,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 80 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 83 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -932,6 +934,10 @@ static int NoVerb()
         "400's and 600's provisional rules read by the sweep's own code into their tables and asking for nothing, with " +
         "'--leavers' instead selling again each holding the books sold on leaving the index at its stock's stored close on " +
         "the session it was sold, its round trip from that close, " +
+        "'replay-prepare --from <yyyy-MM-dd>' prepares a replay's copy, one carrying the copying's mark beside it, for the first " +
+        "night the replay runs, 'replay-night --session <yyyy-MM-dd>' runs that night's deciding steps over the copy with its " +
+        "ceiling moved to it, asking nothing of a feed, and 'replay-compare --old <store> --new <store>' compares the two " +
+        "replayed copies' trades rule by rule, each refusing a store that is no replay's copy, " +
         "'history-pull --index-funds' pulls SPY's, IJH's, IJR's and HYG's daily series, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
         "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store, " +
@@ -3188,6 +3194,28 @@ static async Task<int> ReplayNightRun(string[] args)
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
 
+    // The night named, the ceiling moved to it first.
+    if (Argument(args, "--session") is { } named)
+    {
+        if (!DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var night))
+        {
+            Console.Error.WriteLine($"replay-night: '--session {named}' is not a date in yyyy-MM-dd.");
+
+            return 1;
+        }
+
+        try
+        {
+            await EquityBrief.Worker.Replay.ReplayCopy.CeilAsync(store.DatabaseFile, night);
+        }
+        catch (InvalidOperationException refused)
+        {
+            Console.Error.WriteLine("replay-night: " + refused.Message);
+
+            return 1;
+        }
+    }
+
     if (EquityBrief.Worker.Replay.ReplayCopy.CeilingOf(store.DatabaseFile) is not { } session)
     {
         Console.Error.WriteLine($"replay-night: '{store.DatabaseFile}' holds no '{EquityBrief.Worker.Replay.ReplayCopy.CeilingTable}', so it is not a replay's copy and nothing was run.");
@@ -3216,6 +3244,65 @@ static async Task<int> ReplayNightRun(string[] args)
         forming: EquityBrief.Core.Cards.FormingSettings.From(key => configuration[key]),
         registerAt: registerAt,
         replaying: Nightly.ReplayedSteps);
+}
+
+// A replay's copy prepared for the first night it replays, refused for a store carrying no copy's mark beside it.
+// see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+static async Task<int> ReplayPrepareRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!DateOnly.TryParseExact(Argument(args, "--from") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var first))
+    {
+        Console.Error.WriteLine("replay-prepare: it takes '--from <yyyy-MM-dd>', the first night the replay runs.");
+
+        return 1;
+    }
+
+    try
+    {
+        Console.Out.WriteLine("replay-prepare: " + await EquityBrief.Worker.Replay.ReplayCopy.PrepareAsync(store.DatabaseFile, first));
+
+        return 0;
+    }
+    catch (InvalidOperationException refused)
+    {
+        Console.Error.WriteLine("replay-prepare: " + refused.Message);
+
+        return 1;
+    }
+}
+
+// The old build's copy and the new build's compared after a replay, each rule's and book's rows on each table: a line for
+// each that differs with its first differing row, and a count of those the same. It exits 2 where any differs.
+// see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+static async Task<int> ReplayCompareRun(string[] args)
+{
+    if (Argument(args, "--old") is not { Length: > 0 } oldFile || Argument(args, "--new") is not { Length: > 0 } newFile)
+    {
+        Console.Error.WriteLine("replay-compare: it takes '--old <store>' and '--new <store>', the two replayed copies.");
+
+        return 1;
+    }
+
+    if (!EquityBrief.Worker.Replay.ReplayCopy.IsACopy(oldFile) || !EquityBrief.Worker.Replay.ReplayCopy.IsACopy(newFile))
+    {
+        Console.Error.WriteLine($"replay-compare: each store compared is a replay's copy carrying '{EquityBrief.Worker.Replay.ReplayCopy.CopyMark}' beside it.");
+
+        return 1;
+    }
+
+    var compared = await EquityBrief.Worker.Replay.ReplayCompare.CompareAsync(oldFile, newFile);
+
+    foreach (var one in compared.Where(one => !one.Same))
+    {
+        Console.Out.WriteLine(FormattableString.Invariant($"replay-compare: differs: {one.Table}, {one.Owner}: {one.Old} row(s) old, {one.New} new; {one.First ?? "the counts differ"}"));
+    }
+
+    Console.Out.WriteLine(FormattableString.Invariant($"replay-compare: {compared.Count(one => one.Same)} of {compared.Count} rule and book table(s) the same"));
+
+    return compared.All(one => one.Same) ? 0 : 2;
 }
 
 // A night refused before its first step, on stderr and on the run log.
