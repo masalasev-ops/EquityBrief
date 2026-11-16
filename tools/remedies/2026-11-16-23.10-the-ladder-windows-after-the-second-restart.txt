@@ -1,0 +1,24 @@
+# The ladder windows' remedy owed by 23.10's second restart, PR 699, merged 2026-11-15, whose remedy of 2026-11-14 left it out.
+# The restart moved the ladder rules' code version: merge distance to 8461b7936af1, zone edges from non-average anchors only to
+# 1951bc70337f and the trend rule to 9d4c4d38b658, so the first night after it, Friday 13 Nov run again on 2026-11-16, stopped at
+# the rule versions step on each of the three. The eight windows the store holds open are closed, each version before its rule's
+# live window, then opened again, each live window before its versions, at the values each carried. No register command, so no
+# live rule's record restarts. Run on the operator's word of 2026-11-16, from main's build of cb28080f9a88 at 17:06Z, when no
+# night, local run, drain, labeller, history read, ledger build or monthly run was writing; the windows opened that day count
+# from the session after it. No request to the provider and no model call.
+version --rule "merge distance" --close "a quarter of a typical move" --evidence "the ladder rules' code version moved to 8461b7936af1 with 23.10's second restart, PR 699, merged 2026-11-15"
+version --rule "merge distance" --close live --evidence "the ladder rules' code version moved to 8461b7936af1 with 23.10's second restart, PR 699, merged 2026-11-15"
+version --rule "zone edges from non-average anchors only" --close "non-average anchors only" --evidence "the ladder rules' code version moved to 1951bc70337f with 23.10's second restart, PR 699, merged 2026-11-15"
+version --rule "zone edges from non-average anchors only" --close live --evidence "the ladder rules' code version moved to 1951bc70337f with 23.10's second restart, PR 699, merged 2026-11-15"
+version --rule "the trend rule" --close "below both averages" --evidence "the ladder rules' code version moved to 9d4c4d38b658 with 23.10's second restart, PR 699, merged 2026-11-15"
+version --rule "the trend rule" --close "below both under a cross" --evidence "the ladder rules' code version moved to 9d4c4d38b658 with 23.10's second restart, PR 699, merged 2026-11-15"
+version --rule "the trend rule" --close "the new label holds two nights" --evidence "the ladder rules' code version moved to 9d4c4d38b658 with 23.10's second restart, PR 699, merged 2026-11-15"
+version --rule "the trend rule" --close live --evidence "the ladder rules' code version moved to 9d4c4d38b658 with 23.10's second restart, PR 699, merged 2026-11-15"
+version --rule "merge distance" --live-window
+version --rule "merge distance" --version "a quarter of a typical move" --parameters typicalMoveMultiple=0.25
+version --rule "zone edges from non-average anchors only" --live-window
+version --rule "zone edges from non-average anchors only" --version "non-average anchors only" --parameters zoneEdgesFromNonAverageAnchorsOnly=1
+version --rule "the trend rule" --live-window
+version --trend-version "below both averages"
+version --trend-version "below both under a cross"
+version --trend-version "the new label holds two nights"
