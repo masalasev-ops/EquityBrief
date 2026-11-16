@@ -660,6 +660,46 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Registered, null, detail);
     }
 
+    // On a replay's copy alone, the new build's copy: each standing candidate whose evaluator the code moved registered again
+    // at its own registration's instant, with the parameters `--moved` would give it and the version the code carries, so
+    // the night replayed under the new build reads it as the night under the old read the rule it stood as. A row at the
+    // same instant and a later id is the one that stands. A store carrying no copy's mark is refused before it is opened.
+    // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
+    public async Task<int> RegisterAsTheCodeIsOnACopyAsync(CancellationToken cancellation = default)
+    {
+        if (!EquityBrief.Worker.Replay.ReplayCopy.IsACopy(databaseFile))
+        {
+            throw new InvalidOperationException($"'{databaseFile}' carries no '{EquityBrief.Worker.Replay.ReplayCopy.CopyMark}' beside it, so it is not a replay's copy and nothing was registered.");
+        }
+
+        var at = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        var rows = await RowsAsync(connection, cancellation);
+        var standing = CandidateFamily.Standing(rows, at);
+        var taking = EquityBrief.Worker.Loop.PlanTrades.LiveTakingProfit(rows, at);
+        var appended = rows;
+        var written = 0;
+
+        foreach (var row in standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is { } evaluator && !string.Equals(evaluator.Version, row.EvaluatorVersion, StringComparison.Ordinal)))
+        {
+            var parameters = WithFamilyTakeProfit(row, Renamed(row.Evaluator, CandidateEvaluator.Read(row.Parameters)), standing, taking);
+            var id = await AppendAsync(
+                connection, appended, row.Candidate, row.Rule, row.Test, row.Evaluator, CandidateEvaluator.Write(parameters),
+                CandidateEvaluators.Find(row.Evaluator)!.Version, Registered, null, row.RegisteredAt, row.Evidence, cancellation);
+
+            appended = [.. appended, row with { Id = id }];
+            written++;
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return written;
+    }
+
     // From 23.10's second part an approval the operator withdrew undone at one instant or not at all: the live rule its change
     // registered and the rule it replaced, standing in the background under the same words, both retired on the evidence given,
     // and the earlier rule registered live again under its own name at its own parameters, as it stood before the approval.

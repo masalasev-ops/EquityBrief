@@ -3264,6 +3264,16 @@ static async Task<int> ReplayPrepareRun(string[] args)
     {
         Console.Out.WriteLine("replay-prepare: " + await EquityBrief.Worker.Replay.ReplayCopy.PrepareAsync(store.DatabaseFile, first));
 
+        // The new build's copy: each moved rule registered again at its own instant and each open ladder window hashed as
+        // this build applies it.
+        if (VerbArguments.Has(args, "--as-the-code-is"))
+        {
+            var registered = await new CandidateRegistrar(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).RegisterAsTheCodeIsOnACopyAsync();
+            var windows = await EquityBrief.Worker.Replay.ReplayCopy.HashWindowsAsTheCodeIsAsync(store.DatabaseFile);
+
+            Console.Out.WriteLine(FormattableString.Invariant($"replay-prepare: {registered} moved rule(s) registered again at their own instants and {windows} open window(s) hashed as this build applies them"));
+        }
+
         return 0;
     }
     catch (InvalidOperationException refused)

@@ -234,6 +234,56 @@ public static class ReplayCopy
         return FormattableString.Invariant($"prepared for {stamp}: {rows} row(s) of the deciding steps' tables stood as on the evening of {before}, {Caps.Count} table(s) capped");
     }
 
+    // The new build's copy alone: each open ladder window's hash and code version written as this build applies its
+    // parameters, so the night replayed under the new build scores the windows the night under the old scored. It is here
+    // and not in the scorer, whose source the ladder rules' code version pins.
+    public static async Task<int> HashWindowsAsTheCodeIsAsync(string databaseFile, CancellationToken cancellation = default)
+    {
+        if (!IsACopy(databaseFile))
+        {
+            throw new InvalidOperationException($"'{databaseFile}' carries no '{CopyMark}' beside it, so it is not a replay's copy and no window was moved.");
+        }
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        var open = new List<(string Rule, string Version, string Parameters, string OpenedAt)>();
+
+        await using (var read = connection.CreateCommand())
+        {
+            read.Transaction = transaction;
+            read.CommandText = "SELECT rule, version, parameters, opened_at FROM rule_version WHERE closed_at IS NULL;";
+
+            await using var reader = await read.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                open.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3)));
+            }
+        }
+
+        var code = EquityBrief.Worker.Rules.RuleVersionScorer.CodeVersion;
+
+        foreach (var (rule, version, parameters, openedAt) in open)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.Transaction = transaction;
+            command.CommandText = "UPDATE rule_version SET parameters_hash = $parameters_hash, code_version = $code_version WHERE rule = $rule AND version = $version AND opened_at = $opened_at;";
+            command.Parameters.AddWithValue("$parameters_hash", EquityBrief.Core.Rules.RuleVersions.Hash(EquityBrief.Core.Rules.RuleVersions.Read(parameters), code));
+            command.Parameters.AddWithValue("$code_version", code);
+            command.Parameters.AddWithValue("$rule", rule);
+            command.Parameters.AddWithValue("$version", version);
+            command.Parameters.AddWithValue("$opened_at", openedAt);
+            await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return open.Count;
+    }
+
     // The ceiling moved to a night: its session and the instant that night's run ended.
     public static async Task CeilAsync(string databaseFile, DateOnly night, CancellationToken cancellation = default)
     {
