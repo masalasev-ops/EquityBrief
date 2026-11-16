@@ -307,7 +307,7 @@ public sealed class ReleaseFetch(
                 (read, announcements, results, saved) = (read + 1, announcements + filings.Length, results + dayResults, saved + dayStored);
             }
         }
-        catch (Exception refused) when (refused is ProviderRefusal or FormatException)
+        catch (Exception refused) when (IsARefusal(refused, cancellation))
         {
             return new ReleaseFetchOutcome(read, 0, announcements, results, saved, feed.Documents, stopped, refused.Message, []);
         }
@@ -392,7 +392,7 @@ public sealed class ReleaseFetch(
                 }
             }
         }
-        catch (Exception refused) when (refused is ProviderRefusal or FormatException)
+        catch (Exception refused) when (IsARefusal(refused, cancellation))
         {
             refusal = refused.Message;
         }
@@ -497,7 +497,7 @@ public sealed class ReleaseFetch(
                 filersRead++;
             }
         }
-        catch (Exception refused) when (refused is ProviderRefusal or FormatException)
+        catch (Exception refused) when (IsARefusal(refused, cancellation))
         {
             refusal = refused.Message;
         }
@@ -559,7 +559,7 @@ public sealed class ReleaseFetch(
                 }
             }
         }
-        catch (Exception refused) when (refused is ProviderRefusal or FormatException)
+        catch (Exception refused) when (IsARefusal(refused, cancellation))
         {
             refusal = refused.Message;
         }
@@ -688,7 +688,7 @@ public sealed class ReleaseFetch(
                 replaced += replacing ? 1 : 0;
             }
         }
-        catch (Exception refused) when (refused is ProviderRefusal or FormatException)
+        catch (Exception refused) when (IsARefusal(refused, cancellation))
         {
             refusal = refused.Message;
         }
@@ -839,6 +839,13 @@ public sealed class ReleaseFetch(
 
         await command.ExecuteNonQueryAsync(cancellation);
     }
+
+    // What the fetch reads as the archive refusing it, named on the slot's row: a refusal, a page that is no answer, and from
+    // the 23.10 correction of 2026-11-16 a request the connection cut off or that timed out, which is not the caller's own
+    // cancellation.
+    static bool IsARefusal(Exception refused, CancellationToken cancellation) =>
+        refused is ProviderRefusal or FormatException
+        || (refused is HttpRequestException or TaskCanceledException or IOException && !cancellation.IsCancellationRequested);
 
     // One document asked of the archive, at its pace.
     async Task<string?> AskAsync(Func<CancellationToken, Task<string?>> ask, CancellationToken cancellation)
