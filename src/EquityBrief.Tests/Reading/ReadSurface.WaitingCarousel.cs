@@ -108,6 +108,11 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-wo-track", html, StringComparison.Ordinal);
         Assert.Equal(["W02", "W01"], Regex.Matches(html, "<article class=\"wo-card[^\"]*\"[^>]*data-ticker=\"([^\"]+)\"").Select(card => card.Groups[1].Value));
         Assert.Equal(string.Empty, MarkRenderer.WaitingCarousel([], "S&P 600", CarouselNight));
+
+        // A plan row carrying a note under its price wraps the note onto a line of its own, so the label keeps its line: read
+        // back on 2026-11-17, "Take profit at" stood on three lines beside the rules restart's note.
+        Assert.Contains(".home-prices.wo-plan div[data-plan]{flex-wrap:wrap}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".home-prices .sale-note{flex-basis:100%", Stylesheet.Css, StringComparison.Ordinal);
     }
 
     [Fact]

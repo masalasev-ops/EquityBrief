@@ -19834,3 +19834,21 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
             passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: a waiting order's plan rows wrap a note under the price onto a line of its own   2026-11-17
+
+Corrects:   the waiting orders' cards of the correction of 2026-11-17 above: read back on 5152 over the night of 2026-11-16,
+            every card whose take-profit carries the rules restart's note drew "Take profit at" on three lines beside it, the
+            row's label, price and note sharing one line in a card a quarter of the page wide.
+Built:      the plan rows of a waiting order's card wrap as a pick card's sale rows do, the note under its price on a line of
+            its own.
+Tests:      none new: the grid's test holds the rule that wraps the rows and the note's own line.
+Claims:     none new.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: the property the correction adds, the rows' wrap. m1 the rule left out of the stylesheet: red at the
+            grid's test, reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3802 of 3802 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
+            passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
