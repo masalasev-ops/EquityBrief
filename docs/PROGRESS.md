@@ -20004,6 +20004,11 @@ Pins:       the ledger readings' version from a9e953f17c94 to 6bc899179b67, and 
 Mutated:    the rule: the property the correction adds, a step no split table holds read as no split. m1 the share check's
             test of the table dropped from the split reading: red at the split reading's test, a step no table holds read
             as a split of 0.5 against the 1 expected; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3814 of 3814 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
 
 ### 23.10 - correction: a split table's entry is read only where the closes step by its own ratio   2026-11-17
 
@@ -20033,11 +20038,6 @@ Mutated:    the rule: the property the correction adds, a held entry read only b
             the split of a step of 0.5, 0.5 against the 1 expected; reverted before anything was committed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
             that run: all six steps, 0 warnings, 0 errors, 3815 of 3815 tests ran with none failed, migrations 0 to 152 with none
-            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
-            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
-            checks on the roster run and passed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
-            that run: all six steps, 0 warnings, 0 errors, 3814 of 3814 tests ran with none failed, migrations 0 to 152 with none
             pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
             passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
