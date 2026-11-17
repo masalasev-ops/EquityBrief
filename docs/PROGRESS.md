@@ -20052,10 +20052,11 @@ Ruled:      the operator's word of 2026-11-17, word for word in `prompts/2026-11
 Built:      in `SiteCopy.Worded` alone, the copy's words: "at its take-profit price or higher"; a take-profit's line by its
             dollars alone, the no-earlier-high lines as "No earlier high far enough above the buy, so its take-profit is"
             its dollars, a near miss's reward as too small for the risk, and every other multiple of the risk as a set multiple
-            of the risk; the app's pages and the check's needles unchanged. An upload the network failed tried again after 5,
-            10 and 15 minutes, each try said, any other failure ending the run. `site-upload.json` beside the copy, written by
+            of the risk; the app's pages and the check's needles unchanged. An upload the network failed tried again after five,
+            ten and fifteen minutes, each try said, any other failure ending the run. `site-upload.json` beside the copy, written by
             the worker's verb on each run asked to upload, and the app's Home line beside its masthead drawn from it. The
-            decision, which narrows the copy's tile clause for the multiple alone, and section 17's row.
+            decision, which narrows the copy's tile clause for the multiple alone, and `store-never-deleted`'s list naming
+            the record's write beside the copy.
 Tests:      5 new: each rewrite with the app's lines unchanged, the take-profit phrase, the retries and the record, Home's line
             and its place on the page.
 Claims:     1632, unchanged.

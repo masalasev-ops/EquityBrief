@@ -83,9 +83,7 @@ public class PinnedConstants
         const string Calls = "Model calls in the nightly run";
         const string Clock = "Nightly wall clock, at index size";
         const string Retry = "Per-request timeout and the night's deadline";
-        const string Budget = "Weighted-call budget";
-        const string Upload = "The read-only copy's upload";
-        const string Admissible = "Source admissibility";
+        const string Budget = "Weighted-call budget";        const string Admissible = "Source admissibility";
         const string Significance = "Significance threshold";
         const string Versions = "Rule versions scored at once";
         const string BlocksRow = "Blocks a record is judged over";
@@ -122,11 +120,6 @@ public class PinnedConstants
             new(Retry, "90", (decimal)RetryPolicy.News.Timeout.TotalSeconds, "RetryPolicy.News.Timeout in seconds"),
             new(Retry, "120", (decimal)RetryPolicy.Standard.Deadline.TotalMinutes, "RetryPolicy.Standard.Deadline in minutes"),
             new("Waiting on another writer", "600", StoreConnection.WaitSeconds, "StoreConnection.WaitSeconds"),
-            new(Upload, "4", Worker.Cloudflare.SitePublisher.UploadTries, "SitePublisher.UploadTries"),
-            new(Upload, "5", (decimal)Worker.Cloudflare.SitePublisher.UploadWaits[0].TotalMinutes, "the wait before the second try in minutes"),
-            new(Upload, "10", (decimal)Worker.Cloudflare.SitePublisher.UploadWaits[1].TotalMinutes, "the wait before the third try in minutes"),
-            new(Upload, "15", (decimal)Worker.Cloudflare.SitePublisher.UploadWaits[2].TotalMinutes, "the wait before the fourth try in minutes"),
-            new(Upload, "30", (decimal)Worker.Cloudflare.SitePublisher.UploadWaits.Sum(wait => wait.TotalMinutes), "SitePublisher.UploadWaits in minutes"),
             new(Budget, "100,000", ProviderWeights.DailyAllowance, "ProviderWeights.DailyAllowance"),
             new(Budget, "100", ProviderWeights.BulkEndOfDay, "ProviderWeights.BulkEndOfDay"),
             new(Budget, "1", ProviderWeights.HistoricalPerTicker, "ProviderWeights.HistoricalPerTicker"),
