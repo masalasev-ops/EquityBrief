@@ -44,6 +44,8 @@ public sealed class ImprovingFamily : IComponent
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.SplitEvent, Touch.Read),
+            new StoreTouch(Store.PulledSplit, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
@@ -305,6 +307,7 @@ public sealed class ImprovingFamily : IComponent
 
             var night = Date(newest);
             var bars = await BarsAsync(connection, night, cancellation);
+            var splits = await EquityBrief.Worker.Bars.SplitDays.ReadAsync(connection, EquityBrief.Worker.Bars.SplitDays.NightTables, cancellation);
             var filers = await FilersAsync(connection, cancellation);
             var facts = new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal);
             var register = await RegisterAsync(connection, cancellation);
@@ -328,7 +331,7 @@ public sealed class ImprovingFamily : IComponent
                             continue;
                         }
 
-                        var (outcome, written) = await IndexNightAsync(connection, index, night, bars, filers, facts, rule, setting, hooks, cancellation);
+                        var (outcome, written) = await IndexNightAsync(connection, index, night, bars, splits, filers, facts, rule, setting, hooks, cancellation);
 
                         first ??= outcome;
                         rows += written;
@@ -423,6 +426,7 @@ public sealed class ImprovingFamily : IComponent
         string index,
         DateOnly night,
         IReadOnlyDictionary<string, SortedDictionary<DateOnly, Daily>> bars,
+        IReadOnlyDictionary<string, List<DateOnly>> splits,
         IReadOnlyDictionary<string, string> filers,
         Dictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string rule,
@@ -533,7 +537,7 @@ public sealed class ImprovingFamily : IComponent
 
             if (first)
             {
-                earlierCard = FundamentalScorecard.Read(held, filed!.Value, score.Financial, Prices(bars, ticker));
+                earlierCard = FundamentalScorecard.Read(held, filed!.Value, score.Financial, Prices(bars, splits, ticker));
                 answer = ImprovingRule.Answer(score.Passed, score.Applied, earlierCard.Passed, earlierCard.Applied, change, flaggedBefore, setting);
             }
 
@@ -789,13 +793,16 @@ public sealed class ImprovingFamily : IComponent
             1 + answered.Count + written);
     }
 
-    // A stock's closes to the night as the share check reads them, at the store's scale and as traded.
-    static PriceHistory Prices(IReadOnlyDictionary<string, SortedDictionary<DateOnly, Daily>> bars, string ticker) =>
+    // A stock's closes to the night as the share check reads them, at the store's scale and as traded, with the splits
+    // the night's split tables hold for it.
+    // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
+    static PriceHistory Prices(IReadOnlyDictionary<string, SortedDictionary<DateOnly, Daily>> bars, IReadOnlyDictionary<string, List<DateOnly>> splits, string ticker) =>
         bars.TryGetValue(ticker, out var days)
             ? new PriceHistory(
                 [.. days.Keys],
                 [.. days.Values.Select(day => Statistic.FromPrice(day.Close))],
-                [.. days.Values.Select(day => day.Raw > 0m ? Statistic.FromPrice(day.Raw) : 0)])
+                [.. days.Values.Select(day => day.Raw > 0m ? Statistic.FromPrice(day.Raw) : 0)],
+                [.. (splits.GetValueOrDefault(ticker) ?? []).Distinct().Order()])
             : PriceHistory.None;
 
     // The sessions a trade was held from its buy to the session it was carried to, each a session the store holds a bar

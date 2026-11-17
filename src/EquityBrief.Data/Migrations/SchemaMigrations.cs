@@ -4298,7 +4298,7 @@ public static class SchemaMigrations
     // session whose split basis the provider restated them to; its splits; and each figure its filer stated under a
     // revenue concept, one row a filing and period, with the day it was filed. Counts, ratios and dollars are text,
     // the form an exact figure takes. Every row carries the pull that wrote it, which removes the pull whole.
-    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
     const string CreatePulledCompanies = @"
         CREATE TABLE pulled_company (
             ticker          TEXT NOT NULL,

@@ -794,7 +794,7 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --market --from 2018
 
 It asks the provider's historical endpoint once for each, `GSPC` and `VIX` under its index exchange, two requests at a weight of one whatever the span, and stores every session sent in `pulled_market_bar`, every row carrying the pull's run id. It prints each series' sessions with the first and the last. A series the provider refuses stores nothing, is named, and the command exits with a failure. Run it when no night is running.
 
-Each company of the history, its splits, the sector funds and each filer's revenue as first filed, which the sector heavyweights and the context checks are measured over, are pulled apart by the same verb, in this order (see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night):
+Each company of the history, its splits, the sector funds and each filer's revenue as first filed, which the sector heavyweights and the context checks are measured over, are pulled apart by the same verb, in this order (see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits):
 
 ```
 dotnet run --project src/EquityBrief.Worker -- history-pull --companies --from 2018-01-01 --live

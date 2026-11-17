@@ -89,12 +89,16 @@ public partial class FixtureExpectations
     ];
 
     // Closes at the store's scale and as traded, the same on every session where no split stands between the counts;
-    // where a split of two for one came on 2026-01-15 the sessions before it traded at twice their scaled close, and
-    // where a dividend came then the older traded three per cent over theirs, a step no split takes.
-    static PriceHistory NinePrices(bool split = false, bool dividend = false) => new(
-        [new DateOnly(2025, 7, 25), new DateOnly(2026, 1, 14), new DateOnly(2026, 1, 15), new DateOnly(2026, 7, 24), NineSession],
+    // where a split of two for one came on 2026-01-15 the sessions before it traded at twice their scaled close, a split
+    // table holding it unless said otherwise, and where a dividend came then the older traded three per cent over theirs,
+    // a step no split takes.
+    static PriceHistory NinePrices(bool split = false, bool dividend = false, bool held = true) => new(
+        [new DateOnly(2025, 7, 25), new DateOnly(2026, 1, 14), NineSplit, new DateOnly(2026, 7, 24), NineSession],
         [50, 54, 55, 60, 61],
-        [split ? 100 : dividend ? 51.5 : 50, split ? 108 : dividend ? 55.62 : 54, 55, 60, 61]);
+        [split ? 100 : dividend ? 51.5 : 50, split ? 108 : dividend ? 55.62 : 54, 55, 60, 61],
+        split && held ? [NineSplit] : []);
+
+    static readonly DateOnly NineSplit = new(2026, 1, 15);
 
     static Scorecard Nine(List<FiledFactRow> facts, bool financial = false, bool split = false, DateOnly? session = null, bool dividend = false) =>
         FundamentalScorecard.Read(facts, session ?? NineSession, financial, NinePrices(split, dividend));

@@ -183,7 +183,7 @@ public sealed record LedgerContext(
         var sector = Gics is { } gics ? gics.GetValueOrDefault(ticker) : Sectors.GetValueOrDefault(ticker);
         var financial = FundamentalScorecard.IsFinancial(GicsSectors.On(ticker, sector, session));
 
-        return ImprovingLay.FlagStood(Facts?.GetValueOrDefault(ticker) ?? [], releases, calendar, session, financial, ownPrices.GetValue(one, series => PriceHistory.Of(series.Bars)));
+        return ImprovingLay.FlagStood(Facts?.GetValueOrDefault(ticker) ?? [], releases, calendar, session, financial, ownPrices.GetValue(one, series => PriceHistory.Of(series.Bars, series.Name.Splits)));
     }
 
     readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, double?[]> relativeStrength = new();
@@ -417,7 +417,7 @@ public sealed record LedgerContext(
         var facts = Facts?.GetValueOrDefault(ticker) ?? [];
         var filed = facts.Count(fact => fact.Filed < session);
         var parts = valuation.GetOrAdd((ticker, filed), _ => ValuationReading.PartsOf(facts, session));
-        var history = prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars)));
+        var history = prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars, series.Name.Splits)));
 
         return CompanyValueOf(parts, history, session);
     }
@@ -464,7 +464,7 @@ public sealed record LedgerContext(
         var facts = Facts?.GetValueOrDefault(ticker) ?? [];
         var filed = facts.Count(fact => fact.Filed < session);
         var parts = valuation.GetOrAdd((ticker, filed), _ => ValuationReading.PartsOf(facts, session));
-        var history = prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars)));
+        var history = prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars, series.Name.Splits)));
 
         return InsiderReadings.Read(rows, InsiderSpans, session, dollars => ValuationReading.OverValue(dollars, parts, history, session));
     }
@@ -498,7 +498,7 @@ public sealed record LedgerContext(
         var filed = facts.Count(fact => fact.Filed < session);
         var parts = valuation.GetOrAdd((ticker, filed), _ => ValuationReading.PartsOf(facts, session));
 
-        return ValuationReading.Place(parts, prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars))), session);
+        return ValuationReading.Place(parts, prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars, series.Name.Splits))), session);
     }
 
     readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed, int Counts, bool Financial), Scorecard> scorecards = new();
@@ -524,7 +524,7 @@ public sealed record LedgerContext(
         var sector = Gics is { } gics ? gics.GetValueOrDefault(ticker) : Sectors.GetValueOrDefault(ticker);
         var financial = FundamentalScorecard.IsFinancial(GicsSectors.On(ticker, sector, session));
 
-        return scorecards.GetOrAdd((ticker, filed, counts, financial), _ => FundamentalScorecard.Read(facts, session, financial, ownPrices.GetValue(one, series => PriceHistory.Of(series.Bars))));
+        return scorecards.GetOrAdd((ticker, filed, counts, financial), _ => FundamentalScorecard.Read(facts, session, financial, ownPrices.GetValue(one, series => PriceHistory.Of(series.Bars, series.Name.Splits))));
     }
 }
 
@@ -1123,25 +1123,37 @@ public static class LedgerSetups
         return edges.Length > 0 ? edges.Min() : double.NaN;
     }
 
-    // The index's floors on the member's session: its close as traded and its dollar volume over the 50 sessions to it.
+    // The index's floors on the member's session: its close as traded and its dollar volume as traded over the 50
+    // sessions to it.
     static bool Clears(string indexCode, SweepSeries one, int bar)
     {
         var day = one.Bars[bar];
         var traded = day.RawClose > 0m ? day.RawClose : day.Close;
-        var window = one.Bars[Math.Max(0, bar - MemberReadings.DollarVolumeSessions + 1)..(bar + 1)].Select(each => (each.Close, each.Volume)).ToArray();
 
-        return SetupGates.ClearsTheFloors(indexCode, traded, MemberReadings.DollarVolume(window));
+        return SetupGates.ClearsTheFloors(indexCode, traded, DollarsTraded(one, bar));
     }
 
     // The index's floors whole, as the night holds a family's list to them: its close as traded at least the lowest close
-    // and its dollar volume over the 50 sessions to it at least the index's own floor.
+    // and its dollar volume as traded over the 50 sessions to it at least the index's own floor.
     static bool ClearsTheWholeFloors(string indexCode, SweepSeries one, int bar)
     {
         var day = one.Bars[bar];
         var traded = day.RawClose > 0m ? day.RawClose : day.Close;
-        var window = one.Bars[Math.Max(0, bar - MemberReadings.DollarVolumeSessions + 1)..(bar + 1)].Select(each => (each.Close, each.Volume)).ToArray();
 
-        return MemberReadings.ClearsTheFloors(indexCode, traded, MemberReadings.DollarVolume(window)) && traded >= MemberReadings.LowestPrice;
+        return MemberReadings.ClearsTheFloors(indexCode, traded, DollarsTraded(one, bar)) && traded >= MemberReadings.LowestPrice;
+    }
+
+    static readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, decimal[]> SharesTradedOf = new();
+
+    // The mean dollars that changed hands over the 50 sessions to a bar: each session's close as traded times its stored
+    // volume brought back to the shares that traded that day by the splits the tables hold after it, so no later split
+    // or dividend moves it; none where fewer than 50 are held.
+    // see: A ledger's dollar volume floor reads the dollars that traded each session, so no later split or dividend moves a setup's existence
+    public static decimal? DollarsTraded(SweepSeries one, int bar)
+    {
+        var shares = SharesTradedOf.GetValue(one, series => StoredSplits.SharesTraded(series.Bars, series.Name.Splits));
+
+        return MemberReadings.DollarVolume(StoredSplits.TradedDollars(one.Bars, shares, Math.Max(0, bar - MemberReadings.DollarVolumeSessions + 1), bar));
     }
 
     static IReadOnlyList<SetupRow> Ordered(List<SetupRow> rows)

@@ -100,7 +100,7 @@ public partial class FixtureExpectations
             var asTraded = day == ValuationNight && night is { } same ? same : traded(day);
 
             return new SweepBar(day, close, close, close, 1_000_000, close, asTraded);
-        })]);
+        })], []);
 
     static double? Valued(IReadOnlyList<FiledFactRow> facts, PriceHistory prices, DateOnly session) =>
         ValuationReading.Place(ValuationReading.PartsOf(facts, session), prices, session);
@@ -359,7 +359,7 @@ public partial class FixtureExpectations
 
         var readAhead = (double?[])stored.Clone();
 
-        readAhead[place] = ValuationReading.Place(ValuationReading.PartsOf(facts["AAA"], on.AddDays(1)), PriceHistory.Of(series[0].Bars), on);
+        readAhead[place] = ValuationReading.Place(ValuationReading.PartsOf(facts["AAA"], on.AddDays(1)), PriceHistory.Of(series[0].Bars, series[0].Name.Splits), on);
 
         Assert.Equal([("value_place", (double?)(11.5 / 12), (double?)1.0)], LedgerPointInTime.Differences(readAhead, stored));
     }

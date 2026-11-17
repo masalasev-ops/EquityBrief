@@ -19969,3 +19969,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
             passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: the ledgers' dollar volume floor reads the dollars that traded, and a split is read only where a split table holds it   2026-11-17
+
+Corrects:   two faults the trace of the rows the stale share figure's rebuild moved found in every ledger build: the S&P 400's
+            and 600's dollar volume floor read the closes at the store's scale, which every later dividend lowers, so 43,691
+            and 101,655 member-sessions of the long history answered it otherwise than on their own prices; and the share
+            check read any step of 1.4 in the closes' adjustment as a split, GEN's $12 special dividend of February 2020
+            among 331 such steps in the long prices with no split stored, its share count's fall read as 0.449 against 0.047.
+            The trace's first report said the $5 floor read adjusted closes too; it reads the close as traded in every build.
+Ruled:      the operator's ruling of 2026-11-17 and their answers of the same day on the fixes' scope and the dollar volume,
+            word for word in `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`.
+Built:      the core's one reading of the splits a stock's closes are read across: a step of 1.4 or more read as a split only
+            where a split table holds one within five days, a split held with no step read as none. The night's share check,
+            the Fundamental scorer's and the Improving family's, reads the split events and the pulled splits; the ledgers,
+            the sweeps' history and the long reader read them, the long reader the long splits as well. Every ledger build
+            and the long test's own floors read each session's dollars as its close as traded times its stored volume times
+            the step of every split read after it; the night's own floors are unchanged. The Run page lists each step the
+            share check reads as none and each held split whose closes show no step, by stock and date. A record box says
+            beneath its figure for a month after 2026-11-18, where its newest run started on or after that day, "Corrected
+            on 18 Nov 2026 after a fault in the history; was" the figure its newest run before it stated. Three decisions,
+            one superseding the pulls' read by no night; the catalogue's and the matrix's rows of the six readers, SCHEMA's
+            three split tables, CLAUDE.md's bars rule.
+Tests:      5 new: a step read as a split only where a table holds one within five days, a held split with no step read as
+            none and the share check failing two hundred shares across a step no table holds; both kinds listed; the ledger's
+            dollar volume worked by hand over a split and a dividend; the Run page's list over a constructed store; and a
+            corrected record's note inside its month and none outside it.
+Claims:     1632, unchanged: the rows this correction edits are rows the checks already reach.
+Pins:       the ledger readings' version from a9e953f17c94 to 6bc899179b67, and with the share check, the series' split days
+            and the ledger's floors the versions of Quality at a fair price on every index from f52b2fa98e60 to 12b2f047f116,
+            the Fundamentals family on every index from a336c20457bd to bded6a70b5e5, the short-term dip on every index from
+            21e06b729622 to 38d2b3715915 and the S&P 500's sector heavyweights from 64c2bb97683a to 080c55db265c; each moved
+            live rule is registered again under `register --moved` with the replay that shows its trades unchanged.
+Mutated:    the rule: the property the correction adds, a step no split table holds read as no split. m1 the share check's
+            test of the table dropped from the split reading: red at the split reading's test, a step no table holds read
+            as a split of 0.5 against the 1 expected; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3814 of 3814 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

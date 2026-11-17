@@ -182,6 +182,92 @@ public sealed partial class ReadApi
         return names;
     }
 
+    // On the operator's answer of 2026-11-17, what the share check reads as no split among the stocks holding a bar on the
+    // night: each step of the split step or more in a stock's close as traded over its close at the store's scale that no
+    // split table the night reads holds a split within days of, and each split those tables hold within its closes' span
+    // whose closes show no such step; the night's rule over the same rows.
+    // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
+    public async Task<IReadOnlyList<SplitStepRow>> SplitStepsOnAsync(DateOnly session)
+    {
+        await using var connection = Open();
+
+        var held = new Dictionary<string, List<DateOnly>>(StringComparer.Ordinal);
+
+        foreach (var query in new[] { "SELECT ticker, ex_date FROM split_event;", "SELECT ticker, ex_date FROM pulled_split;" })
+        {
+            await using var splits = connection.CreateCommand();
+
+            splits.CommandText = query;
+
+            await using var reader = await splits.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var ticker = reader.GetString(0);
+
+                if (!held.TryGetValue(ticker, out var days))
+                {
+                    held[ticker] = days = [];
+                }
+
+                days.Add(DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+            }
+        }
+
+        var rows = new List<SplitStepRow>();
+        var current = string.Empty;
+        var bars = new List<EquityBrief.Core.Sweep.SweepBar>();
+
+        void Flush()
+        {
+            if (bars.Count == 0)
+            {
+                return;
+            }
+
+            var (unheld, unseen) = EquityBrief.Core.Ledger.StoredSplits.Unmatched(bars, (IReadOnlyCollection<DateOnly>?)held.GetValueOrDefault(current) ?? []);
+
+            rows.AddRange(unheld.Select(step => new SplitStepRow(current, step.Session, step.Step)));
+            rows.AddRange(unseen.Select(day => new SplitStepRow(current, day, null)));
+            bars.Clear();
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = @"
+                SELECT b.ticker, b.session_date, b.close, b.raw_close FROM bar b
+                WHERE b.session_date <= $session
+                  AND b.ticker IN (SELECT ticker FROM bar WHERE session_date = $session)
+                ORDER BY b.ticker, b.session_date;";
+            command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var ticker = reader.GetString(0);
+
+                if (ticker != current)
+                {
+                    Flush();
+                    current = ticker;
+                }
+
+                bars.Add(new EquityBrief.Core.Sweep.SweepBar(
+                    DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    0m,
+                    0m,
+                    Money.FromStorage(reader.GetString(2)),
+                    0,
+                    RawClose: reader.IsDBNull(3) ? 0m : Money.FromStorage(reader.GetString(3))));
+            }
+        }
+
+        Flush();
+
+        return [.. rows.OrderBy(row => row.Ticker, StringComparer.Ordinal).ThenBy(row => row.Day)];
+    }
+
     static LateBarRow LateRow(SqliteDataReader reader) => new(
         reader.GetString(0),
         DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),

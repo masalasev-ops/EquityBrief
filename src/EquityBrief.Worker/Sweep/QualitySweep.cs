@@ -106,7 +106,7 @@ public sealed class QualityLay
             var series = read.Series[name];
             var company = read.Companies.Companies.GetValueOrDefault(series.Name.Ticker);
             IReadOnlyList<FiledFactRow> filed = company.Cik is { } cik && facts.TryGetValue(cik, out var held) ? held : [];
-            var prices = PriceHistory.Of(series.Bars);
+            var prices = PriceHistory.Of(series.Bars, series.Name.Splits);
 
             QualityReading? ReadOn(int session) =>
                 tape.Member[name][session] && !double.IsNaN(tape.Close[name][session])

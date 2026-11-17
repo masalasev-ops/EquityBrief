@@ -15,7 +15,7 @@ namespace EquityBrief.Tests.Checks;
 // see: A company's sector on a session is the GICS sector the provider files, with the fourteen moves of 2023-03-17 read by date
 // see: Companies are ranked by CIK with one listing held, the class that traded the more dollars over fifty sessions
 // see: A quarter's revenue is read as first filed, a fiscal fourth quarter being the year less its first nine months
-// see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+// see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
 public partial class FixtureExpectations
 {
     // The rows the pulls and their readings add that this check reaches: section 17's five and section 18's four.

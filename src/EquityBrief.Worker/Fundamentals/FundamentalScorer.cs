@@ -31,6 +31,8 @@ public sealed class FundamentalScorer(IClock clock, string databaseFile) : IComp
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.SplitEvent, Touch.Read),
+            new StoreTouch(Store.PulledSplit, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
@@ -267,9 +269,12 @@ public sealed class FundamentalScorer(IClock clock, string databaseFile) : IComp
     }
 
     // Each name's closes to the session at the store's scale and as traded, a close as traded the store does not hold
-    // being nought.
+    // being nought, with the splits the night's split tables hold for it.
+    // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
     static async Task<IReadOnlyDictionary<string, PriceHistory>> ClosesAsync(SqliteConnection connection, DateOnly session, CancellationToken cancellation)
     {
+        var splits = await Bars.SplitDays.ReadAsync(connection, Bars.SplitDays.NightTables, cancellation);
+
         await using var command = connection.CreateCommand();
 
         command.CommandText = ClosesTo;
@@ -292,7 +297,7 @@ public sealed class FundamentalScorer(IClock clock, string databaseFile) : IComp
             series.Add(new SweepBar(Date(reader.GetString(1)), 0m, 0m, Money.FromStorage(reader.GetString(2)), 0, RawClose: reader.IsDBNull(3) ? 0m : Money.FromStorage(reader.GetString(3))));
         }
 
-        return bars.ToDictionary(pair => pair.Key, pair => PriceHistory.Of(pair.Value), StringComparer.Ordinal);
+        return bars.ToDictionary(pair => pair.Key, pair => PriceHistory.Of(pair.Value, (IReadOnlyCollection<DateOnly>?)splits.GetValueOrDefault(pair.Key) ?? []), StringComparer.Ordinal);
     }
 
     static async Task<IReadOnlyDictionary<string, (string? Cik, string? Sector, string? Industry)>> CompaniesAsync(SqliteConnection connection, CancellationToken cancellation)

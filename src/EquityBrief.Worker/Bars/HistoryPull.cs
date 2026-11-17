@@ -38,7 +38,7 @@ namespace EquityBrief.Worker.Bars;
 // one request an index, marked and removed the same way; every other pull asked for that index reads its names from
 // them, survivors alone, since the answer carries no span of membership.
 // see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
-// see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+// see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
 public sealed partial class HistoryPull(
     IHistoricalBarFeed bars,
     IEarningsCalendarFeed earnings,
@@ -1943,7 +1943,7 @@ public sealed partial class HistoryPull(
     // the names filing no sector, no count or no CIK, and reads each of the fourteen GICS moved after the close of
     // 2023-03-17 against the sector the provider files for it. A date on or after tonight's session is refused before
     // any request.
-    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
     public static async Task<HistoryCompanyOutcome> PullCompaniesAsync(
         ICompanyFeed companies,
         IClock clock,
@@ -2156,7 +2156,7 @@ public sealed partial class HistoryPull(
 
     // Pulls the splits of every name the index held from a date to tonight, one request a name, each split from the
     // date on. A name not served is named and the others stored, as the companies pull does.
-    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
     public static async Task<HistorySplitOutcome> PullSplitsAsync(
         ISplitHistoryFeed splits,
         IClock clock,
@@ -2274,7 +2274,7 @@ public sealed partial class HistoryPull(
     // series beside the index's and the VIX's, each in the adjusted form a member's bars take. A fund not served stores
     // nothing and is named, the others are stored, and the pull's row says partial. Handed the index and credit funds,
     // it pulls those under a stage of their own.
-    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
     public static async Task<HistorySectorFundOutcome> PullSectorFundsAsync(
         IHistoricalBarFeed bars,
         IClock clock,
@@ -2380,7 +2380,7 @@ public sealed partial class HistoryPull(
     // day each filing was made, one request a filer for its whole facts, waiting a tenth of a second after each. A
     // concept a filer never filed under is no figure and no failure; a filer not served is named and the rest stored.
     // Refused where no pulled company carries a filer, since the companies pull is what names them.
-    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
     public static async Task<HistoryRevenueOutcome> PullRevenueAsync(
         IFiledRevenueFeed revenue,
         IClock clock,
