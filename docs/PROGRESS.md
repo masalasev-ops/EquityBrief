@@ -19758,3 +19758,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
             passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: Tonight's and Home's news counts read for the stocks they draw, the own exit's prices in one read, and the own exit's line above its fold in points a month   2026-11-17
+
+Corrects:   the read surface's news counts, which read every labelled story of the 30 days before the night with its text for
+            every member and matched each to its company, 28,802 stories and 119 MB of text on the night of 2026-11-16, read
+            once a page and twice on the S&amp;P 500's Tonight, whose rows on a night the families drew its list are their picks
+            alone; on 5152, main's Release over the store on 2026-11-17 near 12:15 am ET, Tonight took 24.0 and 24.6 s on the
+            S&amp;P 500, 14.5 and 14.6 s on the S&amp;P 400, 16.0 and 11.8 s on the S&amp;P 600, and Home 18.6 s on the S&amp;P 500,
+            the stacks sampled during Home standing in the news counts' read in 6 of the 9 samples inside the page; and the
+            own exit's walk, which read each stock's bars and averages a query apiece.
+Ruled:      the operator's answers of 2026-11-16, items 6, 7 and 8, word for word in
+            `prompts/2026-11-17-23.10-answers-to-the-report-of-16-nov.md`.
+Built:      the news counts read the stories of the stocks a page draws alone, the S&amp;P 500's listing rows none on a night the
+            families drew the page's list; measured read-only on the store, the window's read for the night's five picks 0.73 s
+            and 83 stories against 2.53 s and 28,802 for every member. The own exit's walk reads every stock's bars and its
+            averages in one query each. Each book's card draws above its fold, read without opening it, the operator's line
+            in the reader's words a card speaks, which say holdings for a book: "Sold the old way, with no stop and no
+            take-profit, these holdings would have made x points a month against x as they trade now, since <date>.", each
+            mean change in percentage points over the trading months since the walk began, 21 sessions a month and never
+            fewer than one month.
+Tests:      1 new: the line worked by hand over a month, under one and two, and its unmeasured form, standing above the fold;
+            the frozen S&amp;P 400 Quality card's read-back holds the line, the two equal on the walk's first nights.
+Claims:     none new: the own exit's row is worded again in place.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: the property item 7 adds that a figure can be wrong by, the months it is read over. m1 the floor of one
+            month dropped: red at the line's test, the read-back passing since its two figures are equal whatever the
+            months; reverted before anything was committed. Not mutated: the news counts' read for the stocks drawn, which
+            changes no figure a page draws, held by the read-surface tests drawing each pick's counts.
+Carried:    a sector heavyweights rule of the S&amp;P 400 or 600 selling when a holding stops leading stores no leaders a walk
+            could read, so its own exit is not drawn; owed when such a rule is registered, on the operator's answers of
+            2026-11-16, item 8. No live rule sells so today. The page times after the merge, read on 5152 as before.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3801 of 3801 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
+            passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

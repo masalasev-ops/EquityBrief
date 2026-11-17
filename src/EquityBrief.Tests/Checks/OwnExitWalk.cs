@@ -160,6 +160,29 @@ public sealed class OwnExitWalk
         Assert.Equal(string.Empty, MarkRenderer.OwnExitFold(null));
     }
 
+    // On the operator's answers of 2026-11-16, item 7, the line above the fold in their words, each mean change in percentage
+    // points over the trading months since the walk began, worked by hand: from 1 Dec 2026 to 30 Dec 2026 the exchange trades
+    // 21 sessions (25 Dec closed), one month, 5.67 and -1.20; to 15 Dec it trades 11, under a month, so the change so far reads
+    // as the month's, the same; from 1 Dec 2026 to 29 Jan 2027 it trades 41 (1 and 18 Jan closed), 41 / 21 months,
+    // 0.0567 * 100 * 21 / 41 = 2.90 and -0.012 * 100 * 21 / 41 = -0.61.
+    [Fact]
+    public void TheLineAboveTheFoldSaysInTheOperatorsWordsWhatTheOldWayAndTheLiveRuleMadeAMonthSinceTheWalkBegan()
+    {
+        var month = new OwnExitView(Since, "at a reshuffle", ["C"], [], 0.0567, 3, -0.012, 4) { Through = new DateOnly(2026, 12, 30) };
+        var early = month with { Through = new DateOnly(2026, 12, 15) };
+        var later = month with { Through = new DateOnly(2027, 1, 29) };
+
+        Assert.Equal("Sold the old way, with no stop and no take-profit, these holdings would have made 5.67 points a month against -1.20 as they trade now, since 1 Dec 2026.", MarkRenderer.OwnExitLine(month));
+        Assert.Equal(MarkRenderer.OwnExitLine(month), MarkRenderer.OwnExitLine(early));
+        Assert.Equal("Sold the old way, with no stop and no take-profit, these holdings would have made 2.90 points a month against -0.61 as they trade now, since 1 Dec 2026.", MarkRenderer.OwnExitLine(later));
+        Assert.Equal("Sold the old way, with no stop and no take-profit, these holdings' points a month against how they trade now are not yet measured, since 1 Dec 2026.", MarkRenderer.OwnExitLine(early with { OwnMean = null }));
+
+        // The line stands above the fold, read without opening it.
+        var html = MarkRenderer.OwnExitFold(later);
+
+        Assert.True(html.IndexOf("own-exit-line", StringComparison.Ordinal) < html.IndexOf("<details", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void NoSourceTheOwnExitRunsThroughWritesTheStoreOrNamesARegistrationOrAPick()
     {

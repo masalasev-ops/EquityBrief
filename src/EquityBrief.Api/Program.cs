@@ -1856,6 +1856,7 @@ async Task<IResult> TonightScreenAsync(
         var indexDipResults = await read.DipResultsAsync(reading.Code, dated);
         var indexReadings = await read.FundamentalReadingsAsync(dated);
         var researchedRows = await read.ResearchedAsync();
+        var indexPicks = await read.IndexPicksAsync(reading.Code, dated);
 
         // A dip pick's card words its management by the setting the dip's night ran on.
         if (indexDipNight is not null)
@@ -1875,13 +1876,13 @@ async Task<IResult> TonightScreenAsync(
                             TonightScreen.IndexCards(
                                 reading,
                                 indexNight,
-                                await read.IndexPicksAsync(reading.Code, dated),
+                                indexPicks,
                                 indexResults,
                                 members,
                                 researchedRows,
                                 queueStates,
                                 indexReadings,
-                                await read.NewsCountsAsync(dated)),
+                                await read.NewsCountsAsync(dated, indexPicks.Select(pick => pick.Ticker))),
                             TonightScreen.DipCard(reading, indexDipNight, indexDipPicks, indexDipResults, members, researchedRows, queueStates, indexReadings)),
                         reading,
                         indexRegister,
@@ -2131,6 +2132,10 @@ async Task<IResult> TonightScreenAsync(
     var suspects = await read.SuspectSeriesAsync();
     var researched = await read.ResearchedAsync();
     var readings = await read.FundamentalReadingsAsync(dated);
+
+    // On a night the families drew the page's list, its rows are drawn from their picks below, so the listing's rows read no
+    // stories.
+    var onThePage = gates is null ? null : await read.FamilyNightAsync(dated);
     var listed = TonightScreen.Rows(
         dated,
         listings,
@@ -2140,7 +2145,7 @@ async Task<IResult> TonightScreenAsync(
         researched,
         gates,
         readings,
-        news: await read.NewsCountsAsync(dated));
+        news: onThePage is null ? await read.NewsCountsAsync(dated, listings.Select(listing => listing.Ticker)) : null);
 
     // Every trade the live list recommended up to the night, which "Still open" reads and the list's rows
     // are marked from where one repeats a trade still open.
@@ -2152,7 +2157,6 @@ async Task<IResult> TonightScreenAsync(
     // On a night the families drew the page's list, the rows are the stocks the page lists, in its order,
     // and the list is drawn as a card a family.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
-    var onThePage = gates is null ? null : await read.FamilyNightAsync(dated);
     IReadOnlyList<FamilyPickRow> familyPicks = onThePage is null ? [] : await read.FamilyPicksAsync(dated);
 
     if (onThePage is not null)
@@ -2167,7 +2171,7 @@ async Task<IResult> TonightScreenAsync(
             researched,
             gates,
             readings,
-            await read.NewsCountsAsync(dated));
+            await read.NewsCountsAsync(dated, familyPicks.Select(pick => pick.Ticker)));
     }
 
     // The members one gate short, on a night the swing filter listed, each measured against the settings of

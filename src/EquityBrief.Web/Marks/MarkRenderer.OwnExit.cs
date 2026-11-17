@@ -16,7 +16,11 @@ public sealed record OwnExitView(
     double? OwnMean,
     int OwnCounted,
     double? LiveMean,
-    int LiveCounted);
+    int LiveCounted)
+{
+    // The night the record is read to, from which its months are counted.
+    public DateOnly? Through { get; init; }
+}
 
 // The books' own exit as a comparison record, drawn as a fold on each book's card: it says it is a record that draws no pick
 // and cannot go live as it stands, and that it is brought to the operator if it leads after the book's 12 months.
@@ -24,6 +28,35 @@ public sealed record OwnExitView(
 public sealed partial class MarkRenderer
 {
     public const string OwnExitHeading = "Its own exit, a record only";
+
+    // The trading days a month is counted as, and the fewest months a figure a month is read over, so the record's first
+    // weeks read as the change so far rather than as that change stretched over a month.
+    public const double SessionsAMonth = 21.0;
+
+    public const double FewestMonths = 1.0;
+
+    // On the operator's answers of 2026-11-16, item 7, the line above the fold in their words: the own exit's positions'
+    // mean change and the live rule's, each in percentage points a month over the trading months since the walk began.
+    public static string OwnExitLine(OwnExitView view)
+    {
+        var sessions = 0;
+
+        for (var day = view.Since; view.Through is { } through && day <= through; day = day.AddDays(1))
+        {
+            if (EquityBrief.Core.Bars.ExchangeClosures.IsSession(day))
+            {
+                sessions++;
+            }
+        }
+
+        var months = Math.Max(FewestMonths, sessions / SessionsAMonth);
+
+        // The operator's "this book" in the reader's words a card speaks, which say holdings for a book.
+        // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+        return view.OwnMean is { } own && view.LiveMean is { } live
+            ? FormattableString.Invariant($"Sold the old way, with no stop and no take-profit, these holdings would have made {own * 100 / months:0.00} points a month against {live * 100 / months:0.00} as they trade now, since {view.Since:d MMM yyyy}.")
+            : FormattableString.Invariant($"Sold the old way, with no stop and no take-profit, these holdings' points a month against how they trade now are not yet measured, since {view.Since:d MMM yyyy}.");
+    }
 
     public static string OwnExitFold(OwnExitView? view)
     {
@@ -33,6 +66,9 @@ public sealed partial class MarkRenderer
         }
 
         var body = new StringBuilder();
+
+        // see: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
+        body.Append(Invariant, $"<p class=\"record-said own-exit-line\" data-through=\"{view.Through?.ToString("yyyy-MM-dd", Invariant) ?? "none"}\">{Escaped(OwnExitLine(view))}</p>");
 
         body.Append(Invariant, $"<details class=\"fold own-exit\" data-own-held=\"{view.Held.Count}\" data-own-sold=\"{view.Sold.Count}\" data-own-mean=\"{Figure(view.OwnMean)}\" data-live-mean=\"{Figure(view.LiveMean)}\"><summary>{OwnExitHeading}</summary><div class=\"fold-b\">");
         body.Append(Invariant, $"<p class=\"record-said\">The rule as it sold before the rules restart: it sells only {Escaped(view.Turn)}, with no stop and no take-profit. It is walked each night from what the rule stored, draws no pick and cannot go live as it stands; if it leads after its first 12 months live, it is brought to you.</p>");

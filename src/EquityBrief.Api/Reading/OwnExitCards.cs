@@ -41,7 +41,7 @@ public static class OwnExitCards
             (ticker, on) => live.FirstOrDefault(position => position.Ticker == ticker && position.ChosenOn == on)?.Gap ?? prices.GapOf(ticker, on),
             trend ? prices.UnderAverage : null);
 
-        return TonightScreen.OwnExitOf(own, live, position => OpenChange(position, carried, nights), QualityTurn);
+        return TonightScreen.OwnExitOf(own, live, position => OpenChange(position, carried, nights), QualityTurn, night);
     }
 
     public static async Task<OwnExitView?> ImprovingAsync(ReadApi read, string index, string rule, DateOnly? liveSince, DateOnly night, string? settings)
@@ -71,7 +71,7 @@ public static class OwnExitCards
             prices.SessionsHeld,
             setting.SoldUnderAverage ? prices.UnderAverage : null);
 
-        return TonightScreen.OwnExitOf(own, live, position => OpenChange(position, carried, nights), ImprovingTurn);
+        return TonightScreen.OwnExitOf(own, live, position => OpenChange(position, carried, nights), ImprovingTurn, night);
     }
 
     // The S&P 500's page book, or an S&P 400 or 600 rule's own book: every session the store holds a close of a stock it can
@@ -120,7 +120,8 @@ public static class OwnExitCards
             position => prices.CloseOn(position.Ticker, position.ChosenOn) is { } bought && bought > 0m && LastClose(prices, position.Ticker, since, night) is { } now
                 ? EquityBrief.Core.Prices.Statistic.FromRatio(now / bought) - 1.0
                 : null,
-            soldUnderAverage && !soldOnLeading ? AverageTurn : LeadingTurn);
+            soldUnderAverage && !soldOnLeading ? AverageTurn : LeadingTurn,
+            night);
     }
 
     // An S&P 400 or 600 heavyweights rule's newest registration: its day and whether it sells on the lead and under its
@@ -215,7 +216,7 @@ public static partial class TonightScreen
     // The view a book's card draws of its own exit: the walk's record, and the live book's positions over the same nights,
     // each ended one at its stored result and each open one at the change given for it.
     // see: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
-    public static OwnExitView OwnExitOf(OwnExitRecord own, IReadOnlyList<OwnExitLive> live, Func<OwnExitLive, double?> openChange, string turn)
+    public static OwnExitView OwnExitOf(OwnExitRecord own, IReadOnlyList<OwnExitLive> live, Func<OwnExitLive, double?> openChange, string turn, DateOnly? night = null)
     {
         double[] liveChanges = [.. live
             .Select(position => position.EndedOn is not null ? position.Result : openChange(position))
@@ -230,6 +231,9 @@ public static partial class TonightScreen
             own.MeanChange,
             own.Positions.Count(position => position.Change is not null),
             liveChanges.Length > 0 ? liveChanges.Average() : null,
-            liveChanges.Length);
+            liveChanges.Length)
+        {
+            Through = night,
+        };
     }
 }
