@@ -1623,7 +1623,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .wo-bar-track{height:8px;border-radius:4px;background:var(--s1);overflow:hidden}
 .wo-fill{height:8px;border-radius:4px;background:var(--wait)}
 .wo-bar-labels{display:flex;justify-content:space-between;gap:8px;margin:4px 0 0;font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
-.wo-plan .buy{color:var(--ink)}
+.wo-plan .buy{color:var(--ink)} .home-prices.wo-plan div[data-plan]{flex-wrap:wrap}
 .wo-placed{margin:0;font-size:13px;line-height:1.45;color:var(--ink-2)}
 .wo-card .home-plan{margin-top:auto}
 @media (max-width:1100px){.wo-track{grid-auto-columns:calc((100% - 24px)/3)}}
