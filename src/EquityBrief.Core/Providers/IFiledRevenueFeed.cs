@@ -15,7 +15,7 @@ public sealed record ConceptFact(DateOnly Start, DateOnly End, decimal Value, Da
 // concept is not asked: it answers an empty set of dollars for some filers whose facts hold the figures, Coca-Cola's
 // revenue among them. A filer with no facts is the archive saying the document is not there, which is no figure and
 // no failure.
-// see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+// see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
 public interface IFiledRevenueFeed
 {
     int Requests { get; }

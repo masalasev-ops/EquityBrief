@@ -347,14 +347,15 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
     public static Func<SweepSeries, int, bool>? ClearOf(LoopRead read) => read.Index == IndexFamilies.LargeIndex ? Floors(read.Index) : null;
 
     // The clear a listing reads over the long years: the index's floors on its session, its close as traded and its dollar
-    // volume over the 50 sessions to it, as the long ledger reads them, the profit gate's quarters not being held there.
+    // volume as traded over the 50 sessions to it, as the long ledger reads them, the profit gate's quarters not being held
+    // there.
+    // see: A ledger's dollar volume floor reads the dollars that traded each session, so no later split or dividend moves a setup's existence
     public static Func<SweepSeries, int, bool> Floors(string index) => (one, bar) =>
     {
         var day = one.Bars[bar];
         var traded = day.RawClose > 0m ? day.RawClose : day.Close;
-        var window = one.Bars[Math.Max(0, bar - Core.Readings.MemberReadings.DollarVolumeSessions + 1)..(bar + 1)].Select(each => (each.Close, each.Volume)).ToArray();
 
-        return Core.Ledger.SetupGates.ClearsTheFloors(index, traded, Core.Readings.MemberReadings.DollarVolume(window));
+        return Core.Ledger.SetupGates.ClearsTheFloors(index, traded, Ledger.LedgerSetups.DollarsTraded(one, bar));
     };
 
     static string Line(string index, SearchRead searched) =>

@@ -85,7 +85,7 @@ public partial class FixtureExpectations
 
         var atFirst = context.Scorecard(series[0], first);
         var atLater = context.Scorecard(series[0], later);
-        var alone = FundamentalScorecard.Read(late, later, financial: false, PriceHistory.Of(series[0].Bars));
+        var alone = FundamentalScorecard.Read(late, later, financial: false, PriceHistory.Of(series[0].Bars, series[0].Name.Splits));
 
         Assert.Equal(CheckAnswer.NotFiled, atFirst.Checks.Single(check => check.Number == 7).Answer);
         Assert.NotEqual(CheckAnswer.NotFiled, atLater.Checks.Single(check => check.Number == 7).Answer);

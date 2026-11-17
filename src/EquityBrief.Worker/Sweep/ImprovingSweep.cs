@@ -137,7 +137,7 @@ public sealed class ImprovingLay
                 read.Calendar,
                 read.FirstScored,
                 session => FundamentalScorecard.IsFinancial(GicsSectors.On(series.Name.Ticker, company.Sector, read.Calendar[session])),
-                PriceHistory.Of(series.Bars));
+                PriceHistory.Of(series.Bars, series.Name.Splits));
         });
 
         return new ImprovingLay(read, tape, months, filings, scores);

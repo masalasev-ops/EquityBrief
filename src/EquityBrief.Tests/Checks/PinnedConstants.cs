@@ -359,6 +359,7 @@ public class PinnedConstants
             new("The fundamentals scorecard's numbers","0.02", (decimal)Core.Ledger.FundamentalScorecard.ShareTolerance, "FundamentalScorecard.ShareTolerance"),
             new("The fundamentals scorecard's numbers","45", Core.Ledger.FundamentalScorecard.CountYearWithin, "FundamentalScorecard.CountYearWithin"),
             new("The fundamentals scorecard's numbers","1.4", (decimal)Core.Ledger.FundamentalScorecard.SplitStep, "FundamentalScorecard.SplitStep"),
+            new("The fundamentals scorecard's numbers","5", Core.Ledger.StoredSplits.WithinDays, "StoredSplits.WithinDays"),
             new("The fundamentals scorecard's numbers","3", EquityBrief.Worker.Fundamentals.FundamentalScorer.IndustryFewest, "FundamentalScorer.IndustryFewest"),
             new("The fundamentals scorecard's numbers", "45", EquityBrief.Worker.Fundamentals.FundamentalScorer.NewerAfter, "FundamentalScorer.NewerAfter"),
             // 22.9's Quality at a fair price, the figures in the row's order.

@@ -31,6 +31,9 @@ public sealed class LongHistoryReader : IComponent
         [
             new StoreTouch(Store.LongSpan, Touch.Read),
             new StoreTouch(Store.LongBar, Touch.Read),
+            new StoreTouch(Store.LongSplit, Touch.Read),
+            new StoreTouch(Store.PulledSplit, Touch.Read),
+            new StoreTouch(Store.SplitEvent, Touch.Read),
             new StoreTouch(Store.LongMarketBar, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.SessionMark, Touch.Read),
@@ -147,6 +150,7 @@ public sealed class LongHistoryReader : IComponent
             }
         }
 
+        var splitDays = await Bars.SplitDays.ReadAsync(connection, [.. Bars.SplitDays.NightTables, "long_split"], cancellation);
         var names = new List<SweepName>();
         var fingerprint = new System.Text.StringBuilder();
         var read = 0;
@@ -166,7 +170,8 @@ public sealed class LongHistoryReader : IComponent
                 held,
                 [.. (prints.GetValueOrDefault(ticker) ?? [])],
                 sectors.GetValueOrDefault(ticker),
-                [.. (surprises.GetValueOrDefault(ticker) ?? []).OrderBy(surprise => surprise.EventDate)]));
+                [.. (surprises.GetValueOrDefault(ticker) ?? []).OrderBy(surprise => surprise.EventDate)],
+                SplitsStored: splitDays.GetValueOrDefault(ticker)));
 
             if (++read % 250 == 0)
             {

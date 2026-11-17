@@ -63,6 +63,8 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.SplitEvent, Touch.Read),
+            new StoreTouch(Store.PulledSplit, Touch.Read),
             new StoreTouch(Store.SessionMark, Touch.Read),
             new StoreTouch(Store.PulledEarnings, Touch.Read),
             new StoreTouch(Store.PulledSurprise, Touch.Read),
@@ -2990,17 +2992,19 @@ public sealed partial class SetupLedger : IComponent
         var places = new Dictionary<string, double?>(StringComparer.Ordinal);
         var values = new Dictionary<string, double?>(StringComparer.Ordinal);
         var cards = new Dictionary<string, Scorecard>(StringComparer.Ordinal);
+        var splits = await Bars.SplitDays.ReadAsync(connection, Bars.SplitDays.NightTables, cancellation);
 
         foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
         {
             var filed = facts.GetValueOrDefault(ticker) ?? [];
             var parts = ValuationReading.PartsOf(filed, session);
-            var prices = await PricesOnAsync(connection, ticker, filed, session, cancellation);
+            var held = (IReadOnlyCollection<DateOnly>?)splits.GetValueOrDefault(ticker) ?? [];
+            var prices = await PricesOnAsync(connection, ticker, filed, session, held, cancellation);
             var financial = FundamentalScorecard.IsFinancial(GicsSectors.On(ticker, gics.GetValueOrDefault(ticker), session));
 
             places[ticker] = prices is null ? null : ValuationReading.Place(parts, prices, session);
             values[ticker] = prices is null ? null : LedgerContext.CompanyValueOf(parts, prices, session);
-            cards[ticker] = FundamentalScorecard.Read(filed, session, financial, await StoredPricesAsync(connection, ticker, session, cancellation));
+            cards[ticker] = FundamentalScorecard.Read(filed, session, financial, await StoredPricesAsync(connection, ticker, session, held, cancellation));
         }
 
         var read = 0;
@@ -3081,7 +3085,7 @@ public sealed partial class SetupLedger : IComponent
         foreach (var ticker in tickers)
         {
             var filed = facts.GetValueOrDefault(ticker) ?? [];
-            var prices = await PricesOnAsync(connection, ticker, filed, session, cancellation);
+            var prices = await PricesOnAsync(connection, ticker, filed, session, [], cancellation);
             var parts = ValuationReading.PartsOf(filed, session);
 
             // A member the store matches no filer for holds no entry and reads none, where a filer filing nothing reads nought.
@@ -3140,7 +3144,7 @@ public sealed partial class SetupLedger : IComponent
 
     // A member's closes on the night and those before its year that its valuation reading reaches, as the night's step
     // reads them; none where the store holds no bar of it.
-    static async Task<PriceHistory?> PricesOnAsync(SqliteConnection connection, string ticker, IReadOnlyList<FiledFactRow> facts, DateOnly night, CancellationToken cancellation)
+    static async Task<PriceHistory?> PricesOnAsync(SqliteConnection connection, string ticker, IReadOnlyList<FiledFactRow> facts, DateOnly night, IReadOnlyCollection<DateOnly> splits, CancellationToken cancellation)
     {
         var bars = new List<SweepBar>();
 
@@ -3161,11 +3165,12 @@ public sealed partial class SetupLedger : IComponent
 
         var before = await BeforeTheYearAsync(connection, [(ticker, bars[0].Session, bars[0].Close)], new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal) { [ticker] = facts }, night, cancellation);
 
-        return (before.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(bars));
+        return (before.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(bars, splits));
     }
 
-    // A stock's closes the store holds to the night and no others, which the scorecard reads on a night.
-    static async Task<PriceHistory> StoredPricesAsync(SqliteConnection connection, string ticker, DateOnly night, CancellationToken cancellation)
+    // A stock's closes the store holds to the night and no others, which the scorecard reads on a night, with the splits
+    // the night's split tables hold for it.
+    static async Task<PriceHistory> StoredPricesAsync(SqliteConnection connection, string ticker, DateOnly night, IReadOnlyCollection<DateOnly> splits, CancellationToken cancellation)
     {
         var bars = new List<SweepBar>();
 
@@ -3177,7 +3182,7 @@ public sealed partial class SetupLedger : IComponent
             bars.Add(new SweepBar(Date(reader.GetString(0)), 0m, 0m, Money.FromStorage(reader.GetString(1)), 0, RawClose: reader.IsDBNull(2) ? 0m : Money.FromStorage(reader.GetString(2))));
         }
 
-        return PriceHistory.Of(bars);
+        return PriceHistory.Of(bars, splits);
     }
 
     // Each name's first stored session and its close there.

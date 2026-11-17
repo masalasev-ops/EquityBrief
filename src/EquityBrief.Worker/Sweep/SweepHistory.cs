@@ -27,9 +27,14 @@ public sealed record SweepName(
     string? Sector = null,
     IReadOnlyList<SweepSurprise>? SurprisesFiled = null,
     bool Survivor = false,
-    SweepBar[]? Before = null)
+    SweepBar[]? Before = null,
+    IReadOnlyList<DateOnly>? SplitsStored = null)
 {
     public IReadOnlyList<SweepSurprise> Surprises => SurprisesFiled ?? [];
+
+    // The days of the splits the split tables hold for the stock, the only steps in its closes read as a split.
+    // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
+    public IReadOnlyList<DateOnly> Splits => SplitsStored ?? [];
 
     public bool MemberOn(DateOnly session) =>
         Spans.Any(span => (span.Joined is not { } joined || joined <= session) && (span.Left is not { } left || left > session));
@@ -121,6 +126,7 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.PulledMarketBar, Touch.Read),
             new StoreTouch(Store.PulledCompany, Touch.Read),
             new StoreTouch(Store.PulledShares, Touch.Read),
+            new StoreTouch(Store.SplitEvent, Touch.Read),
             new StoreTouch(Store.PulledSplit, Touch.Read),
             new StoreTouch(Store.PulledRevenue, Touch.Read),
             new StoreTouch(Store.PulledMember, Touch.Read),
@@ -285,6 +291,7 @@ public sealed class SweepHistory : IComponent
             liveListed.Add((row.GetString(0), Date(row.GetString(1))));
         }
 
+        var splitDays = await Bars.SplitDays.ReadAsync(connection, Bars.SplitDays.NightTables, cancellation);
         var names = new List<SweepName>();
         var stamp = through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var fingerprint = new System.Text.StringBuilder();
@@ -311,7 +318,8 @@ public sealed class SweepHistory : IComponent
                 [.. (prints.GetValueOrDefault(ticker) ?? [])],
                 sectors.GetValueOrDefault(ticker),
                 [.. (surprises.GetValueOrDefault(ticker) ?? []).OrderBy(surprise => surprise.EventDate)],
-                survivors.Contains(ticker)));
+                survivors.Contains(ticker),
+                SplitsStored: splitDays.GetValueOrDefault(ticker)));
 
             if (++read % 100 == 0)
             {
@@ -630,7 +638,7 @@ public sealed class SweepHistory : IComponent
     // them, its counts filed by the history's end, every split, since a count is stated on the basis of the day the
     // pull asked for it, each sector fund's closes through the history's end, and the readings the night's book stored
     // through it; each none where the store holds no table for it.
-    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
     // see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
     // Each pulled company's GICS industry as the companies pull filed it, the newest pull's where two filed one, none for
     // a company filing none; the heavyweights' second design reads an industry's lead off it.
@@ -729,7 +737,7 @@ public sealed class SweepHistory : IComponent
     // Each name's revenue as its filer's facts state it, every figure filed by the history's end under the revenue
     // concepts, found through the filer the companies pull names for the name; none for a name the pull names no
     // filer for, and none at all where the store holds no revenue pull.
-    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
     public async Task<IReadOnlyDictionary<string, IReadOnlyList<FiledRevenue>>> RevenueAsync(DateOnly through, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(ConnectionString(databaseFile));

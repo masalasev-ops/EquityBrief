@@ -34,7 +34,7 @@ public sealed record CompanyAnswer(
 // Asked by the history pull on the operator's command and by no night, through the fundamentals endpoint at its
 // weight of ten with a filter naming the fields the pull stores, so a name costs what the whole answer costs and
 // carries a fraction of it. Departed companies answer as current ones do.
-// see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+// see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
 public interface ICompanyFeed
 {
     int Requests { get; }

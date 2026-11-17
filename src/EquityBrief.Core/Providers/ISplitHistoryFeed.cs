@@ -12,7 +12,7 @@ public sealed record SplitAnswer(DateOnly ExDate, decimal NewShares, decimal Old
 // Asked by the history pull on the operator's command and by no night, through the per-name splits endpoint at its
 // weight of one. The night reads the day's splits for the whole exchange in one request instead, and has no use for
 // a name's history of them.
-// see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+// see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
 public interface ISplitHistoryFeed
 {
     int Requests { get; }

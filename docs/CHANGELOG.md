@@ -7,6 +7,31 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-17 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - a split is read only where a split table holds it, and the ledgers' dollar volume floor reads the dollars that traded, on the operator's ruling of 2026-11-17
+Decision: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
+Decision: A ledger's dollar volume floor reads the dollars that traded each session, so no later split or dividend moves a setup's existence
+Decision: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits
+Was:
+> CLAUDE.md, the bars hard rule: ... and written whole by the long price pull (see: The long history's prices are asked once a code from 2004-01-02 and kept apart from the bars, the pull's tables and every night).
+> ARCHITECTURE.html, section 7's Reads cells: Fundamental scorer "membership, bar store, calendar, companies, filed facts"; Long history reader "long spans, long bars, long market bars, bar store, ..."; Sweep history "... pulled share counts, pulled splits, pulled revenue, ..."; Improving family "membership, bar store, pulled bars, indicators, ..."; Setup ledger "membership, bar store, market series, calendar, pulled bars, session marks, ..."; Read API "... read from the 23.4 correction for the marking page and but the long ledger's setups and departed setups from 23.6, strip quote feed"
+> ARCHITECTURE.html, the Fundamental scorer's row: ... reads the store's own closes alone, for the splits between two share counts; makes no request, ...
+> ARCHITECTURE.html, section 8's matrix: the Fundamental scorer's Pulled history cell blank
+> ARCHITECTURE.html, four citations, SCHEMA.md two and RUNBOOK.md one: (see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night)
+> SCHEMA.md, split_event: ... and a ratio that is not two numbers is left out. No rule reads it.
+> SCHEMA.md, pulled_split: **The splits a session's close is put on a count's basis by, read by no night.** The operator's ...
+> SCHEMA.md, the long tables: ... and the long ledger's measure `long_bar`, `long_market_bar` and `long_filing`, each by hand and none a night's (see: ...).
+> ARCHITECTURE.html, section 17's row of the fundamentals scorecard's numbers: ... the older brought across each session whose close as traded over its close at the store's scale steps by 1.4 or more; an industry's median ...
+Now:
+> CLAUDE.md, the bars hard rule: the same, then: From the operator's answer of 2026-11-17 the night's share check reads the days of the splits the splits pull stored beside the night's own, for which steps in a stock's closes are splits, and reads no price of the pulled history for it (see: A split is read only where ...).
+> ARCHITECTURE.html, section 7's Reads cells: the Fundamental scorer, the Improving family and the Setup ledger add split events and pulled splits, the Long history reader long splits, pulled splits and split events, the Sweep history split events, and the Read API "... for the marking page and its splits read from the 23.10 correction for the Run page and but the long ledger's setups ..."; the rows of the Fundamental scorer, the Long history reader, the Sweep history, the Improving family, the Setup ledger and the Read API each say what they read the split days for
+> ARCHITECTURE.html, section 8's matrix: the Fundamental scorer's Pulled history cell R
+> the seven citations: (see: The pulls behind the heavyweights and the context checks store into tables of their own, and no night reads them but the share check's splits)
+> SCHEMA.md, split_event: ... From the operator's answer of 2026-11-17 the share check reads its days, and the pulled splits', ...; no other rule reads it.
+> SCHEMA.md, pulled_split: **The splits a session's close is put on a count's basis by, read by no night but for the share check's split days.** From the operator's answer of 2026-11-17 the night's share check and the Run page read each split's day ...
+> SCHEMA.md, the long tables: the same, then: From the operator's answer of 2026-11-17 the long reader reads `long_split` as well, by hand, ...
+> ARCHITECTURE.html, section 17's row of the fundamentals scorecard's numbers: ... steps by 1.4 or more where a split table holds a split within 5 days of it (see: A split is read only where ...); an industry's median ...
+Why: the operator's ruling of 2026-11-17 and their answers of the same day, word for word in `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`, after the trace of the rows the stale share figure's rebuild moved found 331 steps in the long prices read as splits with no split stored within five days and the S&P 400's and 600's dollar volume floor read on closes later dividends lower.
+
 ### 2026-11-17 - docs/BUILD_PLAN.md - the range phase 23's claims were predicted within is corrected to 1,630, on the operator's answer of 2026-11-17
 Corrects: the plan's prediction of phase 23's claims, which the 23.10 correction of 2026-11-17 passes by one: on the operator's answer to item 6 it lands four rows no checkpoint's count held, the names refresh's catalogue and matrix rows, the listed names' store row and section 17's row of the symbol list's names, bringing phase 23's actual to 1,626 over a range ending at 1,625.
 Was:

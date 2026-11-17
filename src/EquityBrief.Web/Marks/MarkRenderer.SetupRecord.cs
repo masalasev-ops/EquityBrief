@@ -27,6 +27,14 @@ public sealed record SetupLongRecord(string Index, string Family, double? EdgePe
 
     public int? Months { get; init; }
 
+    // On the operator's ruling of 2026-11-17 the day of a correction to the history the record is read over and the figure the
+    // record stood at before it, the edge a pick or a book's points a month, drawn beneath the figure for a month after that
+    // day; none at any other time.
+    // see: A record corrected after a fault in the history says so beneath its figure for a month, with the figure it stood at before
+    public DateOnly? CorrectedOn { get; init; }
+
+    public double? Was { get; init; }
+
     // A book's months rounding to nothing, said as about the same.
     public bool Same => Points is { } points && Math.Round(Math.Abs(points), 2) == 0;
 
@@ -138,7 +146,28 @@ public sealed partial class MarkRenderer
             ? Formatted($"<span class=\"rec-sub\" data-reads-high>{Escaped(ReadsHighLine)}</span>")
             : string.Empty;
 
-        return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span>{high}<span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
+        return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span>{high}{CorrectedLine(record)}<span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
+    }
+
+    // The days the history the records are read over was corrected after a fault in it, the newest last.
+    // see: A record corrected after a fault in the history says so beneath its figure for a month, with the figure it stood at before
+    public static IReadOnlyList<DateOnly> RecordCorrections { get; } = [new(2026, 11, 19)];
+
+    // Beneath a corrected record's figure for a month after the correction, in the operator's words: the day and the figure it
+    // stood at before, an edge a pick in dollars for each dollar risked and a book's in percentage points a month; none where
+    // the record holds no figure from before the correction.
+    public static string CorrectedLine(SetupLongRecord record)
+    {
+        if (record is not { CorrectedOn: { } on, Was: { } was })
+        {
+            return string.Empty;
+        }
+
+        var figure = record.Points is not null
+            ? FormattableString.Invariant($"{Math.Abs(was):0.00} percentage points a month {(was < 0 ? "less" : "more")}")
+            : was < 0 ? "a loss of " + RecordDollars(was) : RecordDollars(was);
+
+        return Formatted($"<span class=\"rec-sub\" data-corrected=\"{on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\">{Escaped(FormattableString.Invariant($"Corrected on {on:d MMM yyyy} after a fault in the history; was {figure}."))}</span>");
     }
 
     // The line a drift's and a breakout's record box says beneath its figure, in the operator's words.

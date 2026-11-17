@@ -18,7 +18,7 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
     public const string HoldParameter = "hold";
     public const string LimitParameter = "limit";
 
-    public override string Version => "a336c20457bd";
+    public override string Version => "bded6a70b5e5";
 
     public override string SetupFamily => ImprovingRule.Name;
 
@@ -39,6 +39,8 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Core/Candidates/OwnStepCandidate.cs",
         "src/EquityBrief.Worker/Improving/ImprovingFamily.cs",
         "src/EquityBrief.Core/Ledger/FundamentalScorecard.cs",
+        "src/EquityBrief.Core/Ledger/StoredSplits.cs",
+        "src/EquityBrief.Worker/Bars/SplitDays.cs",
         "src/EquityBrief.Core/Ledger/FiledFacts.cs",
         "src/EquityBrief.Core/Families/FirstFiledRevenue.cs",
         "src/EquityBrief.Core/Ledger/ValuationReading.cs",
