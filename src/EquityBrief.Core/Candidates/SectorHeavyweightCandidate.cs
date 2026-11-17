@@ -23,7 +23,7 @@ public sealed class SectorHeavyweightCandidate : BookEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "a82f8db1a2bb";
+    public override string Version => "64c2bb97683a";
 
     public override string Family => HeavyweightRule.Name;
 
