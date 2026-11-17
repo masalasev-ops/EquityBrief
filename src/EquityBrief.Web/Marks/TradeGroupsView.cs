@@ -35,6 +35,10 @@ public sealed record TradeGroupsView(DateOnly? FirstLive, DateOnly? VersionSince
     // Those orders, each with its price and its last session, which Tonight names as a group of their own.
     public IReadOnlyList<WaitingOrderView> StillWaitingOrders { get; init; } = [];
 
+    // From the operator's answers of 2026-11-16 the stocks of tonight's new picks whose live rule's own order waits for a price,
+    // by family, which every count of tonight's buys counts apart as bought only on a dip.
+    public IReadOnlySet<(string Family, string Ticker)> PlacedTonight { get; init; } = new HashSet<(string Family, string Ticker)>();
+
     // A page's words for them, none where none waits.
     public string StillWaitingWords => StillWaiting <= 0 ? string.Empty : FormattableString.Invariant($"{StillWaiting} {(StillWaiting == 1 ? "order from an earlier night is" : "orders from earlier nights are")} {PlanOrderWords.StillWaiting}");
 

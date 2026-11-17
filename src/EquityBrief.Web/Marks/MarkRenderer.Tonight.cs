@@ -25,6 +25,9 @@ public sealed record OneMinuteView(MarketLineView Line, IReadOnlyList<SetupTileV
     // From the operator's order of 2026-11-14 the stocks a setup's rules met again tonight while a trade holds them, each with
     // the setup that matched.
     public IReadOnlyList<(string Ticker, string Family)> HeldAgain { get; init; } = [];
+
+    // From the operator's answers of 2026-11-16 how many of tonight's new picks are bought only if the price dips to the buy price.
+    public int OnDip { get; init; }
 }
 
 // One setup in the reader's words: the line its tile states what it looks for in, and the two sentences its card's header
@@ -109,6 +112,50 @@ public sealed partial class MarkRenderer
         return day == after.AddDays(1) ? "tomorrow's" : day.DayOfWeek + "'s";
     }
 
+    // From the operator's answers of 2026-11-16 the next trading session's name from the calendar, its weekday and never
+    // "tomorrow", owned: "Tuesday's"; the next trading day's where the closure table cannot place it.
+    public static string NextSessionOwned(DateOnly? night)
+    {
+        if (night is not { } after)
+        {
+            return "the next trading day's";
+        }
+
+        var day = after.AddDays(1);
+
+        try
+        {
+            while (!EquityBrief.Core.Bars.ExchangeClosures.IsSession(day))
+            {
+                day = day.AddDays(1);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            return "the next trading day's";
+        }
+
+        return day.DayOfWeek + "'s";
+    }
+
+    // Whether one of tonight's picks is bought only on a dip: its card's plan waits for a price, or its live rule's own order
+    // placed tonight does.
+    public static bool WaitsForAPrice(BuyPointView point, TradeGroupsView? groups) =>
+        point.Pick.Card?.Zone is not null || groups?.PlacedTonight.Contains((point.Family, point.Pick.Row.Ticker)) == true;
+
+    // On the operator's answers of 2026-11-16, item 1a: a count of tonight's new picks to buy, those bought at the next
+    // session's open and those bought only if the price dips to the buy price counted apart, in their words; none where
+    // neither holds one. A waiting order from an earlier night is in neither.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+    public static string? ToBuyCounted(int atOpen, int onDip, DateOnly? night) =>
+        (atOpen, onDip) switch
+        {
+            (0, 0) => null,
+            (_, 0) => Counted(atOpen, "stock", "stocks") + " to buy at " + NextSessionOwned(night) + " open",
+            (0, _) => FormattableString.Invariant($"{onDip} new, each bought only if its price dips to the buy price"),
+            _ => FormattableString.Invariant($"{atOpen} to buy at {NextSessionOwned(night)} open, {onDip} more bought only on a dip"),
+        };
+
     // A count as a sentence says it, one noun and its plural.
     static string Counted(int count, string one, string many) => Formatted($"{count} {(count == 1 ? one : many)}");
 
@@ -191,9 +238,19 @@ public sealed partial class MarkRenderer
         var opens = OpenDay(view.Night);
         var newPicks = line.BuyPoints + (view.Fundamentals ?? 0);
         var reshuffled = (view.Groups ?? line.Groups)?.ToBuyFromReshuffles ?? 0;
+
+        // On the operator's answers of 2026-11-16, item 1a: the picks bought at the next session's open and those bought only on
+        // a dip counted apart, the session named from the calendar.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+        var onDip = Math.Min(view.OnDip, newPicks);
+        var atOpen = newPicks - onDip;
         var picks = (newPicks == 0
             ? "No new picks to buy at " + opens + " open."
-            : Counted(newPicks, "new pick", "new picks") + " to buy at " + opens + " open" + from + ".")
+            : onDip == 0
+                ? Counted(newPicks, "new pick", "new picks") + " to buy at " + opens + " open" + from + "."
+                : atOpen == 0
+                    ? Counted(onDip, "new pick", "new picks") + ", each bought only if its price dips to the buy price" + from + "."
+                    : Counted(atOpen, "new pick", "new picks") + " to buy at " + opens + " open, " + Formatted($"{onDip} more bought only on a dip") + from + ".")
             + (reshuffled == 0 ? string.Empty : Formatted($" The monthly books' reshuffle adds {reshuffled} more."));
 
         // From the operator's order of 2026-11-14 the line beneath in their words: on a night with picks the setups that found
@@ -234,11 +291,12 @@ public sealed partial class MarkRenderer
 
         body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>{Escaped(open + " " + why)}</b></p><p class=\"minute-said\">{paper}</p></div>");
 
-        // The orders earlier nights placed still waiting for their price, a group of their own, in none of the counts above.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // The orders earlier nights placed still waiting for their price, a group of their own, in none of the counts above,
+        // drawn as Home draws them.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         if ((view.Groups ?? line.Groups) is { StillWaitingOrders.Count: > 0 } waiting)
         {
-            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{StillWaitingOrders(waiting.StillWaitingOrders, line.Index)}</div>");
+            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{WaitingCarousel(waiting.StillWaitingOrders, line.Index, view.Night)}</div>");
         }
 
         // The stocks one step from qualifying, which from 22.17 the read-only copy draws none of.
@@ -381,7 +439,7 @@ public sealed partial class MarkRenderer
     // until a press on the row or its Open plan opens it, the row the link names open; a buy no plan sells drawn as a row
     // saying how it sells and linking to its row on its own card; and one line on how to read it.
     // see: A pick's page heads its rule's plan as traded and draws every other way in open beneath it, headed as not traded
-    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, DateOnly? night = null, IReadOnlyList<PlanlessBuyView>? planless = null)
+    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, DateOnly? night = null, IReadOnlyList<PlanlessBuyView>? planless = null, TradeGroupsView? groups = null)
     {
         var body = new StringBuilder();
         var opens = OpenDay(night);
@@ -391,9 +449,19 @@ public sealed partial class MarkRenderer
         // see: Every count of trades names its group and one function works the four groups
         var reshuffled = rows.Count(row => row.Planless is { } buy && buy.Family != EquityBrief.Core.Families.ImprovingRule.Name);
         var picked = rows.Count - reshuffled;
+
+        // On the operator's answers of 2026-11-16, item 1a: the picks bought at the next session's open and those bought only on
+        // a dip counted apart, the session named from the calendar.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+        var onDip = rows.Count(row => row.Point is { } point && WaitsForAPrice(point, groups));
+        var atOpen = picked - onDip;
         var summary = (picked == 0
                 ? "No stock to buy at " + opens + " open: no setup picked one tonight."
-                : Counted(picked, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close.")
+                : onDip == 0
+                    ? Counted(picked, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close."
+                    : atOpen == 0
+                        ? Formatted($"{onDip} new, each bought only if its price dips to the buy price.")
+                        : Formatted($"{atOpen} to buy at {opens} open, at about tonight's close, {onDip} more bought only on a dip."))
             + (reshuffled == 0 ? string.Empty : Formatted($" The monthly books' reshuffle adds {reshuffled} more, each a row below."));
 
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary data-buy-points=\"{rows.Count}\">{Escaped(summary)}</p>");
@@ -471,10 +539,17 @@ public sealed partial class MarkRenderer
         body.Append("<p class=\"buys-read\">The business is how the company's reported quarters read: improving, steady or getting worse. News counts the stories of the last 30 days the labeller read as good or bad for the company. Open a row for its full plan, what could go wrong and how its setup has done. Each pick is bought at ");
         body.Append(opens);
         body.Append(rows.Any(row => row.Planless is { Stop: null })
-            ? " open, with its stop and target where tonight's close set them; a Fundamentals buy and a monthly book's set none, and How it sells opens its row on its own card.</p>"
+            ? " open, with its stop and target where tonight's close set them; a Fundamentals buy and a monthly book's set none, and How it sells opens its row on its own card."
             : rows.Any(row => row.Planless is not null)
-                ? " open, with its stop and target where tonight's close set them; a Fundamentals buy's and a monthly book's are placed again from the price it is bought at, and How it sells opens its row on its own card.</p>"
-                : " open, with its stop and target where tonight's close set them.</p>");
+                ? " open, with its stop and target where tonight's close set them; a Fundamentals buy's and a monthly book's are placed again from the price it is bought at, and How it sells opens its row on its own card."
+                : " open, with its stop and target where tonight's close set them.");
+
+        // On the operator's answers of 2026-11-16 a pick whose plan waits for a price is said apart: it is bought only if the price
+        // dips to its buy price, never at the open.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+        body.Append(onDip == 0 ? "</p>" : onDip == picked
+            ? " Tonight's are not: each waits for its price, and is bought only if the price dips to its buy price within its trading days.</p>"
+            : " A pick whose plan waits for a price is not: it is bought only if the price dips to its buy price within its trading days.</p>");
 
         return body.ToString();
     }

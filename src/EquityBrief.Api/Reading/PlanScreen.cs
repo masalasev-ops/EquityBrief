@@ -10,7 +10,7 @@ namespace EquityBrief.Api.Reading;
 // session while it waits, and "not filled, no trade" once its window passed unfilled, which no group, rate, account or record
 // counts. Only picks listed since the restart under such a rule; a trade an earlier version bought at the next open, and a
 // plan buying at the next open, are drawn as they are.
-// see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+// see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
 public static class PlanScreen
 {
     // Whether a plan buys at a price: every entry but the next open, which fills as the list's own trade does.
@@ -43,22 +43,7 @@ public static class PlanScreen
     }
 
     // The last session an order waits: the window's sessions on the exchange calendar after the night that listed it.
-    public static DateOnly LastDay(DateOnly listed, int window)
-    {
-        var day = listed;
-
-        for (var counted = 0; counted < window;)
-        {
-            day = day.AddDays(1);
-
-            if (ExchangeClosures.IsSession(day))
-            {
-                counted++;
-            }
-        }
-
-        return day;
-    }
+    public static DateOnly LastDay(DateOnly listed, int window) => PlanOrderWords.LastDay(listed, window);
 
     public static bool IsWaiting(PlannedTradeRow row) => row.Fill is null && !row.NotFilled;
 
@@ -205,6 +190,11 @@ public static class PlanScreen
         };
     }
 
+    // On the operator's answers of 2026-11-16 the live rules' orders placed on the night drawn that buy at a price, by family
+    // and stock, which the pages count among tonight's picks bought only on a dip.
+    public static IReadOnlyDictionary<(string Family, string Ticker), PlannedTradeRow> PlacedTonight(IReadOnlyList<PlannedTradeRow> planned, DateOnly night) =>
+        LiveBuying(planned).Where(row => row.Listed == night).GroupBy(row => (row.Family, row.Ticker)).ToDictionary(group => group.Key, group => group.First());
+
     // The orders from nights before the one drawn still waiting for their price, each with its price and its last session,
     // in the order they were listed, which Home, Tonight and Past picks draw as a group of their own.
     public static IReadOnlyList<WaitingOrderView> StillWaiting(IReadOnlyList<PlannedTradeRow> planned, DateOnly night) =>
@@ -213,6 +203,11 @@ public static class PlanScreen
             .Where(row => IsWaiting(row) && row.Listed < night)
             .OrderBy(row => row.Listed)
             .ThenBy(row => row.Place)
-            .Select(row => new WaitingOrderView(row.Family, row.Ticker, row.Listed, Price(row), LastDay(row.Listed, row.Order.Window))),
+            .Select(row => new WaitingOrderView(row.Family, row.Ticker, row.Listed, Price(row), LastDay(row.Listed, row.Order.Window))
+            {
+                // From the operator's answers of 2026-11-16 the stop and the sale its card draws, as a pick's card works them.
+                Stop = CardScreen.PlanOf(row.Order).Stop,
+                Sale = CardScreen.PlanOf(row.Order).Sale,
+            }),
     ];
 }

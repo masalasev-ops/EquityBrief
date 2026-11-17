@@ -418,6 +418,7 @@ public sealed partial class MarkRenderer
             : TargetTile(card, pick));
         body.Append("</div>");
         body.Append(TrailLines(card, pick));
+        body.Append(card.Zone is { NoBuy: false } boxed ? Formatted($"<p class=\"wo-box\" data-zone-box>{Escaped(ZoneBox(boxed, card.Night))}</p>") : string.Empty);
         body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
         body.Append(card.Zone?.Sale is { HoldsToItsLimit: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
         body.Append("</section>");
@@ -440,7 +441,14 @@ public sealed partial class MarkRenderer
     // about the plan's price, and what the setup buys, in a line.
     static string CardSummary(DecisionCardView card, string setup)
     {
-        var bought = card.Entry is { } entry
+        // On the operator's answers of 2026-11-16 a pick whose plan waits for a price is bought only if the price dips to it, and
+        // never at the next open.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+        var bought = card.Zone is { NoBuy: false } zone
+            ? Formatted($", bought only if the price dips to about {Price(zone.Price)} within {zone.Within} trading days")
+            : card.Zone is { NoBuy: true }
+            ? ", with no price to buy at from its levels tonight"
+            : card.Entry is { } entry
             ? Formatted($" and bought at the next trading day's open, at about {Price(entry)}")
             : ", with no buy price stored for it";
         var buys = SetupWords.TryGetValue(card.Family, out var words) ? " " + words.Plain : string.Empty;
@@ -854,6 +862,7 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</div>");
+        body.Append(card.Zone is { NoBuy: false } boxed ? Formatted($"<p class=\"wo-box\" data-zone-box>{Escaped(ZoneBox(boxed, card.Night))}</p>") : string.Empty);
         body.Append(card.Zone is { } waits ? Formatted($"<p class=\"zone-wait\">{Escaped(ZoneWaitLine(waits))}</p>") : string.Empty);
         body.Append(card.Zone?.Sale is { HoldsToItsLimit: true } ? TimeLimitRecord(card.LongRecord) : string.Empty);
 

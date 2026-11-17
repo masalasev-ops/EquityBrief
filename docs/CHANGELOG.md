@@ -7,6 +7,26 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-17 - docs/ARCHITECTURE.html - the waiting orders drawn as cards nearest their buy price first, and the picks to buy counted at the open apart from those bought only on a dip, on the operator's answers of 2026-11-16
+Decision: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+Was:
+> ARCHITECTURE.html, the plan trades on every page: ... and the ones still waiting are listed with their prices and last sessions above the trades here, beneath the heading of Home's ideas, which counts tonight's new picks alone, and beneath the open trades on Tonight; Paper trading names its accounts' orders waiting on a line of their own above what each did not buy (see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own).
+
+> ARCHITECTURE.html, Home's ideas: the count of the night's buys across every swing family and the Fundamentals family drawn as cards with the session they are bought at; every buy ...
+
+> ARCHITECTURE.html, Tonight in one minute: ... Then come tonight's picks and the setups they came from with the open named from the trading calendar's next session (Monday's after a Friday); from the operator's order of 2026-11-14 ... the orders earlier nights placed still waiting to buy as a group of their own; and how many stocks ...
+
+> ARCHITECTURE.html, Tonight's buy points: from 19.2 beneath the tiles on every index: one table of tonight's buy points across every setup with each family's picks in its own order and the rows numbered from one across the table. Each row ...
+Now:
+> the ones still waiting are listed with their prices and last sessions above the trades here; from the operator's answers of 2026-11-16 on Home under tonight's ideas and on Tonight beneath the open trades they are cards nearest their buy price first, each with the rows of its plan, more than three in one row that scrolls sideways with a chip each and three or fewer in the ordinary grid, and the heading of Home's ideas counts the picks bought at the next session's open apart from those bought only on a dip ...
+
+> Home's ideas: ... drawn as cards with the session they are bought at; from the operator's answers of 2026-11-16 the picks bought at the next session's open counted apart from those bought only on a dip with the session's weekday and never tomorrow; a new pick that waits for a price drawn with the box ...; the orders from earlier nights still waiting drawn under the ideas as cards nearest their buy price first ...; every buy ...
+
+> Tonight in one minute: ... (Monday's after a Friday); from the operator's answers of 2026-11-16 those bought at that open counted apart from those bought only on a dip; ... as a group of their own, from the operator's answers of 2026-11-16 drawn as Home draws them; and how many stocks ...
+
+> Tonight's buy points: ... numbered from one across the table. From the operator's answers of 2026-11-16 its sentence counts the picks bought at the next open apart from those bought only on a dip. Each row ...
+Why: the operator's answers of 2026-11-16, item 1, word for word in `prompts/2026-11-17-23.10-answers-to-the-report-of-16-nov.md`: "the waiting orders become a carousel of cards, and the heading is corrected".
+
 ### 2026-11-15 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md and docs/BUILD_PLAN.md - a book's buy draws the stop and take-profit its exit places from the close it was chosen at, and a target's tile reads "Take profit at", on the operator's ruling on the report of that day
 Decision: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at; Tonight's buys name every buy on the index, a book's buy drawn with its stop and take-profit where its card placed them
 Was:

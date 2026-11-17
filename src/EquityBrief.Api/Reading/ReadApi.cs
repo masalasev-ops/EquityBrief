@@ -651,7 +651,7 @@ public sealed record IndexTradeRow(string Index, string Family, string Ticker, D
 {
     // From the 23.10 correction of 2026-11-13 a live rule's trade under a plan buying at a price, and the session its price
     // filled it on.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     public bool UnderPlan { get; init; }
 
     public DateOnly? FilledOn { get; init; }

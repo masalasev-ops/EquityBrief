@@ -135,7 +135,7 @@ public partial class ReadSurface
 
         // The ideas: the count and the session, each card's prices, the bar sized 10 to 25, a trailing plan's line in the
         // target's place, and a Fundamentals buy selling when its filings weaken.
-        Assert.Contains("Tonight's ideas: 7 stocks to buy Monday morning", text, StringComparison.Ordinal);
+        Assert.Contains("Tonight's ideas: 7 stocks to buy at Monday's open", text, StringComparison.Ordinal);
         Assert.Equal(["AAA", "BBB", "CCC"], Regex.Matches(page, "<article class=\"home-idea fam-edge\" data-family=\"[a-z]+\" data-ticker=\"([A-Z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("Bounce in an uptrend", text, StringComparison.Ordinal);
         Assert.Contains("<b>$100.00</b>", page, StringComparison.Ordinal);
