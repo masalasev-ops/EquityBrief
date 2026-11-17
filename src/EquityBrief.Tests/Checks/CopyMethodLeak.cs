@@ -129,6 +129,66 @@ public class CopyMethodLeak
         Assert.Equal("<p>a close at 9.50 or higher</p>" + Prose, SiteCopy.Worded("<p>a close at or above 9.50</p>" + Prose));
     }
 
+    // The upload of 2026-11-17, refused for "2 times the risk" on a pick's take-profit and "at or above" in the books' column:
+    // the copy says each take-profit by its dollars alone and every other multiple of the risk code wrote with no figure,
+    // while the app's own line keeps every word it draws.
+    // see: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
+    [Fact]
+    public void EveryMultipleOfTheRiskCodeWroteIsLeftOutOfTheCopyAndTheAppsLineKeepsIt()
+    {
+        var risk = new TakeProfitView(518.26m, EquityBrief.Core.Loop.TakeProfitSource.Risk, Multiple: 2, Buy: 423.57m, Stop: 376.22m) { Placing = EquityBrief.Core.Loop.TakeProfitPlacing.Risk };
+        var beyond = risk with { Placing = EquityBrief.Core.Loop.TakeProfitPlacing.Beyond };
+        var nearest = risk with { Placing = EquityBrief.Core.Loop.TakeProfitPlacing.Turned };
+
+        // The app's lines, word for word as the local pages draw them.
+        Assert.Equal("2 times the risk: $94.69 up for $47.35 down.", risk.From);
+        Assert.Equal("No earlier high 2 times the risk or more above the buy, so it aims for 2 times the risk: $94.69 up for $47.35 down.", beyond.From);
+        Assert.Equal("No earlier high above the buy, so it aims for 2 times the risk: $94.69 up for $47.35 down.", nearest.From);
+        Assert.Equal("2 times the risk: $94.69 up for $47.35 down. Take-profit added at the rules restart of 16 Nov 2026.", (risk with { AddedOn = new DateOnly(2026, 11, 16) }).Line);
+
+        // The copy's.
+        Assert.Equal("<p>$94.69 up for $47.35 down. Take-profit added at the rules restart of 16 Nov 2026.</p>", SiteCopy.Worded("<p>" + (risk with { AddedOn = new DateOnly(2026, 11, 16) }).Line + "</p>"));
+        Assert.Equal("<p>Half of what is left. $94.69 up for $47.35 down.</p>", SiteCopy.Worded("<p>Half of what is left. " + risk.From + "</p>"));
+        Assert.Equal("<p>No earlier high far enough above the buy, so its take-profit is $94.69 up for $47.35 down.</p>", SiteCopy.Worded("<p>" + beyond.From + "</p>"));
+        Assert.Equal("<p>No earlier high far enough above the buy, so its take-profit is $94.69 up for $47.35 down.</p>", SiteCopy.Worded("<p>" + nearest.From + "</p>"));
+        Assert.Equal(
+            "<p>Close to a buy point on 2026-09-25: one gate short, the trade gate, the reward is too small for the risk. It is not a pick.</p>",
+            SiteCopy.Worded("<p>Close to a buy point on 2026-09-25: one gate short, the trade gate, the reward is 1.62 times the risk, needs 2. It is not a pick.</p>"));
+
+        // The sale rows', the books' and the waiting cards' words for a multiple, each with no figure.
+        Assert.Equal("<td>taking profit on half at a set multiple of the risk, the stop on the other half then moved up to the buy</td>", SiteCopy.Worded("<td>" + EquityBrief.Core.Families.RuleWording.TakeProfit.TakingHalf(2) + "</td>"));
+        Assert.Equal("<td>taking profit at a set multiple of the risk</td>", SiteCopy.Worded("<td>" + EquityBrief.Core.Families.RuleWording.TakeProfit.Taking(2.5) + "</td>"));
+        Assert.Equal("<td>taking profit at a set multiple of the risk alone</td>", SiteCopy.Worded("<td>" + EquityBrief.Core.Families.RuleWording.TakeProfit.TakingAtRisk(3) + "</td>"));
+        Assert.Equal("<td>taking profit at the first price it turned down at a set multiple of the risk or more above the buy</td>", SiteCopy.Worded("<td>" + EquityBrief.Core.Families.RuleWording.TakeProfit.TakingBeyond(2) + "</td>"));
+        Assert.Equal("<li>the nearer of the next price band about two typical moves up, or a set multiple of the risk</li>", SiteCopy.Worded("<li>" + EquityBrief.Core.Families.RuleWording.DriftTarget("2.5") + "</li>"));
+        Assert.Equal(
+            "<li>Its take profit is set with its stop: the nearest price above the buy where the stock turned down before, or a set multiple of the risk above the buy.</li>",
+            SiteCopy.Worded("<li>Its take profit is set with its stop: the nearest price above the buy where the stock turned down before, or 2 times the risk above the buy.</li>"));
+
+        // A report's written prose is left as the claim checker accepted it.
+        const string Prose = "<section class=\"written-section\"><p>a payout of 2 times the risk</p></section>";
+
+        Assert.Equal(Prose, SiteCopy.Worded(Prose));
+
+        // The setting the upload was refused for is found in the app's line and in none of the copy's.
+        var needles = SiteCopy.MethodNeedles([], ["the live pullback rule at a strength of 0.75, 2 times the risk"]);
+
+        Assert.Equal([$"{Page} carries a live rule's setting words: \"2 times the risk\""], SiteCopy.Leaks(Page, "<p>" + risk.From + "</p>", needles));
+        Assert.Empty(SiteCopy.Leaks(Page, SiteCopy.Worded("<p>" + risk.From + "</p><p>" + beyond.From + "</p>"), needles));
+    }
+
+    [Fact]
+    public void AtOrAboveItsTakeProfitPriceIsSaidAsAtItsTakeProfitPriceOrHigher()
+    {
+        const string Column = "<th>A close under its stop, or at or above its take-profit price, sells it at that close before the next reshuffle.</th>";
+        const string Sold = "<p>JLL was sold at the close of 16 Nov 2026: it closed at or above its take-profit price.</p>";
+
+        Assert.Equal("<th>A close under its stop, or at its take-profit price or higher, sells it at that close before the next reshuffle.</th>", SiteCopy.Worded(Column));
+        Assert.Equal("<p>JLL was sold at the close of 16 Nov 2026: it closed at its take-profit price or higher.</p>", SiteCopy.Worded(Sold));
+        Assert.Equal([$"{Page} carries a threshold's words: \"at or above\""], SiteCopy.Leaks(Page, Column, Needles));
+        Assert.Empty(SiteCopy.Leaks(Page, SiteCopy.Worded(Column + Sold), Needles));
+    }
+
     // A worker and a read surface built beside it, as the publisher finds the surface it starts.
     static (string Worker, string Surface) Builds(string root)
     {
@@ -181,6 +241,133 @@ public class CopyMethodLeak
         Assert.Equal(0, await new SitePublisher(data, worker, [], [], Surface(0), Feed).RunAsync(upload: false, "token", "account", said.Add));
         Assert.Contains("Nothing the check reads refuses the upload.", said);
         Assert.DoesNotContain("  " + SiteChecks.LeakedTheMethod, said);
+    }
+
+    // A feed failing each try in turn as listed, the network's failure or Cloudflare's refusal, and going up after the list.
+    sealed class TriedFeed(params Exception[] failures) : ICloudflarePagesFeed
+    {
+        public int Tries { get; private set; }
+
+        public Task<string> DeployAsync(IReadOnlyList<PagesFile> files, string headers, Action<string> say) =>
+            ++Tries <= failures.Length ? Task.FromException<string>(failures[Tries - 1]) : Task.FromResult("https://abc123.equitybrief.pages.dev");
+
+        public string Scrubbed(string said) => said;
+    }
+
+    static PagesUnreachable NoHost => new("the host could not be reached: No such host is known. (api.cloudflare.com:443)", new HttpRequestException("No such host is known."));
+
+    // The upload of 2026-11-13, lost to a name the network could not resolve: an upload the network failed is tried again after
+    // each wait, four tries over half an hour, each try said; one Cloudflare answered and refused, and a copy the check refused,
+    // are tried no more; and each outcome is written to the record Home reads, the last upload kept through a failure.
+    // see: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
+    [Fact]
+    public async Task AnUploadTheNetworkFailedIsTriedAgainAndAnyOtherFailureIsNot()
+    {
+        using var root = new TemporaryDirectory();
+        var data = Path.Combine(root.Path, "data");
+        var (worker, _) = Builds(root.Path);
+        var at = new DateTimeOffset(2026, 11, 18, 5, 58, 0, TimeSpan.Zero);
+        var clock = new EquityBrief.Core.Time.FixedClock(at, EquityBrief.Core.Time.SessionZones.ResolveSessionZone(EquityBrief.Core.Time.SessionZones.UnitedStates));
+
+        Func<ProcessStartInfo, TimeSpan, (int, IReadOnlyList<string>)> Surface(int ending) => (start, _) =>
+        {
+            Directory.CreateDirectory(start.ArgumentList[2]);
+            File.WriteAllText(Path.Combine(start.ArgumentList[2], "index.html"), "<p>the copy</p>");
+            File.WriteAllText(Path.Combine(start.ArgumentList[2], PublishedSite.HeadersFile), "/*\n");
+
+            return (ending, ending == PublishedSite.Leaked
+                ? ["publish-site: leaks the method: screens/home.html carries a live rule's setting words: \"2 times the risk\"", "publish-site: leaks the method: screens/tonight.html carries a threshold's words: \"at or above\"", "publish-site: leaks the method: screens/tonight.html carries a live rule's setting words: \"2 times the risk\""]
+                : [PublishedSite.NightLine(new DateOnly(2026, 11, 17), 1200)]);
+        };
+
+        async Task<(int Outcome, List<string> Said, List<TimeSpan> Waited)> Publish(ICloudflarePagesFeed feed, int ending = 0)
+        {
+            var said = new List<string>();
+            var waited = new List<TimeSpan>();
+            var outcome = await new SitePublisher(data, worker, [], [], Surface(ending), (_, _) => feed, clock, span => { waited.Add(span); return Task.CompletedTask; })
+                .RunAsync(upload: true, "token", "account", said.Add);
+
+            return (outcome, said, waited);
+        }
+
+        // Two tries the network failed, then the upload goes up on the third.
+        var twice = new TriedFeed(NoHost, new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout of 600 seconds elapsing."));
+        var (outcome, said, waited) = await Publish(twice);
+
+        Assert.Equal(0, outcome);
+        Assert.Equal(3, twice.Tries);
+        Assert.Equal([TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10)], waited);
+        Assert.Contains("The upload's try 1 of 4 failed: the host could not be reached: No such host is known. (api.cloudflare.com:443); trying again in 5 minutes.", said);
+        Assert.Contains("The upload's try 2 of 4 failed: The request was canceled due to the configured HttpClient.Timeout of 600 seconds elapsing.; trying again in 10 minutes.", said);
+        Assert.Contains("Uploaded to the Cloudflare Pages project 'equitybrief': https://abc123.equitybrief.pages.dev", said);
+        Assert.Equal(new SiteUpload(at, new DateOnly(2026, 11, 17), "https://abc123.equitybrief.pages.dev", at, null), SiteUpload.Read(data));
+
+        // Every try the network failed: four tries over half an hour, and the record keeps the last upload.
+        var never = new TriedFeed(NoHost, NoHost, NoHost, NoHost);
+
+        (outcome, said, waited) = await Publish(never);
+
+        Assert.Equal(1, outcome);
+        Assert.Equal(4, never.Tries);
+        Assert.Equal(30, waited.Sum(span => span.TotalMinutes));
+        Assert.Contains("The upload failed: the host could not be reached: No such host is known. (api.cloudflare.com:443), on its last try of 4.", said);
+        Assert.Equal(new SiteUpload(at, new DateOnly(2026, 11, 17), "https://abc123.equitybrief.pages.dev", at, "Cloudflare could not be reached on any of 4 tries over 30 minutes"), SiteUpload.Read(data));
+
+        // Cloudflare's own refusal is tried once.
+        var refused = new TriedFeed(new InvalidOperationException("could not make the deployment: the host answered 403, 10000: Authentication error"));
+
+        (outcome, said, waited) = await Publish(refused);
+
+        Assert.Equal(1, outcome);
+        Assert.Equal(1, refused.Tries);
+        Assert.Empty(waited);
+        Assert.DoesNotContain(said, line => line.StartsWith("The upload's try", StringComparison.Ordinal));
+        Assert.Equal("Cloudflare refused the upload: could not make the deployment: the host answered 403, 10000: Authentication error", SiteUpload.Read(data)!.Failed);
+
+        // A copy the check refused is never sent and never tried again.
+        var unasked = new TriedFeed();
+
+        (outcome, _, waited) = await Publish(unasked, PublishedSite.Leaked);
+
+        Assert.Equal(1, outcome);
+        Assert.Equal(0, unasked.Tries);
+        Assert.Empty(waited);
+        Assert.Equal(new SiteUpload(at, new DateOnly(2026, 11, 17), "https://abc123.equitybrief.pages.dev", at, "the check found words of the method on 2 pages of the copy, so nothing was sent"), SiteUpload.Read(data));
+
+        // A run asked for no upload leaves the record as it stands.
+        var before = File.ReadAllText(SiteUpload.In(data));
+
+        Assert.Equal(0, await new SitePublisher(data, worker, [], [], Surface(0), (_, _) => new TriedFeed(), clock).RunAsync(upload: false, "token", "account", _ => { }));
+        Assert.Equal(before, File.ReadAllText(SiteUpload.In(data)));
+    }
+
+    // Home's line on the app: when the copy was last uploaded and with which night, whether it is behind the page, and why the
+    // newest attempt failed; and nothing where the copy's own Home is drawn.
+    // see: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
+    [Fact]
+    public void HomeSaysWhenTheCopyWasLastUploadedAndWhyTheNewestAttemptFailed()
+    {
+        var zone = EquityBrief.Core.Time.SessionZones.ResolveSessionZone(EquityBrief.Core.Time.SessionZones.UnitedStates);
+        var uploaded = new DateTimeOffset(2026, 11, 12, 5, 58, 0, TimeSpan.Zero);
+        var failed = new DateTimeOffset(2026, 11, 17, 20, 48, 0, TimeSpan.Zero);
+        var night = new DateOnly(2026, 11, 17);
+
+        Assert.Equal("No upload of the public copy is recorded yet.", new SiteUploadView(null, zone).Line(night));
+        Assert.Equal("none", new SiteUploadView(null, zone).State(night));
+
+        var current = new SiteUploadView(SiteUpload.Succeeded(uploaded, new DateOnly(2026, 11, 11), "https://a.equitybrief.pages.dev"), zone);
+
+        Assert.Equal("The public copy was last uploaded at 00:58 ET on 12 Nov 2026, with the night of 11 Nov 2026.", current.Line(new DateOnly(2026, 11, 11)));
+        Assert.Equal("uploaded", current.State(new DateOnly(2026, 11, 11)));
+        Assert.Equal("The public copy was last uploaded at 00:58 ET on 12 Nov 2026, with the night of 11 Nov 2026. It is behind this page, which shows the night of 17 Nov 2026.", current.Line(night));
+        Assert.Equal("behind", current.State(night));
+
+        var refused = new SiteUploadView(SiteUpload.FailedAfter(current.Record, failed, "the check found words of the method on 9 pages of the copy, so nothing was sent"), zone);
+
+        Assert.Equal(
+            "The public copy was last uploaded at 00:58 ET on 12 Nov 2026, with the night of 11 Nov 2026. It is behind this page, which shows the night of 17 Nov 2026. The newest attempt, at 15:48 ET on 17 Nov 2026, failed: the check found words of the method on 9 pages of the copy, so nothing was sent.",
+            refused.Line(night));
+        Assert.Equal("failed", refused.State(night));
     }
 
     [Fact]

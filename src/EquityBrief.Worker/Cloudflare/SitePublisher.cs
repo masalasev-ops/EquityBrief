@@ -19,10 +19,21 @@ public sealed class SitePublisher(
     IReadOnlyList<string> secretsFiles,
     IReadOnlyList<string> roots,
     Func<ProcessStartInfo, TimeSpan, (int ExitCode, IReadOnlyList<string> Lines)>? run = null,
-    Func<string, string, ICloudflarePagesFeed>? feed = null)
+    Func<string, string, ICloudflarePagesFeed>? feed = null,
+    EquityBrief.Core.Time.IClock? clock = null,
+    Func<TimeSpan, Task>? wait = null)
 {
     // How long the read surface may take to write the copy before it is stopped.
     public static readonly TimeSpan CopyTakesAtMost = TimeSpan.FromHours(2);
+
+    // From the operator's word of 2026-11-17 an upload the network failed is tried again after each of these waits, four
+    // tries over half an hour, and an upload Cloudflare answered and refused is not.
+    // see: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
+    public static readonly IReadOnlyList<TimeSpan> UploadWaits = [TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(15)];
+
+    public static int UploadTries => UploadWaits.Count + 1;
+
+    readonly EquityBrief.Core.Time.IClock time = clock ?? EquityBrief.Core.Time.SystemClock.ForUnitedStatesSessions();
 
     const string SurfaceProject = "EquityBrief.Api";
     const string WorkerProject = "EquityBrief.Worker";
@@ -104,6 +115,7 @@ public sealed class SitePublisher(
         {
             Say("refused: the read surface did not write the copy, so nothing was uploaded.");
             Write(report);
+            Attempted(upload, "the copy could not be written, so nothing was sent");
 
             return 1;
         }
@@ -134,35 +146,84 @@ public sealed class SitePublisher(
         else if (check.Refusals.Count > 0)
         {
             Say("Nothing was uploaded, since the check refused it.");
+
+            var pages = lines
+                .Select(line => System.Text.RegularExpressions.Regex.Match(line, "leaks the method: (?<page>.+?) carries "))
+                .Where(match => match.Success)
+                .Select(match => match.Groups["page"].Value)
+                .Distinct(StringComparer.Ordinal)
+                .Count();
+
+            Attempted(upload, leaked && check.Refusals.Count == 1
+                ? FormattableString.Invariant($"the check found words of the method on {pages} {(pages == 1 ? "page" : "pages")} of the copy, so nothing was sent")
+                : FormattableString.Invariant($"the check refused the copy for {check.Refusals.Count} {(check.Refusals.Count == 1 ? "reason" : "reasons")}, so nothing was sent"));
         }
         else if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(account))
         {
             Say($"Nothing was uploaded: {(string.IsNullOrWhiteSpace(token) ? PublishedSite.TokenKey : PublishedSite.AccountKey)} is not set in the secrets file.");
+            Attempted(upload, "the Cloudflare token or account is not set, so nothing was sent");
         }
         else
         {
             var pages = feed?.Invoke(token, account) ?? CloudflarePagesFeed.Live(token, account, PublishedSite.Project);
+            var files = Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories)
+                .Where(file => Path.GetRelativePath(folder, file) != PublishedSite.HeadersFile)
+                .Select(file => PagesFiles.Of(folder, file))
+                .ToArray();
+            var headers = File.ReadAllText(Path.Combine(folder, PublishedSite.HeadersFile));
 
-            try
+            // Only the upload is tried again, the copy and its check never: a try the network failed waits and goes again, and
+            // any other failure ends the run.
+            for (var tried = 1; ; tried++)
             {
-                var files = Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories)
-                    .Where(file => Path.GetRelativePath(folder, file) != PublishedSite.HeadersFile)
-                    .Select(file => PagesFiles.Of(folder, file))
-                    .ToArray();
-                var deployed = await pages.DeployAsync(files, File.ReadAllText(Path.Combine(folder, PublishedSite.HeadersFile)), Say);
+                try
+                {
+                    var deployed = await pages.DeployAsync(files, headers, Say);
 
-                Say($"Uploaded to the Cloudflare Pages project '{PublishedSite.Project}': {deployed}");
-            }
-            catch (Exception failed) when (failed is InvalidOperationException or TaskCanceledException or IOException)
-            {
-                Say("The upload failed: " + pages.Scrubbed(failed.Message));
-                outcome = 1;
+                    Say($"Uploaded to the Cloudflare Pages project '{PublishedSite.Project}': {deployed}");
+                    SiteUpload.Succeeded(time.UtcNow, PublishedSite.NightOf(lines), deployed).Write(dataRoot);
+
+                    break;
+                }
+                catch (Exception failed) when (Unreached(failed) && tried < UploadTries)
+                {
+                    var waiting = UploadWaits[tried - 1];
+
+                    Say(FormattableString.Invariant($"The upload's try {tried} of {UploadTries} failed: {pages.Scrubbed(failed.Message)}; trying again in {waiting.TotalMinutes:0} minutes."));
+                    await (wait ?? Task.Delay)(waiting);
+                }
+                catch (Exception failed) when (failed is InvalidOperationException or TaskCanceledException or IOException)
+                {
+                    var said = pages.Scrubbed(failed.Message);
+
+                    Say(Unreached(failed)
+                        ? FormattableString.Invariant($"The upload failed: {said}, on its last try of {UploadTries}.")
+                        : "The upload failed: " + said);
+                    Attempted(upload, Unreached(failed)
+                        ? FormattableString.Invariant($"Cloudflare could not be reached on any of {UploadTries} tries over {UploadWaits.Sum(one => one.TotalMinutes):0} minutes")
+                        : "Cloudflare refused the upload: " + said);
+                    outcome = 1;
+
+                    break;
+                }
             }
         }
 
         Write(report);
 
         return outcome;
+    }
+
+    // A failure the network caused before Cloudflare answered: the host not reached, no answer in time, or the connection lost.
+    static bool Unreached(Exception failed) => failed is PagesUnreachable or TaskCanceledException or IOException;
+
+    // An attempt the run was asked to make and that sent nothing, written over the record with the last upload kept.
+    void Attempted(bool upload, string why)
+    {
+        if (upload)
+        {
+            SiteUpload.FailedAfter(SiteUpload.Read(dataRoot), time.UtcNow, why).Write(dataRoot);
+        }
     }
 
     // The report, beside the folder and never inside it, so the copy never carries it.

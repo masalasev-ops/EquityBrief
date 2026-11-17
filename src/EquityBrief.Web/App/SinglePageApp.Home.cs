@@ -61,6 +61,47 @@ public sealed record HomeView(
 
     // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
     public IReadOnlyList<DecisionCardView> HeldAgain { get; init; } = [];
+
+    // From the operator's word of 2026-11-17 the public copy's newest upload and attempt, none on the copy's own Home.
+    public SiteUploadView? Upload { get; init; }
+}
+
+// The record of the public copy's uploads as the app's Home reads it, none where no run has written one, and the zone its
+// instants are said in.
+// see: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
+public sealed record SiteUploadView(EquityBrief.Core.Cloudflare.SiteUpload? Record, TimeZoneInfo Zone)
+{
+    // "The public copy was last uploaded at 00:58 ET on 12 Nov 2026, with the night of 11 Nov 2026." and, where it holds an
+    // earlier night than the page or the newest attempt failed, a sentence saying so.
+    public string Line(DateOnly night)
+    {
+        string When(DateTimeOffset instant) =>
+            TimeZoneInfo.ConvertTime(instant, Zone).ToString("HH:mm", CultureInfo.InvariantCulture) + " ET on " + TimeZoneInfo.ConvertTime(instant, Zone).ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+
+        static string Day(DateOnly day) => day.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+
+        var said = Record?.Uploaded is { } uploaded
+            ? "The public copy was last uploaded at " + When(uploaded) + (Record.Night is { } held ? ", with the night of " + Day(held) : string.Empty) + "."
+            : "No upload of the public copy is recorded yet.";
+
+        if (Record?.Uploaded is not null && Record.Night is { } carried && carried < night)
+        {
+            said += " It is behind this page, which shows the night of " + Day(night) + ".";
+        }
+
+        if (Record is { Failed: { } why } attempt)
+        {
+            said += " The newest attempt, at " + When(attempt.Attempted) + ", failed: " + why + ".";
+        }
+
+        return said;
+    }
+
+    public string State(DateOnly night) =>
+        Record is { Failed: not null } ? "failed"
+        : Record?.Uploaded is null ? "none"
+        : Record.Night is { } carried && carried < night ? "behind"
+        : "uploaded";
 }
 
 // Home, from 22.16: the landing page for a reader new to investing, the day, tonight's ideas, how past ideas have done and
@@ -378,6 +419,16 @@ public sealed partial class SinglePageApp
 
         region.Append(Invariant($"<section class=\"home\" data-universe=\"{view.Reading.Word}\" data-night=\"{Cards.Day(view.Night)}\" data-running=\"{(view.Running ? "true" : "false")}\">"));
         region.Append(Cards.Masthead(heading, $"<span class=\"m-screen\">{Escaped(heading)}</span>", Invariant($"Night of {Cards.Day(view.Night)}, computed after the close")));
+
+        // The public copy's newest upload, beside the masthead on the app's Home alone.
+        // see: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
+        if (view.Upload is { } upload)
+        {
+            var state = upload.State(view.Night);
+
+            region.Append(Invariant($"<p class=\"site-upload{(state is "failed" or "behind" ? " degraded" : string.Empty)}\" data-upload=\"{state}\">{Escaped(upload.Line(view.Night))}</p>"));
+        }
+
         region.Append(selector);
 
         // The day.

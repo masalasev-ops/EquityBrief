@@ -20041,3 +20041,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
             passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: the read-only copy states no multiple of the risk, retries an upload only the network failed, and Home says when it was last uploaded   2026-11-17
+
+Corrects:   the read-only copy, which showed the night of 11 Nov 2026 for six days: the upload of the night of 12 Nov was lost to
+            "No such host is known (api.cloudflare.com:443)", the publish of 16 Nov did not run while the tasks were off for
+            the second restart's remedy, and both runs of 17 Nov were refused by the check for "2 times the risk" on a pick's
+            take-profit line (9 leaks over 7 pages) and "at or above its take-profit price" in the books' column.
+Ruled:      the operator's word of 2026-11-17, word for word in `prompts/2026-11-17-23.10-site-copy-correction.md`.
+Built:      in `SiteCopy.Worded` alone, the copy's words: "at its take-profit price or higher"; a take-profit's line by its
+            dollars alone, the no-earlier-high lines as "No earlier high far enough above the buy, so its take-profit is"
+            its dollars, a near miss's reward as too small for the risk, and every other multiple of the risk as a set multiple
+            of the risk; the app's pages and the check's needles unchanged. An upload the network failed tried again after 5,
+            10 and 15 minutes, each try said, any other failure ending the run. `site-upload.json` beside the copy, written by
+            the worker's verb on each run asked to upload, and the app's Home line beside its masthead drawn from it. The
+            decision, which narrows the copy's tile clause for the multiple alone, and section 17's row.
+Tests:      5 new: each rewrite with the app's lines unchanged, the take-profit phrase, the retries and the record, Home's line
+            and its place on the page.
+Claims:     1632, unchanged.
+Mutated:    the rule: the property the correction adds. m1 the take-profit line's rewrite never matching: red in
+            `EveryMultipleOfTheRiskCodeWroteIsLeftOutOfTheCopyAndTheAppsLineKeepsIt`, the line read "a set multiple of the risk:
+            $94.69 up for $47.35 down." against "$94.69 up for $47.35 down."; m2 a try the network failed never tried again:
+            red in `AnUploadTheNetworkFailedIsTriedAgainAndAnyOtherFailureIsNot`, 1 against the 0 expected; each run filtered
+            to `CopyMethodLeak` and the Home test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3820 of 3820 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
