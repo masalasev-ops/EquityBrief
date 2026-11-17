@@ -1,0 +1,10 @@
+# A split table's entry is read only where the closes step by its own ratio, on the operator's instruction of 2026-11-17
+# before the six ledgers were built again. The size match moves the ledger readings' version and the versions of Quality at a
+# fair price, the Fundamentals family and the short-term dip on every index and of the S&P 500's sector heavyweights. The
+# replay over two copies of the store of 2026-11-17 19:08Z compared main's f376bbada72e with the change's f0a920425d9b over
+# the night of 2026-11-16: 263 of 263 rule and book tables the same, so every moved rule is registered again with its record
+# carrying on and no acceptance is named. Run from main after the merge, which carries no migration, and before the next
+# night, when no night, off-peak run, local run, ledger build or monthly run is writing; the record holds only while the
+# store's newest session is 2026-11-16 and its register's newest id 2752. No request and no model call. The six ledgers are
+# built again after it, outside any night, under the size match.
+register --moved --evidence "23.10: a split table's entry is read only where the closes step by its own ratio, on the operator's instruction of 2026-11-17; every trade the same over the replay of 2026-11-16" --replayed data/replays/20261117T191532Z-f376bbada72e-f0a920425d9b.txt
