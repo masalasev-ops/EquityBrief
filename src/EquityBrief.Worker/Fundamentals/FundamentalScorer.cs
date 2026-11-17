@@ -297,7 +297,7 @@ public sealed class FundamentalScorer(IClock clock, string databaseFile) : IComp
             series.Add(new SweepBar(Date(reader.GetString(1)), 0m, 0m, Money.FromStorage(reader.GetString(2)), 0, RawClose: reader.IsDBNull(3) ? 0m : Money.FromStorage(reader.GetString(3))));
         }
 
-        return bars.ToDictionary(pair => pair.Key, pair => PriceHistory.Of(pair.Value, (IReadOnlyCollection<DateOnly>?)splits.GetValueOrDefault(pair.Key) ?? []), StringComparer.Ordinal);
+        return bars.ToDictionary(pair => pair.Key, pair => PriceHistory.Of(pair.Value, (IReadOnlyCollection<StoredSplit>?)splits.GetValueOrDefault(pair.Key) ?? []), StringComparer.Ordinal);
     }
 
     static async Task<IReadOnlyDictionary<string, (string? Cik, string? Sector, string? Industry)>> CompaniesAsync(SqliteConnection connection, CancellationToken cancellation)

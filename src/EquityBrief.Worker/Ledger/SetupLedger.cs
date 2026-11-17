@@ -2998,7 +2998,7 @@ public sealed partial class SetupLedger : IComponent
         {
             var filed = facts.GetValueOrDefault(ticker) ?? [];
             var parts = ValuationReading.PartsOf(filed, session);
-            var held = (IReadOnlyCollection<DateOnly>?)splits.GetValueOrDefault(ticker) ?? [];
+            var held = (IReadOnlyCollection<StoredSplit>?)splits.GetValueOrDefault(ticker) ?? [];
             var prices = await PricesOnAsync(connection, ticker, filed, session, held, cancellation);
             var financial = FundamentalScorecard.IsFinancial(GicsSectors.On(ticker, gics.GetValueOrDefault(ticker), session));
 
@@ -3144,7 +3144,7 @@ public sealed partial class SetupLedger : IComponent
 
     // A member's closes on the night and those before its year that its valuation reading reaches, as the night's step
     // reads them; none where the store holds no bar of it.
-    static async Task<PriceHistory?> PricesOnAsync(SqliteConnection connection, string ticker, IReadOnlyList<FiledFactRow> facts, DateOnly night, IReadOnlyCollection<DateOnly> splits, CancellationToken cancellation)
+    static async Task<PriceHistory?> PricesOnAsync(SqliteConnection connection, string ticker, IReadOnlyList<FiledFactRow> facts, DateOnly night, IReadOnlyCollection<StoredSplit> splits, CancellationToken cancellation)
     {
         var bars = new List<SweepBar>();
 
@@ -3170,7 +3170,7 @@ public sealed partial class SetupLedger : IComponent
 
     // A stock's closes the store holds to the night and no others, which the scorecard reads on a night, with the splits
     // the night's split tables hold for it.
-    static async Task<PriceHistory> StoredPricesAsync(SqliteConnection connection, string ticker, DateOnly night, IReadOnlyCollection<DateOnly> splits, CancellationToken cancellation)
+    static async Task<PriceHistory> StoredPricesAsync(SqliteConnection connection, string ticker, DateOnly night, IReadOnlyCollection<StoredSplit> splits, CancellationToken cancellation)
     {
         var bars = new List<SweepBar>();
 

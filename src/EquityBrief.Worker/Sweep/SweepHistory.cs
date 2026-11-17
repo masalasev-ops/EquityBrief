@@ -28,13 +28,14 @@ public sealed record SweepName(
     IReadOnlyList<SweepSurprise>? SurprisesFiled = null,
     bool Survivor = false,
     SweepBar[]? Before = null,
-    IReadOnlyList<DateOnly>? SplitsStored = null)
+    IReadOnlyList<StoredSplit>? SplitsStored = null)
 {
     public IReadOnlyList<SweepSurprise> Surprises => SurprisesFiled ?? [];
 
-    // The days of the splits the split tables hold for the stock, the only steps in its closes read as a split.
+    // The splits the split tables hold for the stock, the only steps in its closes read as a split being those of a held
+    // split's size.
     // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
-    public IReadOnlyList<DateOnly> Splits => SplitsStored ?? [];
+    public IReadOnlyList<StoredSplit> Splits => SplitsStored ?? [];
 
     public bool MemberOn(DateOnly session) =>
         Spans.Any(span => (span.Joined is not { } joined || joined <= session) && (span.Left is not { } left || left > session));

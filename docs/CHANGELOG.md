@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-17 - docs/ARCHITECTURE.html - a split table's entry is read only where the closes step by its own ratio, on the operator's instruction of 2026-11-17
+Decision: A split table's entry is read only where the closes step by its own ratio, and an entry of another size is set aside and listed
+Was:
+> section 17's row of the fundamentals scorecard's numbers: ... steps by 1.4 or more where a split table holds a split within 5 days of it (see: A split is read only where ...); an industry's median ...
+Now:
+> section 17's row of the fundamentals scorecard's numbers: ... steps by 1.4 or more where a split table holds a split within 5 days of it (see: A split is read only where ...) whose new shares over its old times the step stand within 0.10 of one (see: A split table's entry is read only where the closes step by its own ratio, and an entry of another size is set aside and listed); an industry's median ...
+Why: the operator's instruction of 2026-11-17 before the six ledgers were built again, word for word in `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`, and MSGK's distribution of October 2026, whose step of 0.506 stood a day from a long splits entry of 1,328 for 1,000 the long ledger would otherwise have read as its split.
+
 ### 2026-11-17 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - a split is read only where a split table holds it, and the ledgers' dollar volume floor reads the dollars that traded, on the operator's ruling of 2026-11-17
 Decision: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
 Decision: A ledger's dollar volume floor reads the dollars that traded each session, so no later split or dividend moves a setup's existence

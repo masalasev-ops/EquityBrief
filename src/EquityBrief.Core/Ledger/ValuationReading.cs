@@ -5,21 +5,21 @@ using EquityBrief.Core.Sweep;
 namespace EquityBrief.Core.Ledger;
 
 // A stock's closes over the sessions a reading reaches, oldest first: each session, its close at the store's scale and
-// its close as traded, a close as traded the store does not hold being nought; and the days of the splits a split table
-// holds for it, the only steps in its closes read as a split.
+// its close as traded, a close as traded the store does not hold being nought; and the splits a split table holds for it,
+// the only steps in its closes read as a split being those of a held split's size.
 // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
-public sealed record PriceHistory(DateOnly[] Sessions, double[] Closes, double[] Traded, DateOnly[]? StoredSplits = null)
+public sealed record PriceHistory(DateOnly[] Sessions, double[] Closes, double[] Traded, StoredSplit[]? StoredSplits = null)
 {
     public static PriceHistory None { get; } = new([], [], []);
 
-    public DateOnly[] Splits => StoredSplits ?? [];
+    public StoredSplit[] Splits => StoredSplits ?? [];
 
     // A series' bars as a history, with the splits the tables hold for it.
-    public static PriceHistory Of(IReadOnlyList<SweepBar> bars, IReadOnlyCollection<DateOnly> splits) => new(
+    public static PriceHistory Of(IReadOnlyList<SweepBar> bars, IReadOnlyCollection<StoredSplit> splits) => new(
         [.. bars.Select(bar => bar.Session)],
         [.. bars.Select(bar => Statistic.FromPrice(bar.Close))],
         [.. bars.Select(bar => bar.RawClose > 0m ? Statistic.FromPrice(bar.RawClose) : 0)],
-        [.. splits.Distinct().Order()]);
+        [.. splits.Distinct().OrderBy(split => split.Day)]);
 
     // This history followed by one beginning after it.
     public PriceHistory Then(PriceHistory after)
@@ -31,7 +31,7 @@ public sealed record PriceHistory(DateOnly[] Sessions, double[] Closes, double[]
                 nameof(after));
         }
 
-        DateOnly[] splits = [.. Splits.Concat(after.Splits).Distinct().Order()];
+        StoredSplit[] splits = [.. Splits.Concat(after.Splits).Distinct().OrderBy(split => split.Day)];
 
         return Sessions.Length == 0 ? after with { StoredSplits = splits }
             : after.Sessions.Length == 0 ? this with { StoredSplits = splits }
