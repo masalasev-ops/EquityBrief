@@ -57,7 +57,7 @@ public sealed record Scorecard(DateOnly? Quarter, DateOnly? YearBefore, bool Fin
 // current assets over current liabilities higher than a year before and (7) no new shares, the newest count the covers
 // state at most the tolerance above the one standing a year before it, the older brought across each split the closes
 // show between them, a session whose close as traded over its close at the store's scale steps by the split step or
-// more where a split table holds a split within days of it, so neither a split nor a dividend moves it. Efficiency: (8) the gross margin, gross profit over sales with sales less the
+// more where a split table holds a split of that size within days of it, so neither a split nor a dividend moves it. Efficiency: (8) the gross margin, gross profit over sales with sales less the
 // cost of sales standing for gross profit where none is filed, higher than a year before and (9) sales over the total
 // assets at the start of the four quarters higher than a year before. A financial company is scored on the seven that
 // apply to it; any other passes over a check only where a line it needs is not filed; and the word and a floor are read
@@ -222,7 +222,7 @@ public static class FundamentalScorecard
 
     // The product of the steps of every split between two days: on each session after the first day and to the second,
     // its close as traded over its close at the store's scale against the same on the session before, where that moves
-    // by the split step or more and a split table holds a split within the days of it. One where none stands between
+    // by the split step or more and a split table holds a split of its size within the days of it. One where none stands between
     // them, and a split before the first session the prices hold is not seen.
     // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
     public static double SplitsBetween(PriceHistory prices, DateOnly from, DateOnly to)
@@ -239,7 +239,7 @@ public static class FundamentalScorecard
 
             var step = prices.Traded[at] / prices.Closes[at] / (prices.Traded[at - 1] / prices.Closes[at - 1]);
 
-            if ((step >= SplitStep || step <= 1 / SplitStep) && StoredSplits.Holds(prices.Splits, prices.Sessions[at]))
+            if (StoredSplits.Steps(step) && StoredSplits.Holds(prices.Splits, prices.Sessions[at], step))
             {
                 product *= step;
             }

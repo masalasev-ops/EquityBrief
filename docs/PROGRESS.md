@@ -20009,3 +20009,35 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
             passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: a split table's entry is read only where the closes step by its own ratio   2026-11-17
+
+Corrects:   the split reading of the correction before, which matched a step to a table's entry by its day alone: MSGK's
+            distribution of October 2026 stepped its closes by 0.506 a day from the long splits' entry of 1,328 for 1,000,
+            whose step would be 0.753, and the long ledger would have read the 0.506 as its split.
+Ruled:      the operator's instruction of 2026-11-17 before the six ledgers were built again, word for word in
+            `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`.
+Built:      each split a table holds read with its ratio, and a step of 1.4 or more read as a split only where an entry
+            within five days, times the step, stands within 10 per cent of one, through the core's one reading on the
+            night, in every ledger build, the long test's floors and the Run page's list alike. Over the long history 1,416
+            entries meet a step of their size; 468 are set aside, 283 stock dividends and spin-offs' adjustments under 1.4,
+            87 small splits, 86 of 1.4 or more the prices show no step for and 12 beside a step of another size; and 343
+            steps, 184 a provider's step undone, 70 special dividends, 53 of no cause found, 24 a split's ratio no table
+            holds and the 12 beside an entry of another size. The decision, which narrows the split reading's, and section
+            17's row with the 10 per cent pinned.
+Tests:      1 new: a held split of the step's size read and one of another size, a spin-off's and a split the other way, not,
+            with MSGK's closes listing both.
+Claims:     1632, unchanged.
+Pins:       the ledger readings' version from 6bc899179b67 to f028fdadd56a, and with the split reading Quality at a fair
+            price's on every index from 12b2f047f116 to c15aead47c41, the Fundamentals family's from bded6a70b5e5 to
+            d1257024f77b, the short-term dip's from 38d2b3715915 to 6ff111c1ad04 and the S&P 500's sector heavyweights' from
+            080c55db265c to e2def4ddf094; registered again under `register --moved` with the replay that shows their trades
+            unchanged.
+Mutated:    the rule: the property the correction adds, a held entry read only beside a step of its size. m1 the size test
+            dropped from the reading of a held split: red at the size test, a spin-off's entry of 1,328 for 1,000 read as
+            the split of a step of 0.5, 0.5 against the 1 expected; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3815 of 3815 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

@@ -426,7 +426,7 @@ public sealed class ImprovingFamily : IComponent
         string index,
         DateOnly night,
         IReadOnlyDictionary<string, SortedDictionary<DateOnly, Daily>> bars,
-        IReadOnlyDictionary<string, List<DateOnly>> splits,
+        IReadOnlyDictionary<string, List<StoredSplit>> splits,
         IReadOnlyDictionary<string, string> filers,
         Dictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string rule,
@@ -796,13 +796,13 @@ public sealed class ImprovingFamily : IComponent
     // A stock's closes to the night as the share check reads them, at the store's scale and as traded, with the splits
     // the night's split tables hold for it.
     // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
-    static PriceHistory Prices(IReadOnlyDictionary<string, SortedDictionary<DateOnly, Daily>> bars, IReadOnlyDictionary<string, List<DateOnly>> splits, string ticker) =>
+    static PriceHistory Prices(IReadOnlyDictionary<string, SortedDictionary<DateOnly, Daily>> bars, IReadOnlyDictionary<string, List<StoredSplit>> splits, string ticker) =>
         bars.TryGetValue(ticker, out var days)
             ? new PriceHistory(
                 [.. days.Keys],
                 [.. days.Values.Select(day => Statistic.FromPrice(day.Close))],
                 [.. days.Values.Select(day => day.Raw > 0m ? Statistic.FromPrice(day.Raw) : 0)],
-                [.. (splits.GetValueOrDefault(ticker) ?? []).Distinct().Order()])
+                [.. (splits.GetValueOrDefault(ticker) ?? []).Distinct().OrderBy(split => split.Day)])
             : PriceHistory.None;
 
     // The sessions a trade was held from its buy to the session it was carried to, each a session the store holds a bar

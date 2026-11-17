@@ -96,7 +96,7 @@ public partial class FixtureExpectations
         [new DateOnly(2025, 7, 25), new DateOnly(2026, 1, 14), NineSplit, new DateOnly(2026, 7, 24), NineSession],
         [50, 54, 55, 60, 61],
         [split ? 100 : dividend ? 51.5 : 50, split ? 108 : dividend ? 55.62 : 54, 55, 60, 61],
-        split && held ? [NineSplit] : []);
+        split && held ? [new StoredSplit(NineSplit, 2)] : []);
 
     static readonly DateOnly NineSplit = new(2026, 1, 15);
 

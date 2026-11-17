@@ -184,16 +184,16 @@ public sealed partial class ReadApi
 
     // On the operator's answer of 2026-11-17, what the share check reads as no split among the stocks holding a bar on the
     // night: each step of the split step or more in a stock's close as traded over its close at the store's scale that no
-    // split table the night reads holds a split within days of, and each split those tables hold within its closes' span
-    // whose closes show no such step; the night's rule over the same rows.
+    // split table the night reads holds a split of its size within days of, and each split those tables hold within its
+    // closes' span whose closes show no step of its size; the night's rule over the same rows.
     // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
     public async Task<IReadOnlyList<SplitStepRow>> SplitStepsOnAsync(DateOnly session)
     {
         await using var connection = Open();
 
-        var held = new Dictionary<string, List<DateOnly>>(StringComparer.Ordinal);
+        var held = new Dictionary<string, List<EquityBrief.Core.Ledger.StoredSplit>>(StringComparer.Ordinal);
 
-        foreach (var query in new[] { "SELECT ticker, ex_date FROM split_event;", "SELECT ticker, ex_date FROM pulled_split;" })
+        foreach (var query in new[] { "SELECT ticker, ex_date, new_shares, old_shares FROM split_event;", "SELECT ticker, ex_date, new_shares, old_shares FROM pulled_split;" })
         {
             await using var splits = connection.CreateCommand();
 
@@ -203,14 +203,22 @@ public sealed partial class ReadApi
 
             while (await reader.ReadAsync())
             {
-                var ticker = reader.GetString(0);
+                var newShares = decimal.Parse(reader.GetString(2), CultureInfo.InvariantCulture);
+                var oldShares = decimal.Parse(reader.GetString(3), CultureInfo.InvariantCulture);
 
-                if (!held.TryGetValue(ticker, out var days))
+                if (newShares <= 0m || oldShares <= 0m)
                 {
-                    held[ticker] = days = [];
+                    continue;
                 }
 
-                days.Add(DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+                var ticker = reader.GetString(0);
+
+                if (!held.TryGetValue(ticker, out var stock))
+                {
+                    held[ticker] = stock = [];
+                }
+
+                stock.Add(new EquityBrief.Core.Ledger.StoredSplit(DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture), EquityBrief.Core.Prices.Statistic.FromRatio(newShares / oldShares)));
             }
         }
 
@@ -225,10 +233,10 @@ public sealed partial class ReadApi
                 return;
             }
 
-            var (unheld, unseen) = EquityBrief.Core.Ledger.StoredSplits.Unmatched(bars, (IReadOnlyCollection<DateOnly>?)held.GetValueOrDefault(current) ?? []);
+            var (unheld, unseen) = EquityBrief.Core.Ledger.StoredSplits.Unmatched(bars, (IReadOnlyList<EquityBrief.Core.Ledger.StoredSplit>?)held.GetValueOrDefault(current) ?? []);
 
             rows.AddRange(unheld.Select(step => new SplitStepRow(current, step.Session, step.Step)));
-            rows.AddRange(unseen.Select(day => new SplitStepRow(current, day, null)));
+            rows.AddRange(unseen.Select(split => new SplitStepRow(current, split.Day, null)));
             bars.Clear();
         }
 
