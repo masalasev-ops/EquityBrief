@@ -239,7 +239,7 @@ public sealed record SalePart(string Kind, decimal? Price, int Units, int Of)
 
                 if (named.Reduced == (part, whole) && (words == named.Words || words == named.Noun || words == named.LastWords || (whole == 2 && words == "the other half")))
                 {
-                    return (decimal)part / whole;
+                    return decimal.Divide(part, whole);
                 }
             }
         }
