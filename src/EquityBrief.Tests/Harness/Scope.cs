@@ -1362,6 +1362,11 @@ internal static class Scope
             Verdict.Pass,
             "every claim this document makes carries a verdict and every table and figure carrying none is placed, and both artifacts are written and read back",
             ByHarness),
+        // 23.10's replay fix: the replay over two copies of the store.
+        [CheckReach.Key(CatalogueTable, "Replay over copies")] = new Scoped(
+            Verdict.Pass,
+            "its Reads and Writes cells name no store the matrix carries, and the copies are refused under the data root and made only where none stands",
+            ByAccess),
         [CheckReach.Key(CatalogueTable, "Backfill")] = new Scoped(
             Verdict.Pass,
             "the class declares the feed it reads and the stores it touches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
@@ -2663,6 +2668,10 @@ internal static class Scope
             Verdict.Pass,
             "the file the export route offers is a document of its own opening in the light palette, carrying one script, which switches the palette at its one toggle, and no router link, no form and nothing fetched, every disclosure open, the name page's own marks and written sections byte for byte with the script taken out and no value the page does not state, one candle for each session the store holds for the name, and an opening line stamped with the instant of the export in New York's time",
             ByReadSurface),
+        [CheckReach.Key(MatrixTable, "Replay over copies")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is blank, read against the catalogue row's words for what the replay reads and writes, which name no store the matrix carries",
+            ByAccess),
         [CheckReach.Key(MatrixTable, "Verification harness")] = new Scoped(
             Verdict.Pass,
             "every cell of the row is blank, read against the catalogue row's words for what the harness reads and writes, which name no store the matrix carries, and every store the suite opens is a temporary one outside the data root",
@@ -6644,6 +6653,8 @@ internal static class Scope
         ["Rule cards"] = "17.2",
         // 23.10's second part's, which the plan describes as the five sessions after a restart held to the registered plan.
         ["Match check"] = "23.10",
+        // 23.10's replay fix, which the plan describes as clause 17's (a).
+        ["Replay over copies"] = "23.10",
         // 17.3's, which the plan describes as the night step refreshing the members' filed facts.
         ["Filings refresher"] = "17.3",
         // 17.9's two, which the plan describes as the worker step applying approved decisions and as the alarm.

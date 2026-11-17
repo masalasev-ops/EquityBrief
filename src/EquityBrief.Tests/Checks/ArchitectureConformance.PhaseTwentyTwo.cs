@@ -155,6 +155,9 @@ public partial class ArchitectureConformance
 
         // From 23.10's second part: the match check's catalogue and matrix rows.
         .. MatchCheckRows,
+
+        // From 23.10's replay fix: the replay's catalogue and matrix rows.
+        .. ComponentAccess.ReplayRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

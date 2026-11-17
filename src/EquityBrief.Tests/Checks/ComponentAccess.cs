@@ -208,6 +208,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Local comparison"),
     ];
 
+    // 23.10's replay fix: the replay over two copies of the store, a row no shipped class stands for.
+    internal static string[] ReplayRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Replay over copies"),
+        CheckReach.Key(Scope.MatrixTable, "Replay over copies"),
+    ];
+
     // 20.9's one: the idea generator, the local model asked over the loop's tables.
     internal static string[] IdeaGeneratorRows =>
     [
@@ -312,6 +319,9 @@ public partial class ComponentAccess
 
             // 23.2, the pooled test.
             .. PooledTestRows,
+
+            // 23.10's replay fix, the replay over copies.
+            .. ReplayRows,
 
             // 23.3, the long history's schedule filings, day files and members.
             .. LongMembershipRows,
@@ -1040,6 +1050,32 @@ public partial class ComponentAccess
         Assert.False(
             Path.GetFullPath(store.Root).StartsWith(Path.GetFullPath(Path.Combine(Repository.Root, "data")), StringComparison.OrdinalIgnoreCase),
             "A store the suite opens sits under the checkout's data root.");
+    }
+
+    [Fact]
+    public async Task TheReplayRowIsBlankAcrossTheMatrixAndItsCopiesAreRefusedUnderTheDataRoot()
+    {
+        // The replay is a catalogue row no shipped class stands for, as the harness is: it reads and writes
+        // two copies outside the data root, which SCHEMA says are not the store. The row is read against the
+        // catalogue's words, and the half of its Reads cell saying it never writes the store under the data
+        // root against the copy itself.
+        var row = Table(Scope.MatrixTable).Body.Single(entry => entry.Count > 1 && entry[0] == "Replay over copies");
+
+        Assert.True(row.Count >= 12, $"Read {row.Count - 1} cells in the replay's row, expected at least 11.");
+        Assert.All(row.Skip(1), cell => Assert.Equal(string.Empty, cell));
+
+        var catalogue = Catalogue().Single(entry => entry.Component == "Replay over copies");
+
+        Assert.Contains("never the store under the data root", catalogue.Reads, StringComparison.Ordinal);
+        Assert.Empty(ComponentVocabulary.Read(catalogue.Reads).Stores);
+        Assert.Empty(ComponentVocabulary.Read(catalogue.Writes).Stores);
+        Assert.DoesNotContain(ShippedComponents.All(), component => Matches("Replay over copies", component.Name));
+
+        using var store = new TemporaryStore();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            EquityBrief.Worker.Replay.ReplayCopy.CopyAsync(store.DatabaseFile, store.Root, Path.Combine(store.Root, "replay")));
+        Assert.False(Directory.Exists(Path.Combine(store.Root, "replay")), "A copy refused under the data root left a folder there.");
     }
 
     // Section 7 says a class of this exact name with spaces removed, which
