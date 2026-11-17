@@ -1,0 +1,14 @@
+# The S&P 400's and 600's live heavyweights rules' own holdings take their book's exit, on the operator's answer of
+# 2026-11-17, item 1: a holding of the live rule's own book bought before the rule was registered at the rules restart, with
+# no stop and no take-profit, takes the book's exit from its own buy on the next night. IndexFamilies.cs is pinned, so the
+# change moves the versions of the S&P 400's and 600's pullback, breakout, drift and heavyweights rules and of the short-term
+# dip on every index. The replay over two copies of the store of 2026-11-17 14:45Z compared main's d1882371e50d with the
+# change's 2b2547897599 over the night of 2026-11-16, 75 moved rules registered again at their own instants: 264 of 267 rule
+# and book tables the same, the three that differ the two live rules' own books and the S&P 600's fills of them, as the
+# change means them to. Inside the freeze the two would refuse the command, so it names the operator's written acceptance of
+# 2026-11-17, heavyweights-rule-exits, which holds each to a difference in its own book and fills alone and every other moved
+# rule to reproducing exactly; every moved rule is then registered again with its record carrying on. Run from main after the merge,
+# whose migration 151 the merge applies, and before the next night, when no night, off-peak run, local run, ledger build or
+# monthly run is writing; the record holds only while the store's newest session is 2026-11-16 and its register's newest id
+# 2442. No request and no model call.
+register --moved --evidence "23.10: the S&P 400's and 600's live heavyweights rules' own holdings take their book's exit on the operator's answer of 2026-11-17, item 1, moving IndexFamilies.cs; every trade the same over the replay of 2026-11-16 but the two live rules' own books" --replayed data/replays/20261117T144931Z-d1882371e50d-2b2547897599.txt --accepting heavyweights-rule-exits

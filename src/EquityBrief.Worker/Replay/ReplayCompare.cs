@@ -69,6 +69,18 @@ public static class ReplayCompare
         return (header.Groups[1].Value, long.Parse(header.Groups[2].Value, CultureInfo.InvariantCulture), differing);
     }
 
+    // From the operator's answer of 2026-11-17 the tables each rule's rows differ in over a record, by rule, so an acceptance
+    // can hold a rule's difference to the tables it names.
+    // see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce unless the operator accepted its change in writing
+    public static IReadOnlyDictionary<string, IReadOnlySet<string>> DifferingTables(string record) =>
+        record.Split('\n')
+            .Select(line => line.TrimEnd('\r'))
+            .Where(line => line.StartsWith(DiffersOpening, StringComparison.Ordinal))
+            .Select(line => line[DiffersOpening.Length..].Split('\t'))
+            .Where(parts => parts.Length >= 2)
+            .GroupBy(parts => RuleOf(parts[1]), StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => (IReadOnlySet<string>)group.Select(parts => parts[0]).ToHashSet(StringComparer.Ordinal), StringComparer.Ordinal);
+
     public static string Header(string session, long register) =>
         FormattableString.Invariant($"{RecordOpening}{session}, its register to id {register}");
 
