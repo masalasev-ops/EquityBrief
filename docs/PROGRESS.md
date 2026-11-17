@@ -19987,8 +19987,8 @@ Built:      the core's one reading of the splits a stock's closes are read acros
             and the long test's own floors read each session's dollars as its close as traded times its stored volume times
             the step of every split read after it; the night's own floors are unchanged. The Run page lists each step the
             share check reads as none and each held split whose closes show no step, by stock and date. A record box says
-            beneath its figure for a month after 2026-11-19, where its newest run started on or after that day, "Corrected
-            on 19 Nov 2026 after a fault in the history; was" the figure its newest run before it stated. Three decisions,
+            beneath its figure for a month after 2026-11-18, where its newest run started on or after that day, "Corrected
+            on 18 Nov 2026 after a fault in the history; was" the figure its newest run before it stated. Three decisions,
             one superseding the pulls' read by no night; the catalogue's and the matrix's rows of the six readers, SCHEMA's
             three split tables, CLAUDE.md's bars rule.
 Tests:      5 new: a step read as a split only where a table holds one within five days, a held split with no step read as

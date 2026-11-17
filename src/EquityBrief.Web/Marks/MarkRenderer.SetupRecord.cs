@@ -151,7 +151,7 @@ public sealed partial class MarkRenderer
 
     // The days the history the records are read over was corrected after a fault in it, the newest last.
     // see: A record corrected after a fault in the history says so beneath its figure for a month, with the figure it stood at before
-    public static IReadOnlyList<DateOnly> RecordCorrections { get; } = [new(2026, 11, 19)];
+    public static IReadOnlyList<DateOnly> RecordCorrections { get; } = [new(2026, 11, 18)];
 
     // Beneath a corrected record's figure for a month after the correction, in the operator's words: the day and the figure it
     // stood at before, an edge a pick in dollars for each dollar risked and a book's in percentage points a month; none where

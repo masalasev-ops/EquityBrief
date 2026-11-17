@@ -1,0 +1,11 @@
+# The ledgers' dollar volume floor reads the dollars that traded, and a split is read only where a split table holds it, on
+# the operator's ruling of 2026-11-17 on item 2 and their answers of the same day. The share check's split reading and the
+# ledgers' floors move the ledger readings' version and the versions of Quality at a fair price, the Fundamentals family and
+# the short-term dip on every index and of the S&P 500's sector heavyweights. The replay over two copies of the store of
+# 2026-11-17 18:04Z compared main's c51d7032c498 with the change's 4bf52bb936c8 over the night of 2026-11-16: 263 of 263
+# rule and book tables the same, so every moved rule is registered again with its record carrying on and no acceptance is
+# named. Run from main after the merge, which carries no migration, and before the next night, when no night, off-peak run,
+# local run, ledger build or monthly run is writing; the record holds only while the store's newest session is 2026-11-16
+# and its register's newest id 2592. No request and no model call. The six ledgers are built again after it by hand, outside
+# any night, with tools/ledger-build, and the long test run again on them.
+register --moved --evidence "23.10: the ledgers' dollar volume floor reads the dollars that traded and a split is read only where a split table holds it, on the operator's ruling of 2026-11-17 on item 2; every trade the same over the replay of 2026-11-16" --replayed data/replays/20261117T180452Z-c51d7032c498-4bf52bb936c8.txt
