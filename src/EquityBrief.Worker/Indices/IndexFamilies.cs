@@ -1878,7 +1878,14 @@ public static class IndexHeavyweights
         DELETE FROM index_heavyweight_rule_holding WHERE candidate = $candidate AND entered_on = $night;
         UPDATE index_heavyweight_rule_holding SET ended_on = NULL, exit_close = NULL, reason = NULL, result = NULL, cut_return = NULL, cost = NULL
         WHERE candidate = $candidate AND ended_on = $night;
+        UPDATE index_heavyweight_rule_holding SET stop = NULL, take_profit = NULL, take_profit_from = NULL, exit_added_on = NULL
+        WHERE candidate = $candidate AND exit_added_on = $night;
         DELETE FROM index_heavyweight_rule_night WHERE candidate = $candidate AND session_date = $night;
+    ";
+
+    const string AddedRuleExit = @"
+        UPDATE index_heavyweight_rule_holding SET stop = $stop, take_profit = $take_profit, take_profit_from = $take_profit_from, exit_added_on = $night
+        WHERE candidate = $candidate AND ticker = $ticker AND entered_on = $entered_on;
     ";
 
     const string RuleOpenHoldings = @"
@@ -1954,6 +1961,7 @@ public static class IndexHeavyweights
     {
         var (entered, ended, held, rebalanced) = (0, 0, 0, false);
         var waiting = new List<string>();
+        IReadOnlyList<Core.Candidates.RegisterRow>? register = null;
         var bars = names.ToDictionary(name => name.Ticker, name => name.Bars.ToDictionary(bar => bar.Session), StringComparer.Ordinal);
         var byTicker = names.ToDictionary(name => name.Ticker, StringComparer.Ordinal);
         var members = names.Where(name => name.MemberOn(night)).Select(name => name.Ticker).ToHashSet(StringComparer.Ordinal);
@@ -1969,6 +1977,12 @@ public static class IndexHeavyweights
             var quality = (IndexQuality)(int)p[Core.Candidates.IndexRuleCandidate.QualityParameter];
             var multiple = p[Core.Candidates.IndexRuleCandidate.FloorsParameter] == 2 ? 2m : 1m;
             var key = new (string, object)[] { ("$candidate", rule.Candidate), ("$night", Stamp(night)) };
+
+            // On the operator's answer of 2026-11-17 the day the index's live rule was registered at the rules restart; none for a
+            // background version, whose holdings keep the exits they were bought with.
+            var restartedOn = Core.Candidates.FamilyRecords.IsLive(rule.Candidate)
+                ? Loop.PlanTrades.RegisteredOn(register ??= await Loop.PlanTrades.RegisterRowsAsync(connection, transaction, cancellation), rule.Candidate)
+                : null;
 
             bool Clears(SweepName name) => ClearsAt(index, name, night, income.GetValueOrDefault(name.Ticker) ?? [], quality, multiple, levels.Coverage.GetValueOrDefault(name.Ticker));
 
@@ -2007,10 +2021,23 @@ public static class IndexHeavyweights
 
                 await ExecuteAsync(connection, transaction, RuleCarry, [.. key, ("$ticker", one.Ticker), ("$entered_on", Stamp(one.Entered)), ("$growth", growth), ("$cut", JsonSerializer.Serialize(cut)), ("$through", Stamp(night))], cancellation);
 
+                // On the operator's answer of 2026-11-17 a holding of the index's live rule's own book bought before the rule was
+                // registered at the rules restart, with no stop and no take-profit, takes the book's exit from its own buy, stored
+                // with it from tonight, as the page's book took it at clause 5 of 2026-11-14; a background version's keeps its own.
+                // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+                var (stop, takeProfit) = (one.Stop, one.TakeProfit);
+
+                if (restartedOn is { } restart && stop is null && takeProfit is null && one.Entered < restart
+                    && await EquityBrief.Worker.Loop.PlanTrades.BookExitAsync(connection, transaction, one.Ticker, one.Entered, one.Entry, IndexBookExit(index), cancellation) is { } added)
+                {
+                    (stop, takeProfit) = (Statistic.ToPrice(added.Stop), added.TakeProfit is { } taking ? Statistic.ToPrice(taking.Price) : null);
+                    await ExecuteAsync(connection, transaction, AddedRuleExit, [.. key, ("$ticker", one.Ticker), ("$entered_on", Stamp(one.Entered)), .. BookExitParameters(added)], cancellation);
+                }
+
                 // From the operator's order of 2026-11-14 one bought before tonight is sold at tonight's close under its stop or
                 // at or above its take-profit.
                 if (CloseOn(one.Ticker, night) is { } closedAt
-                    && EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closedAt), one.Stop is { } floor ? Statistic.FromPrice(floor) : null, one.TakeProfit is { } aim ? Statistic.FromPrice(aim) : null) is { } exited)
+                    && EquityBrief.Core.Loop.TakeProfit.EndOf(Statistic.FromPrice(closedAt), stop is { } floor ? Statistic.FromPrice(floor) : null, takeProfit is { } aim ? Statistic.FromPrice(aim) : null) is { } exited)
                 {
                     await RuleEndAsync(connection, transaction, index, rule.Candidate, one.Ticker, one.Entered, night, closedAt, exited, growth, cut, one.Entry, cancellation);
                     ended++;

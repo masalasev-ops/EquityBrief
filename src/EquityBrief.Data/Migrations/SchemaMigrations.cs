@@ -771,7 +771,16 @@ public static class SchemaMigrations
         new Migration(148, "add the night a holding's first half sold and the night its exit was added at the rules restart to the books' holdings and the Fundamentals family's trades", AddHalfSold),
         new Migration(149, "create book_record", CreateBookRecord),
         new Migration(150, "rebuild quality_holding and improving_trade so their end reasons admit a close under its stop and a take-profit", AdmitTheBookExits),
+        new Migration(151, "add the night a live rule's holding took its exit at the rules restart to index_heavyweight_rule_holding", AddRuleExitAdded),
     ];
+
+    // On the operator's answer of 2026-11-17 the live S&P 400 and 600 heavyweights rules' own holdings bought before the rules
+    // restart take their book's exit from their own buy, as the page's book took it at clause 5 of 2026-11-14, and carry the
+    // night it was added; each row kept and the new column null for one placed with its exit.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    const string AddRuleExitAdded = @"
+        ALTER TABLE index_heavyweight_rule_holding ADD COLUMN exit_added_on TEXT;
+    ";
 
     // From the 23.10 correction of 2026-11-16: the Quality and Fundamentals books' holdings sold at a close under their stop or at
     // their take-profit, on the operator's order of 2026-11-14, which the two tables' end reasons admit only once rebuilt, since

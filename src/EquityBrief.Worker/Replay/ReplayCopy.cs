@@ -97,6 +97,7 @@ public static class ReplayCopy
         "UPDATE index_heavyweight_holding SET through = $before WHERE through >= $first;",
         "DELETE FROM index_heavyweight_rule_holding WHERE entered_on >= $first;",
         "UPDATE index_heavyweight_rule_holding SET ended_on = NULL, exit_close = NULL, reason = NULL, result = NULL, cut_return = NULL, cost = NULL WHERE ended_on >= $first;",
+        "UPDATE index_heavyweight_rule_holding SET stop = NULL, take_profit = NULL, take_profit_from = NULL, exit_added_on = NULL WHERE exit_added_on >= $first;",
         "UPDATE index_heavyweight_rule_holding SET through = $before WHERE through >= $first;",
         "DELETE FROM index_heavyweight_rule_night WHERE session_date >= $first;",
         "DELETE FROM dip_night WHERE session_date >= $first;",
