@@ -19688,3 +19688,36 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1627 claims, 1627
             passing, none out of scope and none unexamined, 1642 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - the books' own exit walked beside each live book as a record on its card, from the rows its step stores, registering no version and drawing no pick   2026-11-16
+
+Ruled:      the operator's ruling of 2026-11-16, word for word in `prompts/2026-11-16-23.10-ruling-on-the-books-own-exit.md`,
+            replacing their ruling of 2026-11-15 that built the books' own exit as background versions, so no retirement in
+            Quality at a fair price or the Fundamentals family is owed.
+Built:      the read surface walks each of the nine books from the first night after its live rule's registration at the rules
+            restart over the rows its step stored each night, as it sold before the restart and never at a stop or a
+            take-profit: Quality at a fair price at a reshuffle whose answer says a holding no longer qualifies, filling the
+            places left from that reshuffle's order; the Fundamentals family on the live book's buys, a stock still held not
+            bought again, sold on its score under the hold floor or at its time limit; the sector heavyweights at the S&amp;P
+            500's rebalance whose leaders leave a holding out and on the S&amp;P 400 and 600 at a close under the 200-day average
+            their live rules sell on; every book on its stock leaving the index. Each card draws it behind a fold, "Its own
+            exit, a record only", with its holdings, what it sold and why, and its positions' mean change beside the live
+            book's over the same nights. No step, store, write or registration: no source a rule's version pins moved, so no
+            replay is owed. An S&amp;P 400 or 600 heavyweights rule selling on the lead stores no leaders a walk could read, and
+            its card draws none; no live rule sells so today.
+Tests:      8 new: each kind's walk worked by hand over constructed nights (4), the fold's words (1), no source it runs through
+            writing the store or naming a registration or a pick (1), and the frozen S&amp;P 400 Quality card read back with its
+            fold beside the live book's and a provisional card drawing none (2).
+Claims:     1628, from 1627: Tonight's row of a book's own exit, passing on read-surface; the phase pairs' lists name it among
+            23.10's rows.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: each property the walk adds that decides its record. m1 a Quality holding sold between reshuffles where
+            its answer fails: red at the Quality walk and at the read-back; m2 the Fundamentals walk buying a stock it still
+            holds: red at its walk; each reverted before anything was committed.
+Carried:    the comparison after each book's first 12 months live, from 2026-11-16, read on its card and brought to the
+            operator where the own exit leads.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3791 of 3791 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
+            passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

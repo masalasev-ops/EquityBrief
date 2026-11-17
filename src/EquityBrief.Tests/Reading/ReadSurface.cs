@@ -256,6 +256,9 @@ public partial class ReadSurface
             // The 22.17 correction of 2026-11-09, the records and the picks watched on the read-only copy.
             .. CopyRecordRows,
 
+            // 23.10, on the operator's ruling of 2026-11-16, a book's own exit beside its live book.
+            .. OwnExitRows,
+
             // The 18.4 correction of 2026-11-02, section 17's row of the report page's day limits.
             .. PageDayLimitRows,
 

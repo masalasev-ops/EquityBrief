@@ -38,7 +38,11 @@ public sealed record ImprovingCardView(
     EquityBrief.Core.Families.ImprovingSweepSetting? Setting = null,
     DateOnly? LiveSince = null,
     QualityFixedView? Fixed = null,
-    int? HeldByThisVersion = null);
+    int? HeldByThisVersion = null)
+{
+    // On the operator's ruling of 2026-11-16 the book's own exit beside it, a record only; none without a live rule.
+    public OwnExitView? OwnExit { get; init; }
+}
 
 // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
@@ -369,6 +373,7 @@ public sealed partial class MarkRenderer
         var setting = card.Setting ?? EquityBrief.Core.Families.ImprovingGrid.Starting;
         var body = new StringBuilder();
 
+        body.Append(OwnExitFold(card.OwnExit));
         body.Append("<details class=\"fold fam-rule improving-rule\"><summary>How it picks, and how it will be tested</summary><div class=\"fold-b\">");
         body.Append("<p class=\"record-said\">Flagged: a company whose results release, sent since its last filing, reads results better than expected and an outlook raised or kept. A flag buys nothing.</p>");
         body.Append(Invariant, $"<p class=\"record-said\">Bought at the next open: a company whose new filing, read tonight for the first time, lifts its score to {InEveryNine(settings.BuyInNine, atLeast: true)} to the company{(setting.Rise ? " and above the score of the filing before it" : string.Empty)}{(setting.Faster ? ", while its sales over a year grow faster than in the quarter before" : string.Empty)}. {(setting.FlagFirst ? "A flag must have stood the night before." : "A flag is not needed.")}</p>");

@@ -4181,6 +4181,11 @@ internal static class Scope
             Verdict.Pass,
             "read back off the rendered page over a constructed store's night: the card in the fundamentals-first family's place with its tile in that slot, its sentence, its four tiles, the two tabs with each improver's score, what changed and its status, the strongest scores with the quality book's words, and its rule a click away; a night its part failed saying so, a store whose step read no night saying so, and the fundamentals-first family's card and tile drawn nowhere; and from 22.50 each score read as its count of the checks that apply, the rule as a score in every 9 of them, and a stock short of the bar worked by hand at its own count; and from 22.51 a buy holding a reading drawing its entry check's line on its card row, its buy row and Home, and a stock held and not bought drawing none",
             ByReadSurface),
+        // 23.10, on the operator's ruling of 2026-11-16: a book's own exit beside its live book.
+        [CheckReach.Key("15.7 Tonight", "A book's own exit")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page over a frozen book's nights: the fold headed as a record that draws no pick and cannot go live as it stands, its holdings and its positions' mean change beside the live book's, and none on a provisional card; each kind's walk worked by hand over constructed nights, and no source it runs through writing the store or naming a registration or a pick",
+            ByReadSurface),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.NightlyRun.ImprovingStep)] = new Scoped(
             Verdict.Pass,
             "the night runs the step after Quality at a fair price's and before the Treasury's 10-year, read off the document, the night's output and its run log's order, its row recording no model call and no request",
@@ -7702,6 +7707,8 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Quality at a fair price's card")] = "22.9",
         // 22.13's one, which the plan names as the Fundamentals family's card in the fundamentals-first family's place.
         [CheckReach.Key("15.7 Tonight", "The Fundamentals family's card")] = "22.13",
+        // 23.10's, on the operator's ruling of 2026-11-16, which the plan does not name.
+        [CheckReach.Key("15.7 Tonight", "A book's own exit")] = "23.10",
         // 22.16's six, Home on the operator's ruling of 2026-11-01.
         [CheckReach.Key("15.24 Home", "The day")] = "22.16",
         [CheckReach.Key("15.24 Home", "Tonight's ideas")] = "22.16",

@@ -40,7 +40,11 @@ public sealed record QualityCardView(
     IReadOnlyList<QualityNextCell> Next,
     string Rule,
     DateOnly? LiveSince = null,
-    QualityFixedView? Fixed = null);
+    QualityFixedView? Fixed = null)
+{
+    // On the operator's ruling of 2026-11-16 the book's own exit beside it, a record only; none without a live rule.
+    public OwnExitView? OwnExit { get; init; }
+}
 
 // From 22.11 a fixed card's line, read off the answer its history test recorded before its freeze: the day its settings
 // were fixed, the first year its test read, its holdings, its edge a holding after costs as a fraction of the buy, the
@@ -170,6 +174,7 @@ public sealed partial class MarkRenderer
             body.Append("</ol></details>");
         }
 
+        body.Append(OwnExitFold(card.OwnExit));
         body.Append("<details class=\"fold fam-rule\"><summary>The full rule, and how it will be tested</summary><div class=\"fold-b\">");
         body.Append(Invariant, $"<p class=\"record-said\">{Escaped(char.ToUpperInvariant(card.Rule[0]) + card.Rule[1..])}.</p>");
         body.Append(card.LiveSince is { } live

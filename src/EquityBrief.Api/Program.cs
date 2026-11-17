@@ -2014,6 +2014,16 @@ async Task<IResult> TonightScreenAsync(
             _ => TonightScreen.StoresNoSectorReading,
             RuleScreen.DesignB(indexHeavyweightVariant ?? heavyweightRule, indexRegister));
 
+        // On the operator's ruling of 2026-11-16 the live book's own exit beside it, a record only.
+        // see: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
+        if (heavyweightRule is not null && indexHeavyweightVariant is null && OwnExitCards.IndexHeavyweightLive(indexRegister, heavyweightRule) is { } heavyweightLive)
+        {
+            heavyweightCard = heavyweightCard with
+            {
+                OwnExit = await OwnExitCards.HeavyweightsAsync(read, reading.Code, heavyweightRule, heavyweightLive.Since, dated, heavyweightLive.SoldOnLeading, heavyweightLive.SoldUnderAverage),
+            };
+        }
+
         var indexCells = UniverseScreen.Rows(await read.UniverseAsync(reading.Code, dated)).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
         var indexLine = TonightScreen.IndexLine(reading, indexNight, indexCards, indexResults, indexOpen, indexClose) with
         {
@@ -2388,6 +2398,16 @@ async Task<IResult> TonightScreenAsync(
             Growths(heavyweightHoldings.Where(holding => holding.EndedOn is null).Select(holding => (holding.Ticker, holding.EnteredOn, holding.Growth))),
             heavyweightSettings.FundReturn,
             sector => TonightScreen.EmptySectorReason(sector, heavyweightRead, heavyweightSettings.FundReturn, heavyweightSettings.HighBeta, heavyweightSettings.LookBack, heavyweightHoldings, heavyweights.NextRebalance));
+
+        // On the operator's ruling of 2026-11-16 the live book's own exit beside it, a record only.
+        // see: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
+        if (heavyweightVariant is null)
+        {
+            heavyweights = heavyweights with
+            {
+                OwnExit = await OwnExitCards.HeavyweightsAsync(read, reading.Code, null, heavyweights.LiveSince, dated, heavyweightSettings.SoldOnLeading, heavyweightSettings.SoldUnderAverage),
+            };
+        }
     }
     var line = cards is null
         ? null
@@ -2783,8 +2803,15 @@ async Task<QualityCardView> QualityCardAsync(ReadApi read, string index, DateOnl
 
     // On the operator's ruling of 2026-11-15 on the review of PR 699 each stock chosen tonight with the stop and take-profit its card placed.
     // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at
+    // On the operator's ruling of 2026-11-16 the book's own exit beside it, a record only.
+    // see: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
+    var qualityNight = await read.QualityNightAsync(index, night, rule);
+
     return CardScreen.WithBookCards(
-        TonightScreen.Quality(index, night, await read.QualityNightAsync(index, night, rule), last, holdings, await read.QualityResultsAsync(index, night, rule), answersOn, cells, liveSince, fixedView),
+        TonightScreen.Quality(index, night, qualityNight, last, holdings, await read.QualityResultsAsync(index, night, rule), answersOn, cells, liveSince, fixedView) with
+        {
+            OwnExit = await OwnExitCards.QualityAsync(read, index, rule, liveSince, night, qualityNight?.Settings),
+        },
         await read.DecisionCardsAsync(index, night));
 }
 
@@ -2864,6 +2891,10 @@ async Task<ImprovingCardView> ImprovingCardAsync(ReadApi read, string index, Dat
     return CardScreen.WithBookCards(improvingCard, await read.DecisionCardsAsync(index, night)) with
     {
         HeldByThisVersion = TradeGroups.Of(accounts.Sources, night, accounts.Close, await read.RegisteredCandidatesAsync(), index, EquityBrief.Core.Families.ImprovingRule.Name).ThisVersion.Open,
+
+        // On the operator's ruling of 2026-11-16 the book's own exit beside it, a record only.
+        // see: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
+        OwnExit = await OwnExitCards.ImprovingAsync(read, index, rule, liveSince, night, (await read.ImprovingNightAsync(index, night, rule))?.Settings),
     };
 }
 
