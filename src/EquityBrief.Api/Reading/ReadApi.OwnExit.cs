@@ -73,14 +73,16 @@ public sealed partial class ReadApi
         FROM improving_result WHERE rule = $rule AND index_code = $index AND session_date >= $since AND session_date <= $on;
     ";
 
+    // From the operator's answers of 2026-11-16, item 6, every stock's bars and averages in one read each.
     const string OwnExitBars = @"
-        SELECT session_date, open, close FROM bar WHERE ticker = $ticker AND session_date >= $from AND session_date <= $on
-        ORDER BY session_date;
+        SELECT ticker, session_date, open, close FROM bar
+        WHERE ticker IN (SELECT value FROM json_each($tickers)) AND session_date >= $from AND session_date <= $on;
     ";
 
     const string OwnExitAverageValues = @"
-        SELECT session_date, value FROM indicator
-        WHERE ticker = $ticker AND name = 'sma200' AND value IS NOT NULL AND session_date >= $since AND session_date <= $on;
+        SELECT ticker, session_date, value FROM indicator
+        WHERE ticker IN (SELECT value FROM json_each($tickers)) AND name = 'sma200' AND value IS NOT NULL
+          AND session_date >= $since AND session_date <= $on;
     ";
 
     // Whether a stock was a member of the index on a session: a span it joined on or before, which it had not left.
@@ -188,47 +190,43 @@ public sealed partial class ReadApi
     public async Task<OwnExitPrices> OwnExitPricesAsync(IEnumerable<string> tickers, DateOnly from, DateOnly since, DateOnly on)
     {
         await using var connection = Open();
-        var bars = new Dictionary<string, SortedList<DateOnly, (decimal Open, decimal Close)>>(StringComparer.Ordinal);
+        string[] wanted = [.. tickers.Distinct(StringComparer.Ordinal)];
+        var bars = wanted.ToDictionary(ticker => ticker, _ => new SortedList<DateOnly, (decimal Open, decimal Close)>(), StringComparer.Ordinal);
         var under = new HashSet<(string Ticker, DateOnly Session)>();
+        var named = System.Text.Json.JsonSerializer.Serialize(wanted);
 
-        foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
+        await using (var command = connection.CreateCommand())
         {
-            var days = new SortedList<DateOnly, (decimal Open, decimal Close)>();
+            command.CommandText = OwnExitBars;
+            command.Parameters.AddWithValue("$tickers", named);
+            command.Parameters.AddWithValue("$from", Day(from));
+            command.Parameters.AddWithValue("$on", Day(on));
 
-            await using (var command = connection.CreateCommand())
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
             {
-                command.CommandText = OwnExitBars;
-                command.Parameters.AddWithValue("$ticker", ticker);
-                command.Parameters.AddWithValue("$from", Day(from));
-                command.Parameters.AddWithValue("$on", Day(on));
-
-                await using var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
-                {
-                    days[OwnExitDate(reader.GetString(0))] = (Money.FromStorage(reader.GetString(1)), Money.FromStorage(reader.GetString(2)));
-                }
+                bars[reader.GetString(0)][OwnExitDate(reader.GetString(1))] = (Money.FromStorage(reader.GetString(2)), Money.FromStorage(reader.GetString(3)));
             }
+        }
 
-            bars[ticker] = days;
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = OwnExitAverageValues;
+            command.Parameters.AddWithValue("$tickers", named);
+            command.Parameters.AddWithValue("$since", Day(since));
+            command.Parameters.AddWithValue("$on", Day(on));
 
-            await using (var command = connection.CreateCommand())
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
             {
-                command.CommandText = OwnExitAverageValues;
-                command.Parameters.AddWithValue("$ticker", ticker);
-                command.Parameters.AddWithValue("$since", Day(since));
-                command.Parameters.AddWithValue("$on", Day(on));
+                var ticker = reader.GetString(0);
+                var session = OwnExitDate(reader.GetString(1));
 
-                await using var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
+                if (bars[ticker].TryGetValue(session, out var day) && Statistic.FromPrice(day.Close) < reader.GetDouble(2))
                 {
-                    var session = OwnExitDate(reader.GetString(0));
-
-                    if (days.TryGetValue(session, out var day) && Statistic.FromPrice(day.Close) < reader.GetDouble(1))
-                    {
-                        under.Add((ticker, session));
-                    }
+                    under.Add((ticker, session));
                 }
             }
         }

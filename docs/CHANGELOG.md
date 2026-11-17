@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-17 - docs/ARCHITECTURE.html - a book's own exit draws one line above its fold in points a month, on the operator's answers of 2026-11-16
+Decision: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
+Was:
+> ARCHITECTURE.html, A book's own exit: ... beside the live book's over its own positions on the same nights, the open ones at tonight's close; none on an S&amp;P 400 or 600 heavyweights rule selling on the lead ...
+Now:
+> ... the open ones at tonight's close; from the operator's answers of 2026-11-16 one line above the fold read without opening it, setting the two in percentage points a month since that night over its trading months and never fewer than one; none on an S&amp;P 400 or 600 heavyweights rule selling on the lead ...
+Why: the operator's answers of 2026-11-16, item 7, word for word in `prompts/2026-11-17-23.10-answers-to-the-report-of-16-nov.md`: "keep the fold, and add one line visible above it without opening".
+
 ### 2026-11-17 - docs/ARCHITECTURE.html - the waiting orders drawn as cards nearest their buy price first, and the picks to buy counted at the open apart from those bought only on a dip, on the operator's answers of 2026-11-16
 Decision: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
 Was:

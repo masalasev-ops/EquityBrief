@@ -2858,7 +2858,8 @@ public sealed partial class ReadApi : IComponent
             SELECT n.rowid FROM news_label n
             WHERE n.ticker = a.ticker AND n.article_id = a.article_id
             ORDER BY n.instruction_version DESC, n.labelled_at DESC, n.rowid DESC LIMIT 1)
-        WHERE a.published_at >= $from AND a.published_at < $to AND l.outcome = $labelled AND l.kind NOT IN ($opinion, $opinionName);
+        WHERE a.published_at >= $from AND a.published_at < $to AND l.outcome = $labelled AND l.kind NOT IN ($opinion, $opinionName)
+          AND a.ticker IN (SELECT value FROM json_each($tickers));
     ";
 
     // The store's copies, each attempt's own row, newest first.
@@ -2926,12 +2927,23 @@ public sealed partial class ReadApi : IComponent
         return rows;
     }
 
-    public async Task<IReadOnlyDictionary<string, (int Positive, int Negative)>> NewsCountsAsync(DateOnly night)
+    // From the operator's answers of 2026-11-16, item 6, the stories of the stocks a page draws alone: the window's every
+    // labelled story, its text read for whom it is about, took about three seconds a read and the S&P 500's Tonight read it
+    // twice.
+    public async Task<IReadOnlyDictionary<string, (int Positive, int Negative)>> NewsCountsAsync(DateOnly night, IEnumerable<string> tickers)
     {
+        string[] wanted = [.. tickers.Distinct(StringComparer.Ordinal)];
+
+        if (wanted.Length == 0)
+        {
+            return new Dictionary<string, (int, int)>(StringComparer.Ordinal);
+        }
+
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = NewsCountsOn;
+        command.Parameters.AddWithValue("$tickers", System.Text.Json.JsonSerializer.Serialize(wanted));
         command.Parameters.AddWithValue("$from", NewsLabelling.WindowFrom(night));
         command.Parameters.AddWithValue("$to", NewsLabelling.WindowTo(night));
         command.Parameters.AddWithValue("$labelled", NewsLabelling.Labelled);

@@ -30,6 +30,10 @@ public partial class ReadSurface
         var fold = Regex.Match(section, "<details class=\"fold own-exit\".*?</details>", RegexOptions.Singleline).Value;
 
         Assert.NotEqual(string.Empty, fold);
+
+        // On the operator's answers of 2026-11-16 the line above the fold, read without opening it, the two equal on the
+        // walk's first nights.
+        Assert.Matches("<p class=\"record-said own-exit-line\" data-through=\"[0-9-]+\">Sold the old way, with no stop and no take-profit, this book would have made (-?[0-9.]+) points a month against \\1 as it trades now, since 1 Oct 2026\\.</p>", section);
         Assert.Contains($"<summary>{MarkRenderer.OwnExitHeading}</summary>", fold, StringComparison.Ordinal);
         Assert.Contains("draws no pick and cannot go live as it stands; if it leads after its first 12 months live, it is brought to you.", fold, StringComparison.Ordinal);
         Assert.Contains("with no stop and no take-profit", fold, StringComparison.Ordinal);
