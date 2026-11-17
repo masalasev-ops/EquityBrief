@@ -1595,5 +1595,38 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .home-foot a.go{font:600 13.5px var(--sans);color:var(--accent-ink);background:var(--accent);border-radius:6px;padding:9px 14px;text-decoration:none}
 .home-disclaimer{margin:0 0 40px;font-size:13px;color:var(--soft);line-height:1.5;max-width:820px}
 @media (max-width:600px){.home-day h2{font-size:24px}}
+/* The orders still waiting for their price on Home and Tonight, from the operator's answers of 2026-11-16 */
+.wo{margin:16px 0 4px;min-width:0}
+.wo-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.wo-title{margin:0;font:600 16px var(--sans);color:var(--ink)}
+.wo-nav{display:flex;align-items:center;gap:6px}
+.wo-count{font-size:13px;color:var(--soft);font-variant-numeric:tabular-nums;margin-right:4px}
+.wo-arrow{width:34px;height:34px;border:1px solid var(--hair-2);border-radius:50%;background:var(--surface);color:var(--ink);font-size:20px;line-height:1;cursor:pointer}
+.wo-arrow:disabled{opacity:.4;cursor:default}
+.wo-said{margin:4px 0 10px;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.wo-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.wo-chip{font:600 12.5px var(--sans);padding:3px 9px;border:1px solid var(--hair-2);border-radius:12px;background:var(--surface);color:var(--ink);cursor:pointer;font-variant-numeric:tabular-nums}
+.wo-chip span{font-weight:400;color:var(--ink-2);margin-left:5px}
+.wo-chip.near{background:var(--wait-fill);border-color:var(--wait)}
+.wo-chip.in-view{box-shadow:0 0 0 2px var(--accent)}
+.wo-track{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 36px)/4);gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;padding:2px 2px 8px;scrollbar-width:thin}
+.wo-track:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wo-track>.wo-card{scroll-snap-align:start}
+.wo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.wo-card{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
+.wo-card.fam-edge{border-left-width:4px}
+.wo-card-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.wo-card-h a.home-ticker{text-decoration:none;color:var(--ink)}
+.wo-badge{display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}
+.wo-state{font-size:12px;font-weight:600;color:var(--wait)}
+.wo-cond,.wo-box{margin:0;padding:8px 10px;border:1px solid var(--wait);border-radius:6px;background:var(--wait-fill);font-size:13.5px;line-height:1.45;color:var(--ink)}
+.wo-bar-track{height:8px;border-radius:4px;background:var(--s1);overflow:hidden}
+.wo-fill{height:8px;border-radius:4px;background:var(--wait)}
+.wo-bar-labels{display:flex;justify-content:space-between;gap:8px;margin:4px 0 0;font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.wo-plan .buy{color:var(--ink)}
+.wo-placed{margin:0;font-size:13px;line-height:1.45;color:var(--ink-2)}
+.wo-card .home-plan{margin-top:auto}
+@media (max-width:1100px){.wo-track{grid-auto-columns:calc((100% - 24px)/3)}}
+@media (max-width:600px){.wo-track{grid-auto-columns:84%}}
 """;
 }

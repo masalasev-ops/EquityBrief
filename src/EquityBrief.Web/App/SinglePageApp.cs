@@ -614,6 +614,7 @@ public sealed partial class SinglePageApp : IComponent
           quoting();
           analysing();
           marking();
+          carousels();
         }
         addEventListener('hashchange', show);
         // A name page shown inside the regular session asks for its delayed quote once the interval since the name's
@@ -1196,6 +1197,52 @@ public sealed partial class SinglePageApp : IComponent
           const from = held === null ? candles.length - 1 : parseInt(held, 10);
           const to = event.key === 'Home' ? 0 : event.key === 'End' ? candles.length - 1 : from + (event.key === 'ArrowLeft' ? -1 : 1);
           if (to >= 0 && to < candles.length) { pointAt(candles[to]); }
+        });
+        // The orders still waiting on Home and Tonight: one row of cards that snaps to a card, moved by swipe, by the arrows,
+        // by a chip and by the keyboard; the counter and the chips outlined say which cards are in view.
+        function woSeen(track) {
+          const cards = [...track.querySelectorAll('.wo-card')];
+          const box = track.getBoundingClientRect();
+          let first = -1, last = -1;
+          cards.forEach((card, at) => { const r = card.getBoundingClientRect(); if (r.left >= box.left - 4 && r.right <= box.right + 4) { if (first < 0) { first = at; } last = at; } });
+          if (first < 0) { first = 0; last = 0; }
+          return [first, last, cards];
+        }
+        function woUpdate(track) {
+          const group = track.closest('.wo');
+          if (!group) { return; }
+          const [first, last, cards] = woSeen(track);
+          const count = group.querySelector('[data-wo-count]');
+          if (count) { count.textContent = (first + 1) + ' to ' + (last + 1) + ' of ' + cards.length; }
+          for (const chip of group.querySelectorAll('.wo-chip')) { const at = parseInt(chip.getAttribute('data-at'), 10); chip.classList.toggle('in-view', at >= first && at <= last); }
+          const back = group.querySelector('[data-wo-step="-1"]');
+          const on = group.querySelector('[data-wo-step="1"]');
+          if (back) { back.disabled = first <= 0; }
+          if (on) { on.disabled = last >= cards.length - 1; }
+        }
+        function woGo(track, at) {
+          const cards = track.querySelectorAll('.wo-card');
+          const card = cards[Math.max(0, Math.min(at, cards.length - 1))];
+          if (card) { track.scrollBy({ left: card.getBoundingClientRect().left - track.getBoundingClientRect().left, behavior: 'smooth' }); }
+        }
+        function carousels() { for (const track of screen.querySelectorAll('[data-wo-track]')) { woUpdate(track); } }
+        document.addEventListener('scroll', (event) => { if (event.target.matches && event.target.matches('[data-wo-track]')) { woUpdate(event.target); } }, true);
+        addEventListener('resize', () => carousels(), { passive: true });
+        document.addEventListener('click', (event) => {
+          const control = event.target.closest ? event.target.closest('[data-wo-step], .wo-chip') : null;
+          const track = control && control.closest('.wo') ? control.closest('.wo').querySelector('[data-wo-track]') : null;
+          if (!track) { return; }
+          if (control.classList.contains('wo-chip')) { woGo(track, parseInt(control.getAttribute('data-at'), 10)); return; }
+          const [first, last] = woSeen(track);
+          const page = Math.max(1, last - first + 1);
+          woGo(track, control.getAttribute('data-wo-step') === '1' ? first + page : first - page);
+        });
+        document.addEventListener('keydown', (event) => {
+          const track = event.target.matches && event.target.matches('[data-wo-track]') ? event.target : null;
+          if (!track || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) { return; }
+          event.preventDefault();
+          const [first, , cards] = woSeen(track);
+          woGo(track, event.key === 'Home' ? 0 : event.key === 'End' ? cards.length - 1 : first + (event.key === 'ArrowLeft' ? -1 : 1));
         });
         menuButton.addEventListener('click', () => {
           const open = menuButton.getAttribute('aria-expanded') !== 'true';
@@ -4731,7 +4778,7 @@ public sealed partial class SinglePageApp : IComponent
 
         // From the 23.10 correction of 2026-11-13 the orders a plan placed waiting for their price, tonight's new apart from
         // earlier nights' still waiting, each count naming its group.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         var newWaiting = trades.Count(trade => PlanOrderWords.IsWaiting(trade.NotBought) && night is { } placed && trade.Listed >= placed);
         var stillWaiting = trades.Count(trade => PlanOrderWords.IsWaiting(trade.NotBought) && night is { } before && trade.Listed < before);
 

@@ -9,7 +9,7 @@ namespace EquityBrief.Api.Reading;
 // family and stock, the night that listed it and its place, the listing close and the rule's own stop, target, trail and
 // limit, the plan's order, and what became of it by the night: filled at its price on a session, ended unfilled at its
 // window's last session, or neither, waiting; and once filled, its end, result and sale where they came by the night.
-// see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+// see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
 public sealed record PlannedTradeRow(
     string Owner,
     string Index,

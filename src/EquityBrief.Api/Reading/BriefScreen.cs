@@ -44,7 +44,7 @@ public sealed record BriefHeld(string Family, DecisionCardRow Card, int? DipExit
 {
     // From the 23.10 correction of 2026-11-13 a trade a live rule's plan bought once its price traded, with the stop that plan
     // placed from its fill and its target, none for a trade bought at the next open.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     public bool Planned { get; init; }
 
     public decimal? PlanStop { get; init; }
@@ -497,7 +497,7 @@ public static class BriefScreen
 
         // From the 23.10 correction of 2026-11-13 a pick its live rule's plan buys at a price: the price it waits for and how long,
         // and the stop and the sale that plan was registered with; none where its levels set no price tonight.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
         if (inputs.Listed is { Card: { Entry: { } close } planned } listedOnAPlan && CardScreen.ZoneOf(planned.Plan, close) is { } zoned)
         {

@@ -6,7 +6,7 @@ namespace EquityBrief.Web.Marks;
 // waits for its price, with that price and the last session it waits, and once its window passed unfilled; one place, so
 // every page says the same and the counts read them. From the operator's order of 2026-11-14 in their words: an order buys if
 // the price falls to a set level, and is cancelled if not filled by its last day.
-// see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+// see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
 public static class PlanOrderWords
 {
     public const string WaitingOpening = "buys if it falls to";
@@ -52,6 +52,40 @@ public static class PlanOrderWords
     // How far tonight's close stands above an order's price, over the close, none where either is not read or the close is none.
     public static decimal? Gap(decimal? price, decimal? close) =>
         price is { } at && close is { } last && last > 0 ? (last - at) / last : null;
+
+    // The last session an order waits: the window's sessions on the exchange calendar after the night that listed it.
+    public static DateOnly LastDay(DateOnly listed, int window)
+    {
+        var day = listed;
+
+        for (var counted = 0; counted < window;)
+        {
+            day = day.AddDays(1);
+
+            if (EquityBrief.Core.Bars.ExchangeClosures.IsSession(day))
+            {
+                counted++;
+            }
+        }
+
+        return day;
+    }
+
+    // The sessions an order still waits after a night, its last day among them.
+    public static int SessionsLeft(DateOnly night, DateOnly lastDay)
+    {
+        var left = 0;
+
+        for (var day = night.AddDays(1); day <= lastDay; day = day.AddDays(1))
+        {
+            if (EquityBrief.Core.Bars.ExchangeClosures.IsSession(day))
+            {
+                left++;
+            }
+        }
+
+        return left;
+    }
 }
 
 // An order from an earlier night still waiting for its price: its family, stock, the night that listed it, its price, none
@@ -59,6 +93,12 @@ public static class PlanOrderWords
 // night's stored close.
 public sealed record WaitingOrderView(string Family, string Ticker, DateOnly Listed, decimal? Price, DateOnly LastDay, string? Company = null, decimal? LastClose = null)
 {
+    // From the operator's answers of 2026-11-16 the stop its plan places from its price and the sale it was registered with,
+    // which its card draws as a pick's card does.
+    public decimal? Stop { get; init; }
+
+    public PlanSaleView? Sale { get; init; }
+
     public string Words => PlanOrderWords.Waiting(Price, LastDay);
 
     // The row in the operator's words: what it buys at, the last close and how far above, and when it was placed by which
@@ -114,7 +154,7 @@ public sealed partial class MarkRenderer
     // The orders from earlier nights still waiting for their price as a group of their own, under the operator's heading of
     // 2026-11-14, each numbered with its stock and company, its price, the night's close and how far above it, the setup and
     // night that placed it and its last day; nothing where none waits.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     public static string StillWaitingOrders(IReadOnlyList<WaitingOrderView> orders, string index)
     {
         if (orders.Count == 0)

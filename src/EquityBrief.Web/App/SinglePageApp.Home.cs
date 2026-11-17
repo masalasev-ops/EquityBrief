@@ -413,15 +413,11 @@ public sealed partial class SinglePageApp
             : Signal("today", "Today", "care", "No figure", NoFigure));
         region.Append("</div></div></section>");
 
-        // Tonight's ideas.
-        var title = Invariant($"Tonight's ideas: {view.IdeasCount} {(view.IdeasCount == 1 ? "stock" : "stocks")} to buy {view.OpensOn} morning");
+        // Tonight's ideas, those bought at the next session's open and those bought only on a dip counted apart.
+        var title = IdeasTitle(view);
+        var onDip = view.Ideas.Count(idea => idea.Zone is not null);
 
-        region.Append(Invariant($"<section class=\"card\" id=\"ideas\" data-ideas=\"{view.IdeasCount}\"><div class=\"card-h\"><div><div class=\"lbl\">Tonight's ideas</div><h2>{Escaped(title)}</h2></div><div>{stamp}</div></div><div class=\"card-b\">"));
-
-        // The heading counts tonight's new picks alone; the orders earlier nights placed still waiting for their price are a
-        // group of their own beneath it.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
-        region.Append(MarkRenderer.StillWaitingOrders(view.StillWaiting, view.Reading.Name));
+        region.Append(Invariant($"<section class=\"card\" id=\"ideas\" data-ideas=\"{view.IdeasCount}\" data-at-open=\"{view.IdeasCount - onDip}\" data-on-dip=\"{onDip}\"><div class=\"card-h\"><div><div class=\"lbl\">Tonight's ideas</div><h2>{Escaped(title)}</h2></div><div>{stamp}</div></div><div class=\"card-b\">"));
 
         // Every pick is a card, the ideas to buy first and the picks watched after them, each in Tonight's order; the heading
         // counts the ideas to buy, and the line above the cards says what splits them.
@@ -447,7 +443,7 @@ public sealed partial class SinglePageApp
 
             foreach (var idea in view.Ideas)
             {
-                region.Append(Idea(idea, marks.Copying, view.Reading, watched: false));
+                region.Append(Idea(idea, marks.Copying, view.Reading, watched: false, view.Night));
             }
 
             region.Append("</div>");
@@ -465,6 +461,11 @@ public sealed partial class SinglePageApp
 
             region.Append("</div>");
         }
+
+        // The orders earlier nights placed still waiting for their price, under tonight's ideas: cards nearest their buy price
+        // first, in no count of tonight's buys.
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night));
 
         // From the operator's order of 2026-11-14 the stocks a setup's rules met again while a trade holds them, a group of their
         // own under tonight's ideas, each a full card, counted in none of the ideas.
@@ -529,12 +530,24 @@ public sealed partial class SinglePageApp
         return region.ToString();
     }
 
+    // On the operator's answers of 2026-11-16, item 1a: tonight's ideas counted apart, those bought at the next session's open,
+    // named from the calendar, and those bought only on a dip; as it read before where tonight holds none.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+    public static string IdeasTitle(HomeView view)
+    {
+        var onDip = view.Ideas.Count(idea => idea.Zone is not null);
+
+        return MarkRenderer.ToBuyCounted(view.IdeasCount - onDip, onDip, view.Night) is { } counted
+            ? "Tonight's ideas: " + counted
+            : Invariant($"Tonight's ideas: {view.IdeasCount} {(view.IdeasCount == 1 ? "stock" : "stocks")} to buy {view.OpensOn} morning");
+    }
+
     // One of the day's three tiles: a dot and a word, so colour is never the only sign, and the line saying what it means.
     static string Signal(string key, string label, string tone, string word, string meaning, bool plainWord = false) =>
         Invariant($"<div class=\"home-signal\" data-signal=\"{key}\" data-tone=\"{tone}\"><span class=\"st-label\"><span class=\"home-dot {tone}\" aria-hidden=\"true\"></span>{Escaped(label)}</span><span class=\"home-word{(plainWord ? string.Empty : " " + tone)}\">{Escaped(word)}</span><span class=\"home-meaning\">{Escaped(meaning)}</span></div>");
 
     // A pick's card: an idea to buy, or a pick watched, whose buy price reads as bought on paper.
-    static string Idea(HomeIdea idea, bool copying, UniverseChoice reading, bool watched)
+    static string Idea(HomeIdea idea, bool copying, UniverseChoice reading, bool watched, DateOnly? night = null)
     {
         var card = new StringBuilder();
         var family = Escaped(idea.Family);
@@ -564,6 +577,10 @@ public sealed partial class SinglePageApp
         }
         else if (idea.Zone is { } zone)
         {
+            // On the operator's answers of 2026-11-16, item 1b: a new pick that waits for a price says in a box that it is bought
+            // only if the price falls to it by its last day.
+            // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+            card.Append(!watched && night is { } placed ? Invariant($"<p class=\"wo-box\" data-zone-box>{Escaped(MarkRenderer.ZoneBox(zone, placed))}</p>") : string.Empty);
             card.Append("<div class=\"home-prices\">");
             card.Append(Invariant($"<div><span>{buying} if it dips to about</span><b>{Dollars(zone.Price)}</b></div>"));
             card.Append(Invariant($"<div><span>Sell if it closes below</span><b class=\"stop\">{(idea.Stop is { } below ? Dollars(below) : NoFigure)}</b></div>"));

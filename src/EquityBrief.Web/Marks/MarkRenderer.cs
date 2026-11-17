@@ -236,7 +236,7 @@ public sealed record PickCell(
 {
     // From the 23.10 correction of 2026-11-13 a live rule's trade under a plan buying at a price, its buy and its stop the
     // plan's.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     public bool UnderPlan { get; init; }
 
     public string? FiredWords => FiredAs switch
@@ -269,7 +269,7 @@ public static class PickStatus
 
     // From the 23.10 correction of 2026-11-13 a live rule's order under a plan buying at a price: waiting for its price, or
     // ended at its window's last session unfilled, which no group, rate, account or record counts.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     public const string Waiting = "waiting";
     public const string NotFilled = "not-filled";
 
@@ -322,7 +322,7 @@ public sealed record PicksSummary(
     int Selling = 0,
     // From the 23.10 correction of 2026-11-13 a plan's orders placed on the night drawn and waiting for their price, beside
     // those to buy at the open, and the orders from earlier nights still waiting, a group of their own.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     int PlacedTonight = 0,
     int StillWaiting = 0,
     int NotFilled = 0)
@@ -7502,7 +7502,7 @@ public sealed partial class MarkRenderer : IComponent
 
         // From the 23.10 correction of 2026-11-13 the orders a plan placed waiting for their price, tonight's new and earlier
         // nights' each a group of its own, and those whose window passed unfilled, which are no trade.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         (string, int)[] waiting =
         [
             .. summary.PlacedTonight > 0 ? [(PlanOrderWords.NewTonightHeading, summary.PlacedTonight)] : Array.Empty<(string, int)>(),

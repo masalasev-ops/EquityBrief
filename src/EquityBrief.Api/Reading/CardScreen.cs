@@ -161,11 +161,35 @@ public static class CardScreen
             return null;
         }
 
+        return ZoneOfOrder(order, tonight);
+    }
+
+    // The zone an order buying at a price waits for from tonight's close, as above.
+    public static (ZoneBuy Zone, decimal? Stop, decimal? Target)? ZoneOfOrder(EquityBrief.Core.Loop.PlanOrder order, decimal tonight)
+    {
         // From the 23.10 correction of 2026-11-10 an order the stock's levels placed no price for, read by the typical move it holds
         // none of, places no buy, and its card draws none of the next open's prices in the plan's place.
         if (order.Level is not { } level)
         {
             return order.TypicalDay > 0 ? null : (new ZoneBuy(0m, order.Window, tonight, null, NoBuy: true), null, null);
+        }
+
+        var (stopAt, sale) = PlanOf(order);
+
+        return (
+            new ZoneBuy(EquityBrief.Core.Prices.Statistic.ToPrice(level), order.Window, tonight, order.Target is null ? order.Cap : null) { Sale = sale },
+            stopAt,
+            order.Target is { } aimed ? EquityBrief.Core.Prices.Statistic.ToPrice(aimed) : null);
+    }
+
+    // The stop an order buying at a price places from that price, and the sale it was registered with worked from it; none of
+    // either where its levels placed no price.
+    // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
+    public static (decimal? Stop, PlanSaleView? Sale) PlanOf(EquityBrief.Core.Loop.PlanOrder order)
+    {
+        if (order.Level is not { } level)
+        {
+            return (null, null);
         }
 
         var stop = EquityBrief.Core.Loop.PlanPoints.StopOf(order.Stop, level, order.RuleStop, order.ZoneStop, order.TypicalDay);
@@ -174,7 +198,6 @@ public static class CardScreen
 
         // From the 23.10 correction of 2026-11-13 the sale the plan was registered with, worked from the price it waits for: its
         // staged levels above that price, each selling an equal share.
-        // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
         var sale = new PlanSaleView(
             PlanSaleView.KindOf(order.Words),
             EquityBrief.Core.Prices.Statistic.ToPrice(level),
@@ -188,10 +211,7 @@ public static class CardScreen
             TakeProfit = stop is { } from ? TakeProfitOf(order, level, from) : null,
         };
 
-        return (
-            new ZoneBuy(EquityBrief.Core.Prices.Statistic.ToPrice(level), order.Window, tonight, order.Target is null ? order.Cap : null) { Sale = sale },
-            stopAt,
-            targetAt);
+        return (stopAt, sale);
     }
 
     // From the operator's order of 2026-11-14 the price an order takes profit at from a buy and the stop placed from it, through

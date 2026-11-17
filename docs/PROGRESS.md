@@ -19721,3 +19721,40 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
             passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: the waiting orders drawn on Home and Tonight as cards nearest their buy price first, and tonight's picks counted at the open apart from those bought only on a dip   2026-11-17
+
+Corrects:   23.10's correction of 2026-11-13 and its group of orders still waiting: Home's heading read "Tonight's ideas: 1
+            stock to buy tomorrow morning" on the night of 2026-11-16 where RL buys only if it falls to its buy price, $376.21
+            under a close of $389.59, and RL's card opened "bought at the next trading day's open, at about 389.59", found
+            reading the first night back.
+Ruled:      the operator's answers of 2026-11-16, item 1, word for word in
+            `prompts/2026-11-17-23.10-answers-to-the-report-of-16-nov.md`. The mockup that item names is not in the
+            checkout; the cards follow the item's words on the site's own stylesheet.
+Built:      Home's heading counts tonight's ideas bought at the next session's open apart from those bought only on a dip, in
+            the item's four forms, the session named by its weekday; Tonight's minute line and its buys' sentence count the
+            same two apart, keeping the calendar's wording the decision on the session names; a new pick waiting for a price
+            draws the item's box on its card, and its card's opening says it is bought only if the price dips to it. The
+            orders still waiting are drawn on Home under tonight's ideas and on Tonight beneath the open trades by one
+            function, nearest their buy price first: more than three as one row that snaps to a card, four in view wide,
+            three narrower and one on a phone, with the counter, the arrows, a chip each filled within 3% and outlined in
+            view, moved by swipe, arrows, chips and keys; three or fewer as the grid. Each card carries the list's facts and
+            the plan's rows, a take-profit not yet placed drawn as added at the next night. Past picks keeps its list. The
+            counts proof reads every form. A new decision supersedes the waiting orders' group of 2026-11-13.
+Tests:      9 new: sixteen orders drawn as sixteen cards and sixteen chips nearest first with every fact (1), two as the grid
+            (1), no card lacking a buy, a stop or a take-profit row with the guard shown to find one (1), the heading's four
+            forms and the proof reading each (5 cases), and the box's words (1); the plan-trades read-back now holds the
+            cards on Home and Tonight and the heading's form for a night whose one new pick waits for its price, which the
+            live rule's own order placed tonight decides where no card carries the plan.
+Claims:     none new: the rows the item changes are worded again in place.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: the property the item orders tested first, the order the cards and chips stand in. m1 the cards drawn in
+            the order their nights placed them, not nearest first: red at the sixteen orders' test and the grid's, reverted
+            before anything was committed. Not mutated: the chips' 3% fill and the take-profit row's guard, each held by its
+            own assertion.
+Carried:    the read-back at 1440 and a true 390 in both palettes on all three indexes after the merge, item 1g.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3800 of 3800 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
+            passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

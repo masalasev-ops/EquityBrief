@@ -30,7 +30,7 @@ public static class TradeGroups
 
         // From the 23.10 correction of 2026-11-13 an order a plan placed tonight waits for its price as tonight's pick, and one
         // placed on an earlier night still waiting is in a group of its own.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         int ToBuy(IEnumerable<PaperAccountSource> accounts) =>
             accounts.Sum(head => (head.Unfilled ?? []).Count(one => one.Why == PaperAccount.Waiting || (PlanOrderWords.IsWaiting(one.Why) && one.Listed >= night))
                 + head.Trades.Count(one => one.Trade.Bought > night)

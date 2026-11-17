@@ -804,7 +804,7 @@ public sealed partial class MarkRenderer
     // see: A skipped pick never sits in a trade table, and each account's trades end on one line naming what it did not buy by reason
     // From the 23.10 correction of 2026-11-13 an order a plan placed still waiting for its price is not a stock not bought: it
     // stands on a line of its own above them, each stock with its price and its last session.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     static string NotBought(PaperNotBought unbought, int reshuffled = 0, string? family = null)
     {
         var waiting = unbought.Reasons.Where(reason => PlanOrderWords.IsWaiting(reason.Why)).ToArray();

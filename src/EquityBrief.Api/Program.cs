@@ -641,7 +641,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // open on it stored, which the page draws the trade it is held on from.
     // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
     // From the 23.10 correction of 2026-11-13 each held trade a live rule's plan buying at a price made drawn as it made it.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     var before = night is { } picked ? PlanScreen.Cells(PicksScreen.Before(await read.PicksAsync(picked, ticker), picked), await read.PlannedTradesAsync(Universes.Large.Code, picked), picked) : null;
     var nightCards = night is { } cardsOn ? await CardsOfTheName(read, ticker, cardsOn) : null;
 
@@ -1508,7 +1508,7 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         bool held;
 
         // From the 23.10 correction of 2026-11-13 a live rule's trade under a plan buying at a price held as its plan made it.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         var plannedHere = await read.PlannedTradesAsync(index, night);
 
         // From the 22.1 correction of 2026-11-11 the short-term dip's open trade the stock is held on, on any index, with the
@@ -3049,6 +3049,20 @@ async Task<IResult> HomeAsync(
                 : idea with { Zone = zoned.Zone, Buy = zoned.Zone.Price, Stop = zoned.Stop ?? idea.Stop, Target = zoned.Target, RewardPerRisk = null }),
     ];
 
+    // On the operator's answers of 2026-11-16 a pick whose live rule's own order placed tonight waits for a price, where no card
+    // carries its plan, draws that order's zone, so the heading counts it among those bought only on a dip.
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
+    var placedTonight = PlanScreen.PlacedTonight(await read.PlannedTradesAsync(reading.Code, dated), dated);
+
+    ideas =
+    [
+        .. ideas.Select(idea => idea.Zone is null && placedTonight.TryGetValue((idea.Family, idea.Ticker), out var order) && CardScreen.ZoneOfOrder(order.Order, order.Entry) is { } placed
+            ? placed.Zone.NoBuy
+                ? idea with { Zone = placed.Zone, Buy = null, Stop = null, Target = null, Trail = null, RewardPerRisk = null }
+                : idea with { Zone = placed.Zone, Buy = placed.Zone.Price, Stop = placed.Stop ?? idea.Stop, Target = placed.Target, RewardPerRisk = null }
+            : idea),
+    ];
+
     var (carded, watched) = SinglePageApp.Split(ideas);
 
     // Each watched pick handed the plan its kind's test recommends, as the night priced it on its card.
@@ -3134,7 +3148,7 @@ async Task<IReadOnlyDictionary<string, (EquityBrief.Core.Cards.PaperProgress Pro
     var indexNight = await read.IndexNightAsync(reading.Code, night);
 
     // From the 23.10 correction of 2026-11-13 an order no price filled counts toward no rule's record.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     var planned = await read.PlannedTradesAsync(reading.Code, night);
     var sources = PlanScreen.Accounts(PaperScreen.Accounts(
         large,
@@ -3180,7 +3194,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     var rows = await read.PaperRowsAsync(reading.Code);
 
     // From the 23.10 correction of 2026-11-13 a live rule's trade under a plan buying at a price drawn as its plan made it.
-    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+    // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
     var planned = await read.PlannedTradesAsync(reading.Code, night);
     var cells = large ? PlanScreen.Cells(PicksScreen.Cells(await read.PicksAsync(night), night), planned, night) : [];
     var indexNight = await read.IndexNightAsync(reading.Code, night);
@@ -3246,7 +3260,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
         Fund,
         standings,
         PaperScreen.Averaged(views, settings, sessions, night, Close, Fund),
-        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions) with { StillWaitingOrders = stillWaiting })
+        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions) with { StillWaitingOrders = stillWaiting, PlacedTonight = PlanScreen.PlacedTonight(planned, night).Keys.ToHashSet() })
     {
         Books = await BookLinesAsync(read, reading, night, sources, register, standings),
         Planned = planned,
@@ -3705,7 +3719,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
         // see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
         // From the 23.10 correction of 2026-11-13 a family whose live rule trades a plan buying at a price drawn from that
         // rule's own trades from its first, each as its plan made it.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         var keptTrades = night is { } through
             ? PicksScreen.IndexTrades(PlanScreen.IndexRows([.. (await read.IndexTradesAsync(reading.Code, through)).Where(trade => trade.Family != EquityBrief.Core.Families.FundamentalsRule.Name), .. await read.DipTradesAsync(reading.Code, through)], paper?.Planned ?? await read.PlannedTradesAsync(reading.Code, through)), companies)
             : [];

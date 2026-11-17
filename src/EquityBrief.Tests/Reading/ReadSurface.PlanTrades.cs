@@ -15,7 +15,7 @@ namespace EquityBrief.Tests.Reading;
 // it was. And the orders earlier nights placed still waiting are a group of their own on Home, Tonight and Past picks, every
 // count naming its group. Before it every page read the list's own trade bought at the next open, and the counts took every
 // order waiting as tonight's to buy.
-// see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+// see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
 public partial class ReadSurface
 {
     // The S&P 400 breakout frozen on 2 Jan, its live rule trading from 15 Sep a plan that buys 2.22 typical days under the
@@ -160,18 +160,39 @@ public partial class ReadSurface
             Assert.DoesNotContain("data-ticker=\"M1\"", group, StringComparison.Ordinal);
         }
 
-        // Home: the heading counts tonight's one new pick, and the order still waiting is the line beneath it.
+        // On Home and Tonight, from the operator's answers of 2026-11-16, the one order still waiting is a card, in the grid
+        // since one is three or fewer, with every fact the list carried.
+        static void StillWaitingCardOnce(string page)
+        {
+            var group = Assert.Single(Blocks(page, "<div class=\"waiting-orders wo\".*?</article></div></div>"));
+
+            Assert.Contains("data-still-waiting=\"1\"", group, StringComparison.Ordinal);
+            Assert.Contains("data-carousel=\"false\"", group, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"list-count wo-title\">Waiting to buy (1)</p>", group, StringComparison.Ordinal);
+            Assert.Matches("<article class=\"wo-card fam-edge\" data-family=\"breakout\" data-ticker=\"M2\" data-listed=\"2026-09-30\" data-price=\"47.50\" data-close=\"[^\"]+\" data-last-day=\"2026-10-14\"", group);
+            Assert.Contains("Buys only if it falls to $47.50.", group, StringComparison.Ordinal);
+            Assert.Matches("Placed 30 Sep by [a-z ]+\\. Cancelled if not filled by 14 Oct", group);
+            Assert.Contains("data-plan=\"buy\"", group, StringComparison.Ordinal);
+            Assert.Contains("data-plan=\"stop\"", group, StringComparison.Ordinal);
+            Assert.Contains("data-plan=\"target\"", group, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-ticker=\"M1\"", group, StringComparison.Ordinal);
+        }
+
+        // Home: the heading counts tonight's one new pick, and the order still waiting is a card under tonight's ideas.
         var home = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/home?universe=400"));
 
-        Assert.Matches("<h2>Tonight's ideas: 1 stock to buy [A-Za-z]+ morning</h2></div><div>.*?</div></div><div class=\"card-b\"><div class=\"waiting-orders\"", home);
-        StillWaitingOnce(home);
+        Assert.Contains("<h2>Tonight's ideas: 1 new, each bought only if its price dips to the buy price</h2>", home, StringComparison.Ordinal);
+        Assert.Contains("data-at-open=\"0\" data-on-dip=\"1\"", home, StringComparison.Ordinal);
+        Assert.True(home.IndexOf("<div class=\"waiting-orders wo\"", StringComparison.Ordinal) > home.IndexOf("<h2>Tonight's ideas:", StringComparison.Ordinal));
+        StillWaitingCardOnce(home);
 
         // Tonight: one new pick, and the order still waiting beneath the open trades.
         var tonight = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-        Assert.Contains("1 new pick to buy at", tonight, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"minute-line\" data-line=\"still-waiting\"><div class=\"waiting-orders\"", tonight, StringComparison.Ordinal);
-        StillWaitingOnce(tonight);
+        Assert.Contains("1 new pick, each bought only if its price dips to the buy price", tonight, StringComparison.Ordinal);
+        Assert.Contains("1 new, each bought only if its price dips to the buy price.", tonight, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"minute-line\" data-line=\"still-waiting\"><div class=\"waiting-orders wo\"", tonight, StringComparison.Ordinal);
+        StillWaitingCardOnce(tonight);
 
         // Past picks: tonight's new order and the one still waiting each counted as its own group, none to buy at the open.
         var picks = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400"));

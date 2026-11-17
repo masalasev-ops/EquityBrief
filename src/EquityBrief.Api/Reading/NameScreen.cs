@@ -2059,7 +2059,7 @@ public static partial class NameScreen
 
         // From the 23.10 correction of 2026-11-13 a trade a live rule's plan bought at its price holds the stop that plan placed
         // from its fill and the plan's target, not the card's from the listing close.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         return new HeldTradeView(open.UnderPlan ? card with { Stop = open.Stop ?? card.Stop, Target = open.Target ?? card.Target } : card, open);
     }
 
@@ -2232,7 +2232,7 @@ public static partial class NameScreen
     {
         // From the operator's order of 2026-11-14 a stock an order waits to buy, or a trade holds, opens on that, in their words;
         // a held stock its setup's rules met again tonight saying it is not bought again.
-        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are a group of their own
+        // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         var named = CompanyWords.Short(company);
 
         if (card is null && waiting is { Price: { } price } order)

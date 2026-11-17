@@ -41,7 +41,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("more on Tonight", text, StringComparison.Ordinal);
 
         // The heading counts the ideas to buy; the line above the cards says what splits them; the link counts all five.
-        Assert.Contains($"Tonight's ideas: 2 stocks to buy {Day().OpensOn} morning", text, StringComparison.Ordinal);
+        Assert.Matches("Tonight's ideas: 2 stocks to buy at [A-Z][a-z]+day's open", text);
         Assert.Contains("We test every kind of pick against simply buying other S&P 500 stocks on the same days. Kinds that beat it, or are too new to test, are ideas to buy. Kinds that lost to it are shown below as watched, followed on paper only.", text, StringComparison.Ordinal);
         Assert.Contains("See all 5 picks with their full plans", text, StringComparison.Ordinal);
 
