@@ -163,6 +163,10 @@ internal static class ComponentVocabulary
         // section 16 key draws for it in so many words.
         ["the phase report, as a page and as data"] = [],
         ["this document, the code, and the fixture, including the fixture's own store; never a store under the data root"] = [],
+        // The replay reads and writes two copies outside the data root, which are not the store (see SCHEMA's paragraph
+        // on a replay's copy), and keeps its record as a file.
+        ["two copies of the store made in a folder outside the data root; never the store under the data root but to copy it, opened for reading alone while the night's lock is held"] = [],
+        ["the two copies, removed when the record is kept, and the replay's record, a file under the data root"] = [],
     };
 
     // Terms naming a feed rather than a store. A feed has no column, and saying

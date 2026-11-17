@@ -19647,3 +19647,44 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1625 claims, 1625
             passing, none out of scope and none unexamined, 1640 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - the replay fix's carried rows: the replay over copies in the component catalogue and the matrix, the guide's sentence on it, and the stale share figure with the rows it reaches   2026-11-16
+
+Label:      23.10, the replay fix's entry carrying the catalogue's rows and the stale share figure to the next pull request.
+Written:    the catalogue's row and the matrix's row for the replay over copies, a row no shipped class stands for, as the
+            verification harness's is: its Reads and Writes cells name the two copies outside the data root and the replay's
+            record, and no store the matrix carries, so its matrix row is blank across every store; the guide's sentence that a
+            change to the code a live rule reads is registered inside the freeze only where the replay over the old code and
+            the new gives every trade, holding and waiting order the same.
+Measured:   the stale share figure, on the operator's ruling of 2026-11-15, word for word in
+            `prompts/2026-11-15-23.10-ruling-on-item-5.md`. Some filers date a share count on their report's cover after the
+            day they filed it, so the first session after the filing cannot count it yet; a later session should, but where
+            one ledger context is asked about many sessions, a stock's scorecard is kept by the count of its facts filed before
+            a session and worked once, with the first session to ask, so the later sessions read that first session's shares
+            until the next filing. No live rule's nightly reading goes through it: each night the steps reading these figures,
+            the rules' conditions, the swing filter's business state and the cards, build a context of their own asked about
+            that night alone, and Quality at a fair price and the Fundamentals family work their scorecards from the filings
+            outside it. It reaches only the stores built by asking one context about many sessions: the standing and long
+            ledgers' builds, the monthly run's tests and the point-in-time check. At most 257 rows of about 2.6 million, counted
+            on a copy of the store of 2026-11-15 and not on the store: the long ledger's setups 102 of 1,546,854, 19 on the S&amp;P
+            500, all KEY, and 83 on the S&amp;P 600, on HZO, MINI, RGR and SAIA; the standing ledger's setups 155 of 1,038,434, 49 on
+            the S&amp;P 400, on ACM, BERY and NARI, and 106 on the S&amp;P 600, on JJSF, LNN, RES, SLP, VRRM and WT; 205 of the 257
+            dip setups. The count is an upper bound: it takes every row a late-dated count could reach, and some of those read
+            the same figure either way.
+Tests:      1 new: the replay's matrix row blank in every cell, its catalogue row naming no store and no shipped class standing
+            for it, and a copy asked for under the data root refused with no folder left there.
+Claims:     1627, from 1625: the replay's catalogue row and its matrix row, each passing on component-access; the phase pairs'
+            lists name them among 23.10's rows.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: the property the rows add, that the replay touches no store the matrix carries and makes no copy under
+            the data root. m1 a read filled in the replay's matrix row: red at the new test; m2 the copy's refusal under the data
+            root narrowed so it never matches: red at the new test and at the copies' test; each reverted before anything was
+            committed.
+Carried:    the stale share figure's repair, which changes the ledger's readings and so the ledger readings' version every
+            ledger row and every rule reading the catalogue is keyed by, asking both ledgers to be built again and the rules
+            registered again inside the freeze, to the operator's word on whether and when.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3783 of 3783 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1627 claims, 1627
+            passing, none out of scope and none unexamined, 1642 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
