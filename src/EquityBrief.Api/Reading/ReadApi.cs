@@ -808,8 +808,8 @@ public sealed record UniverseRow(
     decimal? NearestSupport,
     decimal? NearestResistance,
     double? TypicalMove,
-    // The company's name and its industry, as the membership row holds them, which a
-    // page states beside the ticker. Null for a row that carries none.
+    // The company's name, as the symbol list spells it or the membership row holds it, and
+    // its industry, which a page states beside the ticker. Null for a row that carries none.
     string? Name = null,
     string? Industry = null,
     // The day the name's newest researched section was written, and null for a name
@@ -818,7 +818,11 @@ public sealed record UniverseRow(
     // From 19.5 the nearest support band's low edge and the nearest resistance band's
     // high edge, the far side of each from the price, null where no band is marked.
     decimal? SupportFloor = null,
-    decimal? ResistanceCeiling = null);
+    decimal? ResistanceCeiling = null)
+{
+    // The name as its membership row holds it, which a story is matched against, as the news counts match it.
+    public string? HeldName { get; init; }
+}
 
 // A current member as the masthead's search offers it: its ticker, its company's name, and
 // the day its newest researched section was written, null where it holds none.
@@ -867,6 +871,7 @@ public sealed partial class ReadApi : IComponent
         Stores:
         [
             new StoreTouch(Store.Membership, Touch.Read),
+            new StoreTouch(Store.ListedName, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.KeptBar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
@@ -1592,8 +1597,8 @@ public sealed partial class ReadApi : IComponent
                CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN g.clear_stop ELSE g.swing_stop END,
                CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN g.clear_target ELSE g.swing_target END,
                f.horizon IS NOT NULL, f.outcome, f.resolved_on, f.return_pct, f.break_even,
-               (SELECT m.name FROM membership m WHERE m.ticker = g.ticker
-                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = g.ticker), titled((SELECT m.name FROM membership m WHERE m.ticker = g.ticker
+                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1))),
                (SELECT b.close FROM bar b WHERE b.ticker = g.ticker AND b.session_date = g.session_date),
                (SELECT b.session_date FROM bar b WHERE b.ticker = g.ticker AND b.session_date <= $on
                 ORDER BY b.session_date DESC LIMIT 1),
@@ -1628,8 +1633,8 @@ public sealed partial class ReadApi : IComponent
                " + EquityBrief.Core.Families.SetupFamilies.HorizonIn("p.family", "pv.settings") + @",
                pr.entry, pr.stop, pr.target,
                pf.horizon IS NOT NULL, pf.outcome, pf.resolved_on, pf.return_pct, pf.break_even,
-               (SELECT m.name FROM membership m WHERE m.ticker = p.ticker
-                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = p.ticker), titled((SELECT m.name FROM membership m WHERE m.ticker = p.ticker
+                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1))),
                (SELECT b.close FROM bar b WHERE b.ticker = p.ticker AND b.session_date = p.session_date),
                (SELECT b.session_date FROM bar b WHERE b.ticker = p.ticker AND b.session_date <= $on
                 ORDER BY b.session_date DESC LIMIT 1),
@@ -1721,9 +1726,10 @@ public sealed partial class ReadApi : IComponent
                (SELECT i.value FROM indicator i WHERE i.ticker = m.ticker AND i.name = $typical
                     AND i.session_date <= $on
                 ORDER BY i.session_date DESC LIMIT 1),
-               m.name,
+               COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = m.ticker), titled(m.name)),
                " + NamedIndustry + @",
-               " + ResearchedOn + @"
+               " + ResearchedOn + @",
+               m.name
         FROM membership m
         WHERE " + CurrentMember + @"
         ORDER BY m.ticker;
@@ -1754,6 +1760,46 @@ public sealed partial class ReadApi : IComponent
 
     // The current members of the index on a session, one row a ticker, for the reason the
     // universe query states.
+    // On the operator's answer of 2026-11-17, item 6, each member of an index on a night the symbol list names none of, with
+    // the name it is drawn by, the name its membership row holds in title case where it holds it in capitals alone, and the
+    // day the names refresh last read the list, none where it never has.
+    // see: A member's company is named as the provider's symbol list spells it, read once a week outside the night
+    static readonly string UnlistedOn = @"
+        SELECT m.ticker, titled(m.name), (SELECT MAX(read_on) FROM listed_name)
+        FROM membership m
+        WHERE " + CurrentMember + @"
+          AND NOT EXISTS (SELECT 1 FROM listed_name l WHERE l.ticker = m.ticker)
+        ORDER BY m.ticker;
+    ";
+
+    public async Task<(IReadOnlyList<(string Ticker, string? Name)> Unlisted, DateOnly? ReadOn)> UnlistedNamesAsync(string index, DateOnly session)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = UnlistedOn;
+        command.Parameters.AddWithValue("$index_code", index);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<(string Ticker, string? Name)>();
+        DateOnly? readOn = null;
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add((reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1)));
+            readOn ??= reader.IsDBNull(2) ? null : Day(reader.GetString(2));
+        }
+
+        await using var newest = connection.CreateCommand();
+
+        newest.CommandText = "SELECT MAX(read_on) FROM listed_name;";
+        readOn ??= await newest.ExecuteScalarAsync() is string day ? Day(day) : null;
+
+        return (readOn is null ? [] : rows, readOn);
+    }
+
     const string CurrentMember = @"
           m.index_code = $index_code
           AND (m.joined IS NULL OR m.joined <= $session)
@@ -1779,7 +1825,7 @@ public sealed partial class ReadApi : IComponent
     // Every current member with its company's name and the day its newest researched
     // section was written, which is what the masthead's search offers.
     const string Findable = @"
-        SELECT m.ticker, m.name, " + ResearchedOn + @"
+        SELECT m.ticker, COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = m.ticker), titled(m.name)), " + ResearchedOn + @"
         FROM membership m
         WHERE " + CurrentMember + @"
         ORDER BY m.ticker;
@@ -1796,8 +1842,8 @@ public sealed partial class ReadApi : IComponent
     // see: A researched name is one holding an accepted section besides the key under each figure
     const string Researched = @"
         SELECT r.ticker,
-               (SELECT m.name FROM membership m WHERE m.ticker = r.ticker
-                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = r.ticker), titled((SELECT m.name FROM membership m WHERE m.ticker = r.ticker
+                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1))),
                (SELECT c.sector FROM company c WHERE c.ticker = r.ticker
                 ORDER BY c.fetched_at DESC, c.rowid DESC LIMIT 1),
                MAX(r.as_of),
@@ -2066,9 +2112,22 @@ public sealed partial class ReadApi : IComponent
     {
         var connection = new SqliteConnection($"Data Source={databaseFile}");
         connection.Open();
+        connection.CreateFunction("titled", (string? name) => Titled(name), isDeterministic: true);
 
         return connection;
     }
+
+    // On the operator's answer of 2026-11-17, item 6, a member's company as every page names it: as the provider's symbol list
+    // spells it where the names refresh read one, and otherwise the name the store held for it, in title case where it held
+    // it in capitals alone.
+    // see: A member's company is named as the provider's symbol list spells it, read once a week outside the night
+    //
+    // A name held in capitals alone in title case, each word's first letter a capital and the rest small; a name holding a
+    // small letter as it stands.
+    public static string? Titled(string? name) =>
+        name is null || name.Any(char.IsLower)
+            ? name
+            : System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(name.ToLowerInvariant());
 
     public async Task<IReadOnlyList<BarRow>> BarsAsync(string ticker, DateOnly from, DateOnly to)
     {
@@ -5061,7 +5120,7 @@ public sealed partial class ReadApi : IComponent
     // Each member of an index on a night with the company its membership row names, and its close on the night.
     const string IndexMembersOn = @"
         SELECT m.ticker,
-               (SELECT n.name FROM membership n WHERE n.ticker = m.ticker AND n.name IS NOT NULL ORDER BY n.joined DESC LIMIT 1),
+               COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = m.ticker), titled((SELECT n.name FROM membership n WHERE n.ticker = m.ticker AND n.name IS NOT NULL ORDER BY n.joined DESC LIMIT 1))),
                b.close
         FROM (SELECT DISTINCT ticker FROM membership
               WHERE index_code = $index AND (joined IS NULL OR joined <= $session) AND (""left"" IS NULL OR ""left"" > $session)) m
@@ -5216,7 +5275,7 @@ public sealed partial class ReadApi : IComponent
     // Every holding the sector heavyweights bought on or before a night, its end read only where it ended by the
     // night, so a holding that ended after it is read as open on it.
     static readonly string HeavyweightHoldingsUpTo = $@"
-        SELECT h.ticker, h.entered_on, h.sector, h.company, h.entry_close,
+        SELECT h.ticker, h.entered_on, h.sector, COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = h.ticker), titled(h.company)), h.entry_close,
                CASE WHEN h.ended_on <= $on THEN h.ended_on END,
                CASE WHEN h.ended_on <= $on THEN h.exit_close END,
                CASE WHEN h.ended_on <= $on THEN h.reason END,
@@ -5241,7 +5300,7 @@ public sealed partial class ReadApi : IComponent
     // card's selector chooses it.
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     static readonly string HeavyweightRuleHoldingsUpTo = $@"
-        SELECT h.ticker, h.entered_on, h.sector, h.company, h.entry_close,
+        SELECT h.ticker, h.entered_on, h.sector, COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = h.ticker), titled(h.company)), h.entry_close,
                CASE WHEN h.ended_on <= $on THEN h.ended_on END,
                CASE WHEN h.ended_on <= $on THEN h.exit_close END,
                CASE WHEN h.ended_on <= $on THEN h.reason END,
@@ -5257,7 +5316,7 @@ public sealed partial class ReadApi : IComponent
     ";
 
     const string HeavyweightRuleReadOn = @"
-        SELECT session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader, beta
+        SELECT session_date, sector, place, ticker, COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = heavyweight_rule_night.ticker), titled(company)), company_value, look_back, sector_return, lead, trend, leader, beta
         FROM heavyweight_rule_night
         WHERE candidate = $candidate AND session_date = (SELECT MAX(session_date) FROM heavyweight_rule_night WHERE candidate = $candidate AND session_date <= $on)
         ORDER BY sector, place;
@@ -5313,7 +5372,7 @@ public sealed partial class ReadApi : IComponent
 
     // The book's reading at its last rebalance on or before a night, a sector at a time in order of value.
     const string HeavyweightReadOn = @"
-        SELECT session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader, beta
+        SELECT session_date, sector, place, ticker, COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = heavyweight_night.ticker), titled(company)), company_value, look_back, sector_return, lead, trend, leader, beta
         FROM heavyweight_night
         WHERE session_date = (SELECT MAX(session_date) FROM heavyweight_night WHERE session_date <= $on)
         ORDER BY sector, place;
@@ -5897,7 +5956,10 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(6) ? null : reader.GetString(6),
                 reader.IsDBNull(7) ? null : Day(reader.GetString(7)),
                 support.TryGetValue(ticker, out var supportBand) ? supportBand.Far : null,
-                resistance.TryGetValue(ticker, out var resistanceBand) ? resistanceBand.Far : null));
+                resistance.TryGetValue(ticker, out var resistanceBand) ? resistanceBand.Far : null)
+            {
+                HeldName = reader.IsDBNull(8) ? null : reader.GetString(8),
+            });
         }
 
         return rows;

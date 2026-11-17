@@ -74,7 +74,8 @@ public partial class ReadSurface
             var setup = EquityBrief.Core.Families.SetupFamilies.Named(order.Family)!.Label;
 
             Assert.Contains($"href=\"#/chart/{order.Ticker}\">{order.Ticker}</a>", card, StringComparison.Ordinal);
-            Assert.Contains($"<div class=\"home-co\">Company {order.Ticker}</div>", card, StringComparison.Ordinal);
+            // On the operator's answer of 2026-11-17, item 6, the company in full, as the pick cards draw it.
+            Assert.Contains($"<div class=\"home-co\">Company {order.Ticker} Inc.</div>", card, StringComparison.Ordinal);
             Assert.Contains(FormattableString.Invariant($"data-listed=\"{order.Listed:yyyy-MM-dd}\" data-price=\"100.00\" data-close=\"{order.LastClose:0.00}\" data-last-day=\"{order.LastDay:yyyy-MM-dd}\""), card, StringComparison.Ordinal);
             Assert.Contains(System.Net.WebUtility.HtmlEncode(MarkRenderer.WaitingCondition(order)), card, StringComparison.Ordinal);
             Assert.Matches(FormattableString.Invariant($"Buys only if it falls to \\$100\\.00\\. Last close \\${order.LastClose:#,##0.00}, [0-9.]+% above\\."), System.Net.WebUtility.HtmlDecode(card));

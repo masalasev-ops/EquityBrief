@@ -155,7 +155,7 @@ public sealed partial class ReadApi
     // A stock's company as its newest membership row names it, and its typical move and 200-session average on the night.
     const string PaperStocksOn = @"
         SELECT t.value,
-               (SELECT m.name FROM membership m WHERE m.ticker = t.value ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = t.value), titled((SELECT m.name FROM membership m WHERE m.ticker = t.value ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1))),
                (SELECT i.value FROM indicator i WHERE i.ticker = t.value AND i.session_date = $night AND i.name = $typical),
                (SELECT i.value FROM indicator i WHERE i.ticker = t.value AND i.session_date = $night AND i.name = $average),
                (SELECT m.sector FROM membership m WHERE m.ticker = t.value ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1)

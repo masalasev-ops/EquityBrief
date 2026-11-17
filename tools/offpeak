@@ -10,11 +10,12 @@
 #
 # The worker then asks once more for each member the night's day file carried nothing for, labels the newest night's
 # list, refreshes the analysts' ratings of the members asked longest ago
-# under the New York day's cap, reads FINRA's newest short interest, and then drains the report requests the night
+# under the New York day's cap, reads FINRA's newest short interest, reads the provider's symbol list for the members'
+# company names where its last read is a week old, and then drains the report requests the night
 # queued, each a run of its own whose calls and spend are on its own rows; the drain waits out any peak window it
 # starts in, as every drain does, and a step before it that stops leaves the rest to run.
 #
-#   tools/offpeak            the late bars' ask, the labeller, the ratings refresh, the short interest and then the drain
+#   tools/offpeak            the late bars' ask, the labeller, the ratings refresh, the short interest, the names and then the drain
 #   tools/offpeak --check    print what a run would build and run, and run nothing
 set -euo pipefail
 
@@ -88,7 +89,7 @@ if [ "$check" = 1 ]; then
     echo "offpeak: copy $copy, ${built:+built already}${built:-to build}"
     echo "offpeak: data root $data"
     echo "offpeak: secrets read from $secrets, none copied"
-    echo "offpeak: would ask once more for the members the night's day file carried nothing for, label the newest night's list, refresh the analysts' ratings, read FINRA's short interest and then drain the queued reports"
+    echo "offpeak: would ask once more for the members the night's day file carried nothing for, label the newest night's list, refresh the analysts' ratings, read FINRA's short interest, read the symbol list's names where a week has passed and then drain the queued reports"
     exit 0
 fi
 
@@ -145,7 +146,14 @@ shorted=0
 dotnet "$built" short-interest || shorted=$?
 
 if [ "$shorted" != 0 ]; then
-    echo "offpeak: the short interest step stopped with $shorted, and the drain runs" >&2
+    echo "offpeak: the short interest step stopped with $shorted, and the rest runs" >&2
+fi
+
+named=0
+dotnet "$built" names || named=$?
+
+if [ "$named" != 0 ]; then
+    echo "offpeak: the names refresh stopped with $named, and the drain runs" >&2
 fi
 
 exec dotnet "$built" drain

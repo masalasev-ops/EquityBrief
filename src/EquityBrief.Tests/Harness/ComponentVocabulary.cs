@@ -87,7 +87,7 @@ internal static class ComponentVocabulary
     // short interest, each a source's answer about a company.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
-        ("Membership", [DataStore.Membership, DataStore.TickerJoin]),
+        ("Membership", [DataStore.Membership, DataStore.TickerJoin, DataStore.ListedName]),
         ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar, DataStore.LiveQuote, DataStore.TreasuryYield, DataStore.SplitEvent]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.SessionMark, DataStore.DataCheck, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding, DataStore.LongSnapshot, DataStore.LongHolding, DataStore.LongSpan, DataStore.LongBar, DataStore.LongMarketBar, DataStore.LongPrint, DataStore.LongSplit, DataStore.LongDividend, DataStore.LongFiling, DataStore.LongFact]),
@@ -193,6 +193,7 @@ internal static class ComponentVocabulary
         ["analyst feed"] = Feed.Analyst,
         ["ratings feed"] = Feed.AnalystRatings,
         ["short interest feed"] = Feed.ShortInterest,
+        ["symbol list feed"] = Feed.SymbolList,
         ["estimate trends feed"] = Feed.EstimateTrends,
         ["oil chart feed"] = Feed.OilChart,
         ["strip quote feed"] = Feed.StripQuotes,
@@ -343,6 +344,7 @@ internal static class ComponentVocabulary
         ["estimate trends"] = DataStore.EstimateTrend,
         ["dividend events"] = DataStore.DividendEvent,
         ["ticker joins"] = DataStore.TickerJoin,
+        ["listed names"] = DataStore.ListedName,
         ["session marks"] = DataStore.SessionMark,
         ["long setups"] = DataStore.LongSetup,
         ["long readings"] = DataStore.LongReading,

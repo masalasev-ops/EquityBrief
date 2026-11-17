@@ -46,6 +46,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `analyst_rating` | RatingsJob | none | none |
 | `treasury_yield` | TreasuryReader | none | none |
 | `short_interest` | ShortInterestReader | ShortInterestReader | none |
+| `listed_name` | NamesRefresh | NamesRefresh | none |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
@@ -1042,6 +1043,20 @@ Grain: one row per stock per settlement FINRA reported its consolidated short in
 Primary key: `ticker`, `settlement_date`.
 
 **FINRA's consolidated short interest, kept a stock and settlement a row by the short interest reader alone** (see: FINRA's short interest is read once a settlement after the labeller, and its history once by hand). The off-peak run's step asks FINRA for the settlements from the newest the table holds and the records of every stock the three indices held on or after each, and the history by hand from FINRA's first settlement, 2017-12-29; a report held is kept as first read, so a settlement asked again stores only what it lacked and nothing deletes a row. From the 21.6 correction of 2026-10-30 each run first moves every stored settlement's `published_on` to the day the rule gives where it stands at another, the one update the table takes, a settlement whose count starts before the exchange's closure table reaches counted on weekdays alone and moved one business day later (see: A FINRA publication day counted before the closure table's reach is moved later by the largest miss counting weekdays alone makes where the table reaches). A stock FINRA answers nothing for at a settlement stores nothing. The setup ledger reads the newest report a session finds published before it, over the share count the filings state before the session, for its short interest reading, none for a session before the first; no rule, list or gate reads the table (see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none).
+
+### listed_name
+Grain: one row per stock, its company name as the provider's symbol list spells it.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the stock as the three indices hold it, the provider's code |
+| `name` | TEXT | the company's name as the symbol list spells it, in full, the common stock's where the list files the code more than once |
+| `read_on` | TEXT | the session day the names refresh read the list, which the week before the next ask is counted from |
+| `run_id` | TEXT | the run of the names refresh that read it |
+
+Primary key: `ticker`.
+
+**Each member's company name, kept by the names refresh alone** (see: A member's company is named as the provider's symbol list spells it, read once a week outside the night). From migration 152, on the operator's answer of 2026-11-17, the off-peak run's step asks the provider's list of the US exchanges' symbols once a week, one request at a weight of one, and keeps a row for every stock the three indices hold that day the list names, inserting or replacing it, the newest read standing; a member the list names none of keeps what it held, and nothing deletes a row. The read API names a member's company by it on every page and card, and by the name its membership row holds in title case where it holds none; no rule, list or gate reads the table, and a story is matched to a member by the name its membership row holds.
 
 ### calendar
 Grain: one row per ticker, event date and kind.

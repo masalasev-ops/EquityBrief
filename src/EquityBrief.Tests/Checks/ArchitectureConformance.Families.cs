@@ -433,9 +433,11 @@ public partial class ArchitectureConformance
         // 1623 from its next, a plan that buys at a zone, and 1624 from the 22.17 correction of 2026-11-09, the records and the
         // picks watched on the read-only copy, and 1625 from 23.10's second part, the match check's catalogue and matrix rows
         // less section 14's step asking for the reported quarters, and 1627 from its replay fix, the replay's catalogue and
-        // matrix rows, and 1628 from the operator's ruling of 2026-11-16, Tonight's row of a book's own exit.
+        // matrix rows, and 1628 from the operator's ruling of 2026-11-16, Tonight's row of a book's own exit, and 1632 from the
+        // 23.10 correction of 2026-11-17, the names refresh's catalogue and matrix rows, its store's row and section 17's row of
+        // its names.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1628),
+            (789, 853, 6, 4, 855, 876, 1632),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

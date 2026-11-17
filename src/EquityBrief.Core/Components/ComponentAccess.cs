@@ -36,6 +36,7 @@ public enum Store
     PulledShares,
     PulledSplit,
     TickerJoin,
+    ListedName,
     SessionMark,
     DataCheck,
     LongSnapshot,
@@ -241,6 +242,9 @@ public enum Feed
     // From 21.13 Yahoo's spark of the market strip's symbols, keyless and free, every tile in one request, asked by the
     // read API alone for a page opened in the regular session and kept five minutes.
     StripQuotes,
+    // On the operator's answer of 2026-11-17 the provider's list of the US exchanges' symbols with each company's name, one
+    // request at a weight of one, asked by the names refresh alone in the off-peak run once a week.
+    SymbolList,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);

@@ -146,6 +146,8 @@ public partial class FixtureExpectations
             .. ChosenReadingClaims,
             // 21.6, the new readings' sources: section 17's three rows and section 18's two.
             .. NewReadingClaims,
+            // The 23.10 correction of 2026-11-17: section 17's row of the symbol list's names.
+            .. NamesClaims,
             // 21.8, ranking in place of pass-or-fail gates: section 17's row of the variant.
             .. RankingClaims,
             // 21.9, graded exposure: section 17's row of the variant.

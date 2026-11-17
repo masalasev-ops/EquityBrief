@@ -103,7 +103,7 @@ public sealed partial class MarkRenderer
         var close = order.LastClose is { } last ? last.ToString("0.00", CultureInfo.InvariantCulture) : "none";
 
         card.Append(Invariant, $"<article class=\"wo-card fam-edge\" data-family=\"{family}\" data-ticker=\"{Escaped(order.Ticker)}\" data-listed=\"{DayOf(order.Listed)}\" data-price=\"{price}\" data-close=\"{close}\" data-last-day=\"{DayOf(order.LastDay)}\" data-gap=\"{(gap is { } apart ? apart.ToString("0.0000", CultureInfo.InvariantCulture) : "none")}\">");
-        card.Append(Invariant, $"<div class=\"wo-card-h\"><div><a class=\"home-ticker name-link\" href=\"#/chart/{Uri.EscapeDataString(order.Ticker)}\">{Escaped(order.Ticker)}</a>{(order.Company is { Length: > 0 } company ? Formatted($"<div class=\"home-co\">{Escaped(CompanyWords.Short(company))}</div>") : string.Empty)}</div>");
+        card.Append(Invariant, $"<div class=\"wo-card-h\"><div><a class=\"home-ticker name-link\" href=\"#/chart/{Uri.EscapeDataString(order.Ticker)}\">{Escaped(order.Ticker)}</a>{(order.Company is { Length: > 0 } company ? Formatted($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div>");
         card.Append(Invariant, $"<div class=\"wo-badge\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(setup)}</span><span class=\"wo-state\">{WaitingState}</span></div></div>");
         card.Append(Invariant, $"<p class=\"wo-cond\">{Escaped(WaitingCondition(order))}</p>");
 

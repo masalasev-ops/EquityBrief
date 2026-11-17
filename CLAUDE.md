@@ -73,8 +73,8 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                                  of the month, from a clean copy of the main checkout's commit
                   offpeak  offpeak.ps1   the off-peak run, what the scheduler calls five minutes after each
                                  peak window ends, every day:
-                                 the labeller, the ratings refresh, the short interest reader and then
-                                 the drain over the reports the night queued,
+                                 the labeller, the ratings refresh, the short interest reader, the names
+                                 refresh once a week and then the drain over the reports the night queued,
                                  from a clean copy of the main checkout's commit
                   publish-site  publish-site.ps1   the read-only copy on Cloudflare Pages, run by hand and by the
                                  scheduler once the off-peak run has finished: the site's screens written under

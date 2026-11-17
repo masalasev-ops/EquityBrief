@@ -35,7 +35,7 @@ public partial class ArchitectureConformance
         ("23.8", [.. FixtureExpectations.LongSearchRows], []),
         ("23.9", [.. FixtureExpectations.SectorSplitsRows], []),
         ("23.10", [.. MatchCheckRows, .. ComponentAccess.ReplayRows, .. Reading.ReadSurface.OwnExitRows], [CheckReach.Key(NightlyRunSteps.Heading, RetiredQuartersStep)]),
-        ("23.10 correction", [], []),
+        ("23.10 correction", [.. ComponentAccess.NamesRows, .. SchemaColumns.NamesStoreRows, .. FixtureExpectations.NamesClaims], []),
         ("23.11", [], []),
     ];
 
@@ -61,7 +61,9 @@ public partial class ArchitectureConformance
     // rows that stood, as the plans, the marks and the cards' zones did, its second part adding the match check's catalogue
     // and matrix rows and retiring section 14's step asking for the reported quarters, whose fetch asks inside the swing
     // filter's step, its replay fix adding the replay's catalogue and matrix rows, and the books' own exit Tonight's row; its
-    // correction none. 23.11, none of one.
+    // correction four, which no count held: on the operator's answer of 2026-11-17 the names refresh's catalogue and matrix
+    // rows, its store's row and section 17's row of the symbol list's names.
+    // 23.11, none of one.
     static readonly (string Checkpoint, int More)[] PhaseTwentyThreeMore =
     [
         ("23.0", 0),
@@ -76,7 +78,7 @@ public partial class ArchitectureConformance
         ("23.8", 6),
         ("23.9", 2),
         ("23.10", -3),
-        ("23.10 correction", 0),
+        ("23.10 correction", 4),
         ("23.11", -1),
     ];
 
@@ -136,6 +138,6 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1534, 1602, 1580, 1625, 1622, 6), (before, predicted, low, high, actual, BesidePhaseTwentyThree.Length));
+        Assert.Equal((1534, 1602, 1580, 1630, 1626, 6), (before, predicted, low, high, actual, BesidePhaseTwentyThree.Length));
     }
 }

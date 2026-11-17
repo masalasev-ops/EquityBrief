@@ -238,7 +238,7 @@ The copy is made, and a read-back or a sweep is run, only while nothing writes t
 
 | Provider | Used for | Notes |
 |---|---|---|
-| EODHD | bulk end-of-day bars, index constituents, company fundamentals, the earnings calendar, ticker-tagged news, from 18.1 a name page's delayed quote in the regular session, and from 18.2 each member's dividends history, asked once by hand | the daily allowance is 100,000 weighted calls; a normal night spends a few hundred, and the day's quotes are capped at 500 |
+| EODHD | bulk end-of-day bars, index constituents, company fundamentals, the earnings calendar, ticker-tagged news, from 18.1 a name page's delayed quote in the regular session, from 18.2 each member's dividends history, asked once by hand, and from the operator's answer of 2026-11-17 the US exchanges' symbol list for the members' company names, one request at a weight of one in the off-peak run once a week | the daily allowance is 100,000 weighted calls; a normal night spends a few hundred, and the day's quotes are capped at 500 |
 | SEC EDGAR | filings, segment tables, the earnings press release that carries guidance, a call transcript where a company files one, and from 18.2 the results release before the newest, which what management said is read against | free, no key, and the primary document rather than someone's summary of it |
 | the US Treasury | from 18.2 the daily par yield curve, whose 10-year a payer's dividend is read against | free, no key and the Treasury's own table, one request a night for the session's calendar year, counting against no allowance |
 | Tavily | open web search, for theme material only | free tier is a thousand credits a month; a theme pass makes twelve searches, one a site of the industry list, at one credit each at the basic depth, so a few hundred passes a year come to a few thousand searches |
@@ -574,6 +574,18 @@ dotnet run --project src/EquityBrief.Worker -- short-interest --history
 Without `--history` it reads the newest settlements as the off-peak run does, and with no settlement stored the last 45 days. It prints a line a settlement with the stocks asked and answered, and a last line with the settlements read, the asks, the reports stored, the stocks FINRA answered nothing for and the requests; a refusal ends it with what it stored kept, naming FINRA's words, and the next run asks again from the newest settlement held.
 
 **Where to look.** Each run writes one row under the stage `short-interest` and its own run, `short-interest-<instant>` or `short-interest-history-<instant>`. The Ledger page says beneath which readings go with winners the first settlement the store holds.
+
+### The members' company names
+
+On the operator's answer of 2026-11-17 the off-peak run asks the provider's list of the US exchanges' symbols after the short interest, one request at a weight of one inside the subscription, once a week: a run within seven days of the list's last read asks nothing. It keeps each company name the list spells for every stock the three indices hold that day, the newest read standing, and every page and card names a member's company by it (see: A member's company is named as the provider's symbol list spells it, read once a week outside the night). To read it by hand, when no night is running:
+
+```
+dotnet run --project src/EquityBrief.Worker -- names
+```
+
+It prints one line: the members named, those the list names none of with their codes, and the requests; inside the week it says when it last read the list and asks nothing. A refusal keeps every name the store held.
+
+**Where to look.** Each run writes one row under the stage `names` and its own run, `names-<instant>`. The Run page lists the members the list names none of, each drawn by the name its index's file holds in title case, and says so where the list has never been read.
 
 ### Exporting one name's report
 

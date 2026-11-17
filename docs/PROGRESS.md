@@ -19933,3 +19933,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 151, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
             passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: each member's company named as the provider's symbol list spells it, read once a week   2026-11-17
+
+Corrects:   the S&P 400's and 600's members named only by their funds' holdings files, in capitals and cut at 34 characters, as
+            KRATOS DEFENSE AND SECURITY SOLUTI, on every card and page, the waiting cards and the pick cards alike.
+Ruled:      the operator's answers of 2026-11-17, item 6 and its correction, word for word in
+            `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`.
+Built:      the names refresh, a process of its own the off-peak run starts after the short interest reader: when its last read
+            is seven days old or more it asks the provider's US symbol list, one request at a weight of one, and keeps each
+            company name the list spells for every stock the three indices hold that day, the common stock's where a code is
+            listed twice, in `listed_name` (migration 152), the newest read standing; inside the week it asks nothing; a refused
+            list keeps every name held. The read API names a member's company by it on every page and card, and by the name its
+            membership row holds in title case where the list names none of it; the Run page lists those members, and says so
+            where the list has never been read. A story is still matched to a member by the name its membership row holds. The
+            waiting cards draw the name in full as the pick cards do. The decision, SCHEMA's table and its writer, the
+            names refresh's catalogue and matrix rows, the listed names' store row, section 17's row, the runbook's providers
+            row and its section, CLAUDE.md's off-peak line and `tools/offpeak`.
+Amended:    the plan's prediction of phase 23's claims, on the operator's answer of 2026-11-17: the range's top from 1,625 to
+            1,630, since this correction lands four rows no checkpoint's count held and brings phase 23's actual to 1,626; the
+            pair of about 1,602, the sum of the checkpoints' counts the plan states, stands.
+Tests:      2 new: a refresh over a recorded list keeping each member's name, the common stock's of a code listed twice, asking
+            nothing inside the week and again after it, a refused list keeping every name; and the pages naming each member by
+            the list or in title case, the Run page listing those the list names none of, and the universe's rows carrying the
+            held name a story is matched against.
+Claims:     1632, from 1628: the names refresh's catalogue and matrix rows on component-access, the listed names' store row
+            on schema-columns and section 17's row of the symbol list's names on fixture-expectations; phase 23's pair and
+            every later phase's list name them.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: the property the correction adds, a member named as the list spells it. m1 the paper read's listed name
+            dropped: red at the pages' test, KTOS drawn in title case from its held name; reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3809 of 3809 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

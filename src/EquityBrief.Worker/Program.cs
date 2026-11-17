@@ -90,6 +90,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "analyst-ratings" => await AnalystRatingsRun(args),
     "analysts-refresh" => await AnalystsRefreshRun(args),
     "short-interest" => await ShortInterestRun(args),
+    "names" => await NamesRun(args),
     "dividends" => await DividendsRun(args),
     "local-run" => await LocalRunVerb(args),
     "releases" => await ReleasesVerb(args),
@@ -886,7 +887,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 84 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 85 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1104,6 +1105,9 @@ static int NoVerb()
         "every stock the three indices held on or after it, 500 symbols a request, and keeps each report with the day FINRA " +
         "published it, as the off-peak run starts it after the labeller, with '--history' reading every settlement from " +
         "FINRA's first, free and keyless, and " +
+        "'names' asks the provider's list of the US exchanges' symbols once a week, one request at a weight of one, and keeps " +
+        "each member of the three indices' company name as the list spells it, as the off-peak run starts it after the short " +
+        "interest, asking nothing inside the week since its last read, and " +
         "'dividends --history --from <yyyy-MM-dd>' asks each member the index holds today for its dividends from that date, " +
         "one request a member, stating its asks and their weighted calls before the first request, and keeps each beside " +
         "the ones the nights kept, with '--index <GSPC, MID or SML>' naming the index and '--names' with codes between " +
@@ -3551,6 +3555,39 @@ static async Task<int> ShortInterestRun(string[] args)
     Console.WriteLine(FormattableString.Invariant(
         $"short-interest: {outcome.Settlements} settlement(s) read, {outcome.Asked} stock ask(s), {outcome.Stored} report(s) stored, {outcome.Unanswered} answered nothing, {outcome.Requests} request(s) to FINRA")
         + (outcome.Refused is { } refused ? "; stopped, " + refused : string.Empty));
+
+    return outcome.Refused is null ? 0 : 1;
+}
+
+// On the operator's answer of 2026-11-17, item 6, the names refresh: once a week the provider's symbol list, each member's
+// company name as it spells it kept, outside the night.
+// see: A member's company is named as the provider's symbol list spells it, read once a week outside the night
+static async Task<int> NamesRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (args.Length > 1)
+    {
+        Console.Error.WriteLine("names: it takes no argument.");
+
+        return 1;
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"names: no store at '{store.DatabaseFile}', so there is nowhere to keep a name.");
+
+        return 1;
+    }
+
+    var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+    var outcome = await new EquityBrief.Worker.Members.NamesRefresh(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
+        .RunAsync(
+            EodhdSymbolListFeed.Live(
+                string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+                new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
+            Console.Out);
 
     return outcome.Refused is null ? 0 : 1;
 }
