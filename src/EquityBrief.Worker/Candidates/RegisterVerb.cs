@@ -120,7 +120,7 @@ public static class RegisterVerb
         new("--retire", ["--retire", "--evidence"], [], []),
         new(TheThree, [], [], [TheThree]),
         new(TheFamily, [], [], [TheFamily]),
-        new(Moved, ["--evidence"], [Replayed], [Moved]),
+        new(Moved, ["--evidence"], [Replayed, ReplayAcceptances.Option], [Moved]),
         new(Family, [Family], [], []),
         new(TheFamilyAgain, ["--evidence"], [], [TheFamilyAgain]),
         new(FamilyAgain, [FamilyAgain, "--evidence"], [], []),
@@ -219,9 +219,27 @@ public static class RegisterVerb
             // see: The replay compares the old build and the new over two copies of the store capped night by night, and a moved live rule keeps its record only where every trade is the same
             IReadOnlyList<FamilyReplayed> replayed;
 
+            // From the operator's answer of 2026-11-17 an acceptance they gave in writing, named by --accepting and read against
+            // the replay's record alone.
+            // see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce unless the operator accepted its change in writing
+            var acceptance = Given(ReplayAcceptances.Option) is { Length: > 0 } accepting ? ReplayAcceptances.Named(accepting) : null;
+
+            if (Given(ReplayAcceptances.Option) is { Length: > 0 } unknown && acceptance is null)
+            {
+                return await RefusedAsync(registrar, runId, $"no acceptance is named '{unknown}': the operator's acceptances are {string.Join(", ", ReplayAcceptances.Given.Select(one => one.Name))}, so nothing was registered.", error);
+            }
+
+            if (acceptance is not null && Given(Replayed) is not { Length: > 0 })
+            {
+                return await RefusedAsync(registrar, runId, $"an acceptance is read against a replay's record, so {ReplayAcceptances.Option} takes {Replayed} and nothing was registered.", error);
+            }
+
+            string? acceptedEvidence = null;
+
             if (Given(Replayed) is { Length: > 0 } recordFile)
             {
-                var record = File.Exists(recordFile) ? EquityBrief.Worker.Replay.ReplayCompare.Read(await File.ReadAllTextAsync(recordFile)) : null;
+                var text = File.Exists(recordFile) ? await File.ReadAllTextAsync(recordFile) : string.Empty;
+                var record = EquityBrief.Worker.Replay.ReplayCompare.Read(text);
                 var newest = EquityBrief.Worker.Nights.NightSession.NewestStored(databaseFile)?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "none";
                 var register = (await registrar.RowsAsync()).Select(row => row.Id).DefaultIfEmpty(0).Max();
 
@@ -235,7 +253,43 @@ public static class RegisterVerb
                     return await RefusedAsync(registrar, runId, FormattableString.Invariant($"the replay's record was made through {read.Session} and register id {read.Register}, and the store now holds {newest} and id {register}, so nothing was registered: run the replay again."), error);
                 }
 
-                replayed = await replay.FromRecordAsync(read.Differing);
+                IReadOnlyDictionary<string, string>? accepted = null;
+
+                if (acceptance is not null)
+                {
+                    var tables = EquityBrief.Worker.Replay.ReplayCompare.DifferingTables(text);
+                    var named = Core.Candidates.CandidateFamily.Standing(await registrar.RowsAsync(), at).Where(acceptance.Accepts).Select(row => row.Candidate).Distinct(StringComparer.Ordinal).ToArray();
+                    var beyond = named
+                        .Select(rule => (Rule: rule, Tables: tables.GetValueOrDefault(rule) ?? new HashSet<string>(StringComparer.Ordinal)))
+                        .Where(one => one.Tables.Any(table => !acceptance.Tables.Contains(table)))
+                        .ToArray();
+
+                    if (named.Length == 0 || beyond.Length > 0)
+                    {
+                        return await RefusedAsync(
+                            registrar,
+                            runId,
+                            named.Length == 0
+                                ? $"the acceptance '{acceptance.Name}' names no standing rule, so nothing was registered."
+                                : $"the acceptance '{acceptance.Name}' holds a rule's difference to {string.Join(", ", acceptance.Tables.Order(StringComparer.Ordinal))}, and the replay shows "
+                                    + string.Join("; ", beyond.Select(one => one.Rule + " differing in " + string.Join(", ", one.Tables.Where(table => !acceptance.Tables.Contains(table)).Order(StringComparer.Ordinal))))
+                                    + ", so nothing was registered.",
+                            error);
+                    }
+
+                    accepted = named.ToDictionary(rule => rule, _ => AcceptedWords + acceptance.Ruling, StringComparer.Ordinal);
+                    acceptedEvidence = "; accepted under '" + acceptance.Name + "', " + acceptance.Ruling;
+                }
+
+                replayed = await replay.FromRecordAsync(read.Differing, accepted);
+
+                // Under an acceptance every other moved rule, live or not, reproduces exactly, or nothing registers.
+                if (acceptance is not null && replayed.Where(one => !one.Reproduced).Select(one => one.Candidate).ToArray() is { Length: > 0 } others)
+                {
+                    await ReplayedAsync(replayed, output);
+
+                    return await RefusedAsync(registrar, runId, $"under the acceptance '{acceptance.Name}' every other moved rule must reproduce exactly, and the replay did not reproduce {string.Join("; ", others)}, so nothing was registered.", error);
+                }
             }
             else
             {
@@ -246,13 +300,13 @@ public static class RegisterVerb
 
             // On the operator's rulings of 2026-11-15 a live rule's record never restarts inside the freeze: where a moved live
             // rule's replay did not reproduce every trade, nothing is registered and the refusal names each.
-            // see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce
+            // see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce unless the operator accepted its change in writing
             if (RuleFreezeDates.Holds(DateOnly.FromDateTime(at.UtcDateTime)) && LiveRestarts(await registrar.RowsAsync(), replayed, at) is { Count: > 0 } restarting)
             {
                 return await RefusedAsync(registrar, runId, FreezeRefusal(restarting), error);
             }
 
-            return await Said(await registrar.RegisterMovedAgainAsync(Given("--evidence"), runId), output, error);
+            return await Said(await registrar.RegisterMovedAgainAsync(Given("--evidence") + acceptedEvidence, runId), output, error);
         }
 
         // From 21.17 the Fundamentals family's live rule on the index given registered again at its setting without the
@@ -643,6 +697,9 @@ public static class RegisterVerb
     static bool IsLive(Core.Candidates.RegisterRow row, IReadOnlyList<Core.Candidates.RegisterRow> standing) =>
         Core.Filter.SwingFamily.IsLive(row.Candidate)
         || Core.Candidates.FamilyRecords.IsLiveAmong(row.Candidate, standing.Where(other => string.Equals(other.Evaluator, row.Evaluator, StringComparison.Ordinal)));
+
+    // What an accepted rule's run log row says in place of the replay's own words, before the ruling it cites.
+    public const string AcceptedWords = "the operator accepted its change in writing, its difference over the replay lying in its own book and its fills alone, so its record carries on: ";
 
     public static string FreezeRefusal(IReadOnlyList<string> restarting) =>
         "the rules are frozen until " + RuleFreezeDates.Until.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)

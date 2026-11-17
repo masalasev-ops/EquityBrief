@@ -8,7 +8,7 @@ namespace EquityBrief.Tests.Checks;
 // On the operator's rulings of 2026-11-15 `register` refuses to restart a live rule's record during the freeze, so a remedy's
 // `--moved` passes the freeze check: inside the freeze a moved live rule no replay reproduces refuses the command whole, and
 // outside it, or where the replay reproduces every trade, the command registers as it did.
-// see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce
+// see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce unless the operator accepted its change in writing
 public partial class FixtureExpectations
 {
     [Fact]
@@ -79,6 +79,80 @@ public partial class FixtureExpectations
         Assert.True(same.Code == 0, same.Said);
         Assert.Equal(6, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
         Assert.True(Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE outcome = '{EquityBrief.Core.Candidates.FamilyRecords.ReplayReproduced}' AND detail LIKE '%{EquityBrief.Worker.Families.FamilyReplay.ReproducedOnTheCopies}%';") >= 1);
+    }
+
+    // On the operator's answer of 2026-11-17 an acceptance they gave in writing lets the live S&P 400 and 600 heavyweights rules
+    // keep their records over a replay that differs in their own books and fills alone, every other moved rule reproducing
+    // exactly; a difference anywhere else, another moved rule differing, an acceptance no one gave, or none named refuses.
+    // see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce unless the operator accepted its change in writing
+    [Fact]
+    public async Task AnAcceptanceKeepsTheNamedLiveRulesRecordsOnlyWhereTheirDifferenceLiesInTheirOwnBooksAndFills()
+    {
+        var threeAt = new DateTimeOffset(2026, 11, 16, 22, 0, 0, TimeSpan.Zero);
+        const string Mid = "the live S&P 400 heavyweights rule under test";
+        const string Small = "the live S&P 600 heavyweights rule under test";
+
+        using var store = await FamilyStore(threeAt);
+
+        string Provisional(string evaluator) => CandidateEvaluator.Write(EquityBrief.Worker.Indices.IndexRules.Provisional(HeavyweightIndexEvaluator(evaluator)));
+
+        store.Execute(
+            "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) VALUES "
+            + $"(4, '{Mid}', 'a rule', 'a test', 'heavyweight-400', '{Provisional("heavyweight-400")}', 'moved000000', 'registered', NULL, '2026-11-16T23:00:00Z', NULL), "
+            + $"(5, '{Small}', 'a rule', 'a test', 'heavyweight-600', '{Provisional("heavyweight-600")}', 'moved000000', 'registered', NULL, '2026-11-16T23:00:00Z', NULL);");
+
+        var newest = EquityBrief.Worker.Nights.NightSession.NewestStored(store.DatabaseFile)!.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        var file = Path.Combine(store.Root, "replay-record.txt");
+        var opening = EquityBrief.Worker.Replay.ReplayCompare.DiffersOpening;
+        var ownBooks = opening + $"index_heavyweight_rule_holding\t{Mid}\t9 row(s) old, 9 new\n"
+            + opening + $"index_heavyweight_rule_holding\t{Small}\t6 row(s) old, 6 new\n"
+            + opening + $"trade_fill\t{Small} | SML\t6 row(s) old, 6 new\n";
+
+        async Task<(int Code, string Said)> MovedWith(string differences, long register, int days, params string[] accepting)
+        {
+            await File.WriteAllTextAsync(file, EquityBrief.Worker.Replay.ReplayCompare.Header(newest, register) + "\n" + differences);
+
+            return await RegisterVerbAt(store, threeAt.AddDays(days), [RegisterVerb.Moved, "--evidence", "a pinned source moved", RegisterVerb.Replayed, file, .. accepting]);
+        }
+
+        // With no acceptance named the freeze refuses the two as before.
+        var none = await MovedWith(ownBooks, 5, 2);
+
+        Assert.Equal(1, none.Code);
+        Assert.Contains("the rules are frozen until 6 Feb 2027", none.Said, StringComparison.Ordinal);
+
+        // An acceptance no one gave is refused.
+        var unknown = await MovedWith(ownBooks, 5, 3, ReplayAcceptances.Option, "an acceptance never given");
+
+        Assert.Equal(1, unknown.Code);
+        Assert.Contains("no acceptance is named 'an acceptance never given'", unknown.Said, StringComparison.Ordinal);
+
+        // A difference beyond a rule's own book and fills is refused, naming the rule and the table.
+        var beyond = await MovedWith(ownBooks + opening + $"index_rule_trade\t{Mid}\t3 row(s) old, 3 new\n", 5, 4, ReplayAcceptances.Option, "heavyweights-rule-exits");
+
+        Assert.Equal(1, beyond.Code);
+        Assert.Contains($"{Mid} differing in index_rule_trade, so nothing was registered", beyond.Said, StringComparison.Ordinal);
+        Assert.Equal(5, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
+
+        // The two differing in their own books and fills alone are registered again, the ruling on the register row and on
+        // each accepted rule's run log row.
+        var accepted = await MovedWith(ownBooks, 5, 5, ReplayAcceptances.Option, "heavyweights-rule-exits");
+
+        Assert.True(accepted.Code == 0, accepted.Said);
+        Assert.Equal(9, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
+        Assert.Equal(2, Scalar(store, $"SELECT COUNT(*) FROM candidate_register WHERE id > 5 AND event = '{CandidateFamily.Retired}' AND evidence LIKE '%accepted under ''heavyweights-rule-exits''%This is my written acceptance%';"));
+        Assert.Equal(2, Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE detail LIKE '%{RegisterVerb.AcceptedWords.Replace("'", "''", StringComparison.Ordinal)}%';"));
+
+        // Another moved rule the replay does not reproduce refuses the whole command, accepted or not.
+        store.Execute(
+            "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) " +
+            "SELECT 10, 'the live rule on a moved evaluator', rule, test, evaluator, parameters, 'moved000000', 'registered', NULL, '2026-11-21T23:00:00Z', NULL FROM candidate_register WHERE id = 1;");
+
+        var other = await MovedWith(opening + "family_trade\tthe live rule on a moved evaluator\t1 row(s) old, 0 new\n", 10, 6, ReplayAcceptances.Option, "heavyweights-rule-exits");
+
+        Assert.Equal(1, other.Code);
+        Assert.Contains("every other moved rule must reproduce exactly, and the replay did not reproduce the live rule on a moved evaluator", other.Said, StringComparison.Ordinal);
+        Assert.Equal(10, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
     }
 
     [Fact]

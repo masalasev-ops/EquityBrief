@@ -7,6 +7,24 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-17 - docs/RUNBOOK.md - register --moved takes the operator's written acceptance of a named live rule's change, on their answer of 2026-11-17
+Decision: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce unless the operator accepted its change in writing
+Was:
+> Inside the rule freeze a moved live rule the record does not reproduce refuses the command whole (see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce).
+Now:
+> Inside the rule freeze a moved live rule the record does not reproduce refuses the command whole, unless the operator accepted that rule's change in writing: `--accepting <name>` names an acceptance written into the code, the rules it accepts and the tables their difference may lie in, and the command then registers only where each accepted rule differs in those tables alone and every other moved rule reproduces exactly (see: ... unless the operator accepted its change in writing).
+Why: the operator's answer of 2026-11-17 to item 1's refused register, word for word in `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`: "A, the narrow acceptance."
+
+### 2026-11-17 - docs/ARCHITECTURE.html and docs/SCHEMA.md - the S&P 400's and 600's live heavyweights rules' own holdings take their book's exit from their own buy, on the operator's answer of 2026-11-17
+Corrects: the second restart's clause 5 of 2026-11-14 reached the S&P 400's and 600's heavyweights page books alone; the live rules' own books held 11 open holdings bought before the restart with no stop and no take-profit, their cards saying the exit is not read for that book.
+Was:
+> ARCHITECTURE.html, the heavyweights' card: ... Stop and take profit drawing the live book's stop under each holding's buy and the price it takes profit at with the rules restart they were added at where they were and on a variant's book saying it is not read for that book; ...
+> SCHEMA.md, index_heavyweight_rule_holding: ... `take_profit_from` ...; the table ending there
+Now:
+> ... and on a variant's book saying it is not read for that book; from the operator's answer of 2026-11-17 the S&amp;P 400's and 600's live rule's own book drawn as the live book is, a holding of it bought before the rule was registered at the rules restart with neither taking its book's exit from its own buy on the next night and sold that night where its close stands under the stop or at the take-profit; ...
+> SCHEMA.md, index_heavyweight_rule_holding: `exit_added_on`, from migration 151, the night such a holding was given its stop and take-profit
+Why: the operator's answer of 2026-11-17, item 1, word for word in `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`: "The 11 open holdings of the live S&P 400 and 600 heavyweights rules get a stop and a take-profit from their own buy price, by the book's chosen exit, from the night the change lands."
+
 ### 2026-11-17 - docs/ARCHITECTURE.html - a plan staging its sales with a take-profit on half draws each part's share of the whole holding, on the operator's answer of 2026-11-17
 Corrects: KTOS's waiting card on the S&P 400 drew "Sell a third at" twice, "Take profit on half at" and "Sell the other half", two plans' shares adding to more than the holding, while its order sells one set adding to the whole: a third at each level, half of what is left at the take-profit and the last sixth to the stop or the time limit.
 Was:

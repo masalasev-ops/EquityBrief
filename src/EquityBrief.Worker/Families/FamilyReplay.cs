@@ -136,7 +136,10 @@ public sealed class FamilyReplay : IComponent
 
     public const string DiffersOnTheCopies = "the new build's rows differ from the old build's on the two copies, the first difference named in the replay's record";
 
-    public async Task<IReadOnlyList<FamilyReplayed>> FromRecordAsync(IReadOnlySet<string> differing, CancellationToken cancellation = default)
+    // From the operator's answer of 2026-11-17 a rule an acceptance names is reproduced with the acceptance's words where the
+    // record shows it differing, the register having held its difference to the tables the acceptance names.
+    // see: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce unless the operator accepted its change in writing
+    public async Task<IReadOnlyList<FamilyReplayed>> FromRecordAsync(IReadOnlySet<string> differing, IReadOnlyDictionary<string, string>? accepted = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
 
@@ -154,8 +157,10 @@ public sealed class FamilyReplay : IComponent
                 0,
                 0,
                 0,
-                !differing.Contains(rule.Candidate),
-                differing.Contains(rule.Candidate) ? DiffersOnTheCopies : ReproducedOnTheCopies))
+                !differing.Contains(rule.Candidate) || (accepted?.ContainsKey(rule.Candidate) ?? false),
+                !differing.Contains(rule.Candidate) ? ReproducedOnTheCopies
+                    : accepted?.GetValueOrDefault(rule.Candidate) is { } said ? said
+                    : DiffersOnTheCopies))
             .ToArray();
 
         await RecordAsync(connection, RunIdAt(startedAt), startedAt, found, cancellation);

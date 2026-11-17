@@ -19886,3 +19886,50 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
             passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: the S&P 400's and 600's live heavyweights rules' own holdings take their book's exit, and register takes the operator's written acceptance   2026-11-17
+
+Corrects:   the second restart's clause 5 of 2026-11-14 (PR 699), which gave the S&P 400's and 600's heavyweights page books
+            their stops and take-profits and not the live rules' own books: 11 open holdings bought before the restart held
+            neither, their cards saying the exit is not read for that book.
+Ruled:      the operator's answers of 2026-11-17, items 1 and the narrow acceptance, word for word in
+            `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`.
+Built:      the index families' step gives a holding of the index's live heavyweights rule's own book bought before the rule's
+            registration, with no stop and no take-profit, the book's exit from its own buy on the next night, stored with that
+            night, and sells it that night where its close stands under the stop or at the take-profit; a background
+            version's keeps its own; a night run again clears the exit it added. Migration 151 adds `exit_added_on` to
+            `index_heavyweight_rule_holding`; the replay's copy clears it; the read API reads the live rule's stop and
+            take-profit and the night they were added. `register --moved --accepting <name>` reads an acceptance written into
+            the code: the first, `heavyweights-rule-exits`, names the two live rules and their own books and fills, and the
+            command registers only where each differs in those alone and every other moved rule reproduces exactly, the ruling
+            on the retirement row's evidence and each accepted rule's run log row. The decision refusing a moved live rule its
+            replay does not reproduce is superseded by one keeping it whole but for the operator's written acceptance.
+Pins:       IndexFamilies.cs moves the S&P 400's and 600's pullback, breakout, drift and heavyweights evaluators and the dip's on
+            every index: each version raised to its pin. RegisterVerb.cs, ReplayCompare.cs and FamilyReplay.cs move none.
+Replayed:   main's d1882371e50d against 2b2547897599 over two copies of the store of 2026-11-17 14:45Z, the night of
+            2026-11-16, 75 moved rules registered again at their own instants: 264 of 267 rule and book tables the same, the
+            three differing the S&P 400's and 600's live rules' own books and the S&P 600's fills of them; the record
+            `data/replays/20261117T144931Z-d1882371e50d-2b2547897599.txt`.
+Holdings:   the 11 with the exit each takes from its own buy, at the close of 2026-11-16: S&P 400, 4 typical moves under and
+            3 risks above, none earlier that far: BTSG 62.42 stop 54.51 take-profit 86.14; CRBG 34.95, 31.35, 45.76; EQH 54.02,
+            48.25, 71.33; LECO 285.50, 249.88, 392.36; PNFP 104.32, 94.89, 132.61; SN 198.72, 172.22, 278.23, each held. S&P 600,
+            2 typical moves under and the first earlier high 1.5 risks above or 1.5 risks: MATX 237.27, 223.29, 258.23; PI
+            177.84, 160.68, 211.45 (high of Nov 2024); RELY 25.34, 23.44, 38.55 (Nov 2021); URBN 87.32, 82.16, 95.07; WOR 63.90,
+            60.17, 69.71 (Jun 2025). MATX at 209.95, RELY at 21.93 and WOR at 58.63 closed under their stops, so each sells on
+            its first night under them; PI and URBN stood 1.7 per cent above theirs.
+Remedy:     `tools/remedies/2026-11-17-23.10-the-heavyweights-rule-exits.txt`: `register --moved --replayed` with the record and
+            `--accepting heavyweights-rule-exits`, after the merge applies migration 151 and before the next night.
+Tests:      2 new: a live rule's holding bought before its registration takes the stop of its buy less 4 typical moves and
+            is sold under it on the next night, a variant's keeps none, the night run again writing the same; and the
+            acceptance registering the two over a record differing in their own books and fills, refusing a difference in
+            another table, another moved rule differing, an acceptance never given, and none named.
+Claims:     none new.
+Mutated:    the rule: the properties the correction adds, the live rule's exit taken and the acceptance held to its tables. m1 the
+            live rule read with no registration day: red at the exit's test, the stop read "none"; m2 the acceptance's
+            table check switched off: red at the acceptance's test, a difference in another table registering; each reverted
+            before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3807 of 3807 tests ran with none failed, migrations 0 to 151 with none
+            pending, schema version 151, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
+            passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

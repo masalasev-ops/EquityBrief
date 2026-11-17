@@ -4910,7 +4910,8 @@ public sealed partial class ReadApi : IComponent
         HoldingRowsAsync(IndexHoldingsUpTo, ("$index", index), on);
 
     // Every holding a registered heavyweights rule of an index bought on or before a night, in its own book, its end read
-    // only where it ended by the night.
+    // only where it ended by the night; on the operator's answer of 2026-11-17 the live rule's with its stop, take-profit and
+    // where it came from, and the night they were added at the rules restart where they were, a background version's not read.
     // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
     static readonly string IndexRuleHoldingsUpTo = $@"
         SELECT h.index_code, h.ticker, h.entered_on, h.sector, h.entry_close,
@@ -4923,7 +4924,11 @@ public sealed partial class ReadApi : IComponent
                h.lead,
                CASE WHEN h.through = $on THEN h.growth END,
                f.fill,
-               0, NULL, NULL, NULL, NULL
+               CASE WHEN h.candidate LIKE '{EquityBrief.Core.Candidates.FamilyRecords.LivePrefix}%' THEN 1 ELSE 0 END,
+               CASE WHEN h.candidate LIKE '{EquityBrief.Core.Candidates.FamilyRecords.LivePrefix}%' AND (h.exit_added_on IS NULL OR h.exit_added_on <= $on) THEN h.stop END,
+               CASE WHEN h.candidate LIKE '{EquityBrief.Core.Candidates.FamilyRecords.LivePrefix}%' AND (h.exit_added_on IS NULL OR h.exit_added_on <= $on) THEN h.take_profit END,
+               CASE WHEN h.candidate LIKE '{EquityBrief.Core.Candidates.FamilyRecords.LivePrefix}%' AND (h.exit_added_on IS NULL OR h.exit_added_on <= $on) THEN h.take_profit_from END,
+               CASE WHEN h.candidate LIKE '{EquityBrief.Core.Candidates.FamilyRecords.LivePrefix}%' AND h.exit_added_on <= $on THEN h.exit_added_on END
         FROM index_heavyweight_rule_holding h
         {Filled("index_heavyweight_rule_holding", "h", "h.index_code", "h.candidate", "entered_on")}
         WHERE h.candidate = $candidate AND h.entered_on <= $on

@@ -1997,6 +1997,7 @@ Grain: one row per registered sector heavyweights rule of the S&P 400 or 600, st
 | `stop` | TEXT | decimal in code, from 23.10's second part the stop under the close it was bought at, the typical daily moves its book's exit states that night, a close under it selling it at that close; null for a holding bought before |
 | `take_profit` | TEXT | decimal in code, the price it takes profit at from that close, a close at or above it selling it at that close; null as `stop` is |
 | `take_profit_from` | TEXT | where that price came from: `turned down` and the session of the swing high, `risk` and the multiple, or `own`; null as `stop` is |
+| `exit_added_on` | TEXT | from migration 151, on the operator's answer of 2026-11-17, the night a holding of the index's live rule bought before the rule was registered at the rules restart was given its stop and take-profit from its own buy; null for one bought with them and for a background version's |
 
 Primary key: `candidate`, `ticker`, `entered_on`.
 
