@@ -170,6 +170,12 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Short interest"),
     ];
 
+    // The 23.10 correction of 2026-11-17, on the operator's answer to item 6: the listed names.
+    internal static string[] NamesStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Listed names"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -301,6 +307,7 @@ public class SchemaColumns
 
             // 21.6, the new readings' two stores.
             .. NewReadingStoreRows,
+            .. NamesStoreRows,
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,
             .. SessionMarkStoreRows,

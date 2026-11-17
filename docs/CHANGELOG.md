@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-17 - docs/BUILD_PLAN.md - the range phase 23's claims were predicted within is corrected to 1,630, on the operator's answer of 2026-11-17
+Corrects: the plan's prediction of phase 23's claims, which the 23.10 correction of 2026-11-17 passes by one: on the operator's answer to item 6 it lands four rows no checkpoint's count held, the names refresh's catalogue and matrix rows, the listed names' store row and section 17's row of the symbol list's names, bringing phase 23's actual to 1,626 over a range ending at 1,625.
+Was:
+> After 23.11 about 1,602, within 1,580 to 1,625:
+Now:
+> After 23.11 about 1,602, within 1,580 to 1,630:
+Why: the operator's answer of 2026-11-17, word for word in `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`: "The 1,625 was a prediction, not a cap: correct the predicted count in a dated entry, and say why." The pair of about 1,602 is the sum of the checkpoints' counts the plan states and stands; the range's top moves, since the store is declared as a row of its own as the operator ruled, rather than as words in the membership row, which had held phase 23 at 1,625.
+
 ### 2026-11-17 - docs/RUNBOOK.md - register --moved takes the operator's written acceptance of a named live rule's change, on their answer of 2026-11-17
 Decision: A live rule's record never restarts inside the rule freeze, so register refuses a moved live rule its replay does not reproduce unless the operator accepted its change in writing
 Was:
@@ -14,6 +22,17 @@ Was:
 Now:
 > Inside the rule freeze a moved live rule the record does not reproduce refuses the command whole, unless the operator accepted that rule's change in writing: `--accepting <name>` names an acceptance written into the code, the rules it accepts and the tables their difference may lie in, and the command then registers only where each accepted rule differs in those tables alone and every other moved rule reproduces exactly (see: ... unless the operator accepted its change in writing).
 Why: the operator's answer of 2026-11-17 to item 1's refused register, word for word in `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`: "A, the narrow acceptance."
+
+### 2026-11-17 - CLAUDE.md, docs/RUNBOOK.md, docs/ARCHITECTURE.html and docs/SCHEMA.md - each member's company named as the provider's symbol list spells it, read once a week in the off-peak run, on the operator's answer of 2026-11-17
+Decision: A member's company is named as the provider's symbol list spells it, read once a week outside the night
+Was:
+> CLAUDE.md, the repository layout's off-peak run: the labeller, the ratings refresh, the short interest reader and then the drain over the reports the night queued,
+> RUNBOOK.md, Providers: EODHD | ... from 18.1 a name page's delayed quote in the regular session, and from 18.2 each member's dividends history, asked once by hand |
+Now:
+> the labeller, the ratings refresh, the short interest reader, the names refresh once a week and then the drain over the reports the night queued,
+> ... from 18.2 each member's dividends history, asked once by hand, and from the operator's answer of 2026-11-17 the US exchanges' symbol list for the members' company names, one request at a weight of one in the off-peak run once a week |
+> and added: the names refresh's catalogue and matrix rows, the listed names' store row, section 17's row of the symbol list's names, SCHEMA's `listed_name` and its writer, and the runbook's section on the members' company names
+Why: the operator's answer of 2026-11-17, item 6, word for word in `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`: the S&P 400's and 600's members were named only by their funds' holdings files, in capitals and cut at 34 characters.
 
 ### 2026-11-17 - docs/ARCHITECTURE.html and docs/SCHEMA.md - the S&P 400's and 600's live heavyweights rules' own holdings take their book's exit from their own buy, on the operator's answer of 2026-11-17
 Corrects: the second restart's clause 5 of 2026-11-14 reached the S&P 400's and 600's heavyweights page books alone; the live rules' own books held 11 open holdings bought before the restart with no stop and no take-profit, their cards saying the exit is not read for that book.

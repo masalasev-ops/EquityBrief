@@ -3855,6 +3855,23 @@ internal static class Scope
             Verdict.Pass,
             "a constructed read asks the settlements from the newest held, the history from FINRA's first, every stock the indices held on or after each in pages of the stated symbols, keeps each report with its published day worked by hand, keeps a report held as first read, and an answer at FINRA's most records is refused; the figures read off the document against the constants",
             ByExpectations),
+        // On the operator's answer of 2026-11-17, item 6, the names refresh and the names it keeps.
+        [CheckReach.Key(CatalogueTable, "Names refresh")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the members and the listed names it reads, the listed names and the run log it writes and the symbol list feed, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Names refresh")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Listed names")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The symbol list's names")] = new Scoped(
+            Verdict.Pass,
+            "a constructed refresh over a recorded list keeps each member's name, the common stock's where a code is listed twice, asks nothing inside the week and asks again after it, and a refused list keeps every name held; the week read off the document against the constant",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A new reading's source refuses")] = new Scoped(
             Verdict.Pass,
             "over constructed stores a refused page of trends stores nothing while the pages after it are asked, a refused FINRA answer stops its run with what it stored kept and says why on its row, and three failed asks of Yahoo in a row stop the refresh",

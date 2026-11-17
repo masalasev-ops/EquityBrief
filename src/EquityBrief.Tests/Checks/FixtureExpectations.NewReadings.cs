@@ -47,6 +47,12 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.FailureTable, "A member a new reading's source answers nothing for"),
     ];
 
+    // The 23.10 correction of 2026-11-17, on the operator's answer to item 6: the symbol list's names.
+    internal static readonly string[] NamesClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "The symbol list's names"),
+    ];
+
     // The night after the close of 2026-10-30, in New York's evening.
     static readonly DateTimeOffset TrendsAsked = new(2026, 10, 30, 23, 40, 0, TimeSpan.Zero);
 

@@ -608,7 +608,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // move's cause reads: the company's own alone, a story the feed tagged it with that names another company left out.
     // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
     var tagged = night is { } storiedOn ? await read.NewsAsync(ticker, storiedOn) : [];
-    var company = members.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal))?.Name;
+    var company = members.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)) is { } member ? member.HeldName ?? member.Name : null;
     var stories = EquityBrief.Core.News.StoryMatch.Members(tagged, story => (story.Title, story.Text), ticker, company);
 
     // What the typical earnings move, the long view, the chart's marks and the moves' causes read. The typical move and
@@ -4162,8 +4162,10 @@ app.MapGet("/screens/run/{night?}", async (
         var runDipTrades = await read.DipTradesAsync(reading.Code, dated);
         var runResults = await read.IndexResultsAsync(reading.Code, dated);
 
+        var indexUnlisted = await read.UnlistedNamesAsync(reading.Code, dated);
+
         return Results.Content(
-            marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + page.IndexRunRegion(
+            marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + MarkRenderer.UnlistedNames(indexUnlisted.Unlisted, indexUnlisted.ReadOn) + page.IndexRunRegion(
                 marks,
                 dated,
                 reading,
@@ -4256,8 +4258,10 @@ app.MapGet("/screens/run/{night?}", async (
     // release reading is held back by.
     var monthlyHeld = new LoopDecided(monthlyDecisions, [], [], null, await read.ModelCutoffAsync(), monthlyRun is null ? [] : await read.LoopTestsAsync(monthlyRun));
 
+    var unlisted = await read.UnlistedNamesAsync(reading.Code, dated);
+
     return Results.Content(
-        marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + page.RunRegion(
+        marks.LateBars(await read.LateBarsOnAsync(dated)) + MarkRenderer.SplitNames(await read.SplitNamesOnAsync(dated)) + MarkRenderer.UnlistedNames(unlisted.Unlisted, unlisted.ReadOn) + page.RunRegion(
             marks,
             dated,
             stages,

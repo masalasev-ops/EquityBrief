@@ -772,7 +772,20 @@ public static class SchemaMigrations
         new Migration(149, "create book_record", CreateBookRecord),
         new Migration(150, "rebuild quality_holding and improving_trade so their end reasons admit a close under its stop and a take-profit", AdmitTheBookExits),
         new Migration(151, "add the night a live rule's holding took its exit at the rules restart to index_heavyweight_rule_holding", AddRuleExitAdded),
+        new Migration(152, "create listed_name", CreateListedName),
     ];
+
+    // On the operator's answer of 2026-11-17, item 6, each member's company name as the provider's symbol list spells it in
+    // full, the newest read standing, written by the names refresh alone once a week in the off-peak run.
+    // see: A member's company is named as the provider's symbol list spells it, read once a week outside the night
+    const string CreateListedName = @"
+        CREATE TABLE listed_name (
+            ticker   TEXT NOT NULL PRIMARY KEY,
+            name     TEXT NOT NULL,
+            read_on  TEXT NOT NULL,
+            run_id   TEXT NOT NULL
+        );
+    ";
 
     // On the operator's answer of 2026-11-17 the live S&P 400 and 600 heavyweights rules' own holdings bought before the rules
     // restart take their book's exit from their own buy, as the page's book took it at clause 5 of 2026-11-14, and carry the

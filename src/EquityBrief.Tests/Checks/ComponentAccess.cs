@@ -261,6 +261,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Short interest reader"),
     ];
 
+    // The 23.10 correction of 2026-11-17, on the operator's answer to item 6: the names refresh.
+    internal static string[] NamesRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Names refresh"),
+        CheckReach.Key(Scope.MatrixTable, "Names refresh"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -355,6 +362,7 @@ public partial class ComponentAccess
 
             // 21.6, the new readings' sources.
             .. NewReadingSourceRows,
+            .. NamesRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

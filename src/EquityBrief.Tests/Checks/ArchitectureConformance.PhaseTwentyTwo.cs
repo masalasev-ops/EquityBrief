@@ -161,6 +161,12 @@ public partial class ArchitectureConformance
 
         // From the operator's ruling of 2026-11-16: Tonight's row of a book's own exit.
         .. Reading.ReadSurface.OwnExitRows,
+
+        // From the 23.10 correction of 2026-11-17: the names refresh's catalogue and matrix rows and section 17's row of its
+        // names.
+        .. ComponentAccess.NamesRows,
+        .. SchemaColumns.NamesStoreRows,
+        .. FixtureExpectations.NamesClaims,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

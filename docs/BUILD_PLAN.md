@@ -2580,7 +2580,7 @@ The operator's brief of 2026-11-04 plans phase 23 as the section below, which ta
 
 **What is the operator's.** Any spend, named with its amount; each mark on a session but a history's end the rule reads, and the one list of those no filing settles; a failed company left out, Countrywide already ruled; the word that the data check's counts have been read; a first test year differing from its estimate by more than a year; a drift on the S&P 400 or 600 no year of which reaches its coverage; the heavyweights' input before filed share counts; each proposal; the benchmark's fix; the sector variant; and the restart.
 
-**The claims phase 23 predicts.** 1,534 claims and 1,534 PASS on main at f0f98fb9. After 23.11 about 1,602, within 1,580 to 1,625:
+**The claims phase 23 predicts.** 1,534 claims and 1,534 PASS on main at f0f98fb9. After 23.11 about 1,602, within 1,580 to 1,630:
 - none at 23.0, which adds section 20's row and no row of a table the harness reads;
 - about 7 at 23.1, the check's catalogue and matrix rows, its store, the marks' new kind, the History page's rows and section 18's row;
 - about 6 at 23.2, its store, the scorecard's and the Loop summary's rows, the luck line's row, section 17's row and section 18's row;
