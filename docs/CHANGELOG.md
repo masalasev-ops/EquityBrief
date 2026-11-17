@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-17 - docs/ARCHITECTURE.html - the read-only copy states no multiple of the risk, retries an upload only the network failed, and Home says when it was last uploaded, on the operator's word of 2026-11-17
+Decision: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
+Was:
+> the read-only copy: ... fetches only the copy's files. A target's close the code writes is said in the copy's words, and every file the copy wrote is read for the method, ...
+> the read-only copy: ... the Fundamentals family's line with its setting exactly as the app does, and none of them is a thing the check refuses (see: The read-only copy draws each pick's record and the picks watched as the app does, and its check still refuses the method). It runs by hand ...
+Now:
+> the read-only copy: ... A target's close the code writes is said in the copy's words, and from the 23.10 correction of 2026-11-17 so are "at or above its take-profit price", as "at its take-profit price or higher", and every multiple of the risk code wrote, ... while the app's own pages keep every word (see: ...); and every file the copy wrote is read for the method, ...
+> the read-only copy: ... (see: The read-only copy draws each pick's record ...), a tile's multiple of the risk alone said in the copy's words from the 23.10 correction of 2026-11-17. An upload the network failed before Cloudflare answered is tried again after waits of five, ten and fifteen minutes, ... which the app's Home draws as one line beside its masthead and the copy's own Home does not (see: ...). It runs by hand ...
+Why: the operator's word of 2026-11-17, kept in `prompts/2026-11-17-23.10-site-copy-correction.md`, after the copy had shown the night of 11 November for six days: the upload of the night of 12 November was lost to the network, and the two of 17 November were refused by the check for "2 times the risk" on a pick's take-profit line and "at or above" in the books' column.
+
 ### 2026-11-17 - docs/ARCHITECTURE.html - a split table's entry is read only where the closes step by its own ratio, on the operator's instruction of 2026-11-17
 Decision: A split table's entry is read only where the closes step by its own ratio, and an entry of another size is set aside and listed
 Was:

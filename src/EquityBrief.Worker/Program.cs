@@ -4094,7 +4094,8 @@ static async Task<int> PublishSiteVerb(string[] args)
         store.DataRoot,
         AppContext.BaseDirectory,
         [.. secrets.OfType<string>().Where(file => file.Length > 0)],
-        [.. roots.OfType<string>().Where(root => root.Length > 0)]).RunAsync(
+        [.. roots.OfType<string>().Where(root => root.Length > 0)],
+        clock: SystemClock.ForUnitedStatesSessions()).RunAsync(
             args.Contains(EquityBrief.Core.Cloudflare.PublishedSite.Upload),
             configuration[EquityBrief.Core.Cloudflare.PublishedSite.TokenKey],
             configuration[EquityBrief.Core.Cloudflare.PublishedSite.AccountKey],

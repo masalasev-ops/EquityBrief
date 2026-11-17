@@ -83,8 +83,7 @@ public class PinnedConstants
         const string Calls = "Model calls in the nightly run";
         const string Clock = "Nightly wall clock, at index size";
         const string Retry = "Per-request timeout and the night's deadline";
-        const string Budget = "Weighted-call budget";
-        const string Admissible = "Source admissibility";
+        const string Budget = "Weighted-call budget";        const string Admissible = "Source admissibility";
         const string Significance = "Significance threshold";
         const string Versions = "Rule versions scored at once";
         const string BlocksRow = "Blocks a record is judged over";

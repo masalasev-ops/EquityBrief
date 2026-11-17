@@ -67,8 +67,10 @@ public static partial class SiteCopy
     static bool IsModelsHeadline(string start) => HasClass(start, "lead-line") && AttributeOf(start, "data-written") == "model";
 
     // A screen with the target's close the code writes said in the copy's words: "a close at or above 22.13" as "a close at
-    // 22.13 or higher", and the words list's "at or above it" as "at it or higher"; a report's written prose and the headline a
-    // model wrote are left as the claim checker accepted them.
+    // 22.13 or higher", the words list's "at or above it" as "at it or higher" and "at or above its take-profit price" as "at
+    // its take-profit price or higher", and every multiple of the risk code wrote left out, a take-profit said by the dollars
+    // up and down alone; a report's written prose and the headline a model wrote are left as the claim checker accepted them.
+    // see: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
     public static string Worded(string fragment)
     {
         var kept = new List<string>();
@@ -81,11 +83,36 @@ public static partial class SiteCopy
         }
 
         var marked = Removed(Removed(fragment, "section", start => HasClass(start, WrittenSection), Kept), "h1", IsModelsHeadline, Kept);
-        var worded = AtOrAbove().Replace(marked, "at ${what} or higher").Replace("The price a close at or above ends it at a gain", "The price at which a close ends it at a gain", StringComparison.Ordinal);
+        var worded = WithoutRiskMultiples(AtOrAbove().Replace(marked, "at ${what} or higher").Replace("The price a close at or above ends it at a gain", "The price at which a close ends it at a gain", StringComparison.Ordinal));
 
         return Regex.Replace(worded, "\u0001(?<at>[0-9]+)\u0001", held => kept[int.Parse(held.Groups["at"].Value, System.Globalization.CultureInfo.InvariantCulture)]);
     }
 
-    [GeneratedRegex(@"at or above (?<what>it\b|the target of [0-9][0-9,.]*[0-9]|\$?[0-9][0-9,]*(?:\.[0-9]+)?)")]
+    // The copy's words for each multiple of the risk the app states: a take-profit's line by its dollars alone, "2 times the
+    // risk: $94.69 up for $47.35 down." as "$94.69 up for $47.35 down.", the line of a take-profit no earlier high reached as
+    // "No earlier high far enough above the buy, so its take-profit is" its dollars, a reward short of its floor as too small
+    // for the risk with neither figure, and any other as a set multiple of the risk.
+    static string WithoutRiskMultiples(string text) =>
+        RiskMultiple().Replace(
+            RewardShortOfRisk().Replace(
+                RiskMultipleBeforeDollars().Replace(
+                    NoEarlierHigh().Replace(text, "No earlier high far enough above the buy, so its take-profit is "),
+                    string.Empty),
+                "the reward is too small for the risk"),
+            "a set multiple of the risk");
+
+    [GeneratedRegex(@"at or above (?<what>it\b|its take-profit price\b|the target of [0-9][0-9,.]*[0-9]|\$?[0-9][0-9,]*(?:\.[0-9]+)?)")]
     private static partial Regex AtOrAbove();
+
+    [GeneratedRegex(@"No earlier high (?:[0-9]+(?:\.[0-9]+)? times the risk or more )?above the buy, so it aims for [0-9]+(?:\.[0-9]+)? times the risk: ")]
+    private static partial Regex NoEarlierHigh();
+
+    [GeneratedRegex(@"\b[0-9]+(?:\.[0-9]+)? times the risk: (?=\$)")]
+    private static partial Regex RiskMultipleBeforeDollars();
+
+    [GeneratedRegex(@"the reward is [0-9]+(?:\.[0-9]+)? times the risk, needs [0-9]+(?:\.[0-9]+)?")]
+    private static partial Regex RewardShortOfRisk();
+
+    [GeneratedRegex(@"\b[0-9]+(?:\.[0-9]+)? times the risk\b")]
+    private static partial Regex RiskMultiple();
 }

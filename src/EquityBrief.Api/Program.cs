@@ -3136,6 +3136,11 @@ async Task<IResult> HomeAsync(
 
         // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
         HeldAgain = [.. families.SelectMany(family => family.HeldAgain)],
+
+        // From the operator's word of 2026-11-17 when the public copy was last uploaded and why the newest attempt failed, on
+        // the app's Home alone and never the copy's.
+        // see: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
+        Upload = copying ? null : new SiteUploadView(EquityBrief.Core.Cloudflare.SiteUpload.Read(store.DataRoot), TimeZoneInfo.FindSystemTimeZoneById(EquityBrief.Core.Time.SessionZones.UnitedStates)),
     };
 
     return Results.Content(
@@ -4426,7 +4431,7 @@ if (copyServer is not null)
         Console.WriteLine($"{PublishedSite.Verb}: leaks the method: {leak}");
     }
 
-    Console.WriteLine(FormattableString.Invariant($"{PublishedSite.Verb}: night {copied.Night:yyyy-MM-dd}, {copied.Files.Count} screens held"));
+    Console.WriteLine(PublishedSite.NightLine(copied.Night, copied.Files.Count));
     Environment.ExitCode = copied.Files.Count == 0 ? 1 : copied.Leaks is { Count: > 0 } ? PublishedSite.Leaked : 0;
 
     return;

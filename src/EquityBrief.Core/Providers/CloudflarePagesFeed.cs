@@ -35,7 +35,11 @@ public sealed class CloudflarePagesFeed(HttpClient http, string token, string ac
         }
         catch (HttpRequestException failed)
         {
-            throw new InvalidOperationException(Scrubbed("the host could not be reached: " + failed.Message), failed);
+            throw new PagesUnreachable(Scrubbed("the host could not be reached: " + failed.Message), failed);
+        }
+        catch (TaskCanceledException failed)
+        {
+            throw new PagesUnreachable(Scrubbed("the host did not answer in time: " + failed.Message), failed);
         }
     }
 
@@ -145,3 +149,8 @@ public sealed class CloudflarePagesFeed(HttpClient http, string token, string ac
     public string Scrubbed(string said) =>
         new[] { token, account }.Where(secret => secret.Length > 0).Aggregate(said, (text, secret) => text.Replace(secret, "(withheld)", StringComparison.Ordinal));
 }
+
+// An upload the network failed before Cloudflare answered: the host not reached or not answering in time, which the
+// publisher tries again, where an answer refusing it is not.
+// see: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
+public sealed class PagesUnreachable(string message, Exception inner) : InvalidOperationException(message, inner);

@@ -39,4 +39,14 @@ public static class PublishedSite
 
     // What every page of the copy names itself, so it is never taken for the read surface the operator runs.
     public const string Name = "EquityBrief, read-only copy";
+
+    // The read surface's last line, naming the night the copy holds, which the worker reads back for the upload's record.
+    public static string NightLine(DateOnly night, int screens) =>
+        FormattableString.Invariant($"{Verb}: night {night:yyyy-MM-dd}, {screens} screens held");
+
+    public static DateOnly? NightOf(IEnumerable<string> lines) =>
+        lines.Select(line => System.Text.RegularExpressions.Regex.Match(line, $@"^{Verb}: night (?<night>\d{{4}}-\d{{2}}-\d{{2}}), \d+ screens held$"))
+            .Where(match => match.Success)
+            .Select(match => (DateOnly?)DateOnly.ParseExact(match.Groups["night"].Value, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))
+            .LastOrDefault();
 }
