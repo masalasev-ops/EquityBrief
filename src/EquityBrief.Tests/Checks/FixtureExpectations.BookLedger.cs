@@ -61,6 +61,38 @@ public partial class FixtureExpectations
     // The scorecard's constructed filer for the night test over a store, which lives in another partial class.
     internal static IReadOnlyList<FiledFactRow> NineFactsForTheLedger() => NineFacts();
 
+    // On the operator's answers of 2026-11-16, item 3, the stale share figure: a filer whose cover dates its share count after
+    // the day it filed, the count standing for 2026-08-10 filed on 2026-08-05. The first session after the filing cannot
+    // count it, so its share check reads the year before's count against none and is not read; a later session can, and
+    // reads it against the year before's. One context asked about both, the earlier first, scores the later on its own
+    // session, as the scorecard read alone over that session does, and never as the earlier.
+    [Fact]
+    public void ALedgerContextAskedAboutManySessionsScoresEachOnTheShareCountsItsOwnSessionCanRead()
+    {
+        var (calendar, inputs, _) = BookHistory();
+        var sessionAt = calendar.Select((day, at) => (day, at)).ToDictionary(pair => pair.day, pair => pair.at);
+        var series = inputs.Names.Select(name => SweepColumns.Series(name, sessionAt)).ToArray();
+        var members = SweepBenchmark.On(series, calendar.Count);
+        var (highs, lows) = SweepIdeas.HighsAndLows(series, members, calendar.Count);
+        List<FiledFactRow> late =
+        [
+            .. NineFacts().Where(fact => !(FiledFacts.SharesOutstanding.Contains(fact.Concept, StringComparer.Ordinal) && fact.End.Year == 2026)),
+            NineFact(FiledFacts.SharesOutstanding[0], new(2026, 8, 10), new(2026, 8, 10), 100m, new(2026, 8, 5)),
+        ];
+        var context = new LedgerContext(NoIncome, NoSectors, highs, lows, new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal) { ["AAA"] = late });
+        var first = new DateOnly(2026, 8, 6);
+        var later = new DateOnly(2026, 8, 20);
+
+        var atFirst = context.Scorecard(series[0], first);
+        var atLater = context.Scorecard(series[0], later);
+        var alone = FundamentalScorecard.Read(late, later, financial: false, PriceHistory.Of(series[0].Bars));
+
+        Assert.Equal(CheckAnswer.NotFiled, atFirst.Checks.Single(check => check.Number == 7).Answer);
+        Assert.NotEqual(CheckAnswer.NotFiled, atLater.Checks.Single(check => check.Number == 7).Answer);
+        Assert.Equal((alone.Passed, alone.Applied), (atLater.Passed, atLater.Applied));
+        Assert.Equal(atFirst.Applied + 1, atLater.Applied);
+    }
+
     [Fact]
     public void ABookFamilysSetupIsLaidAtAReshuffleOrAFilingAndHeldToTheFirstLaterOneItsGateFailsAtOrItsCapAgainstTheIndexHeldTheSameWay()
     {

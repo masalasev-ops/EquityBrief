@@ -19794,3 +19794,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
             passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: the stale share figure: the ledger's scorecard worked once for each count of the share counts standing before a session, through the replay   2026-11-17
+
+Corrects:   the stale share figure carried by 23.10's replay fix's carried rows: one ledger context asked about many sessions
+            kept a stock's scorecard by the count of its facts filed before a session and worked it with the first session to
+            ask, so where a cover dated its share count after the day it was filed, the later sessions read the first one's
+            share check until the next filing; at most 257 rows of about 2.6 million, counted on a copy of 2026-11-15. No live
+            rule's nightly reading went through it.
+Ruled:      the operator's answers of 2026-11-16, item 3, word for word in
+            `prompts/2026-11-17-23.10-answers-to-the-report-of-16-nov.md`: fix it now through the replay, land it only if every
+            live rule's trades are unchanged, write the ledgers again outside any night and report the rows moved.
+Built:      the scorecard is worked once for each count of the facts filed before a session and of the share counts among
+            them standing for a day before it. The ledger readings' version moves to a9e953f17c94, and with it the versions of
+            the evaluators reading the catalogue: Quality at a fair price and the Fundamentals family on every index to
+            f52b2fa98e60 and a336c20457bd, the short-term dip on every index to db74119af994 and the S&amp;P 500's sector
+            heavyweights to 64c2bb97683a. The ladder rules' code version does not move.
+Replayed:   by hand before the merge, tools/replay's own steps with the repair's commit as the new build: over two copies of
+            the store made at 2026-11-17 06:15Z on C:, main's bf620b93335a against the repair's 05c8ae320041 from the night of
+            2026-11-16, the session after the restart's registrations of 2026-11-15, 80 moved rules registered again at their
+            own instants and 8 open windows hashed on the new copy: 267 of 267 rule and book tables the same; 4 minutes; both
+            copies removed, 21 GB freed; the record kept as `data/replays/20261117T061915Z-bf620b93335a-05c8ae320041.txt`.
+            The live store was only read.
+Remedy:     `tools/remedies/2026-11-17-23.10-the-stale-share-figure.txt`: `register --moved` reading that record, every
+            moved rule registered again with its record carrying on, run from main after the merge and before the night of
+            2026-11-17. The ledgers are then written again by hand from main with `tools/ledger-build.ps1`, the standing
+            ledger from 2019-01-02 to 2026-11-16 and the long ledger on each index with `--again`, outside any night.
+Tests:      1 new: a ledger context asked about the first session after a filing whose cover dates its share count after it
+            and then a later session scores the later as the scorecard read alone over it does, its share check read.
+Claims:     none new.
+Pins:       moved: `src/EquityBrief.Worker/Ledger/LedgerSetups.cs`, one of the sources the ledger readings' version pins, and
+            through `src/EquityBrief.Core/Ledger/LedgerReadings.cs` the four evaluators named above, each raised to its pin.
+Mutated:    the rule: the property the repair adds, that the share counts a session can read are part of the key. m1 the key
+            without them, the code as it stood: red at the new test, its later session's share check not read.
+Carried:    the rows the ledgers' rebuild moves, counted against the readings of `fundamentals_score` and `share_fall` read
+            from the store before it, and the builds' times, reported to the operator once the builds end.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3802 of 3802 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
+            passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

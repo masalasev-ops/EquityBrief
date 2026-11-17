@@ -501,7 +501,7 @@ public sealed record LedgerContext(
         return ValuationReading.Place(parts, prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars))), session);
     }
 
-    readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed, bool Financial), Scorecard> scorecards = new();
+    readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed, int Counts, bool Financial), Scorecard> scorecards = new();
     readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, PriceHistory> ownPrices = new();
 
     // From 22.8 each member's GICS sector as the companies' rows file it, which the scorecard reads a financial company by
@@ -511,17 +511,20 @@ public sealed record LedgerContext(
 
     // From 22.8 a member's fundamentals scorecard on a session, over its filer's facts filed before it and its own closes
     // to it, which on a night are the store's year alone, a financial company's read as GICS filed its sector on the
-    // session; worked once for each count of the facts filed before a session.
+    // session; worked once for each count of the facts filed before a session and, on the operator's answers of 2026-11-16,
+    // item 3, of the share counts among them standing for a day before it, since a cover may date its count after the day
+    // it was filed and the share check reads only the counts standing before the session.
     // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
     public Scorecard Scorecard(SweepSeries one, DateOnly session)
     {
         var ticker = one.Name.Ticker;
         var facts = Facts?.GetValueOrDefault(ticker) ?? [];
         var filed = facts.Count(fact => fact.Filed < session);
+        var counts = facts.Count(fact => fact.Filed < session && fact.End < session && FiledFacts.SharesOutstanding.Contains(fact.Concept, StringComparer.Ordinal));
         var sector = Gics is { } gics ? gics.GetValueOrDefault(ticker) : Sectors.GetValueOrDefault(ticker);
         var financial = FundamentalScorecard.IsFinancial(GicsSectors.On(ticker, sector, session));
 
-        return scorecards.GetOrAdd((ticker, filed, financial), _ => FundamentalScorecard.Read(facts, session, financial, ownPrices.GetValue(one, series => PriceHistory.Of(series.Bars))));
+        return scorecards.GetOrAdd((ticker, filed, counts, financial), _ => FundamentalScorecard.Read(facts, session, financial, ownPrices.GetValue(one, series => PriceHistory.Of(series.Bars))));
     }
 }
 
