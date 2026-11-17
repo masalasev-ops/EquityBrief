@@ -158,6 +158,9 @@ public partial class ArchitectureConformance
 
         // From 23.10's replay fix: the replay's catalogue and matrix rows.
         .. ComponentAccess.ReplayRows,
+
+        // From the operator's ruling of 2026-11-16: Tonight's row of a book's own exit.
+        .. Reading.ReadSurface.OwnExitRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

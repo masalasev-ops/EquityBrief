@@ -69,7 +69,11 @@ public sealed record HeavyweightCardView(
     HeavyweightTilesView? Tiles = null,
     IReadOnlyList<HeavyweightSectorView>? Sectors = null,
     IReadOnlyList<int>? SweepLost = null,
-    FrozenSweepView? Frozen = null);
+    FrozenSweepView? Frozen = null)
+{
+    // On the operator's ruling of 2026-11-16 the book's own exit beside it, a record only; none without a live rule.
+    public OwnExitView? OwnExit { get; init; }
+}
 
 // One holding on Past picks as of a night: the stock, its sector, its buy and its sale with their closes, why it
 // ended, its return, its size cut's over the same sessions and the difference, each in percent and none while open.
@@ -271,6 +275,7 @@ public sealed partial class MarkRenderer
             body.Append("</ul></details>");
         }
 
+        body.Append(OwnExitFold(card.OwnExit));
         body.Append("<details class=\"fold fam-rule\"><summary>The full rule, how its settings were chosen, and its record</summary><div class=\"fold-b\">");
 
         if (card.RuleChoice is { } chips)
