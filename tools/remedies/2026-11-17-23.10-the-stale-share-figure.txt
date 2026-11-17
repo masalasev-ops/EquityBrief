@@ -1,0 +1,12 @@
+# The stale share figure's repair, on the operator's answers of 2026-11-16, item 3: the ledger's scorecard is worked once for
+# each count of the share counts standing before a session, which moves the ledger readings' version and, through it, the
+# evaluators of Quality at a fair price, the Fundamentals family and the short-term dip on every index and the S&P 500's sector
+# heavyweights. The replay over two copies of the store of 2026-11-17 06:15Z compared main's bf620b93335a with the repair's
+# 05c8ae320041 over the night of 2026-11-16, 80 moved rules registered again at their own instants: 267 of 267 rule and book
+# tables the same. So every moved rule is registered again with its record carrying on. Run from main after the merge and before
+# the night of 2026-11-17, when no night, off-peak run, local run, ledger build or monthly run is writing; the record holds
+# only while the store's newest session is 2026-11-16 and its register's newest id 2282. No request and no model call.
+# The ledgers are then written again by hand from main with tools/ledger-build, as RUNBOOK's 21.4 does, outside any night:
+#   tools/ledger-build.ps1 --index <GSPC, MID, SML> --from 2019-01-02 --through 2026-11-16 --again
+#   tools/ledger-build.ps1 --long --index <GSPC, MID, SML> --again
+register --moved --evidence "23.10: the stale share figure's repair on the operator's answers of 2026-11-16, item 3, moving the ledger readings' version; every trade the same over the replay of 2026-11-16" --replayed data/replays/20261117T061915Z-bf620b93335a-05c8ae320041.txt
