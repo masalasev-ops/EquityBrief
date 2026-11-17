@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-17 - docs/ARCHITECTURE.html - a plan staging its sales with a take-profit on half draws each part's share of the whole holding, on the operator's answer of 2026-11-17
+Corrects: KTOS's waiting card on the S&P 400 drew "Sell a third at" twice, "Take profit on half at" and "Sell the other half", two plans' shares adding to more than the holding, while its order sells one set adding to the whole: a third at each level, half of what is left at the take-profit and the last sixth to the stop or the time limit.
+Was:
+> ... with "Its stop moves up to the buy" and the price beneath it once the first half sells; a take-profit at the multiple of the risk alone ...
+Now:
+> ... once the first half sells; from the operator's answer of 2026-11-17 a plan staging its sales with a take-profit on half draws one set of sales, each part in the order its price is reached naming its share of the whole holding, as its walk sells them ... so the shares a card's rows name add up to the whole holding and never more, and every plan selling in more than two parts says above its rows "Sells in" the count "parts as the price rises"; a take-profit at the multiple of the risk alone ...
+Why: the operator's answer of 2026-11-17 on item 5, word for word in `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`: "The trade stays as built and only the card changes."
+
 ### 2026-11-17 - docs/ARCHITECTURE.html - a book's own exit draws one line above its fold in points a month, on the operator's answers of 2026-11-16
 Decision: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
 Was:

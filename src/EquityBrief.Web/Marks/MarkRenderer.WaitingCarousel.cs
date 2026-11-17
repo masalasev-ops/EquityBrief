@@ -114,6 +114,7 @@ public sealed partial class MarkRenderer
             card.Append(Invariant, $"<div class=\"wo-bar\" role=\"img\" aria-label=\"{Escaped(ToGo(gap))} to its buy price of {Escaped(Dollars(buy))}\"><div class=\"wo-bar-track\"><div class=\"wo-fill\" style=\"width:{filled.ToString("0.#", CultureInfo.InvariantCulture)}%\"></div></div><p class=\"wo-bar-labels\"><span>Buy price {Escaped(Dollars(buy))}</span><span>{Escaped(ToGo(gap))}</span></p></div>");
         }
 
+        card.Append(order.Sale is { } parted ? SalePartsMark(parted) : string.Empty);
         card.Append("<div class=\"home-prices wo-plan\">");
 
         foreach (var (key, label, value, note) in WaitingPlanRows(order))
