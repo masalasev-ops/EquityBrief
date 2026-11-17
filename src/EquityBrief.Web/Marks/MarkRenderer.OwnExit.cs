@@ -51,9 +51,11 @@ public sealed partial class MarkRenderer
 
         var months = Math.Max(FewestMonths, sessions / SessionsAMonth);
 
+        // The operator's "this book" in the reader's words a card speaks, which say holdings for a book.
+        // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
         return view.OwnMean is { } own && view.LiveMean is { } live
-            ? Formatted($"Sold the old way, with no stop and no take-profit, this book would have made {own * 100 / months:0.00} points a month against {live * 100 / months:0.00} as it trades now, since {view.Since:d MMM yyyy}.")
-            : Formatted($"Sold the old way, with no stop and no take-profit, this book's points a month against how it trades now are not yet measured, since {view.Since:d MMM yyyy}.");
+            ? FormattableString.Invariant($"Sold the old way, with no stop and no take-profit, these holdings would have made {own * 100 / months:0.00} points a month against {live * 100 / months:0.00} as they trade now, since {view.Since:d MMM yyyy}.")
+            : FormattableString.Invariant($"Sold the old way, with no stop and no take-profit, these holdings' points a month against how they trade now are not yet measured, since {view.Since:d MMM yyyy}.");
     }
 
     public static string OwnExitFold(OwnExitView? view)

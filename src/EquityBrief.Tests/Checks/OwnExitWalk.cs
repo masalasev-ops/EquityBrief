@@ -172,10 +172,10 @@ public sealed class OwnExitWalk
         var early = month with { Through = new DateOnly(2026, 12, 15) };
         var later = month with { Through = new DateOnly(2027, 1, 29) };
 
-        Assert.Equal("Sold the old way, with no stop and no take-profit, this book would have made 5.67 points a month against -1.20 as it trades now, since 1 Dec 2026.", MarkRenderer.OwnExitLine(month));
+        Assert.Equal("Sold the old way, with no stop and no take-profit, these holdings would have made 5.67 points a month against -1.20 as they trade now, since 1 Dec 2026.", MarkRenderer.OwnExitLine(month));
         Assert.Equal(MarkRenderer.OwnExitLine(month), MarkRenderer.OwnExitLine(early));
-        Assert.Equal("Sold the old way, with no stop and no take-profit, this book would have made 2.90 points a month against -0.61 as it trades now, since 1 Dec 2026.", MarkRenderer.OwnExitLine(later));
-        Assert.Equal("Sold the old way, with no stop and no take-profit, this book's points a month against how it trades now are not yet measured, since 1 Dec 2026.", MarkRenderer.OwnExitLine(early with { OwnMean = null }));
+        Assert.Equal("Sold the old way, with no stop and no take-profit, these holdings would have made 2.90 points a month against -0.61 as they trade now, since 1 Dec 2026.", MarkRenderer.OwnExitLine(later));
+        Assert.Equal("Sold the old way, with no stop and no take-profit, these holdings' points a month against how they trade now are not yet measured, since 1 Dec 2026.", MarkRenderer.OwnExitLine(early with { OwnMean = null }));
 
         // The line stands above the fold, read without opening it.
         var html = MarkRenderer.OwnExitFold(later);

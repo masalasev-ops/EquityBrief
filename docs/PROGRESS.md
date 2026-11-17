@@ -19773,10 +19773,11 @@ Ruled:      the operator's answers of 2026-11-16, items 6, 7 and 8, word for wor
 Built:      the news counts read the stories of the stocks a page draws alone, the S&amp;P 500's listing rows none on a night the
             families drew the page's list; measured read-only on the store, the window's read for the night's five picks 0.73 s
             and 83 stories against 2.53 s and 28,802 for every member. The own exit's walk reads every stock's bars and its
-            averages in one query each. Each book's card draws above its fold, read without opening it, the operator's line:
-            "Sold the old way, with no stop and no take-profit, this book would have made x points a month against x as it
-            trades now, since <date>.", each mean change in percentage points over the trading months since the walk began,
-            21 sessions a month and never fewer than one month.
+            averages in one query each. Each book's card draws above its fold, read without opening it, the operator's line
+            in the reader's words a card speaks, which say holdings for a book: "Sold the old way, with no stop and no
+            take-profit, these holdings would have made x points a month against x as they trade now, since <date>.", each
+            mean change in percentage points over the trading months since the walk began, 21 sessions a month and never
+            fewer than one month.
 Tests:      1 new: the line worked by hand over a month, under one and two, and its unmeasured form, standing above the fold;
             the frozen S&amp;P 400 Quality card's read-back holds the line, the two equal on the walk's first nights.
 Claims:     none new: the own exit's row is worded again in place.
