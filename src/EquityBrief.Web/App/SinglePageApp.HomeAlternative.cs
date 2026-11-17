@@ -143,6 +143,7 @@ public sealed partial class SinglePageApp
 
         block.Append(Invariant($"<div class=\"home-alt\" data-alt=\"{(better ? "better" : "less")}\" data-combination=\"{Escaped(plan.Combination)}\">"));
         block.Append(Invariant($"<p class=\"home-alt-h\"><b>{heading}</b> {Escaped(AlternativeLead(plan))}</p>"));
+        block.Append(EquityBrief.Web.Marks.MarkRenderer.SalePartsMark(sale));
         block.Append("<div class=\"home-prices\">");
         block.Append(plan.Buy is { } level
             ? Invariant($"<div><span>Buy if it dips to about</span><b>{Dollars(level)}</b></div>")

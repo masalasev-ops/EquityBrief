@@ -560,6 +560,15 @@ public sealed partial class MarkRenderer
     {
         var after = Formatted($"{sale.Cap} trading days");
 
+        // On the operator's answer of 2026-11-17 on item 5 a plan staging its sales with a take-profit on half names each part's
+        // share of the whole in the order its price is reached.
+        if (sale.StagesAndHalves)
+        {
+            var parts = string.Join(", ", sale.Parts().Select(part => part.Price is { } price ? part.Words + " at " + Figures.Price(price) : part.LastWords + " after " + after));
+
+            return Formatted($"<td class=\"r num plan-target\" data-target=\"staged\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(parts)}</td>");
+        }
+
         return sale.Kind == EquityBrief.Core.Loop.PlanPoints.StagedSales && sale.Stages.Count > 0
             ? Formatted($"<td class=\"r num plan-target\" data-target=\"staged\" data-sale=\"{Escaped(sale.Kind)}\">{Escaped(PlanSaleView.SharesOf(sale.Stages.Count).Each)} at each of {Escaped(string.Join(", ", sale.Stages.Select(Figures.Price)))}{(sale.TakeProfit is { } rest ? Formatted($", the rest at {Figures.Price(rest.Price)}") : string.Empty)}</td>")
             // From the operator's order of 2026-11-14 the price it takes profit at where its sale names none of its own.

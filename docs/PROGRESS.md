@@ -19852,3 +19852,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
             passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 23.10 - correction: a plan staging its sales with a take-profit on half draws each part's share of the whole holding   2026-11-17
+
+Corrects:   the second restart's half exit as the cards draw it (PR 699): KTOS's waiting order on the S&P 400 drew "Sell a third
+            at" $44.11 and $45.47, "Take profit on half at" $46.51 and "Sell the other half", two plans' shares adding to more
+            than the holding. Its order sells one set adding to the whole, as its long test walked it: a third at each level,
+            half of what is left at $46.51, the stop on the rest then at the buy, and the last sixth to the stop or the time
+            limit. Four waiting orders of the live S&P 400 drift rule carried both, CNH, KTOS and MAT given the half at the
+            restart and AAON placed with it; no open trade, and none on the S&P 500 or 600. On the operator's answer of
+            2026-11-17 the trade stays as built and only the card changes.
+Built:      a plan's parts as its walk sells them on a rise, each its share of the whole in the order its price is reached, drawn
+            on the waiting cards, Home's ideas and alternatives, the pick cards, Tonight's sale column and the plan's steps:
+            "Sell a third at", "Take profit on a sixth at" with "Half of what is left." and the multiple beneath, "Sell the last
+            sixth" after its trading days with the stop moving up to the buy beneath; "Sells in x parts as the price rises."
+            above the rows of a plan selling in more than two parts; and a guard reading the shares every plan's rows on a page
+            name, a plan naming more than the whole, or naming its last part and less, found by its stock. The plan's steps of a
+            take-profit on half alone say half sells and the stop on the other half moves up to the buy.
+Tests:      3 new: KTOS's rows, parts line and steps word for word; seven plans, the four the store held with three shapes
+            beside them, each worked by hand and the guard finding none; and the guard finding KTOS's card as it was drawn.
+Claims:     none new.
+Pins:       none: no source a version pins moved.
+Mutated:    the rule: the property the correction adds, one holding drawn as one set of sales. m1 the parts' rows switched off,
+            the two plans' shares drawn again: red at the rows test and at the guard over the seven plans, which found AAON,
+            CNH, HALF, KTOS and MAT, the guard's own test staying green as predicted; reverted before anything was committed.
+Carried:    the one shape the walk and the operator's reading of item 5 part on, a single close reaching the last staged level
+            and the half's price together, the walk taking the half first and selling everything at the next open: kept as
+            built on the operator's answer of 2026-11-17, an idea for a background version and not a change to the live rule.
+            The rows the stale share figure's rebuild moved, reported to the operator on 2026-11-17: 1,244 of about 2.6 million,
+            262 in the three ledgers since 2019 and 982 in the three long ones.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3805 of 3805 tests ran with none failed, migrations 0 to 150 with none
+            pending, schema version 150, against `data-ci` and never `data`; the phase report 66 tables, 1628 claims, 1628
+            passing, none out of scope and none unexamined, 1643 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.

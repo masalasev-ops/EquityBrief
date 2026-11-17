@@ -581,6 +581,7 @@ public sealed partial class SinglePageApp
             // only if the price falls to it by its last day.
             // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
             card.Append(!watched && night is { } placed ? Invariant($"<p class=\"wo-box\" data-zone-box>{Escaped(MarkRenderer.ZoneBox(zone, placed))}</p>") : string.Empty);
+            card.Append(zone.Sale is { } parted ? MarkRenderer.SalePartsMark(parted) : string.Empty);
             card.Append("<div class=\"home-prices\">");
             card.Append(Invariant($"<div><span>{buying} if it dips to about</span><b>{Dollars(zone.Price)}</b></div>"));
             card.Append(Invariant($"<div><span>Sell if it closes below</span><b class=\"stop\">{(idea.Stop is { } below ? Dollars(below) : NoFigure)}</b></div>"));

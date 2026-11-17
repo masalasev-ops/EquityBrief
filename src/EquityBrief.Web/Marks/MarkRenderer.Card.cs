@@ -751,7 +751,7 @@ public sealed partial class MarkRenderer
     // limit's carrying the hold's last day.
     // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
     static string SaleTiles(PlanSaleView sale, DecisionCardView card) =>
-        string.Concat(PlanSaleLines(sale).Select(line => PlanTile(
+        SalePartsMark(sale) + string.Concat(PlanSaleLines(sale).Select(line => PlanTile(
             line.Key,
             line.Label,
             line.Value,
