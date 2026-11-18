@@ -20080,8 +20080,8 @@ Queue:      done, 23.10's second restart and its corrections to PR 715; in progr
 Ruled:      the operator's second brief of 2026-11-16, replacing the first plan of 2026-11-15, and their changes of 2026-11-17
             placing phase 24 beside phase 23's sign-off in a worktree of its own on the C: drive (see: Phase 24 is built beside
             phase 23's sign-off in a worktree of its own, the sign-off reviewing main as the ledger rebuild found it). The sign-off
-            reviews main at 6c7a22b7, as it stood when the ledger rebuild of 2026-11-17 started; what phase 24 merges after it is
-            outside its scope.
+            reviews main at 6486e9cb, as it stood when the ledger rebuild of 2026-11-18 started at 00:59 UTC, its log reading
+            "built from 6486e9cb6452"; what phase 24 merges after it is outside its scope.
 Answered:   word for word in `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, its appendices holding the brief, the six
             answers of 2026-11-15 that stand, the four answers of 2026-11-16 and the operator's changes of 2026-11-16 and
             2026-11-17; the first plan's brief, answers, changes and plan in the four `prompts/2026-11-15-24.0-*-superseded.md`.
