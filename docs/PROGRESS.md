@@ -20070,3 +20070,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
             passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
+
+### 24.0 planning - phase 24 planned: the AI judge first, then one loop that improves the frozen rules and the judge, built beside phase 23's sign-off   2026-11-17
+
+Not a checkpoint entry. It lands 24.0, the pass that plans phase 24, and builds none of it.
+Queue:      done, 23.10's second restart and its corrections to PR 715; in progress, phase 23's ledger rebuild, its long test run
+            again and its monthly test on a copy, then its sign-off, and beside them this pass; next, the judge's mockup with the
+            operator as 24.1, and 24.2 before the monthly run of 2026-12-05.
+Ruled:      the operator's second brief of 2026-11-16, replacing the first plan of 2026-11-15, and their changes of 2026-11-17
+            placing phase 24 beside phase 23's sign-off in a worktree of its own on the C: drive (see: Phase 24 is built beside
+            phase 23's sign-off in a worktree of its own, the sign-off reviewing main as the ledger rebuild found it). The sign-off
+            reviews main at 6486e9cb, as it stood when the ledger rebuild of 2026-11-18 started at 00:59 UTC, its log reading
+            "built from 6486e9cb6452"; what phase 24 merges after it is outside its scope.
+Answered:   word for word in `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, its appendices holding the brief, the six
+            answers of 2026-11-15 that stand, the four answers of 2026-11-16 and the operator's changes of 2026-11-16 and
+            2026-11-17; the first plan's brief, answers, changes and plan in the four `prompts/2026-11-15-24.0-*-superseded.md`.
+Planned:    `BUILD_PLAN.md`'s phase 24 section, 24.0 to 24.28; four operating rows; section 20's row; fourteen decisions.
+Measured:   read-only on 2026-11-16 and 2026-11-17 on the code at 6c7a22b7, the corpus, the record and three reads of the store
+            of about a second in all, no provider call, no model call and no store row written. Of the first plan, phase 23 built
+            the replay, the refusal of a moved live rule, the stale share figure and the books' own exit; the refusal of an
+            approval inside the freeze is still owed. The judge's fields on the night of 2026-11-16: every reading in the
+            catalogue and stored in `ledger_reading`; six held by no member, the year's return less its last month, the distance
+            from the year's high, the nearest support's strength, reward against risk, rating actions net and a cluster of
+            insider buyers; sector in `membership` for 503 of 503 S&P 500 members and none of the S&P 400's or 600's, and in
+            `company` for 500 of 503, 399 of 400 and 598 of 602. Eleven places on main state a price for a buy at the open.
+            Claims about 1,745 from 1,632; migrations about eighteen from 153.
+Opened:     four operating rows: the 6 Feb decision read off the case page, the books' own exit read beside each live book after
+            its first year, the earnings premium's record on test read at 50 closed trades an index and the AI judge's live
+            record read at 300 closed picks.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over main at 6486e9cb as the 23.10 correction's entry above
+            records, 3820 of 3820 tests and 1632 claims; documents alone change, so the checks reading them run filtered over the
+            tree carrying this entry, 182 of 182 passed.
+Carried:    phase 23's sign-off, owed by a fresh session and discharged by no checkpoint of phase 24; the operator's word on the
+            judge's fields, on whether a pin move a replay carries counts as registering a live rule, and on correcting the
+            places stating a price at the open.
