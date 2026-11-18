@@ -113,7 +113,33 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
     // see: A pick's card draws the sale its traded plan was registered with, worked from the price the plan buys at
     public sealed record PlanMoves(double Move, double Up, int Fills);
 
-    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default, bool driftChecks = false, string? only = null, bool driftReport = false)
+    // The plans a family's take-profit shapes are walked on: the plan it trades after the restart where that holds no take-profit,
+    // unlabelled, whose choice the run writes; and on the operator's decision of 2026-11-18, C, with '--every-take-profit' its live
+    // and its recommended plans as well, each without its take-profit and each once, labelled, whose choices are printed alone.
+    public static IReadOnlyList<(string Label, PlanCombination Plan)> TakeProfitBases(PlanCombination today, PlanCombination live, PlanCombination? recommended, bool every)
+    {
+        var bases = new List<(string Label, PlanCombination Plan)>();
+
+        if (today.TakeProfit is null)
+        {
+            bases.Add((string.Empty, today));
+        }
+
+        if (every)
+        {
+            foreach (var (label, plan) in new[] { ("the live plan", (PlanCombination?)live), ("the recommended plan", recommended) })
+            {
+                if (plan is not null && (plan with { TakeProfit = null, Half = false, Placing = default }) is var bare && bases.TrueForAll(one => one.Plan.Words != bare.Words))
+                {
+                    bases.Add((label, bare));
+                }
+            }
+        }
+
+        return bases;
+    }
+
+    public async Task<int> RunAsync(string index, bool print, CancellationToken cancellation = default, bool driftChecks = false, string? only = null, bool driftReport = false, bool everyTakeProfit = false)
     {
         if (!Funds.TryGetValue(index, out var fund))
         {
@@ -360,54 +386,59 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
             // chosen together on the years before 2019.
             var live = livePlans.GetValueOrDefault(family) ?? PlanPoints.Combinations[traded];
             var liveSince = SinceOf(family, live)?.EdgePerPick ?? tradedSince.GetValueOrDefault(family)?.EdgePerPick;
-            var today = recommended is { TakeProfit: null } && SinceOf(family, recommended)?.EdgePerPick is { } better && (liveSince is null || better > liveSince) ? recommended : live;
+            var chosenToday = recommended is { TakeProfit: null } && SinceOf(family, recommended)?.EdgePerPick is { } better && (liveSince is null || better > liveSince) ? recommended : live;
 
-            if (today.TakeProfit is not null)
+            foreach (var (label, today) in TakeProfitBases(chosenToday, live, recommended, everyTakeProfit))
             {
-                continue;
+                var named = label.Length == 0 ? family : FormattableString.Invariant($"{family} ({label})");
+
+                // On the operator's answer of 2026-11-14 on the tables three full take-profits beside the half: today's, the
+                // multiple of the risk alone, and the first price the stock turned down at that far above the buy or more.
+                PlanCombination[] grid =
+                [
+                    today,
+                    .. TakeProfit.Multiples.Select(today.Taking),
+                    .. TakeProfit.Multiples.Select(today.TakingAtRisk),
+                    .. TakeProfit.Multiples.Select(today.TakingBeyond),
+                    .. TakeProfit.Multiples.Select(today.Halving),
+                ];
+                var walkedGrid = Tallied(walker, [.. setups.Where(one => one.Family == family)], grid, cancellation);
+                var (todayUnseen, todaySince) = walkedGrid[today.Words];
+                // On the operator's ruling of 2026-11-15 on the shapes today's full take-profit, the nearest price above the buy the
+                // stock turned down at, is walked as a reference and never chosen.
+                var choosable = grid.Skip(1).Where(Choosable).ToArray();
+                var chosenTaking = choosable
+                    .Where(one => walkedGrid[one.Words].Unseen?.EdgePerPick is not null)
+                    .OrderByDescending(one => walkedGrid[one.Words].Unseen!.EdgePerPick)
+                    .ThenBy(one => one.Half)
+                    .ThenBy(one => one.Placing)
+                    .ThenBy(one => one.TakeProfit)
+                    .FirstOrDefault() ?? today.TakingAtRisk(TakeProfit.MiddleMultiple);
+
+                string Best(Func<PlanCombination, bool> shape) =>
+                    grid.Skip(1).Where(one => shape(one) && walkedGrid[one.Words].Unseen?.EdgePerPick is not null).OrderByDescending(one => walkedGrid[one.Words].Unseen!.EdgePerPick).FirstOrDefault() is { } best
+                        ? FormattableString.Invariant($"{best.TakeProfit:0.##}: {Shown(walkedGrid[best.Words].Unseen?.EdgePerPick)} before, {Shown(walkedGrid[best.Words].Since?.EdgePerPick)} from {LongLedger.StandingFrom.Year} over {walkedGrid[best.Words].Since?.Fills ?? 0}")
+                        : "none";
+
+                output.WriteLine(FormattableString.Invariant($"{Verb}: take-profit table: {named} | {today.Words} | today {Shown(todayUnseen?.EdgePerPick)} before, {Shown(todaySince?.EdgePerPick)} from {LongLedger.StandingFrom.Year} over {todaySince?.Fills ?? 0} | full {Best(one => !one.Half && one.Placing == TakeProfitPlacing.Turned)} | full at the risk {Best(one => !one.Half && one.Placing == TakeProfitPlacing.Risk)} | full beyond {Best(one => !one.Half && one.Placing == TakeProfitPlacing.Beyond)} | half {Best(one => one.Half)} | chosen {ShapeOf(chosenTaking)} at {chosenTaking.TakeProfit:0.##}, {Shown(walkedGrid[chosenTaking.Words].Since?.EdgePerPick)} from {LongLedger.StandingFrom.Year}"));
+                output.WriteLine($"{Verb}: take-profit chosen: {named}: {chosenTaking.Words}");
+
+                if (label.Length > 0)
+                {
+                    continue;
+                }
+
+                takingProfit[family] = chosenTaking;
+
+                var worse = choosable.All(one => walkedGrid[one.Words].Since?.EdgePerPick is { } edge && todaySince?.EdgePerPick is { } held && edge < held);
+                var shortBy = choosable.Select(one => walkedGrid[one.Words].Since?.EdgePerPick).OfType<double>().DefaultIfEmpty().Max() - (todaySince?.EdgePerPick ?? 0);
+
+                refinements.Add(
+                    FormattableString.Invariant($"The {family}'s take-profit, item 4: today's plan, {today.Words}, {Shown(todayUnseen?.EdgePerPick)} a pick per $1 risked against the benchmark over {todayUnseen?.Fills ?? 0} fill(s) before {LongLedger.StandingFrom.Year} and {Shown(todaySince?.EdgePerPick)} over {todaySince?.Fills ?? 0} from {LongLedger.StandingFrom.Year}; ")
+                    + string.Join("; ", grid.Skip(1).Select(one => FormattableString.Invariant($"{ShapeOf(one)} at {one.TakeProfit:0.##} times the risk {Shown(walkedGrid[one.Words].Unseen?.EdgePerPick)} before {LongLedger.StandingFrom.Year} and {Shown(walkedGrid[one.Words].Since?.EdgePerPick)} from it")))
+                    + FormattableString.Invariant($". Chosen on the years before {LongLedger.StandingFrom.Year}: {ShapeOf(chosenTaking)} at {chosenTaking.TakeProfit:0.##} times the risk, judged from {LongLedger.StandingFrom.Year} at {Shown(walkedGrid[chosenTaking.Words].Since?.EdgePerPick)} against today's {Shown(todaySince?.EdgePerPick)}.")
+                    + (worse ? FormattableString.Invariant($" Every multiple does worse than today's plan from {LongLedger.StandingFrom.Year}, the closest short of it by {Math.Abs(shortBy):0.000} a pick per $1 risked; for the operator's ruling, the take-profit standing either way.") : string.Empty));
             }
-
-            // On the operator's answer of 2026-11-14 on the tables three full take-profits beside the half: today's, the multiple
-            // of the risk alone, and the first price the stock turned down at that far above the buy or more.
-            PlanCombination[] grid =
-            [
-                today,
-                .. TakeProfit.Multiples.Select(today.Taking),
-                .. TakeProfit.Multiples.Select(today.TakingAtRisk),
-                .. TakeProfit.Multiples.Select(today.TakingBeyond),
-                .. TakeProfit.Multiples.Select(today.Halving),
-            ];
-            var walkedGrid = Tallied(walker, [.. setups.Where(one => one.Family == family)], grid, cancellation);
-            var (todayUnseen, todaySince) = walkedGrid[today.Words];
-            // On the operator's ruling of 2026-11-15 on the shapes today's full take-profit, the nearest price above the buy the stock
-            // turned down at, is walked as a reference and never chosen.
-            var choosable = grid.Skip(1).Where(Choosable).ToArray();
-            var chosenTaking = choosable
-                .Where(one => walkedGrid[one.Words].Unseen?.EdgePerPick is not null)
-                .OrderByDescending(one => walkedGrid[one.Words].Unseen!.EdgePerPick)
-                .ThenBy(one => one.Half)
-                .ThenBy(one => one.Placing)
-                .ThenBy(one => one.TakeProfit)
-                .FirstOrDefault() ?? today.TakingAtRisk(TakeProfit.MiddleMultiple);
-
-            string Best(Func<PlanCombination, bool> shape) =>
-                grid.Skip(1).Where(one => shape(one) && walkedGrid[one.Words].Unseen?.EdgePerPick is not null).OrderByDescending(one => walkedGrid[one.Words].Unseen!.EdgePerPick).FirstOrDefault() is { } best
-                    ? FormattableString.Invariant($"{best.TakeProfit:0.##}: {Shown(walkedGrid[best.Words].Unseen?.EdgePerPick)} before, {Shown(walkedGrid[best.Words].Since?.EdgePerPick)} from {LongLedger.StandingFrom.Year} over {walkedGrid[best.Words].Since?.Fills ?? 0}")
-                    : "none";
-
-            output.WriteLine(FormattableString.Invariant($"{Verb}: take-profit table: {family} | {today.Words} | today {Shown(todayUnseen?.EdgePerPick)} before, {Shown(todaySince?.EdgePerPick)} from {LongLedger.StandingFrom.Year} over {todaySince?.Fills ?? 0} | full {Best(one => !one.Half && one.Placing == TakeProfitPlacing.Turned)} | full at the risk {Best(one => !one.Half && one.Placing == TakeProfitPlacing.Risk)} | full beyond {Best(one => !one.Half && one.Placing == TakeProfitPlacing.Beyond)} | half {Best(one => one.Half)} | chosen {ShapeOf(chosenTaking)} at {chosenTaking.TakeProfit:0.##}, {Shown(walkedGrid[chosenTaking.Words].Since?.EdgePerPick)} from {LongLedger.StandingFrom.Year}"));
-
-            takingProfit[family] = chosenTaking;
-
-            var worse = choosable.All(one => walkedGrid[one.Words].Since?.EdgePerPick is { } edge && todaySince?.EdgePerPick is { } held && edge < held);
-            var shortBy = choosable.Select(one => walkedGrid[one.Words].Since?.EdgePerPick).OfType<double>().DefaultIfEmpty().Max() - (todaySince?.EdgePerPick ?? 0);
-
-            refinements.Add(
-                FormattableString.Invariant($"The {family}'s take-profit, item 4: today's plan, {today.Words}, {Shown(todayUnseen?.EdgePerPick)} a pick per $1 risked against the benchmark over {todayUnseen?.Fills ?? 0} fill(s) before {LongLedger.StandingFrom.Year} and {Shown(todaySince?.EdgePerPick)} over {todaySince?.Fills ?? 0} from {LongLedger.StandingFrom.Year}; ")
-                + string.Join("; ", grid.Skip(1).Select(one => FormattableString.Invariant($"{ShapeOf(one)} at {one.TakeProfit:0.##} times the risk {Shown(walkedGrid[one.Words].Unseen?.EdgePerPick)} before {LongLedger.StandingFrom.Year} and {Shown(walkedGrid[one.Words].Since?.EdgePerPick)} from it")))
-                + FormattableString.Invariant($". Chosen on the years before {LongLedger.StandingFrom.Year}: {ShapeOf(chosenTaking)} at {chosenTaking.TakeProfit:0.##} times the risk, judged from {LongLedger.StandingFrom.Year} at {Shown(walkedGrid[chosenTaking.Words].Since?.EdgePerPick)} against today's {Shown(todaySince?.EdgePerPick)}.")
-                + (worse ? FormattableString.Invariant($" Every multiple does worse than today's plan from {LongLedger.StandingFrom.Year}, the closest short of it by {Math.Abs(shortBy):0.000} a pick per $1 risked; for the operator's ruling, the take-profit standing either way.") : string.Empty));
-            output.WriteLine($"{Verb}: take-profit chosen: {family}: {chosenTaking.Words}");
         }
 
         // From the 23.10 correction of 2026-11-13 the live plan's fills from 2019 its sale placed no price above, their mean move

@@ -20104,3 +20104,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over main at
 Carried:    phase 23's sign-off, owed by a fresh session and discharged by no checkpoint of phase 24; the operator's word on the
             judge's fields, on whether a pin move a replay carries counts as registering a live rule, and on correcting the
             places stating a price at the open.
+
+### 23.10 - correction: the record boxes say what the rebuild changed in each rule's trades, and the plan reading re-tests every family's take-profit   2026-11-18
+
+Corrects:   the record boxes' line of the correction of 2026-11-17, which said beneath each figure the figure it stood at
+            before the rebuild of 2026-11-18; the report of that day found all 21 the same at the precision a box draws, so
+            each line said a figure was what it still is.
+Ruled:      the operator's decisions of 2026-11-18 on the item 2 report, C and D, word for word in
+            `prompts/2026-11-17-23.10-answers-on-heavyweights-stops-and-the-waiting-cards.md`, round 9.
+Built:      D: each box, for a month after the correction where its newest run started on or after its day, says "Corrected
+            on 18 Nov 2026: x trades added, x removed, from a fix to how dollar volume was read." where its rule's trades from
+            2019 changed, the S&P 400's dip 169 added and none removed and the S&P 600's dip 1,018 added and 23 removed, and
+            "Checked on 18 Nov 2026 after a data correction: no trade changed." on the other 19; the counts the report's,
+            named in the code with the correction; the decision superseding the line's. C: `plan-points --every-take-profit`
+            walks the take-profit's shapes on each family's live and recommended plans as well, each without its
+            take-profit, and prints each choice, writing nothing of it. The registration C asked for, run before this change
+            from main: the S&P 400's pullback and the S&P 600's drift plans that won on 16 Nov and on 18 Nov registered beside
+            their live rules as background versions, `tools/remedies/2026-11-18-23.10-the-winning-plans-in-the-background.txt`;
+            the S&P 400's drift and the S&P 600's breakout refused with nothing written, each family keeping nine.
+Tests:      2 new, the plans the take-profit walks with and without the option; 1 rewritten, the box's two lines, the month
+            and a run before the day.
+Claims:     1632, unchanged.
+Pins:       none moved.
+Mutated:    the rule: each property the change adds. m1 the walk's plans not held to one each: red at the option's test, the
+            recommended plan walked twice. m2 every box said corrected: red at the box's test, the S&P 500's pullback said
+            "Corrected on 18 Nov 2026: 0 trades added, 0 removed". A first m2, a rule absent from the correction read as
+            changed, stayed green: such a rule reads as no trade added and none removed either way, so the line is the same;
+            replaced by the second. Both reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3822 of 3822 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the S&P 400's drift and the S&P 600's breakout winners, to the operator; the S&P 600's pullback winner and any
+            take-profit that wins on a live plan, registered after `--every-take-profit` runs on all three indexes.

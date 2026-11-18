@@ -333,13 +333,13 @@ static async Task<int> PlanPointsRun(string[] args)
 
     if (at < 0 || at + 1 >= args.Length)
     {
-        Console.Error.WriteLine("plan-points: give '--index <GSPC, MID or SML>', '--family <pullback, breakout, drift or dip>' to walk and write one family alone, and '--print' to write nothing.");
+        Console.Error.WriteLine("plan-points: give '--index <GSPC, MID or SML>', '--family <pullback, breakout, drift or dip>' to walk and write one family alone, '--print' to write nothing, and '--every-take-profit' to walk the take-profit's shapes on every family's live and recommended plans as well.");
 
         return 1;
     }
 
     return await new EquityBrief.Worker.Loop.PlanPointTest(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
-        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal), driftChecks: args.Contains("--drift-checks", StringComparer.Ordinal), only: VerbArguments.Value(args, "--family"), driftReport: args.Contains("--drift-report", StringComparer.Ordinal));
+        .RunAsync(args[at + 1], args.Contains("--print", StringComparer.Ordinal), driftChecks: args.Contains("--drift-checks", StringComparer.Ordinal), only: VerbArguments.Value(args, "--family"), driftReport: args.Contains("--drift-report", StringComparer.Ordinal), everyTakeProfit: args.Contains("--every-take-profit", StringComparer.Ordinal));
 }
 
 // Each price family's pick on the newest night's cards, or on a session named, priced again at its family's recommended plan
