@@ -69,7 +69,7 @@ public sealed partial class SinglePageApp
         // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
         var plain = marks.Copying;
 
-        // From the operator's order of 2026-11-18 the page by revisions; the read-only copy keeps its own plain parts.
+        // The page by revisions; the read-only copy keeps its own plain parts.
         // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         if (!plain)
         {
@@ -190,7 +190,7 @@ public sealed partial class SinglePageApp
         var region = new StringBuilder();
         var heading = "Past picks: " + reading.Titled;
 
-        // From the operator's order of 2026-11-18 the log names the revision or the variant whose trades it draws.
+        // The log names the revision or the variant whose trades it draws.
         var earlierRevision = chosen is { } asked && asked.Contains('#', StringComparison.Ordinal)
             ? account.Revisions.FirstOrDefault(revision => MarkRenderer.EarlierKey(account.Key, revision.Number) == asked)
             : null;

@@ -997,8 +997,8 @@ public static class PaperScreen
         var from = views.Where(view => view.Head && view.Since is not null).Select(view => view.Since).Min();
         var counted = from is { } start ? PaperAccount.FundOver([.. sessions.Where(session => session >= start && session <= night)], fund) : null;
 
-        // From the operator's order of 2026-11-18 every rule's and every variant's own trades as its tabs draw them, those its
-        // walk bought, and each running rule's earlier revisions' trades, each named by the revision that listed it.
+        // Every rule's and every variant's own trades as its tabs draw them, those its walk bought, and each running rule's
+        // earlier revisions' trades, each named by the revision that listed it.
         // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         var traded = views
             .Where(view => view.Standing != PaperAccountView.You)

@@ -50,8 +50,8 @@ public sealed partial class MarkRenderer
         return Carousel(orders, index, night) + LeftNotes(left);
     }
 
-    // From the operator's order of 2026-11-18, under the waiting cards for five trading days, each order that left the waiting
-    // list and why, with the revision that placed it; nothing where none left.
+    // Under the waiting cards for five trading days, each order that left the waiting list and why, with the revision that
+    // placed it; nothing where none left.
     public static string LeftNotes(IReadOnlyList<LeftOrderView>? left)
     {
         if (left is not { Count: > 0 })

@@ -4,7 +4,7 @@ using EquityBrief.Core.Families;
 
 namespace EquityBrief.Web.Marks;
 
-// From the operator's order of 2026-11-18 Paper trading by revisions: a tile for each rule's running revision with the line
+// Paper trading by revisions: a tile for each rule's running revision with the line
 // of every running revision together against the index's fund; the Rule and Show controls; the revision Show draws with its
 // running box, its plan in five plain rows, what it changed, its tiles and its four tabs one at a time; how it has done, its
 // record since it started and the test that chose it never added together; its variants, each a row that unfolds to its

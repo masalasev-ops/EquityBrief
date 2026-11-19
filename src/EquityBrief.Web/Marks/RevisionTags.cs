@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace EquityBrief.Web.Marks;
 
-// From the operator's order of 2026-11-18 the tag every pick on Home, Tonight and Past picks carries under its setup's tag:
+// The tag every pick on Home, Tonight and Past picks carries under its setup's tag:
 // the revision that placed it, "Revision x, running since <date>", or for a pick an earlier revision placed "Revision x, ran
 // <date> to <date>", opening that revision on Paper trading. The revisions of each family on the index a page reads are
 // handed in for the one request drawing it; a page drawn with none handed in draws no tag.

@@ -1628,7 +1628,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .wo-card .home-plan{margin-top:auto}
 @media (max-width:1100px){.wo-track{grid-auto-columns:calc((100% - 24px)/3)}}
 @media (max-width:600px){.wo-track{grid-auto-columns:84%}}
-/* Paper trading by revisions, the operator's mockup of 2026-11-18 */
+/* Paper trading by revisions */
 .pick-bar{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end;padding:14px 16px;border:1px solid var(--hair-2);border-radius:10px;background:var(--surface);margin:18px 0 0}
 .pick-bar label{display:flex;flex-direction:column;gap:5px;font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
 .pick-bar select{min-height:38px;min-width:240px;max-width:100%;padding:0 10px;border-radius:6px;border:1px solid var(--hair-2);background:var(--page);color:var(--ink);font:500 14px var(--sans);text-transform:none;letter-spacing:0}

@@ -814,8 +814,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             ? stillWaiting with { LastClose = bars.Count > 0 ? bars[^1].Close : null }
             : null);
 
-    // From the operator's order of 2026-11-18 the page opens on the stock's open trades and waiting orders, each named by the
-    // revision that placed it, above its opening lines; the read-only copy names none.
+    // The page opens on the stock's open trades and waiting orders, each named by the revision that placed it, above its
+    // opening lines; the read-only copy names none.
     // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     if (!marks.Copying && !export && on is null && night is { } tradesOn && await read.IndexOfAsync(ticker, tradesOn) is { } tradesIndex)
     {
@@ -2718,7 +2718,7 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             accounts.Books)
         : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
 
-    // From the operator's order of 2026-11-18 each rule's and variant's waiting orders and those that left its list.
+    // Each rule's and variant's waiting orders and those that left its list.
     if (paper is { } ordered && night is { } orderedOn)
     {
         drawn = RevisionScreen.WithOrders(drawn, ordered.Sources, ordered.Planned, orderedOn, ordered.Sessions ?? [], ordered.Close, ticker => ordered.Stocks?.GetValueOrDefault(ticker)?.Company);
@@ -3727,7 +3727,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, (copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) ?? EquityBrief.Core.Cards.AccountSettings.Example) : null;
     var askedAccount = request.Query[PaperScreen.AccountQuery].FirstOrDefault();
 
-    // From the operator's order of 2026-11-18 an earlier revision's trades are chosen as its rule's key and its number.
+    // An earlier revision's trades are chosen as its rule's key and its number.
     // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     var askedKey = askedAccount?.Split('#')[0];
     var askedRevision = askedAccount is { } named && named.Contains('#', StringComparison.Ordinal) && int.TryParse(named[(named.IndexOf('#', StringComparison.Ordinal) + 1)..], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var revisionNumber) ? revisionNumber : (int?)null;

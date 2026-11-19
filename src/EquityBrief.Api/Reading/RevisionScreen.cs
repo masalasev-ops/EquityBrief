@@ -4,8 +4,7 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
 
-// From the operator's order of 2026-11-18 each rule's and variant's orders as its Waiting to buy and Left the waiting list
-// tabs draw them, the running revision's under the account's key and each earlier revision's under the key and its number:
+// Each rule's and variant's orders as its Waiting to buy and Left the waiting list tabs draw them, the running revision's under the account's key and each earlier revision's under the key and its number:
 // an order still waiting with its price, the night's close, the stop and the one take-profit its plan works from that price
 // and its last session; and an order that left the list in the last five trading days, bought at its fill or cancelled at
 // its last session. A stock a rule kept with no plan waits on the next open in the words its account stored.

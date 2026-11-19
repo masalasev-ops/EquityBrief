@@ -6555,8 +6555,8 @@ public sealed partial class MarkRenderer : IComponent
         ("Result", "What the trade came to from its buy in multiples of the risk its plan put up, the fall from the evening's close to the stop: +2.00 made twice that risk and -1.00 lost it, and a close through the stop can read below -1. Open while the trade runs."),
     ];
 
-    // From the operator's order of 2026-11-18 the column a trade's take-profit stands under on Paper trading and Past picks,
-    // never "Target", and the tag a pick from a rule not yet registered carries in its revision's place.
+    // The column a trade's take-profit stands under on Paper trading and Past picks, never "Target", and the tag a pick from a
+    // rule not yet registered carries in its revision's place.
     public const string TakesProfitAt = "Takes profit at";
 
     public const string StartingSettings = "starting settings, not yet registered";

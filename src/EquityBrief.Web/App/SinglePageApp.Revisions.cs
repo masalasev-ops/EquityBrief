@@ -3,10 +3,9 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.App;
 
-// From the operator's order of 2026-11-18 Paper trading by revisions, as the mockup of that day draws it: the account's card,
-// shorter; every rule's running revision as a tile with every running revision together against the index's fund and the
-// chart beneath; the Rule and Show controls; the revision Show draws; how it has done; its variants, each unfolding to its
-// own trades; its earlier revisions, folded; and your own trades. Every figure the page drew before keeps a place.
+// Paper trading by revisions: the account's card; every rule's running revision as a tile with every running revision
+// together against the index's fund and the chart beneath; the Rule and Show controls; the revision Show draws; how it has
+// done; its variants, each unfolding to its own trades; its earlier revisions, folded; and your own trades.
 // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
 public sealed partial class SinglePageApp
 {

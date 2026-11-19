@@ -42,8 +42,8 @@ public sealed record TradeGroupsView(DateOnly? FirstLive, DateOnly? VersionSince
     // A page's words for them, none where none waits.
     public string StillWaitingWords => StillWaiting <= 0 ? string.Empty : FormattableString.Invariant($"{StillWaiting} {(StillWaiting == 1 ? "order from an earlier night is" : "orders from earlier nights are")} {PlanOrderWords.StillWaiting}");
 
-    // From the operator's order of 2026-11-18 the running rules' orders that left the waiting list in the last five trading
-    // days, which Home and Tonight draw under their waiting cards with why each left.
+    // The running rules' orders that left the waiting list in the last five trading days, which Home and Tonight draw under
+    // their waiting cards with why each left.
     public IReadOnlyList<LeftOrderView> LeftOrders { get; init; } = [];
 
     // Each family's revisions on the index, which every pick's tag names the one that placed it from.

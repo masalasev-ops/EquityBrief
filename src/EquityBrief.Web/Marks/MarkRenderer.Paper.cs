@@ -156,9 +156,9 @@ public sealed record PaperPageView(
     // Each live account's same trades before its version, drawn apart under the account.
     public IReadOnlyList<PaperSameView> Same { get; init; } = [];
 
-    // From the operator's order of 2026-11-18 every rule's and variant's own trades by the account's key, and each running
-    // rule's earlier revisions' trades by its key, each named by the revision that listed it; and the orders each waits on and
-    // those that left its waiting list in the last five trading days, which its tabs draw.
+    // Every rule's and variant's own trades by the account's key, and each running rule's earlier revisions' trades by its
+    // key, each named by the revision that listed it; and the orders each waits on and those that left its waiting list in the
+    // last five trading days, which its tabs draw.
     public IReadOnlyDictionary<string, IReadOnlyList<PaperBoughtView>> Traded { get; init; } = new Dictionary<string, IReadOnlyList<PaperBoughtView>>(StringComparer.Ordinal);
 
     public IReadOnlyDictionary<string, IReadOnlyList<PaperBoughtView>> EarlierTraded { get; init; } = new Dictionary<string, IReadOnlyList<PaperBoughtView>>(StringComparer.Ordinal);
@@ -236,8 +236,8 @@ public sealed record PaperLink(string Universe, string? Family = null, bool Clos
 
     public const string ClosedValue = "closed";
 
-    // From the operator's order of 2026-11-18 what Show draws for the rule chosen, its running revision as the key's absence, a
-    // variant by its key or an earlier revision by its number; the tab of the drawn card's lists and its page; the variant
+    // What Show draws for the rule chosen, its running revision as the key's absence, a variant by its key or an earlier
+    // revision by its number; the tab of the drawn card's lists and its page; the variant
     // unfolded in its table, and that variant's own tab and page.
     public string? Pick { get; init; }
 

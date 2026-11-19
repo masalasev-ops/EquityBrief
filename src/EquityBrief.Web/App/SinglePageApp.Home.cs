@@ -59,8 +59,8 @@ public sealed record HomeView(
     // the heading does not count and a line beneath it names.
     public IReadOnlyList<WaitingOrderView> StillWaiting { get; init; } = [];
 
-    // From the operator's order of 2026-11-18 the orders that left the waiting list in the last five trading days, and each
-    // family's revisions, which every pick's tag names the one that placed it from.
+    // The orders that left the waiting list in the last five trading days, and each family's revisions, which every pick's
+    // tag names the one that placed it from.
     public IReadOnlyList<LeftOrderView> LeftOrders { get; init; } = [];
 
     public IReadOnlyDictionary<string, IReadOnlyList<RevisionView>> Revisions { get; init; } = new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal);
