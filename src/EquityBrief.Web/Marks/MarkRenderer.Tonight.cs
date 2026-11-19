@@ -294,9 +294,9 @@ public sealed partial class MarkRenderer
         // The orders earlier nights placed still waiting for their price, a group of their own, in none of the counts above,
         // drawn as Home draws them.
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
-        if ((view.Groups ?? line.Groups) is { StillWaitingOrders.Count: > 0 } waiting)
+        if ((view.Groups ?? line.Groups) is { } waiting && (waiting.StillWaitingOrders.Count > 0 || waiting.LeftOrders.Count > 0))
         {
-            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{WaitingCarousel(waiting.StillWaitingOrders, line.Index, view.Night)}</div>");
+            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{WaitingCarousel(waiting.StillWaitingOrders, line.Index, view.Night, waiting.LeftOrders)}</div>");
         }
 
         // The stocks one step from qualifying, which from 22.17 the read-only copy draws none of.
@@ -497,7 +497,7 @@ public sealed partial class MarkRenderer
 
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-family=\"{Escaped(point.Family)}\" data-place=\"{number}\"{(folds ? Formatted($" data-fold=\"{Escaped(fold)}\"") : string.Empty)}{(opened ? " class=\"sel\"" : string.Empty)}>");
             body.Append(PickNameCell(pick, (folds ? FoldToggle(fold, opened) : string.Empty) + (links?.GetValueOrDefault(row.Ticker) ?? string.Empty)));
-            body.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span></td>");
+            body.Append(Invariant, $"<td class=\"setup\"><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span>{RevisionTags.For(point.Family, DateOnly.MaxValue)}</span></td>");
             body.Append(Invariant, $"<td class=\"why\">{Escaped(WhyWords(point.Family, pick.Why))}</td>");
             body.Append(PickBusinessCell(pick));
 
@@ -589,7 +589,7 @@ public sealed partial class MarkRenderer
 
         row.Append(Invariant, $"<tr data-ticker=\"{Escaped(buy.Ticker)}\" data-family=\"{Escaped(buy.Family)}\" data-place=\"{number}\" data-planless>");
         row.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(buy.Ticker)}\">{Escaped(buy.Ticker)}</a> <a class=\"how-sells\" href=\"{buy.Href}\">How it sells</a>{(buy.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
-        row.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(buy.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(buy.Family)}\"></span>{Escaped(buy.Label)}</span></td>");
+        row.Append(Invariant, $"<td class=\"setup\"><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{Escaped(buy.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(buy.Family)}\"></span>{Escaped(buy.Label)}</span>{RevisionTags.For(buy.Family, DateOnly.MaxValue)}</span></td>");
         row.Append(Invariant, $"<td class=\"why\">{Escaped(buy.Why)}{EntryCheckLine(buy.EntryCheck, buy.Ticker)}{SetupRecordBox(buy.LongRecord)}</td>");
         row.Append(Invariant, $"<td class=\"business-cell\">{Escaped(buy.Business)}</td>");
         row.Append(PriceCell("buy", buy.Close, null));

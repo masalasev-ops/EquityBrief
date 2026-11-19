@@ -185,18 +185,26 @@ public sealed partial class SinglePageApp
             Invariant($"<li data-family=\"{Escaped(account.Family)}\" data-verdict=\"{Escaped(account.Verdict)}\"><span class=\"fam-tag\" data-family=\"{Escaped(account.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(account.Family)}\"></span>{Escaped(FamilyLabel(account.Family))}</span> {Escaped(account.Name)}: {Escaped(account.Verdict)}{(account.Years.Count > 0 ? "; " + Escaped(EquityBrief.Core.Loop.RuleVerdict.Chosen) : string.Empty)}. Since registered: {account.Trades} trade(s){(account.TooFew is { } few ? Invariant($", <span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}{MarkRenderer.StartWords(account)}.</li>")))
         + Invariant($"</ul><p class=\"paper-entry\">{Escaped(MarkRenderer.EntryPriceLine)}</p></div>");
 
-    public string AccountLogRegion(MarkRenderer marks, UniverseChoice reading, DateOnly? night, IReadOnlyList<PaperAccountView> accounts, PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null)
+    public string AccountLogRegion(MarkRenderer marks, UniverseChoice reading, DateOnly? night, IReadOnlyList<PaperAccountView> accounts, PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null, string? chosen = null)
     {
         var region = new StringBuilder();
         var heading = "Past picks: " + reading.Titled;
 
+        // From the operator's order of 2026-11-18 the log names the revision or the variant whose trades it draws.
+        var earlierRevision = chosen is { } asked && asked.Contains('#', StringComparison.Ordinal)
+            ? account.Revisions.FirstOrDefault(revision => MarkRenderer.EarlierKey(account.Key, revision.Number) == asked)
+            : null;
+        var whose = account.Standing == PaperAccountView.You ? "Your trades"
+            : account.Standing == PaperAccountView.Variant ? FamilyLabel(account.Family) + ", variant: " + MarkRenderer.VariantName(account)
+            : FamilyLabel(account.Family) + ", " + (earlierRevision?.Tag ?? account.Revision?.Tag ?? "its starting settings, not yet registered");
+
         region.Append(Invariant($"<section class=\"picks\" data-universe=\"{reading.Word}\" data-account=\"{Escaped(account.Key)}\" data-trades=\"{trades.Count}\">"));
-        region.Append(Cards.Masthead(heading, $"<span class=\"m-screen\">{Escaped(heading)}</span>", Escaped(account.Standing == PaperAccountView.You ? "Your trades on the " + reading.Name : "The trades of " + FamilyLabel(account.Family) + " · " + account.Name)));
-        region.Append(AccountSelector(accounts, account.Key));
+        region.Append(Cards.Masthead(heading, $"<span class=\"m-screen\">{Escaped(heading)}</span>", Escaped(account.Standing == PaperAccountView.You ? "Your trades on the " + reading.Name : "The trades of " + whose)));
+        region.Append(PicksControls(accounts, chosen ?? account.Key));
         region.Append(Cards.Computed(
             "Trade log",
             marks.PaperLog(account, trades, earlier ?? []),
-            title: Escaped(account.Standing == PaperAccountView.You ? "Your trades" : FamilyLabel(account.Family) + " · " + account.Name),
+            title: Escaped(whose),
             lede: Escaped(account.Words),
             stamp: Cards.Night(night),
             region: "paper-log"));

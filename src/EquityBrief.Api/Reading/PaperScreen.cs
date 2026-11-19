@@ -565,8 +565,31 @@ public static class PaperScreen
             Short: "You",
             Unfilled: []));
 
-        return accounts;
+        // A variant is a copy of its rule's running revision, so its account counts from that revision's first session where
+        // its own registration is older, the trades before it left out as listed before that revision.
+        // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        return
+        [
+            .. accounts.Select(account => account.Standing == PaperAccountView.Variant
+                && accounts.FirstOrDefault(head => head.Family == account.Family && head.Standing is PaperAccountView.Live or PaperAccountView.Provisional)?.Since is { } start
+                ? FromRevision(account, start)
+                : account),
+        ];
     }
+
+    public const string BeforeRevision = "before the running revision";
+
+    static PaperAccountSource FromRevision(PaperAccountSource account, DateOnly start) =>
+        account.Since is { } since && since >= start
+            ? account
+            : account with
+            {
+                Trades = [.. account.Trades.Where(one => one.Trade.ListedOn >= start)],
+                Earlier = [.. account.Earlier ?? [], .. account.Trades.Where(one => one.Trade.ListedOn < start).Select(one => (one.Trade, one.Result, BeforeRevision))],
+                Unfilled = [.. (account.Unfilled ?? []).Where(one => one.Listed >= start)],
+                Since = start,
+                VersionFrom = start,
+            };
 
     // From 21.20 each variant registered after the register was read for the night, which no night has read yet, in the
     // families' page order: numbered and named by what it changes as its card will number it once the register is read past

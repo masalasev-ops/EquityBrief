@@ -59,6 +59,12 @@ public sealed record HomeView(
     // the heading does not count and a line beneath it names.
     public IReadOnlyList<WaitingOrderView> StillWaiting { get; init; } = [];
 
+    // From the operator's order of 2026-11-18 the orders that left the waiting list in the last five trading days, and each
+    // family's revisions, which every pick's tag names the one that placed it from.
+    public IReadOnlyList<LeftOrderView> LeftOrders { get; init; } = [];
+
+    public IReadOnlyDictionary<string, IReadOnlyList<RevisionView>> Revisions { get; init; } = new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal);
+
     // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
     public IReadOnlyList<DecisionCardView> HeldAgain { get; init; } = [];
 
@@ -413,6 +419,7 @@ public sealed partial class SinglePageApp
 
     public string HomeRegion(MarkRenderer marks, HomeView view, string selector)
     {
+        using var tags = RevisionTags.Use(view.Reading.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : view.Revisions);
         var region = new StringBuilder();
         var heading = "Home: " + view.Reading.Titled;
         var stamp = Cards.Night(view.Night);
@@ -516,7 +523,7 @@ public sealed partial class SinglePageApp
         // The orders earlier nights placed still waiting for their price, under tonight's ideas: cards nearest their buy price
         // first, in no count of tonight's buys.
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
-        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night));
+        region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, view.LeftOrders));
 
         // From the operator's order of 2026-11-14 the stocks a setup's rules met again while a trade holds them, a group of their
         // own under tonight's ideas, each a full card, counted in none of the ideas.
@@ -605,7 +612,7 @@ public sealed partial class SinglePageApp
         var buying = watched ? "Paper buy" : "Buy";
 
         card.Append(Invariant($"<article class=\"home-idea fam-edge{(watched ? " watched" : string.Empty)}\" data-family=\"{family}\" data-ticker=\"{Escaped(idea.Ticker)}\">"));
-        card.Append(Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(idea.Ticker)}</div>{(idea.Company is { } company ? Invariant($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(idea.Family))}</span></div>"));
+        card.Append(Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(idea.Ticker)}</div>{(idea.Company is { } company ? Invariant($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(idea.Family))}</span>{RevisionTags.For(idea.Family, night ?? DateOnly.MaxValue)}</span></div>"));
         card.Append(VerdictLine(idea, reading));
 
         // A watched card says why its rule picked it and why it is not bought.

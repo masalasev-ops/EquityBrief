@@ -6548,12 +6548,18 @@ public sealed partial class MarkRenderer : IComponent
         ("Setup", "The setup the page listed the trade under. A trade listed before the page drew setups was the pullback's."),
         ("Buy", "The open it was bought at, the session after its night. A trade whose next session is not stored yet says it buys at the next open."),
         ("Stop", "The price the plan sells at to cut the loss, or the first level of a stop that trails the price."),
-        ("Target", "The price the plan takes its gain at. A setup that trails its stop names none."),
-        ("Trade", "The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
+        (TakesProfitAt, "The one price the plan takes profit at, worked from the price it paid. A setup that trails its stop names none."),
+        ("Trade", "The line runs from the stop on the left, in red, to the take-profit on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
         ("Status", "What became of the trade: open, reached target, stopped out, or ran out of time where its holding limit passed before either."),
         ("Sessions held", "Trading sessions from the night listed to the session it finished on, or to the night drawn while it is still open."),
         ("Result", "What the trade came to from its buy in multiples of the risk its plan put up, the fall from the evening's close to the stop: +2.00 made twice that risk and -1.00 lost it, and a close through the stop can read below -1. Open while the trade runs."),
     ];
+
+    // From the operator's order of 2026-11-18 the column a trade's take-profit stands under on Paper trading and Past picks,
+    // never "Target", and the tag a pick from a rule not yet registered carries in its revision's place.
+    public const string TakesProfitAt = "Takes profit at";
+
+    public const string StartingSettings = "starting settings, not yet registered";
 
     // How many typical days either side of the close the distance row draws before a band becomes an arrow.
     public const int DistanceSpan = 4;
@@ -7424,7 +7430,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var (heading, says) in PicksHeadings(named))
         {
-            table.Append(TippedHeading(heading, says, heading is "Buy" or "Stop" or "Target" or "Sessions held" or "Result" ? "r" : null));
+            table.Append(TippedHeading(heading, says, heading is "Buy" or "Stop" or TakesProfitAt or "Sessions held" or "Result" ? "r" : null));
         }
 
         table.Append("</tr></thead><tbody>");
@@ -7448,7 +7454,7 @@ public sealed partial class MarkRenderer : IComponent
 
             // The setup the page listed the trade under.
             // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
-            table.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\" data-provisional=\"{Flag(row.Provisional)}\">{Escaped(row.Setup)}{(row.Provisional ? " <span class=\"provisional\">provisional</span>" : string.Empty)}</td>");
+            table.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\" data-provisional=\"{Flag(row.Provisional)}\"><span class=\"tag-stack\">{Escaped(row.Setup)}{(row.Provisional ? " <span class=\"vtag\">" + StartingSettings + "</span>" : RevisionTags.For(row.Family, row.Night))}</span></td>");
 
             foreach (var (name, price) in new[] { ("buy", row.Buy), ("stop", row.Stop), ("target", row.Target) })
             {

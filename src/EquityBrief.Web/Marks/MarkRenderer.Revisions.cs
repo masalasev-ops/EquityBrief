@@ -36,10 +36,10 @@ public sealed partial class MarkRenderer
 
         if (combined is { } all)
         {
-            html.Append(Formatted($"<p class=\"running-line\" data-open=\"{all.Open}\">Following every running revision at once: {(all.Walk.Return is { } made ? (made >= 0 ? "up " : "down ") + PaperPercent(Math.Abs(made)) : "no return yet")} since {all.Since:d MMM}, with {all.Open} {(all.Open == 1 ? "trade" : "trades")} open. {Escaped(fund?.Fund ?? "The index's fund")} over the same days: {(all.Walk.FundReturn is { } fundMade ? PaperPercent(fundMade) : "not read")}.</p>"));
+            html.Append(Formatted($"<p class=\"running-line\" data-as-worded data-open=\"{all.Open}\">Following every running revision at once: {(all.Walk.Return is { } made ? Formatted($"{(made >= 0 ? "up" : "down")} {Math.Abs(made) * 100:0.0}%") : "no return yet")} since {all.Since:d MMM}, with {all.Open} {(all.Open == 1 ? "trade" : "trades")} open. {Escaped(fund?.Fund ?? "The index's fund")} over the same days: {(all.Walk.FundReturn is { } fundMade ? PaperPercent(fundMade) : "not read")}.</p>"));
         }
 
-        html.Append("<div class=\"setup-tiles\">");
+        html.Append("<div class=\"setup-tiles\" data-as-worded>");
 
         foreach (var head in heads)
         {
@@ -68,7 +68,7 @@ public sealed partial class MarkRenderer
         var variants = accounts.Where(account => account.Family == head.Family && account.Standing == PaperAccountView.Variant).ToArray();
         var running = head.Revision;
 
-        html.Append("<div class=\"pick-bar\" data-controls=\"rule-show\">");
+        html.Append("<div class=\"pick-bar\" data-controls=\"rule-show\" data-as-worded>");
         html.Append(Formatted($"<label><span class=\"universe-lbl\">Rule</span> <select data-merge-key=\"{PaperLink.RuleKey}\" aria-label=\"The rule drawn below\">"));
 
         foreach (var one in heads)
@@ -120,7 +120,7 @@ public sealed partial class MarkRenderer
     // The revision Show draws: the running box, the plan, what changed from the one before, its tiles and its four tabs.
     public string RevisionCard(PaperPageView page, PaperAccountView head, RevisionView? revision, PaperLink link)
     {
-        var html = new StringBuilder();
+        var html = new StringBuilder("<div class=\"revision-card\" data-as-worded>");
         var running = revision is null || revision.Running;
         var key = running ? head.Key : EarlierKey(head.Key, revision!.Number);
         var before = revision is null ? null : head.Revisions.LastOrDefault(one => one.Number < revision.Number);
@@ -155,7 +155,7 @@ public sealed partial class MarkRenderer
         html.Append(RevisionTiles(running ? head : null, trades, waiting));
         html.Append(Tabbed(trades, waiting, left, link.Tab, link.Page, tab => link with { Tab = tab, Page = 1 }, number => link with { Page = number }, null, null));
 
-        return html.ToString();
+        return html.Append("</div>").ToString();
     }
 
     public static string EarlierKey(string account, int revision) => account + "#" + revision.ToString(Invariant);
@@ -398,7 +398,7 @@ public sealed partial class MarkRenderer
         var html = new StringBuilder();
 
         html.Append(Formatted($"<div class=\"score\" data-family=\"{Escaped(head.Family)}\" data-standing=\"{head.Standing}\" data-verdict=\"{Escaped(head.Verdict)}\">"));
-        html.Append("<p class=\"sub-l\">Two records, never added together: its trades since it started running, and the test over past years that chose it.</p>");
+        html.Append("<p class=\"sub-l\" data-as-worded>Two records, never added together: its trades since it started running, and the test over past years that chose it.</p>");
         html.Append("<div class=\"score-halves\">");
         html.Append(SinceLive(head));
         html.Append(History(head));
@@ -434,7 +434,7 @@ public sealed partial class MarkRenderer
                     ? order.BuyPrice is { } buy ? Formatted($"Waits to buy it at ${Figures.Price(buy)}") : "Buys it at the next open"
                     : "Did not take it";
 
-        var html = new StringBuilder();
+        var html = new StringBuilder("<div class=\"revision-variants\" data-as-worded>");
 
         html.Append(Formatted($"<p class=\"sub-l\">Each variant is {Escaped(name.ToLowerInvariant())} with one thing changed, traded only on paper and never as picks. A variant that does better can become the next revision only at a monthly run, on your word. Press a variant's row to unfold its trades under it; press again to fold it away.</p>"));
         html.Append(Formatted($"<div class=\"tbl-wrap\"><table class=\"list-table vtable\" data-variants=\"{variants.Length}\"><thead><tr><th>Variant (press one to unfold it)</th><th>How it differs from {Escaped(name.ToLowerInvariant())}</th><th class=\"r\">Trades</th><th class=\"r\">Trades {Escaped(name.ToLowerInvariant())} did not take</th><th class=\"r\">Result so far</th><th>On past years</th></tr></thead><tbody>"));
@@ -470,10 +470,38 @@ public sealed partial class MarkRenderer
             }
         }
 
-        html.Append("</tbody></table></div>");
+        html.Append("</tbody></table></div></div>");
 
         return html.ToString();
     }
+
+    // The top of a stock's own page: each open trade and waiting order the rules' revisions hold on it, the revision, when it
+    // was bought or placed, its price, stop and one take-profit, its days left and where it stands; nothing where none holds it.
+    public static string NameTradesCard(string ticker, IReadOnlyList<NameTradeView> trades)
+    {
+        if (trades.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var html = new StringBuilder(Formatted($"<section class=\"card name-trades\" data-card=\"name-trades\" data-ticker=\"{Escaped(ticker)}\" data-trades=\"{trades.Count}\" data-as-worded><div class=\"card-b\"><h3 class=\"card-t\">{Escaped(ticker)} on the rules' paper trades</h3>"));
+
+        html.Append("<div class=\"tbl-wrap\"><table class=\"list-table\"><thead><tr><th>Setup</th><th>State</th><th class=\"r\">Price</th><th class=\"r\">Sells if it closes below</th><th class=\"r\">Takes profit at</th><th class=\"r\">Days left</th><th>Where it stands</th></tr></thead><tbody>");
+
+        foreach (var trade in trades)
+        {
+            html.Append(Formatted($"<tr data-family=\"{Escaped(trade.Family)}\" data-waiting=\"{Flag(trade.Waiting)}\"><td><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{Escaped(trade.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(trade.Family)}\"></span>{Escaped(FamilyName(trade.Family))}</span><span class=\"vtag\">{Escaped(trade.Revision)}</span></span></td>"));
+            html.Append(Formatted($"<td>{(trade.Waiting ? Formatted($"Waiting to buy, placed {trade.Placed:d MMM}") : Formatted($"Bought {trade.Bought:d MMM yyyy}"))}</td>"));
+            html.Append(MoneyTd(trade.Price, trade.Waiting ? "its buy price" : "paid"));
+            html.Append(MoneyTd(trade.Stop));
+            html.Append(MoneyTd(trade.TakeProfit, trade.TakeProfit is null ? "none: sells on its time limit" : null));
+            html.Append(Formatted($"<td class=\"r num\">{(trade.DaysLeft is { } days ? days.ToString(Invariant) : "-")}</td><td>{Escaped(trade.Standing)}</td></tr>"));
+        }
+
+        return html.Append("</tbody></table></div></div></section>").ToString();
+    }
+
+    public const string StartingTonight = "If you were starting tonight";
 
     // The rule's earlier revisions, folded: each with the sessions it ran, what the next revision changed, its trades and what
     // they made, and the link that draws it above.
@@ -482,7 +510,7 @@ public sealed partial class MarkRenderer
         var earlier = head.Revisions.Where(revision => !revision.Running).Reverse().ToArray();
         var html = new StringBuilder();
 
-        html.Append(Formatted($"<details class=\"earlier-revisions\" data-revisions=\"{earlier.Length}\"><summary>Earlier revisions of {Escaped(FamilyName(head.Family))} ({earlier.Length}), no longer running</summary>"));
+        html.Append(Formatted($"<details class=\"earlier-revisions\" data-as-worded data-revisions=\"{earlier.Length}\"><summary>Earlier revisions of {Escaped(FamilyName(head.Family))} ({earlier.Length}), no longer running</summary>"));
 
         if (earlier.Length == 0)
         {

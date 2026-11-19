@@ -2178,7 +2178,7 @@ public sealed partial class SinglePageApp : IComponent
                     "What these trades did is a record of the list's picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen.")));
         }
 
-        Card("plan", "plan", "The plan", Cards.Computed("The plan", planned.ToString(), title: "Entry and exit plan", stamp: Cards.Night(session), id: "plan", region: "plan", role: Cards.Buy));
+        Card("plan", "plan", "The plan", Cards.Computed("The plan", planned.ToString(), title: MarkRenderer.StartingTonight, stamp: Cards.Night(session), id: "plan", region: "plan", role: Cards.Buy));
 
         // The earnings reaction record: the stock's typical earnings move over every print the store holds, and what
         // each print over the calendar's year behind did on the session it moved, drawn against it.
@@ -3131,6 +3131,7 @@ public sealed partial class SinglePageApp : IComponent
         ImprovingCardView? improving = null,
         SetupRecords? longRecords = null)
     {
+        using var tags = RevisionTags.Use(Universes.Large.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : line?.Groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
         var heading = "Tonight: " + Universes.Large.Titled;
@@ -3321,6 +3322,7 @@ public sealed partial class SinglePageApp : IComponent
         ImprovingCardView? improving = null,
         SetupRecords? longRecords = null)
     {
+        using var tags = RevisionTags.Use(universe.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : line?.Groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Titled;
         var query = "?" + Universes.Query + "=" + universe.Word;
@@ -4471,6 +4473,7 @@ public sealed partial class SinglePageApp : IComponent
     // where it names none; the setups are the ones the page has listed a trade under, each with its trades.
     public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null, string selector = "", IReadOnlyList<IndexTradeCell>? businessFirst = null, IReadOnlyList<IndexTradeCell>? dips = null, TradeGroupsView? groups = null)
     {
+        using var tags = RevisionTags.Use(Universes.Large.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
         var lit = status is { } asked && PickStatus.Filters.Contains(asked, StringComparer.Ordinal) ? asked : "all";
@@ -4750,6 +4753,7 @@ public sealed partial class SinglePageApp : IComponent
 
     public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings, IReadOnlyList<(string Family, string Heading, DateOnly Since)>? frozen = null, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, TradeGroupsView? groups = null, IReadOnlyDictionary<string, DateOnly?>? firstLive = null, int unrowed = 0, int listOwn = 0)
     {
+        using var tags = RevisionTags.Use(universe.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         frozen ??= [];
 
         // The setups the page kept a trade under, and whether the short-term dip is among them, whose trades are bought and

@@ -34,6 +34,11 @@ public sealed record RevisionView(int Number, DateOnly From, DateOnly? Until, st
     public static string Day(DateOnly day) => day.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
 }
 
+// A trade or an order a revision holds on a stock, as the top of its own page names it: its setup, the revision that placed
+// it, whether it waits, the night it was placed and the session it was bought, its price, stop and one take-profit, the
+// trading days left to it, the night's close and where it stands.
+public sealed record NameTradeView(string Family, string Revision, bool Waiting, DateOnly Placed, DateOnly? Bought, decimal? Price, decimal? Stop, decimal? TakeProfit, int? DaysLeft, decimal? LastClose, string Standing);
+
 // A revision's plan in five plain rows, read from its registration.
 public sealed record PlanRowsView(string LooksFor, string Buys, string Loss, string Profit, string Limit);
 
@@ -64,6 +69,11 @@ public sealed record WaitingRowView(
 public sealed record LeftOrderView(string Ticker, DateOnly On, bool Bought, string Words, string Revision)
 {
     public const int Sessions = 5;
+
+    // The family whose rule placed it and the night it was placed, which Home and Tonight tag it by.
+    public string? Family { get; init; }
+
+    public DateOnly? Listed { get; init; }
 
     public static string BoughtWords(string ticker, DateOnly on, decimal fill, decimal? price) =>
         FormattableString.Invariant($"{ticker} bought {on.ToString("d MMM", CultureInfo.InvariantCulture)} at ${fill:N2}, ")

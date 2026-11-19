@@ -227,7 +227,7 @@ public sealed partial class MarkRenderer
         ("Listed", "The night its list drew it, bought at the open of the session after."),
         ("Buy", "The open it was bought at, the session after its night, or its plan's close while it buys at the next open; under a plan buying at a price, the price it filled at, or the price it waits for."),
         ("Stop", "The price a close beneath ends it at a loss, sold at the next session's open, or the first level of a stop that trails."),
-        ("Target", "The price a close at or above ends it at a gain, sold at the next session's open; a setup that trails its stop names none."),
+        (TakesProfitAt, "The one price its plan takes profit at, a close at or above it sold at the next session's open; a setup that trails its stop names none."),
         ("Status", "Open once bought, to buy at the next session's open until then, selling at the next session's open once its exit fired on a close, or the session it ended on; under a plan buying at a price, buying if it falls to its price, with the last day it waits, until it fills, or not filled, no trade, once its window passed."),
         ("Result", "What it made in multiples of what it risked, before its cost."),
         ("Cost", "Its round trip at the published spread for its size and price, in multiples of its risk."),
@@ -243,7 +243,7 @@ public sealed partial class MarkRenderer
 
         foreach (var (heading, says) in IndexTradeHeadings)
         {
-            body.Append(TippedHeading(heading, says, heading is "Buy" or "Stop" or "Target" or "Result" or "Cost" or "After cost" ? "r" : null));
+            body.Append(TippedHeading(heading, says, heading is "Buy" or "Stop" or TakesProfitAt or "Result" or "Cost" or "After cost" ? "r" : null));
         }
 
         body.Append("</tr></thead><tbody>");
@@ -253,7 +253,7 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-index=\"{Escaped(index)}\" data-family=\"{Escaped(row.Family)}\" data-listed=\"{DayOf(row.Listed)}\" data-ended=\"{(row.EndedOn is { } end ? DayOf(end) : "open")}\" ");
             body.Append(Invariant, $"data-result=\"{Stated(row.Result)}\" data-cost=\"{Stated(row.Cost)}\" data-after-cost=\"{Stated(row.AfterCost)}\">");
             body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
-            body.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\">{Escaped(row.Setup)} · {Escaped(index)}</td>");
+            body.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\"><span class=\"tag-stack\">{Escaped(row.Setup)} · {Escaped(index)}{RevisionTags.For(row.Family, row.Listed)}</span></td>");
             body.Append(Invariant, $"<td>{DayOf(row.Listed)}</td>");
             body.Append(PriceCell("buy", row.Entry, null));
             body.Append(PriceCell("stop", row.Stop, null));

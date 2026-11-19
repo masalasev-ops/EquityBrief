@@ -814,6 +814,18 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             ? stillWaiting with { LastClose = bars.Count > 0 ? bars[^1].Close : null }
             : null);
 
+    // From the operator's order of 2026-11-18 the page opens on the stock's open trades and waiting orders, each named by the
+    // revision that placed it, above its opening lines; the read-only copy names none.
+    // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    if (!marks.Copying && !export && on is null && night is { } tradesOn && await read.IndexOfAsync(ticker, tradesOn) is { } tradesIndex)
+    {
+        var tradesUniverse = Universes.ByCode(tradesIndex) ?? Universes.Large;
+        var card = MarkRenderer.NameTradesCard(ticker, RevisionScreen.NameTrades(ticker, await read.PlannedTradesAsync(tradesIndex, tradesOn), await read.RegisteredCandidatesAsync(), tradesUniverse == Universes.Large, tradesUniverse.Name, tradesOn, bars.Count > 0 ? bars[^1].Close : null));
+        var lead = region.IndexOf("<section class=\"lead\"", StringComparison.Ordinal);
+
+        region = card.Length == 0 ? region : lead >= 0 ? region.Insert(lead, card) : card + region;
+    }
+
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
 
@@ -3146,6 +3158,8 @@ async Task<IResult> HomeAsync(
         // see: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle
         Reshuffled = [.. SinglePageApp.PlanlessBuys(reading.Word, null, heavyweights, quality).Select(buy => (buy.Family, buy.Ticker))],
         StillWaiting = paper.StillWaiting,
+        LeftOrders = paper.Groups?.LeftOrders ?? [],
+        Revisions = RevisionTags.Of(paper.Views),
 
         // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
         HeldAgain = [.. families.SelectMany(family => family.HeldAgain)],
@@ -3282,7 +3296,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
         Fund,
         standings,
         PaperScreen.Averaged(views, settings, sessions, night, Close, Fund),
-        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions) with { StillWaitingOrders = stillWaiting, PlacedTonight = PlanScreen.PlacedTonight(planned, night).Keys.ToHashSet() })
+        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions) with { StillWaitingOrders = stillWaiting, PlacedTonight = PlanScreen.PlacedTonight(planned, night).Keys.ToHashSet(), LeftOrders = RevisionScreen.LeftOf(planned, night, sessions), Revisions = RevisionTags.Of(views) })
     {
         Books = await BookLinesAsync(read, reading, night, sources, register, standings),
         Planned = planned,
@@ -3713,18 +3727,26 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, (copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) ?? EquityBrief.Core.Cards.AccountSettings.Example) : null;
     var askedAccount = request.Query[PaperScreen.AccountQuery].FirstOrDefault();
 
-    if (paper is { } accounts && night is { } logged && accounts.Views.FirstOrDefault(view => view.Key == askedAccount) is { } chosenAccount)
+    // From the operator's order of 2026-11-18 an earlier revision's trades are chosen as its rule's key and its number.
+    // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    var askedKey = askedAccount?.Split('#')[0];
+    var askedRevision = askedAccount is { } named && named.Contains('#', StringComparison.Ordinal) && int.TryParse(named[(named.IndexOf('#', StringComparison.Ordinal) + 1)..], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var revisionNumber) ? revisionNumber : (int?)null;
+
+    if (paper is { } accounts && night is { } logged && accounts.Views.FirstOrDefault(view => view.Key == askedKey) is { } chosenAccount)
     {
         var source = accounts.Sources.First(one => one.Key == chosenAccount.Key);
+        var earlierLog = PaperScreen.EarlierLog(source, logged, accounts.Close);
 
         return Results.Content(
-            page.AccountLogRegion(marks, reading, night, accounts.Views, chosenAccount, PaperScreen.Log(source, chosenAccount.Walk, logged, accounts.Close), PaperScreen.EarlierLog(source, logged, accounts.Close)),
+            askedRevision is { } number && chosenAccount.Revisions.FirstOrDefault(revision => revision.Number == number && !revision.Running) is { } earlierRevision
+                ? page.AccountLogRegion(marks, reading, night, accounts.Views, chosenAccount, [.. earlierLog.Where(trade => trade.Version == earlierRevision.Name)], [], askedAccount)
+                : page.AccountLogRegion(marks, reading, night, accounts.Views, chosenAccount, PaperScreen.Log(source, chosenAccount.Walk, logged, accounts.Close), earlierLog),
             "text/html; charset=utf-8");
     }
 
     // From 22.17 the read-only copy draws neither, since both name every variant and the test years' verdicts.
     // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
-    selector += paper is null || copying ? string.Empty : SinglePageApp.AccountSelector(paper.Views, null) + SinglePageApp.ListsVerdicts(paper.Views);
+    selector += paper is null || copying ? string.Empty : SinglePageApp.PicksControls(paper.Views, null) + SinglePageApp.ListsVerdicts(paper.Views);
 
     if (reading != Universes.Large)
     {

@@ -12,6 +12,72 @@ public sealed partial class SinglePageApp
 {
     public const string RevisionsWhat = "A rule changes only through a new revision. Each revision keeps its own trades and its own record from the day it started running, so nothing an earlier revision did is mixed into a later one. A variant is a copy of the running revision with one thing changed, traded on paper beside it.";
 
+    public const string EveryRunningRevision = "Every rule, the revisions running now";
+
+    // Past picks' Rule and Show controls, in its Account list's place: the rules first, every rule's running revision as the
+    // key's absence; and for a rule chosen, its running revision, its variants by their one change and its earlier revisions
+    // with the dates they ran, each choice a trade log kept in the link.
+    // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    public static string PicksControls(IReadOnlyList<PaperAccountView> accounts, string? chosen)
+    {
+        var heads = accounts.Where(account => account.Head).OrderBy(account => EquityBrief.Core.Families.SetupFamilies.OrderOf(account.Family)).ToArray();
+        var key = chosen?.Split('#')[0];
+        var picked = accounts.FirstOrDefault(account => account.Key == key);
+        var head = picked is null ? null : heads.FirstOrDefault(one => one.Family == picked.Family);
+        var html = new StringBuilder("<div class=\"pick-bar\" data-controls=\"rule-show\" data-as-worded>");
+
+        html.Append(Invariant($"<label><span class=\"universe-lbl\">Rule</span> <select data-merge-key=\"{PaperScreenAccountKey}\" aria-label=\"The rule whose trades are drawn\"><option value=\"\"{(head is null ? " selected" : string.Empty)}>{Escaped(EveryRunningRevision)}</option>"));
+
+        foreach (var one in heads)
+        {
+            html.Append(Invariant($"<option value=\"{Escaped(one.Key)}\"{(head?.Key == one.Key ? " selected" : string.Empty)}>{Escaped(MarkRenderer.FamilyName(one.Family))}</option>"));
+        }
+
+        html.Append("</select></label>");
+
+        if (head is not null)
+        {
+            html.Append(Invariant($"<label><span class=\"universe-lbl\">Show</span> <select data-merge-key=\"{PaperScreenAccountKey}\" aria-label=\"What of the rule is drawn\"><option value=\"{Escaped(head.Key)}\"{(chosen == head.Key ? " selected" : string.Empty)}>{Escaped(head.Revision?.Tag ?? "Its starting settings")}</option>"));
+
+            var variants = accounts.Where(account => account.Family == head.Family && account.Standing == PaperAccountView.Variant).ToArray();
+
+            if (variants.Length > 0)
+            {
+                html.Append(Invariant($"<optgroup label=\"Variants of {Escaped(head.Revision?.Name.ToLowerInvariant() ?? "the rule")}\">"));
+
+                foreach (var variant in variants)
+                {
+                    html.Append(Invariant($"<option value=\"{Escaped(variant.Key)}\"{(chosen == variant.Key ? " selected" : string.Empty)}>{Escaped(MarkRenderer.VariantName(variant))}</option>"));
+                }
+
+                html.Append("</optgroup>");
+            }
+
+            var earlier = head.Revisions.Where(revision => !revision.Running).Reverse().ToArray();
+
+            if (earlier.Length > 0)
+            {
+                html.Append("<optgroup label=\"Earlier revisions, no longer running\">");
+
+                foreach (var revision in earlier)
+                {
+                    var value = MarkRenderer.EarlierKey(head.Key, revision.Number);
+
+                    html.Append(Invariant($"<option value=\"{Escaped(value)}\"{(chosen == value ? " selected" : string.Empty)}>{Escaped(revision.Tag)}</option>"));
+                }
+
+                html.Append("</optgroup>");
+            }
+
+            html.Append("</select></label>");
+        }
+
+        return html.Append("</div>").ToString();
+    }
+
+    // The link key Past picks keeps the chosen trade log under.
+    public const string PaperScreenAccountKey = "account";
+
     string RevisionsLayout(
         MarkRenderer marks,
         DateOnly? night,

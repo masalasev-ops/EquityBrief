@@ -94,6 +94,62 @@ public static class RevisionScreen
         };
     }
 
+    // The running rules' orders that left their waiting lists in the last five trading days, newest first, which Home and
+    // Tonight draw under their waiting cards: each bought at its fill, or cancelled at its last session.
+    public static IReadOnlyList<LeftOrderView> LeftOf(IReadOnlyList<PlannedTradeRow> planned, DateOnly night, IReadOnlyList<DateOnly> sessions)
+    {
+        DateOnly[] recent = [.. sessions.Where(session => session <= night).OrderDescending().Take(LeftOrderView.Sessions)];
+        var since = recent.Length > 0 ? recent.Min() : night;
+        var left = new List<LeftOrderView>();
+
+        foreach (var row in planned.Where(row => row.Live && PlanScreen.BuysAtAPrice(row)).GroupBy(row => (row.Family, row.Ticker, row.Listed)).Select(group => group.First()))
+        {
+            var last = PlanScreen.LastDay(row.Listed, row.Order.Window);
+
+            if (row.FilledOn is { } filled && filled >= since && filled <= night && row.Fill is { } fill)
+            {
+                left.Add(new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlanScreen.Price(row)), string.Empty) { Family = row.Family, Listed = row.Listed });
+            }
+            else if (row.NotFilled && last >= since && last <= night)
+            {
+                left.Add(new LeftOrderView(row.Ticker, last, false, LeftOrderView.CancelledWords(row.Ticker, last), string.Empty) { Family = row.Family, Listed = row.Listed });
+            }
+        }
+
+        return [.. left.OrderByDescending(row => row.On).ThenBy(row => row.Ticker, StringComparer.Ordinal)];
+    }
+
+    // A stock's open trades and waiting orders under its index's rules' plans, every revision's, as the top of its page names
+    // them: the revision that placed each, its price, stop and one take-profit, its days left and where it stands tonight.
+    public static IReadOnlyList<NameTradeView> NameTrades(string ticker, IReadOnlyList<PlannedTradeRow> planned, IReadOnlyList<CandidateRow> register, bool large, string indexName, DateOnly night, decimal? close)
+    {
+        var rows = new List<NameTradeView>();
+
+        foreach (var row in planned.Where(one => one.Live && one.Ticker == ticker && one.Listed <= night && !one.NotFilled && (one.Fill is null || one.EndedOn is null)).GroupBy(one => (one.Family, one.Listed)).Select(group => group.First()))
+        {
+            var lineage = RuleScreen.Registrations(row.Family, large, indexName, register).Where(one => EquityBrief.Core.Candidates.FamilyRecords.IsLive(one.Candidate)).ToArray();
+            var revision = PaperScreen.RevisionViews(lineage).LastOrDefault(one => one.From <= row.Listed);
+            var waiting = row.Fill is null;
+            var stop = PlanScreen.StopOf(row);
+            var take = PlanScreen.TakeProfitOf(row);
+            var price = waiting ? PlanScreen.Price(row) : row.Fill;
+            int? left = waiting
+                ? ExchangeClosures.SessionsUntil(night, PlanScreen.LastDay(row.Listed, row.Order.Window))
+                : row.FilledOn is { } bought && ExchangeClosures.SessionsUntil(bought, night) is { } held ? Math.Max(0, row.Cap - held) : null;
+            string Away(decimal? to, string what) =>
+                close is { } now && to is { } at && now > 0m ? FormattableString.Invariant($"{Math.Abs((double)((at / now) - 1m)) * 100:0.0}% {(at >= now ? "above" : "below")} the last close, {what}") : string.Empty;
+            var standing = waiting
+                ? price is { } buy && close is { } last && buy > 0m ? FormattableString.Invariant($"The last close stands {Math.Abs((double)((last / buy) - 1m)) * 100:0.0}% {(last >= buy ? "above" : "below")} its buy price.") : "It buys at the next open."
+                : string.Join("; ", new[] { Away(stop, "its stop"), Away(take, "its take-profit") }.Where(part => part.Length > 0)) is { Length: > 0 } said ? Capitalise(said) + "." : "Held.";
+
+            rows.Add(new NameTradeView(row.Family, revision?.Tag ?? "before its rule was first registered", waiting, row.Listed, row.FilledOn, price, stop, take, left, close, standing));
+        }
+
+        return rows;
+    }
+
+    static string Capitalise(string words) => words.Length == 0 ? words : char.ToUpperInvariant(words[0]) + words[1..];
+
     // Each running rule's plan rows by its account's key, and each earlier revision's by the key and its number, every
     // variant's by its own key.
     public static IReadOnlyDictionary<string, PlanRowsView> Plans(IReadOnlyList<PaperAccountSource> sources, IReadOnlyList<CandidateRow> register, string index)
@@ -122,7 +178,16 @@ public static class RevisionScreen
     {
         var parameters = row is null ? new Dictionary<string, double>() : EquityBrief.Core.Candidates.CandidateEvaluator.Read(row.Parameters);
         var chips = row is null ? [] : RuleScreen.ChipsOf(row);
-        var plan = EquityBrief.Core.Loop.RuleHooks.Of(parameters).Plan;
+        EquityBrief.Core.Loop.PlanCombination? plan;
+
+        try
+        {
+            plan = EquityBrief.Core.Loop.PlanHook.Of(parameters);
+        }
+        catch (ArgumentException)
+        {
+            plan = null;
+        }
         var looksFor = FamilyRule(family) + (chips.Count > 0 ? " Its settings: " + string.Join("; ", chips.Where(chip => chip.Key != "hooks").Select(chip => chip.Words)) + "." : string.Empty);
         string? Chip(string key) => chips.FirstOrDefault(chip => chip.Key == key)?.Words;
 
