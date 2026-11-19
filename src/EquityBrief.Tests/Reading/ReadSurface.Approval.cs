@@ -57,6 +57,11 @@ public partial class ReadSurface
 
     static string Decide(string index, string run, string family) => $"{SinglePageApp.LoopDecidePostRoute}{index}/{run}/{family}";
 
+    // A clock on a day before the rule freeze, where an approval is pressed and applied, so a check reading presses does not
+    // move with the machine's day.
+    // see: An approval inside the rule freeze is refused and replaces no live rule
+    internal static IClock BeforeTheFreeze => FixedClock.At(new DateTimeOffset(2026, 10, 9, 23, 35, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
     [Fact]
     public async Task TheLoopPagesPressesWriteOneDecisionUnderThePagesHeaderAndRefuseWhatTheStoreCannotHoldOrNoApplyCouldApply()
     {
@@ -83,7 +88,7 @@ public partial class ReadSurface
         Proposed(store, LargeOctober, "GSPC", "drift", "the autopsy's exit, ranked 1", true, Exit(7));
         Proposed(store, LargeOctober, "GSPC", "pullback", "winners against losers, ranked 1", true, Condition("rsi", 60));
 
-        using var host = new Host(store.Root);
+        using var host = new Host(store.Root, BeforeTheFreeze);
         using var client = host.CreateClient();
 
         async Task<(HttpStatusCode Status, string Said)> Press(string index, string run, string family, string proposal, string decision, string? reason = null, bool fromThePage = true) =>
@@ -226,7 +231,7 @@ public partial class ReadSurface
             "INSERT INTO loop_alarm (index_code, family, period, trades, edge, edge_floor, counted, under, streak, flagged, reference, run_id) VALUES " +
             $"('SML', 'drift', '2026-07-01', 6, -0.4, -0.1, 1, 1, 1, 0, '{SmallOctober}', 'night-1'), ('SML', 'drift', '2026-08-01', 5, -0.3, -0.1, 1, 1, 2, 1, '{SmallOctober}', 'night-2');");
 
-        using var host = new Host(store.Root);
+        using var host = new Host(store.Root, BeforeTheFreeze);
         using var client = host.CreateClient();
 
         var page = await LoopWhole(client, "universe=600");
@@ -293,7 +298,7 @@ public partial class ReadSurface
         Run(store, SmallOctober, "SML", "2026-10");
         Proposed(store, SmallOctober, "SML", "breakout", "the autopsy's exit, ranked 1", true, Exit(7));
 
-        using var host = new Host(store.Root);
+        using var host = new Host(store.Root, BeforeTheFreeze);
         using var client = host.CreateClient();
 
         var mid = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
@@ -351,7 +356,7 @@ public partial class ReadSurface
         Run(store, LargeOctober, "GSPC", "2026-10");
         Proposed(store, LargeOctober, "GSPC", "breakout", "the autopsy's exit, ranked 1", true, Exit(14));
 
-        using var host = new Host(store.Root);
+        using var host = new Host(store.Root, BeforeTheFreeze);
         using var client = host.CreateClient();
 
         var mid = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));

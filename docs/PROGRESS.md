@@ -20138,3 +20138,33 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the S&P 400's drift and the S&P 600's breakout winners, to the operator; the S&P 600's pullback winner and any
             take-profit that wins on a live plan, registered after `--every-take-profit` runs on all three indexes.
+
+### 24.2 - the refusal of an approval inside the rule freeze: the apply step answers every approval refused and the Monthly check-up offers none   2026-11-18
+
+Queue:      done, 24.0's planning; in progress, this checkpoint, beside phase 23's long test run again, its monthly test on a copy
+            and its sign-off; next, 24.3 once the operator approves the judge's fields at 24.1, which stays open.
+Built:      in the apply step, every approval and restore waiting answered refused, with "the rules are frozen until the monthly
+            run of 6 Feb 2027, so an approval changes no rule before it", where the day it runs or the night's session falls
+            inside the freeze, registering nothing and storing no setting; on the Monthly check-up, while the day the clock
+            reads falls inside it, no Approve and no restore drawn, the line saying why in their place and Decline kept, and a
+            press of either refused with nothing written. The decision, section 15.20's and section 18's rows, the runbook's
+            paragraph, the guide's sentence and the changelog. A background rule kept before the freeze still retires on its
+            63rd session, which registers nothing.
+Tests:      3 new: the apply step over a register shaped as the operator's, the S&P 400's frozen breakout, the S&P 500's dip
+            and its quality book, refused on the night of 20 Nov 2026 and on the night of 5 Feb 2027 run after midnight UTC on
+            6 Feb, and applied on the night of 8 Feb 2027; the Monthly check-up on 5 Feb 2027 and on 6 Feb 2027 read back with
+            its presses; and no source a rule pins among the five 24.2 writes. Six tests of the Loop page and the check-up given
+            a clock before the freeze, since their host read the machine's day.
+Claims:     1632, unchanged: the two rows it reaches take a clause each.
+Pins:       none moved; no rule's version moves, asserted.
+Mutated:    the rule: each refusal 24.2 adds taken out in turn. m1 the apply step's refusal: red, the three changes applied on
+            20 Nov 2026 against refused; m2 its night's session leg alone: red, 0 refused on the night of 5 Feb 2027 against
+            3; m3 the press's refusal of an approval: red, the approval written on 5 Feb 2027; each run filtered to its test
+            and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3825 of 3825 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the operator's word on the judge's fields at 24.1, on whether a pin move a replay carries counts as registering a
+            live rule, and on correcting the places stating a price at the open.

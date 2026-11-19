@@ -34,7 +34,7 @@ public partial class ReadSurface
     public async Task TheOpeningPageDrawsNoVerdictAndLinksEachStrategysPageAndTheThreeFurtherParts()
     {
         using var store = CheckUpStore();
-        using var host = new Host(store.Root);
+        using var host = new Host(store.Root, BeforeTheFreeze);
         using var client = host.CreateClient();
 
         var opening = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));

@@ -13,7 +13,7 @@ public sealed record LoopChoiceView(string Family, string Rule, string Words, in
 // What a Loop page draws of the operator's word: every decision on the index with what the apply step did, the settings
 // approvals stored, the live alarm's periods, and the index's newest run, the one whose proposals are put to the operator;
 // from 20.8 the local model's cutoff, and from its correction of 2026-10-19 the run's test years, which a proposal reading a
-// release reading is held back by.
+// release reading is held back by; and from 24.2 the day the rule freeze ends while it holds, which offers no approval.
 public sealed record LoopDecided(
     IReadOnlyList<LoopDecisionRow> Decisions,
     IReadOnlyList<LoopSettingRow> Settings,
@@ -21,7 +21,8 @@ public sealed record LoopDecided(
     string? Newest,
     DateOnly? Cutoff = null,
     IReadOnlyList<LoopTestRow>? Tests = null,
-    IReadOnlySet<string>? Registered = null);
+    IReadOnlySet<string>? Registered = null,
+    DateOnly? FrozenUntil = null);
 
 // The Loop page's marks: a family's rule today in the words its run stored, and each proposal tested against it, its
 // change, its verdict part by part and its test years with the setting each fold's learning years chose. Every figure
@@ -215,6 +216,7 @@ public sealed partial class MarkRenderer
                     {
                         LoopDecisions.Applied => $"Applied on {Escaped(DayOf(mine.AppliedAt ?? string.Empty))}: {Escaped(mine.Words ?? string.Empty)}.",
                         LoopDecisions.Refused => $"Not applied: {Escaped(mine.Words ?? string.Empty)}.",
+                        _ when decided.FrozenUntil is not null => $"It is refused before the next night: {Escaped(EquityBrief.Core.Candidates.RuleFreezeDates.ApprovalRefused)}.",
                         _ => "It is applied before the next night.",
                     })
                     + "</p>");
@@ -261,8 +263,17 @@ public sealed partial class MarkRenderer
                 var action = $"{LoopDecideRoute}{Uri.EscapeDataString(index)}/{Uri.EscapeDataString(run.RunId)}/{Uri.EscapeDataString(proposal.Family)}";
                 var hidden = $"<input type=\"hidden\" name=\"proposal\" value=\"{Escaped(proposal.Proposal)}\">";
 
-                html.Append($"<p class=\"loop-ask\">Approve to apply this change before the next night, on this index alone; decline to leave the rule as it stands.</p>");
-                html.Append($"<form class=\"loop-press\" method=\"post\" action=\"{Escaped(action)}\" data-loop-key=\"{Escaped(key)}\">{hidden}<input type=\"hidden\" name=\"decision\" value=\"approve\"><button type=\"submit\">Approve</button></form>");
+                // see: An approval inside the rule freeze is refused and replaces no live rule
+                if (decided.FrozenUntil is not null)
+                {
+                    html.Append($"<p class=\"degraded\" data-decision=\"frozen\">Approve is not offered: {Escaped(EquityBrief.Core.Candidates.RuleFreezeDates.ApprovalRefused)}. Decline to record why not; it changes nothing.</p>");
+                }
+                else
+                {
+                    html.Append($"<p class=\"loop-ask\">Approve to apply this change before the next night, on this index alone; decline to leave the rule as it stands.</p>");
+                    html.Append($"<form class=\"loop-press\" method=\"post\" action=\"{Escaped(action)}\" data-loop-key=\"{Escaped(key)}\">{hidden}<input type=\"hidden\" name=\"decision\" value=\"approve\"><button type=\"submit\">Approve</button></form>");
+                }
+
                 html.Append($"<form class=\"loop-press\" method=\"post\" action=\"{Escaped(action)}\" data-loop-key=\"{Escaped(key)}\">{hidden}<input type=\"hidden\" name=\"decision\" value=\"decline\"><label>Reason <input name=\"reason\" required></label> <button type=\"submit\">Decline</button></form>");
             }
         }
@@ -426,6 +437,12 @@ public sealed partial class MarkRenderer
         if (decided.Decisions.FirstOrDefault(one => one.Run == LoopDecisions.RestoreRun && one.Family == family && one.Proposal == proposal) is { } restored)
         {
             return $"<p class=\"loop-decided\" data-restore=\"{Escaped(restored.Outcome ?? "waiting")}\"><b>Restore approved</b> on {Escaped(DayOf(restored.DecidedAt))}: {Escaped(restored.Outcome is null ? "it is applied before the next night" : restored.Words ?? string.Empty)}.</p>";
+        }
+
+        // see: An approval inside the rule freeze is refused and replaces no live rule
+        if (decided.FrozenUntil is not null)
+        {
+            return $"<p class=\"degraded\" data-restore=\"frozen\">No restore is offered: {Escaped(EquityBrief.Core.Candidates.RuleFreezeDates.ApprovalRefused)}.</p>";
         }
 
         var key = family + "|" + proposal;

@@ -184,7 +184,7 @@ public partial class ReadSurface
         LoopTestRow(store, "breakout", "winners against losers, ranked 1", 2024, 1, "a", 10, 10, 1.0, 4.0);
         LoopTestRow(store, "breakout", "winners against losers, ranked 1", 2025, 1, "a", 10, 10, 3.0, 3.0);
 
-        using var host = new Host(store.Root);
+        using var host = new Host(store.Root, BeforeTheFreeze);
         using var client = host.CreateClient();
 
         async Task<string> Loop() => await LoopWhole(client, "universe=400");

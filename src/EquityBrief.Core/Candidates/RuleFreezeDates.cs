@@ -11,4 +11,10 @@ public static class RuleFreezeDates
 
     // Whether a day falls inside the freeze: from its first day and before the monthly run that ends it.
     public static bool Holds(DateOnly day) => day >= From && day < Until;
+
+    // Why an approval or a restore inside the freeze is refused, in the apply step's answer and on the Monthly check-up.
+    // see: An approval inside the rule freeze is refused and replaces no live rule
+    public static string ApprovalRefused =>
+        "the rules are frozen until the monthly run of " + Until.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)
+        + ", so an approval changes no rule before it";
 }

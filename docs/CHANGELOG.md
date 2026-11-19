@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-18 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - an approval inside the rule freeze is refused, on the operator's word of 2026-11-17
+Decision: An approval inside the rule freeze is refused and replaces no live rule
+Was:
+> section 15.20's row Your word on a proposal: ... from 19.7 drawn in the summary with a line in its row saying so (see: An approved change is applied by the night's own build on the index it was approved on alone)
+> section 18's row An approval that cannot be applied: ... a second approval in a family in one run and a declined change not yet put again, writing nothing; a failure of the step itself is named on the night's row ...
+> RUNBOOK.md, Approving a change, and the live alarm: no paragraph on the freeze after the adopt setting's
+Now:
+> section 15.20's row Your word on a proposal: ... (see: An approved change is applied ...); from 24.2 while the day falls inside the rule freeze no Approve and no restore is offered and a line in their place says the rules are frozen until the monthly run of 6 Feb 2027; Decline is still offered (see: An approval inside the rule freeze is refused and replaces no live rule)
+> section 18's row An approval that cannot be applied: ... writing nothing; from 24.2 inside the rule freeze, from 15 Nov 2026 to the day before the monthly run of 6 Feb 2027, the apply step answers every approval and restore refused where the day it runs or the night's session falls inside it, registering nothing and storing no setting, and the press refuses an approval and a restore with nothing written (see: ...); a failure of the step itself ...
+> RUNBOOK.md, Approving a change, and the live alarm: a paragraph saying what the page and the step do while the rules are frozen
+Why: 24.2 of phase 24's plan, approved by the operator on 2026-11-17: the approval's path registered a change and read no freeze, and the monthly run of 2026-12-05 would put proposals to the operator inside it.
+
 ### 2026-11-17 - docs/ARCHITECTURE.html - the read-only copy states no multiple of the risk, retries an upload only the network failed, and Home says when it was last uploaded, on the operator's word of 2026-11-17
 Decision: The read-only copy states no multiple of the risk and retries an upload only the network failed, and Home says when it was last uploaded
 Was:
