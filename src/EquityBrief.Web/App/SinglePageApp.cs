@@ -597,13 +597,14 @@ public sealed partial class SinglePageApp : IComponent
           const setupCard = query.get('{{{HomeSetupKey}}}') ? document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')) : null;
           const setupRow = setupCard && query.get('name') ? setupCard.querySelector('tr[data-ticker="' + CSS.escape(query.get('name')) + '"]') : null;
           const placed = keptPlace && Date.now() - keptPlace.at < 10000 ? screen.querySelector(keptPlace.find) : null;
-          const placedCard = placed ? placed.closest('section.card') : null;
+          const placedCard = placed ? (keptPlace.self ? placed : placed.closest('section.card')) : null;
           if (placedCard) { scrollTo(0, placedCard.getBoundingClientRect().top + scrollY - keptPlace.top); }
           else if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }
           else if (query.get('name') && document.getElementById('selected')) { document.getElementById('selected').scrollIntoView({ block: 'start' }); }
           else if (setupRow) { setupRow.scrollIntoView({ block: 'center' }); }
           else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { const buyRow = screen.querySelector('.buy-points tr.sel[data-fold]'); const buyFold = document.getElementById(buyRow.getAttribute('data-fold')); const buyPlan = buyFold ? buyFold.querySelector('.card-plan') : null; (buyPlan || buyRow).scrollIntoView({ block: 'start' }); }
           else if (reasonRow) { reasonRow.scrollIntoView({ block: 'center' }); }
+          else if (query.get('{{{PaperLink.PickKey}}}') && screen.querySelector('.vrow.open')) { screen.querySelector('.vrow.open').scrollIntoView({ block: 'start' }); }
           else if (query.get('{{{HomeSetupKey}}}') && document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}'))) { document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')).scrollIntoView({ block: 'start' }); }
           else { scrollTo(0, 0); }
           {{{MarkRenderer.PaperChartToNewest}}}
@@ -979,9 +980,13 @@ public sealed partial class SinglePageApp : IComponent
             return;
           }
           // A chip, a sector's tile or a column's heading keeps its card where it stood, found again by the card's mark.
-          const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort');
+          const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort, a.chip.tab, .pager a.pg-btn, .vdetail .plan-foot a');
           const keeperCard = keeper ? keeper.closest('section.card[data-card]') : null;
           if (keeperCard) { keepPlace(keeper, 'section.card[data-card="' + CSS.escape(keeperCard.getAttribute('data-card')) + '"]'); }
+          // A variant's row unfolding or folding stays where it stood in the window, found again by its own id.
+          const unfolding = event.target.closest('a.vbtn');
+          const unfoldingRow = unfolding ? unfolding.closest('tr[id]') : null;
+          if (unfoldingRow) { keptPlace = { find: '#' + CSS.escape(unfoldingRow.id), top: unfoldingRow.getBoundingClientRect().top, at: Date.now(), self: true }; }
           // A link to a place on this screen. Every screen's address opens "#/", so a link whose hash
           // does not is a place rather than a screen, and is scrolled to rather than taken as an
           // address, which would draw a screen of that name that does not exist. It lands below the
