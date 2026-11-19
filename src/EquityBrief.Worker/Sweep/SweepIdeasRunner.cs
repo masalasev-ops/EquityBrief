@@ -84,12 +84,15 @@ public sealed class SweepIdeasRunner(IClock clock, string databaseFile, string d
         return (replay, run);
     }
 
-    // The same, with the candidates the replay picks from, which a walk at a setting off the sweep's grid reads again.
-    public static (IdeaReplay Replay, SweepIdeasRun Run, IReadOnlyList<SweepCandidate> Candidates) ReadWithCandidates(SweepHistoryInputs inputs, IReadOnlyList<SweepMarketSeries> market, Action<string>? progress = null)
+    // The same, with the candidates the replay picks from, which a walk at a setting off the sweep's grid reads again; scored
+    // from the sweep's first scored session, or from the one named, which the long test names as its history's first.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    public static (IdeaReplay Replay, SweepIdeasRun Run, IReadOnlyList<SweepCandidate> Candidates) ReadWithCandidates(SweepHistoryInputs inputs, IReadOnlyList<SweepMarketSeries> market, Action<string>? progress = null, DateOnly? scoredFrom = null)
     {
         var calendar = inputs.Sessions;
         var sessionAt = calendar.Select((session, index) => (session, index)).ToDictionary(pair => pair.session, pair => pair.index);
-        var firstScored = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
+        var from = scoredFrom ?? SweepColumns.FirstScored;
+        var firstScored = Array.FindIndex(calendar, session => session >= from);
         var nights = calendar.Length - firstScored;
         var series = new SweepSeries[inputs.Names.Count];
 

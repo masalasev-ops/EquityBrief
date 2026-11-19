@@ -415,9 +415,9 @@ public static class RuleTests
             .. Swings(inputs, BreakoutRule.Name),
             .. Swings(inputs, DriftRule.Name),
             .. Heavyweights(inputs),
-            .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting, stops: (Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => lay.Book(setting, stops: stops, half: half, placing: placing).Months) : []),
+            .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting, stops: (Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(QualityRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => lay.Book(setting, stops: stops, half: half, placing: placing).Months) : inputs.Read.Long ? BooksKept(inputs.Standing, QualityRule.Name, row => CandidateEvaluators.Find(row.Evaluator) is QualityCandidate rule && rule.Index == inputs.Read.Index) : []),
             .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters, inputs)) : []),
-            .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting, stops: (Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => improving.Book(setting, stops: stops, half: half, placing: placing).Months) : []),
+            .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting, stops: (Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Moves, Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Multiple), half: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Half, placing: Core.Loop.BookExits.Of(ImprovingRule.Name, inputs.Read.Index).Placing).Months, (setting, stops, half, placing) => improving.Book(setting, stops: stops, half: half, placing: placing).Months) : inputs.Read.Long ? BooksKept(inputs.Standing, ImprovingRule.Name, row => CandidateEvaluators.Find(row.Evaluator) is ImprovingCandidate rule && rule.Index == inputs.Read.Index) : []),
         ];
 
         walked = [.. walked.Select(rule => inputs.Standing.FirstOrDefault(row => row.Candidate == rule.Rule) is { } row && RuleHooks.Of(CandidateEvaluator.Read(row.Parameters)).Exposure is not null ? rule with { Graded = true } : rule)];
@@ -426,6 +426,14 @@ public static class RuleTests
 
         return choosing ? [.. ranked, .. Choosing(inputs.Read, ranked)] : ranked;
     }
+
+    // From the long test's correction a book family's rules a long run lays out no book for, Quality at a fair price's and the
+    // Fundamentals family's, each kept with why, so the long history's record of each says why it holds no trade.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    public const string BooksOnTheStanding = "a book laid over the standing facts, which the long run lays out no book of";
+
+    static IEnumerable<RuleUnderTest> BooksKept(IReadOnlyList<RegisterRow> standing, string family, Func<RegisterRow, bool> ofTheFamily) =>
+        LiveFirst(standing.Where(ofTheFamily)).Select(row => new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Why: BooksOnTheStanding));
 
     // From 21.10 each family's version chosen by its recent record, three procedures a family walked beside its rules over
     // the same walks: at each month's first session the rule standing here whose mean edge after costs over the window
@@ -941,6 +949,22 @@ public static class RuleTests
     // plan on every member that session; kept with why where the search reads no such setting or the run laid out no
     // reading.
     // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+    // A pick of a search's own reading is a trade under an exit where the reading ended it won, lost or out of sessions with
+    // its multiple and its benchmark read and a fill clear of the stop floor; a pick of the long history's years before the
+    // sweep's first scored year among them, its year counted back from that one below nothing, the sweep's eight years
+    // still ending at its last.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    public static bool OwnTrade(SweepPlanOutcomes plan, int year, int exit, float floor) =>
+        year < SweepFigures.Years
+        && plan.Code[exit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved
+        && !float.IsNaN(plan.Multiple[exit])
+        && !float.IsNaN(plan.Benchmark[exit])
+        && plan.IsATradeAt(exit, floor);
+
+    // Such a trade's edge over the same plan on every member, none where the pick is no trade.
+    public static double? OwnEdge(SweepPlanOutcomes plan, int year, int exit, float floor) =>
+        OwnTrade(plan, year, exit, floor) ? plan.EdgeAt(exit) : null;
+
     public static RuleUnderTest ThroughOwnSearch(IndexSweepRunner.OwnPullbackRead? own, IndexRuleCandidate evaluator, RegisterRow row, IReadOnlyDictionary<string, double> p, LoopReadings? readings = null)
     {
         RuleUnderTest Kept(string why) => new(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, SweepIdeas.Cap, Why: why);
@@ -984,16 +1008,7 @@ public static class RuleTests
                 continue;
             }
 
-            var plan = pick.Plan;
-            double? edge = pick.Year is >= 0 and < SweepFigures.Years
-                && plan.Code[exit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved
-                && !float.IsNaN(plan.Multiple[exit])
-                && !float.IsNaN(plan.Benchmark[exit])
-                && plan.IsATradeAt(exit, floor)
-                    ? plan.EdgeAt(exit)
-                    : null;
-
-            units.Add((pick.Session, edge));
+            units.Add((pick.Session, OwnEdge(pick.Plan, pick.Year, exit, floor)));
         }
 
         return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, SweepIdeas.Cap, [.. units.OrderBy(unit => unit.Entry)]);
@@ -1478,17 +1493,8 @@ public static class RuleTests
                     continue;
                 }
 
-                var plan = pick.Plan;
-                double? edge = pick.Year is >= 0 and < SweepFigures.Years
-                    && plan.Code[exit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved
-                    && !float.IsNaN(plan.Multiple[exit])
-                    && !float.IsNaN(plan.Benchmark[exit])
-                    && plan.IsATradeAt(exit, floor)
-                        ? plan.EdgeAt(exit)
-                        : null;
-
-                openUntil[pick.Name] = pick.Session + plan.Ends[exit];
-                units.Add((pick.Session, edge));
+                openUntil[pick.Name] = pick.Session + pick.Plan.Ends[exit];
+                units.Add((pick.Session, OwnEdge(pick.Plan, pick.Year, exit, floor)));
                 taken++;
             }
         }
