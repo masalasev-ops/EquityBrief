@@ -73,7 +73,7 @@ public sealed record PaperAccountView(
     public EquityBrief.Core.Cards.VersionReachKind? Reach { get; init; }
 
     // The revisions of its rule up to the one it stands in, the last that one; none for an account no registration starts.
-    // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public IReadOnlyList<RevisionView> Revisions { get; init; } = [];
 
     // The revision it stands in, none for an account no registration starts.
@@ -82,7 +82,7 @@ public sealed record PaperAccountView(
 
 // The trades a family's live account leaves out as listed before its version that a replay under its version reproduced,
 // drawn apart under the account: its family, the session the replay counted from, and each trade.
-// see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+// see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
 public sealed record PaperSameView(string Family, DateOnly Since, IReadOnlyList<PaperBoughtView> Trades);
 
 // One trade of an account's trade log: its stock, its buy session and price, its stop where it holds one, the session it
@@ -530,7 +530,7 @@ public sealed partial class MarkRenderer
 
     // The words heading an account's trades listed before its version that replay the same under it, from the session the
     // replay counted from.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public static string SameWords(DateOnly since) =>
         FormattableString.Invariant($"The same trades before this version (since {since:d MMM}), kept in the rule's record and not in this account");
 
@@ -669,7 +669,7 @@ public sealed partial class MarkRenderer
 
         // Each live account's same trades before its version under one press of its own, named by its setup and the day the
         // replay counted from, in none of the account's figures.
-        // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         foreach (var same in page.Same)
         {
             html.Append(Invariant, $"<details class=\"paper-earlier paper-same\" data-family=\"{Escaped(same.Family)}\" data-same=\"{same.Trades.Count}\" data-since=\"{DayOf(same.Since)}\"><summary>{Escaped(FamilyName(same.Family))}: {Escaped(SameWords(same.Since))}, {same.Trades.Count} {(same.Trades.Count == 1 ? "trade" : "trades")}</summary>");
@@ -1348,7 +1348,7 @@ public sealed partial class MarkRenderer
     // first, an open one's result so far at tonight's close marked open, and the running total of its ended trades as a
     // line, labelled not evidence yet under the minimums; beneath it, folded, the trades of earlier versions the account
     // leaves out, each naming the version that listed it, and the same trades before its version among them.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public string PaperLog(PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null)
     {
         var html = new StringBuilder();

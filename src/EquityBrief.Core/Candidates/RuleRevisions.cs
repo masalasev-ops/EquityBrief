@@ -16,7 +16,7 @@ public sealed record RuleRevision(int Number, DateOnly From, DateOnly? Until, lo
 // registered again under its own settings, continues the revision it stands in. A revision runs from its first
 // registration's first session to the session before the next revision's first, and a trade belongs to the revision whose
 // sessions hold the night that listed it.
-// see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+// see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
 public static class RuleRevisions
 {
     // The revisions of a rule's registrations, in the order they ran; none for none.

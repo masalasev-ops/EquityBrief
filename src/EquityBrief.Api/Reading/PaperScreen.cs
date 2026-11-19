@@ -40,7 +40,7 @@ public sealed record PaperAccountSource(
 
     // The trades listed before its version's first session that a replay under its version reproduced, kept in its rule's
     // record and not in the account, and the session that replay counted from; none where no replay carried the record back.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public IReadOnlyList<(PaperTrade Trade, double? Result)> Same { get; init; } = [];
 
     // The revisions of its rule up to the one it stands in, the last that one; none for an account no registration starts.
@@ -155,7 +155,7 @@ public static class PaperScreen
     static string Stamp(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
     // The revisions of a rule's registrations, in the order they ran.
-    // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public static IReadOnlyList<RuleRevision> RevisionsOf(IReadOnlyList<CandidateRow> lineage) =>
         RuleRevisions.Of(lineage.Select(row => (row.Id, row.Candidate, row.RegisteredAt, row.Parameters)));
 
@@ -165,7 +165,7 @@ public static class PaperScreen
 
     // Where a registered rule's account starts without a lineage to read its revision from: its standing registration's first
     // session, never earlier, whatever a replay carried its record back to.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public static DateOnly StartOf(CandidateRow standing) => FamilyRecords.FirstSession(standing.RegisteredAt);
 
     // Where the Run page's record of a registered rule counts from: its standing registration's first session, or the
@@ -270,7 +270,7 @@ public static class PaperScreen
 
     // Each revision of a rule as a page draws it: its number, the sessions it ran and what it changed from the one before, in
     // the words its chips are drawn in.
-    // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public static IReadOnlyList<RevisionView> RevisionViews(IReadOnlyList<CandidateRow> lineage)
     {
         var revisions = RevisionsOf(lineage);
@@ -294,7 +294,7 @@ public static class PaperScreen
     // the earlier versions' whatever night listed it, never this version's or the same, named by the version that listed it,
     // and a stock its own words kept at the same listing night counted once.
     // see: Every count of trades names its group and one function works the four groups
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     static PaperAccountSource WithEarlierWords(PaperAccountSource account, IReadOnlyList<PaperRow> rows, CandidateRow live, IReadOnlyList<CandidateRow> lineage)
     {
         string[] words = [.. lineage.Select(row => row.Candidate).Where(candidate => !string.Equals(candidate, live.Candidate, StringComparison.Ordinal)).Distinct(StringComparer.Ordinal)];
@@ -348,7 +348,7 @@ public static class PaperScreen
     // current version alone, from its version's first session; a provisional account and the operator's own count every
     // trade from their first. The register is read as the night's page reads it, as of the instant given where a night run
     // again read it later, and the rule a freeze keeps in the background has no account.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public static IReadOnlyList<PaperAccountSource> Accounts(
         bool large,
         string indexName,
@@ -567,7 +567,7 @@ public static class PaperScreen
 
         // A variant is a copy of its rule's running revision, so its account counts from that revision's first session where
         // its own registration is older, the trades before it left out as listed before that revision.
-        // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         return
         [
             .. accounts.Select(account => account.Standing == PaperAccountView.Variant
@@ -972,7 +972,7 @@ public static class PaperScreen
                 .ThenBy(trade => trade.Ticker, StringComparer.Ordinal),
         ];
         // Each account's same trades before its version, drawn apart under the account and in none of its figures.
-        // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         PaperSameView[] same =
         [
             .. heads
@@ -999,7 +999,7 @@ public static class PaperScreen
 
         // Every rule's and every variant's own trades as its tabs draw them, those its walk bought, and each running rule's
         // earlier revisions' trades, each named by the revision that listed it.
-        // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         var traded = views
             .Where(view => view.Standing != PaperAccountView.You)
             .ToDictionary(

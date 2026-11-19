@@ -9,8 +9,8 @@ namespace EquityBrief.Web.Marks;
 // running box, its plan in five plain rows, what it changed, its tiles and its four tabs one at a time; how it has done, its
 // record since it started and the test that chose it never added together; its variants, each a row that unfolds to its
 // own tabs; and its earlier revisions, folded. Every list draws at most ten rows a page in a stated order.
-// see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
-// see: Every list of stocks on Paper trading draws at most ten rows a page, in a stated order, with the rows it shows counted above its pager
+// see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+// see: Every list of stocks on Paper trading draws at most ten rows a page in a stated order, with the rows it shows counted above its pager
 public sealed partial class MarkRenderer
 {
     public const int RowsAPage = 10;
@@ -112,6 +112,14 @@ public sealed partial class MarkRenderer
 
         return html.ToString();
     }
+
+    // How many settings a variant states differently from the running revision, each a chip of its name; a variant is one
+    // change, and the checks read this mark to fail one that is more.
+    public static int ChangesOf(PaperAccountView variant) =>
+        (variant.Changes ?? string.Empty).Split(" · ", StringSplitOptions.RemoveEmptyEntries).Length;
+
+    // The take-profit a trade's row draws, as a mark the checks read to find one trade drawn with two exits on a page.
+    public static string TakeProfitMark(decimal? price) => price is { } at ? at.ToString("0.00", Invariant) : "none";
 
     // A variant named by what it changes from the rule's running revision, as its settings are drawn.
     public static string VariantName(PaperAccountView variant) =>
@@ -334,7 +342,7 @@ public sealed partial class MarkRenderer
         {
             var position = trade.Open!;
 
-            html.Append(FormattableString.Invariant($"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-listed=\"{trade.Listed:yyyy-MM-dd}\">"));
+            html.Append(FormattableString.Invariant($"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-listed=\"{trade.Listed:yyyy-MM-dd}\" data-take-profit=\"{TakeProfitMark(trade.Target)}\">"));
             html.Append(StockTd(trade.Ticker, trade.Company));
             html.Append(FormattableString.Invariant($"<td class=\"r num\">${Figures.Price(trade.Buy)}<span class=\"row-note\">{trade.Bought:d MMM yyyy}</span></td>"));
             html.Append(trade.Stop is { } stop ? MoneyTd(stop) : FormattableString.Invariant($"<td>{Escaped(trade.Sells ?? "no price stop")}</td>"));
@@ -356,7 +364,7 @@ public sealed partial class MarkRenderer
 
         foreach (var row in rows)
         {
-            html.Append(FormattableString.Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-placed=\"{row.Placed:yyyy-MM-dd}\">"));
+            html.Append(FormattableString.Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-placed=\"{row.Placed:yyyy-MM-dd}\" data-take-profit=\"{TakeProfitMark(row.TakeProfit)}\">"));
             html.Append(StockTd(row.Ticker, row.Company));
             html.Append(FormattableString.Invariant($"<td class=\"r num\">{row.Placed:d MMM}</td>"));
             html.Append(row.BuyPrice is { } buy ? MoneyTd(buy) : FormattableString.Invariant($"<td>{Escaped(row.Words ?? "the next open")}</td>"));
@@ -447,7 +455,7 @@ public sealed partial class MarkRenderer
             double[] ended = [.. trades.Where(trade => trade.Closed?.Risks is not null).Select(trade => trade.Closed!.Risks!.Value)];
             var toggle = link with { Unfold = open ? null : variant.Key, VariantTab = null, VariantPage = 1, Pick = null };
 
-            html.Append(FormattableString.Invariant($"<tr class=\"vrow{(open ? " open" : string.Empty)}\" data-account=\"{Escaped(variant.Key)}\" id=\"variant-{Escaped(variant.Key)}\">"));
+            html.Append(FormattableString.Invariant($"<tr class=\"vrow{(open ? " open" : string.Empty)}\" data-account=\"{Escaped(variant.Key)}\" data-changes=\"{ChangesOf(variant)}\" id=\"variant-{Escaped(variant.Key)}\">"));
             html.Append(FormattableString.Invariant($"<td><a class=\"vbtn\" href=\"{Escaped(toggle.Href)}\" aria-expanded=\"{(open ? "true" : "false")}\"><span class=\"car\">{(open ? "▾" : "▸")}</span><b>{Escaped(VariantName(variant))}</b></a>{(variant.Since is { } since ? FormattableString.Invariant($"<span class=\"row-note\">since {since:d MMM yyyy}</span>") : string.Empty)}{AccountNote(variant)}</td>"));
             html.Append(FormattableString.Invariant($"<td class=\"r num\">{trades.Count}</td><td class=\"r num\">{alone}</td>"));
             html.Append(FormattableString.Invariant($"<td class=\"r num\">{(ended.Length > 0 ? Escaped(PerRisk(ended.Average())) + " risked" : "none closed")}</td>"));
@@ -489,7 +497,7 @@ public sealed partial class MarkRenderer
 
         foreach (var trade in trades)
         {
-            html.Append(FormattableString.Invariant($"<tr data-family=\"{Escaped(trade.Family)}\" data-waiting=\"{Flag(trade.Waiting)}\"><td><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{Escaped(trade.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(trade.Family)}\"></span>{Escaped(FamilyName(trade.Family))}</span><span class=\"vtag\">{Escaped(trade.Revision)}</span></span></td>"));
+            html.Append(FormattableString.Invariant($"<tr data-family=\"{Escaped(trade.Family)}\" data-waiting=\"{Flag(trade.Waiting)}\" data-ticker=\"{Escaped(ticker)}\" data-placed=\"{trade.Placed:yyyy-MM-dd}\" data-take-profit=\"{TakeProfitMark(trade.TakeProfit)}\"><td><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{Escaped(trade.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(trade.Family)}\"></span>{Escaped(FamilyName(trade.Family))}</span><span class=\"vtag\">{Escaped(trade.Revision)}</span></span></td>"));
             html.Append(FormattableString.Invariant($"<td>{(trade.Waiting ? FormattableString.Invariant($"Waiting to buy, placed {trade.Placed:d MMM}") : FormattableString.Invariant($"Bought {trade.Bought:d MMM yyyy}"))}</td>"));
             html.Append(MoneyTd(trade.Price, trade.Waiting ? "its buy price" : "paid"));
             html.Append(MoneyTd(trade.Stop));

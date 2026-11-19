@@ -70,7 +70,7 @@ public sealed partial class SinglePageApp
         var plain = marks.Copying;
 
         // The page by revisions; the read-only copy keeps its own plain parts.
-        // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         if (!plain)
         {
             region.Append(RevisionsLayout(marks, night, page, link, settings, proposedCap, example, line));

@@ -6,7 +6,7 @@ namespace EquityBrief.Web.App;
 // Paper trading by revisions: the account's card; every rule's running revision as a tile with every running revision
 // together against the index's fund and the chart beneath; the Rule and Show controls; the revision Show draws; how it has
 // done; its variants, each unfolding to its own trades; its earlier revisions, folded; and your own trades.
-// see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+// see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
 public sealed partial class SinglePageApp
 {
     public const string RevisionsWhat = "A rule changes only through a new revision. Each revision keeps its own trades and its own record from the day it started running, so nothing an earlier revision did is mixed into a later one. A variant is a copy of the running revision with one thing changed, traded on paper beside it.";
@@ -16,7 +16,7 @@ public sealed partial class SinglePageApp
     // Past picks' Rule and Show controls, in its Account list's place: the rules first, every rule's running revision as the
     // key's absence; and for a rule chosen, its running revision, its variants by their one change and its earlier revisions
     // with the dates they ran, each choice a trade log kept in the link.
-    // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public static string PicksControls(IReadOnlyList<PaperAccountView> accounts, string? chosen)
     {
         var heads = accounts.Where(account => account.Head).OrderBy(account => EquityBrief.Core.Families.SetupFamilies.OrderOf(account.Family)).ToArray();

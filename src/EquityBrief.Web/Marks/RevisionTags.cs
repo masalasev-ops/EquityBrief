@@ -6,7 +6,7 @@ namespace EquityBrief.Web.Marks;
 // the revision that placed it, "Revision x, running since <date>", or for a pick an earlier revision placed "Revision x, ran
 // <date> to <date>", opening that revision on Paper trading. The revisions of each family on the index a page reads are
 // handed in for the one request drawing it; a page drawn with none handed in draws no tag.
-// see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+// see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
 public static class RevisionTags
 {
     static readonly AsyncLocal<(string Universe, IReadOnlyDictionary<string, IReadOnlyList<RevisionView>> Families)?> Held = new();

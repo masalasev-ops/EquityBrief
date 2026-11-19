@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-19 - docs/ARCHITECTURE.html and docs/BUILD_PLAN.md - Paper trading by revisions, one exit a trade, the reader's words, on the operator's order of 2026-11-18
+Decision: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+Was:
+> section 15.21, Reads: ... and stores none of them (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read).
+> sections 15.17 and 15.21, four citations, and BUILD_PLAN.md, two citations: (see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account)
+> section 15.23, the build's terms: variant | a version, named by what it changes; live rule | the live setup
+Now:
+> section 15.21, Reads: ... and stores none of them (see: ...). A paragraph after it describing the page by revisions, its controls, its cards and lists, Past picks' controls, every pick's revision tag, the orders that left the waiting list and the stock page's opening card.
+> the six citations: (see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it)
+> section 15.23, the build's terms: version | a revision of a rule, or a variant named by its one change; live setup | the revision running now; live rule | the revision running now
+Why: the operator's order of 2026-11-18, word for word in `prompts/2026-11-18-23.10-paper-trading-redesign-order.md`: a rule changes through numbered revisions, a variant is named by its one change, "version", "live setup" and V1 to V8 leave every page, and Paper trading is drawn as the mockup of that day draws it; the decision it cited is superseded.
+
 ### 2026-11-18 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - an approval inside the rule freeze is refused, on the operator's word of 2026-11-17
 Decision: An approval inside the rule freeze is refused and replaces no live rule
 Was:
