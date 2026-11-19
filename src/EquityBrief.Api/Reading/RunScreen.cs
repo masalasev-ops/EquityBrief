@@ -1836,6 +1836,11 @@ public static class RunScreen
             .ToDictionary(group => group.Key, group => Settings(group.OrderBy(row => row.RegisteredAt).Last().Parameters), StringComparer.Ordinal);
         var live = standing.FirstOrDefault(candidate => candidate.Live);
         var liveSettings = live is not null && settings.TryGetValue(live.Candidate, out var held) ? held : new Dictionary<string, double>(StringComparer.Ordinal);
+        var newest = register
+            .Where(row => row.Retires is null)
+            .GroupBy(row => row.Candidate, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.OrderBy(row => row.RegisteredAt).Last(), StringComparer.Ordinal);
+        var liveChips = live is not null && newest.TryGetValue(live.Candidate, out var liveRow) ? RuleScreen.ChipsOf(liveRow) : [];
 
         return
         [
@@ -1845,15 +1850,25 @@ public static class RunScreen
                 {
                     var fired = picks.Where(pick => pick.Fired && pick.Candidate == candidate.Candidate).ToArray();
 
+                    // A variant named by its one change and its changes said as sentences, its chips read against the
+                    // running revision's.
+                    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+                    IReadOnlyList<ChangeLine> changes = !candidate.Live && newest.TryGetValue(candidate.Candidate, out var row) && liveChips.Count > 0
+                        ? RuleSentences.Between(liveChips, RuleScreen.ChipsOf(row))
+                        : [];
+                    var named = changes.FirstOrDefault(change => change.Key != "hooks") ?? changes.FirstOrDefault();
+
                     return new VersionLine(
                         candidate.Candidate,
                         Slug(candidate.Candidate),
-                        candidate.Live ? "The rules that pick tonight's stocks" : Changes(settings.GetValueOrDefault(candidate.Candidate) ?? liveSettings, liveSettings),
+                        candidate.Live ? "The rules that pick tonight's stocks"
+                            : changes.Count > 0 ? RuleSentences.Joined([.. changes.Select(change => change.Sentence)])
+                            : Changes(settings.GetValueOrDefault(candidate.Candidate) ?? liveSettings, liveSettings),
                         fired.Length,
                         fired.Length == 0 ? null : 1.0 * fired.Count(pick => pick.LivePassed) / fired.Length,
                         candidate.Record.Blocks,
                         candidate.Record.Floor,
-                        candidate.Live);
+                        candidate.Live) { Name = named?.Sentence };
                 }),
         ];
     }

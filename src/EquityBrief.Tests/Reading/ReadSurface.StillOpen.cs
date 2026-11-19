@@ -27,7 +27,7 @@ public partial class ReadSurface
         CheckReach.Key("15.7 Tonight", "Still open, once the rule reaches the filter the stock is excluded there and drawn here alone"),
         CheckReach.Key("15.7 Tonight", "Still open, a line where there is none"),
         CheckReach.Key("15.7 Tonight", "Still open, a key saying it is not a new trade"),
-        CheckReach.Key("15.17 Past picks", "How the list's picks have done, a line saying how many were listed again while an earlier trade was open, drawn and not counted"),
+        CheckReach.Key("15.17 Past picks", "How the running revisions' picks have done, a line saying how many were listed again while an earlier trade was open, drawn and not counted"),
         CheckReach.Key("15.17 Past picks", "Every trade, a repeat listing made while the trade from an earlier night was open marked as listed again and counted once"),
         CheckReach.Key(Scope.FailureTable, "A still open trade whose outcome row is missing"),
     ];

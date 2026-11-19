@@ -40,8 +40,11 @@ public sealed record PaperAccountSource(
 
     // The trades listed before its version's first session that a replay under its version reproduced, kept in its rule's
     // record and not in the account, and the session that replay counted from; none where no replay carried the record back.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public IReadOnlyList<(PaperTrade Trade, double? Result)> Same { get; init; } = [];
+
+    // The revisions of its rule up to the one it stands in, the last that one; none for an account no registration starts.
+    public IReadOnlyList<RevisionView> Revisions { get; init; } = [];
 
     public DateOnly? SameSince { get; init; }
 
@@ -49,6 +52,9 @@ public sealed record PaperAccountSource(
     // or provisional rule, the operator's own, or a version whose live rule holds no registered settings to read against.
     // see: A version is marked as narrowing or widening its live rule by the direction of each setting it changes
     public Core.Cards.VersionReachKind? Reach { get; init; }
+
+    // A variant's settings that differ from its running revision, each a plain sentence; none for any other account.
+    public IReadOnlyList<ChangeLine> Differences { get; init; } = [];
 
     // Whether a stored trade is one of this account's: kept under its name, or under its name and the filter version it
     // was listed from.
@@ -151,9 +157,39 @@ public static class PaperScreen
 
     static string Stamp(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
-    // Where a registered rule's account starts: its standing registration's first session, never earlier, whatever a replay
-    // carried its record back to.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // The revisions of a rule's registrations and the changes in its code, in the order they ran.
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    // see: Any change that changes what a rule's trades do starts a new revision, in its settings or in its code
+    public static IReadOnlyList<RuleRevision> RevisionsOf(IReadOnlyList<CandidateRow> lineage) =>
+        RuleRevisions.Of(
+            lineage.Select(row => (row.Id, row.Candidate, row.RegisteredAt, row.Parameters)),
+            lineage.Count > 0 ? [.. CodeRevisions.Of(lineage[0].Evaluator).Where(change => change.From <= (Reading.Value ?? DateOnly.MaxValue))] : []);
+
+    // The night a page reads, which a change in code that ran after it does not reach; none outside a page's read.
+    static readonly AsyncLocal<DateOnly?> Reading = new();
+
+    // The night a page reads its revisions as of, until the returned scope is disposed.
+    public static IDisposable ReadingNight(DateOnly night)
+    {
+        var before = Reading.Value;
+
+        Reading.Value = night;
+
+        return new Restored(() => Reading.Value = before);
+    }
+
+    sealed class Restored(Action restore) : IDisposable
+    {
+        public void Dispose() => restore();
+    }
+
+    // The revision a standing registration stands in, none where the lineage does not hold it.
+    public static RuleRevision? RevisionOf(CandidateRow standing, IReadOnlyList<CandidateRow> lineage) =>
+        RevisionsOf([.. lineage.Where(row => row.RegisteredAt <= standing.RegisteredAt)]) is { Count: > 0 } revisions ? revisions[^1] : null;
+
+    // Where a registered rule's account starts without a lineage to read its revision from: its standing registration's first
+    // session, never earlier, whatever a replay carried its record back to.
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public static DateOnly StartOf(CandidateRow standing) => FamilyRecords.FirstSession(standing.RegisteredAt);
 
     // Where the Run page's record of a registered rule counts from: its standing registration's first session, or the
@@ -165,9 +201,12 @@ public static class PaperScreen
             replays).First;
 
     // The version that listed a trade: its rule's newest registration whose first session is on or before the trade's buy.
+    public static string VersionAt(IReadOnlyList<RevisionView> revisions, DateOnly listed) =>
+        revisions.LastOrDefault(revision => revision.From <= listed) is { } revision ? revision.Name : BeforeRegistration;
+
     public static string VersionAt(IReadOnlyList<CandidateRow> lineage, DateOnly bought) =>
-        lineage.Where(row => FamilyRecords.FirstSession(row.RegisteredAt) <= bought).MaxBy(row => (row.RegisteredAt, row.Id)) is { } listed
-            ? VersionWords(listed)
+        RuleRevisions.At(RevisionsOf(lineage), bought) is { } revision
+            ? RevisionView.Named(revision.Number)
             : BeforeRegistration;
 
     // A registered rule's account's trades split at its start: those it counts, bought on or after it, and those it leaves
@@ -240,16 +279,47 @@ public static class PaperScreen
     // earlier versions'.
     public static PaperAccountSource Started(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays, IReadOnlyList<CandidateRow> lineage)
     {
-        var start = StartOf(standing);
+        var revision = RevisionOf(standing, lineage);
+        var start = revision?.From ?? StartOf(standing);
         var record = RecordFrom(standing, replays);
         bool IsSame((PaperTrade Trade, double? Result) one) => one.Trade.ListedOn >= record && one.Trade.ListedOn < start;
 
-        return Split(account, [.. trades.Where(one => !IsSame(one))], start, VersionWords(standing), lineage) with
+        return Split(account, [.. trades.Where(one => !IsSame(one))], start, revision is not null ? RevisionView.Named(revision.Number) : VersionWords(standing), lineage) with
         {
             VersionFrom = start,
             Same = [.. trades.Where(IsSame)],
             SameSince = record < start ? record : null,
+            Revisions = RevisionViews([.. lineage.Where(row => row.RegisteredAt <= standing.RegisteredAt)]),
         };
+    }
+
+    // Each revision of a rule as a page draws it: its number, the sessions it ran and what it changed from the one before, in
+    // the words its chips are drawn in.
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    public static IReadOnlyList<RevisionView> RevisionViews(IReadOnlyList<CandidateRow> lineage)
+    {
+        var revisions = RevisionsOf(lineage);
+        var views = new List<RevisionView>();
+        IReadOnlyList<RuleChip>? before = null;
+        CandidateRow? beforeRow = null;
+
+        foreach (var revision in revisions)
+        {
+            var first = lineage.FirstOrDefault(row => row.Id == revision.FirstId);
+            var chips = first is not null ? RuleScreen.ChipsOf(first) : [];
+            string[]? changed = before is null
+                ? null
+                : revision.Code is { } code ? [code]
+                : RuleSentences.Between(before, chips).Select(change => change.Sentence).ToArray() is { Length: > 0 } sentences
+                    ? sentences
+                    : beforeRow is not null && first is not null ? [.. RuleSentences.Parameters(CandidateEvaluator.Read(beforeRow.Parameters), CandidateEvaluator.Read(first.Parameters))] : [];
+
+            views.Add(new RevisionView(revision.Number, revision.From, revision.Until, changed is null ? null : changed.Length == 0 ? RevisionView.CodeOnly : RuleSentences.Joined(changed)) { Registration = revision.FirstId });
+            before = chips;
+            beforeRow = first;
+        }
+
+        return views;
     }
 
     // From the 22.25 correction of 2026-11-11 a registered rule's account with the trades its family's earlier live
@@ -257,7 +327,7 @@ public static class PaperScreen
     // the earlier versions' whatever night listed it, never this version's or the same, named by the version that listed it,
     // and a stock its own words kept at the same listing night counted once.
     // see: Every count of trades names its group and one function works the four groups
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     static PaperAccountSource WithEarlierWords(PaperAccountSource account, IReadOnlyList<PaperRow> rows, CandidateRow live, IReadOnlyList<CandidateRow> lineage)
     {
         string[] words = [.. lineage.Select(row => row.Candidate).Where(candidate => !string.Equals(candidate, live.Candidate, StringComparison.Ordinal)).Distinct(StringComparer.Ordinal)];
@@ -295,8 +365,33 @@ public static class PaperScreen
 
     // A version's account with its reach against its live rule's registered settings, none where the family stands at no
     // registered rule.
-    static PaperAccountSource Reached(PaperAccountSource version, string family, CandidateRow? live, CandidateRow row) =>
-        live is null ? version : version with { Reach = Core.Cards.VersionReach.Of(family, CandidateEvaluator.Read(live.Parameters), CandidateEvaluator.Read(row.Parameters)) };
+    static PaperAccountSource Reached(PaperAccountSource version, string family, CandidateRow? live, CandidateRow row, IReadOnlyList<CandidateRow>? registrations = null) =>
+        live is null
+            ? version
+            : version with
+            {
+                Reach = Core.Cards.VersionReach.Of(family, CandidateEvaluator.Read(live.Parameters), CandidateEvaluator.Read(row.Parameters)),
+                Differences = Named(RuleSentences.Between(RuleScreen.ChipsOf(live), RuleScreen.ChipsOf(row)), BaseOf(registrations ?? [], row) is { } beside ? RuleSentences.Between(RuleScreen.ChipsOf(beside), RuleScreen.ChipsOf(row)) : []),
+            };
+
+    // The rule a variant was registered beside: its family's newest live registration on the index at or before the
+    // variant's first, none where the register holds none.
+    static CandidateRow? BaseOf(IReadOnlyList<CandidateRow> registrations, CandidateRow row)
+    {
+        var first = registrations.Where(one => one.Candidate == row.Candidate).Select(one => one.RegisteredAt).DefaultIfEmpty(row.RegisteredAt).Min();
+
+        return registrations.Where(one => FamilyRecords.IsLive(one.Candidate) && one.RegisteredAt <= first).MaxBy(one => one.RegisteredAt);
+    }
+
+    // A variant's differences from its running revision with the one it is named by first: the setting it changed from the
+    // rule it was registered beside, the plan aside, where the two read one; the rest as they fall.
+    static IReadOnlyList<ChangeLine> Named(IReadOnlyList<ChangeLine> fromRunning, IReadOnlyList<ChangeLine> fromBase)
+    {
+        var named = fromBase.Where(change => change.Key != "hooks").Select(change => change.Key).ToHashSet(StringComparer.Ordinal);
+        var first = fromRunning.FirstOrDefault(change => named.Contains(change.Key));
+
+        return first is null ? fromRunning : [first, .. fromRunning.Where(change => !ReferenceEquals(change, first))];
+    }
 
     // A variant's tab is its number and the settings it differs by: its short name is the number, and what it changes the
     // rest.
@@ -311,7 +406,7 @@ public static class PaperScreen
     // current version alone, from its version's first session; a provisional account and the operator's own count every
     // trade from their first. The register is read as the night's page reads it, as of the instant given where a night run
     // again read it later, and the rule a freeze keeps in the background has no account.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public static IReadOnlyList<PaperAccountSource> Accounts(
         bool large,
         string indexName,
@@ -324,6 +419,7 @@ public static class PaperScreen
         IReadOnlyList<FamilyReplayRow>? replays = null,
         DateTimeOffset? asOf = null)
     {
+        using var reading = ReadingNight(night);
         var accounts = new List<PaperAccountSource>();
         var replayed = large ? replays ?? [] : [];
 
@@ -367,7 +463,7 @@ public static class PaperScreen
                 {
                     var version = new PaperAccountSource(RunScreen.Slug(row.Candidate), family, PaperAccountView.Variant, tab, row.Candidate, row.Candidate, false, [], null, row.Candidate, Short: TabShort(tab), Changes: TabChanges(tab));
 
-                    accounts.Add(Reached(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. dipRegistrations.Where(one => one.Candidate == row.Candidate)]), family, liveDip, row));
+                    accounts.Add(Reached(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. dipRegistrations.Where(one => one.Candidate == row.Candidate)]), family, liveDip, row, dipRegistrations));
                 }
 
                 continue;
@@ -433,7 +529,7 @@ public static class PaperScreen
                     Short: TabShort(tab),
                     Changes: TabChanges(tab));
 
-                accounts.Add(Reached(Started(variant with { Unfilled = Unfilled(rows.Where(variant.Keeps)) }, Of(rows.Where(variant.Keeps)), row, replayed, [.. registrations.Where(one => one.Candidate == row.Candidate)]), family, live, row));
+                accounts.Add(Reached(Started(variant with { Unfilled = Unfilled(rows.Where(variant.Keeps)) }, Of(rows.Where(variant.Keeps)), row, replayed, [.. registrations.Where(one => one.Candidate == row.Candidate)]), family, live, row, registrations));
             }
         }
 
@@ -471,7 +567,7 @@ public static class PaperScreen
             {
                 var version = new PaperAccountSource(RunScreen.Slug(row.Candidate), family, PaperAccountView.Variant, tab, row.Candidate, row.Candidate, true, [], null, row.Candidate, Short: TabShort(tab), Changes: TabChanges(tab));
 
-                accounts.Add(Reached(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. registrations.Where(one => one.Candidate == row.Candidate)]), family, live, row));
+                accounts.Add(Reached(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. registrations.Where(one => one.Candidate == row.Candidate)]), family, live, row, registrations));
             }
         }
 
@@ -509,7 +605,7 @@ public static class PaperScreen
             {
                 var version = new PaperAccountSource(RunScreen.Slug(row.Candidate), family, PaperAccountView.Variant, tab, row.Candidate, row.Candidate, true, [], null, row.Candidate, Short: TabShort(tab), Changes: TabChanges(tab));
 
-                accounts.Add(Reached(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. registrations.Where(one => one.Candidate == row.Candidate)]), family, live, row));
+                accounts.Add(Reached(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. registrations.Where(one => one.Candidate == row.Candidate)]), family, live, row, registrations));
             }
         }
 
@@ -528,8 +624,31 @@ public static class PaperScreen
             Short: "You",
             Unfilled: []));
 
-        return accounts;
+        // A variant is a copy of its rule's running revision, so its account counts from that revision's first session where
+        // its own registration is older, the trades before it left out as listed before that revision.
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        return
+        [
+            .. accounts.Select(account => account.Standing == PaperAccountView.Variant
+                && accounts.FirstOrDefault(head => head.Family == account.Family && head.Standing is PaperAccountView.Live or PaperAccountView.Provisional)?.Since is { } start
+                ? FromRevision(account, start)
+                : account),
+        ];
     }
+
+    public const string BeforeRevision = "before the running revision";
+
+    static PaperAccountSource FromRevision(PaperAccountSource account, DateOnly start) =>
+        account.Since is { } since && since >= start
+            ? account
+            : account with
+            {
+                Trades = [.. account.Trades.Where(one => one.Trade.ListedOn >= start)],
+                Earlier = [.. account.Earlier ?? [], .. account.Trades.Where(one => one.Trade.ListedOn < start).Select(one => (one.Trade, one.Result, BeforeRevision))],
+                Unfilled = [.. (account.Unfilled ?? []).Where(one => one.Listed >= start)],
+                Since = start,
+                VersionFrom = start,
+            };
 
     // From 21.20 each variant registered after the register was read for the night, which no night has read yet, in the
     // families' page order: numbered and named by what it changes as its card will number it once the register is read past
@@ -813,6 +932,8 @@ public static class PaperScreen
                 VersionFrom = account.VersionFrom,
                 Tested = test?.Rule,
                 Reach = account.Reach,
+                Revisions = account.Revisions,
+                Differences = account.Differences,
             };
         });
 
@@ -911,7 +1032,7 @@ public static class PaperScreen
                 .ThenBy(trade => trade.Ticker, StringComparer.Ordinal),
         ];
         // Each account's same trades before its version, drawn apart under the account and in none of its figures.
-        // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         PaperSameView[] same =
         [
             .. heads
@@ -936,6 +1057,30 @@ public static class PaperScreen
         var from = views.Where(view => view.Head && view.Since is not null).Select(view => view.Since).Min();
         var counted = from is { } start ? PaperAccount.FundOver([.. sessions.Where(session => session >= start && session <= night)], fund) : null;
 
+        // Every rule's and every variant's own trades as its tabs draw them, those its walk bought, and each running rule's
+        // earlier revisions' trades, each named by the revision that listed it.
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        var traded = views
+            .Where(view => view.Standing != PaperAccountView.You)
+            .ToDictionary(
+                view => view.Key,
+                view => (IReadOnlyList<PaperBoughtView>)
+                [
+                    .. (view.Walk is { } walk
+                            ? walk.Trades.Where(one => one.Skipped is null).Select(one => (one.Trade, Result: source[view.Key].Trades.FirstOrDefault(own => own.Trade == one.Trade).Result))
+                            : source[view.Key].Trades.Select(one => (one.Trade, one.Result)))
+                        .Select(one => Drawn(view, one.Trade, one.Result, null)),
+                ],
+                StringComparer.Ordinal);
+        var earlierTraded = heads.ToDictionary(
+            head => head.Key,
+            head => (IReadOnlyList<PaperBoughtView>)
+            [
+                .. (source[head.Key].Earlier ?? []).Select(one => Drawn(head, one.Trade, one.Result, one.Version)),
+                .. source[head.Key].Same.Select(one => Drawn(head, one.Trade, one.Result, VersionAt(source[head.Key].Revisions, one.Trade.ListedOn))),
+            ],
+            StringComparer.Ordinal);
+
         return new PaperPageView(
             views,
             [.. bought.Where(trade => trade.Open is not null)],
@@ -947,6 +1092,8 @@ public static class PaperScreen
             combined)
         {
             Same = same,
+            Traded = traded,
+            EarlierTraded = earlierTraded,
             Skipped =
             [
                 .. heads.SelectMany(head => (head.Walk?.Trades ?? [])

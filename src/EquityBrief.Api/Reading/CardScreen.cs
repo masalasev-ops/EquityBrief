@@ -217,8 +217,13 @@ public static class CardScreen
     // From the operator's order of 2026-11-14 the price an order takes profit at from a buy and the stop placed from it, through
     // the core's one function the walk sells at; none for an order placed before, which takes profit at none.
     // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    // A half at or above the order's own target never sells, a close at the target selling the whole first, so the card draws
+    // the whole at the target in the half's place, as the walk sells it.
+    // see: A trade under a plan names the one exit its walk sells by on every page, read from its plan and never from a stored target
     public static TakeProfitView? TakeProfitOf(EquityBrief.Core.Loop.PlanOrder order, double buy, double stop) =>
-        order.TakeProfitFrom(buy, stop) is { } placed
+        order.Half && EquityBrief.Core.Loop.TradeExit.Of(order, buy, stop) is { Half: null, Whole: { } whole }
+            ? new TakeProfitView(EquityBrief.Core.Prices.Statistic.ToPrice(whole), EquityBrief.Core.Loop.TakeProfitSource.Own, Buy: EquityBrief.Core.Prices.Statistic.ToPrice(buy), Stop: EquityBrief.Core.Prices.Statistic.ToPrice(stop)) { AddedOn = order.TakeProfitAddedOn }
+        : order.TakeProfitFrom(buy, stop) is { } placed
             ? new TakeProfitView(
                 EquityBrief.Core.Prices.Statistic.ToPrice(placed.Price),
                 placed.Source,

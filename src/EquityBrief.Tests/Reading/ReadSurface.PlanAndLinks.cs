@@ -27,7 +27,7 @@ public partial class ReadSurface
         // section 4 names it, and the card's heading over it.
         Assert.Contains("<a href=\"#plan\">", page, StringComparison.Ordinal);
         Assert.Matches("<a href=\"#plan\"><span class=\"c-n\">\\d+</span>The plan</a>", page);
-        Assert.Matches("<section class=\"card\" id=\"plan\"[^>]*>.*?<h2>Entry and exit plan</h2>", page);
+        Assert.Matches("<section class=\"card\" id=\"plan\"[^>]*>.*?<h2>" + EquityBrief.Web.Marks.MarkRenderer.StartingTonight + "</h2>", page);
         Assert.DoesNotContain("Where it is bought, sold, and wrong", page, StringComparison.Ordinal);
 
         // Every rule across the column, the price line among them, ends short of every word set to the

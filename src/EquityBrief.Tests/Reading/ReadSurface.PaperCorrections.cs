@@ -56,7 +56,7 @@ public partial class ReadSurface
 
         Assert.Empty(Doubled(paper));
         Assert.Empty(Doubled(loop));
-        Assert.Contains("the setup whose live or not-yet-tested rule bought it, in that setup's own account", paper, StringComparison.Ordinal);
+        Assert.Contains("the setup whose running revision bought it, in that setup's own account", paper, StringComparison.Ordinal);
         Assert.Contains("What it does", loop, StringComparison.Ordinal);
     }
 
@@ -64,13 +64,13 @@ public partial class ReadSurface
     // reproduced every trade from 2 Oct. On 2026-11-06 its tile read "Down 1.8% since 2 Oct" with "counts from 2 Oct: its
     // earlier trades replay the same under this version", the scorecard counted from 2 Oct and the line beneath what the
     // system bought said "The accounts above count only the rules as registered now, since 3 Nov".
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     [Fact]
     public void AnAccountCountsFromItsVersionsFirstSessionAndTheSameTradesBeforeItStandApartUnderIt()
     {
         const string rule = "the live breakout rule at the order's words";
         var standing = new EquityBrief.Api.Reading.CandidateRow(301, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 11, 3, 2, 0, 0, TimeSpan.Zero), EvaluatorVersion: "v");
-        var earlier = new EquityBrief.Api.Reading.CandidateRow(300, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 9, 24, 22, 0, 0, TimeSpan.Zero), EvaluatorVersion: "u");
+        var earlier = new EquityBrief.Api.Reading.CandidateRow(300, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 9, 24, 22, 0, 0, TimeSpan.Zero), "{\"volumeMultiple\": 2}", EvaluatorVersion: "u");
         var replay = new EquityBrief.Core.Candidates.FamilyReplayRow(rule, "v", new DateOnly(2026, 10, 2), true, "reproduced", new DateTimeOffset(2026, 11, 3, 3, 0, 0, TimeSpan.Zero));
 
         (PaperTrade, double?) Trade(string ticker, DateOnly listed) => (new PaperTrade(ticker, listed.AddDays(1), 100m, 90m, null, null, null, 1, Listed: listed), null);
@@ -85,7 +85,7 @@ public partial class ReadSurface
         Assert.Equal(["LH"], started.Same.Select(one => one.Trade.Ticker));
         Assert.Equal(new DateOnly(2026, 10, 2), started.SameSince);
         Assert.Equal(["OLD"], (started.Earlier ?? []).Select(one => one.Trade.Ticker));
-        Assert.Equal("the version registered 2026-11-03, code v", started.Version);
+        Assert.Equal("Revision 2", started.Version);
 
         // Drawn: the same trades under their own press beneath what the system bought, named by the setup and the replay's
         // day; the tile counting from 3 Nov alone, no line beside it carrying an earlier day; and the line beneath naming no
@@ -96,9 +96,8 @@ public partial class ReadSurface
         var groups = new TradeGroupsView(new DateOnly(2025, 9, 25), new DateOnly(2026, 11, 3), new TradeCountView(122, 71, 51, 21, 18, 27, -0.012), new TradeCountView(28, 23, 5, 2, 1, 2, -0.02), new TradeCountView(94, 48, 46, 19, 17, 25, -0.01), 13);
         var page = PaperPageOf(new PaperPageView([view], [], [], [], new PaperNotBought([]), [], null) { Same = [new PaperSameView("breakout", new DateOnly(2026, 10, 2), [lh])], Groups = groups });
 
-        Assert.Contains("<summary>Breakout: The same trades before this version (since 2 Oct), kept in the rule's record and not in this account, 1 trade</summary>", page, StringComparison.Ordinal);
-        Assert.Contains("data-since=\"2026-11-03\"", Regex.Match(page, "<div class=\"paper-tile\" data-family=\"breakout\"[^>]*>").Value, StringComparison.Ordinal);
-        Assert.Contains("since 3 Nov on $100,000", page, StringComparison.Ordinal);
+        Assert.Contains("<summary>Breakout: The same trades before this revision (since 2 Oct), kept in the rule's record and not in this account, 1 trade</summary>", page, StringComparison.Ordinal);
+        Assert.Contains("data-since=\"2026-11-03\"", Regex.Match(page, "<a class=\"revision-tile\" data-family=\"breakout\"[^>]*>").Value, StringComparison.Ordinal);
         Assert.DoesNotContain("since 2 Oct on", page, StringComparison.Ordinal);
         Assert.DoesNotContain("counts from 2 Oct", page, StringComparison.Ordinal);
         Assert.DoesNotContain("The accounts above count only the rules as registered now", page, StringComparison.Ordinal);
@@ -128,7 +127,8 @@ public partial class ReadSurface
         // The account's card says so, and its line draws a tenth beside the cap a pick's card reads.
         var page = PaperPageOf(new PaperPageView([view], [], [], [], new PaperNotBought([]), [], null));
 
-        Assert.Contains("<p class=\"card-summary\" data-summary>Each setup trades its own copy of your account of $100,000. <span data-as-worded>Each position risks 1% and is capped at a tenth of the account.</span></p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-summary\" data-summary>Each rule buys its picks on paper in its own copy of an account of your size", page, StringComparison.Ordinal);
+        Assert.Contains("<span>Account <b>$100,000</b></span><span>Risk a trade <b>1%</b></span>", page, StringComparison.Ordinal);
         Assert.Empty(PlainWords.Faults(page, "account", ["risks"]));
         Assert.Contains("<span>Most in one stock <b>10%</b></span>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("with at most 20% in one stock", page, StringComparison.Ordinal);
@@ -214,7 +214,7 @@ public partial class ReadSurface
         Assert.Contains("data-account-since=\"2026-11-03\">Since today's rules all took effect on 3 Nov, our paper account has followed every one of them with an equal share.</p>", home, StringComparison.Ordinal);
         Assert.Contains("<span>Our paper account since 3 Nov</span><b", home, StringComparison.Ordinal);
         Assert.Contains("<span>The index's fund, SPY, over the same days</span>", home, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"home-system\" data-system-closed=\"51\" data-made-money=\"21\">All versions since 25 Sep: 51 ideas bought and sold on paper, 21 made money.</p>", home, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"home-system\" data-system-closed=\"51\" data-made-money=\"21\">Every revision since 25 Sep: 51 ideas bought and sold on paper, 21 made money.</p>", home, StringComparison.Ordinal);
         Assert.DoesNotContain("2 Oct", home, StringComparison.Ordinal);
         Assert.DoesNotContain("replay the same", home, StringComparison.Ordinal);
 
@@ -429,13 +429,20 @@ public partial class ReadSurface
         Assert.DoesNotContain("<table class=\"paper-variants\"", narrowing, StringComparison.Ordinal);
 
         // One widening version: the line counts them.
-        Assert.Contains(">Pullback has made no trade since its record began on 3 Nov, and none of its 2 versions has traded either: 1 narrows it and 1 widens it.</p>", Part(Row("list-pullback", PaperAccountView.Live, null, 0), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 0), Row("V8", PaperAccountView.Variant, VersionReachKind.Widens, 0)), StringComparison.Ordinal);
+        Assert.Contains(">Pullback has made no trade since its record began on 3 Nov, and none of its 2 variants has traded either: 1 narrows it and 1 can take trades it cannot.</p>", Part(Row("list-pullback", PaperAccountView.Live, null, 0), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 0), Row("V8", PaperAccountView.Variant, VersionReachKind.Widens, 0)), StringComparison.Ordinal);
 
         // A family with a trade draws its table, each version marked.
         var traded = Part(Row("list-pullback", PaperAccountView.Live, null, 2), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 1), Row("V8", PaperAccountView.Variant, VersionReachKind.Widens, 3));
 
-        Assert.Contains("<span class=\"pv-reach\" data-reach=\"narrows\">narrows the live rule</span>", AccountRowOf(traded, "V1"), StringComparison.Ordinal);
-        Assert.Contains("<span class=\"pv-reach\" data-reach=\"widens\">widens it</span>", AccountRowOf(traded, "V8"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pv-reach\" data-reach=\"narrows\">narrows the running revision</span>", AccountRowOf(traded, "V1"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pv-reach\" data-reach=\"widens\">can take trades the running revision cannot</span>", AccountRowOf(traded, "V8"), StringComparison.Ordinal);
+
+        // A version changing a setting whose direction is not read draws no words for it, its name saying what it changes;
+        // a family with no trade counts it as one that could add trades or remove them.
+        var unread = Part(Row("list-pullback", PaperAccountView.Live, null, 2), Row("V3", PaperAccountView.Variant, VersionReachKind.Unread, 1));
+
+        Assert.DoesNotContain("data-reach=\"unread\"", AccountRowOf(unread, "V3"), StringComparison.Ordinal);
+        Assert.Contains("1 narrows it and 1 could add trades or remove them.</p>", Part(Row("list-pullback", PaperAccountView.Live, null, 0), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 0), Row("V3", PaperAccountView.Variant, VersionReachKind.Unread, 0)), StringComparison.Ordinal);
         Assert.DoesNotContain("paper-no-trade", traded, StringComparison.Ordinal);
     }
 
@@ -613,14 +620,14 @@ public partial class ReadSurface
 
         Assert.DoesNotContain("data-account=\"pullback\"", chart, StringComparison.Ordinal);
         Assert.DoesNotContain("data-end=\"pullback\"", chart, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"paper-key paper-key-none\" data-none=\"pullback\" data-family=\"pullback\" data-standing=\"live\"><span class=\"paper-key-mark\" data-family=\"pullback\" data-standing=\"live\"></span>Pullback · Live · no trades yet</span>", chart, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"paper-key paper-key-none\" data-none=\"pullback\" data-family=\"pullback\" data-standing=\"live\"><span class=\"paper-key-mark\" data-family=\"pullback\" data-standing=\"live\"></span>Pullback, its starting settings, no trades yet</span>", chart, StringComparison.Ordinal);
         Assert.Contains("data-account=\"drift\"", chart, StringComparison.Ordinal);
 
         // With no account holding a trade, no chart, and each key still saying so.
         var none = WebUtility.HtmlDecode(new MarkRenderer().PaperChart([idle], null));
 
         Assert.Contains("data-paper-chart=\"none\">No account has a trade to draw yet.", none, StringComparison.Ordinal);
-        Assert.Contains("Pullback · Live · no trades yet", none, StringComparison.Ordinal);
+        Assert.Contains("Pullback, its starting settings, no trades yet", none, StringComparison.Ordinal);
     }
 
     // Read back on 5152 at a true 390 on 2026-11-07, the chart drew its whole width into the phone's, its axis, dates and end

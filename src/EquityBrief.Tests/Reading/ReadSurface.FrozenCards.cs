@@ -261,7 +261,7 @@ public partial class ReadSurface
         var card = FamilyCardOf(page, BreakoutRule.Name);
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\"", card, StringComparison.Ordinal);
-        Assert.Equal(["The live setup", "Version: market check off"], Regex.Matches(card, "<option [^>]*>([^<]*)</option>").Select(match => match.Groups[1].Value));
+        Assert.Equal(["The revision running now", "Variant: skips the check on the whole market"], Regex.Matches(card, "<option [^>]*>([^<]*)</option>").Select(match => match.Groups[1].Value));
         Assert.DoesNotContain(background, page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-no-variant", card, StringComparison.Ordinal);
 
@@ -272,7 +272,7 @@ public partial class ReadSurface
         var paper = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&variants=breakout&rule=breakout"));
 
         Assert.Contains("<p class=\"paper-no-trade\" data-no-trade=\"1\">", paper, StringComparison.Ordinal);
-        Assert.Equal([RunScreen.Slug(registrations[1].Candidate)], Regex.Matches(paper, "<tr data-account=\"([^\"]+)\" data-verdict=").Select(match => match.Groups[1].Value));
+        Assert.Equal([RunScreen.Slug(registrations[1].Candidate)], Regex.Matches(paper, "<tr class=\"vrow[^\"]*\" data-account=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains(registrations[0].Candidate, paper, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(registrations[1].Candidate, paper, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(background, paper, StringComparison.OrdinalIgnoreCase);
@@ -327,7 +327,7 @@ public partial class ReadSurface
         var card = FamilyCardOf(page, BreakoutRule.Name);
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"0\"", card, StringComparison.Ordinal);
-        Assert.Equal(["The live setup"], Regex.Matches(card, "<option [^>]*>([^<]*)</option>").Select(match => match.Groups[1].Value));
+        Assert.Equal(["The revision running now"], Regex.Matches(card, "<option [^>]*>([^<]*)</option>").Select(match => match.Groups[1].Value));
         Assert.DoesNotContain("data-no-variant", card, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"no-variant\" data-no-variant=\"true\">{ReaderWords.Plain(RuleScreen.NoVariantLine("S&P 400"))}</p>", FamilyCardOf(page, DriftRule.Name), StringComparison.Ordinal);
     }
@@ -385,7 +385,7 @@ public partial class ReadSurface
         // on none of it; the heavyweights' card the live rule's own book, holding M1, live since that day.
         var (frozen, frozenBook) = await CardsReadAt("2026-10-03T11:05:00Z");
 
-        Assert.Contains("<span class=\"status-pill live\">This version since 3 Oct 2026</span>", frozen, StringComparison.Ordinal);
+        Assert.Matches("<span class=\"status-pill live\">" + RunningPill + "</span>", frozen);
         Assert.Contains(SweepLineDrawn, RuleFoldOf(frozen), StringComparison.Ordinal);
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-03\"", frozenBook, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M1\"", frozenBook, StringComparison.Ordinal);
@@ -568,8 +568,8 @@ public partial class ReadSurface
         // No freeze: every rule of the index provisional.
         var before = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400"));
 
-        Assert.Contains("Every rule of this index is provisional, so no share and no average is drawn", before, StringComparison.Ordinal);
-        Assert.Contains("Each listed by a setup on the S&P 400's provisional settings, named with its index.", before, StringComparison.Ordinal);
+        Assert.Contains("Every rule of this index is not yet tested, so no share and no average is drawn", before, StringComparison.Ordinal);
+        Assert.Contains("Each listed by a setup on the S&P 400's starting settings, named with its index.", before, StringComparison.Ordinal);
 
         // The breakout frozen on the night and read by it: it alone is named frozen, from the day of its freeze, and the
         // two other swing families provisional, the fundamentals-first family named no more from 22.13.
@@ -577,13 +577,13 @@ public partial class ReadSurface
 
         var frozen = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400"));
 
-        Assert.DoesNotContain("Every rule of this index is provisional", frozen, StringComparison.Ordinal);
+        Assert.DoesNotContain("Every rule of this index is not yet tested", frozen, StringComparison.Ordinal);
         Assert.Contains(
-            "Breakouts to a new high is frozen, listing by its live rule from the night of its freeze, 2026-10-02, its live rule's record read on the Run page; " +
-            "Pullbacks to support and Earnings drift are provisional, followed and in no record until a freeze. No share and no average is drawn here: each trade is a fact and is followed.",
+            "Breakouts to a new high is frozen, listing by its running revision from the night of its freeze, 2026-10-02, its running revision's record read on the Run page; " +
+            "Pullbacks to support and Earnings drift are not yet tested, followed and in no record until a freeze. No share and no average is drawn here: each trade is a fact and is followed.",
             frozen,
             StringComparison.Ordinal);
-        Assert.Contains("Each listed by a setup on the S&P 400, by its live rule from its freeze and on the provisional settings before it, named with its index.", frozen, StringComparison.Ordinal);
-        Assert.Contains("Provisional until its freeze: followed, and in no record until then.", frozen, StringComparison.Ordinal);
+        Assert.Contains("Each listed by a setup on the S&P 400, by its running revision from its freeze and on the starting settings before it, named with its index.", frozen, StringComparison.Ordinal);
+        Assert.Contains("Not yet tested until its freeze: followed, and in no record until then.", frozen, StringComparison.Ordinal);
     }
 }

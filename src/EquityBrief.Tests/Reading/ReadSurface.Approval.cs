@@ -179,7 +179,7 @@ public partial class ReadSurface
         var large = await LoopWhole(client, "universe=500");
 
         // The page reads the stored words through the reader's plain phrases, the learned score and a variant among them.
-        Assert.Contains("<p class=\"loop-decided\" data-decision=\"withdrawn\"><b>Approval withdrawn</b> on your word of 2026-11-13. It was recorded as approved on 2026-11-09 and applied on 2026-11-10, and you did not approve it. At the next restart of the rules the earlier rule is made live again, and the score fitted to past setups keeps running beside it as a version on each index.</p>", large, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"loop-decided\" data-decision=\"withdrawn\"><b>Approval withdrawn</b> on your word of 2026-11-13. It was recorded as approved on 2026-11-09 and applied on 2026-11-10, and you did not approve it. At the next restart of the rules the earlier rule is made live again, and the score fitted to past setups keeps running beside it as a variant on each index.</p>", large, StringComparison.Ordinal);
         Assert.Contains("<td>approval withdrawn on your word of 2026-11-13</td>", large, StringComparison.Ordinal);
         Assert.Contains("You gave your word on 1 change on this index: 0 approved, 0 declined and 1 approval withdrawn.", large, StringComparison.Ordinal);
         Assert.DoesNotContain("data-decision=\"approved\"", large, StringComparison.Ordinal);
@@ -377,8 +377,8 @@ public partial class ReadSurface
         var picker = Assert.Single(Blocks(large, "<select id=\"rule-breakout\" class=\"rule-select\" data-rule-choice=\"breakout\".*?</select>"));
 
         Assert.Contains("It stands at a change approved on the Monthly check-up: exit: a target at 1.5 times the risk.", large, StringComparison.Ordinal);
-        Assert.Contains($"data-variant=\"none\" title=\"{replaced}; exit: a target at 1.5 risks\" selected>The live setup</option>", picker, StringComparison.Ordinal);
-        Assert.Matches($"data-variant=\"[0-9]+\" title=\"{Regex.Escape(replaced)}\">Version: without ", picker);
+        Assert.Contains($"data-variant=\"none\" title=\"{replaced}; exit: a target at 1.5 risks\" selected>The revision running now</option>", picker, StringComparison.Ordinal);
+        Assert.Matches($"data-variant=\"[0-9]+\" title=\"{Regex.Escape(replaced)}\">Variant: sells by its setup's own sale, without the running revision's exit, ", picker);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
         Assert.Equal(small, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600")));
     }

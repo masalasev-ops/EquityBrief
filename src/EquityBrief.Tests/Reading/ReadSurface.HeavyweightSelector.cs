@@ -48,15 +48,15 @@ public partial class ReadSurface
         Assert.Contains($"data-rule=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\"", page, StringComparison.Ordinal);
         // From 22.6 the Showing list: the live setup first and selected, then each version named by what it changes, its
         // full name under the pointer.
-        Assert.Contains($"<div class=\"rule-view\"><label for=\"rule-heavyweight\">Showing</label> <select id=\"rule-heavyweight\" class=\"rule-select\" data-rule-choice=\"heavyweight\" aria-label=\"The version this card is drawn by\"><option value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{live}\" selected>The live setup</option><option value=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\" title=\"{bothExits}\">Version: sold on either exit</option>", page, StringComparison.Ordinal);
+        Assert.Contains($"<div class=\"rule-view\"><label for=\"rule-heavyweight\">Showing</label> <select id=\"rule-heavyweight\" class=\"rule-select\" data-rule-choice=\"heavyweight\" aria-label=\"The revision or variant this card is drawn by\"><option value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{live}\" selected>The revision running now</option><option value=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\" title=\"{bothExits}\">Variant: sells when it loses the lead or closes under its 200-day average</option>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("variant-band", page, StringComparison.Ordinal);
 
         // The variant chosen in the link: its own book, H5 and not H3, under the band naming it.
         var chosen = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?heavyweight={RunScreen.Slug(bothExits)}")));
 
         Assert.Contains($"data-rule=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\"", chosen, StringComparison.Ordinal);
-        Assert.Contains($"<option value=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\" title=\"{bothExits}\" selected>Version: sold on either exit</option>", chosen, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A version being tested, not tonight's holdings</p><p>Version: sold on either exit</p><p class=\"band-note\">It runs every night beside the live setup with its own paper account. It replaces the live setup only if it proves better and you approve it on the Monthly check-up.</p></div>", chosen, StringComparison.Ordinal);
+        Assert.Contains($"<option value=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\" title=\"{bothExits}\" selected>Variant: sells when it loses the lead or closes under its 200-day average</option>", chosen, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A variant being tested, not tonight's holdings</p><p>Variant: sells when it loses the lead or closes under its 200-day average</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better and you approve it on the Monthly check-up.</p></div>", chosen, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"H5\"", chosen, StringComparison.Ordinal);
         Assert.DoesNotContain("<tr data-ticker=\"H3\"", chosen, StringComparison.Ordinal);
 
@@ -71,7 +71,7 @@ public partial class ReadSurface
         var pageBook = Strings(store, $"SELECT ticker FROM heavyweight_holding WHERE entered_on <= '{TheSwitch}' AND (ended_on IS NULL OR ended_on > '{TheSwitch}') ORDER BY sector, ticker;");
 
         Assert.DoesNotContain("H5", pageBook);
-        Assert.Contains($"<p class=\"rule-share\" data-shared=\"\" data-added=\"H5\" data-dropped=\"{string.Join(",", pageBook)}\">Beside the live setup's holdings tonight, it shares none, adds H5 and drops {(pageBook.Count == 0 ? "none" : string.Join(", ", pageBook))}.</p>", chosen, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"rule-share\" data-shared=\"\" data-added=\"H5\" data-dropped=\"{string.Join(",", pageBook)}\">Beside the running revision's holdings tonight, it shares none, adds H5 and drops {(pageBook.Count == 0 ? "none" : string.Join(", ", pageBook))}.</p>", chosen, StringComparison.Ordinal);
 
         // A link naming no standing rule returns to the live rule.
         var unknown = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?heavyweight=no-such-rule")));

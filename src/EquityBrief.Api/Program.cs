@@ -814,6 +814,18 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             ? stillWaiting with { LastClose = bars.Count > 0 ? bars[^1].Close : null }
             : null);
 
+    // The page opens on the stock's open trades and waiting orders, each named by the revision that placed it, above its
+    // opening lines; the read-only copy names none.
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    if (!marks.Copying && !export && on is null && night is { } tradesOn && await read.IndexOfAsync(ticker, tradesOn) is { } tradesIndex)
+    {
+        var tradesUniverse = Universes.ByCode(tradesIndex) ?? Universes.Large;
+        var card = MarkRenderer.NameTradesCard(ticker, RevisionScreen.NameTrades(ticker, await read.PlannedTradesAsync(tradesIndex, tradesOn), await read.RegisteredCandidatesAsync(), tradesUniverse == Universes.Large, tradesUniverse.Name, tradesOn, bars.Count > 0 ? bars[^1].Close : null));
+        var lead = region.IndexOf("<section class=\"lead\"", StringComparison.Ordinal);
+
+        region = card.Length == 0 ? region : lead >= 0 ? region.Insert(lead, card) : card + region;
+    }
+
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
 
@@ -2680,6 +2692,12 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
         Family(PaperLink.RuleKey))
     {
         Recent = request.Query[PaperLink.SpanKey].FirstOrDefault() == PaperLink.RecentValue,
+        Pick = request.Query[PaperLink.PickKey].FirstOrDefault() is { Length: > 0 } pick ? pick : null,
+        Tab = request.Query[PaperLink.TabKey].FirstOrDefault() is { } tab && MarkRenderer.RevisionTabs.Contains(tab) ? tab : null,
+        Page = int.TryParse(request.Query[PaperLink.PageKey].FirstOrDefault(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var pageNumber) && pageNumber > 0 ? pageNumber : 1,
+        Unfold = request.Query[PaperLink.UnfoldKey].FirstOrDefault() is { Length: > 0 } unfold ? unfold : null,
+        VariantTab = request.Query[PaperLink.VariantTabKey].FirstOrDefault() is { } variantTab && MarkRenderer.RevisionTabs.Contains(variantTab) ? variantTab : null,
+        VariantPage = int.TryParse(request.Query[PaperLink.VariantPageKey].FirstOrDefault(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var variantPage) && variantPage > 0 ? variantPage : 1,
     };
     var variants = link.Variants ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
     var rule = link.Rule ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
@@ -2699,6 +2717,13 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             accounts.Combined,
             accounts.Books)
         : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
+
+    // Each rule's and variant's waiting orders and those that left its list.
+    if (paper is { } ordered && night is { } orderedOn)
+    {
+        drawn = RevisionScreen.WithOrders(drawn, ordered.Sources, ordered.Planned, orderedOn, ordered.Sessions ?? [], ordered.Close, ticker => ordered.Stocks?.GetValueOrDefault(ticker)?.Company);
+        drawn = drawn with { Plans = RevisionScreen.Plans(ordered.Sources, await read.RegisteredCandidatesAsync(), reading.Code) };
+    }
 
     // From 21.20 the variants registered after the newest night, which no night has read yet.
     // see: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it
@@ -3133,6 +3158,8 @@ async Task<IResult> HomeAsync(
         // see: On a night the monthly books reshuffle Home names their buys apart from the new picks and says they come from the reshuffle
         Reshuffled = [.. SinglePageApp.PlanlessBuys(reading.Word, null, heavyweights, quality).Select(buy => (buy.Family, buy.Ticker))],
         StillWaiting = paper.StillWaiting,
+        LeftOrders = paper.Groups?.LeftOrders ?? [],
+        Revisions = RevisionTags.Of(paper.Views),
 
         // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
         HeldAgain = [.. families.SelectMany(family => family.HeldAgain)],
@@ -3219,7 +3246,11 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     (string Ticker, DateOnly Session)[] earlier = [.. sources.SelectMany(account => (account.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Trade.Bought)).Concat(account.Same.Select(one => (one.Trade.Ticker, one.Trade.Bought)))).Distinct()];
     var from = sources.Select(account => account.Since).OfType<DateOnly>().Concat(bought.Select(one => one.Session)).DefaultIfEmpty(night).Min();
     var earliest = earlier.Select(one => one.Session).Append(from).Min();
-    var tickers = bought.Concat(earlier).Select(one => one.Ticker).Distinct(StringComparer.Ordinal).ToArray();
+    // The stocks bought, and those waiting to be bought, whose rows draw their company and the night's close too.
+    var tickers = bought.Concat(earlier).Select(one => one.Ticker)
+        .Concat(planned.Where(row => row.Listed <= night && PlanScreen.IsWaiting(row)).Select(row => row.Ticker))
+        .Concat(sources.SelectMany(account => (account.Unfilled ?? []).Select(one => one.Ticker)))
+        .Distinct(StringComparer.Ordinal).ToArray();
     var closes = await read.ClosesAsync(tickers, earliest);
 
     sources = PaperScreen.Costed(sources, rows, await read.MemberCostsAsync(reading.Code, bought), closes);
@@ -3269,7 +3300,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
         Fund,
         standings,
         PaperScreen.Averaged(views, settings, sessions, night, Close, Fund),
-        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions) with { StillWaitingOrders = stillWaiting, PlacedTonight = PlanScreen.PlacedTonight(planned, night).Keys.ToHashSet() })
+        TradeGroups.Of(sources, night, Close, register, reading.Code, sessions: sessions) with { StillWaitingOrders = stillWaiting, PlacedTonight = PlanScreen.PlacedTonight(planned, night).Keys.ToHashSet(), LeftOrders = RevisionScreen.LeftOf(planned, night, sessions), Revisions = RevisionTags.Of(views) })
     {
         Books = await BookLinesAsync(read, reading, night, sources, register, standings),
         Planned = planned,
@@ -3700,18 +3731,27 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, (copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) ?? EquityBrief.Core.Cards.AccountSettings.Example) : null;
     var askedAccount = request.Query[PaperScreen.AccountQuery].FirstOrDefault();
 
-    if (paper is { } accounts && night is { } logged && accounts.Views.FirstOrDefault(view => view.Key == askedAccount) is { } chosenAccount)
+    // An earlier revision's trades are chosen as its rule's key and its number.
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    var askedKey = askedAccount?.Split('#')[0];
+    var askedRevision = askedAccount is { } named && named.Contains('#', StringComparison.Ordinal) && int.TryParse(named[(named.IndexOf('#', StringComparison.Ordinal) + 1)..], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var revisionNumber) ? revisionNumber : (int?)null;
+
+    if (paper is { } accounts && night is { } logged && accounts.Views.FirstOrDefault(view => view.Key == askedKey) is { } chosenAccount)
     {
         var source = accounts.Sources.First(one => one.Key == chosenAccount.Key);
+        var earlierLog = PaperScreen.EarlierLog(source, logged, accounts.Close);
 
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         return Results.Content(
-            page.AccountLogRegion(marks, reading, night, accounts.Views, chosenAccount, PaperScreen.Log(source, chosenAccount.Walk, logged, accounts.Close), PaperScreen.EarlierLog(source, logged, accounts.Close)),
+            ReaderText.Revisions(askedRevision is { } number && chosenAccount.Revisions.FirstOrDefault(revision => revision.Number == number && !revision.Running) is { } earlierRevision
+                ? page.AccountLogRegion(marks, reading, night, accounts.Views, chosenAccount, [.. earlierLog.Where(trade => trade.Version == earlierRevision.Name)], [], askedAccount)
+                : page.AccountLogRegion(marks, reading, night, accounts.Views, chosenAccount, PaperScreen.Log(source, chosenAccount.Walk, logged, accounts.Close), earlierLog)),
             "text/html; charset=utf-8");
     }
 
     // From 22.17 the read-only copy draws neither, since both name every variant and the test years' verdicts.
     // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
-    selector += paper is null || copying ? string.Empty : SinglePageApp.AccountSelector(paper.Views, null) + SinglePageApp.ListsVerdicts(paper.Views);
+    selector += paper is null || copying ? string.Empty : SinglePageApp.PicksControls(paper.Views, null) + SinglePageApp.ListsVerdicts(paper.Views);
 
     if (reading != Universes.Large)
     {
@@ -3736,7 +3776,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
         var firstLive = TradeGroups.FirstLiveByFamily(await read.RegisteredCandidatesAsync(), reading.Code);
 
         return Results.Content(
-            page.IndexPicksRegion(
+            ReaderText.Revisions(page.IndexPicksRegion(
                 marks,
                 night,
                 reading,
@@ -3750,7 +3790,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
                 firstLive,
                 night is { } rowedOn && paper is { } walked ? PicksScreen.Unrowed(walked.Sources, keptTrades, PicksScreen.Tabled(reading), rowedOn) : 0,
                 paper is { } listedBy ? PicksScreen.ListOwn(listedBy.Sources, keptTrades, PicksScreen.Tabled(reading), firstLive) : 0) +
-            page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(copying ? [] : await read.TakenTradesAsync(), reading.Code)),
+            page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(copying ? [] : await read.TakenTradesAsync(), reading.Code))),
             "text/html; charset=utf-8");
     }
 
@@ -3782,8 +3822,8 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     // The fundamentals-first family's trades are drawn on no page's list of families, its rule running out of sight.
     // see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
     return Results.Content(
-        page.PicksRegion(marks, night, PicksScreen.Summary(under, night), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector, null, dipTrades, paper?.Groups) +
-        page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(copying ? [] : await read.TakenTradesAsync(), reading.Code)),
+        ReaderText.Revisions(page.PicksRegion(marks, night, PicksScreen.Summary(under, night), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector, null, dipTrades, paper?.Groups) +
+        page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(copying ? [] : await read.TakenTradesAsync(), reading.Code))),
         "text/html; charset=utf-8");
 });
 

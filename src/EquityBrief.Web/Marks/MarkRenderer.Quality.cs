@@ -78,7 +78,7 @@ public sealed partial class MarkRenderer
         body.Append("<header class=\"fam-head\" data-family=\"quality\"><span class=\"fam-tag\" data-family=\"quality\"><span class=\"fam-swatch\" data-family=\"quality\"></span>");
         body.Append(Escaped(EquityBrief.Core.Families.QualityRule.Label)).Append("</span>");
         body.Append(card.LiveSince is { } since
-            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">This version since {since:d MMM yyyy}{RuleFreeze.Beside(since)}</span>")
+            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">{Escaped(RevisionTags.At(EquityBrief.Core.Families.QualityRule.Name, DateOnly.MaxValue)?.Tag ?? "Running since " + since.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture))}{RuleFreeze.Beside(since)}</span>")
             : FormattableString.Invariant($" <span class=\"status-pill provisional\" title=\"{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}\">Not yet tested</span>"));
         body.Append(Invariant, $" <span class=\"fam-count\">{Escaped(card.Cells.Count == 1 ? "1 holding" : Formatted($"{card.Cells.Count} holdings"))}</span></header>");
         body.Append(Invariant, $"<p class=\"setup-about\">{Escaped(EquityBrief.Core.Families.QualityRule.Description)}</p>");
@@ -178,7 +178,7 @@ public sealed partial class MarkRenderer
         body.Append("<details class=\"fold fam-rule\"><summary>The full rule, and how it will be tested</summary><div class=\"fold-b\">");
         body.Append(Invariant, $"<p class=\"record-said\">{Escaped(char.ToUpperInvariant(card.Rule[0]) + card.Rule[1..])}.</p>");
         body.Append(card.LiveSince is { } live
-            ? FormattableString.Invariant($"<p class=\"record-said\">Its settings were fixed on {live:d MMM yyyy} after its test over the past, and its record counts from then. Each version one setting from it runs beside it unseen, and the monthly test reads whether any does better.</p>")
+            ? FormattableString.Invariant($"<p class=\"record-said\">Its settings were fixed on {live:d MMM yyyy} after its test over the past, and its record counts from then. Each variant, one setting changed from it, runs beside it on paper, and the monthly test reads whether any does better.</p>")
             : "<p class=\"record-said\">It has not been tested yet, so its holdings count toward nothing. Its test over the past seven years comes next, and its settings are fixed only on that answer.</p>");
         body.Append("</div></details>");
 

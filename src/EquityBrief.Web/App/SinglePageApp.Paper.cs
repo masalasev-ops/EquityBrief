@@ -14,7 +14,7 @@ public sealed partial class SinglePageApp
 {
     // How paper trading is read, opened from its fold.
     public const string PaperGuide =
-        "Each account takes one rule's trades: a family's live or provisional rule takes the page's own list, each registered variant its own list or book, and You the trades you took from the cards. Each trade is bought at the open of the session after the night that listed it and sized off the account's value at its buy by the card's own sizing, risking the risk setting and holding at most a tenth of the account, the trades ending on a session sold before any is bought, and one the free cash cannot buy is skipped and counted; each pays its round trip, half at its buy and half at its sale. The tiles draw each family's live or provisional account's return since its record began beside the index's fund over the same days, and the chart draws each account's return session by session, a chosen family's variants dashed; a key's press hides or shows its line. An account is evidence about one unchanged rule, so a registered rule's account counts only the trades of its current version, from where the Run page's record of the rule starts, and starts again when the rule is registered again; the trades of earlier versions stay folded and left out of every figure. A provisional account and yours count every trade from the first. A rule's scorecard puts two things beside each other and never adds them together: how the rule did on the test years in the newest monthly test, and its own record since it went live, which is not evidence until it holds the test's count of trades or months.";
+        "Each rule buys its picks on paper in its own copy of an account of your size. A rule's revision is a run of its settings and code that left them unchanged: the revision running now buys the picks you see on Home and Tonight, each variant is the running revision with one setting changed and buys its own picks, and Your own trades holds the trades you took from the cards. Each trade is bought at the open of the session after the night that picked it, sized off the account's value at its buy by the card's own sizing, risking the risk setting and holding at most a tenth of the account; a pick the free cash cannot buy is skipped and counted, and each trade pays its round trip, half at its buy and half at its sale. The tiles draw each running revision's return since it started running beside the index's fund over the same days, and the chart draws each account's return session by session; a key's press hides or shows its line. A revision's account counts only its own trades, and the trades of earlier revisions stay under their own revision, left out of every figure of the running one. How it has done puts two records beside each other and never adds them together: its trades since it started running, which are not evidence until they reach the count a verdict needs, and the test on earlier years that chose it.";
 
     // From 22.17 how the read-only copy's paper trading is read, and what it is, which name no variant and no version.
     public const string PlainPaperGuide =
@@ -68,6 +68,16 @@ public sealed partial class SinglePageApp
         // variant, no version named, no setting and no trade of the operator's.
         // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
         var plain = marks.Copying;
+
+        // The page by revisions; the read-only copy keeps its own plain parts.
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        if (!plain)
+        {
+            region.Append(RevisionsLayout(marks, night, page, link, settings, proposedCap, example, line));
+            region.Append("</section>");
+
+            return ReaderText.Page(region.ToString());
+        }
 
         region.Append(Cards.Computed(
             "Paper trading",
@@ -169,24 +179,33 @@ public sealed partial class SinglePageApp
 
     // Beside the lists' trades: each family's live or provisional rule's test years verdict and its record's label,
     // apart, and the line about entries.
+    // Each rule's running revision by its tag, the monthly test that judges it, and its trades since it started running.
     public static string ListsVerdicts(IReadOnlyList<PaperAccountView> accounts) =>
-        "<div class=\"paper-heads\"><p><b>Test years and since registered.</b></p><ul>"
+        "<div class=\"paper-heads\" data-as-worded><p><b>Each rule's running revision: the monthly test that judges it, and its trades since it started running.</b></p><ul>"
         + string.Concat(accounts.Where(one => one.Head).OrderBy(one => EquityBrief.Core.Families.SetupFamilies.OrderOf(one.Family)).Select(account =>
-            Invariant($"<li data-family=\"{Escaped(account.Family)}\" data-verdict=\"{Escaped(account.Verdict)}\"><span class=\"fam-tag\" data-family=\"{Escaped(account.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(account.Family)}\"></span>{Escaped(FamilyLabel(account.Family))}</span> {Escaped(account.Name)}: {Escaped(account.Verdict)}{(account.Years.Count > 0 ? "; " + Escaped(EquityBrief.Core.Loop.RuleVerdict.Chosen) : string.Empty)}. Since registered: {account.Trades} trade(s){(account.TooFew is { } few ? Invariant($", <span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}{MarkRenderer.StartWords(account)}.</li>")))
+            Invariant($"<li data-family=\"{Escaped(account.Family)}\" data-verdict=\"{Escaped(account.Verdict)}\"><span class=\"fam-tag\" data-family=\"{Escaped(account.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(account.Family)}\"></span>{Escaped(FamilyLabel(account.Family))}</span> {Escaped(account.Revision?.Tag ?? "Its starting settings, not yet registered")}. Its monthly test: {Escaped(account.Verdict)}{(account.Years.Count > 0 ? "; " + Escaped(EquityBrief.Core.Loop.RuleVerdict.Chosen) : string.Empty)}. Since it started running: {account.Trades} {(account.Trades == 1 ? "trade" : "trades")}{(account.TooFew is { } few ? Invariant($", <span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}.</li>")))
         + Invariant($"</ul><p class=\"paper-entry\">{Escaped(MarkRenderer.EntryPriceLine)}</p></div>");
 
-    public string AccountLogRegion(MarkRenderer marks, UniverseChoice reading, DateOnly? night, IReadOnlyList<PaperAccountView> accounts, PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null)
+    public string AccountLogRegion(MarkRenderer marks, UniverseChoice reading, DateOnly? night, IReadOnlyList<PaperAccountView> accounts, PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null, string? chosen = null)
     {
         var region = new StringBuilder();
         var heading = "Past picks: " + reading.Titled;
 
+        // The log names the revision or the variant whose trades it draws.
+        var earlierRevision = chosen is { } asked && asked.Contains('#', StringComparison.Ordinal)
+            ? account.Revisions.FirstOrDefault(revision => MarkRenderer.EarlierKey(account.Key, revision.Number) == asked)
+            : null;
+        var whose = account.Standing == PaperAccountView.You ? "Your trades"
+            : account.Standing == PaperAccountView.Variant ? FamilyLabel(account.Family) + ", variant: " + MarkRenderer.VariantName(account)
+            : FamilyLabel(account.Family) + ", " + (earlierRevision?.Tag ?? account.Revision?.Tag ?? "its starting settings, not yet registered");
+
         region.Append(Invariant($"<section class=\"picks\" data-universe=\"{reading.Word}\" data-account=\"{Escaped(account.Key)}\" data-trades=\"{trades.Count}\">"));
-        region.Append(Cards.Masthead(heading, $"<span class=\"m-screen\">{Escaped(heading)}</span>", Escaped(account.Standing == PaperAccountView.You ? "Your trades on the " + reading.Name : "The trades of " + FamilyLabel(account.Family) + " · " + account.Name)));
-        region.Append(AccountSelector(accounts, account.Key));
+        region.Append(Cards.Masthead(heading, $"<span class=\"m-screen\">{Escaped(heading)}</span>", Escaped(account.Standing == PaperAccountView.You ? "Your trades on the " + reading.Name : "The trades of " + whose)));
+        region.Append(PicksControls(accounts, chosen ?? account.Key));
         region.Append(Cards.Computed(
             "Trade log",
             marks.PaperLog(account, trades, earlier ?? []),
-            title: Escaped(account.Standing == PaperAccountView.You ? "Your trades" : FamilyLabel(account.Family) + " · " + account.Name),
+            title: Escaped(whose),
             lede: Escaped(account.Words),
             stamp: Cards.Night(night),
             region: "paper-log"));

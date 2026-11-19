@@ -76,7 +76,7 @@ public partial class ReadSurface
         var section = Assert.Single(Blocks(page, "<section class=\"card setup-card\" id=\"setup-quality\".*?</section></div></section>"));
 
         // Live since the freeze, never not yet tested, and its holdings the live rule's.
-        Assert.Contains("<span class=\"status-pill live\" data-live-since=\"2026-09-30\">This version since 30 Sep 2026</span>", section, StringComparison.Ordinal);
+        Assert.Matches("<span class=\"status-pill live\" data-live-since=\"2026-09-30\">(Revision [0-9]+, running since [0-9]+ [A-Z][a-z]{2} 2026|Running since 30 Sep 2026)</span>", section);
         Assert.DoesNotContain("Not yet tested", section, StringComparison.Ordinal);
         Assert.Equal(["M1", "M2"], Regex.Matches(section, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
@@ -100,20 +100,19 @@ public partial class ReadSurface
         // The family's tile its live rule's, after the setups' and before the Fundamentals family's from 22.15.
         Assert.Equal(
             [("quality", "live"), ("improving", "provisional")],
-            Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).TakeLast(2));
+            RevisionTilesOf(page).TakeLast(2));
 
-        // Both pickers list it before the Fundamentals family last, and the link choosing it in each chooses it.
+        // The Rule select lists it before the Fundamentals family last and the link choosing it chooses it.
         Assert.Equal(["quality", "improving"], Regex.Matches(Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value).TakeLast(2));
         Assert.Contains("<option value=\"quality\" selected>", Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
-        Assert.Contains("<option value=\"quality\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
 
-        // An account for the live rule and one for each of its seven versions, the one holding 20 carrying its two trades.
+        // Its running revision's card and a row for each of its seven variants, the one holding 20 carrying its two trades.
         var live = AccountRowOf(page, ReadApi.PageList + "-" + QualityRule.Name);
         var twenty = AccountRowOf(page, RunScreen.Slug(MidVersion(QualityRule.Starting with { Holdings = 20 })));
 
         Assert.Contains("data-standing=\"live\"", live, StringComparison.Ordinal);
-        Assert.Contains("data-standing=\"variant\"", twenty, StringComparison.Ordinal);
-        Assert.Equal(7, Regex.Matches(page, "<tr data-account=\"[^\"]*s-p-400-quality-rule-at[^\"]*\"[^>]*data-standing=\"variant\"").Count);
+        Assert.Contains("data-standing=\"variant\" data-trades=\"2\"", twenty, StringComparison.Ordinal);
+        Assert.Equal(7, VariantRowsOf(page).Count(key => key.Contains("s-p-400-quality-rule-at", StringComparison.Ordinal)));
 
         // From the 22.11 correction of 2026-10-25 the family is named by its label on its tile, its chip and its
         // scorecard, and no family anywhere on the page by the word the store keeps it under.
@@ -121,6 +120,6 @@ public partial class ReadSurface
 
         Assert.True(names.Length >= 10, $"Read {names.Length} family name(s), expected at least 10.");
         Assert.All(names, name => Assert.False(name.Name.StartsWith(name.Family + " ", StringComparison.Ordinal) || name.Name == name.Family, $"{name.Family} drawn as '{name.Name}'"));
-        Assert.Contains("<span class=\"fam-swatch\" data-family=\"quality\"></span>Quality at a fair price <span class=\"status-pill live\">", page, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"fam-swatch\" data-family=\"quality\"></span>Quality at a fair price</span>", page, StringComparison.Ordinal);
     }
 }

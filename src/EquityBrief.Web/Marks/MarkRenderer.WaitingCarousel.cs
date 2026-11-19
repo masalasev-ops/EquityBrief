@@ -40,12 +40,37 @@ public sealed partial class MarkRenderer
     ];
 
     // The waiting orders' group on Home and Tonight; nothing where none waits.
-    public static string WaitingCarousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night)
+    public static string WaitingCarousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night, IReadOnlyList<LeftOrderView>? left = null)
     {
         if (orders.Count == 0)
         {
+            return LeftNotes(left);
+        }
+
+        return Carousel(orders, index, night) + LeftNotes(left);
+    }
+
+    // Under the waiting cards for five trading days, each order that left the waiting list and why, with the revision that
+    // placed it; nothing where none left.
+    public static string LeftNotes(IReadOnlyList<LeftOrderView>? left)
+    {
+        if (left is not { Count: > 0 })
+        {
             return string.Empty;
         }
+
+        var html = new StringBuilder(Formatted($"<div class=\"left-notes\" data-left=\"{left.Count}\"><p class=\"list-count\">Left the waiting list in the last {LeftOrderView.Sessions} trading days ({left.Count})</p><ul class=\"left-list\">"));
+
+        foreach (var row in left)
+        {
+            html.Append(Formatted($"<li class=\"{(row.Bought ? "bt" : "cx")}\" data-ticker=\"{Escaped(row.Ticker)}\">{Escaped(row.Words)}{(row.Family is { } family && row.Listed is { } listed ? RevisionTags.For(family, listed) : string.Empty)}</li>"));
+        }
+
+        return html.Append("</ul></div>").ToString();
+    }
+
+    static string Carousel(IReadOnlyList<WaitingOrderView> orders, string index, DateOnly? night)
+    {
 
         var sorted = NearestFirst(orders);
         var rolling = sorted.Count > WaitingGridAtMost;
@@ -104,7 +129,7 @@ public sealed partial class MarkRenderer
 
         card.Append(Invariant, $"<article class=\"wo-card fam-edge\" data-family=\"{family}\" data-ticker=\"{Escaped(order.Ticker)}\" data-listed=\"{DayOf(order.Listed)}\" data-price=\"{price}\" data-close=\"{close}\" data-last-day=\"{DayOf(order.LastDay)}\" data-gap=\"{(gap is { } apart ? apart.ToString("0.0000", CultureInfo.InvariantCulture) : "none")}\">");
         card.Append(Invariant, $"<div class=\"wo-card-h\"><div><a class=\"home-ticker name-link\" href=\"#/chart/{Uri.EscapeDataString(order.Ticker)}\">{Escaped(order.Ticker)}</a>{(order.Company is { Length: > 0 } company ? Formatted($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div>");
-        card.Append(Invariant, $"<div class=\"wo-badge\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(setup)}</span><span class=\"wo-state\">{WaitingState}</span></div></div>");
+        card.Append(Invariant, $"<div class=\"wo-badge\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(setup)}</span><span class=\"wo-state\">{WaitingState}</span>{RevisionTags.For(order.Family, order.Listed, order: true)}</div></div>");
         card.Append(Invariant, $"<p class=\"wo-cond\">{Escaped(WaitingCondition(order))}</p>");
 
         if (order.Price is { } buy)

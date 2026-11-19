@@ -456,8 +456,8 @@ public partial class ReadSurface
 
         sold = sold[..sold.IndexOf("</tr>", StringComparison.Ordinal)];
 
-        Assert.Contains("<td class=\"setup\" data-setup=\"breakout\" data-provisional=\"true\">Breakout <span class=\"provisional\">provisional</span></td>", sold, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"setup\" data-setup=\"pullback\" data-provisional=\"false\">Pullback</td>", all, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"setup\" data-setup=\"breakout\" data-provisional=\"true\"><span class=\"tag-stack\">Breakout <span class=\"vtag\">starting settings, not yet registered</span></span></td>", sold, StringComparison.Ordinal);
+        Assert.Matches("<td class=\"setup\" data-setup=\"pullback\" data-provisional=\"false\"><span class=\"tag-stack\">Pullback<a class=\"vtag\" data-revision=\"[0-9]+\" data-family=\"pullback\" href=\"[^\"]+\">Revision [0-9]+, running since [^<]+</a></span></td>", all);
 
         // B0, the trailing trade: bought at 50 with the stop at 47 and no target, sold at its trailing stop
         // 6 per cent up on the 6 per cent it risked, a result of +1.00 times its risk.

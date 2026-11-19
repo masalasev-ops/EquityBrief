@@ -294,9 +294,9 @@ public sealed partial class MarkRenderer
         // The orders earlier nights placed still waiting for their price, a group of their own, in none of the counts above,
         // drawn as Home draws them.
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
-        if ((view.Groups ?? line.Groups) is { StillWaitingOrders.Count: > 0 } waiting)
+        if ((view.Groups ?? line.Groups) is { } waiting && (waiting.StillWaitingOrders.Count > 0 || waiting.LeftOrders.Count > 0))
         {
-            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{WaitingCarousel(waiting.StillWaitingOrders, line.Index, view.Night)}</div>");
+            body.Append(Invariant, $"<div class=\"minute-line\" data-line=\"still-waiting\">{WaitingCarousel(waiting.StillWaitingOrders, line.Index, view.Night, waiting.LeftOrders)}</div>");
         }
 
         // The stocks one step from qualifying, which from 22.17 the read-only copy draws none of.
@@ -389,8 +389,8 @@ public sealed partial class MarkRenderer
             var words = WordsOf(tile.Family, tile.Label);
             var since = liveSince.GetValueOrDefault(tile.Family);
             var first = since is null ? null : firstLive?.GetValueOrDefault(tile.Family) ?? since;
-            var badge = first is { } live ? FormattableString.Invariant($"Live since {live:d MMM yyyy}") : "Not yet tested";
-            var version = since is { } registered && first != since ? FormattableString.Invariant($"<span class=\"tile-version\">This version since {registered:d MMM yyyy}{RuleFreeze.Beside(registered)}; earlier trades kept.</span>") : string.Empty;
+            var badge = first is { } live ? FormattableString.Invariant($"First ran {live:d MMM yyyy}") : "Not yet tested";
+            var version = since is { } registered && first != since ? FormattableString.Invariant($"<span class=\"tile-version\">{RevisionTags.At(tile.Family, DateOnly.MaxValue)?.Tag ?? "Running since " + registered.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)}{RuleFreeze.Beside(registered)}; earlier revisions' trades kept.</span>") : string.Empty;
 
             body.Append(Invariant, $"<button type=\"button\" class=\"setup-tile fam-edge\" data-family=\"{Escaped(tile.Family)}\" data-card=\"{Escaped(tile.Family)}\" data-count=\"{tile.Count}\" data-state=\"{Escaped(tile.State)}\">");
             body.Append(Invariant, $"<span class=\"tile-top\"><span class=\"fam-tag\" data-family=\"{Escaped(tile.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(tile.Family)}\"></span>{Escaped(tile.Label)}</span><span class=\"status-pill {(since is null ? "provisional" : "live")}\">{Escaped(badge)}</span></span>");
@@ -497,7 +497,7 @@ public sealed partial class MarkRenderer
 
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-family=\"{Escaped(point.Family)}\" data-place=\"{number}\"{(folds ? Formatted($" data-fold=\"{Escaped(fold)}\"") : string.Empty)}{(opened ? " class=\"sel\"" : string.Empty)}>");
             body.Append(PickNameCell(pick, (folds ? FoldToggle(fold, opened) : string.Empty) + (links?.GetValueOrDefault(row.Ticker) ?? string.Empty)));
-            body.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span></td>");
+            body.Append(Invariant, $"<td class=\"setup\"><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span>{RevisionTags.For(point.Family, DateOnly.MaxValue)}</span></td>");
             body.Append(Invariant, $"<td class=\"why\">{Escaped(WhyWords(point.Family, pick.Why))}</td>");
             body.Append(PickBusinessCell(pick));
 
@@ -589,7 +589,7 @@ public sealed partial class MarkRenderer
 
         row.Append(Invariant, $"<tr data-ticker=\"{Escaped(buy.Ticker)}\" data-family=\"{Escaped(buy.Family)}\" data-place=\"{number}\" data-planless>");
         row.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(buy.Ticker)}\">{Escaped(buy.Ticker)}</a> <a class=\"how-sells\" href=\"{buy.Href}\">How it sells</a>{(buy.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
-        row.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(buy.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(buy.Family)}\"></span>{Escaped(buy.Label)}</span></td>");
+        row.Append(Invariant, $"<td class=\"setup\"><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{Escaped(buy.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(buy.Family)}\"></span>{Escaped(buy.Label)}</span>{RevisionTags.For(buy.Family, DateOnly.MaxValue)}</span></td>");
         row.Append(Invariant, $"<td class=\"why\">{Escaped(buy.Why)}{EntryCheckLine(buy.EntryCheck, buy.Ticker)}{SetupRecordBox(buy.LongRecord)}</td>");
         row.Append(Invariant, $"<td class=\"business-cell\">{Escaped(buy.Business)}</td>");
         row.Append(PriceCell("buy", buy.Close, null));
@@ -622,9 +622,10 @@ public sealed partial class MarkRenderer
         ("Target", "The price that says the idea worked. If the stock closes at or above it, the trade is sold at the next day's open. A breakout has none: its stop rises as the price climbs."),
         ("Risk $1 to make", "How far the target is compared with the stop. $2.50 means the target is 2.5 times as far away as the stop. It is a fact about the chart and not a chance of anything."),
         ("Typical day's move", "How much this stock usually moves in a day. Measuring jumps and distances in these units makes calm and jumpy stocks comparable."),
-        ("Live", "The setup's settings were chosen from years of history and fixed; its record now counts only the nights after that."),
+        ("Running", "The revision whose settings were chosen from years of history and fixed; its record counts only the nights from the day it started running."),
         ("Not yet tested", "Running on starting settings while its history test is done. Its picks count toward nothing yet."),
-        ("Version", "The same setup with one thing changed, run in the background so it can be compared fairly with the live one. A version is never tonight's pick."),
+        ("Revision", "A rule changes only through a new revision, numbered, one running at a time, each with the dates it ran."),
+        ("Variant", "The revision running now with one thing changed, traded on paper beside it so the two can be compared fairly. A variant is never tonight's pick."),
         ("One stock, one trade", "A stock already bought on an earlier night is not bought again until that trade ends, across every setup on every index."),
         ("The business", "How the company's reported quarters read: improving, steady or getting worse, from sales and margins. It orders nothing and removes no pick."),
         ("Quiet night", "A night a setup finds nothing. Each setup shows how long its quiet runs usually last, so a long one stands out."),
@@ -637,8 +638,8 @@ public sealed partial class MarkRenderer
     {
         var body = new StringBuilder();
 
-        // From 22.17 the read-only copy's words leave out a version and a stock one step short, which it draws none of.
-        (string Term, string Meaning)[] words = [.. TonightWords.Where(word => !Copying || word.Term is not ("Version" or "One step short"))];
+        // The read-only copy's words leave out a variant and a stock one step short, which it draws none of.
+        (string Term, string Meaning)[] words = [.. TonightWords.Where(word => !Copying || word.Term is not ("Variant" or "One step short"))];
 
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>The {words.Length} words this page uses most, each with what it means here.</p>");
         body.Append("<dl class=\"gloss tonight-words\">");

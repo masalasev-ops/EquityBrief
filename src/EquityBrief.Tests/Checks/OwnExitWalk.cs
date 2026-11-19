@@ -149,14 +149,14 @@ public sealed class OwnExitWalk
         var html = MarkRenderer.OwnExitFold(new OwnExitView(Since, "at a reshuffle where a holding no longer qualifies, or when it leaves the index", ["C"], [new OwnExitSoldCell("B", Second, OwnExit.NoLongerQualifies)], 0.0567, 3, -0.012, 4));
 
         Assert.Contains(MarkRenderer.OwnExitHeading, html, StringComparison.Ordinal);
-        Assert.Contains("draws no pick and cannot go live as it stands", html, StringComparison.Ordinal);
+        Assert.Contains("draws no pick and cannot become a revision as it stands", html, StringComparison.Ordinal);
         Assert.Contains("brought to you", html, StringComparison.Ordinal);
         Assert.Contains("with no stop and no take-profit", html, StringComparison.Ordinal);
         Assert.Contains("It holds 1 tonight: C.", html, StringComparison.Ordinal);
         Assert.Contains("It sold B at the close of 2 Dec 2026: no longer qualifies.", html, StringComparison.Ordinal);
         Assert.Contains("+5.7%", html, StringComparison.Ordinal);
         Assert.Contains("-1.2%", html, StringComparison.Ordinal);
-        Assert.Contains("over the live rule's 4", html, StringComparison.Ordinal);
+        Assert.Contains("over the running revision's 4", html, StringComparison.Ordinal);
         Assert.Equal(string.Empty, MarkRenderer.OwnExitFold(null));
     }
 

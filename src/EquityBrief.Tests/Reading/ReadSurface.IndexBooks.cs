@@ -72,8 +72,8 @@ public partial class ReadSurface
         // from 22.6 in the Showing list.
         Assert.Contains(
             $"<option value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{RuleScreen.ProvisionalChoice}\" selected>The setup as it runs, not yet tested</option>"
-            + $"<option value=\"{RunScreen.Slug(cover)}\" data-variant=\"1\" title=\"{cover}\">Version: profit and cover</option>"
-            + $"<option value=\"{RunScreen.Slug(twelve)}\" data-variant=\"2\" title=\"{twelve}\">Version: twelve months less the latest</option>",
+            + $"<option value=\"{RunScreen.Slug(cover)}\" data-variant=\"1\" title=\"{cover}\">Variant: needs a profit and its interest covered</option>"
+            + $"<option value=\"{RunScreen.Slug(twelve)}\" data-variant=\"2\" title=\"{twelve}\">Variant: measures strength over twelve months, leaving out the latest</option>",
             page,
             StringComparison.Ordinal);
         Assert.DoesNotContain("no-variant", page, StringComparison.Ordinal);
@@ -82,9 +82,9 @@ public partial class ReadSurface
 
         // The cover's book: its own holding under the band, with the line and no word of the twelve-month strength.
         var covered = await Card(cover);
-        const string Untested = "This version did not pass the year-by-year test: the run for 2026-10 put the chance that design (a)'s six settings did as well by luck at 0.60, against the 0.0042 it needs, so it does not read as better than the starting setup.";
+        const string Untested = "This variant did not pass the year-by-year test: the run for 2026-10 put the chance that design (a)'s six settings did as well by luck at 0.60, against the 0.0042 it needs, so it does not read as better than the starting setup.";
 
-        Assert.Contains($"<p class=\"band-head\">A version being tested, not tonight's holdings</p><p>Version: profit and cover</p>", covered, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"band-head\">A variant being tested, not tonight's holdings</p><p>Variant: needs a profit and its interest covered</p>", covered, StringComparison.Ordinal);
         Assert.Contains($"</div><p class=\"variant-untested\" data-adjusted=\"0.5999\">{Untested}</p>", covered, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"M1\"", covered, StringComparison.Ordinal);
         Assert.DoesNotContain("<tr data-ticker=\"M3\"", covered, StringComparison.Ordinal);
