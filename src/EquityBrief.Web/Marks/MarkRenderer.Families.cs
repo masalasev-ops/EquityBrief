@@ -957,10 +957,29 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-card-pick=\"true\"><td class=\"place\" data-place=\"{place}\">{place}</td>");
             body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Distance?.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
             body.Append(Invariant, $"<td class=\"why\">{Escaped(WhyWords(family, pick.Why))}</td>");
-            body.Append(PriceCell("buy", pick.Buy, null));
-            body.Append(PriceCell("stop", pick.Stop, null));
-            body.Append(PriceCell("target", pick.Target, pick.Trailing ? "rising stop, no target" : pick.Exit is { } exit ? ReaderWords.Plain(exit) : null));
-            body.Append(RewardCell(pick));
+
+            // A pick whose plan buys at a price draws the plan's price, its stop and its one exit, as its card and tomorrow's buys
+            // draw them, and never the listing's own.
+            // see: A trade under a plan names the one exit its walk sells by on every page, read from its plan and never from a stored target
+            if (pick.Card?.Zone is { NoBuy: false, Sale: { } sale } zone)
+            {
+                body.Append(PriceCell("buy", zone.Price, null));
+                body.Append(PriceCell("stop", pick.Card.Stop, null));
+                body.Append(SaleCell(sale));
+                body.Append(sale.RewardPerRisk is { } ratio
+                    ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">${Figures.Ratio(ratio)}</td>")
+                    : Formatted($"<td class=\"r num\" data-reward-to-risk=\"none\">{(sale.OnTimeAlone ? "No target: it sells on its time limit" : "<span class=\"degraded\">none above the buy</span>")}</td>"));
+            }
+            else
+            {
+                body.Append(PriceCell("buy", pick.Buy, null));
+                body.Append(PriceCell("stop", pick.Stop, null));
+                body.Append(pick.Card?.TakeProfit is { } taking
+                    ? PriceCell("target", taking.Price, null)
+                    : PriceCell("target", pick.Target, pick.Trailing ? "rising stop, no target" : pick.Exit is { } exit ? ReaderWords.Plain(exit) : null));
+                body.Append(RewardCell(pick));
+            }
+
             body.Append("</tr>");
         }
 

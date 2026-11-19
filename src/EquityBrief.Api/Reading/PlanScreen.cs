@@ -28,7 +28,7 @@ public static class PlanScreen
 
         return
         [
-            .. sources.Select(account => account.Listed is { } owner && account.Unfilled is { Count: > 0 } unfilled
+            .. Exited(sources, planned).Select(account => account.Listed is { } owner && account.Unfilled is { Count: > 0 } unfilled
                 ? account with
                 {
                     Unfilled =
@@ -42,6 +42,29 @@ public static class PlanScreen
         ];
     }
 
+    // Each rule's trades kept under a plan with the stop the plan placed from the fill and the one exit its walk sells by, every
+    // rule's, a variant's as its rule's, in place of the stop and target its listing stored.
+    // see: A trade under a plan names the one exit its walk sells by on every page, read from its plan and never from a stored target
+    static IEnumerable<PaperAccountSource> Exited(IReadOnlyList<PaperAccountSource> sources, IReadOnlyList<PlannedTradeRow> planned)
+    {
+        var filled = planned.Where(row => row.Fill is not null).GroupBy(row => (row.Owner, row.Ticker, row.Listed)).ToDictionary(group => group.Key, group => group.First());
+
+        foreach (var account in sources)
+        {
+            yield return account.Listed is { } owner && account.Trades.Any(one => filled.ContainsKey((owner, one.Trade.Ticker, one.Trade.ListedOn)))
+                ? account with
+                {
+                    Trades =
+                    [
+                        .. account.Trades.Select(one => filled.TryGetValue((owner, one.Trade.Ticker, one.Trade.ListedOn), out var row)
+                            ? (one.Trade with { Stop = StopOf(row), Target = TakeProfitOf(row), Trail = row.Order.Trail is { } trail ? Statistic.ToPrice(trail) : one.Trade.Trail }, one.Result)
+                            : one),
+                    ],
+                }
+                : account;
+        }
+    }
+
     // The last session an order waits: the window's sessions on the exchange calendar after the night that listed it.
     public static DateOnly LastDay(DateOnly listed, int window) => PlanOrderWords.LastDay(listed, window);
 
@@ -52,6 +75,15 @@ public static class PlanScreen
     public static string WaitingWords(PlannedTradeRow row) => PlanOrderWords.Waiting(Price(row), LastDay(row.Listed, row.Order.Window));
 
     // The plan's stop placed from its fill, or from its price while it waits, the rule's own where the plan places none.
+    // The one exit the plan's walk sells the trade by, from its fill, or while it waits from the price it waits for; none for an
+    // order buying at the next open that has not filled, whose price is not known.
+    // see: A trade under a plan names the one exit its walk sells by on every page, read from its plan and never from a stored target
+    public static TradeExit? ExitOf(PlannedTradeRow row) =>
+        row.Fill is { } fill ? TradeExit.Filled(row.Order, Statistic.FromPrice(fill)) : TradeExit.Waiting(row.Order);
+
+    // The price the plan first takes profit at, which every page draws as its take-profit.
+    public static decimal? TakeProfitOf(PlannedTradeRow row) => ExitOf(row)?.First is { } first ? Statistic.ToPrice(first) : null;
+
     public static decimal? StopOf(PlannedTradeRow row) =>
         (row.Fill is { } fill ? Statistic.FromPrice(fill) : row.Order.Level) is { } from
         && PlanPoints.StopOf(row.Order.Stop, from, row.Order.RuleStop, row.Order.ZoneStop, row.Order.TypicalDay) is { } placed
@@ -90,6 +122,7 @@ public static class PlanScreen
             {
                 Buy = Price(row) ?? cell.Buy,
                 Stop = stop,
+                Target = TakeProfitOf(row),
                 Status = row.NotFilled ? PickStatus.NotFilled : PickStatus.Waiting,
                 Result = null,
                 Along = null,
@@ -115,6 +148,7 @@ public static class PlanScreen
         {
             Buy = fill,
             Stop = stop,
+            Target = TakeProfitOf(row),
             Status = ended ? Ending(row, stop) : PickStatus.Open,
             Result = ended ? row.Result : null,
             EndedOn = ended ? row.EndedOn : null,
@@ -151,7 +185,7 @@ public static class PlanScreen
     // fill, the stop the plan placed from that fill and the plan's target.
     public static BriefHeld Held(BriefHeld held, string ticker, IReadOnlyList<PlannedTradeRow> planned) =>
         LiveBuying(planned).FirstOrDefault(row => row.Family == held.Family && row.Ticker == ticker && row.Listed == held.Listed) is { Fill: not null } row
-            ? held with { Planned = true, PlanStop = StopOf(row), PlanTarget = row.Order.Target is { } target ? Statistic.ToPrice(target) : row.Target }
+            ? held with { Planned = true, PlanStop = StopOf(row), PlanTarget = TakeProfitOf(row) }
             : held;
 
     // The short-term dip's trades alone with its plan's, and the swing families' alone with theirs, for a page reading one
@@ -174,7 +208,7 @@ public static class PlanScreen
             row.Place,
             row.Fill ?? Price(row) ?? row.Entry,
             stop,
-            row.Order.Target is { } target ? Statistic.ToPrice(target) : row.Target,
+            TakeProfitOf(row),
             row.Trail,
             row.Cap,
             row.Fill is not null ? row.EndedOn : null,

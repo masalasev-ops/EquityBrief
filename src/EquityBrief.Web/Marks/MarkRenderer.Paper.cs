@@ -71,6 +71,13 @@ public sealed record PaperAccountView(
 
     // From the 19.4 correction of 2026-11-07 a version's reach against its live rule, none for any other account.
     public EquityBrief.Core.Cards.VersionReachKind? Reach { get; init; }
+
+    // The revisions of its rule up to the one it stands in, the last that one; none for an account no registration starts.
+    // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    public IReadOnlyList<RevisionView> Revisions { get; init; } = [];
+
+    // The revision it stands in, none for an account no registration starts.
+    public RevisionView? Revision => Revisions.Count > 0 ? Revisions[^1] : null;
 }
 
 // The trades a family's live account leaves out as listed before its version that a replay under its version reproduced,
