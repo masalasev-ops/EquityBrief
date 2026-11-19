@@ -437,7 +437,7 @@ public sealed partial class MarkRenderer
         var html = new StringBuilder("<div class=\"revision-variants\" data-as-worded>");
 
         html.Append(Formatted($"<p class=\"sub-l\">Each variant is {Escaped(name.ToLowerInvariant())} with one thing changed, traded only on paper and never as picks. A variant that does better can become the next revision only at a monthly run, on your word. Press a variant's row to unfold its trades under it; press again to fold it away.</p>"));
-        html.Append(Formatted($"<div class=\"tbl-wrap\"><table class=\"list-table vtable\" data-variants=\"{variants.Length}\"><thead><tr><th>Variant (press one to unfold it)</th><th>How it differs from {Escaped(name.ToLowerInvariant())}</th><th class=\"r\">Trades</th><th class=\"r\">Trades {Escaped(name.ToLowerInvariant())} did not take</th><th class=\"r\">Result so far</th><th>On past years</th></tr></thead><tbody>"));
+        html.Append(Formatted($"<div class=\"tbl-wrap\"><table class=\"list-table vtable\" data-variants=\"{variants.Length}\"><thead><tr><th>Variant, named by how it differs from {Escaped(name.ToLowerInvariant())} (press one to unfold it)</th><th class=\"r\">Trades</th><th class=\"r\">Trades {Escaped(name.ToLowerInvariant())} did not take</th><th class=\"r\">Result so far</th><th>On past years</th></tr></thead><tbody>"));
 
         foreach (var variant in variants)
         {
@@ -449,7 +449,6 @@ public sealed partial class MarkRenderer
 
             html.Append(Formatted($"<tr class=\"vrow{(open ? " open" : string.Empty)}\" data-account=\"{Escaped(variant.Key)}\" id=\"variant-{Escaped(variant.Key)}\">"));
             html.Append(Formatted($"<td><a class=\"vbtn\" href=\"{Escaped(toggle.Href)}\" aria-expanded=\"{(open ? "true" : "false")}\"><span class=\"car\">{(open ? "▾" : "▸")}</span><b>{Escaped(VariantName(variant))}</b></a>{(variant.Since is { } since ? Formatted($"<span class=\"row-note\">since {since:d MMM yyyy}</span>") : string.Empty)}{AccountNote(variant)}</td>"));
-            html.Append(Formatted($"<td>{Escaped(VariantName(variant))}.</td>"));
             html.Append(Formatted($"<td class=\"r num\">{trades.Count}</td><td class=\"r num\">{alone}</td>"));
             html.Append(Formatted($"<td class=\"r num\">{(ended.Length > 0 ? Escaped(PerRisk(ended.Average())) + " risked" : "none closed")}</td>"));
             html.Append(Formatted($"<td><span class=\"pill\">{Escaped(variant.Verdict)}</span>{(variant.Better is { } better && variant.Counted is { } counted ? Formatted($"<span class=\"row-note\">better in {better} of {counted} years</span>") : string.Empty)}</td>"));
@@ -460,7 +459,7 @@ public sealed partial class MarkRenderer
                 var waiting = page.Waiting.GetValueOrDefault(variant.Key) ?? [];
                 var left = page.Left.GetValueOrDefault(variant.Key) ?? [];
 
-                html.Append("<tr class=\"vdetail\"><td colspan=\"6\"><div class=\"vx\">");
+                html.Append("<tr class=\"vdetail\"><td colspan=\"5\"><div class=\"vx\">");
                 html.Append(Formatted($"<div class=\"plan-box\" data-plan=\"changed\"><div class=\"k chg\">{Escaped(VariantName(variant))}<span class=\"chg-tag\">Changed</span></div><div class=\"v chg\">{Escaped(VariantName(variant))}.</div>"));
                 html.Append(Formatted($"<div class=\"k\">Everything else</div><div class=\"v\">Same as {Escaped(name.ToLowerInvariant())}: what it looks for, how it buys, when it sells at a loss, when it takes profit and its time limit.</div></div>"));
                 html.Append(RevisionTiles(variant, trades, waiting));

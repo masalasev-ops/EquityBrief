@@ -1631,7 +1631,8 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 /* Paper trading by revisions */
 .pick-bar{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end;padding:14px 16px;border:1px solid var(--hair-2);border-radius:10px;background:var(--surface);margin:18px 0 0}
 .pick-bar label{display:flex;flex-direction:column;gap:5px;font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
-.pick-bar select{min-height:38px;min-width:240px;max-width:100%;padding:0 10px;border-radius:6px;border:1px solid var(--hair-2);background:var(--page);color:var(--ink);font:500 14px var(--sans);text-transform:none;letter-spacing:0}
+.pick-bar select{min-height:38px;width:100%;min-width:0;max-width:100%;padding:0 10px;border-radius:6px;border:1px solid var(--hair-2);background:var(--page);color:var(--ink);font:500 14px var(--sans);text-transform:none;letter-spacing:0;text-overflow:ellipsis}
+.pick-bar label{flex:1 1 300px;min-width:0;max-width:520px}
 .vstate{display:inline-flex;align-items:center;font:600 11.5px var(--sans);border-radius:999px;padding:2px 9px;white-space:nowrap}
 .vstate.old{background:var(--s1);color:var(--ink-2)}
 .vstate.run{background:var(--up);color:var(--surface)}
