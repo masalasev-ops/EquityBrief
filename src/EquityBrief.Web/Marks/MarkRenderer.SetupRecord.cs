@@ -27,13 +27,10 @@ public sealed record SetupLongRecord(string Index, string Family, double? EdgePe
 
     public int? Months { get; init; }
 
-    // On the operator's ruling of 2026-11-17 the day of a correction to the history the record is read over and the figure the
-    // record stood at before it, the edge a pick or a book's points a month, drawn beneath the figure for a month after that
-    // day; none at any other time.
-    // see: A record corrected after a fault in the history says so beneath its figure for a month, with the figure it stood at before
-    public DateOnly? CorrectedOn { get; init; }
-
-    public double? Was { get; init; }
+    // On the operator's decision of 2026-11-18 the correction to the history the record is read over, drawn beneath the figure
+    // for a month after its day with the trades it added and removed under the record's rule; none at any other time.
+    // see: A record the history was corrected under says for a month how many of its rule's trades the correction added and removed, or that none changed
+    public RecordCorrection? Correction { get; init; }
 
     // A book's months rounding to nothing, said as about the same.
     public bool Same => Points is { } points && Math.Round(Math.Abs(points), 2) == 0;
@@ -88,6 +85,10 @@ public sealed record SetupRecords(IReadOnlyList<SetupLongRecord> Records)
     public SetupLongRecord? Of(string index, string family) =>
         Records.FirstOrDefault(record => record.Index == index && record.Family == family);
 }
+
+// A correction to the history the records are read over: its day, what it fixed, and the trades it added and removed under each
+// rule it changed any of, by index and family.
+public sealed record RecordCorrection(DateOnly On, string Cause, IReadOnlyDictionary<(string Index, string Family), (int Added, int Removed)> Trades);
 
 // From the 22.16 correction of 2026-11-09 a traded plan that buys at a zone: the price it waits for, the trading days it waits,
 // tonight's close and, where it sets no target, the trading days after which it sells. No plan buys at a zone before 23.10. From
@@ -149,25 +150,34 @@ public sealed partial class MarkRenderer
         return Formatted($"<div class=\"setup-record\" data-record=\"{record.State}\" data-family=\"{Escaped(record.Family)}\" data-index=\"{Escaped(record.Index)}\"><span class=\"rec-h\">{Escaped("This setup's record on the " + IndexNamed(record.Index))}</span><span>{line}</span>{high}{CorrectedLine(record)}<span class=\"rec-sub\">{Escaped(RecordNote)}</span></div>");
     }
 
-    // The days the history the records are read over was corrected after a fault in it, the newest last.
-    // see: A record corrected after a fault in the history says so beneath its figure for a month, with the figure it stood at before
-    public static IReadOnlyList<DateOnly> RecordCorrections { get; } = [new(2026, 11, 18)];
+    // The corrections to the history the records are read over, the newest last: each one's day, what it fixed in the operator's
+    // words, and for each rule whose trades from 2019 it changed, by index and family, the trades it added and removed, counted
+    // by comparing the ledgers before and after it. The correction of 18 Nov 2026 is the operator's item 2 of 2026-11-17, the
+    // counts its report's of 2026-11-18.
+    // see: A record the history was corrected under says for a month how many of its rule's trades the correction added and removed, or that none changed
+    public static IReadOnlyList<RecordCorrection> RecordCorrections { get; } =
+    [
+        new(new(2026, 11, 18), "a fix to how dollar volume was read", new Dictionary<(string Index, string Family), (int Added, int Removed)>
+        {
+            [("MID", EquityBrief.Core.Families.DipRule.Name)] = (169, 0),
+            [("SML", EquityBrief.Core.Families.DipRule.Name)] = (1018, 23),
+        }),
+    ];
 
-    // Beneath a corrected record's figure for a month after the correction, in the operator's words: the day and the figure it
-    // stood at before, an edge a pick in dollars for each dollar risked and a book's in percentage points a month; none where
-    // the record holds no figure from before the correction.
+    // Beneath a record's figure for a month after a correction, in the operator's words: the trades it added and removed under the
+    // record's rule where it changed any, and that it was checked and changed none otherwise; none outside the month.
     public static string CorrectedLine(SetupLongRecord record)
     {
-        if (record is not { CorrectedOn: { } on, Was: { } was })
+        if (record.Correction is not { } correction)
         {
             return string.Empty;
         }
 
-        var figure = record.Points is not null
-            ? FormattableString.Invariant($"{Math.Abs(was):0.00} percentage points a month {(was < 0 ? "less" : "more")}")
-            : was < 0 ? "a loss of " + RecordDollars(was) : RecordDollars(was);
+        var text = correction.Trades.TryGetValue((record.Index, record.Family), out var changed) && (changed.Added > 0 || changed.Removed > 0)
+            ? FormattableString.Invariant($"Corrected on {correction.On:d MMM yyyy}: {changed.Added} {(changed.Added == 1 ? "trade" : "trades")} added, {changed.Removed} removed, from {correction.Cause}.")
+            : FormattableString.Invariant($"Checked on {correction.On:d MMM yyyy} after a data correction: no trade changed.");
 
-        return Formatted($"<span class=\"rec-sub\" data-corrected=\"{on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\">{Escaped(FormattableString.Invariant($"Corrected on {on:d MMM yyyy} after a fault in the history; was {figure}."))}</span>");
+        return Formatted($"<span class=\"rec-sub\" data-corrected=\"{correction.On.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\">{Escaped(text)}</span>");
     }
 
     // The line a drift's and a breakout's record box says beneath its figure, in the operator's words.

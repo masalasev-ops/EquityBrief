@@ -8,14 +8,16 @@ using Xunit;
 
 namespace EquityBrief.Tests.Reading;
 
-// The operator's ruling of 2026-11-17, item 5: for a month after the history the records are read over was corrected, a
-// record whose newest run started on or after the correction's day says beneath its figure the day and the figure it stood at
-// before, read off the newest run started before that day; a book's in percentage points a month; none before the correction,
-// after the month, or where no run before it held a figure.
-// see: A record corrected after a fault in the history says so beneath its figure for a month, with the figure it stood at before
+// The operator's decision of 2026-11-18, D: for a month after the history the records are read over was corrected, a record
+// whose newest run started on or after the correction's day says beneath its figure the trades the correction added and removed
+// under its rule where it changed any, and that it was checked and changed none where it changed none, a book's as a price
+// family's; nothing before the correction, after the month, or on a record whose newest run started before the day.
+// see: A record the history was corrected under says for a month how many of its rule's trades the correction added and removed, or that none changed
 public partial class ReadSurface
 {
-    static readonly DateOnly Corrected = MarkRenderer.RecordCorrections[^1];
+    static readonly RecordCorrection Correction = MarkRenderer.RecordCorrections[^1];
+
+    static readonly DateOnly Corrected = Correction.On;
 
     static string Stamp(DateOnly day, int hour) => FormattableString.Invariant($"{day:yyyyMMdd}T{hour:00}0000Z");
 
@@ -23,51 +25,53 @@ public partial class ReadSurface
         new(store.DatabaseFile, FixedClock.At(new DateTimeOffset(day.ToDateTime(new TimeOnly(22, 0)), TimeSpan.Zero), SessionZones.UnitedStates));
 
     [Fact]
-    public async Task ACorrectedRecordSaysBeneathItsFigureForAMonthWhatItWasBeforeTheCorrection()
+    public async Task ARecordSaysForAMonthTheTradesTheCorrectionAddedAndRemovedOrThatItCheckedAndNoneChanged()
     {
         using var store = new TemporaryStore().Migrated();
 
-        // The pullback's run before the correction made $0.50; its run after it lost $0.124. The breakout's runs both came after
-        // it, so nothing says what it was. The S&P 400's heavyweights book was 0.35 points a month more and is now 0.20 less.
+        // The S&P 600's dip, whose trades the correction of 18 Nov changed, and the S&P 500's pullback, whose trades it did not,
+        // both run on the day; the S&P 500's breakout last ran before it. The S&P 400's heavyweights book ran on the day.
         store.Execute(FormattableString.Invariant($@"
             INSERT INTO plan_point (run_id, index_code, family, through, setups, picks, traded_later_edge_per_pick, traded_later_picks) VALUES
-                ('plan-points-GSPC-{Stamp(Corrected.AddDays(-9), 3)}', 'GSPC', 'pullback', '2026-11-05', 10, 5, 0.5, 999),
-                ('plan-points-GSPC-{Stamp(Corrected, 2)}', 'GSPC', 'pullback', '2026-11-18', 10, 5, -0.124, 2933),
-                ('plan-points-GSPC-{Stamp(Corrected, 2)}', 'GSPC', 'breakout', '2026-11-18', 10, 5, 0.186, 517);
+                ('plan-points-SML-{Stamp(Corrected.AddDays(-2), 3)}', 'SML', 'dip', '2026-11-13', 10, 5, 0.05, 35523),
+                ('plan-points-SML-{Stamp(Corrected, 2)}', 'SML', 'dip', '2026-11-17', 10, 5, 0.0503, 36567),
+                ('plan-points-GSPC-{Stamp(Corrected, 2)}', 'GSPC', 'pullback', '2026-11-17', 10, 5, -0.124, 2933),
+                ('plan-points-GSPC-{Stamp(Corrected.AddDays(-2), 2)}', 'GSPC', 'breakout', '2026-11-13', 10, 5, 0.186, 517);
             INSERT INTO book_record (run_id, index_code, family, rule, exit_words, from_year, through, months, points) VALUES
-                ('loop-books-MID-{Stamp(Corrected.AddDays(-3), 4)}', 'MID', 'heavyweight', 'the rule', 'the exit', 2023, '2026-11-05', 34, 0.35),
-                ('loop-books-MID-{Stamp(Corrected, 5)}', 'MID', 'heavyweight', 'the rule', 'the exit', 2023, '2026-11-18', 35, -0.2);"));
+                ('loop-books-MID-{Stamp(Corrected, 5)}', 'MID', 'heavyweight', 'the rule', 'the exit', 2023, '2026-11-17', 35, -0.2);"));
 
         var inside = await ApiOn(store, Corrected.AddDays(10)).SetupRecordsAsync();
+        var dip = inside.Of("SML", DipRule.Name)!;
         var pullback = inside.Of("GSPC", SetupFamilies.Pullback)!;
         var book = inside.Of("MID", HeavyweightRule.Name)!;
 
-        Assert.Equal((Corrected, 0.5), (pullback.CorrectedOn!.Value, pullback.Was!.Value));
-        Assert.Null(inside.Of("GSPC", BreakoutRule.Name)!.CorrectedOn);
-        Assert.Equal(0.35, book.Was);
+        Assert.Equal(Correction, dip.Correction);
+        Assert.Null(inside.Of("GSPC", BreakoutRule.Name)!.Correction);
 
         string Line(SetupLongRecord record) => Read(MarkRenderer.CorrectedLine(record));
 
-        Assert.Equal(FormattableString.Invariant($"Corrected on {Corrected:d MMM yyyy} after a fault in the history; was $0.50."), Line(pullback));
-        Assert.Equal(FormattableString.Invariant($"Corrected on {Corrected:d MMM yyyy} after a fault in the history; was 0.35 percentage points a month more."), Line(book));
-        Assert.Equal(FormattableString.Invariant($"Corrected on {Corrected:d MMM yyyy} after a fault in the history; was a loss of $0.12."), Line(pullback with { Was = -0.124 }));
+        Assert.Equal((1018, 23), Correction.Trades[("SML", DipRule.Name)]);
+        Assert.Equal("Corrected on 18 Nov 2026: 1018 trades added, 23 removed, from a fix to how dollar volume was read.", Line(dip));
+        Assert.Equal("Corrected on 18 Nov 2026: 169 trades added, 0 removed, from a fix to how dollar volume was read.", Line(dip with { Index = "MID" }));
+        Assert.Equal("Checked on 18 Nov 2026 after a data correction: no trade changed.", Line(pullback));
+        Assert.Equal("Checked on 18 Nov 2026 after a data correction: no trade changed.", Line(book));
 
-        // The box draws it beneath the figure and above the rule's note.
+        // The box draws it beneath the figure and above the rule's note, and its figure as before.
         var box = Read(MarkRenderer.SetupRecordBox(pullback));
 
         Assert.Contains("picks like this lost about $0.12 for every $1 risked", box, StringComparison.Ordinal);
-        Assert.True(box.IndexOf("Corrected on", StringComparison.Ordinal) < box.IndexOf(MarkRenderer.RecordNote, StringComparison.Ordinal));
+        Assert.True(box.IndexOf("Checked on", StringComparison.Ordinal) < box.IndexOf(MarkRenderer.RecordNote, StringComparison.Ordinal));
 
         // The day before the correction and a month after it, nothing is said.
         foreach (var day in new[] { Corrected.AddDays(-1), Corrected.AddMonths(1) })
         {
             var outside = await ApiOn(store, day).SetupRecordsAsync();
 
-            Assert.Null(outside.Of("GSPC", SetupFamilies.Pullback)!.CorrectedOn);
+            Assert.Null(outside.Of("SML", DipRule.Name)!.Correction);
             Assert.Equal(string.Empty, MarkRenderer.CorrectedLine(outside.Of("MID", HeavyweightRule.Name)!));
         }
 
-        Assert.DoesNotMatch(new Regex("Corrected on"), MarkRenderer.SetupRecordBox(inside.Of("GSPC", BreakoutRule.Name)));
+        Assert.DoesNotMatch(new Regex("Corrected on|Checked on"), MarkRenderer.SetupRecordBox(inside.Of("GSPC", BreakoutRule.Name)));
     }
 
     // The operator's answer of 2026-11-17: the Run page lists each step in a stock's closes the share check reads as no split,

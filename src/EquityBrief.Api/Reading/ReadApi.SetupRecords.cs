@@ -22,33 +22,20 @@ public sealed partial class ReadApi
         FROM book_record WHERE rowid IN (SELECT MAX(rowid) FROM book_record GROUP BY index_code, family)
         ORDER BY index_code, family;";
 
-    // The figure each record stood at before a correction: its newest row from a run started before the correction's day.
-    const string TradedBefore = @"
-        SELECT index_code, family, traded_later_edge_per_pick
-        FROM plan_point WHERE rowid IN (SELECT MAX(rowid) FROM plan_point WHERE " + RunStarted + @" < $before GROUP BY index_code, family);";
-
-    const string BooksBefore = @"
-        SELECT index_code, family, points
-        FROM book_record WHERE rowid IN (SELECT MAX(rowid) FROM book_record WHERE " + RunStarted + @" < $before GROUP BY index_code, family);";
-
     public async Task<SetupRecords> SetupRecordsAsync()
     {
         var records = new List<SetupLongRecord>();
 
-        // On the operator's ruling of 2026-11-17, for a month after the newest correction to the history, the figure each record
-        // stood at before it, drawn where the record's newest run started on or after the correction's day.
-        // see: A record corrected after a fault in the history says so beneath its figure for a month, with the figure it stood at before
-        var corrected = MarkRenderer.RecordCorrections[^1];
+        // On the operator's decision of 2026-11-18, for a month after the newest correction to the history, the correction on each
+        // record whose newest run started on or after its day, which the box says beneath its figure.
+        // see: A record the history was corrected under says for a month how many of its rule's trades the correction added and removed, or that none changed
+        var correction = MarkRenderer.RecordCorrections[^1];
         var today = clock.SessionDateAt(clock.UtcNow);
-        var shown = today >= corrected && today < corrected.AddMonths(1);
-        var before = corrected.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture) + "T000000Z";
-        var tradedWas = shown ? await WasAsync(TradedBefore, before) : new Dictionary<(string, string), double>();
-        var booksWas = shown ? await WasAsync(BooksBefore, before) : new Dictionary<(string, string), double>();
+        var shown = today >= correction.On && today < correction.On.AddMonths(1);
+        var before = correction.On.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture) + "T000000Z";
 
-        SetupLongRecord Corrected(SetupLongRecord record, string started, IReadOnlyDictionary<(string, string), double> was) =>
-            string.CompareOrdinal(started, before) >= 0 && was.TryGetValue((record.Index, record.Family), out var figure)
-                ? record with { CorrectedOn = corrected, Was = figure }
-                : record;
+        SetupLongRecord Corrected(SetupLongRecord record, string started) =>
+            shown && string.CompareOrdinal(started, before) >= 0 ? record with { Correction = correction } : record;
 
         await using (var connection = Open())
         {
@@ -74,8 +61,7 @@ public sealed partial class ReadApi
                         LiveUp = reader.IsDBNull(6) ? null : reader.GetDouble(6),
                         LiveFills = reader.IsDBNull(7) ? null : reader.GetInt32(7),
                     },
-                    reader.GetString(8),
-                    tradedWas));
+                    reader.GetString(8)));
             }
         }
 
@@ -103,8 +89,7 @@ public sealed partial class ReadApi
                         Points = reader.IsDBNull(5) ? null : reader.GetDouble(5),
                         Months = reader.GetInt32(4),
                     },
-                    reader.GetString(6),
-                    booksWas));
+                    reader.GetString(6)));
             }
         }
 
@@ -113,28 +98,5 @@ public sealed partial class ReadApi
             .OfType<SetupLongRecord>());
 
         return new SetupRecords(records);
-    }
-
-    async Task<IReadOnlyDictionary<(string, string), double>> WasAsync(string query, string before)
-    {
-        var was = new Dictionary<(string, string), double>();
-
-        await using var connection = Open();
-        await using var command = connection.CreateCommand();
-
-        command.CommandText = query;
-        command.Parameters.AddWithValue("$before", before);
-
-        await using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-        {
-            if (!reader.IsDBNull(2))
-            {
-                was[(reader.GetString(0), reader.GetString(1))] = reader.GetDouble(2);
-            }
-        }
-
-        return was;
     }
 }

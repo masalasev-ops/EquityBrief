@@ -2197,6 +2197,12 @@ dotnet run --project src/EquityBrief.Worker -- plan-points --index GSPC --print
 dotnet run --project src/EquityBrief.Worker -- register --plan "<the live rule's name>" --combination "<the plan's words>, taking profit at 2 times the risk" --evidence "the plan-points run of <date>"
 ```
 
+A family whose plan as it trades already holds a take-profit is passed over by that walk. On the operator's decision of 2026-11-18, C, `--every-take-profit` also walks the shapes on each family's live plan and on its recommended plan, each without its take-profit, and prints `plan-points: take-profit chosen: <family> (the live plan): <the plan's words>` and `(the recommended plan)` beside the run's own, without writing either or changing what the run writes. A different take-profit that wins on a live plan is registered beside the live rule with `--variant-only`, where its family keeps fewer than nine:
+
+```
+dotnet run --project src/EquityBrief.Worker -- plan-points --index GSPC --every-take-profit --print
+```
+
 **The match check, from 23.10's second part.** On each of the first five sessions after a live rule's registration the night's `match-check` row on the Run page says how many of each rule's picks matched the plan it was registered with, placed again from the stored bars, and names every pick that did not; a mismatch means the live rule is not the rule that was tested, and is the operator's to rule on (see: The first five sessions after a restart hold each live rule's picks to its registered plan placed again, and change nothing).
 
 **A pick's recommended plan on its card, from the 22.16 correction of 2026-11-10.** The night's decision cards price each price family's pick at the plan its index's newest `plan-points` run recommends for its family, on the stock's own levels on the night, and store it on the card for Home to draw on a watched pick (see: A watched pick on Home draws the plan the long test recommends for its kind of pick, priced on its own levels and not traded). To price a night's cards again, after a new `plan-points` run or a migration adding the column:
