@@ -20168,3 +20168,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the operator's word on the judge's fields at 24.1, on whether a pin move a replay carries counts as registering a
             live rule, and on correcting the places stating a price at the open.
+
+### 23.10 - correction: the long per-rule test walks the pullback over the years before 2019, and keeps each Quality and Fundamentals rule it lays out no book for with why   2026-11-19
+
+Corrects:   the long per-rule test of 2026-11-09 walking no pullback trade from 2008 to 2018 on any index, its year rows for
+            those years reading nothing while the long ledger holds the pullback's setups there: the S&P 500's swing filter
+            read its candidates from the sweep's first scored session, 2019-01-02, whatever history it was handed, and the S&P
+            400's and 600's own search counted a pick only where its year, counted from 2019, stood at nothing or after; and the
+            long run keeping no row for a Quality or Fundamentals rule it lays out no book for, where its own comment says each
+            such rule is kept with the reason.
+Ruled:      the operator's order of 2026-11-19 on the report of the fault, word for word in
+            `prompts/2026-11-19-23.10-review-before-719-merges.md`.
+Built:      `WalkForwardTester.PullbackCandidates`, the swing filter's candidates scored from the read's own first scored
+            session, the sweep's on the standing years and the long history's on the long test's, through a session
+            `SweepIdeasRunner.ReadWithCandidates` now takes; `RuleTests.OwnTrade` and `OwnEdge`, the one rule the own search's
+            three walks count a pick's trade by, a pick of the years before 2019 among them, the sweep's eight years still
+            ending at their last; and `RuleTests.BooksKept`, each Quality and Fundamentals rule a long run lays out no book for
+            kept with `BooksOnTheStanding`. On the standing years nothing moves: no candidate there is scored before 2019.
+Measured:   the plan test that chose each price family's take-profit reads the long ledger and the long prices through its own
+            reader, and walked real trades in every year from 2005 to 2018: at the next open 7,446 S&P 500 pullback setups,
+            813 on the S&P 400 and 702 on the S&P 600, the S&P 600's drift none before 2010.
+Tests:      3 new, in `FixtureExpectations.LongPullbackYears`: the swing filter over a constructed S&P 500 history from 2009
+            walks a setup of 2010 to a trade on the long read and none before 2019 on the standing read, its candidates there
+            the sweep's own; the own search counts a pick of 2010 as a trade where its walk ended it; and a long run keeps each
+            Quality and Fundamentals rule with why where the standing run keeps none that way.
+Claims:     1632, unchanged.
+Pins:       none moved.
+Mutated:    the rule: each of today's three faults put back as it stood. m1 the candidates scored from 2019 again: red at the
+            swing filter's test, no candidate in 2010; m2 the lower bound on a pick's year put back: red at the own search's
+            test, a pick of 2010 no trade; m3 the kept rows taken out: red at the books' test, no row; the three run filtered
+            to the new tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3828 of 3828 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the long test run again from main over the long history once this merges, its records before and after brought to
+            the operator; the S&P 400's and 600's breakout and drift variants read by their sweep's own reading, which still
+            scores from 2019 on a long run; and the sweep's eight figure years ending in 2026, which from 2027 leave a pick of
+            that year out of the sweeps' figures and the own search's walks, both for the operator.
