@@ -175,7 +175,7 @@ public class RevisionPages
 
         stated.Add((Core.Cards.RuleKind.Improving, Of((ImprovingCandidate.BuyParameter, 7), (ImprovingCandidate.FlagParameter, 1), (ImprovingCandidate.RiseParameter, 1), (ImprovingCandidate.FasterParameter, 1), (ImprovingCandidate.HoldParameter, 7), (ImprovingCandidate.LimitParameter, 126))));
 
-        // The plan its long test chose, as a live rule's hooks state it.
+        // The plan the test of its buy and sell points chose, as a live rule's hooks state it.
         stated.Add((Core.Cards.RuleKind.Pullback, new Dictionary<string, double>(PlanHook.ParametersOf(PlanPrices.Named("1.13 typical days under the close within 20 sessions, 4 typical days under the buy, the first band above, taking profit at 2 times the risk alone")!), StringComparer.Ordinal)));
 
         var chips = stated.SelectMany(one => Core.Cards.RuleChips.Of(one.Kind, one.Parameters))

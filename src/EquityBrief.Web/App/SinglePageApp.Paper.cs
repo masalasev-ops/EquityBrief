@@ -179,11 +179,11 @@ public sealed partial class SinglePageApp
 
     // Beside the lists' trades: each family's live or provisional rule's test years verdict and its record's label,
     // apart, and the line about entries.
-    // Each rule's running revision by its tag, the test that chose it, and its trades since it started running.
+    // Each rule's running revision by its tag, the monthly test that judges it, and its trades since it started running.
     public static string ListsVerdicts(IReadOnlyList<PaperAccountView> accounts) =>
-        "<div class=\"paper-heads\" data-as-worded><p><b>Each rule's running revision: the test that chose it, and its trades since it started running.</b></p><ul>"
+        "<div class=\"paper-heads\" data-as-worded><p><b>Each rule's running revision: the monthly test that judges it, and its trades since it started running.</b></p><ul>"
         + string.Concat(accounts.Where(one => one.Head).OrderBy(one => EquityBrief.Core.Families.SetupFamilies.OrderOf(one.Family)).Select(account =>
-            Invariant($"<li data-family=\"{Escaped(account.Family)}\" data-verdict=\"{Escaped(account.Verdict)}\"><span class=\"fam-tag\" data-family=\"{Escaped(account.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(account.Family)}\"></span>{Escaped(FamilyLabel(account.Family))}</span> {Escaped(account.Revision?.Tag ?? "Its starting settings, not yet registered")}. Its test: {Escaped(account.Verdict)}{(account.Years.Count > 0 ? "; " + Escaped(EquityBrief.Core.Loop.RuleVerdict.Chosen) : string.Empty)}. Since it started running: {account.Trades} {(account.Trades == 1 ? "trade" : "trades")}{(account.TooFew is { } few ? Invariant($", <span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}.</li>")))
+            Invariant($"<li data-family=\"{Escaped(account.Family)}\" data-verdict=\"{Escaped(account.Verdict)}\"><span class=\"fam-tag\" data-family=\"{Escaped(account.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(account.Family)}\"></span>{Escaped(FamilyLabel(account.Family))}</span> {Escaped(account.Revision?.Tag ?? "Its starting settings, not yet registered")}. Its monthly test: {Escaped(account.Verdict)}{(account.Years.Count > 0 ? "; " + Escaped(EquityBrief.Core.Loop.RuleVerdict.Chosen) : string.Empty)}. Since it started running: {account.Trades} {(account.Trades == 1 ? "trade" : "trades")}{(account.TooFew is { } few ? Invariant($", <span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}.</li>")))
         + Invariant($"</ul><p class=\"paper-entry\">{Escaped(MarkRenderer.EntryPriceLine)}</p></div>");
 
     public string AccountLogRegion(MarkRenderer marks, UniverseChoice reading, DateOnly? night, IReadOnlyList<PaperAccountView> accounts, PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null, string? chosen = null)

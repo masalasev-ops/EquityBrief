@@ -299,7 +299,7 @@ public static partial class RuleSentences
             : "takes profit at " + sale + ", or at " + placed + " where that night read none";
     }
 
-    // The approval's hooks, each part as a sentence: another exit, the plan its long test chose, a condition it also needs,
+    // The approval's hooks, each part as a sentence: another exit, the plan its plan test chose, a condition it also needs,
     // the order it ranks by and how many it buys as the market stands.
     static string? Hooks(string words)
     {
@@ -314,7 +314,7 @@ public static partial class RuleSentences
                     return null;
                 }
 
-                parts.Add("Buys and sells by the plan its long test chose: it " + PlanSentence(plan));
+                parts.Add("Buys and sells by the plan the test of its buy and sell points chose: it " + PlanSentence(plan));
             }
             else if (part.StartsWith("exit: ", StringComparison.Ordinal))
             {

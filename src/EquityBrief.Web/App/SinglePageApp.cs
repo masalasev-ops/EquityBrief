@@ -4515,7 +4515,7 @@ public sealed partial class SinglePageApp : IComponent
             region.Append(Cards.Computed(
                 "Past picks",
                 "<p class=\"degraded\" data-picks=\"none\">No trade has been listed yet. The live list recommends a trade on each night the swing filter passes a name, and every one it recommends is followed here from that night on.</p>",
-                title: "How the list's picks have done",
+                title: "How the running revisions' picks have done",
                 stamp: Cards.Night(night),
                 region: "picks-summary"));
             region.Append(BusinessFirstPicksCard(marks, night, businessFirst));
@@ -4530,10 +4530,10 @@ public sealed partial class SinglePageApp : IComponent
             "Past picks",
             Invariant($"<p class=\"card-note picks-group\">These are {TradeGroupsView.SystemWords} of the pullback, the breakout and the earnings drift under every version, and each row says which. {(groups is { } counted && setup is null ? Escaped(counted.OpenHere(summary.Open, "this table")) + " " : string.Empty)}{(dips is { Count: > 0 } kept && setup is null ? Invariant($"The short-term dip's {kept.Count} sit in their own table below, which All setups counts and the status counts do not. ") : string.Empty)}Paper trading's accounts count {TradeGroupsView.VersionWords} alone, on <a href=\"{PaperRoute}\">Paper trading</a>.</p>") + marks.PicksCounts(summary) + (setup is null && groups is { } waitingOn ? MarkRenderer.StillWaitingOrders(waitingOn.StillWaitingOrders, Universes.Large.Name) : string.Empty) + Cards.Key(
                 "How to read it.",
-                Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its target, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions pass. A result is what the trade made in multiples of what it risked, so <span class=\"loss\">-1</span> is a full stop-out and <span class=\"gain\">+2</span> a target twice as far away as the stop."),
+                Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its take-profit, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} trading days pass. A result is what the trade made in multiples of what it risked, so <span class=\"loss\">-1</span> is a full stop-out and <span class=\"gain\">+2</span> a target twice as far away as the stop."),
                 "Each trade is a fact and is always shown. A share over a handful of trades looks like evidence and is not, so it waits for the minimums, and it never appears without the share the trades needed to break even beside it."),
-            title: "How the list's picks have done",
-            lede: Invariant($"Every name the live list recommended from the swing filter's first night, each bought at the open of the session after the night that listed it and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions."),
+            title: "How the running revisions' picks have done",
+            lede: Invariant($"Every name the live list recommended from the swing filter's first night, each bought at the open of the session after the night that listed it and followed to its take-profit, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} trading days."),
             stamp: Cards.Night(night),
             region: "picks-summary"));
 

@@ -60,6 +60,11 @@ public static class BookExits
     };
 
     public static BookExit Of(string family, string index) => Chosen.GetValueOrDefault((family, index)) ?? BookExit.Middle;
+
+    // The years the heavyweights' exits were chosen on, whose history holds no month before 2019.
+    public const int HeavyweightsChosenFrom = 2019;
+
+    public const int HeavyweightsChosenThrough = 2022;
 }
 
 // From the operator's order of 2026-11-14 every pick takes profit at a price, set in this order: the setup's own registered

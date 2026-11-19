@@ -429,13 +429,20 @@ public partial class ReadSurface
         Assert.DoesNotContain("<table class=\"paper-variants\"", narrowing, StringComparison.Ordinal);
 
         // One widening version: the line counts them.
-        Assert.Contains(">Pullback has made no trade since its record began on 3 Nov, and none of its 2 variants has traded either: 1 narrows it and 1 widens it.</p>", Part(Row("list-pullback", PaperAccountView.Live, null, 0), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 0), Row("V8", PaperAccountView.Variant, VersionReachKind.Widens, 0)), StringComparison.Ordinal);
+        Assert.Contains(">Pullback has made no trade since its record began on 3 Nov, and none of its 2 variants has traded either: 1 narrows it and 1 can take trades it cannot.</p>", Part(Row("list-pullback", PaperAccountView.Live, null, 0), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 0), Row("V8", PaperAccountView.Variant, VersionReachKind.Widens, 0)), StringComparison.Ordinal);
 
         // A family with a trade draws its table, each version marked.
         var traded = Part(Row("list-pullback", PaperAccountView.Live, null, 2), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 1), Row("V8", PaperAccountView.Variant, VersionReachKind.Widens, 3));
 
         Assert.Contains("<span class=\"pv-reach\" data-reach=\"narrows\">narrows the running revision</span>", AccountRowOf(traded, "V1"), StringComparison.Ordinal);
-        Assert.Contains("<span class=\"pv-reach\" data-reach=\"widens\">widens it</span>", AccountRowOf(traded, "V8"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pv-reach\" data-reach=\"widens\">can take trades the running revision cannot</span>", AccountRowOf(traded, "V8"), StringComparison.Ordinal);
+
+        // A version changing a setting whose direction is not read draws no words for it, its name saying what it changes;
+        // a family with no trade counts it as one that could add trades or remove them.
+        var unread = Part(Row("list-pullback", PaperAccountView.Live, null, 2), Row("V3", PaperAccountView.Variant, VersionReachKind.Unread, 1));
+
+        Assert.DoesNotContain("data-reach=\"unread\"", AccountRowOf(unread, "V3"), StringComparison.Ordinal);
+        Assert.Contains("1 narrows it and 1 could add trades or remove them.</p>", Part(Row("list-pullback", PaperAccountView.Live, null, 0), Row("V1", PaperAccountView.Variant, VersionReachKind.Narrows, 0), Row("V3", PaperAccountView.Variant, VersionReachKind.Unread, 0)), StringComparison.Ordinal);
         Assert.DoesNotContain("paper-no-trade", traded, StringComparison.Ordinal);
     }
 

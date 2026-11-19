@@ -50,9 +50,10 @@ public sealed partial class MarkRenderer
 
             html.Append(FormattableString.Invariant($"<a class=\"revision-tile\" data-family=\"{Escaped(head.Family)}\" data-standing=\"{head.Standing}\" data-account=\"{Escaped(head.Key)}\" data-return=\"{(head.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\" data-open=\"{head.Open}\" data-closed=\"{head.Closed}\" data-since=\"{(head.Since is { } began ? DayOf(began) : "none")}\" title=\"{Escaped(head.Words)}\" href=\"{Escaped((link with { Rule = head.Family, Pick = null, Tab = null, Page = 1, Unfold = null }).Href)}\" style=\"border-left-color:var(--fam-{Escaped(head.Family)}, var(--hair-2))\">"));
             html.Append(FormattableString.Invariant($"<span class=\"fam-tag\" data-family=\"{Escaped(head.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(head.Family)}\"></span>{Escaped(FamilyName(head.Family))}</span>"));
-            html.Append(FormattableString.Invariant($"<b>{(head.Walk?.Return is { } made ? PaperPercent(made) : "no return yet")}</b>"));
+            // The rule's own return the largest figure, its index's fund over the same days beneath it and smaller.
+            html.Append(FormattableString.Invariant($"<b>{(head.Walk?.Return is { } made ? PaperPercent(made) : "no return yet")}</b>{TileFund(head.Walk, fund?.Fund)}"));
             html.Append(FormattableString.Invariant($"<span class=\"rev-tile\">{Escaped(head.Revision?.Tag ?? "Not yet registered: its starting settings")}</span>"));
-            html.Append(FormattableString.Invariant($"<span>{open} open · {closed} closed</span>{TileFund(head.Walk, fund?.Fund)}</a>"));
+            html.Append(FormattableString.Invariant($"<span>{open} open · {closed} closed</span></a>"));
         }
 
         html.Append("</div>");
@@ -377,7 +378,7 @@ public sealed partial class MarkRenderer
             html.Append(MoneyTd(position.Now));
             html.Append(FormattableString.Invariant($"<td class=\"r num\">{(position.Risks is { } risks ? Escaped(PerRisk(risks)) + " risked" : string.Empty)}{(position.Fraction is { } fraction ? FormattableString.Invariant($"<span class=\"row-note\">{PaperPercent(fraction)}</span>") : string.Empty)}</td>"));
             html.Append(FormattableString.Invariant($"<td class=\"r num\">{(position.Held is { } held ? held.ToString(Invariant) : "-")}{(trade.Cap is { } cap ? FormattableString.Invariant($" of {cap}") : string.Empty)}</td>"));
-            html.Append(FormattableString.Invariant($"<td>{Escaped(position.Standing)}{(trade.Past is not null ? "<span class=\"row-note\">It opened past its own price.</span>" : string.Empty)}</td>"));
+            html.Append(FormattableString.Invariant($"<td{(PaperAccount.IsClosedUnder(position.Standing) ? " class=\"loss\"" : string.Empty)}>{Escaped(Capitalised(position.Standing))}{(trade.Past is not null ? "<span class=\"row-note\">It opened past its own price.</span>" : string.Empty)}</td>"));
             html.Append(AgainstTd(against, trade.Ticker, trade.Listed));
             html.Append("</tr>");
         }
@@ -427,23 +428,47 @@ public sealed partial class MarkRenderer
         return html.Append("</tbody></table></div>").ToString();
     }
 
-    // How the revision has done: since it started running, and the test over past years that chose it, never added together.
+    // How the revision has done: since it started running, and the monthly test over past years that judges it, never added
+    // together.
     public string HowItHasDone(PaperPageView page, PaperAccountView head)
     {
         var html = new StringBuilder();
 
+        var longOwn = page.Long.FirstOrDefault(row => row.Family == head.Family && row.Standing != PaperAccountView.Variant);
+
         html.Append(FormattableString.Invariant($"<div class=\"score\" data-family=\"{Escaped(head.Family)}\" data-standing=\"{head.Standing}\" data-verdict=\"{Escaped(head.Verdict)}\">"));
+        html.Append(FormattableString.Invariant($"<p class=\"sh-line\" data-chosen-on>{Escaped(ChosenOn(head.Family, [.. (head.Boxes ?? []).Select(box => box.Year)], longOwn))}</p>"));
         html.Append("<div class=\"score-halves\">");
         html.Append(RunningRecord(head));
         html.Append(TestRecord(head));
         html.Append("</div>");
         html.Append(PooledPart(page.Pooled.FirstOrDefault(row => row.Own && row.Family == head.Family), PooledSetups(page.Pooled)));
-        html.Append(LongRecord(
-            page.Long.FirstOrDefault(row => row.Family == head.Family && row.Standing != PaperAccountView.Variant),
-            page.LongPooled.FirstOrDefault(row => row.Own && row.Family == head.Family)));
+        html.Append(LongRecord(longOwn, page.LongPooled.FirstOrDefault(row => row.Own && row.Family == head.Family)));
         html.Append("</div>");
 
         return html.ToString();
+    }
+
+    // The years each test behind a revision read, each test with its own: the sweeps chose its settings on the standing years
+    // from 2019, the plan test its take-profit on the long ledger's years before them, a book's own test its stop and
+    // take-profit on the years before 2019 or the heavyweights' on 2019 to 2022, and the monthly test judges it over its test
+    // years; the long history named only where its long test walked a trade before 2019.
+    // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    public static string ChosenOn(string family, IReadOnlyList<int> testYears, PaperLongVerdict? longRecord)
+    {
+        var standingFrom = EquityBrief.Core.History.LongLedger.StandingFrom.Year;
+        var settings = testYears.Count > 0 ? FormattableString.Invariant($"Its settings were chosen on {standingFrom} to {testYears.Max()}.") : FormattableString.Invariant($"Its settings were chosen on the years from {standingFrom}.");
+        var exit = family == HeavyweightRule.Name
+            ? FormattableString.Invariant($" Its stop and take-profit were chosen on {EquityBrief.Core.Loop.BookExits.HeavyweightsChosenFrom} to {EquityBrief.Core.Loop.BookExits.HeavyweightsChosenThrough}.")
+            : family is QualityRule.Name or ImprovingRule.Name
+                ? FormattableString.Invariant($" Its stop and take-profit were chosen on the years before {standingFrom}.")
+                : FormattableString.Invariant($" Its take-profit was chosen on {EquityBrief.Core.History.LongLedger.From.Year} to {EquityBrief.Core.History.LongLedger.Through.Year}.");
+        var monthly = testYears.Count > 0
+            ? FormattableString.Invariant($" The monthly test judges it over {testYears.Min()} to {testYears.Max()}")
+            : " No monthly test has judged it yet";
+        var tested = longRecord is { Why: null, NeverSeenUnits: > 0 } walked ? FormattableString.Invariant($", and it was tested over the long history from {walked.FirstTestYear}") : string.Empty;
+
+        return settings + exit + monthly + tested + ".";
     }
 
     // What a rule not yet tested keeps in its record's place.
@@ -491,7 +516,7 @@ public sealed partial class MarkRenderer
         var book = head.Unit == LoopPoints;
         var years = boxes.Count > 0 ? FormattableString.Invariant($", {boxes.Min(box => box.Year)} to {boxes.Max(box => box.Year)}") : string.Empty;
 
-        html.Append(FormattableString.Invariant($"<div class=\"score-half history\"><div class=\"sh-h\"><span class=\"sh-lbl\">The test that chose it{years}</span> <span class=\"pill verdict\" data-verdict=\"{Escaped(head.Verdict)}\">{Escaped(head.Verdict)}</span></div>"));
+        html.Append(FormattableString.Invariant($"<div class=\"score-half history\"><div class=\"sh-h\"><span class=\"sh-lbl\">The monthly test{years}</span> <span class=\"pill verdict\" data-verdict=\"{Escaped(head.Verdict)}\">{Escaped(head.Verdict)}</span></div>"));
         html.Append(FormattableString.Invariant($"<p class=\"sh-line\" data-verdict-said>{Escaped(VerdictSaid(head.Verdict))}</p>"));
 
         if (boxes.Count == 0)
@@ -550,10 +575,13 @@ public sealed partial class MarkRenderer
         : verdict.StartsWith(EquityBrief.Core.Loop.RuleVerdict.NotTestablePrefix, StringComparison.Ordinal) ? "The past years cannot test it, because the store does not hold what it reads for them; its own trades will judge it."
         : "It failed one of the test's checks, so the test does not judge it better than the easy alternative.";
 
+    // The S&P 500's heavyweights over the long history, whose fund holdings the long members' run reads from October 2018.
+    public const string HeavyweightHoldingsLine = "The long history holds heavyweight picks only from October 2018, when the fund-holdings data begins.";
+
     // The rule over the long history from its family's first test year: whether it passed, the years better and its trades,
     // how often luck would do as well, the years it was chosen on and, where it holds any, the years before them; and the rules
     // of every index summed over the same history. Every figure is the long step's row, each said in a sentence.
-    static string LongRecord(PaperLongVerdict? own, LoopPooledRow? pooled)
+    public static string LongRecord(PaperLongVerdict? own, LoopPooledRow? pooled)
     {
         var html = new StringBuilder();
         var book = own?.Book ?? false;
@@ -573,8 +601,22 @@ public sealed partial class MarkRenderer
         else
         {
             var luck = own.Adjusted is { } p ? PaperAccount.Luck(p).Words : null;
+            var standingFrom = EquityBrief.Core.History.LongLedger.StandingFrom.Year;
+            var none = own.FirstTestYear < standingFrom && own.NeverSeenUnits == 0;
 
-            html.Append(FormattableString.Invariant($"<p data-long-line=\"verdict\">From {own.FirstTestYear} on, it {(own.Passed ? "passed" : "did not pass")}: better than the easy alternative in {own.Better ?? 0} of {own.Counted ?? 0} years, over {(own.Units ?? 0).ToString("N0", Invariant)} {unit}.{(luck is null ? string.Empty : FormattableString.Invariant($" A rule picking at random would do as well {Escaped(luck)}, and to pass it needs fewer than 1 in {PaperAccount.RealOneIn}."))}</p>"));
+            // Where the long test walked none of the years before 2019 it says so plainly, and its verdict names the years it
+            // read; a heavyweight book on an index whose fund holdings begin in October 2018 says that its history does.
+            if (none)
+            {
+                html.Append(FormattableString.Invariant($"<p data-long-years=\"none before\">The long test walked no trade of it from {own.FirstTestYear} to {standingFrom - 1}, so its long record reads its years from {standingFrom} alone.</p>"));
+            }
+
+            if (own.Family == HeavyweightRule.Name && own.FirstTestYear >= standingFrom)
+            {
+                html.Append(FormattableString.Invariant($"<p data-long-years=\"holdings\">{Escaped(HeavyweightHoldingsLine)}</p>"));
+            }
+
+            html.Append(FormattableString.Invariant($"<p data-long-line=\"verdict\">From {(none ? standingFrom : own.FirstTestYear)} on, it {(own.Passed ? "passed" : "did not pass")}: better than the easy alternative in {own.Better ?? 0} of {own.Counted ?? 0} years, over {(own.Units ?? 0).ToString("N0", Invariant)} {unit}.{(luck is null ? string.Empty : FormattableString.Invariant($" A rule picking at random would do as well {Escaped(luck)}, and to pass it needs fewer than 1 in {PaperAccount.RealOneIn}."))}</p>"));
 
             if (own.NeverSeenUnits > 0)
             {
@@ -630,7 +672,7 @@ public sealed partial class MarkRenderer
 
         html.Append(none);
         html.Append(FormattableString.Invariant($"<p class=\"sub-l\">Each variant is {Escaped(name.ToLowerInvariant())} with one thing changed, traded only on paper and never as picks. A variant that does better can become the next revision only at a monthly run, on your word. Press a variant's row to unfold its trades under it; press again to fold it away.</p>"));
-        html.Append(FormattableString.Invariant($"<div class=\"tbl-wrap\"><table class=\"list-table vtable\" data-variants=\"{variants.Length}\"><thead><tr><th>Variant, named by how it differs from {Escaped(name.ToLowerInvariant())} (press one to unfold it)</th><th class=\"r\">Trades</th><th class=\"r\">Trades {Escaped(name.ToLowerInvariant())} did not take</th><th class=\"r\">Result so far</th><th>On past years</th></tr></thead><tbody>"));
+        html.Append(FormattableString.Invariant($"<div class=\"tbl-wrap\"><table class=\"list-table vtable\" data-variants=\"{variants.Length}\"><thead><tr><th>Variant, named by how it differs from {Escaped(name.ToLowerInvariant())} (press one to unfold it)</th><th class=\"r\">Trades</th><th class=\"r\">Trades {Escaped(name.ToLowerInvariant())} did not take</th><th class=\"r vres\">Result so far</th><th class=\"vpast\">On past years</th></tr></thead><tbody>"));
 
         foreach (var variant in variants)
         {
@@ -644,10 +686,10 @@ public sealed partial class MarkRenderer
             html.Append(FormattableString.Invariant($"<tr class=\"vrow{(open ? " open" : string.Empty)}\" data-account=\"{Escaped(variant.Key)}\" data-standing=\"{variant.Standing}\" data-trades=\"{trades.Count}\" data-changes=\"{ChangesOf(variant)}\" id=\"variant-{Escaped(variant.Key)}\">"));
             var also = AlsoDiffers(variant);
 
-            html.Append(FormattableString.Invariant($"<td><a class=\"vbtn\" title=\"{Escaped(variant.Words)}\" href=\"{Escaped(toggle.Href)}\" aria-expanded=\"{(open ? "true" : "false")}\"><span class=\"car\">{(open ? "▾" : "▸")}</span><b>{Escaped(VariantName(variant))}</b></a>{(variant.Since is { } since ? FormattableString.Invariant($"<span class=\"row-note\">since {since:d MMM yyyy}</span>") : string.Empty)}{(also.Count > 0 ? FormattableString.Invariant($"<span class=\"row-note\" data-also=\"{also.Count}\">Also differs from {Escaped(name.ToLowerInvariant())}: {Escaped(string.Join("; ", also.Select(change => Uncapitalised(change.Sentence))))}.</span>") : string.Empty)}{(variant.Reach is { } reach ? FormattableString.Invariant($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Cards.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(variant)}<a class=\"paper-log\" href=\"{LogHref(link.Universe, variant.Key)}\">trade log</a></td>"));
+            html.Append(FormattableString.Invariant($"<td><a class=\"vbtn\" title=\"{Escaped(variant.Words)}\" href=\"{Escaped(toggle.Href)}\" aria-expanded=\"{(open ? "true" : "false")}\"><span class=\"car\">{(open ? "▾" : "▸")}</span><b>{Escaped(VariantName(variant))}</b></a>{(variant.Since is { } since ? FormattableString.Invariant($"<span class=\"row-note\">since {since:d MMM yyyy}</span>") : string.Empty)}{(also.Count > 0 ? FormattableString.Invariant($"<span class=\"row-note\" data-also=\"{also.Count}\">Also differs from {Escaped(name.ToLowerInvariant())}: {Escaped(string.Join("; ", also.Select(change => Uncapitalised(change.Sentence))))}.</span>") : string.Empty)}{(variant.Reach is { } reach && EquityBrief.Core.Cards.VersionReach.Words(reach) is { } reached ? FormattableString.Invariant($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(Capitalised(reached))}.</span>") : string.Empty)}{AccountNote(variant)}<a class=\"paper-log\" href=\"{LogHref(link.Universe, variant.Key)}\">trade log</a></td>"));
             html.Append(FormattableString.Invariant($"<td class=\"r num\">{trades.Count}</td><td class=\"r num\">{alone}</td>"));
-            html.Append(FormattableString.Invariant($"<td class=\"r num\" data-return=\"{(variant.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\">{(ended.Length > 0 ? Escaped(PerRisk(ended.Average())) + " risked" : "none closed")}{(variant.Walk?.Return is { } made ? FormattableString.Invariant($"<span class=\"row-note\">{PaperPercent(made)} on the account</span>") : string.Empty)}{(variant.TooFew is { } few ? FormattableString.Invariant($"<span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}</td>"));
-            html.Append(FormattableString.Invariant($"<td><span class=\"pill\"{(variant.Adjusted is { } p ? FormattableString.Invariant($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span>{(variant.Better is { } better && variant.Counted is { } counted ? FormattableString.Invariant($"<span class=\"row-note\">better in {better} of {counted} years</span>") : string.Empty)}</td>"));
+            html.Append(FormattableString.Invariant($"<td class=\"r num vres\" data-return=\"{(variant.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\"><span class=\"vres-line\">{(ended.Length > 0 ? Escaped(PerRisk(ended.Average())) + " risked" : "none closed")}</span>{(variant.Walk?.Return is { } made ? FormattableString.Invariant($"<span class=\"row-note\">{PaperPercent(made)} on the account</span>") : string.Empty)}{(variant.TooFew is { } few ? FormattableString.Invariant($"<span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}</td>"));
+            html.Append(FormattableString.Invariant($"<td class=\"vpast\"><span class=\"pill\"{(variant.Adjusted is { } p ? FormattableString.Invariant($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span>{(variant.Better is { } better && variant.Counted is { } counted ? FormattableString.Invariant($"<span class=\"row-note\">better in {better} of {counted} years</span>") : string.Empty)}</td>"));
             html.Append("</tr>");
 
             if (open)

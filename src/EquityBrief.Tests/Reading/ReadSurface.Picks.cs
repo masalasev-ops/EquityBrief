@@ -26,14 +26,14 @@ public partial class ReadSurface
     [
         CheckReach.Key("15.5 The mark vocabulary", "Trade line"),
         CheckReach.Key("15.9 Name", "On the list before"),
-        CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on"),
-        CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished"),
-        CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many reached the target and how many were stopped out or ran out of time"),
-        CheckReach.Key("15.17 Past picks", "How the list's picks have done, a line saying how many carry no outcome row"),
-        CheckReach.Key("15.17 Past picks", "How the list's picks have done, below the minimum a dashed outline stating the trades decided at the target or the stop and their listing nights against the numbers needed with no share"),
-        CheckReach.Key("15.17 Past picks", "How the list's picks have done, at or above it a bar of the finished trades in three steps of one neutral hue with a line at the decided trades' average break-even"),
-        CheckReach.Key("15.17 Past picks", "How the list's picks have done, the share that reached the target first beside the share needed to break even and the average result in multiples of the risk taken, the three always together"),
-        CheckReach.Key("15.17 Past picks", "How the list's picks have done, a key saying how to read it"),
+        CheckReach.Key("15.17 Past picks", "How the running revisions' picks have done,the trades listed with the nights they were listed on"),
+        CheckReach.Key("15.17 Past picks", "How the running revisions' picks have done,how many are still open and how many finished"),
+        CheckReach.Key("15.17 Past picks", "How the running revisions' picks have done,how many reached the target and how many were stopped out or ran out of time"),
+        CheckReach.Key("15.17 Past picks", "How the running revisions' picks have done,a line saying how many carry no outcome row"),
+        CheckReach.Key("15.17 Past picks", "How the running revisions' picks have done,below the minimum a dashed outline stating the trades decided at the target or the stop and their listing nights against the numbers needed with no share"),
+        CheckReach.Key("15.17 Past picks", "How the running revisions' picks have done,at or above it a bar of the finished trades in three steps of one neutral hue with a line at the decided trades' average break-even"),
+        CheckReach.Key("15.17 Past picks", "How the running revisions' picks have done,the share that reached the target first beside the share needed to break even and the average result in multiples of the risk taken, the three always together"),
+        CheckReach.Key("15.17 Past picks", "How the running revisions' picks have done,a key saying how to read it"),
         CheckReach.Key("15.17 Past picks", "Filters, a chip for all and one for each status a trade can stand in with its count"),
         CheckReach.Key("15.17 Past picks", "Filters, none by setup"),
         CheckReach.Key("15.17 Past picks", "Every trade, newest first"),
@@ -182,7 +182,7 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"screen-mast\" data-title=\"Past picks: S&P 500 large cap\"><span class=\"m-screen\">Past picks: S&P 500 large cap</span>", page, StringComparison.Ordinal);
         Assert.Contains($"Every trade the S&P 500's rules picked, as of the close of {PicksNewest}", page, StringComparison.Ordinal);
         Assert.Contains(
-            $"<p class=\"lede\">Every name the rules picked from the swing filter's first night, each bought at the open of the session after the night that listed it and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions.</p>",
+            $"<p class=\"lede\">Every name the rules picked from the swing filter's first night, each bought at the open of the session after the night that listed it and followed to its take-profit, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} trading days.</p>",
             page,
             StringComparison.Ordinal);
         Assert.DoesNotContain("the close it was listed at", page, StringComparison.Ordinal);

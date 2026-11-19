@@ -775,7 +775,7 @@ public sealed partial class MarkRenderer
         html.Append(TippedHeading("Target", "its plan's target, or that its stop trails and it has none, or none for a holding sold only at a rebalance and a short-term dip sold on its exit", "r"));
         html.Append(TippedHeading("Last close", "tonight's close, and the sessions since its listing night against the sessions its plan gives it", "r"));
         html.Append(TippedHeading("So far", "its result at tonight's close in multiples of the risk its plan's close put up, with its move in per cent beneath; a holding's in per cent alone", "r"));
-        html.Append(TippedHeading("Where it stands", "near its target or near its stop within one typical day's move of either, on track otherwise, or that its buy opened past its stop or its target; a holding's lead over its sector tonight"));
+        html.Append(TippedHeading("Where it stands", "near its target or near its stop within one typical day's move of either, on track otherwise, that it closed under its stop tonight and sells at the next open, or that its buy opened past its stop or its target; a holding's lead over its sector tonight"));
         html.Append("</tr></thead><tbody>");
 
         foreach (var trade in trades)
@@ -814,6 +814,7 @@ public sealed partial class MarkRenderer
     {
         PaperAccount.NearTarget => "near-target",
         PaperAccount.NearStop => "near-stop",
+        { } under when PaperAccount.IsClosedUnder(under) => "near-stop",
         PaperAccount.OpenedUnderStop => "opened-under",
         PaperAccount.OpenedOverTarget => "opened-over",
         HeavyweightStandings.StillLeading => "leading",
@@ -992,7 +993,7 @@ public sealed partial class MarkRenderer
         {
             html.Append(Invariant, $"<tr data-account=\"{Escaped(account.Key)}\" data-standing=\"{account.Standing}\" data-trades=\"{account.Overlap?.Trades ?? account.Trades}\" data-shared=\"{account.Overlap?.Shared ?? 0}\" data-only=\"{account.Overlap?.Only ?? 0}\">");
             html.Append(Invariant, $"<td class=\"pv-rule\"><a class=\"paper-log\" href=\"{LogHref(link.Universe, account.Key)}\" title=\"{Escaped(Capitalised(account.Words) + (account.Version is { } version ? "; counts " + version : string.Empty) + (account.Since is { } since ? "; from " + DayOf(since) : string.Empty))}\">{Escaped(account.Short ?? account.Name)}</a><span class=\"pv-verdict\" data-verdict=\"{Escaped(account.Verdict)}\">{Escaped(account.Verdict)}</span>{SinceWords(account)}</td>");
-            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{(account.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Cards.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(account)}</td>");
+            html.Append(Invariant, $"<td>{Escaped(account.Changes ?? string.Empty)}{(account.Reach is { } reach && EquityBrief.Core.Cards.VersionReach.Words(reach) is { } reached ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(reached)}</span>") : string.Empty)}{AccountNote(account)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{account.Overlap?.Trades ?? account.Trades}</td><td class=\"r num\">{account.Overlap?.Shared ?? 0}</td><td class=\"r num\">{account.Overlap?.Only ?? 0}</td>");
             html.Append(Invariant, $"<td class=\"r num\" data-return=\"{(account.Walk?.Return is { } held ? held.ToString("R", Invariant) : "none")}\">{(account.Walk?.Return is { } made ? PaperPercent(made) : "<span class=\"degraded\">none yet</span>")}{(account.TooFew is { } few ? Formatted($"<span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}</td></tr>");
         }
@@ -1095,7 +1096,7 @@ public sealed partial class MarkRenderer
             foreach (var variant in variants)
             {
                 html.Append(Invariant, $"<tr data-account=\"{Escaped(variant.Key)}\" data-verdict=\"{Escaped(variant.Verdict)}\" data-better=\"{(variant.Better is { } better ? better.ToString(Invariant) : "none")}\">");
-                html.Append(Invariant, $"<td><b title=\"{Escaped(Capitalised(variant.Words))}\">{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{(variant.Reach is { } reach ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(EquityBrief.Core.Cards.VersionReach.Words(reach))}</span>") : string.Empty)}{AccountNote(variant)}</td>");
+                html.Append(Invariant, $"<td><b title=\"{Escaped(Capitalised(variant.Words))}\">{Escaped(variant.Short ?? variant.Name)}</b><span class=\"pb-co\">{Escaped(variant.Changes ?? variant.Words)}</span>{(variant.Reach is { } reach && EquityBrief.Core.Cards.VersionReach.Words(reach) is { } reached ? Formatted($"<span class=\"pv-reach\" data-reach=\"{reach.ToString().ToLowerInvariant()}\">{Escaped(reached)}</span>") : string.Empty)}{AccountNote(variant)}</td>");
                 html.Append(Invariant, $"<td><span class=\"pill\"{(variant.Adjusted is { } p ? Formatted($" title=\"adjusted p {p.ToString("0.0000", Invariant)} against the bar {LoopGate.Bar.ToString("0.0000", Invariant)}\"") : string.Empty)}>{Escaped(variant.Verdict)}</span>{(variant.Tested is { } tested ? PooledChangeNote(tested, page.Pooled) : string.Empty)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{(variant.Better is { } of && variant.Counted is { } counted ? Formatted($"{of} of {counted}") : "<span class=\"degraded\">not read</span>")}{JudgedFromNote(variant)}</td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Progressed(variant.Progress, variant.Standing)}</td></tr>");
@@ -1163,10 +1164,10 @@ public sealed partial class MarkRenderer
         string[] parts =
         [
             Count(EquityBrief.Core.Cards.VersionReachKind.Narrows, "narrows it", "narrow it"),
-            Count(EquityBrief.Core.Cards.VersionReachKind.Widens, "widens it", "widen it"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.Widens, "can take trades it cannot", "can take trades it cannot"),
             Count(EquityBrief.Core.Cards.VersionReachKind.SoldDifferently, "takes the same picks sold differently", "take the same picks sold differently"),
             Count(EquityBrief.Core.Cards.VersionReachKind.Reordered, "takes the same picks in another order", "take the same picks in another order"),
-            Count(EquityBrief.Core.Cards.VersionReachKind.Unread, "changes a setting whose reach is not read here", "change a setting whose reach is not read here"),
+            Count(EquityBrief.Core.Cards.VersionReachKind.Unread, EquityBrief.Core.Cards.VersionReach.UnreadWords, EquityBrief.Core.Cards.VersionReach.UnreadWords),
             Count(null, "has no running revision's settings to read against", "have no running revision's settings to read against"),
         ];
         var said = parts.Where(part => part.Length > 0).ToArray();

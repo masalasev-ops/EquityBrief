@@ -172,7 +172,7 @@ public sealed partial class MarkRenderer
             var row = order.Row(setup);
             var rest = row[order.Ticker.Length..];
 
-            body.Append(FormattableString.Invariant($"<li data-ticker=\"{Escaped(order.Ticker)}\" data-family=\"{Escaped(order.Family)}\" data-listed=\"{DayOf(order.Listed)}\" data-price=\"{(order.Price is { } price ? price.ToString("0.00", CultureInfo.InvariantCulture) : "none")}\" data-close=\"{(order.LastClose is { } close ? close.ToString("0.00", CultureInfo.InvariantCulture) : "none")}\" data-last-day=\"{DayOf(order.LastDay)}\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(order.Ticker)}\">{Escaped(order.Ticker)}</a>{Escaped(rest)}</li>"));
+            body.Append(FormattableString.Invariant($"<li data-ticker=\"{Escaped(order.Ticker)}\" data-family=\"{Escaped(order.Family)}\" data-listed=\"{DayOf(order.Listed)}\" data-price=\"{(order.Price is { } price ? price.ToString("0.00", CultureInfo.InvariantCulture) : "none")}\" data-close=\"{(order.LastClose is { } close ? close.ToString("0.00", CultureInfo.InvariantCulture) : "none")}\" data-last-day=\"{DayOf(order.LastDay)}\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(order.Ticker)}\">{Escaped(order.Ticker)}</a>{Escaped(rest)}{(RevisionTags.For(order.Family, order.Listed, order: true) is { Length: > 0 } tag ? FormattableString.Invariant($" <span class=\"wo-revision\">{tag} {Escaped(RevisionTags.BuysInto(order.Family, order.Listed))}</span>") : string.Empty)}</li>"));
         }
 
         body.Append("</ol></div>");

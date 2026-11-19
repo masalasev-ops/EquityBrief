@@ -153,7 +153,7 @@ public static class RevisionScreen
             var price = waiting ? PlanScreen.Price(row) : row.Fill;
             int? left = waiting
                 ? ExchangeClosures.SessionsUntil(night, PlanScreen.LastDay(row.Listed, row.Order.Window))
-                : row.FilledOn is { } bought && ExchangeClosures.SessionsUntil(bought, night) is { } held ? Math.Max(0, row.Cap - held) : null;
+                : row.FilledOn is { } bought && EquityBrief.Core.Cards.PaperAccount.HeldDays(bought, night) is { } held ? Math.Max(0, row.Cap - held) : null;
             string Away(decimal? to, string what) =>
                 close is { } now && to is { } at && now > 0m ? FormattableString.Invariant($"{Math.Abs(Statistic.FromRatio((at / now) - 1m)) * 100:0.0}% {(at >= now ? "above" : "below")} the last close, {what}") : string.Empty;
             var standing = waiting
@@ -191,7 +191,7 @@ public static class RevisionScreen
         return plans;
     }
 
-    // Whether a registration states a plan its long test chose.
+    // Whether a registration states a plan the test of its buy and sell points chose.
     static bool Planned(CandidateRow row)
     {
         try
@@ -329,8 +329,9 @@ public static class RevisionScreen
             : "At the next open after " + sale + ". Where that night read no such price above it, at the next open after " + placed + ".";
     }
 
-    // The sentence beneath a running revision's take-profit row: the exit is the one its long test chose.
-    public const string ChosenExit = " This is the exit its long test chose, on the years 2005 to 2018.";
+    // The sentence beneath a running revision's take-profit row: the take-profit is the one the test of the plan's buy and sell
+    // points chose on the long ledger's years.
+    public static string ChosenExit { get; } = FormattableString.Invariant($" The test of its plan's buy and sell points chose this take-profit on the years {EquityBrief.Core.History.LongLedger.From.Year} to {EquityBrief.Core.History.LongLedger.Through.Year}.");
 
     static void Add<T>(Dictionary<string, List<T>> into, string key, T row)
     {

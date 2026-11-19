@@ -17,13 +17,15 @@ public static class VersionReach
 {
     public const string NarrowsWords = "narrows the running revision";
 
-    public const string WidensWords = "widens it";
+    public const string WidensWords = "can take trades the running revision cannot";
 
     public const string SoldDifferentlyWords = "the same picks, sold differently";
 
     public const string ReorderedWords = "the same picks, in another order";
 
-    public const string UnreadWords = "changes a setting whose reach is not read here";
+    // A setting whose direction the table does not know says nothing a variant's name does not, so its row draws no words for
+    // it; a line counting such variants says it could add trades or remove them.
+    public const string UnreadWords = "could add trades or remove them";
 
     // The kinds a setting is read as. A floor is a least the stock or the market must reach, a check turned on as 1 and off
     // as 0 among them: a higher value narrows. A ceiling is a most it may hold: a higher value widens. A cap counts the
@@ -196,13 +198,13 @@ public static class VersionReach
 
     static double Unbounded(double cap) => cap <= 0 ? double.PositiveInfinity : cap;
 
-    // A reach in the words a version's row draws.
-    public static string Words(VersionReachKind reach) => reach switch
+    // A reach in the words a version's row draws, none for a setting whose direction is not read.
+    public static string? Words(VersionReachKind reach) => reach switch
     {
         VersionReachKind.Narrows => NarrowsWords,
         VersionReachKind.Widens => WidensWords,
         VersionReachKind.SoldDifferently => SoldDifferentlyWords,
         VersionReachKind.Reordered => ReorderedWords,
-        _ => UnreadWords,
+        _ => null,
     };
 }

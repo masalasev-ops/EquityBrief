@@ -130,13 +130,16 @@ public static partial class PaperAccount
     // An open trade on the night, marked by the ratio of its stock's closes as the walk marks it, so a split moves nothing:
     // its stop tonight the plan's, a trailing plan's raised to the highest close since its listing night less the distance
     // it trails and never lowered; its result so far in the risk its plan's close put up and as a fraction of its buy; the
-    // sessions since its listing night; and its standing. A holding's is the words handed in. A trade whose fill opened past
-    // its stop or its target says so; otherwise it is near its target or near its stop within one typical move of either at
-    // the trade's own scale, the nearer where both are and the stop on a tie, and on track where neither is; and not read
-    // tonight where its close or its typical move is not.
+    // trading days it has been held, its buy's own session the first, as the walk counts its time limit from its fill, so an
+    // order that waited counts none of the days it waited; and its standing. A holding's is the words handed in. A trade whose fill opened past
+    // its stop or its target says so; one whose close tonight stands under its stop, the buy's own session's close among them,
+    // closed under it and sells at the next open, as the walk sells it once that open is stored; otherwise it is near its
+    // target or near its stop within one typical move of either at the trade's own scale, the nearer where both are and the
+    // stop on a tie, and on track where neither is; and not read tonight where its close or its typical move is not.
+    // see: A trade under a plan names the one exit its walk sells by on every page, read from its plan and never from a stored target
     public static PaperPosition Position(PaperTrade trade, DateOnly night, IReadOnlyList<DateOnly> sessions, Func<string, DateOnly, decimal?> close, double? typicalMove, string? holding = null)
     {
-        var held = ExchangeClosures.SessionsUntil(trade.ListedOn, night);
+        var held = HeldDays(trade.Bought, night);
         var book = trade.Stop is null;
         var shut = close(trade.Ticker, night);
 
@@ -160,10 +163,27 @@ public static partial class PaperAccount
             ? holding ?? HeavyweightStandings.NotRead
             : trade.Past == FillPast.Stop ? OpenedUnderStop
             : trade.Past == FillPast.Target ? OpenedOverTarget
+            : stop is { } under && price < under ? ClosedUnder(trade.Trail is not null && trade.Stop is { } own && price >= own ? UnderTrail : UnderStop, night)
             : Standing(price, stop, trade.Target, typicalMove is { } move ? move * Statistic.FromRatio(scale) : null);
 
         return new PaperPosition(now, price, stop, risks, Statistic.FromRatio((now / then) - 1m), held, standing);
     }
+
+    // The trading days a trade bought on a session has been held by the night, that session the first, as the walk counts
+    // its time limit from its fill; none where the calendar does not reach the span or the night comes before the buy.
+    // see: A trade under a plan names the one exit its walk sells by on every page, read from its plan and never from a stored target
+    public static int? HeldDays(DateOnly bought, DateOnly night) =>
+        night < bought ? null : ExchangeClosures.SessionsUntil(bought, night) is { } after ? after + 1 : null;
+
+    // An open trade whose close on the night stands under its stop: the stop it closed under, the night, and that it sells at
+    // the next open.
+    public const string SellsAtTheNextOpen = "sells at the next open";
+
+    public static string ClosedUnder(string under, DateOnly night) =>
+        FormattableString.Invariant($"{under} on {night:d MMM}; {SellsAtTheNextOpen}");
+
+    public static bool IsClosedUnder(string? standing) =>
+        standing is not null && standing.EndsWith(SellsAtTheNextOpen, StringComparison.Ordinal) && (standing.StartsWith(UnderStop, StringComparison.Ordinal) || standing.StartsWith(UnderTrail, StringComparison.Ordinal));
 
     // Near its stop or its target within one typical move, the nearer where both are and the stop on a tie; on track where
     // neither is; not read where no typical move is.

@@ -449,13 +449,14 @@ public partial class ReadSurface
         Assert.Contains("<a class=\"chip\" data-filter=\"bought\" href=\"#/paper?universe=400\" aria-pressed=\"true\">Open · 4</a>", page, StringComparison.Ordinal);
         Assert.Contains("<a class=\"chip\" data-filter=\"bought\" href=\"#/paper?universe=400&bought=closed\" aria-pressed=\"false\">Closed · 2</a>", page, StringComparison.Ordinal);
 
-        // O1 at 117, three under its target on a move of 4: near its target; 1.70 risks and 17 per cent, three sessions of
-        // its twenty since its Tuesday listing; its company named and its stock opening its chart.
+        // O1 at 117, three under its target on a move of 4: near its target; 1.70 risks and 17 per cent, four trading days of
+        // its twenty held, its Tuesday buy the first, as the walk counts its time limit from its fill; its company named and
+        // its stock opening its chart.
         var first = PaperRowOf(page, "<tr data-ticker=\"O1\"");
 
         Assert.Contains("data-standing=\"near its target\"", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"pb-stock\"><a href=\"#/chart/O1\">O1</a><span class=\"pb-co\" data-as-filed>Oak One Inc</span></td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\">100.00<span class=\"pb-day\">2026-09-29</span></td><td class=\"r num\">90.00</td><td class=\"r num\">120.00</td><td class=\"r num\">117.00<span class=\"pb-day\">3 of 20 trading days</span></td>", first, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">100.00<span class=\"pb-day\">2026-09-29</span></td><td class=\"r num\">90.00</td><td class=\"r num\">120.00</td><td class=\"r num\">117.00<span class=\"pb-day\">4 of 20 trading days</span></td>", first, StringComparison.Ordinal);
         Assert.Contains("<span class=\"gain\">+1.70</span> per $1 risked<span class=\"pb-day\"><span class=\"gain\">+17.0%</span></span>", first, StringComparison.Ordinal);
         Assert.Contains("<span class=\"pb-standing near-target\" data-standing=\"near its target\">Near its target</span>", first, StringComparison.Ordinal);
 
@@ -464,7 +465,7 @@ public partial class ReadSurface
 
         Assert.Contains("data-standing=\"near its stop\"", second, StringComparison.Ordinal);
         Assert.Contains("<span class=\"loss\">-0.80</span> per $1 risked<span class=\"pb-day\"><span class=\"loss\">-6.4%</span></span>", second, StringComparison.Ordinal);
-        Assert.Contains("46.80<span class=\"pb-day\">2 of 20 trading days</span>", second, StringComparison.Ordinal);
+        Assert.Contains("46.80<span class=\"pb-day\">3 of 20 trading days</span>", second, StringComparison.Ordinal);
 
         // O3 trails: its stop raised from 36 to 43 by its close of 47, its target none as it trails, and at 46 a move and a
         // half over its stop on a move of 2, on track.
@@ -715,10 +716,10 @@ public partial class ReadSurface
         Assert.DoesNotMatch("registered \\d{4}-\\d{2}-\\d{2}", text);
         Assert.Contains("<select data-merge-key=\"rule\" aria-label=\"The rule drawn below\"><option value=\"pullback\">Pullback</option><option value=\"breakout\" selected>Breakout</option>", page, StringComparison.Ordinal);
 
-        // The test that chose it, 2024 to 2026: its verdict in a sentence; better in three of three complete years as the
+        // The monthly test, 2024 to 2026: its verdict in a sentence; better in three of three complete years as the
         // test counted, and a box a year, 2024's three risks under its benchmark over 150 trades two hundredths a trade,
         // 2025's 12.5 over 140 nine, and 2026's five over 50 so far a tenth.
-        Assert.Contains("<span class=\"sh-lbl\">The test that chose it, 2024 to 2026</span>", history, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"sh-lbl\">The monthly test, 2024 to 2026</span>", history, StringComparison.Ordinal);
         Assert.Contains("Passed: over its test years it beat the easy alternative by more than luck alone would.", history, StringComparison.Ordinal);
         Assert.Contains("Better in 3 of 3 complete years.", history, StringComparison.Ordinal);
         Assert.Contains("<div class=\"sy worse\" data-year=\"2024\" data-word=\"Worse\" data-edge=\"-0.02\"", history, StringComparison.Ordinal);

@@ -155,7 +155,7 @@ public sealed partial class SinglePageApp
         {
             region.Append(Cards.Computed(
                 MarkRenderer.FamilyName(chosen.Family),
-                MarkRenderer.CardSummary("Two records, never added together: its trades since it started running, and the test over past years that chose it.") + marks.HowItHasDone(page, chosen),
+                MarkRenderer.CardSummary("Two records, never added together: its trades since it started running, and the monthly test that judges it over past years.") + marks.HowItHasDone(page, chosen),
                 title: "How " + name.ToLowerInvariant() + " has done",
                 stamp: Cards.Night(night),
                 region: "paper-scorecard"));

@@ -50,6 +50,13 @@ public static class RevisionTags
             ? revision.Name + " started running on " + RevisionView.Day(revision.From)
             : "It started running on " + RevisionView.Day(registered);
 
+    // The account an order of a family listed on a night buys into: the running revision's, or for an order an earlier
+    // revision placed that revision's own, apart from the running revision's; nothing where no revision is read.
+    public static string BuysInto(string family, DateOnly listed) =>
+        At(family, listed) is not { } revision ? string.Empty
+        : revision.Running ? "Bought in " + revision.Name.ToLowerInvariant() + "'s account."
+        : "Bought in " + revision.Name.ToLowerInvariant() + "'s own account, not the running revision's.";
+
     public static string PlacedBy(RevisionView revision) => "Placed by " + revision.Name.ToLowerInvariant() + ", ran " + RevisionView.Ran(revision.From, revision.Until!.Value);
 
     sealed class Scope(Action restore) : IDisposable

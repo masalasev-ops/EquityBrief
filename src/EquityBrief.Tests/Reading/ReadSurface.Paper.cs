@@ -332,7 +332,7 @@ public partial class ReadSurface
         // over its four trades, three decided, the running revision taking none of them.
         Assert.StartsWith($"<tr class=\"vrow\" data-account=\"{key}\" data-standing=\"variant\" data-trades=\"4\"", row, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\">4</td><td class=\"r num\">4</td>", row, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-return=\"0.009\">", row, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num vres\" data-return=\"0.009\">", row, StringComparison.Ordinal);
         Assert.Contains($"<span class=\"pill\">{RuleVerdict.NotTested}</span>", row, StringComparison.Ordinal);
         Assert.Contains("too few trades (3 of 300)", row, StringComparison.Ordinal);
 
@@ -355,6 +355,15 @@ public partial class ReadSurface
         // out, so nothing is folded beneath what the system bought; and reading the pages deleted no stored trade and no
         // registration.
         Assert.Contains("data-since=\"2026-01-02\"", Regex.Match(page, "<a class=\"revision-tile\" data-family=\"breakout\"[^>]*>").Value, StringComparison.Ordinal);
+
+        // On each tile the rule's own return is the one large figure, and its index's fund over the same days stands directly
+        // beneath it in the tile's small type, before the revision's tag and its counts.
+        Assert.All(Regex.Matches(page, "<a class=\"revision-tile\".*?</a>", RegexOptions.Singleline).Select(match => match.Value), tile =>
+            Assert.Matches(
+                tile.Contains("pt-fund", StringComparison.Ordinal)
+                    ? "</span><b>[^<]*(<span[^>]*>[^<]*</span>)?[^<]*</b><div class=\"pt-fund\"[^>]*>.*?</div><span class=\"rev-tile\">"
+                    : "</span><b>[^<]*(<span[^>]*>[^<]*</span>)?[^<]*</b><span class=\"rev-tile\">",
+                tile));
         Assert.DoesNotContain("<details class=\"paper-earlier\" data-earlier=\"1", page, StringComparison.Ordinal);
         Assert.DoesNotContain("<details class=\"paper-earlier\" data-earlier=\"2", page, StringComparison.Ordinal);
         Assert.Equal(trades, Strings(store, "SELECT ticker || session_date FROM family_trade ORDER BY rowid;"));

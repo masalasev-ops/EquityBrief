@@ -20212,3 +20212,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    item 2's registration: each of the 57 variants and the 16 book variants registered again on its running revision's
             plan with its one change, its record replayed from the restart with the replayed sessions marked, brought to the
             operator as its own change; until then each variant's row says every setting it differs in.
+
+### 23.10 - correction: a trade closing under its stop says it sells at the next open, trading days from the fill, and each test behind a revision with its own years   2026-11-19
+
+Corrects:   the card naming the monthly test, which chose nothing, as "The test that chose it" and the plan test as "its long
+            test"; an open trade whose close stood under its stop drawn as near it; trading days counted from the listing
+            night on Paper trading and from the session after the fill on the stock's page, where the walk counts its time
+            limit from the fill; a variant's row saying "widens it" or "changes a setting whose reach is not read here"; a
+            tile's fund line drawn larger than its rule's return; Past picks' waiting orders carrying no revision and no
+            account.
+Ruled:      the operator's second review of 2026-11-19 and their order on its report, word for word in
+            `prompts/2026-11-19-23.10-review-before-719-merges.md`.
+Built:      items 3 to 7 and the card's wording of item 2. A trade whose close tonight stands under its stop, its buy's own
+            session's close among them, reads "Closed under its stop on 18 Nov; sells at the next open", the walk reading that
+            close and selling at the open after it once stored; trading days held counted from the fill, its own session the
+            first, on Paper trading and the stock's page, so RL reads 1 of 63 and 62 left; a variant's reach in a plain sentence
+            and none where it is not read; the result a line each and "On past years" narrow; the tile's return the large
+            figure with the fund beneath; Past picks' "How the running revisions' picks have done", its lede and key in
+            take-profit and trading days, every waiting order's revision and the account that buys it; the card's line naming
+            the years that chose its settings and its take-profit and those the monthly test judges it over, its long history
+            named only where its long test walked a trade before 2019, the plain line where it walked none, and the S&P 500
+            heavyweights' fund-holdings line. The architecture's sections 15.17 and 15.21 and Figure 15.6, their claim keys,
+            the guide and the changelog.
+Measured:   the replay of main and this branch over the store copy: 153 accounts and 2,110 trades on the three indexes, every
+            running revision's trades the same stocks, days, prices, stops, ends and results; one variant's open trade, WST in
+            the S&P 600 drift's next-open variant, drawn with the stop its plan's walk sells by, 23.89 for the listing's 20.69,
+            its sale unchanged.
+Tests:      4 new: a close under its stop on the buy's own session and the walk's sale after it; trading days from the fill;
+            every waiting order's revision and account; the card's years and its long lines. 5 rewritten to the new words and
+            counts.
+Claims:     1632, unchanged; 28 claim keys renamed with section 15.17's card.
+Pins:       none moved.
+Mutated:    the rule: each new behaviour's own line. m3 the close-under-stop standing never chosen: red at its test, line 25;
+            m4 the fill's own session left out of the trading days: red at its test, line 44; each run filtered to its test and
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3836 of 3836 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the long test's correction, on its own branch; item 2's registration after the merge, as before.
