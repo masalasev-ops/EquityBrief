@@ -38,8 +38,9 @@ public sealed record LoopApplyOutcome(IReadOnlyList<LoopApplication> Application
 // background where the family holds nine. A change to the S&P 500's pullback's hooks is written as a stored setting on
 // the S&P 500 alone, which the family's list reads, and a shape move of it opens the swing filter's next version through
 // the shape command on the same nights a registration is made. A change to the S&P 500's sector heavyweights' book, and
-// one to a family keeping no stored setting before its freeze, is refused with its reason. Every answer is one row and
-// none is written twice. It reads no market data, makes no request and calls no model.
+// one to a family keeping no stored setting before its freeze, is refused with its reason, and from 24.2 every one inside
+// the rule freeze. Every answer is one row and none is written twice. It reads no market data, makes no request and calls
+// no model.
 // see: An approved change is applied by the night's own build on the index it was approved on alone
 // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
 // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
@@ -174,6 +175,15 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         var registrar = new CandidateRegistrar(clock, databaseFile);
         var applications = new List<LoopApplication>();
         var answered = new List<(Waiting One, bool Applied, string Words, LoopChange? Written)>();
+
+        // Inside the rule freeze every approval and restore waiting is answered refused, its family left as it stands and
+        // nothing registered or stored, where the day the step runs or the night's session falls inside it.
+        // see: An approval inside the rule freeze is refused and replaces no live rule
+        if (answers && (RuleFreezeDates.Holds(DateOnly.FromDateTime(clock.UtcNow.UtcDateTime)) || (night is { } frozenOn && RuleFreezeDates.Holds(frozenOn))))
+        {
+            answered.AddRange(waiting.Select(one => (one, false, RuleFreezeDates.ApprovalRefused, (LoopChange?)null)));
+            waiting.Clear();
+        }
 
         // The S&P 500's breakout and drift, each registered as the family's live rule with its setting written beside the
         // registration in one transaction, and from 21.5 every family whose live rule stands registered on its index

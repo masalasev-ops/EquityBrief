@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Api.Passes;
 using EquityBrief.Core.Loop;
+using RuleFreezeDates = EquityBrief.Core.Candidates.RuleFreezeDates;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Api.Reading;
@@ -288,6 +289,11 @@ public sealed partial class ReadApi
             return new RequestWritten(true, "Declined, with your reason. It changes nothing, and the proposal is put to you again only once a later run reads a new complete block and it passes with that block.");
         }
 
+        if (FrozenUntil() is not null)
+        {
+            return new RequestWritten(false, $"Nothing was approved: {RuleFreezeDates.ApprovalRefused}. Decline still records your reason.");
+        }
+
         if (!held.Passed || held.Change is null)
         {
             return new RequestWritten(false, held.Passed
@@ -334,6 +340,12 @@ public sealed partial class ReadApi
                 : "Approved. The change is applied before the next night, on this index alone, and the family reads it from that night on.");
     }
 
+    // The day the rule freeze ends while the day the clock reads falls inside it, none once it has ended, which refuses an
+    // approval and a restore and which the Monthly check-up says in Approve's place.
+    // see: An approval inside the rule freeze is refused and replaces no live rule
+    public DateOnly? FrozenUntil() =>
+        RuleFreezeDates.Holds(DateOnly.FromDateTime(clock.UtcNow.UtcDateTime)) ? RuleFreezeDates.Until : null;
+
     // From 21.5 whether the family's live rule stands registered on the index, which a family keeping no stored setting is
     // changed through alone, read off the register as it stands.
     // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
@@ -352,6 +364,11 @@ public sealed partial class ReadApi
     // the family's newest period is not flagged, and where no apply could apply it.
     public async Task<RequestWritten> RestoreAsync(string index, string family, long setting)
     {
+        if (FrozenUntil() is not null)
+        {
+            return new RequestWritten(false, $"Nothing was restored: {RuleFreezeDates.ApprovalRefused}.");
+        }
+
         if (LoopDecisions.Refusal(index, family) is { } refused)
         {
             return new RequestWritten(false, $"Nothing was restored: {refused}.");

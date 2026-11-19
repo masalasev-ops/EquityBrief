@@ -4256,7 +4256,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "An approval that cannot be applied")] = new Scoped(
             Verdict.Pass,
-            "the apply step refusing with why an S&P 500 rule's change, a book's, a family's no approval reaches, a proposal stating no change and a restore naming no change the family holds, writing no setting; and from 21.5 the fundamentals-first family's change refused on every index, a frozen swing rule's setting refused while its hooks register the live rule again, the S&P 400's frozen breakout, the S&P 500's dip and its quality book each registering its live rule again at the change over a register shaped as the operator's, and an S&P 500 family at nine taking the change with the rule it replaces in the background",
+            "the apply step refusing with why an S&P 500 rule's change, a book's, a family's no approval reaches, a proposal stating no change and a restore naming no change the family holds, writing no setting; and from 21.5 the fundamentals-first family's change refused on every index, a frozen swing rule's setting refused while its hooks register the live rule again, the S&P 400's frozen breakout, the S&P 500's dip and its quality book each registering its live rule again at the change over a register shaped as the operator's, and an S&P 500 family at nine taking the change with the rule it replaces in the background; and from 24.2 the same three changes refused inside the rule freeze with its words and nothing registered or stored, on a night whose day falls inside it and on the night of its last session run after midnight UTC, and applied on the first night after it",
             ByExpectations),
         [CheckReach.Key(FailureTable, "An alarm on a rule")] = new Scoped(
             Verdict.Pass,
@@ -4264,7 +4264,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LoopPage, LoopWord)] = new Scoped(
             Verdict.Pass,
-            "read back off the rendered page over constructed stores: the two presses on the newest run's passing proposal to its own route, each word given with what the apply step did with it, a book's and an S&P 500 rule's offering no press and saying why, and each press writing one decision under the page's header or refusing with nothing written",
+            "read back off the rendered page over constructed stores: the two presses on the newest run's passing proposal to its own route, each word given with what the apply step did with it, a book's and an S&P 500 rule's offering no press and saying why, and each press writing one decision under the page's header or refusing with nothing written; and from 24.2 on the rule freeze's last day no Approve and no restore drawn with the freeze's line in their place, both presses refused with nothing written and a decline written, and on the day it ends both offered and written",
             ByReadSurface),
         [CheckReach.Key(LoopPage, LoopDecided)] = new Scoped(
             Verdict.Pass,
