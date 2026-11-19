@@ -454,12 +454,18 @@ public sealed partial class MarkRenderer
     // take-profit on the years before 2019 or the heavyweights' on 2019 to 2022, and the monthly test judges it over its test
     // years; the long history named only where its long test walked a trade before 2019.
     // see: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+    // The years the heavyweights' books' test chose their stop and take-profit on, their history holding no month before 2019,
+    // as `BookExits` states them.
+    public const int HeavyweightsExitFrom = 2019;
+
+    public const int HeavyweightsExitThrough = 2022;
+
     public static string ChosenOn(string family, IReadOnlyList<int> testYears, PaperLongVerdict? longRecord)
     {
         var standingFrom = EquityBrief.Core.History.LongLedger.StandingFrom.Year;
         var settings = testYears.Count > 0 ? FormattableString.Invariant($"Its settings were chosen on {standingFrom} to {testYears.Max()}.") : FormattableString.Invariant($"Its settings were chosen on the years from {standingFrom}.");
         var exit = family == HeavyweightRule.Name
-            ? FormattableString.Invariant($" Its stop and take-profit were chosen on {EquityBrief.Core.Loop.BookExits.HeavyweightsChosenFrom} to {EquityBrief.Core.Loop.BookExits.HeavyweightsChosenThrough}.")
+            ? FormattableString.Invariant($" Its stop and take-profit were chosen on {HeavyweightsExitFrom} to {HeavyweightsExitThrough}.")
             : family is QualityRule.Name or ImprovingRule.Name
                 ? FormattableString.Invariant($" Its stop and take-profit were chosen on the years before {standingFrom}.")
                 : FormattableString.Invariant($" Its take-profit was chosen on {EquityBrief.Core.History.LongLedger.From.Year} to {EquityBrief.Core.History.LongLedger.Through.Year}.");
