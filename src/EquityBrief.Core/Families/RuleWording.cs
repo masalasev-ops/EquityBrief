@@ -115,24 +115,24 @@ public static class RuleWording
     {
         public const string Words = "release better, outlook not cut";
 
-        public const string HistoryOpen = "the reading version's history read is not complete";
+        public const string HistoryOpen = "the release reading's history read is not complete";
 
-        public const string NotHanded = "no release reading was handed for the print under the version";
+        public const string NotHanded = "no release reading was handed for the print under its settings";
 
-        public const string NotHeldOnTheIndex = "no reading of its release held under its rule's reading version";
+        public const string NotHeldOnTheIndex = "no reading of its release held under its rule's release reading";
 
         public const string FailedOnTheIndex = "its release not read better with its outlook not cut";
 
         public static string Handed(long version, int prints, int read) =>
-            Invariant($"reading version {version}: {prints} print(s) inside the window, {read} read");
+            Invariant($"release reading {version}: {prints} print(s) inside the window, {read} read");
 
         public static string NoReading(long version, string why) =>
-            Invariant($"no release reading under reading version {version}: {why}");
+            Invariant($"no release reading under release reading {version}: {why}");
 
         public static string Reads(string results, string outlook, long version, bool passed) =>
             passed
-                ? Invariant($"the release reads results {results} and outlook {outlook}, under reading version {version}")
-                : Invariant($"the release reads results {results} and outlook {outlook}, under reading version {version}, and the variant lists only results better with an outlook not lowered or withdrawn");
+                ? Invariant($"the release reads results {results} and outlook {outlook}, under release reading {version}")
+                : Invariant($"the release reads results {results} and outlook {outlook}, under release reading {version}, and the variant lists only results better with an outlook not lowered or withdrawn");
     }
 
     public static class Estimate
@@ -1261,7 +1261,7 @@ public static class RuleWording
 
         public const string NoRelease = "no release the SEC accepted from the print's window is readable on the night";
 
-        public const string NotRead = "the release is not yet read under the reading version";
+        public const string NotRead = "the release is not yet read under its release reading";
 
         public const string RefusedWhy = "the release's reading was refused";
 

@@ -74,6 +74,15 @@ public sealed partial class SinglePageApp
         return html.Append("</div>").ToString();
     }
 
+    static string VariantsSaid(IReadOnlyList<PaperAccountView> accounts, PaperAccountView head, string name)
+    {
+        var count = accounts.Count(account => account.Family == head.Family && account.Standing == PaperAccountView.Variant);
+
+        return count == 0
+            ? Invariant($"{MarkRenderer.FamilyName(head.Family)} has no variant of {name.ToLowerInvariant()} trading on paper.")
+            : Invariant($"{count} {(count == 1 ? "variant" : "variants")} of {name.ToLowerInvariant()} {(count == 1 ? "trades" : "trade")} on paper, each with one thing changed.");
+    }
+
     // The link key Past picks keeps the chosen trade log under.
     public const string PaperScreenAccountKey = "account";
 
@@ -139,14 +148,14 @@ public sealed partial class SinglePageApp
         {
             region.Append(Cards.Computed(
                 MarkRenderer.FamilyName(chosen.Family),
-                marks.HowItHasDone(page, chosen),
+                MarkRenderer.CardSummary("Two records, never added together: its trades since it started running, and the test over past years that chose it.") + marks.HowItHasDone(page, chosen),
                 title: "How " + name.ToLowerInvariant() + " has done",
                 stamp: Cards.Night(night),
                 region: "paper-scorecard"));
 
             region.Append(Cards.Computed(
                 MarkRenderer.FamilyName(chosen.Family),
-                marks.VariantsOf(page, chosen, drawnLink) + MarkRenderer.EarlierRevisionsOf(page, chosen, drawnLink),
+                MarkRenderer.CardSummary(VariantsSaid(accounts, chosen, name)) + marks.VariantsOf(page, chosen, drawnLink) + MarkRenderer.EarlierRevisionsOf(page, chosen, drawnLink),
                 title: "Variants of " + name.ToLowerInvariant(),
                 stamp: Cards.Night(night),
                 region: "paper-variants"));
@@ -155,7 +164,7 @@ public sealed partial class SinglePageApp
         {
             region.Append(Cards.Computed(
                 MarkRenderer.FamilyName(chosen.Family),
-                MarkRenderer.EarlierRevisionsOf(page, chosen, drawnLink),
+                MarkRenderer.CardSummary(Invariant($"{MarkRenderer.FamilyName(chosen.Family)} ran {chosen.Revisions.Count(one => !one.Running)} earlier {(chosen.Revisions.Count(one => !one.Running) == 1 ? "revision" : "revisions")} before the one running now.")) + MarkRenderer.EarlierRevisionsOf(page, chosen, drawnLink),
                 title: "Earlier revisions of " + MarkRenderer.FamilyName(chosen.Family),
                 stamp: Cards.Night(night),
                 region: "paper-variants"));

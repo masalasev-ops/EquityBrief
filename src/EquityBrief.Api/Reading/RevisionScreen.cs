@@ -136,9 +136,9 @@ public static class RevisionScreen
                 ? ExchangeClosures.SessionsUntil(night, PlanScreen.LastDay(row.Listed, row.Order.Window))
                 : row.FilledOn is { } bought && ExchangeClosures.SessionsUntil(bought, night) is { } held ? Math.Max(0, row.Cap - held) : null;
             string Away(decimal? to, string what) =>
-                close is { } now && to is { } at && now > 0m ? FormattableString.Invariant($"{Math.Abs((double)((at / now) - 1m)) * 100:0.0}% {(at >= now ? "above" : "below")} the last close, {what}") : string.Empty;
+                close is { } now && to is { } at && now > 0m ? FormattableString.Invariant($"{Math.Abs(Statistic.FromRatio((at / now) - 1m)) * 100:0.0}% {(at >= now ? "above" : "below")} the last close, {what}") : string.Empty;
             var standing = waiting
-                ? price is { } buy && close is { } last && buy > 0m ? FormattableString.Invariant($"The last close stands {Math.Abs((double)((last / buy) - 1m)) * 100:0.0}% {(last >= buy ? "above" : "below")} its buy price.") : "It buys at the next open."
+                ? price is { } buy && close is { } last && buy > 0m ? FormattableString.Invariant($"The last close stands {Math.Abs(Statistic.FromRatio((last / buy) - 1m)) * 100:0.0}% {(last >= buy ? "above" : "below")} its buy price.") : "It buys at the next open."
                 : string.Join("; ", new[] { Away(stop, "its stop"), Away(take, "its take-profit") }.Where(part => part.Length > 0)) is { Length: > 0 } said ? Capitalise(said) + "." : "Held.";
 
             rows.Add(new NameTradeView(row.Family, revision?.Tag ?? "before its rule was first registered", waiting, row.Listed, row.FilledOn, price, stop, take, left, close, standing));

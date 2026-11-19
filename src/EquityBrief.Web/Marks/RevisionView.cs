@@ -61,7 +61,7 @@ public sealed record WaitingRowView(
     string Revision)
 {
     // How far the night's close stands above the buy price, as a fraction; none where either is not read.
-    public double? AboveBuy => BuyPrice is { } buy && buy > 0m && LastClose is { } close ? (double)((close / buy) - 1m) : null;
+    public double? AboveBuy => BuyPrice is { } buy && buy > 0m && LastClose is { } close ? EquityBrief.Core.Prices.Statistic.FromRatio((close / buy) - 1m) : null;
 }
 
 // An order that left a rule's waiting list in the last five trading days: its stock, the session it left on, whether it was

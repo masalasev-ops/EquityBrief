@@ -390,7 +390,7 @@ public sealed partial class MarkRenderer
             var since = liveSince.GetValueOrDefault(tile.Family);
             var first = since is null ? null : firstLive?.GetValueOrDefault(tile.Family) ?? since;
             var badge = first is { } live ? FormattableString.Invariant($"Live since {live:d MMM yyyy}") : "Not yet tested";
-            var version = since is { } registered && first != since ? FormattableString.Invariant($"<span class=\"tile-version\">This version since {registered:d MMM yyyy}{RuleFreeze.Beside(registered)}; earlier trades kept.</span>") : string.Empty;
+            var version = since is { } registered && first != since ? FormattableString.Invariant($"<span class=\"tile-version\">{RevisionTags.At(tile.Family, DateOnly.MaxValue)?.Tag ?? "Running since " + registered.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)}{RuleFreeze.Beside(registered)}; earlier revisions' trades kept.</span>") : string.Empty;
 
             body.Append(Invariant, $"<button type=\"button\" class=\"setup-tile fam-edge\" data-family=\"{Escaped(tile.Family)}\" data-card=\"{Escaped(tile.Family)}\" data-count=\"{tile.Count}\" data-state=\"{Escaped(tile.State)}\">");
             body.Append(Invariant, $"<span class=\"tile-top\"><span class=\"fam-tag\" data-family=\"{Escaped(tile.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(tile.Family)}\"></span>{Escaped(tile.Label)}</span><span class=\"status-pill {(since is null ? "provisional" : "live")}\">{Escaped(badge)}</span></span>");
@@ -624,7 +624,8 @@ public sealed partial class MarkRenderer
         ("Typical day's move", "How much this stock usually moves in a day. Measuring jumps and distances in these units makes calm and jumpy stocks comparable."),
         ("Live", "The setup's settings were chosen from years of history and fixed; its record now counts only the nights after that."),
         ("Not yet tested", "Running on starting settings while its history test is done. Its picks count toward nothing yet."),
-        ("Version", "The same setup with one thing changed, run in the background so it can be compared fairly with the live one. A version is never tonight's pick."),
+        ("Revision", "A rule changes only through a new revision, numbered, one running at a time, each with the dates it ran."),
+        ("Variant", "The revision running now with one thing changed, traded on paper beside it so the two can be compared fairly. A variant is never tonight's pick."),
         ("One stock, one trade", "A stock already bought on an earlier night is not bought again until that trade ends, across every setup on every index."),
         ("The business", "How the company's reported quarters read: improving, steady or getting worse, from sales and margins. It orders nothing and removes no pick."),
         ("Quiet night", "A night a setup finds nothing. Each setup shows how long its quiet runs usually last, so a long one stands out."),
@@ -637,8 +638,8 @@ public sealed partial class MarkRenderer
     {
         var body = new StringBuilder();
 
-        // From 22.17 the read-only copy's words leave out a version and a stock one step short, which it draws none of.
-        (string Term, string Meaning)[] words = [.. TonightWords.Where(word => !Copying || word.Term is not ("Version" or "One step short"))];
+        // The read-only copy's words leave out a variant and a stock one step short, which it draws none of.
+        (string Term, string Meaning)[] words = [.. TonightWords.Where(word => !Copying || word.Term is not ("Variant" or "One step short"))];
 
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>The {words.Length} words this page uses most, each with what it means here.</p>");
         body.Append("<dl class=\"gloss tonight-words\">");

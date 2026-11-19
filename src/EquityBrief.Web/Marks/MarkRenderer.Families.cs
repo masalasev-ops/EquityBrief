@@ -594,11 +594,11 @@ public sealed partial class MarkRenderer
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     public string FamilyCardHead(FamilyCardView card, string? about = null, string? count = null)
     {
-        var (pill, pillClass, pillTitle) = Pill(card.LiveSince, card.RuleChoice);
+        var (pill, pillClass, pillTitle) = Pill(card.Family, card.LiveSince, card.RuleChoice);
         var variant = card.RuleChoice is { Chosen.Live: false } chosen ? chosen : null;
 
         count ??= variant is not null
-            ? (variant.Picks?.Count ?? 0) switch { 0 => "This version finds no pick tonight", 1 => "1 pick under this version", var many => Formatted($"{many} picks under this version") }
+            ? (variant.Picks?.Count ?? 0) switch { 0 => "This variant finds no pick tonight", 1 => "1 pick under this variant", var many => Formatted($"{many} picks under this variant") }
             : card.Picks.Count switch { 0 => "No picks tonight", 1 => "1 pick tonight", var many => Formatted($"{many} picks tonight") };
         var body = new StringBuilder();
 
@@ -617,11 +617,11 @@ public sealed partial class MarkRenderer
 
     // A card's standing as a pill: a chosen variant's dashed outline, the live rule's slate with the day it went live under
     // the pointer, or the provisional rule's amber.
-    static (string Words, string Class, string? Title) Pill(DateOnly? liveSince, RuleView? rule) =>
+    static (string Words, string Class, string? Title) Pill(string family, DateOnly? liveSince, RuleView? rule) =>
         rule is { Chosen.Live: false } variant
-            ? ("A version being tested", "variant", variant.Chosen.Rule)
+            ? ("A variant being tested", "variant", variant.Chosen.Rule)
             : liveSince is { } since
-                ? (FormattableString.Invariant($"This version since {since:d MMM yyyy}{RuleFreeze.Beside(since)}"), "live", null)
+                ? ((RevisionTags.At(family, DateOnly.MaxValue)?.Tag ?? FormattableString.Invariant($"Running since {since:d MMM yyyy}")) + RuleFreeze.Beside(since), "live", null)
                 : ("Not yet tested", "provisional", EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus);
 
     // Whether a card draws folded to one line: it lists nothing tonight and no variant is chosen on it.
@@ -737,7 +737,7 @@ public sealed partial class MarkRenderer
 
         if (variant is not null)
         {
-            body.Append(Invariant, $"<div class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\"><p class=\"band-head\">A version being tested, not tonight's picks</p><p>{Escaped(VersionName(variant.Chosen))}</p><p class=\"band-note\">It runs every night beside the live setup with its own paper account. It replaces the live setup only if it proves better over enough trades and you approve it on the Monthly check-up.</p></div>");
+            body.Append(Invariant, $"<div class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\"><p class=\"band-head\">A variant being tested, not tonight's picks</p><p>{Escaped(VersionName(variant.Chosen))}</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better over enough trades and you approve it on the Monthly check-up.</p></div>");
             body.Append(ShareLine(variant.Share, "picks"));
             body.Append(VariantPicks(card.Family, variant.Picks ?? [], card.Numbers));
         }
@@ -807,7 +807,7 @@ public sealed partial class MarkRenderer
         {
             var picked = variant.Picks ?? [];
 
-            return Formatted($"<p class=\"card-summary\" data-summary>{Escaped(picked.Count == 0 ? "This version finds no pick tonight." : (picked.Count == 1 ? "This version would buy 1 stock tonight: " : Formatted($"This version would buy {picked.Count} stocks tonight: ")) + string.Join(", ", picked.Select(pick => pick.Ticker)) + ".")}</p>");
+            return Formatted($"<p class=\"card-summary\" data-summary>{Escaped(picked.Count == 0 ? "This variant finds no pick tonight." : (picked.Count == 1 ? "This variant would buy 1 stock tonight: " : Formatted($"This variant would buy {picked.Count} stocks tonight: ")) + string.Join(", ", picked.Select(pick => pick.Ticker)) + ".")}</p>");
         }
 
         if (card.Picks.Count > 0)
@@ -855,11 +855,13 @@ public sealed partial class MarkRenderer
         return said;
     }
 
-    // A version's name by what it changes, from the settings it differs from the live setup on.
+    // A variant's name by what it changes, from the settings it differs from the running revision on.
+    const string VariantPrefix = "Variant: ";
+
     static string VersionName(RuleChoiceView choice) =>
         choice.Live
-            ? choice.Tab == "Provisional" ? "The setup as it runs, not yet tested" : "The live setup"
-            : "Version: " + ReaderWords.Plain(System.Text.RegularExpressions.Regex.Replace(choice.Tab ?? choice.Rule, @"^V\d+ · ", string.Empty).Replace(" · ", ", ", StringComparison.Ordinal));
+            ? choice.Tab == "Provisional" ? "The setup as it runs, not yet tested" : "The revision running now"
+            : VariantPrefix + ReaderWords.Plain(System.Text.RegularExpressions.Regex.Replace(choice.Tab ?? choice.Rule, @"^V\d+ · ", string.Empty).Replace(" · ", ", ", StringComparison.Ordinal));
 
     // Every version beside the live setup, each by what it changes, with the press choosing it.
     static string VersionsSideBySide(RuleView rule)
@@ -867,12 +869,12 @@ public sealed partial class MarkRenderer
         var body = new StringBuilder();
         var versions = rule.Choices.Where(choice => !choice.Live).ToArray();
 
-        body.Append(Invariant, $"<details class=\"fold fam-versions\" data-versions=\"{versions.Length}\"><summary>{(versions.Length == 1 ? "The 1 version being tested" : Formatted($"All {versions.Length} versions being tested, side by side"))}</summary><div class=\"fold-b\">");
-        body.Append("<p class=\"versions-said\">Each runs every night beside the live setup with its own paper account, and none is tonight's pick. Choose one in Showing above to draw what it would buy tonight; its record is on Paper trading.</p><ul class=\"versions\">");
+        body.Append(Invariant, $"<details class=\"fold fam-versions\" data-versions=\"{versions.Length}\"><summary>{(versions.Length == 1 ? "The 1 variant being tested" : Formatted($"All {versions.Length} variants being tested, side by side"))}</summary><div class=\"fold-b\">");
+        body.Append("<p class=\"versions-said\">Each runs every night beside the revision running now, on paper only, and none is tonight's pick. Choose one in Showing above to draw what it would buy tonight; its record is on Paper trading.</p><ul class=\"versions\">");
 
         foreach (var choice in versions)
         {
-            body.Append(Invariant, $"<li data-variant=\"{(choice.Variant is { } number ? number.ToString(Invariant) : "none")}\"{(choice.Slug == rule.Chosen.Slug ? " class=\"current\"" : string.Empty)}>{Escaped(VersionName(choice)[("Version: ").Length..])}</li>");
+            body.Append(Invariant, $"<li data-variant=\"{(choice.Variant is { } number ? number.ToString(Invariant) : "none")}\"{(choice.Slug == rule.Chosen.Slug ? " class=\"current\"" : string.Empty)}>{Escaped(VersionName(choice)[VariantPrefix.Length..])}</li>");
         }
 
         body.Append("</ul></div></details>");
@@ -905,7 +907,7 @@ public sealed partial class MarkRenderer
         }
         else
         {
-            body.Append("<p class=\"record-said\">No record is drawn here tonight: a pick's card states the setup's record, and every version's is on Paper trading.</p>");
+            body.Append("<p class=\"record-said\">No record is drawn here tonight: a pick's card states the setup's record, and every revision's and variant's is on Paper trading.</p>");
         }
 
         var progress = card.Progress is { } held
@@ -1072,7 +1074,7 @@ public sealed partial class MarkRenderer
     {
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<div class=\"rule-view\"><label for=\"rule-{Escaped(family)}\">Showing</label> <select id=\"rule-{Escaped(family)}\" class=\"rule-select\" data-rule-choice=\"{Escaped(family)}\" aria-label=\"The version this card is drawn by\">");
+        body.Append(Invariant, $"<div class=\"rule-view\"><label for=\"rule-{Escaped(family)}\">Showing</label> <select id=\"rule-{Escaped(family)}\" class=\"rule-select\" data-rule-choice=\"{Escaped(family)}\" aria-label=\"The revision or variant this card is drawn by\">");
 
         foreach (var choice in rule.Choices)
         {
@@ -1122,7 +1124,7 @@ public sealed partial class MarkRenderer
 
         static string Named(IReadOnlyList<string> tickers) => tickers.Count == 0 ? "none" : string.Join(", ", tickers);
 
-        var against = share.Against == "live" ? "the live setup's" : "the starting setup's";
+        var against = share.Against == "live" ? "the running revision's" : "the starting setup's";
 
         return Formatted($"<p class=\"rule-share\" data-shared=\"{Escaped(string.Join(",", share.Shared))}\" data-added=\"{Escaped(string.Join(",", share.Added))}\" data-dropped=\"{Escaped(string.Join(",", share.Dropped))}\">")
             + Escaped(FormattableString.Invariant($"Beside {against} {(what == "picks" ? share.Of : "holdings")} tonight, it shares {Named(share.Shared)}, adds {Named(share.Added)} and drops {Named(share.Dropped)}."))
@@ -1167,7 +1169,7 @@ public sealed partial class MarkRenderer
     {
         if (picks.Count == 0)
         {
-            return "<p class=\"degraded variant-empty\" data-picks=\"0\">This version would buy nothing tonight.</p>";
+            return "<p class=\"degraded variant-empty\" data-picks=\"0\">This variant would buy nothing tonight.</p>";
         }
 
         var body = new StringBuilder();

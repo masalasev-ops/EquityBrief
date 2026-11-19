@@ -188,7 +188,7 @@ public sealed partial class SinglePageApp
             .Select(row => "Tonight " + row.Groups[2].Value + " " + row.Groups[1].Value),
     ];
 
-    public const string FootLine = "Want every number, every rule and every version being tested?";
+    public const string FootLine = "Want every number, every rule and every variant being tested?";
 
     // From 22.17 the foot's line on the read-only copy, which draws no version.
     public const string CopyFootLine = "Want every pick with its plan, and how each rule has done?";
@@ -749,7 +749,7 @@ public sealed partial class SinglePageApp
 
     // The system's every trade, apart from the account and labelled.
     public static string SystemLine(HomePast past) =>
-        Invariant($"All versions since {past.Since.ToString("d MMM", CultureInfo.InvariantCulture)}: {past.Closed} {(past.Closed == 1 ? "idea" : "ideas")} bought and sold on paper, {past.Won} made money.");
+        Invariant($"Every revision since {past.Since.ToString("d MMM", CultureInfo.InvariantCulture)}: {past.Closed} {(past.Closed == 1 ? "idea" : "ideas")} bought and sold on paper, {past.Won} made money.");
 
     // One of the two bars comparing the paper account with holding the index, its length the share of the larger of the two.
     public static string Bar(string key, string label, double? value, double widest)
