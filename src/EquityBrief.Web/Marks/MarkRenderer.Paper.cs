@@ -156,6 +156,20 @@ public sealed record PaperPageView(
     // Each live account's same trades before its version, drawn apart under the account.
     public IReadOnlyList<PaperSameView> Same { get; init; } = [];
 
+    // From the operator's order of 2026-11-18 every rule's and variant's own trades by the account's key, and each running
+    // rule's earlier revisions' trades by its key, each named by the revision that listed it; and the orders each waits on and
+    // those that left its waiting list in the last five trading days, which its tabs draw.
+    public IReadOnlyDictionary<string, IReadOnlyList<PaperBoughtView>> Traded { get; init; } = new Dictionary<string, IReadOnlyList<PaperBoughtView>>(StringComparer.Ordinal);
+
+    public IReadOnlyDictionary<string, IReadOnlyList<PaperBoughtView>> EarlierTraded { get; init; } = new Dictionary<string, IReadOnlyList<PaperBoughtView>>(StringComparer.Ordinal);
+
+    public IReadOnlyDictionary<string, IReadOnlyList<WaitingRowView>> Waiting { get; init; } = new Dictionary<string, IReadOnlyList<WaitingRowView>>(StringComparer.Ordinal);
+
+    public IReadOnlyDictionary<string, IReadOnlyList<LeftOrderView>> Left { get; init; } = new Dictionary<string, IReadOnlyList<LeftOrderView>>(StringComparer.Ordinal);
+
+    // Each running rule's plan in five plain rows by its key, and each earlier revision's by its key and number.
+    public IReadOnlyDictionary<string, PlanRowsView> Plans { get; init; } = new Dictionary<string, PlanRowsView>(StringComparer.Ordinal);
+
     // From the 22.25 correction of 2026-11-11 this version's trades the accounts' walks did not buy by the night, each with
     // the walk's reason and whether it is open on the night, which the line of this version's trades counts.
     public IReadOnlyList<(string Why, bool Open)> Skipped { get; init; } = [];
@@ -222,6 +236,36 @@ public sealed record PaperLink(string Universe, string? Family = null, bool Clos
 
     public const string ClosedValue = "closed";
 
+    // From the operator's order of 2026-11-18 what Show draws for the rule chosen, its running revision as the key's absence, a
+    // variant by its key or an earlier revision by its number; the tab of the drawn card's lists and its page; the variant
+    // unfolded in its table, and that variant's own tab and page.
+    public string? Pick { get; init; }
+
+    public string? Tab { get; init; }
+
+    public int Page { get; init; } = 1;
+
+    public string? Unfold { get; init; }
+
+    public string? VariantTab { get; init; }
+
+    public int VariantPage { get; init; } = 1;
+
+    public const string PickKey = "show-rule";
+
+    public const string TabKey = "tab";
+
+    public const string PageKey = "page";
+
+    public const string UnfoldKey = "unfold";
+
+    public const string VariantTabKey = "vtab";
+
+    public const string VariantPageKey = "vpage";
+
+    // The value Show names an earlier revision by.
+    public const string RevisionPrefix = "revision-";
+
     public string Href =>
         Route + "?universe=" + Uri.EscapeDataString(Universe)
         + (Family is { } family ? "&" + FamilyKey + "=" + Uri.EscapeDataString(family) : string.Empty)
@@ -229,7 +273,13 @@ public sealed record PaperLink(string Universe, string? Family = null, bool Clos
         + (Show is { } show ? "&" + ShowKey + "=" + Uri.EscapeDataString(show) : string.Empty)
         + (Variants is { } variants ? "&" + VariantsKey + "=" + Uri.EscapeDataString(variants) : string.Empty)
         + (Rule is { } rule ? "&" + RuleKey + "=" + Uri.EscapeDataString(rule) : string.Empty)
-        + (Recent ? "&" + SpanKey + "=" + RecentValue : string.Empty);
+        + (Recent ? "&" + SpanKey + "=" + RecentValue : string.Empty)
+        + (Pick is { } pick ? "&" + PickKey + "=" + Uri.EscapeDataString(pick) : string.Empty)
+        + (Tab is { } tab ? "&" + TabKey + "=" + Uri.EscapeDataString(tab) : string.Empty)
+        + (Page > 1 ? "&" + PageKey + "=" + Page.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty)
+        + (Unfold is { } unfold ? "&" + UnfoldKey + "=" + Uri.EscapeDataString(unfold) : string.Empty)
+        + (VariantTab is { } variantTab ? "&" + VariantTabKey + "=" + Uri.EscapeDataString(variantTab) : string.Empty)
+        + (VariantPage > 1 ? "&" + VariantPageKey + "=" + VariantPage.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty);
 }
 
 // Paper trading's marks: a tile a family's live or provisional account with the fund beside them, the chart of each

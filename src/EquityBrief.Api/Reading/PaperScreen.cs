@@ -177,6 +177,9 @@ public static class PaperScreen
             replays).First;
 
     // The version that listed a trade: its rule's newest registration whose first session is on or before the trade's buy.
+    public static string VersionAt(IReadOnlyList<RevisionView> revisions, DateOnly listed) =>
+        revisions.LastOrDefault(revision => revision.From <= listed) is { } revision ? revision.Name : BeforeRegistration;
+
     public static string VersionAt(IReadOnlyList<CandidateRow> lineage, DateOnly bought) =>
         RuleRevisions.At(RevisionsOf(lineage), bought) is { } revision
             ? RevisionView.Named(revision.Number)
@@ -279,7 +282,7 @@ public static class PaperScreen
             var chips = lineage.FirstOrDefault(row => row.Id == revision.FirstId) is { } first ? RuleScreen.ChipsOf(first) : [];
             var changed = before is null ? null : RuleChips.Differing(before, chips).Select(chip => chip.Words).ToArray();
 
-            views.Add(new RevisionView(revision.Number, revision.From, revision.Until, changed is null ? null : changed.Length == 0 ? RevisionView.CodeOnly : string.Join("; ", changed)));
+            views.Add(new RevisionView(revision.Number, revision.From, revision.Until, changed is null ? null : changed.Length == 0 ? RevisionView.CodeOnly : string.Join("; ", changed)) { Registration = revision.FirstId });
             before = chips;
         }
 
@@ -971,6 +974,30 @@ public static class PaperScreen
         var from = views.Where(view => view.Head && view.Since is not null).Select(view => view.Since).Min();
         var counted = from is { } start ? PaperAccount.FundOver([.. sessions.Where(session => session >= start && session <= night)], fund) : null;
 
+        // From the operator's order of 2026-11-18 every rule's and every variant's own trades as its tabs draw them, those its
+        // walk bought, and each running rule's earlier revisions' trades, each named by the revision that listed it.
+        // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        var traded = views
+            .Where(view => view.Standing != PaperAccountView.You)
+            .ToDictionary(
+                view => view.Key,
+                view => (IReadOnlyList<PaperBoughtView>)
+                [
+                    .. (view.Walk is { } walk
+                            ? walk.Trades.Where(one => one.Skipped is null).Select(one => (one.Trade, Result: source[view.Key].Trades.FirstOrDefault(own => own.Trade == one.Trade).Result))
+                            : source[view.Key].Trades.Select(one => (one.Trade, one.Result)))
+                        .Select(one => Drawn(view, one.Trade, one.Result, null)),
+                ],
+                StringComparer.Ordinal);
+        var earlierTraded = heads.ToDictionary(
+            head => head.Key,
+            head => (IReadOnlyList<PaperBoughtView>)
+            [
+                .. (source[head.Key].Earlier ?? []).Select(one => Drawn(head, one.Trade, one.Result, one.Version)),
+                .. source[head.Key].Same.Select(one => Drawn(head, one.Trade, one.Result, VersionAt(source[head.Key].Revisions, one.Trade.ListedOn))),
+            ],
+            StringComparer.Ordinal);
+
         return new PaperPageView(
             views,
             [.. bought.Where(trade => trade.Open is not null)],
@@ -982,6 +1009,8 @@ public static class PaperScreen
             combined)
         {
             Same = same,
+            Traded = traded,
+            EarlierTraded = earlierTraded,
             Skipped =
             [
                 .. heads.SelectMany(head => (head.Walk?.Trades ?? [])

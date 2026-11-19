@@ -69,6 +69,16 @@ public sealed partial class SinglePageApp
         // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
         var plain = marks.Copying;
 
+        // From the operator's order of 2026-11-18 the page by revisions; the read-only copy keeps its own plain parts.
+        // see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        if (!plain)
+        {
+            region.Append(RevisionsLayout(marks, night, page, link, settings, proposedCap, example, line));
+            region.Append("</section>");
+
+            return ReaderText.Page(region.ToString());
+        }
+
         region.Append(Cards.Computed(
             "Paper trading",
             MarkRenderer.PaperAccountSummary(settings, example) + Invariant($"<p class=\"paper-what\">{Escaped(plain ? PlainPaperWhat : PaperWhat)}</p>") + line

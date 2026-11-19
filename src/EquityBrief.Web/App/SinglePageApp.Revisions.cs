@@ -1,0 +1,111 @@
+using System.Text;
+using EquityBrief.Web.Marks;
+
+namespace EquityBrief.Web.App;
+
+// From the operator's order of 2026-11-18 Paper trading by revisions, as the mockup of that day draws it: the account's card,
+// shorter; every rule's running revision as a tile with every running revision together against the index's fund and the
+// chart beneath; the Rule and Show controls; the revision Show draws; how it has done; its variants, each unfolding to its
+// own trades; its earlier revisions, folded; and your own trades. Every figure the page drew before keeps a place.
+// see: A rule changes only through a new revision, a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+public sealed partial class SinglePageApp
+{
+    public const string RevisionsWhat = "A rule changes only through a new revision. Each revision keeps its own trades and its own record from the day it started running, so nothing an earlier revision did is mixed into a later one. A variant is a copy of the running revision with one thing changed, traded on paper beside it.";
+
+    string RevisionsLayout(
+        MarkRenderer marks,
+        DateOnly? night,
+        PaperPageView page,
+        PaperLink link,
+        (decimal Size, decimal Risk, decimal Cap)? settings,
+        decimal proposedCap,
+        (decimal Size, decimal Risk, decimal Cap)? example,
+        string line)
+    {
+        var region = new StringBuilder();
+        var accounts = page.Accounts;
+        var walked = settings ?? example;
+        var heads = accounts.Where(account => account.Head).OrderBy(account => EquityBrief.Core.Families.SetupFamilies.OrderOf(account.Family)).ToArray();
+
+        region.Append(Cards.Computed(
+            "Paper trading",
+            MarkRenderer.CardSummary("Each rule buys its picks on paper in its own copy of an account of your size, so you can see what it bought, how each trade stands and how it has done.") + line
+                + Invariant($"<details class=\"paper-change\"{(walked is null ? " open" : string.Empty)}><summary>Change the account</summary>{AccountForm(settings?.Size, settings?.Risk, settings?.Cap, proposedCap)}</details>")
+                + Invariant($"<p class=\"paper-what\">{Escaped(RevisionsWhat)}</p>"),
+            title: "Each rule's trades, in your money",
+            region: "account"));
+
+        region.Append(Cards.Computed(
+            "Paper trading",
+            MarkRenderer.CardSummary("The revision of each rule running now, whose picks you see on Home and Tonight. Press a rule to open it below.")
+                + MarkRenderer.RunningTiles(accounts, page.Combined, page.Fund, link, page.Traded)
+                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, link.Family, page.Combined, link, page.FundCloses, page.Fund?.Fund))
+                + (walked is null ? string.Empty : Invariant($"<details class=\"paper-combined-fold\"><summary>Every running revision's trades together</summary>{marks.PaperCombined(page.Combined)}</details>")),
+            title: "Every rule, the revision running now",
+            stamp: Cards.Night(night),
+            region: "paper-chart"));
+
+        if ((heads.FirstOrDefault(head => head.Family == link.Rule) ?? heads.FirstOrDefault()) is not { } chosen)
+        {
+            region.Append("<p class=\"degraded\" data-rule=\"none\">No rule stands on this index yet.</p>");
+
+            return region.ToString();
+        }
+
+        var variants = accounts.Where(account => account.Family == chosen.Family && account.Standing == PaperAccountView.Variant).ToArray();
+        var pickedVariant = variants.FirstOrDefault(variant => variant.Key == link.Pick);
+        var pickedRevision = link.Pick is { } pick && pick.StartsWith(PaperLink.RevisionPrefix, StringComparison.Ordinal) && int.TryParse(pick[PaperLink.RevisionPrefix.Length..], System.Globalization.CultureInfo.InvariantCulture, out var number)
+            ? chosen.Revisions.FirstOrDefault(revision => revision.Number == number && !revision.Running)
+            : null;
+        var pickKept = pickedVariant is not null || pickedRevision is not null ? link.Pick : null;
+        var drawnLink = link with { Rule = chosen.Family, Pick = pickKept, Unfold = pickedVariant?.Key ?? link.Unfold };
+        var revision = pickedRevision ?? chosen.Revision;
+        var name = revision?.Name ?? "its starting settings";
+
+        region.Append(MarkRenderer.RuleShowControls(accounts, chosen, pickKept));
+        region.Append(Cards.Computed(
+            MarkRenderer.FamilyName(chosen.Family),
+            Invariant($"<p class=\"card-summary\" data-summary>The plan {Escaped(name.ToLowerInvariant())} follows, its trades and how it has done. Every price on this card comes from the plan below.</p>") + marks.RevisionCard(page, chosen, revision, drawnLink),
+            title: MarkRenderer.FamilyName(chosen.Family) + ", " + name.ToLowerInvariant(),
+            stamp: Cards.Night(night),
+            region: "paper-revision"));
+
+        if (pickedRevision is null)
+        {
+            region.Append(Cards.Computed(
+                MarkRenderer.FamilyName(chosen.Family),
+                marks.HowItHasDone(page, chosen),
+                title: "How " + name.ToLowerInvariant() + " has done",
+                stamp: Cards.Night(night),
+                region: "paper-scorecard"));
+
+            region.Append(Cards.Computed(
+                MarkRenderer.FamilyName(chosen.Family),
+                marks.VariantsOf(page, chosen, drawnLink) + MarkRenderer.EarlierRevisionsOf(page, chosen, drawnLink),
+                title: "Variants of " + name.ToLowerInvariant(),
+                stamp: Cards.Night(night),
+                region: "paper-variants"));
+        }
+        else
+        {
+            region.Append(Cards.Computed(
+                MarkRenderer.FamilyName(chosen.Family),
+                MarkRenderer.EarlierRevisionsOf(page, chosen, drawnLink),
+                title: "Earlier revisions of " + MarkRenderer.FamilyName(chosen.Family),
+                stamp: Cards.Night(night),
+                region: "paper-variants"));
+        }
+
+        var you = accounts.FirstOrDefault(account => account.Standing == PaperAccountView.You);
+
+        region.Append(Cards.Computed(
+            "Paper trading",
+            MarkRenderer.CardSummary(MarkRenderer.PaperYoursSaid(you)) + marks.PaperYours(you, link.Universe),
+            title: "Your own trades",
+            lede: "Unchanged: the trades you marked as taken from a pick's card.",
+            stamp: Cards.Night(night),
+            region: "paper-yours"));
+
+        return region.ToString();
+    }
+}

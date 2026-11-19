@@ -2680,6 +2680,12 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
         Family(PaperLink.RuleKey))
     {
         Recent = request.Query[PaperLink.SpanKey].FirstOrDefault() == PaperLink.RecentValue,
+        Pick = request.Query[PaperLink.PickKey].FirstOrDefault() is { Length: > 0 } pick ? pick : null,
+        Tab = request.Query[PaperLink.TabKey].FirstOrDefault() is { } tab && MarkRenderer.RevisionTabs.Contains(tab) ? tab : null,
+        Page = int.TryParse(request.Query[PaperLink.PageKey].FirstOrDefault(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var pageNumber) && pageNumber > 0 ? pageNumber : 1,
+        Unfold = request.Query[PaperLink.UnfoldKey].FirstOrDefault() is { Length: > 0 } unfold ? unfold : null,
+        VariantTab = request.Query[PaperLink.VariantTabKey].FirstOrDefault() is { } variantTab && MarkRenderer.RevisionTabs.Contains(variantTab) ? variantTab : null,
+        VariantPage = int.TryParse(request.Query[PaperLink.VariantPageKey].FirstOrDefault(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var variantPage) && variantPage > 0 ? variantPage : 1,
     };
     var variants = link.Variants ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
     var rule = link.Rule ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
@@ -2699,6 +2705,13 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             accounts.Combined,
             accounts.Books)
         : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
+
+    // From the operator's order of 2026-11-18 each rule's and variant's waiting orders and those that left its list.
+    if (paper is { } ordered && night is { } orderedOn)
+    {
+        drawn = RevisionScreen.WithOrders(drawn, ordered.Sources, ordered.Planned, orderedOn, ordered.Sessions ?? [], ordered.Close, ticker => ordered.Stocks?.GetValueOrDefault(ticker)?.Company);
+        drawn = drawn with { Plans = RevisionScreen.Plans(ordered.Sources, await read.RegisteredCandidatesAsync(), reading.Code) };
+    }
 
     // From 21.20 the variants registered after the newest night, which no night has read yet.
     // see: A variant registered after the newest night is shown on Paper trading at once with the night that first reads it
