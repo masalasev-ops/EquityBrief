@@ -224,7 +224,7 @@ public partial class ReadSurface
         Assert.Contains("function keepPlace(control, find) {", shell, StringComparison.Ordinal);
         Assert.Contains("keptPlace = card ? { find: find, top: card.getBoundingClientRect().top, at: Date.now() } : null;", shell, StringComparison.Ordinal);
         Assert.Contains("keepPlace(rule, 'select[data-rule-choice=\"' + CSS.escape(rule.getAttribute('data-rule-choice')) + '\"]');", shell, StringComparison.Ordinal);
-        Assert.Contains("const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort');", shell, StringComparison.Ordinal);
+        Assert.Contains("const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort, a.chip.tab, .pager a.pg-btn, .vdetail .plan-foot a');", shell, StringComparison.Ordinal);
         Assert.Contains("if (keeperCard) { keepPlace(keeper, 'section.card[data-card=\"' + CSS.escape(keeperCard.getAttribute('data-card')) + '\"]'); }", shell, StringComparison.Ordinal);
         Assert.Contains("if (searched) { keepPlace(form, 'section.card[data-card=\"' + CSS.escape(searched.getAttribute('data-card')) + '\"]'); }", shell, StringComparison.Ordinal);
 
@@ -260,7 +260,7 @@ public partial class ReadSurface
         Assert.Contains("<details class=\"paper-change\"><summary>Change the account</summary>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-paper-chart=\"unset\"", page, StringComparison.Ordinal);
         Assert.Contains("class=\"paper-chart\"", page, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"paper-tile\" data-family=\"pullback\" data-standing=\"live\"", page, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"revision-tile\" data-family=\"pullback\" data-standing=\"live\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("set your account to walk it", page, StringComparison.Ordinal);
         Assert.DoesNotContain("value=\"100000\"", page, StringComparison.Ordinal);
 

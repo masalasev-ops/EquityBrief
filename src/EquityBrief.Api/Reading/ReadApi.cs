@@ -4222,7 +4222,8 @@ public sealed partial class ReadApi : IComponent
             && EquityBrief.Core.Loop.PlanPoints.StopOf(order.Stop, EquityBrief.Core.Prices.Statistic.FromPrice(paid), order.RuleStop, order.ZoneStop, order.TypicalDay) is { } placed)
         {
             stop = EquityBrief.Core.Prices.Statistic.ToPrice(placed);
-            target = order.SaleFrom(EquityBrief.Core.Prices.Statistic.FromPrice(paid), placed).Target is { } sale ? EquityBrief.Core.Prices.Statistic.ToPrice(sale) : target;
+            // see: A trade under a plan names the one exit its walk sells by on every page, read from its plan and never from a stored target
+            target = EquityBrief.Core.Loop.TradeExit.Of(order, EquityBrief.Core.Prices.Statistic.FromPrice(paid), placed).First is { } first ? EquityBrief.Core.Prices.Statistic.ToPrice(first) : null;
         }
 
         return new HeldTradeFigures(fill, filledOn, stop, target);

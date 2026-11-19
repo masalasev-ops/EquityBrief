@@ -71,11 +71,21 @@ public sealed record PaperAccountView(
 
     // From the 19.4 correction of 2026-11-07 a version's reach against its live rule, none for any other account.
     public EquityBrief.Core.Cards.VersionReachKind? Reach { get; init; }
+
+    // The revisions of its rule up to the one it stands in, the last that one; none for an account no registration starts.
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    public IReadOnlyList<RevisionView> Revisions { get; init; } = [];
+
+    // The revision it stands in, none for an account no registration starts.
+    public RevisionView? Revision => Revisions.Count > 0 ? Revisions[^1] : null;
+
+    // A variant's settings that differ from its running revision, each a plain sentence; none for any other account.
+    public IReadOnlyList<ChangeLine> Differences { get; init; } = [];
 }
 
 // The trades a family's live account leaves out as listed before its version that a replay under its version reproduced,
 // drawn apart under the account: its family, the session the replay counted from, and each trade.
-// see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+// see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
 public sealed record PaperSameView(string Family, DateOnly Since, IReadOnlyList<PaperBoughtView> Trades);
 
 // One trade of an account's trade log: its stock, its buy session and price, its stop where it holds one, the session it
@@ -149,6 +159,26 @@ public sealed record PaperPageView(
     // Each live account's same trades before its version, drawn apart under the account.
     public IReadOnlyList<PaperSameView> Same { get; init; } = [];
 
+    // Every rule's and variant's own trades by the account's key, and each running rule's earlier revisions' trades by its
+    // key, each named by the revision that listed it; and the orders each waits on and those that left its waiting list in the
+    // last five trading days, which its tabs draw.
+    public IReadOnlyDictionary<string, IReadOnlyList<PaperBoughtView>> Traded { get; init; } = new Dictionary<string, IReadOnlyList<PaperBoughtView>>(StringComparer.Ordinal);
+
+    public IReadOnlyDictionary<string, IReadOnlyList<PaperBoughtView>> EarlierTraded { get; init; } = new Dictionary<string, IReadOnlyList<PaperBoughtView>>(StringComparer.Ordinal);
+
+    public IReadOnlyDictionary<string, IReadOnlyList<WaitingRowView>> Waiting { get; init; } = new Dictionary<string, IReadOnlyList<WaitingRowView>>(StringComparer.Ordinal);
+
+    public IReadOnlyDictionary<string, IReadOnlyList<LeftOrderView>> Left { get; init; } = new Dictionary<string, IReadOnlyList<LeftOrderView>>(StringComparer.Ordinal);
+
+    // Which part of its plan placed each open trade's take-profit, in words, by its account's key, its stock and its night.
+    public IReadOnlyDictionary<string, string> ProfitFrom { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    public static string ProfitKey(string account, string ticker, DateOnly listed) =>
+        account + "|" + ticker + "|" + listed.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+    // Each running rule's plan in five plain rows by its key, and each earlier revision's by its key and number.
+    public IReadOnlyDictionary<string, PlanRowsView> Plans { get; init; } = new Dictionary<string, PlanRowsView>(StringComparer.Ordinal);
+
     // From the 22.25 correction of 2026-11-11 this version's trades the accounts' walks did not buy by the night, each with
     // the walk's reason and whether it is open on the night, which the line of this version's trades counts.
     public IReadOnlyList<(string Why, bool Open)> Skipped { get; init; } = [];
@@ -215,6 +245,36 @@ public sealed record PaperLink(string Universe, string? Family = null, bool Clos
 
     public const string ClosedValue = "closed";
 
+    // What Show draws for the rule chosen, its running revision as the key's absence, a variant by its key or an earlier
+    // revision by its number; the tab of the drawn card's lists and its page; the variant
+    // unfolded in its table, and that variant's own tab and page.
+    public string? Pick { get; init; }
+
+    public string? Tab { get; init; }
+
+    public int Page { get; init; } = 1;
+
+    public string? Unfold { get; init; }
+
+    public string? VariantTab { get; init; }
+
+    public int VariantPage { get; init; } = 1;
+
+    public const string PickKey = "show-rule";
+
+    public const string TabKey = "tab";
+
+    public const string PageKey = "page";
+
+    public const string UnfoldKey = "unfold";
+
+    public const string VariantTabKey = "vtab";
+
+    public const string VariantPageKey = "vpage";
+
+    // The value Show names an earlier revision by.
+    public const string RevisionPrefix = "revision-";
+
     public string Href =>
         Route + "?universe=" + Uri.EscapeDataString(Universe)
         + (Family is { } family ? "&" + FamilyKey + "=" + Uri.EscapeDataString(family) : string.Empty)
@@ -222,7 +282,13 @@ public sealed record PaperLink(string Universe, string? Family = null, bool Clos
         + (Show is { } show ? "&" + ShowKey + "=" + Uri.EscapeDataString(show) : string.Empty)
         + (Variants is { } variants ? "&" + VariantsKey + "=" + Uri.EscapeDataString(variants) : string.Empty)
         + (Rule is { } rule ? "&" + RuleKey + "=" + Uri.EscapeDataString(rule) : string.Empty)
-        + (Recent ? "&" + SpanKey + "=" + RecentValue : string.Empty);
+        + (Recent ? "&" + SpanKey + "=" + RecentValue : string.Empty)
+        + (Pick is { } pick ? "&" + PickKey + "=" + Uri.EscapeDataString(pick) : string.Empty)
+        + (Tab is { } tab ? "&" + TabKey + "=" + Uri.EscapeDataString(tab) : string.Empty)
+        + (Page > 1 ? "&" + PageKey + "=" + Page.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty)
+        + (Unfold is { } unfold ? "&" + UnfoldKey + "=" + Uri.EscapeDataString(unfold) : string.Empty)
+        + (VariantTab is { } variantTab ? "&" + VariantTabKey + "=" + Uri.EscapeDataString(variantTab) : string.Empty)
+        + (VariantPage > 1 ? "&" + VariantPageKey + "=" + VariantPage.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty);
 }
 
 // Paper trading's marks: a tile a family's live or provisional account with the fund beside them, the chart of each
@@ -342,7 +408,7 @@ public sealed partial class MarkRenderer
             var points = returns[account.Key];
             var path = string.Join(" ", points.Select((point, place) => Formatted($"{(place == 0 ? "M" : "L")}{X(point.Session):0.#},{Y(point.Return):0.#}")));
 
-            svg.Append(Invariant, $"<path class=\"paper-line{(account.Standing == PaperAccountView.Variant ? " dashed" : string.Empty)}\" data-account=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" d=\"{path}\"><title>{Escaped(account.Name)}</title></path>");
+            svg.Append(Invariant, $"<path class=\"paper-line{(account.Standing == PaperAccountView.Variant ? " dashed" : string.Empty)}\" data-account=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" d=\"{path}\"><title>{Escaped(KeyName(account))}</title></path>");
         }
 
         if (fundLine.Length > 0 && fundName is { } named)
@@ -390,7 +456,7 @@ public sealed partial class MarkRenderer
 
         foreach (var account in drawn)
         {
-            svg.Append(Invariant, $"<button type=\"button\" class=\"paper-key\" data-line=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" aria-pressed=\"true\" title=\"{Escaped(Copying ? FamilyName(account.Family) : EquityBrief.Core.Families.RuleWording.ScreenName(account.Words))}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(account.Standing == PaperCombinedView.Key ? account.Name : FamilyName(account.Family) + " · " + account.Name)}</button>");
+            svg.Append(Invariant, $"<button type=\"button\" class=\"paper-key\" data-line=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\" aria-pressed=\"true\" title=\"{Escaped(Copying ? FamilyName(account.Family) : EquityBrief.Core.Families.RuleWording.ScreenName(account.Words))}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(KeyName(account))}</button>");
         }
 
         if (fundLine.Length > 0 && fundName is { } keyed)
@@ -453,7 +519,7 @@ public sealed partial class MarkRenderer
     static string EndName(PaperAccountView account) =>
         account.Standing == PaperCombinedView.Key ? "Averaged"
             : account.Standing == PaperAccountView.You ? "You"
-            : account.Standing == PaperAccountView.Variant ? FamilyName(account.Family) + " " + (account.Short ?? account.Name)
+            : account.Standing == PaperAccountView.Variant ? FamilyName(account.Family) + " variant"
             : FamilyName(account.Family);
 
     // The Monday of a session's week, which the chart's dates are drawn a week at a time by.
@@ -465,7 +531,16 @@ public sealed partial class MarkRenderer
     // The key of an account with no trade, which draws no line: its name and that it has no trades yet, nothing to press.
     // see: The paper chart draws each account from its own first day in its family's colour beside the fund on round gridlines, with an end label on each line
     static string NoTradeKey(PaperAccountView account) =>
-        Formatted($"<span class=\"paper-key paper-key-none\" data-none=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(account.Standing == PaperCombinedView.Key ? account.Name : FamilyName(account.Family) + " · " + account.Name)} · no trades yet</span>");
+        Formatted($"<span class=\"paper-key paper-key-none\" data-none=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"><span class=\"paper-key-mark\" data-family=\"{Escaped(account.Family)}\" data-standing=\"{account.Standing}\"></span>{Escaped(KeyName(account))}, no trades yet</span>");
+
+    // A line's name in the chart's key: its rule and the revision it counts, a variant's by its one change, yours, and the
+    // averaged account's own.
+    static string KeyName(PaperAccountView account) =>
+        account.Standing == PaperCombinedView.Key ? account.Name
+            : account.Standing == PaperAccountView.You ? "Your own trades"
+            : account.Standing == PaperAccountView.Variant ? FamilyName(account.Family) + " variant: " + Uncapitalised(VariantName(account))
+            : account.Revision is { } revision ? FamilyName(account.Family) + ", " + revision.Name.ToLowerInvariant()
+            : FamilyName(account.Family) + ", its starting settings";
 
     // A fraction drawn as a signed per cent to a tenth, in the class its sign gives.
     static string PaperPercent(double fraction) =>
@@ -473,9 +548,9 @@ public sealed partial class MarkRenderer
 
     // The words heading an account's trades listed before its version that replay the same under it, from the session the
     // replay counted from.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public static string SameWords(DateOnly since) =>
-        FormattableString.Invariant($"The same trades before this version (since {since:d MMM}), kept in the rule's record and not in this account");
+        FormattableString.Invariant($"The same trades before this revision (since {since:d MMM}), kept in the rule's record and not in this account");
 
     // The index's fund on a tile, over that tile's own account's days: its return over them, or where its closes start later
     // the day they start; none where the account holds no walk.
@@ -538,7 +613,7 @@ public sealed partial class MarkRenderer
         var html = new StringBuilder();
 
         html.Append("<nav class=\"paper-families\" aria-label=\"Add a family's variants to the chart\">");
-        html.Append(Invariant, $"<a href=\"{Escaped((link with { Family = null }).Href)}\"{(link.Family is null ? " aria-current=\"true\"" : string.Empty)}>Live and provisional only</a>");
+        html.Append(Invariant, $"<a href=\"{Escaped((link with { Family = null }).Href)}\"{(link.Family is null ? " aria-current=\"true\"" : string.Empty)}>The running revisions only</a>");
 
         foreach (var family in accounts.Where(account => account.Standing == PaperAccountView.Variant).Select(account => account.Family).Distinct().OrderBy(SetupFamilies.OrderOf))
         {
@@ -612,7 +687,7 @@ public sealed partial class MarkRenderer
 
         // Each live account's same trades before its version under one press of its own, named by its setup and the day the
         // replay counted from, in none of the account's figures.
-        // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         foreach (var same in page.Same)
         {
             html.Append(Invariant, $"<details class=\"paper-earlier paper-same\" data-family=\"{Escaped(same.Family)}\" data-same=\"{same.Trades.Count}\" data-since=\"{DayOf(same.Since)}\"><summary>{Escaped(FamilyName(same.Family))}: {Escaped(SameWords(same.Since))}, {same.Trades.Count} {(same.Trades.Count == 1 ? "trade" : "trades")}</summary>");
@@ -678,7 +753,7 @@ public sealed partial class MarkRenderer
     // The variants holding a stock too, in words: one, two joined by "and", more with the last after "and".
     static string? AlsoHeld(IReadOnlyList<string> names) =>
         names.Count == 0 ? null
-            : (names.Count == 1 ? names[0] : string.Join(", ", names.Take(names.Count - 1)) + " and " + names[^1]) + (names.Count == 1 ? " holds it too" : " hold it too");
+            : names.Count == 1 ? "A variant holds it too" : Formatted($"{names.Count} variants hold it too");
 
     // The open trades: the stock and its company linking to its chart with the variants holding it too, its setup, its buy
     // and the session it was bought on, its stop tonight, its target or that it trails or none for a holding, tonight's close
@@ -694,7 +769,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-bought\" data-tab=\"open\" data-rows=\"{trades.Count}\"><thead><tr>");
         html.Append(TippedHeading("Stock", "the stock, opening its chart, with its company and the variants of its rule holding it open too"));
-        html.Append(TippedHeading("Setup", "the family whose live or provisional rule bought it, in that family's own account"));
+        html.Append(TippedHeading("Setup", "the family whose running revision bought it, in that family's own account"));
         html.Append(TippedHeading("Bought", "its buy at the open of the session after the night that listed it, and that session", "r"));
         html.Append(TippedHeading("Stop", "its stop tonight: the plan's, or a trailing stop raised to the highest close since its listing less the distance it trails", "r"));
         html.Append(TippedHeading("Target", "its plan's target, or that its stop trails and it has none, or none for a holding sold only at a rebalance and a short-term dip sold on its exit", "r"));
@@ -768,7 +843,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"paper-bought\" data-tab=\"closed\" data-rows=\"{trades.Count}\"><thead><tr>");
         html.Append(TippedHeading("Stock", "the stock, opening its chart, with its company"));
-        html.Append(TippedHeading("Setup", "the family whose live or provisional rule bought it, in that family's own account"));
+        html.Append(TippedHeading("Setup", "the family whose running revision bought it, in that family's own account"));
         html.Append(TippedHeading("Bought", "its buy at the open of the session after the night that listed it, and that session", "r"));
         html.Append(TippedHeading("Sold", "the price it was sold at, at its target, at a close through its stop, at its cap's close or at its book's sale, and that session", "r"));
         html.Append(TippedHeading("How it ended", "what ended it, in words, and the sessions from its listing night to its end"));
@@ -908,7 +983,7 @@ public sealed partial class MarkRenderer
         html.Append(TippedHeading("Rule", "the live or provisional rule first and each variant by its number, its verdict in the newest monthly test beside it and its full words under the pointer"));
         html.Append(TippedHeading("What it changes", "the live rule's settings in short words, and each variant's settings that differ from them"));
         html.Append(TippedHeading("Trades", "the trades its own list or book kept since its account started", "r"));
-        html.Append(TippedHeading("Shared", "a variant's trades the live rule also took in the same stock off the same night; on the live rule's row, its trades any variant also took", "r", "Shared with the live rule"));
+        html.Append(TippedHeading("Shared", "a variant's trades the running revision also took in the same stock off the same night; on the running revision's row, its trades any variant also took", "r", "Shared with the running revision"));
         html.Append(TippedHeading("Only this one", "the trades no other rule of the family took in the same stock off the same night", "r"));
         html.Append(TippedHeading("Return so far", "its account's return on your size since it started, with its record's too-few label until it holds the test's count", "r"));
         html.Append("</tr></thead><tbody>");
@@ -1013,7 +1088,7 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<details class=\"score-variants\" data-variants=\"{variants.Length}\"><summary>Its {variants.Length} {(variants.Length == 1 ? "variant" : "variants")}</summary><div class=\"tbl-wrap\"><table class=\"score-table\"><thead><tr>");
             html.Append(TippedHeading("Variant", "each variant by its number with the settings that differ from the rule's"));
             html.Append(TippedHeading("On history", "its verdict in the newest monthly test, read against the live or provisional rule; its adjusted p under the pointer"));
-            html.Append(TippedHeading("Years better", "the complete test years it stood above the live or provisional rule, of those the test counted", "r", "Years better than the live rule"));
+            html.Append(TippedHeading("Years better", "the complete test years it stood above the running revision, of those the test counted", "r", "Years better than the running revision"));
             html.Append(TippedHeading("Since live", "its own decided trades, or a book's months, against the count a verdict reads", "r"));
             html.Append("</tr></thead><tbody>");
 
@@ -1092,11 +1167,11 @@ public sealed partial class MarkRenderer
             Count(EquityBrief.Core.Cards.VersionReachKind.SoldDifferently, "takes the same picks sold differently", "take the same picks sold differently"),
             Count(EquityBrief.Core.Cards.VersionReachKind.Reordered, "takes the same picks in another order", "take the same picks in another order"),
             Count(EquityBrief.Core.Cards.VersionReachKind.Unread, "changes a setting whose reach is not read here", "change a setting whose reach is not read here"),
-            Count(null, "has no live rule's settings to read against", "have no live rule's settings to read against"),
+            Count(null, "has no running revision's settings to read against", "have no running revision's settings to read against"),
         ];
         var said = parts.Where(part => part.Length > 0).ToArray();
 
-        return Formatted($"{FamilyName(family)} has made no trade{began}, and none of its {versions.Length} versions has traded either: {(said.Length == 1 ? said[0] : string.Join(", ", said[..^1]) + " and " + said[^1])}.");
+        return Formatted($"{FamilyName(family)} has made no trade{began}, and none of its {versions.Length} {(versions.Length == 1 ? "variant" : "variants")} has traded either: {(said.Length == 1 ? said[0] : string.Join(", ", said[..^1]) + " and " + said[^1])}.");
     }
 
     // From the 19.4 correction of 2026-11-07 a row's start in the versions' part: the live or provisional rule's record since
@@ -1278,20 +1353,20 @@ public sealed partial class MarkRenderer
     // The words saying where an account starts and the version it counts, beside its count on the lists' verdicts.
     public static string StartWords(PaperAccountView account) =>
         account.Since is { } since
-            ? Formatted($", from {DayOf(since)}{(account.Version is { } version ? ", counting " + Escaped(version) : string.Empty)}")
-            : account.Version is { } words ? ", counting " + Escaped(words) : string.Empty;
+            ? Formatted($", from {DayOf(since)}{(account.Version is { } version ? ", counting " + Escaped(Uncapitalised(version)) : string.Empty)}")
+            : account.Version is { } words ? ", counting " + Escaped(Uncapitalised(words)) : string.Empty;
 
-    // The version an account counts and how many trades of earlier versions it leaves out, in its trade log.
+    // The revision an account counts and how many trades of earlier revisions it leaves out, in its trade log.
     static string VersionLine(PaperAccountView account) =>
         account.Version is not { } version
             ? string.Empty
-            : Formatted($"<span class=\"paper-version\" data-earlier=\"{account.Earlier}\">counts {Escaped(version)}{(account.Earlier > 0 ? Formatted($"; {account.Earlier} trade(s) of earlier versions left out") : string.Empty)}</span>");
+            : Formatted($"<span class=\"paper-version\" data-earlier=\"{account.Earlier}\">counts the trades of {Escaped(Uncapitalised(version))}{(account.Earlier > 0 ? Formatted($"; {account.Earlier} {(account.Earlier == 1 ? "trade" : "trades")} of earlier revisions left out") : string.Empty)}</span>");
 
     // An account's trade log: its verdict and its record's label beside each other and apart, each trade a row newest
     // first, an open one's result so far at tonight's close marked open, and the running total of its ended trades as a
     // line, labelled not evidence yet under the minimums; beneath it, folded, the trades of earlier versions the account
     // leaves out, each naming the version that listed it, and the same trades before its version among them.
-    // see: A paper account counts from its rule's current version's first session, and the same trades before it stand apart under the account
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
     public string PaperLog(PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null)
     {
         var html = new StringBuilder();

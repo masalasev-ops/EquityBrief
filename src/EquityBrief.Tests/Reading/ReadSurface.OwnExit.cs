@@ -35,14 +35,14 @@ public partial class ReadSurface
         // walk's first nights.
         Assert.Matches("<p class=\"record-said own-exit-line\" data-through=\"[0-9-]+\">Sold the old way, with no stop and no take-profit, these holdings would have made (-?[0-9.]+) points a month against \\1 as they trade now, since 1 Oct 2026\\.</p>", section);
         Assert.Contains($"<summary>{MarkRenderer.OwnExitHeading}</summary>", fold, StringComparison.Ordinal);
-        Assert.Contains("draws no pick and cannot go live as it stands; if it leads after its first 12 months live, it is brought to you.", fold, StringComparison.Ordinal);
+        Assert.Contains("draws no pick and cannot become a revision as it stands; if it leads after its first 12 months, it is brought to you.", fold, StringComparison.Ordinal);
         Assert.Contains("with no stop and no take-profit", fold, StringComparison.Ordinal);
 
         // Walked from 1 Oct, the night after the freeze: the reshuffle chose M1 and M2 as the live book did, and with no stop
         // in this store the own exit's two positions are the live book's, their mean change the same.
         Assert.Contains("It holds 2 tonight: M1, M2.", fold, StringComparison.Ordinal);
         Assert.Contains("Since 1 Oct 2026 its 2 position(s) moved", fold, StringComparison.Ordinal);
-        Assert.Contains("over the live rule's 2.", fold, StringComparison.Ordinal);
+        Assert.Contains("over the running revision's 2.", fold, StringComparison.Ordinal);
 
         var own = Regex.Match(fold, "data-own-mean=\"([^\"]+)\"").Groups[1].Value;
         var live = Regex.Match(fold, "data-live-mean=\"([^\"]+)\"").Groups[1].Value;

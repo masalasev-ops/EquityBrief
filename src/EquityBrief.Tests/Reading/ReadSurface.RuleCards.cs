@@ -70,7 +70,7 @@ public partial class ReadSurface
 
         Assert.Contains("<tr data-ticker=\"K1\" data-variant-pick=\"true\">", card, StringComparison.Ordinal);
         Assert.DoesNotContain("<tr data-ticker=\"K2\" data-variant-pick=\"true\">", card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"rule-share\" data-shared=\"K1,K2\" data-added=\"\" data-dropped=\"\">Beside the live setup's qualifying stocks tonight, it shares K1, K2, adds none and drops none.</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"rule-share\" data-shared=\"K1,K2\" data-added=\"\" data-dropped=\"\">Beside the running revision's qualifying stocks tonight, it shares K1, K2, adds none and drops none.</p>", card, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -100,17 +100,17 @@ public partial class ReadSurface
         // The card says which rule drew it, the selector offers both with the variant chosen, and the band stands.
         Assert.Contains($"data-family=\"breakout\" data-place=\"2\" data-of=\"3\" data-picks=\"2\" data-state=\"live\" data-live-since=\"2026-01-02\" data-variants=\"1\" data-rule=\"{slug}\" data-variant=\"1\"", card, StringComparison.Ordinal);
         Assert.Contains("<select id=\"rule-breakout\" class=\"rule-select\" data-rule-choice=\"breakout\"", card, StringComparison.Ordinal);
-        Assert.Contains($"<option value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{LiveBreakout}\">The live setup</option>", card, StringComparison.Ordinal);
+        Assert.Contains($"<option value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{LiveBreakout}\">The revision running now</option>", card, StringComparison.Ordinal);
 
         // From 19.3 the variant's choice names the one setting it differs from the live rule on, its 251-session high where
         // the live rule reads 126, its full name under the pointer, and its chip of it marked, from 22.6 in the reader's
         // words in the Showing list.
-        Assert.Contains($"<option value=\"{slug}\" data-variant=\"1\" title=\"{NeighbourBreakout}\" selected>Version: 251-day high</option>", card, StringComparison.Ordinal);
+        Assert.Contains($"<option value=\"{slug}\" data-variant=\"1\" title=\"{NeighbourBreakout}\" selected>Variant: needs a close at a 251-day high</option>", card, StringComparison.Ordinal);
         Assert.Equal(["251-day high"], Regex.Matches(card, "<li class=\"rule-chip differs\">([^<]*)</li>").Select(match => match.Groups[1].Value));
         Assert.Equal(
             ["251-day high", "volume 1.5 times", "ranges at 0.85", "stop 1.5 moves"],
             Regex.Matches(card, "<li class=\"rule-chip(?: differs)?\">([^<]*)</li>").Select(match => match.Groups[1].Value));
-        Assert.Contains("<div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A version being tested, not tonight's picks</p><p>Version: 251-day high</p><p class=\"band-note\">It runs every night beside the live setup with its own paper account. It replaces the live setup only if it proves better over enough trades and you approve it on the Monthly check-up.</p></div>", card, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A variant being tested, not tonight's picks</p><p>Variant: needs a close at a 251-day high</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better over enough trades and you approve it on the Monthly check-up.</p></div>", card, StringComparison.Ordinal);
 
         // Its words with the clause the live rule's lack marked: the 251-session high, where the live rule reads 126.
         Assert.Contains("<mark class=\"differs\">", card, StringComparison.Ordinal);
@@ -122,7 +122,7 @@ public partial class ReadSurface
         // K3 and drops both.
         Assert.Contains("<tr data-ticker=\"K3\" data-variant-pick=\"true\">", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"K1\"", card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"rule-share\" data-shared=\"\" data-added=\"K3\" data-dropped=\"K1,K2\">Beside the live setup's picks tonight, it shares none, adds K3 and drops K1, K2.</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"rule-share\" data-shared=\"\" data-added=\"K3\" data-dropped=\"K1,K2\">Beside the running revision's picks tonight, it shares none, adds K3 and drops K1, K2.</p>", card, StringComparison.Ordinal);
 
         // Its funnel as one bar a gate, the gate stopping the most of those reaching it marked and named: of the 10 the
         // market passed, 3 made a new high, 7 stopped there, where the volume, the tightening and the trade stopped 1, 1 and
@@ -189,7 +189,7 @@ public partial class ReadSurface
 
         // The night kept no answer of the version's, so its picks stand against the live rule's picks, K1 and K2, and not
         // against its qualifying stocks, which hold K9 too: K9, qualifying and held back, is a pick the version adds.
-        Assert.Contains("<p class=\"rule-share\" data-shared=\"\" data-added=\"K9\" data-dropped=\"K1,K2\">Beside the live setup's picks tonight, it shares none, adds K9 and drops K1, K2.</p>", chosen, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"rule-share\" data-shared=\"\" data-added=\"K9\" data-dropped=\"K1,K2\">Beside the running revision's picks tonight, it shares none, adds K9 and drops K1, K2.</p>", chosen, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -170,7 +170,10 @@ public sealed class RuleFreezeCheck
         var web = Path.Combine(Repository.Root, "src", "EquityBrief.Web", "Marks");
         var drawn = Directory.GetFiles(web, "*.cs").Select(File.ReadAllText).ToArray();
 
-        Assert.Equal(4, drawn.Sum(text => Regex.Matches(text, @"This version since \{").Count));
-        Assert.Equal(4, drawn.Sum(text => Regex.Matches(text, @"This version since \{[^}]*\}\{RuleFreeze\.Beside\(").Count));
+        // Each running rule's pill and tile, its revision or the day it started running, says the freeze beside it.
+        string[] lines = [.. drawn.SelectMany(text => text.Split('\n')).Where(line => line.Contains("Running since", StringComparison.Ordinal))];
+
+        Assert.Equal(4, lines.Length);
+        Assert.All(lines, line => Assert.Contains("RuleFreeze.Beside(", line, StringComparison.Ordinal));
     }
 }

@@ -164,31 +164,31 @@ public partial class ReadSurface
 
         Assert.Contains($"<div class=\"compare-picture\" data-version=\"{RunScreen.Slug(NearestBands)}\" data-evaluated=\"true\" data-only-live=\"1\" data-both=\"1\" data-only-version=\"1\">", mixed, StringComparison.Ordinal);
         // CCQ's reward to risk of 1.4 on the nearest bands' plan, against the floor of 1.5 version 1 was opened with.
-        Assert.Matches("data-group=\"only-live\">.*?<li data-ticker=\"CCQ\">.*?its reward to risk on this version's plan is 1.40, against a floor of 1.5</span></li>", mixed);
+        Assert.Matches("data-group=\"only-live\">.*?<li data-ticker=\"CCQ\">.*?its reward to risk on this variant's plan is 1.40, against a floor of 1.5</span></li>", mixed);
         Assert.Matches("data-group=\"both\">.*?<li data-ticker=\"AAQ\">", mixed);
-        Assert.Matches("data-group=\"only-version\">.*?<li data-ticker=\"BBQ\">.*?the live list's trigger gate: no buy signal inside three sessions</span></li>", mixed);
+        Assert.Matches("data-group=\"only-version\">.*?<li data-ticker=\"BBQ\">.*?the running revision's trigger gate: no buy signal inside three sessions</span></li>", mixed);
 
         // The rings hold the three counts, left to right.
         Assert.Matches("<svg class=\"overlap-rings\".*?<circle class=\"or-live\".*?<circle class=\"or-version\".*?>1</text>.*?>1</text>.*?>1</text>", mixed);
 
         // Over the two evenings: DDQ, AAQ and BBQ picked, one of the three also the live list's, and both evenings
         // with a pick the live list did not make.
-        Assert.Contains("<b>3</b><span>stocks this version picked over the last 2 evening(s)</span>", mixed, StringComparison.Ordinal);
-        Assert.Contains("<b>33%</b><span>of them also on the live list</span>", mixed, StringComparison.Ordinal);
-        Assert.Contains("<b>2</b><span>evenings it picked a stock the live list did not</span>", mixed, StringComparison.Ordinal);
+        Assert.Contains("<b>3</b><span>stocks this variant picked over the last 2 evening(s)</span>", mixed, StringComparison.Ordinal);
+        Assert.Contains("<b>33%</b><span>of them also the running revision's picks</span>", mixed, StringComparison.Ordinal);
+        Assert.Contains("<b>2</b><span>evenings it picked a stock the running revision did not</span>", mixed, StringComparison.Ordinal);
 
         // A version picking what the live list picked, and one sharing none of it.
         var identical = Card(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/2026-09-16?version={RunScreen.Slug(MarketOff)}")), "compare-picture");
 
         Assert.Contains($"data-version=\"{RunScreen.Slug(MarketOff)}\" data-evaluated=\"true\" data-only-live=\"0\" data-both=\"2\" data-only-version=\"0\"", identical, StringComparison.Ordinal);
-        Assert.Contains("<b>100%</b><span>of them also on the live list</span>", identical, StringComparison.Ordinal);
-        Assert.Contains("<b>0</b><span>evenings it picked a stock the live list did not</span>", identical, StringComparison.Ordinal);
+        Assert.Contains("<b>100%</b><span>of them also the running revision's picks</span>", identical, StringComparison.Ordinal);
+        Assert.Contains("<b>0</b><span>evenings it picked a stock the running revision did not</span>", identical, StringComparison.Ordinal);
 
         var disjoint = Card(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/2026-09-16?version={RunScreen.Slug(Strength)}")), "compare-picture");
 
         Assert.Contains($"data-version=\"{RunScreen.Slug(Strength)}\" data-evaluated=\"true\" data-only-live=\"2\" data-both=\"0\" data-only-version=\"1\"", disjoint, StringComparison.Ordinal);
-        Assert.Contains("<b>0%</b><span>of them also on the live list</span>", disjoint, StringComparison.Ordinal);
-        Assert.Contains("<b>2</b><span>evenings it picked a stock the live list did not</span>", disjoint, StringComparison.Ordinal);
+        Assert.Contains("<b>0%</b><span>of them also the running revision's picks</span>", disjoint, StringComparison.Ordinal);
+        Assert.Contains("<b>2</b><span>evenings it picked a stock the running revision did not</span>", disjoint, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -205,7 +205,7 @@ public partial class ReadSurface
         // one the link names; the shell writes a new choice back to the link.
         Assert.Contains($"<select id=\"compare-version\" data-compare=\"{SinglePageApp.RunRoute}2026-09-16\">", compare, StringComparison.Ordinal);
         Assert.Equal(8, Regex.Matches(compare, "<option ").Count);
-        Assert.Contains($"<option value=\"{RunScreen.Slug(Depth)}\" selected>{Depth}</option>", compare, StringComparison.Ordinal);
+        Assert.Contains($"<option value=\"{RunScreen.Slug(Depth)}\" selected>Needs a dip of 1 to 3 typical daily moves</option>", compare, StringComparison.Ordinal);
         Assert.DoesNotContain($"<option value=\"{RunScreen.Slug(SwingFamily.LiveCandidate("1"))}\"", compare, StringComparison.Ordinal);
         Assert.Contains("data-only-live=\"2\" data-both=\"0\" data-only-version=\"0\"", compare, StringComparison.Ordinal);
 
@@ -246,14 +246,15 @@ public partial class ReadSurface
 
         var nearest = Assert.Single(versions, version => version.Slug == RunScreen.Slug(NearestBands));
 
-        Assert.Equal((3, "A stop and target at the nearest bands, not a stop and target clear of the noise"), (nearest.Picks, nearest.Changes));
+        Assert.Equal((3, "Places its stop and take-profit at the nearest price bands, the swing plan"), (nearest.Picks, nearest.Changes));
+        Assert.Equal("Places its stop and take-profit at the nearest price bands, the swing plan", nearest.Name);
         Assert.Equal(1.0 / 3, nearest.Shared!.Value, 9);
         Assert.Null(Assert.Single(versions, version => version.Slug == RunScreen.Slug(Depth)).Shared);
 
         // The seventh's change in plain words: it leaves off a business its SEC filings read deteriorating, which the live
         // list keeps; a registration from before 21.4, reading the provider's quarters, keeps its own words.
         Assert.Equal(
-            "Leaves off a business whose SEC filings read deteriorating, which the live list keeps",
+            "Skips a stock whose business is deteriorating in its SEC filings",
             Assert.Single(versions, version => version.Slug == RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.DeterioratingName, "1"))).Changes);
         Assert.Equal(
             "Leaves off a business whose reported quarters read deteriorating, which the live list keeps",
@@ -261,7 +262,7 @@ public partial class ReadSurface
 
         // The eighth's: it lists only a stock whose analysts raised their estimate.
         Assert.Equal(
-            "Only a stock whose analysts raised their estimate for its year over the last 30 days, which the live list does not ask",
+            "Needs the analysts' estimates raised",
             Assert.Single(versions, version => version.Slug == RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.RevisionsName, "1"))).Changes);
 
         // The rule it took the place of keeps its words, read off its own registration.
@@ -271,7 +272,7 @@ public partial class ReadSurface
 
         // The ninth's: it keeps the night's first three in the list's own order.
         Assert.Equal(
-            "Keeps only the night's first 3 in the list's own order, where the live list keeps every name it passes",
+            "Takes at most 3 picks a night",
             Assert.Single(versions, version => version.Slug == RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.BestThreeName, "1"))).Changes);
 
         // And no version's change is drawn as a setting's own name against the live list's.

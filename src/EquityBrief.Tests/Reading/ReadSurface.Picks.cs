@@ -180,9 +180,9 @@ public partial class ReadSurface
         // trade the list recommended.
         Assert.Contains($"<section class=\"picks\" data-night=\"{PicksNewest}\" data-universe=\"500\" data-trades=\"5\" data-shown=\"5\" data-status=\"all\">", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"screen-mast\" data-title=\"Past picks: S&P 500 large cap\"><span class=\"m-screen\">Past picks: S&P 500 large cap</span>", page, StringComparison.Ordinal);
-        Assert.Contains($"Every trade the S&P 500's lists recommended, as of the close of {PicksNewest}", page, StringComparison.Ordinal);
+        Assert.Contains($"Every trade the S&P 500's rules picked, as of the close of {PicksNewest}", page, StringComparison.Ordinal);
         Assert.Contains(
-            $"<p class=\"lede\">Every name the live list recommended from the swing filter's first night, each bought at the open of the session after the night that listed it and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions.</p>",
+            $"<p class=\"lede\">Every name the rules picked from the swing filter's first night, each bought at the open of the session after the night that listed it and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions.</p>",
             page,
             StringComparison.Ordinal);
         Assert.DoesNotContain("the close it was listed at", page, StringComparison.Ordinal);
@@ -298,7 +298,7 @@ public partial class ReadSurface
         }
 
         // Both keys, each closing on what to take from it.
-        Assert.Contains("<b>How to read it.</b> A trade is listed on the night the live list drew it", page, StringComparison.Ordinal);
+        Assert.Contains("<b>How to read it.</b> A trade is listed on the night the rules picked it", page, StringComparison.Ordinal);
         Assert.Contains("<b>How to read the trade line.</b> The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them.", page, StringComparison.Ordinal);
 
         // The words name the hues the stylesheet draws the line's two ends in, the stop the loss's red and the target the
@@ -555,7 +555,7 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks"));
 
-        Assert.Contains("<p class=\"degraded\" data-picks=\"none\">No trade has been listed yet. The live list recommends a trade on each night the swing filter passes a name, and every one it recommends is followed here from that night on.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-picks=\"none\">No trade has been listed yet. A rule picks a trade on each night the swing filter passes a name, and every one it recommends is followed here from that night on.</p>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("class=\"counts\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("picks-table", page, StringComparison.Ordinal);
         Assert.DoesNotContain("not-yet-rate", page, StringComparison.Ordinal);

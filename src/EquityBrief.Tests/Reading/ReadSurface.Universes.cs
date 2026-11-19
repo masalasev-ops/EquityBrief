@@ -132,7 +132,7 @@ public partial class ReadSurface
         var pullback = FamilyCardOf(page, "pullback");
 
         Assert.Contains("No picks tonight. 1 stock qualified but was already bought on an earlier night and its trade is still open, named beneath.", pullback, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"family-note\">M3 qualified again tonight but its trade from 2026-09-30 on the S&P 500's list is still open, so it is not bought again; its card is under Met the rules again.</p>", pullback, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"family-note\">M3 qualified again tonight but its trade from 2026-09-30 on the S&P 500's picks is still open, so it is not bought again; its card is under Met the rules again.</p>", pullback, StringComparison.Ordinal);
 
         // The drift carries its line of evidence and says how far the S&P 400's members got.
         var drift = FamilyCardOf(page, "drift");
@@ -300,7 +300,7 @@ public partial class ReadSurface
             [("M1", "breakout", "open", "none", "none"), ("M3", "pullback", "2026-10-01", "2", "1.98")],
             Regex.Matches(picks, "<tr data-ticker=\"([^\"]+)\" data-index=\"S&P 400\" data-family=\"([^\"]+)\" data-listed=\"[^\"]+\" data-ended=\"([^\"]+)\" data-result=\"([^\"]+)\" data-cost=\"[^\"]+\" data-after-cost=\"([^\"]+)\">")
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value, match.Groups[5].Value)));
-        Assert.Contains("<td class=\"setup\" data-setup=\"pullback\">Pullback · S&P 400</td>", picks, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"setup\" data-setup=\"pullback\"><span class=\"tag-stack\">Pullback · S&P 400</span></td>", picks, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\"><span class=\"gain\">+2.00</span></td><td class=\"r num\">0.02</td><td class=\"r num\"><span class=\"gain\">+1.98</span></td>", picks, StringComparison.Ordinal);
         Assert.Contains("Showing 2 of 2 S&P 400 trades, 1 open", picks, StringComparison.Ordinal);
         Assert.Contains(
@@ -374,7 +374,7 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
 
-        Assert.Contains("on the S&P 400's list is still open, so it is not bought again; its card is under Met the rules again.", FamilyCardOf(page, "pullback"), StringComparison.Ordinal);
+        Assert.Contains("on the S&P 400's picks is still open, so it is not bought again; its card is under Met the rules again.", FamilyCardOf(page, "pullback"), StringComparison.Ordinal);
         Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&P 500 large cap\">", page, StringComparison.Ordinal);
         Assert.Contains("<option value=\"500\" data-members=\"", page, StringComparison.Ordinal);
     }

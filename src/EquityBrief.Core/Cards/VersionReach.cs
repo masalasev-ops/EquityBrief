@@ -15,7 +15,7 @@ public enum VersionReachKind
 
 public static class VersionReach
 {
-    public const string NarrowsWords = "narrows the live rule";
+    public const string NarrowsWords = "narrows the running revision";
 
     public const string WidensWords = "widens it";
 

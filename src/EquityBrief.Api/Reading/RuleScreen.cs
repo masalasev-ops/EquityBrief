@@ -86,7 +86,7 @@ public static class RuleScreen
         var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(card.Family, provisional) : [];
         var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live)) };
 
-        choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false, RuleChips.TabWords(at + 1, RuleChips.Differing(liveChips, ChipsOf(row))))));
+        choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false, TabSentence(at + 1, liveChips, row))));
 
         var chosen = choices.FirstOrDefault(choice => !choice.Live && choice.Slug == asked) ?? choices[0];
         var chosenRow = chosen.Live ? live : variants.First(row => RunScreen.Slug(row.Candidate) == chosen.Slug);
@@ -112,6 +112,19 @@ public static class RuleScreen
             Reached: row?.Gates is { } stored ? RuleRows.ReachedOf(stored) : null);
     }
 
+    // A variant's tab on a card: its number and its one change as a sentence, the setting other than the plan where it
+    // differs in more; the same settings where it differs in none.
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    static string TabSentence(int number, IReadOnlyList<RuleChip> liveChips, CandidateRow row)
+    {
+        var changes = RuleSentences.Between(liveChips, ChipsOf(row));
+        var named = changes.FirstOrDefault(change => change.Key != "hooks") ?? changes.FirstOrDefault();
+
+        return named is null
+            ? RuleChips.TabWords(number, [])
+            : FormattableString.Invariant($"V{number} · ") + (named.Sentence.Length > 1 && char.IsUpper(named.Sentence[1]) ? named.Sentence : char.ToLowerInvariant(named.Sentence[0]) + named.Sentence[1..]);
+    }
+
     // The live or provisional rule's tab: live where a freeze registered one, provisional otherwise, as the card's pill
     // reads, on the S&P 500 as on the S&P 400 and 600.
     static string LiveTab(CandidateRow? live) => live is not null ? "Live" : "Provisional";
@@ -123,7 +136,7 @@ public static class RuleScreen
         var (live, variants) = LiveAndVariants(Standing(family, large, indexName, register, night, asOf));
         var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(family, provisional) : [];
 
-        return (live, [.. variants.Select((row, at) => (row, RuleChips.TabWords(at + 1, RuleChips.Differing(liveChips, ChipsOf(row)))))]);
+        return (live, [.. variants.Select((row, at) => (row, TabSentence(at + 1, liveChips, row)))]);
     }
 
     // A chosen rule's chips, each marked where a chosen variant differs from the live rule on it, and the live rule's
@@ -344,7 +357,7 @@ public static class RuleScreen
         var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(HeavyweightRule.Name, provisional) : [];
         var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live)) };
 
-        choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false, RuleChips.TabWords(at + 1, RuleChips.Differing(liveChips, ChipsOf(row))))));
+        choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false, TabSentence(at + 1, liveChips, row))));
 
         var chosen = choices.FirstOrDefault(choice => !choice.Live && choice.Slug == asked) ?? choices[0];
         var chosenRow = chosen.Live ? null : variants.First(row => RunScreen.Slug(row.Candidate) == chosen.Slug);
@@ -422,11 +435,11 @@ public static class RuleScreen
         var line = verdict switch
         {
             { Passed: true, Adjusted: { } p } => FormattableString.Invariant(
-                $"This version's design passed the year-by-year test: the run for {verdict.Month} put the chance that {named} six settings did as well by luck at {p:0.00}, within the {LoopGate.Bar:0.0000} it needs."),
+                $"This variant's design passed the year-by-year test: the run for {verdict.Month} put the chance that {named} six settings did as well by luck at {p:0.00}, within the {LoopGate.Bar:0.0000} it needs."),
             { Adjusted: { } p } => FormattableString.Invariant(
-                $"This version did not pass the year-by-year test: the run for {verdict.Month} put the chance that {named} six settings did as well by luck at {p:0.00}, against the {LoopGate.Bar:0.0000} it needs, so it does not read as better than the starting setup."),
+                $"This variant did not pass the year-by-year test: the run for {verdict.Month} put the chance that {named} six settings did as well by luck at {p:0.00}, against the {LoopGate.Bar:0.0000} it needs, so it does not read as better than the starting setup."),
             _ => FormattableString.Invariant(
-                $"This version did not pass the year-by-year test: the run for {verdict.Month} held too little history to read {named} six settings, so it does not read as better than the starting setup."),
+                $"This variant did not pass the year-by-year test: the run for {verdict.Month} held too little history to read {named} six settings, so it does not read as better than the starting setup."),
         };
 
         if (parameters.GetValueOrDefault(IndexHeavyweightCandidate.TwelveOneParameter) == 1)

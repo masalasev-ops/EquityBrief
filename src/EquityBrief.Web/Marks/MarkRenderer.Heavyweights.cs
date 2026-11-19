@@ -148,8 +148,8 @@ public sealed partial class MarkRenderer
         var sectorsHeld = card.Holdings.Select(holding => holding.Sector).Distinct(StringComparer.Ordinal).Count();
         var reshuffle = card.Tiles?.SessionsToNext is { } days ? Formatted($"; it reshuffles next in {days} trading {(days == 1 ? "day" : "days")}") : string.Empty;
         var summary = card.Holdings.Count == 0
-            ? (variant is null ? "It holds nothing tonight" : "This version would hold nothing tonight") + reshuffle + "."
-            : (variant is null ? "It holds " : "This version would hold ") + (card.Holdings.Count == 1 ? "1 stock" : Formatted($"{card.Holdings.Count} stocks")) + Formatted($" in {sectorsHeld} of {card.Tiles?.Of ?? 11} sectors") + reshuffle + ".";
+            ? (variant is null ? "It holds nothing tonight" : "This variant would hold nothing tonight") + reshuffle + "."
+            : (variant is null ? "It holds " : "This variant would hold ") + (card.Holdings.Count == 1 ? "1 stock" : Formatted($"{card.Holdings.Count} stocks")) + Formatted($" in {sectorsHeld} of {card.Tiles?.Of ?? 11} sectors") + reshuffle + ".";
 
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(summary)}</p>");
 
@@ -162,7 +162,7 @@ public sealed partial class MarkRenderer
 
             if (variant is not null)
             {
-                body.Append(Invariant, $"<div class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\"><p class=\"band-head\">A version being tested, not tonight's holdings</p><p>{Escaped(VersionName(variant.Chosen))}</p><p class=\"band-note\">It runs every night beside the live setup with its own paper account. It replaces the live setup only if it proves better and you approve it on the Monthly check-up.</p></div>");
+                body.Append(Invariant, $"<div class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\"><p class=\"band-head\">A variant being tested, not tonight's holdings</p><p>{Escaped(VersionName(variant.Chosen))}</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better and you approve it on the Monthly check-up.</p></div>");
 
                 // A version registered before its setup's settings were fixed says how the tester judged its design.
                 // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
@@ -256,7 +256,7 @@ public sealed partial class MarkRenderer
         // see: The read-only copy is published to Cloudflare Pages with no control and no part of the method, and its upload refuses a page that leaks one
         if (Copying)
         {
-            body.Append(Invariant, $"<p class=\"record-said\">{(card.LiveSince is { } went ? FormattableString.Invariant($"It went live on {went:d MMM yyyy}; its holdings since then are on <a href=\"#/paper\">Paper trading</a>.") : "It has not been tested yet; its holdings are on <a href=\"#/paper\">Paper trading</a>.")}</p>");
+            body.Append(Invariant, $"<p class=\"record-said\">{(card.LiveSince is { } went ? FormattableString.Invariant($"{Escaped(RevisionTags.StartedRunning(EquityBrief.Core.Families.HeavyweightRule.Name, went))}; its holdings since then are on <a href=\"#/paper\">Paper trading</a>.") :"It has not been tested yet; its holdings are on <a href=\"#/paper\">Paper trading</a>.")}</p>");
 
             return body.Append("</section>").ToString();
         }
@@ -287,7 +287,7 @@ public sealed partial class MarkRenderer
         body.Append(variant is null ? FrozenSweepLine(card.Frozen) : string.Empty);
         body.Append(card.Frozen is { } frozen && variant is null ? Formatted($"<p class=\"record-said\">{Escaped(FrozenRecordSaid(frozen))}</p>") : string.Empty);
         body.Append(card.RuleChoice?.NoVariantLine is { } none ? Formatted($"<p class=\"no-variant\" data-no-variant=\"true\">{Escaped(ReaderWords.Plain(none))}</p>") : string.Empty);
-        body.Append(Invariant, $"<p class=\"record-said\">{(card.LiveSince is { } live ? FormattableString.Invariant($"It went live on {live:d MMM yyyy}; its holdings since then are on <a href=\"#/paper\">Paper trading</a>.") : "It has not been tested yet, so its holdings count toward nothing; they are on <a href=\"#/paper\">Paper trading</a>.")}</p>");
+        body.Append(Invariant, $"<p class=\"record-said\">{(card.LiveSince is { } live ? FormattableString.Invariant($"{Escaped(RevisionTags.StartedRunning(EquityBrief.Core.Families.HeavyweightRule.Name, live))}; its holdings since then are on <a href=\"#/paper\">Paper trading</a>.") :"It has not been tested yet, so its holdings count toward nothing; they are on <a href=\"#/paper\">Paper trading</a>.")}</p>");
         body.Append("</div></details>");
 
         if (card.RuleChoice is { Choices.Count: > 1 } versions)
@@ -366,7 +366,7 @@ public sealed partial class MarkRenderer
         EquityBrief.Core.Families.HeavyweightStandings.StillLeading => "Still leading its sector",
         EquityBrief.Core.Families.HeavyweightStandings.LostItsLead => "Lost its lead; sold at the next reshuffle if it is not leading then",
         EquityBrief.Core.Families.HeavyweightStandings.BelowItsAverage => "Fell below its 200-day average; sold at the next reshuffle if it stops leading",
-        EquityBrief.Core.Families.HeavyweightStandings.NotForThisDesign => "Not read for this version",
+        EquityBrief.Core.Families.HeavyweightStandings.NotForThisDesign => "Not read for this variant",
         _ => "Not read tonight",
     };
 

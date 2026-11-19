@@ -109,7 +109,7 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">No target: it sells on its exit signal</td>", m2, StringComparison.Ordinal);
         Assert.Contains(SetupFamilies.ProvisionalStatus, dip, StringComparison.Ordinal);
         Assert.Contains("M1 also qualified here tonight and is shown once, under Breakouts to a new high, with both labels. One stock is one trade.", dip, StringComparison.Ordinal);
-        Assert.Contains("M3 qualified tonight but its pullback trade from 2026-09-30 on the S&P 500's list is still open, so it is not listed. One stock, one trade.", dip, StringComparison.Ordinal);
+        Assert.Contains("M3 qualified tonight but its pullback trade from 2026-09-30 on the S&P 500's picks is still open, so it is not listed. One stock, one trade.", dip, StringComparison.Ordinal);
 
         // The cards in the page's order, the dip's after the drift's, the fundamentals-first family's drawn no more from 22.13,
         // each numbered among them.
@@ -305,9 +305,9 @@ public partial class ReadSurface
         Assert.Equal(
             ["#/picks?universe=400", "#/picks?setup=pullback&universe=400", "#/picks?setup=breakout&universe=400", "#/picks?setup=dip&universe=400"],
             Regex.Matches(Assert.Single(Blocks(picks, "<nav class=\"universe-filters picks-filters picks-setups\".*?</nav>")), "data-filter=\"setup\"[^>]*href=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Contains("<td class=\"setup\" data-setup=\"dip\">Short-term dip · S&P 400</td>", Assert.Single(Blocks(picks, "<tr data-ticker=\"M2\" data-index=\"S&P 400\" data-family=\"dip\".*?</tr>")), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"setup\" data-setup=\"dip\"><span class=\"tag-stack\">Short-term dip · S&P 400</span></td>", Assert.Single(Blocks(picks, "<tr data-ticker=\"M2\" data-index=\"S&P 400\" data-family=\"dip\".*?</tr>")), StringComparison.Ordinal);
         Assert.Contains("data-ended=\"2026-09-30\"", Assert.Single(Blocks(picks, "<tr data-ticker=\"M1\" data-index=\"S&P 400\" data-family=\"dip\".*?</tr>")), StringComparison.Ordinal);
-        Assert.Contains("A short-term dip trade is bought at the open of the session after the night that listed it and sold at the open after its exit's close or one under its stop, or at the close of its last session where neither came; its exit is the first close above its 5-session average of closes on the provisional settings", picks, StringComparison.Ordinal);
+        Assert.Contains("A short-term dip trade is bought at the open of the session after the night that listed it and sold at the open after its exit's close or one under its stop, or at the close of its last session where neither came; its exit is the first close above its 5-session average of closes on the starting settings", picks, StringComparison.Ordinal);
 
         // The dip chosen keeps its trades alone, the count saying how many of the index's are shown.
         var dipsOnly = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400&setup=dip"));
@@ -320,7 +320,7 @@ public partial class ReadSurface
         var card = Assert.Single(Blocks(large, "<section class=\"card\"[^>]*data-card=\"dip-picks\".*?</section>"));
 
         Assert.Contains("<p class=\"list-count\" data-dip=\"1\" data-open=\"1\" data-to-buy=\"0\">1 S&P 500 short-term dip trade, 1 open</p>", card, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"setup\" data-setup=\"dip\">Short-term dip · S&P 500</td>", card, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"setup\" data-setup=\"dip\"><span class=\"tag-stack\">Short-term dip · S&P 500", card, StringComparison.Ordinal);
 
         var largeDips = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?setup=dip"));
 

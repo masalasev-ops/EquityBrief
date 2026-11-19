@@ -736,7 +736,11 @@ public sealed record ComparisonView(
 // in plain words, the stocks it has picked so far, the share of them the live list also picked, and the evidence it has
 // gathered against the floor its first look is read at. Picks only: nothing here is read from how its trades turned out.
 // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
-public sealed record VersionLine(string Candidate, string Slug, string Changes, int Picks, double? Shared, int Blocks, int Floor, bool Live);
+public sealed record VersionLine(string Candidate, string Slug, string Changes, int Picks, double? Shared, int Blocks, int Floor, bool Live)
+{
+    // A variant's one change as a sentence, which the page names it by; none where its settings are not read.
+    public string? Name { get; init; }
+}
 
 // A stock in a comparison of the night's picks, with the setting that sent it one way where the stored gate
 // results say which.
@@ -6541,19 +6545,25 @@ public sealed partial class MarkRenderer : IComponent
     public static IReadOnlyList<(string Heading, string Says)> PicksHeadings(bool named) =>
     [
         ("Night listed", named
-            ? "The evening the live list recommended the trade. It is bought at the open of the session after that evening."
-            : "The evening the live list recommended the trade. It is bought at the open of the session after that evening, and the date opens this stock's page as it stood that night."),
+            ? "The evening the rules picked the trade. It is bought at the open of the session after that evening."
+            : "The evening the rules picked the trade. It is bought at the open of the session after that evening, and the date opens this stock's page as it stood that night."),
         .. named ? new[] { ("Stock", "The stock, which opens its page as it stood on the night listed.") } : Array.Empty<(string, string)>(),
         ("Business that night", "The state the company's reported quarters gave it on the evening it was listed, or not read that night where none was stored yet."),
         ("Setup", "The setup the page listed the trade under. A trade listed before the page drew setups was the pullback's."),
         ("Buy", "The open it was bought at, the session after its night. A trade whose next session is not stored yet says it buys at the next open."),
         ("Stop", "The price the plan sells at to cut the loss, or the first level of a stop that trails the price."),
-        ("Target", "The price the plan takes its gain at. A setup that trails its stop names none."),
-        ("Trade", "The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
+        (TakesProfitAt, "The one price the plan takes profit at, worked from the price it paid. A setup that trails its stop names none."),
+        ("Trade", "The line runs from the stop on the left, in red, to the take-profit on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
         ("Status", "What became of the trade: open, reached target, stopped out, or ran out of time where its holding limit passed before either."),
         ("Sessions held", "Trading sessions from the night listed to the session it finished on, or to the night drawn while it is still open."),
         ("Result", "What the trade came to from its buy in multiples of the risk its plan put up, the fall from the evening's close to the stop: +2.00 made twice that risk and -1.00 lost it, and a close through the stop can read below -1. Open while the trade runs."),
     ];
+
+    // The column a trade's take-profit stands under on Paper trading and Past picks, never "Target", and the tag a pick from a
+    // rule not yet registered carries in its revision's place.
+    public const string TakesProfitAt = "Takes profit at";
+
+    public const string StartingSettings = "starting settings, not yet registered";
 
     // How many typical days either side of the close the distance row draws before a band becomes an arrow.
     public const int DistanceSpan = 4;
@@ -7424,7 +7434,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var (heading, says) in PicksHeadings(named))
         {
-            table.Append(TippedHeading(heading, says, heading is "Buy" or "Stop" or "Target" or "Sessions held" or "Result" ? "r" : null));
+            table.Append(TippedHeading(heading, says, heading is "Buy" or "Stop" or TakesProfitAt or "Sessions held" or "Result" ? "r" : null));
         }
 
         table.Append("</tr></thead><tbody>");
@@ -7448,7 +7458,7 @@ public sealed partial class MarkRenderer : IComponent
 
             // The setup the page listed the trade under.
             // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
-            table.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\" data-provisional=\"{Flag(row.Provisional)}\">{Escaped(row.Setup)}{(row.Provisional ? " <span class=\"provisional\">provisional</span>" : string.Empty)}</td>");
+            table.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\" data-provisional=\"{Flag(row.Provisional)}\"><span class=\"tag-stack\">{Escaped(row.Setup)}{(row.Provisional ? " <span class=\"vtag\">" + StartingSettings + "</span>" : RevisionTags.For(row.Family, row.Night))}</span></td>");
 
             foreach (var (name, price) in new[] { ("buy", row.Buy), ("stop", row.Stop), ("target", row.Target) })
             {
@@ -8550,41 +8560,44 @@ public sealed partial class MarkRenderer : IComponent
 
         if (view.Chosen is not { } chosen)
         {
-            return "<p class=\"degraded\" data-compare=\"none\">no version runs beside the live list, so there is nothing to compare</p>";
+            return "<p class=\"degraded\" data-compare=\"none\">no variant runs beside the running revision, so there is nothing to compare</p>";
         }
 
+        // From the operator's review of the revisions the filter names variants by their one change and the running revision
+        // by its name, and the checks read it for a version or a provisional rule.
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
         region.Append(Invariant, $"<div class=\"compare-picture\" data-version=\"{Escaped(chosen.Slug)}\" data-evaluated=\"{(view.Evaluated ? "true" : "false")}\" data-only-live=\"{view.OnlyLive.Count}\" data-both=\"{view.Both.Count}\" data-only-version=\"{view.OnlyVersion.Count}\">");
-        region.Append("<div class=\"cp-choose\"><label for=\"compare-version\">Compare the live list with</label>");
+        region.Append("<div class=\"cp-choose\"><label for=\"compare-version\">Compare the running revision's picks with the variant</label>");
         region.Append(Invariant, $"<select id=\"compare-version\" data-compare=\"{Escaped(route)}\">");
 
         foreach (var version in view.Versions.Where(version => !version.Live))
         {
-            region.Append(Invariant, $"<option value=\"{Escaped(version.Slug)}\"{(version.Slug == chosen.Slug ? " selected" : string.Empty)}>{Escaped(version.Candidate)}</option>");
+            region.Append(Invariant, $"<option value=\"{Escaped(version.Slug)}\"{(version.Slug == chosen.Slug ? " selected" : string.Empty)}>{Escaped(version.Name ?? version.Candidate)}</option>");
         }
 
         region.Append("</select></div>");
-        region.Append(Invariant, $"<p class=\"cp-changes\"><b>{Escaped(chosen.Candidate)}:</b> {Escaped(chosen.Changes)}.</p>");
+        region.Append(Invariant, $"<p class=\"cp-changes\"><b>{Escaped(chosen.Name ?? chosen.Candidate)}:</b> {Escaped(CompareWords(chosen.Changes))}.</p>");
 
         if (!view.Evaluated)
         {
-            region.Append("<p class=\"degraded\" data-evaluated=\"false\">This version was not evaluated on this night, so it picked nothing here.</p>");
+            region.Append("<p class=\"degraded\" data-evaluated=\"false\">This variant was not evaluated on this night, so it picked nothing here.</p>");
         }
 
         region.Append("<div class=\"cp-body\">");
-        region.Append(Invariant, $"<svg class=\"overlap-rings\" viewBox=\"0 0 300 200\" width=\"300\" height=\"200\" role=\"img\" aria-label=\"{view.OnlyLive.Count} only on the live list, {view.Both.Count} on both, {view.OnlyVersion.Count} only this version\">");
+        region.Append(Invariant, $"<svg class=\"overlap-rings\" viewBox=\"0 0 300 200\" width=\"300\" height=\"200\" role=\"img\" aria-label=\"{view.OnlyLive.Count} only the running revision's, {view.Both.Count} both, {view.OnlyVersion.Count} only this variant's\">");
         region.Append("<circle class=\"or-live\" cx=\"110\" cy=\"100\" r=\"80\"></circle><circle class=\"or-version\" cx=\"190\" cy=\"100\" r=\"80\"></circle>");
         region.Append(Invariant, $"<text class=\"or-count\" x=\"70\" y=\"108\" text-anchor=\"middle\">{view.OnlyLive.Count}</text><text class=\"or-count\" x=\"150\" y=\"108\" text-anchor=\"middle\">{view.Both.Count}</text><text class=\"or-count\" x=\"230\" y=\"108\" text-anchor=\"middle\">{view.OnlyVersion.Count}</text>");
-        region.Append("<text class=\"or-name\" x=\"70\" y=\"194\" text-anchor=\"middle\">live list</text><text class=\"or-name\" x=\"230\" y=\"194\" text-anchor=\"middle\">this version</text></svg>");
+        region.Append("<text class=\"or-name\" x=\"70\" y=\"194\" text-anchor=\"middle\">running revision</text><text class=\"or-name\" x=\"230\" y=\"194\" text-anchor=\"middle\">this variant</text></svg>");
         region.Append("<div class=\"cp-groups\">");
-        region.Append(Group("only-live", "Only the live list", view.OnlyLive));
+        region.Append(Group("only-live", "Only the running revision", view.OnlyLive));
         region.Append(Group("both", "Both", [.. view.Both.Select(ticker => new ComparedName(ticker, null))]));
-        region.Append(Group("only-version", "Only this version", view.OnlyVersion));
+        region.Append(Group("only-version", "Only this variant", view.OnlyVersion));
         region.Append("</div></div>");
         region.Append("<div class=\"cp-tiles\">");
-        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"picked\"><b>{view.Picked}</b><span>stocks this version picked over the last {view.Evenings} evening(s)</span></div>");
-        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"shared\"><b>{(view.SharedShare is { } share ? Formatted($"{share * 100:0}%") : "none")}</b><span>of them also on the live list</span></div>");
-        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"ahead\"><b>{view.EveningsAhead}</b><span>evenings it picked a stock the live list did not</span></div>");
-        region.Append("</div><p class=\"lp-note\">These are picks, not results. A version's picks never appear on tonight's list, a stock's page or Past picks; how a registered rule's trades did is its verdict in the monthly test.</p></div>");
+        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"picked\"><b>{view.Picked}</b><span>stocks this variant picked over the last {view.Evenings} evening(s)</span></div>");
+        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"shared\"><b>{(view.SharedShare is { } share ? Formatted($"{share * 100:0}%") : "none")}</b><span>of them also the running revision's picks</span></div>");
+        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"ahead\"><b>{view.EveningsAhead}</b><span>evenings it picked a stock the running revision did not</span></div>");
+        region.Append("</div><p class=\"lp-note\">These are picks, not results. A variant's picks never appear on Tonight, a stock's page or Past picks; how a registered rule's trades did is its verdict in the monthly test.</p></div>");
 
         return region.ToString();
 
@@ -8597,7 +8610,7 @@ public sealed partial class MarkRenderer : IComponent
 
             foreach (var name in tickers)
             {
-                group.Append(Invariant, $"<li data-ticker=\"{Escaped(name.Ticker)}\"><a href=\"{Escaped(names + name.Ticker)}\">{Escaped(name.Ticker)}</a>{(name.Why is { } why ? " <span class=\"cp-why\">" + Escaped(why) + "</span>" : string.Empty)}</li>");
+                group.Append(Invariant, $"<li data-ticker=\"{Escaped(name.Ticker)}\"><a href=\"{Escaped(names + name.Ticker)}\">{Escaped(name.Ticker)}</a>{(name.Why is { } why ? " <span class=\"cp-why\">" + Escaped(CompareWords(why)) + "</span>" : string.Empty)}</li>");
             }
 
             group.Append(tickers.Count == 0 ? "</div>" : "</ul></div>");
@@ -8605,6 +8618,13 @@ public sealed partial class MarkRenderer : IComponent
             return group.ToString();
         }
     }
+
+    // The comparison's stored reasons in its own words: the variant compared, and the running revision beside it.
+    static string CompareWords(string words) =>
+        words.Replace("this version's", "this variant's", StringComparison.Ordinal)
+            .Replace("this version", "this variant", StringComparison.Ordinal)
+            .Replace("the live list's", "the running revision's", StringComparison.Ordinal)
+            .Replace("the live list", "the running revision", StringComparison.Ordinal);
 
     static string Escaped(string text) =>
         text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");

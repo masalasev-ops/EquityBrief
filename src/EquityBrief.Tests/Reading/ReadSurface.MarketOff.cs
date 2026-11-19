@@ -53,7 +53,7 @@ public partial class ReadSurface
 
         // From 19.3 its choice names it by the one setting it differs from the provisional rule on, its full name under
         // the pointer, from 22.6 in the Showing list.
-        Assert.Contains($"<option value=\"{RunScreen.Slug(variant.Candidate)}\" data-variant=\"1\" title=\"{variant.Candidate}\">Version: {IndexRuleCandidate.MarketCheckOff}</option>", card, StringComparison.Ordinal);
+        Assert.Contains($"<option value=\"{RunScreen.Slug(variant.Candidate)}\" data-variant=\"1\" title=\"{variant.Candidate}\">Variant: skips the check on the whole market</option>", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-no-variant", card, StringComparison.Ordinal);
 
         // Chosen in the link, the card is drawn under the band with the clause naming the check off marked, and its chip.

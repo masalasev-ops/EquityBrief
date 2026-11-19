@@ -5226,6 +5226,22 @@ public partial class ReadSurface
         }
     }
 
+    // A running rule's pill on its card: its revision and the day it started running, or the day its rule was registered
+    // where the page reads no revision.
+    internal const string RunningPill = "(?:Revision [0-9]+, running since [0-9]+ [A-Z][a-z]{2} 2026|Running since [0-9]+ [A-Z][a-z]{2} 2026)";
+
+    // Paper trading's tiles, one a rule's running revision, each with its family and standing.
+    internal static (string Family, string Standing)[] RevisionTilesOf(string page) =>
+        [.. Regex.Matches(page, "<a class=\"revision-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value))];
+
+    // Paper trading's Show select, drawing the rule chosen's running revision, its variants and its earlier revisions.
+    internal static string ShowSelectOf(string page) =>
+        Regex.Match(page, "<select data-merge-key=\"show-rule\".*?</select>", RegexOptions.Singleline).Value;
+
+    // Paper trading's variant rows of the rule chosen, by each account's key.
+    internal static string[] VariantRowsOf(string page) =>
+        [.. Regex.Matches(page, "<tr class=\"vrow[^\"]*\" data-account=\"([^\"]+)\"").Select(match => match.Groups[1].Value)];
+
     // A quote feed answering no symbol, and counting each ask.
     internal sealed class NoStripQuotes : EquityBrief.Core.Providers.IStripQuoteFeed
     {

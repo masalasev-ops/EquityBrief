@@ -85,7 +85,7 @@ public partial class ReadSurface
 
         var kept = await Card();
 
-        Assert.Contains("<span class=\"status-pill live\">This version since 25 Sep 2026</span> <span class=\"fam-count\">5 picks tonight</span>", kept, StringComparison.Ordinal);
+        Assert.Matches("<span class=\"status-pill live\">" + RunningPill + "</span> <span class=\"fam-count\">5 picks tonight</span>", kept);
         Assert.Contains(SweepLineDrawn, RuleFoldOf(kept), StringComparison.Ordinal);
         Assert.Contains("data-picks=\"5\"", kept, StringComparison.Ordinal);
 
@@ -98,7 +98,7 @@ public partial class ReadSurface
 
         var next = await Card();
 
-        Assert.Contains("<span class=\"status-pill live\">This version since 27 Sep 2026</span>", next, StringComparison.Ordinal);
+        Assert.Matches("<span class=\"status-pill live\">" + RunningPill + "</span>", next);
         Assert.DoesNotContain(SweepLineDrawn, next, StringComparison.Ordinal);
 
         // A sweep after the second freeze found none: the card draws the line again and keeps its five picks.

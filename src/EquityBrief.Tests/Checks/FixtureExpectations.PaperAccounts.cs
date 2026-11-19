@@ -56,7 +56,7 @@ public partial class FixtureExpectations
         using var client = host.CreateClient();
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
-        var tiles = Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\" data-return=\"([^\"]+)\" data-open=\"(\\d+)\" data-closed=\"(\\d+)\" data-since=\"([^\"]+)\"")
+        var tiles = Regex.Matches(page, "<a class=\"revision-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\" data-account=\"[^\"]+\" data-return=\"([^\"]+)\" data-open=\"(\\d+)\" data-closed=\"(\\d+)\" data-since=\"([^\"]+)\"")
             .Select(match => (Family: match.Groups[1].Value, Standing: match.Groups[2].Value, Figures: string.Join("|", match.Groups[3].Value, match.Groups[4].Value, match.Groups[5].Value, match.Groups[6].Value)))
             .ToArray();
 
@@ -66,23 +66,22 @@ public partial class FixtureExpectations
         Assert.Contains("<p class=\"degraded\" data-paper-chart=\"none\">No account has a trade to draw yet.</p>", page, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"degraded\" data-yours=\"{expected.GetProperty("yours").GetString()}\">", page, StringComparison.Ordinal);
 
-        // Each family chosen for its variants and its scorecard: its one account with no trade, the verdict the derivation
-        // gives and its record's label, no variant beside it; no test year; and its record since it went live.
+        // Each rule chosen: its running revision's card, the one account with no trade, the verdict the derivation gives and
+        // its record's label, no variant beside it; no test year; and its record since it started running.
         foreach (var (family, key, standing, tooFew, sinceLive) in accounts)
         {
-            var chosen = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/paper?variants={family}&rule={family}"));
-            var table = Regex.Match(chosen, "<table class=\"paper-variants\".*?</table>", RegexOptions.Singleline).Value;
-            var row = Assert.Single(Regex.Matches(table, "<tr data-account=.*?</tr>", RegexOptions.Singleline)).Value;
+            var chosen = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/paper?rule={family}"));
+            var running = Regex.Match(chosen, $"<div class=\"running\" data-account=\"{Regex.Escape(key)}\" data-standing=\"{standing}\"").Value;
             var score = Regex.Match(chosen, "<div class=\"score\" .*", RegexOptions.Singleline).Value;
             var since = score[score.IndexOf("<div class=\"score-half live\"", StringComparison.Ordinal)..];
 
-            Assert.StartsWith($"<tr data-account=\"{key}\" data-standing=\"{standing}\" data-trades=\"0\" data-shared=\"0\" data-only=\"0\">", row, StringComparison.Ordinal);
-            Assert.Contains($"<span class=\"pv-verdict\" data-verdict=\"{verdict}\">{verdict}</span>", row, StringComparison.Ordinal);
-            Assert.Contains($"<span class=\"too-few\">{tooFew}</span>", row, StringComparison.Ordinal);
-            Assert.Contains("<p class=\"degraded\" data-variants=\"none\">", chosen, StringComparison.Ordinal);
+            Assert.NotEmpty(running);
+            Assert.Contains("<b>0 open · 0 waiting</b><span>0 closed: 0 took profit, 0 stopped</span>", chosen, StringComparison.Ordinal);
+            Assert.Contains($"<span class=\"too-few\">{tooFew}</span>", since, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"degraded\" data-variants=\"0\">", chosen, StringComparison.Ordinal);
             Assert.StartsWith($"<div class=\"score\" data-family=\"{family}\" data-standing=\"{standing}\" data-verdict=\"{verdict}\">", score, StringComparison.Ordinal);
             Assert.Contains("<p class=\"degraded\" data-history=\"none\">No monthly test has read this rule on this index yet.</p>", score, StringComparison.Ordinal);
-            Assert.Contains(sinceLive is { } said ? $"data-counted=\"0\" data-needed=\"{said.Split(' ')[2]}\">{ReaderText.Words(said)}</p>" : $"<p class=\"sh-line\" data-record=\"none\">{ReaderText.Words(MarkRenderer.NoRecordLine)}</p>", since, StringComparison.Ordinal);
+            Assert.Contains(sinceLive is { } said ? $"data-counted=\"0\" data-needed=\"{said.Split(' ')[2]}\">{ReaderText.Words(said)}</p>" : $"<p class=\"sh-line\" data-record=\"none\">{ReaderText.Words(MarkRenderer.NotYetTestedRecord)}</p>", since, StringComparison.Ordinal);
         }
     }
 }

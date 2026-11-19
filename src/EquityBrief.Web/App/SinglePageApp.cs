@@ -597,13 +597,14 @@ public sealed partial class SinglePageApp : IComponent
           const setupCard = query.get('{{{HomeSetupKey}}}') ? document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')) : null;
           const setupRow = setupCard && query.get('name') ? setupCard.querySelector('tr[data-ticker="' + CSS.escape(query.get('name')) + '"]') : null;
           const placed = keptPlace && Date.now() - keptPlace.at < 10000 ? screen.querySelector(keptPlace.find) : null;
-          const placedCard = placed ? placed.closest('section.card') : null;
+          const placedCard = placed ? (keptPlace.self ? placed : placed.closest('section.card')) : null;
           if (placedCard) { scrollTo(0, placedCard.getBoundingClientRect().top + scrollY - keptPlace.top); }
           else if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }
           else if (query.get('name') && document.getElementById('selected')) { document.getElementById('selected').scrollIntoView({ block: 'start' }); }
           else if (setupRow) { setupRow.scrollIntoView({ block: 'center' }); }
           else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { const buyRow = screen.querySelector('.buy-points tr.sel[data-fold]'); const buyFold = document.getElementById(buyRow.getAttribute('data-fold')); const buyPlan = buyFold ? buyFold.querySelector('.card-plan') : null; (buyPlan || buyRow).scrollIntoView({ block: 'start' }); }
           else if (reasonRow) { reasonRow.scrollIntoView({ block: 'center' }); }
+          else if (query.get('{{{PaperLink.PickKey}}}') && screen.querySelector('.vrow.open')) { screen.querySelector('.vrow.open').scrollIntoView({ block: 'start' }); }
           else if (query.get('{{{HomeSetupKey}}}') && document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}'))) { document.getElementById('setup-' + query.get('{{{HomeSetupKey}}}')).scrollIntoView({ block: 'start' }); }
           else { scrollTo(0, 0); }
           {{{MarkRenderer.PaperChartToNewest}}}
@@ -979,9 +980,13 @@ public sealed partial class SinglePageApp : IComponent
             return;
           }
           // A chip, a sector's tile or a column's heading keeps its card where it stood, found again by the card's mark.
-          const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort');
+          const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort, a.chip.tab, .pager a.pg-btn, .vdetail .plan-foot a');
           const keeperCard = keeper ? keeper.closest('section.card[data-card]') : null;
           if (keeperCard) { keepPlace(keeper, 'section.card[data-card="' + CSS.escape(keeperCard.getAttribute('data-card')) + '"]'); }
+          // A variant's row unfolding or folding stays where it stood in the window, found again by its own id.
+          const unfolding = event.target.closest('a.vbtn');
+          const unfoldingRow = unfolding ? unfolding.closest('tr[id]') : null;
+          if (unfoldingRow) { keptPlace = { find: '#' + CSS.escape(unfoldingRow.id), top: unfoldingRow.getBoundingClientRect().top, at: Date.now(), self: true }; }
           // A link to a place on this screen. Every screen's address opens "#/", so a link whose hash
           // does not is a place rather than a screen, and is scrolled to rather than taken as an
           // address, which would draw a screen of that name that does not exist. It lands below the
@@ -2171,14 +2176,14 @@ public sealed partial class SinglePageApp : IComponent
         {
             planned.Append(Fold(
                 "on-the-list-before",
-                Invariant($"On the list before: the nights the live list picked {Escaped(ticker)} before"),
+                Invariant($"Picked before: the nights a rule picked {Escaped(ticker)} before"),
                 marks.OnTheListBefore(ticker, picked) + Cards.Key(
                     "How to read it.",
-                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: planned at that night's close, bought at the next session's open and followed to its target, its stop, or the end of its own setup's limit, {string.Join(", ", picked.GroupBy(pick => (pick.Setup, Cap: pick.Cap ?? EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap)).Select(limit => Invariant($"{limit.Key.Cap} sessions for the {limit.Key.Setup.ToLowerInvariant()}")))}. The line runs from the stop in red to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
-                    "What these trades did is a record of the list's picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen.")));
+                    Invariant($"Each row is a night a rule picked {Escaped(ticker)} before this one, on the plan that night's rule traded: planned at that night's close, bought at the next session's open and followed to its target, its stop, or the end of its own setup's limit, {string.Join(", ", picked.GroupBy(pick => (pick.Setup, Cap: pick.Cap ?? EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap)).Select(limit => Invariant($"{limit.Key.Cap} sessions for the {limit.Key.Setup.ToLowerInvariant()}")))}. The line runs from the stop in red to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
+                    "What these trades did is a record of the rules' picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen.")));
         }
 
-        Card("plan", "plan", "The plan", Cards.Computed("The plan", planned.ToString(), title: "Entry and exit plan", stamp: Cards.Night(session), id: "plan", region: "plan", role: Cards.Buy));
+        Card("plan", "plan", "The plan", Cards.Computed("The plan", planned.ToString(), title: MarkRenderer.StartingTonight, stamp: Cards.Night(session), id: "plan", region: "plan", role: Cards.Buy));
 
         // The earnings reaction record: the stock's typical earnings move over every print the store holds, and what
         // each print over the calendar's year behind did on the session it moved, drawn against it.
@@ -3131,6 +3136,7 @@ public sealed partial class SinglePageApp : IComponent
         ImprovingCardView? improving = null,
         SetupRecords? longRecords = null)
     {
+        using var tags = RevisionTags.Use(Universes.Large.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : line?.Groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
         var heading = "Tonight: " + Universes.Large.Titled;
@@ -3294,7 +3300,8 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append("</section>");
 
-        return region.ToString();
+        // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+        return ReaderText.Revisions(region.ToString());
     }
 
     // Tonight's page for the S&P 400 or the S&P 600: its heading naming the index, the Universe selector, the line its
@@ -3321,6 +3328,7 @@ public sealed partial class SinglePageApp : IComponent
         ImprovingCardView? improving = null,
         SetupRecords? longRecords = null)
     {
+        using var tags = RevisionTags.Use(universe.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : line?.Groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Titled;
         var query = "?" + Universes.Query + "=" + universe.Word;
@@ -3357,7 +3365,7 @@ public sealed partial class SinglePageApp : IComponent
         region.Append(TonightCards(marks, night, Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}"), null, line, families, heavyweights, closeToBuy, closeOpen, false, universe.Word, open, ended, quality: quality, improving: improving, longRecords: longRecords));
         region.Append("</section>");
 
-        return region.ToString();
+        return ReaderText.Revisions(region.ToString());
     }
 
     // The refusal to rank, held once: the name page draws it, and sections 15.9 and 15.14 state it in these words.
@@ -3552,10 +3560,10 @@ public sealed partial class SinglePageApp : IComponent
         if (compare is { } compared)
         {
             region.Append(Cards.Computed(
-                "Versions",
+                "Variants",
                 marks.CompareRegion(compared, RunRoute + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), NameRoute),
                 title: "Compare tonight's picks",
-                lede: "What a registered version would have listed on this night, beside the live list. Picks only.",
+                lede: "What a registered variant would have picked on this night, beside the running revision's picks. Picks only.",
                 stamp: Cards.Night(night),
                 region: "compare-picture"));
         }
@@ -4471,6 +4479,7 @@ public sealed partial class SinglePageApp : IComponent
     // where it names none; the setups are the ones the page has listed a trade under, each with its trades.
     public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null, string selector = "", IReadOnlyList<IndexTradeCell>? businessFirst = null, IReadOnlyList<IndexTradeCell>? dips = null, TradeGroupsView? groups = null)
     {
+        using var tags = RevisionTags.Use(Universes.Large.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
         var lit = status is { } asked && PickStatus.Filters.Contains(asked, StringComparer.Ordinal) ? asked : "all";
@@ -4750,6 +4759,7 @@ public sealed partial class SinglePageApp : IComponent
 
     public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings, IReadOnlyList<(string Family, string Heading, DateOnly Since)>? frozen = null, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, TradeGroupsView? groups = null, IReadOnlyDictionary<string, DateOnly?>? firstLive = null, int unrowed = 0, int listOwn = 0)
     {
+        using var tags = RevisionTags.Use(universe.Word, marks.Copying ? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal) : groups?.Revisions ?? new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal));
         frozen ??= [];
 
         // The setups the page kept a trade under, and whether the short-term dip is among them, whose trades are bought and

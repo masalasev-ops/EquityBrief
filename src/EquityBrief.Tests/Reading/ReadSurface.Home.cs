@@ -172,7 +172,7 @@ public partial class ReadSurface
         Assert.Contains(SinglePageApp.IdeasNote, text, StringComparison.Ordinal);
 
         // The past: the account's day, its ideas and those that made money, and the bars at 3.1% and 1.2%, the larger full.
-        Assert.Contains("All versions since 2 Oct: 4 ideas bought and sold on paper, 3 made money.", text, StringComparison.Ordinal);
+        Assert.Contains("Every revision since 2 Oct: 4 ideas bought and sold on paper, 3 made money.", text, StringComparison.Ordinal);
         Assert.Contains("Still early: each rule needs about 300 finished trades for a fair verdict.", text, StringComparison.Ordinal);
         Assert.Contains("+3.1%</b><div class=\"track\"><div class=\"fill ours\" style=\"width:100%\">", Regex.Replace(page, "</b></div>", "</b>"), StringComparison.Ordinal);
         Assert.Contains("+1.2%</b><div class=\"track\"><div class=\"fill index\" style=\"width:38.7%\">", Regex.Replace(page, "</b></div>", "</b>"), StringComparison.Ordinal);
@@ -182,7 +182,7 @@ public partial class ReadSurface
         Assert.Equal(
             ["#/tonight?setup=pullback", "#/tonight?setup=breakout", "#/tonight?setup=drift", "#/tonight?setup=improving"],
             Regex.Matches(Regex.Match(page, "<div class=\"card-b home-learn\">.*?</section>", RegexOptions.Singleline).Value, "<a href=\"([^\"]+)\"").Select(match => WebUtility.HtmlDecode(match.Groups[1].Value)));
-        Assert.Contains("<div class=\"home-foot\"><span>Want every number, every rule and every version being tested?</span><a class=\"go\" href=\"#/tonight\">Open the full Tonight page</a></div>", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"home-foot\"><span>Want every number, every rule and every change to one being tested?</span><a class=\"go\" href=\"#/tonight\">Open the full Tonight page</a></div>", page, StringComparison.Ordinal);
         Assert.EndsWith($"<p class=\"home-disclaimer\">{SinglePageApp.Disclaimer}</p></section>", page, StringComparison.Ordinal);
 
         // No word Home bans reaches the reader.

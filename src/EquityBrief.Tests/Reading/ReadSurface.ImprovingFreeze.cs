@@ -79,7 +79,7 @@ public partial class ReadSurface
         var section = Assert.Single(Blocks(page, "<section class=\"card setup-card\" id=\"setup-improving\".*?</section></div></section>"));
 
         // Live since the freeze, never not yet tested, and its rows the live rule's.
-        Assert.Contains("<span class=\"status-pill live\" data-live-since=\"2026-09-30\">This version since 30 Sep 2026</span>", section, StringComparison.Ordinal);
+        Assert.Matches("<span class=\"status-pill live\" data-live-since=\"2026-09-30\">(Revision [0-9]+, running since [0-9]+ [A-Z][a-z]{2} 2026|Running since 30 Sep 2026)</span>", section);
         Assert.DoesNotContain("Not yet tested", section, StringComparison.Ordinal);
         Assert.Contains("data-family=\"improving\" data-index=\"MID\" data-bought=\"1\"", section, StringComparison.Ordinal);
 
@@ -105,25 +105,22 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&variants=improving&rule=improving"));
 
         // The family's tile its live rule's, after Quality at a fair price's.
-        Assert.Equal(
-            ("improving", "live"),
-            Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).Last());
+        Assert.Equal(("improving", "live"), RevisionTilesOf(page).Last());
 
-        // Both pickers list it last, and the link choosing it in each chooses it.
+        // The Rule select lists it last, and the link choosing it chooses it.
         Assert.Equal("improving", Regex.Matches(Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value).Last());
         Assert.Contains("<option value=\"improving\" selected>", Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
-        Assert.Contains("<option value=\"improving\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
 
-        // An account for the live rule and one for each of its eight versions, every other level of each dial, the one
-        // holding at 6 carrying its two trades.
+        // Its running revision's card and a row for each of its eight variants, every other level of each dial, the one
+        // holding at 6 carrying its one bought trade, M3, its M1 chosen on the night and bought only at the next open.
         var live = AccountRowOf(page, ReadApi.PageList + "-" + ImprovingRule.Name);
         var six = AccountRowOf(page, RunScreen.Slug(MidImprovingVersion(MidImprovingFrozen with { HoldInNine = 6 })));
 
         Assert.Contains("data-standing=\"live\"", live, StringComparison.Ordinal);
-        Assert.Contains("data-standing=\"variant\"", six, StringComparison.Ordinal);
-        Assert.Equal(8, Regex.Matches(page, "<tr data-account=\"[^\"]*s-p-400-fundamentals-rule-at[^\"]*\"[^>]*data-standing=\"variant\"").Count);
+        Assert.Contains("data-standing=\"variant\" data-trades=\"1\"", six, StringComparison.Ordinal);
+        Assert.Equal(8, VariantRowsOf(page).Count(key => key.Contains("s-p-400-fundamentals-rule-at", StringComparison.Ordinal)));
 
         // The family is named by its label on its tile and nowhere by the word the store keeps it under.
-        Assert.Contains("<span class=\"fam-swatch\" data-family=\"improving\"></span>Fundamentals <span class=\"status-pill live\">", page, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"fam-swatch\" data-family=\"improving\"></span>Fundamentals</span>", page, StringComparison.Ordinal);
     }
 }

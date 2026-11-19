@@ -72,7 +72,7 @@ public static class ReaderText
         (@"breadth floors?", "market check"),
         (@"breadth", "share of stocks above their 200-day average"),
         (@"live rules", "live setups"),
-        (@"live rule", "live setup"),
+        (@"live rule", "running revision"),
         (@"the proposal's", "the change's"),
         (@"proposal's", "change's"),
         (@"the proposals", "the changes tried"),
@@ -84,9 +84,13 @@ public static class ReaderText
         (@"live and provisional", "live and not-yet-tested"),
         (@"live or provisional", "live or not-yet-tested"),
         (@"provisional", "not yet tested"),
-        (@"variants", "versions"),
-        (@"variant's", "version's"),
-        (@"variant", "version"),
+        (@"live setups'", "running revisions'"),
+        (@"live setups", "running revisions"),
+        (@"live setup's", "running revision's"),
+        (@"live setup", "running revision"),
+        (@"versions", "revisions"),
+        (@"version's", "revision's"),
+        (@"version", "revision"),
         (@"held back", "set aside"),
         (@"not held", "not met"),
         (@"held on closes to", "kept on closes up to"),
@@ -169,10 +173,72 @@ public static class ReaderText
     static readonly (Regex Pattern, string Words)[] Rules =
         [.. Phrases.Select(phrase => (new Regex(@"(?<![\w'’-])" + phrase.Phrase + @"(?![\w'’-])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant), phrase.Words))];
 
+    // The revision words alone, for a page whose other words stand as they are: Past picks and the Run page's filter name a
+    // rule's revisions and variants, and no version, live setup or provisional rule. The longer phrase first.
+    // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
+    public static IReadOnlyList<(string Phrase, string Words)> RevisionPhrases { get; } =
+    [
+        (@"the live list recommended", "the rules picked"),
+        (@"the live list recommends", "a rule picks"),
+        (@"the live list drew", "the rules picked"),
+        (@"the live list picked", "the rules picked"),
+        (@"the live lists?", "the running revisions' picks"),
+        (@"lists recommended", "rules picked"),
+        (@"lists kept", "rules kept"),
+        (@"left its list open", "left its picks open"),
+        (@"on the (S&P \d+)'s list", "on the $1's picks"),
+        (@"their rules' own lists", "their rules' own picks"),
+        (@"this table's list held", "this table's rule held"),
+        (@"the index's list in place", "the index's page in place"),
+        (@"its list drew it", "its rule picked it"),
+        (@"Filters live in the address", "Filters are kept in the address"),
+        (@"went live", "started running"),
+        (@"go live", "run"),
+        (@"under every version", "under every revision"),
+        (@"this version's", "the running revision's"),
+        (@"provisional settings", "starting settings"),
+        (@"live and provisional", "running and not-yet-tested"),
+        (@"live or provisional", "running or not-yet-tested"),
+        (@"provisional", "not yet tested"),
+        (@"live setups'", "running revisions'"),
+        (@"live setups", "running revisions"),
+        (@"live setup's", "running revision's"),
+        (@"live setup", "running revision"),
+        (@"live rules", "running revisions"),
+        (@"live rule's", "running revision's"),
+        (@"live rule", "running revision"),
+        (@"live (pullback|breakout|drift|dip|heavyweights|quality|Fundamentals) rule", "running $1 revision"),
+        (@"(?<!reading |short )versions", "revisions"),
+        (@"(?<!reading |short )version's", "revision's"),
+        (@"(?<!reading |short )version", "revision"),
+    ];
+
+    static readonly (Regex Pattern, string Words)[] RevisionRules =
+        [.. RevisionPhrases.Select(phrase => (new Regex(@"(?<![\w'’-])" + phrase.Phrase + @"(?![\w'’-])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant), phrase.Words))];
+
+    // The markup with the revision words alone put into the reader's words, as Page puts every word, an element marked as
+    // filed or as worded standing as it was written.
+    public static string Revisions(string markup) => Drawn(markup, text => Replaced(text, RevisionRules));
+
     // The markup with every text between its tags in the reader's words, the tags as they were, and the text inside an
     // element marked as filed as it was written, however deep its own elements nest.
-    public static string Page(string markup)
+    public static string Page(string markup) => Drawn(markup, Words);
+
+    static string Drawn(string markup, Func<string, string> words)
     {
+        string Text(string text)
+        {
+            if (text.Length == 0 || !text.Any(char.IsLetter))
+            {
+                return text;
+            }
+
+            var read = text.Contains('&', StringComparison.Ordinal) ? WebUtility.HtmlDecode(text) : text;
+            var said = words(read);
+
+            return said == read ? text : WebUtility.HtmlEncode(said);
+        }
+
         var drawn = new StringBuilder(markup.Length);
         var from = 0;
         var inside = false;
@@ -209,26 +275,12 @@ public static class ReaderText
         return drawn.Append(inside || kept is not null ? rest : Text(rest)).ToString();
     }
 
-    // One text between tags, read as the reader sees it and written back escaped where it changed.
-    static string Text(string text)
-    {
-        if (text.Length == 0 || !text.Any(char.IsLetter))
-        {
-            return text;
-        }
-
-        var read = text.Contains('&', StringComparison.Ordinal) ? WebUtility.HtmlDecode(text) : text;
-        var said = Words(read);
-
-        return said == read ? text : WebUtility.HtmlEncode(said);
-    }
-
     // A sentence in the reader's words.
-    public static string Words(string text)
-    {
-        text = FieldWords.Words(text);
+    public static string Words(string text) => Replaced(FieldWords.Words(text), Rules);
 
-        foreach (var (pattern, words) in Rules)
+    static string Replaced(string text, IReadOnlyList<(Regex Pattern, string Words)> rules)
+    {
+        foreach (var (pattern, words) in rules)
         {
             text = pattern.Replace(text, match =>
             {

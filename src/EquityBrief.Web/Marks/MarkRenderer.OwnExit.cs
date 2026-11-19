@@ -71,8 +71,8 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<p class=\"record-said own-exit-line\" data-through=\"{view.Through?.ToString("yyyy-MM-dd", Invariant) ?? "none"}\">{Escaped(OwnExitLine(view))}</p>");
 
         body.Append(Invariant, $"<details class=\"fold own-exit\" data-own-held=\"{view.Held.Count}\" data-own-sold=\"{view.Sold.Count}\" data-own-mean=\"{Figure(view.OwnMean)}\" data-live-mean=\"{Figure(view.LiveMean)}\"><summary>{OwnExitHeading}</summary><div class=\"fold-b\">");
-        body.Append(Invariant, $"<p class=\"record-said\">The rule as it sold before the rules restart: it sells only {Escaped(view.Turn)}, with no stop and no take-profit. It is walked each night from what the rule stored, draws no pick and cannot go live as it stands; if it leads after its first 12 months live, it is brought to you.</p>");
-        body.Append(Invariant, $"<p class=\"record-said own-exit-since\">Since {view.Since:d MMM yyyy} its {view.OwnCounted} position(s) moved {Moved(view.OwnMean)} on average, the open ones at tonight's close, against {Moved(view.LiveMean)} over the live rule's {view.LiveCounted}.</p>");
+        body.Append(Invariant, $"<p class=\"record-said\">The rule as it sold before the rules restart: it sells only {Escaped(view.Turn)}, with no stop and no take-profit. It is walked each night from what the rule stored, draws no pick and cannot become a revision as it stands; if it leads after its first 12 months, it is brought to you.</p>");
+        body.Append(Invariant, $"<p class=\"record-said own-exit-since\">Since {view.Since:d MMM yyyy} its {view.OwnCounted} position(s) moved {Moved(view.OwnMean)} on average, the open ones at tonight's close, against {Moved(view.LiveMean)} over the running revision's {view.LiveCounted}.</p>");
         body.Append(view.Held.Count == 0
             ? "<p class=\"record-said own-exit-held\">It holds nothing tonight.</p>"
             : FormattableString.Invariant($"<p class=\"record-said own-exit-held\">It holds {view.Held.Count} tonight: {Escaped(string.Join(", ", view.Held))}.</p>"));

@@ -592,7 +592,7 @@ public partial class ReadSurface
         // Each named by the version that listed it: BEFORE and SHUT before the family's first registration, AFTER by the
         // earlier words' registration of 25 Oct; and the stock's page naming the earlier version that holds it.
         Assert.Equal(
-            [("AFTER", "the version registered 2026-10-25"), ("BEFORE", PaperScreen.BeforeRegistration), ("SHUT", PaperScreen.BeforeRegistration)],
+            [("AFTER", "Revision 1"), ("BEFORE", PaperScreen.BeforeRegistration), ("SHUT", PaperScreen.BeforeRegistration)],
             (head.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Version)).OrderBy(one => one.Ticker, StringComparer.Ordinal));
         Assert.Equal(PaperScreen.BeforeRegistration, Assert.Single(TradeGroups.EarlierHoldings(sources, "BEFORE", night)).Version);
         Assert.True(Assert.Single(TradeGroups.EarlierHoldings(sources, "BEFORE", night)).BeforeFirstRegistration);

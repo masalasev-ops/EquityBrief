@@ -244,7 +244,7 @@ public partial class ReadSurface
         Assert.Contains($"action=\"{EquityBrief.Web.App.SinglePageApp.ExitPostRoute}M3/2026-10-03T01:00:00Z\"", page, StringComparison.Ordinal);
         Assert.Contains("ended by its stop on 2026-10-06 at 47.10</td><td>-1.07 risks</td>", page, StringComparison.Ordinal);
         Assert.Contains("ended by its exit on 2026-10-05 at 52.00</td><td>not read</td>", page, StringComparison.Ordinal);
-        Assert.Contains("30.00 for 2026-10-05, provisional", page, StringComparison.Ordinal);
+        Assert.Contains("30.00 for 2026-10-05, not yet tested", page, StringComparison.Ordinal);
 
         // An index the operator took nothing from says so.
         Assert.Contains("You have taken no trade from a card on the S&P 600.", System.Net.WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=600")), StringComparison.Ordinal);

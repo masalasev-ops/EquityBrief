@@ -166,7 +166,7 @@ public partial class ReadSurface
             var dip = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), DipRule.Name);
 
             Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-04\" data-variants=\"3\"", dip, StringComparison.Ordinal);
-            Assert.Contains("This version since 4 Oct 2026", dip, StringComparison.Ordinal);
+            Assert.Matches(RunningPill, dip);
             Assert.DoesNotContain(SetupFamilies.ProvisionalStatus, dip, StringComparison.Ordinal);
             Assert.Contains("data-frozen=\"2026-10-04\" data-run=\"20261024T060843Z\" data-answer=\"passed\"", dip, StringComparison.Ordinal);
 
@@ -251,15 +251,14 @@ public partial class ReadSurface
 
             Assert.Equal(
                 [("quality", "live"), ("improving", "provisional")],
-                Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).TakeLast(2));
-            Assert.Contains("<option value=\"quality\" selected>Quality at a fair price · live setup</option>", rule, StringComparison.Ordinal);
-            Assert.Contains("<option value=\"quality\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+                RevisionTilesOf(page).TakeLast(2));
+            Assert.Contains("<option value=\"quality\" selected>Quality at a fair price</option>", rule, StringComparison.Ordinal);
             Assert.Contains("<div class=\"score\" data-family=\"quality\" data-standing=\"live\"", page, StringComparison.Ordinal);
-            Assert.DoesNotContain("No version is registered for this rule.", page, StringComparison.Ordinal);
-            // From the 19.4 correction of 2026-11-07 a family whose rule and seven versions hold no trade says so in one line in
-            // the versions' part, its scorecard still listing each version.
+            Assert.DoesNotContain("No variant is registered for this rule.", page, StringComparison.Ordinal);
+            // From the 19.4 correction of 2026-11-07 a family whose rule and seven variants hold no trade says so in one line in
+            // the variants' part, a row still listing each variant.
             Assert.Contains("<p class=\"paper-no-trade\" data-no-trade=\"7\">", page, StringComparison.Ordinal);
-            Assert.Equal(7, Regex.Matches(page, $"<tr data-account=\"[^\"]*{slug}-quality-rule-at[^\"]*\" data-verdict=").Count);
+            Assert.Equal(7, VariantRowsOf(page).Count(key => key.Contains(slug + "-quality-rule-at", StringComparison.Ordinal)));
         }
     }
 

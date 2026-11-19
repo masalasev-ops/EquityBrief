@@ -20168,3 +20168,47 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the operator's word on the judge's fields at 24.1, on whether a pin move a replay carries counts as registering a
             live rule, and on correcting the places stating a price at the open.
+
+### 23.10 - correction: Paper trading drawn by revisions, a variant named by its one change, and a change in code starting a revision   2026-11-19
+
+Corrects:   Paper trading by families and versions: a rule's account named by its registration and code version, a variant
+            named V1 to V8 or by its settings string, "live", "provisional", "version" and a rule's trades called its list on
+            Paper trading, Past picks, Tonight, Home and the Run page, a take-profit row the walk did not sell by, and a book's
+            own exit of 16 Nov 2026 running under the books' first revision.
+Ruled:      the operator's order of 2026-11-18, word for word in `prompts/2026-11-18-23.10-paper-trading-redesign-order.md`,
+            and their review of 2026-11-19, word for word in `prompts/2026-11-19-23.10-paper-trading-redesign-review.md`.
+Built:      a rule's revisions read from its register and from the changes in its code, `CodeRevisions`, which starts the
+            books' second revision on 16 Nov 2026; Paper trading by revisions, the Rule and Show controls, the running
+            revision's plan in plain rows with the exit its long test chose, its four tabs ten rows a page, how it has done as
+            two records with a sentence beside each figure, its variants unfolding where they stand and its earlier revisions;
+            a variant named by its one change from one sentence a setting, and every other difference from the running
+            revision said on its row; a stock the running revision only waits for counted as not taken; the orders placed
+            before the restart tagged with the revision that placed them, and none waiting without an account that buys it;
+            the chart keyed "Pullback, revision 7" and "no trades yet"; MO's waiting row with its company and close; Past
+            picks' Show control and its summary in revisions; the trade log counting a revision; the reader's words on Paper
+            trading, Past picks, Tonight, Home and the Run page's comparison holding no "version", "provisional", "live" or
+            "list" for a rule's trades. Item 1 changed no price: every running revision's order and trade read no band above
+            on its night, so its walk sells at 2 times the risk, as the row now says. The decision on a change in code, the
+            architecture's section 15.21 paragraph and Figure 15.6, the guide's sections 11 and 12 and its Paper trading
+            figure, and the changelog.
+Tests:      7 new, the check `RevisionPages`: the pages' words over every constructed store, each of its rules found where a
+            page breaks it, a trade taking profit where its plan's walk sells, a half at or above the target never its exit,
+            every rule's exit in code against its newest revision, a revision starting at a change in code, and every setting
+            a variant can change holding its sentence; the tests of 36 files rewritten to the revisions, among them a variant
+            registered again on the same settings counting from its first registration, its four trades worked by hand to
+            10,090.
+Claims:     1632, unchanged.
+Pins:       none moved.
+Mutated:    the rule: each check the review ordered. m1 the S&P 500 heavyweights' take-profit multiple 3 to 2 in code with no
+            revision recorded: red at the exit check, "heavyweight: the code's exit reads a26d228481b907d9 and its newest
+            revision recorded 5da804c4d7b41916"; m2 the sentence for a stop's typical moves taken out: red at the sentence
+            check, "No sentence is written for: stopMoves: stop 1.5 moves"; each run filtered to `RevisionPages` and reverted
+            before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3832 of 3832 tests ran with none failed, migrations 0 to 152 with none
+            pending, schema version 152, against `data-ci` and never `data`; the phase report 66 tables, 1632 claims, 1632
+            passing, none out of scope and none unexamined, 1647 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    item 2's registration: each of the 57 variants and the 16 book variants registered again on its running revision's
+            plan with its one change, its record replayed from the restart with the replayed sessions marked, brought to the
+            operator as its own change; until then each variant's row says every setting it differs in.

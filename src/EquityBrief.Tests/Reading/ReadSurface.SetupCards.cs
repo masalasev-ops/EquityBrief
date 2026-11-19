@@ -279,7 +279,7 @@ public partial class ReadSurface
 
         // From 22.6 the card opens on what the version chosen would buy, beneath it the banner saying it is a version being
         // tested and not tonight's picks, and its funnel's fold names the step most stocks missed in the setup's words.
-        Assert.Contains("data-folded=\"false\"><p class=\"card-summary\" data-summary>This version finds no pick tonight.</p><div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A version being tested, not tonight's picks</p><p>Version: volume 1.25 times</p>", card, StringComparison.Ordinal);
+        Assert.Contains("data-folded=\"false\"><p class=\"card-summary\" data-summary>This variant finds no pick tonight.</p><div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A variant being tested, not tonight's picks</p><p>Variant: volume 1.25 times</p>", card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"funnel-drop\" data-drop=\"volume\">The step most stocks missed: volume too light, 8 of the 9 that got that far.</p>", card, StringComparison.Ordinal);
     }
 

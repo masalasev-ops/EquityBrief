@@ -129,7 +129,7 @@ public partial class ReadSurface
             // them, and its exit on the RSI where a target would stand.
             var m2 = Assert.Single(Blocks(dip, "<tr data-ticker=\"M2\" data-card-pick=\"true\">.*?</tr>"));
 
-            Assert.Contains("Its 2-day RSI closed at 3.5 after a fall of at least 3 typical days' moves over 3 trading days, above its 200-day average with its 50-day average above that with no report in the drop or before its time limit, every step of the short-term dip passing on the S&P 400's live setup. Bought at the next open, it is sold at the next open after its 2-day RSI closes back above 65 or a close under its stop, or at the close of its 5th trading day where neither came.", m2, StringComparison.Ordinal);
+            Assert.Contains("Its 2-day RSI closed at 3.5 after a fall of at least 3 typical days' moves over 3 trading days, above its 200-day average with its 50-day average above that with no report in the drop or before its time limit, every step of the short-term dip passing on the S&P 400's running revision. Bought at the next open, it is sold at the next open after its 2-day RSI closes back above 65 or a close under its stop, or at the close of its 5th trading day where neither came.", m2, StringComparison.Ordinal);
             Assert.Contains("<td class=\"r num plan-target\" data-target=\"none\">its 2-day RSI over 65</td>", m2, StringComparison.Ordinal);
 
             // The card's choice of rule: the live rule and its three versions, each version named by what it changes in the
@@ -144,7 +144,7 @@ public partial class ReadSurface
             var chosen = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400&dip={RunScreen.Slug(rules[2])}"));
             var version = FamilyCardOf(chosen, DipRule.Name);
 
-            Assert.Contains("A version being tested, not tonight's picks", version, StringComparison.Ordinal);
+            Assert.Contains("A variant being tested, not tonight's picks", version, StringComparison.Ordinal);
             Assert.Contains("M2", version, StringComparison.Ordinal);
         }
     }
@@ -162,20 +162,20 @@ public partial class ReadSurface
             var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&variants=dip&rule=dip"));
 
             // The family's tile its live rule's, after the swing families' and before the sector heavyweights'.
-            var tiles = Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).ToArray();
+            var tiles = RevisionTilesOf(page);
 
             Assert.Contains(("dip", "live"), tiles);
-            Assert.Equal("heavyweight", tiles[Array.IndexOf(tiles, ("dip", "live")) + 1].Item1);
+            Assert.Equal("heavyweight", tiles[Array.IndexOf(tiles, ("dip", "live")) + 1].Family);
 
-            // Both pickers list it and choosing it in each chooses it.
+            // The Rule select chooses it, and Show lists its three variants beneath its running revision.
             Assert.Contains("<option value=\"dip\" selected>", Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
-            Assert.Contains("<option value=\"dip\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+            Assert.Equal(3, Regex.Matches(ShowSelectOf(page), "<option value=\"[^\"]*s-p-400-dip-rule-at").Count);
 
-            // An account for the live rule and one for each of its three versions; from the 19.4 correction of 2026-11-07, none
-            // holding a filled trade, the versions' part says so in one line and the scorecard lists the three.
+            // Its running revision's card and a row for each of its three variants; from the 19.4 correction of 2026-11-07, none
+            // holding a filled trade, the variants' part says so in one line.
             Assert.Contains("<p class=\"paper-no-trade\" data-no-trade=\"3\">", page, StringComparison.Ordinal);
-            Assert.Contains($"<tr data-account=\"{RunScreen.Slug(rules[2])}\" data-verdict=", page, StringComparison.Ordinal);
-            Assert.Equal(3, Regex.Matches(page, "<tr data-account=\"[^\"]*s-p-400-dip-rule-at[^\"]*\" data-verdict=").Count);
+            Assert.Contains(RunScreen.Slug(rules[2]), VariantRowsOf(page));
+            Assert.Equal(3, VariantRowsOf(page).Count(key => key.Contains("s-p-400-dip-rule-at", StringComparison.Ordinal)));
 
             // From the 22.3 correction of 2026-10-25 an open dip trade's target reads none, since its plan holds no target
             // and its stop never trails, as Past picks reads it, where a trade whose stop trails reads that it trails.
