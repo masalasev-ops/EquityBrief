@@ -3949,6 +3949,10 @@ internal static class Scope
             Verdict.Pass,
             "a run under a pin holding another prompt refused naming the prompt, one under another model refused naming the model, each asking nothing, and a first run writing its pin from the reading pin with the prompt's version",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "The AI judge's four accounts")] = new Scoped(
+            Verdict.Pass,
+            "a pick walked by hand under each take-profit from the price it paid, the random draw repeated from its seed with the judge's count a night and a member placing no trade drawn past, the median and band read off eleven sorted accounts, the index held grown by its fund, a pick against two members worked by hand, and the accounts sizing and costing through the one account function alone; the figures read off the document against the constants",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A new reading's source refuses")] = new Scoped(
             Verdict.Pass,
             "over constructed stores a refused page of trends stores nothing while the pages after it are asked, a refused FINRA answer stops its run with what it stored kept and says why on its row, and three failed asks of Yahoo in a row stop the refresh",

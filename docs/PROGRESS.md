@@ -20399,3 +20399,35 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the judge picks on the operator's store only once a naming test of the field list's version has passed there; the
             three fields set aside at 24.3; the operator's word on whether a pin move a replay carries counts as registering a
             live rule, and on correcting the places stating a price at the open.
+
+### 24.5 - the AI judge's four accounts: the rules', the judge's, random picks' and the index held, walked by the one account function with the same money, sizing and costs   2026-11-20
+
+Queue:      done, 24.0 to 24.4; in progress, this checkpoint; next, 24.6, the judge's page, its pick cards and Home's line.
+Built:      `JudgeAccounts` in the core: a judge's pick as the account trades it, bought at the open after its night and walked
+            by the plan walk the ledger uses under the whole at 2 times the risk or half there and the rest on the give-up
+            price, its stop and take-profit set from the price it paid; the random accounts, 1,000 draws from one seed, each
+            night as many members as the judge picked under one of the menu's 8 plans drawn at random, a member its plan
+            places no trade on drawn past; their median and the band from their 10th to their 90th in a hundred; the index
+            held; the rules' account, each index's averaged live rules' account given an equal share again; and a pick
+            against the same plan bought on every member that night. Every account is walked by `PaperAccount`, so its money,
+            sizing and costs are read from one place. The accounts are worked when the judge's page is read, from 24.6. Section
+            17's row, the guide's paragraph.
+Tests:      5 new: a pick walked by hand under each take-profit from the price it paid, an open one and none where nothing
+            fills; the draws repeated from their seed and differing on another, the judge's count a night and a member placing
+            no trade drawn past; the median and band read off eleven sorted accounts and the index held grown by its fund; a
+            pick against two members worked by hand; and the four accounts sized and costed through the one function alone.
+Claims:     1652, from 1651: section 17's row of the four accounts, one where the plan counted about four, the accounts' rows
+            landing with the page at 24.6.
+Pins:       none moved; the accounts are new code no rule's version pins.
+Mutated:    the rule: each property its tests hold, broken in turn. m1 the draws without their seed: red, two draws from one seed
+            differing; m2 the band's low read at nought: red, 100 for 110; m3 the buy at the night's close: red, 100 for 101;
+            m4 a pick's own result for its difference from every member: red, 3 for 2.25; each run filtered to its test and
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3859 of 3859 tests ran with none failed, migrations 0 to 154 with none
+            pending, schema version 154, against `data-ci` and never `data`; the phase report 66 tables, 1652 claims, 1652
+            passing, none out of scope and none unexamined, 1667 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the accounts drawn on the judge's page at 24.6; the judge picks on the operator's store only once a naming test of
+            the field list's version has passed there; the three fields set aside at 24.3; the operator's word on whether a pin
+            move a replay carries counts as registering a live rule, and on correcting the places stating a price at the open.

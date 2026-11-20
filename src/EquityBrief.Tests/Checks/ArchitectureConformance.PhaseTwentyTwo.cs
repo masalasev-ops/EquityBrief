@@ -173,6 +173,9 @@ public partial class ArchitectureConformance
 
         // And from 24.4: the AI judge's picker, its four stores, section 14's step, section 17's menu and section 18's two rows.
         .. FixtureExpectations.JudgePickRows,
+
+        // And from 24.5: section 17's row of the AI judge's four accounts.
+        .. FixtureExpectations.JudgeAccountClaims,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported
