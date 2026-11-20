@@ -48,7 +48,7 @@ public partial class ReadSurface
 
         // With no zone every card reads as it did.
         Assert.DoesNotContain("Buy if it dips", Read(new MarkRenderer().DecisionCard(CardScreen.View(row, CardContext.None))), StringComparison.Ordinal);
-        Assert.Contains("Buy at about", Read(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(SetupFamilies.Pullback, "BMY", null, "A dip.", 49.20m, 47.50m, 58m, false, null)], IdeasCount = 1 }, string.Empty)), StringComparison.Ordinal);
+        Assert.Contains("Buy at the next open, at whatever price it opens; last close", Read(new SinglePageApp().HomeRegion(new MarkRenderer(), Day() with { Ideas = [new HomeIdea(SetupFamilies.Pullback, "BMY", null, "A dip.", 49.20m, 47.50m, 58m, false, null)], IdeasCount = 1 }, string.Empty)), StringComparison.Ordinal);
     }
 
     // The 23.10 correction of 2026-11-10: a plan the stock's levels set no buy price for tonight draws no buy, no give-up price
@@ -63,7 +63,7 @@ public partial class ReadSurface
         var card = Read(Regex.Match(region, "<article class=\"home-idea.*?</article>", RegexOptions.Singleline).Value);
 
         Assert.Contains(MarkRenderer.NoBuyTonight, card, StringComparison.Ordinal);
-        Assert.DoesNotContain("Buy at about", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("at whatever price it opens", card, StringComparison.Ordinal);
         Assert.DoesNotContain("Buy if it dips", card, StringComparison.Ordinal);
         Assert.DoesNotContain("Sell if it", card, StringComparison.Ordinal);
         Assert.DoesNotContain("Aim to sell", card, StringComparison.Ordinal);
@@ -75,7 +75,7 @@ public partial class ReadSurface
         foreach (var drawn in new[] { new MarkRenderer().DecisionCard(view), new MarkRenderer { Copying = true }.DecisionCard(view) })
         {
             Assert.Contains(MarkRenderer.NoBuyTonight, Read(drawn), StringComparison.Ordinal);
-            Assert.DoesNotContain("Buy at about", Read(drawn), StringComparison.Ordinal);
+            Assert.DoesNotContain("at whatever price it opens", Read(drawn), StringComparison.Ordinal);
             Assert.DoesNotContain("Buy if it dips", Read(drawn), StringComparison.Ordinal);
             Assert.DoesNotContain("Sell if it closes below", Read(drawn), StringComparison.Ordinal);
         }

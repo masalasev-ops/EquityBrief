@@ -44,7 +44,7 @@ public static partial class CountsProof
             Same("Tonight's open trades selling at the next open are the system's", Sum(onTonight, @"(\d+) (?:reached|hit|ran|ended|sells?)[^.:]*? at " + NextOpen + " open", TonightOpen), groups.System.Selling),
             Same("Paper trading's open trades selling at the next open are the system's", Read(onPaper, @"The system has bought [^:]*: \d+ open, (\d+) of them sells? at " + NextOpen + " open", "The system has bought"), groups.System.Selling),
             Same("Tonight's new picks are those to buy less the reshuffle", Split(onTonight, @"(\d+) new picks?(?: to buy|, each bought only if)" + MoreOnADip, "No new picks to buy"), groups.NewPicks),
-            Same("Tomorrow's buys count the same new picks", Split(onTonight, @"(\d+)(?: stocks?)? (?:to buy at [^.,:]+ open, at about tonight's close|new, each bought only if)" + MoreOnADip, "No stock to buy at"), groups.NewPicks),
+            Same("Tomorrow's buys count the same new picks", Split(onTonight, @"(\d+)(?: stocks?)? (?:to buy at [^.,:]+ open, at whatever price each opens|new, each bought only if)" + MoreOnADip, "No stock to buy at"), groups.NewPicks),
             Same("Paper trading's bought are the system's", Read(onPaper, @"The system has bought (\d+)"), groups.System.Bought),
             Same("Paper trading's open are the system's", Read(onPaper, @"The system has bought [^:]*: (\d+) open"), groups.System.Open),
             Same("Paper trading's reached target are the system's", Read(onPaper, @"(\d+) reached their target"), groups.System.AtTarget),

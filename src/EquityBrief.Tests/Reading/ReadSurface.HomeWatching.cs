@@ -61,8 +61,8 @@ public partial class ReadSurface
         Assert.Equal(3, Regex.Matches(region, "<p class=\"home-verdict\" data-verdict=\"watch\">").Count);
 
         // A watched card's buy is a paper buy; an idea's is a buy.
-        Assert.Equal(3, Regex.Matches(region, "<span>Paper buy at about</span>").Count);
-        Assert.Equal(2, Regex.Matches(region, "<span>Buy at about</span>").Count);
+        Assert.Equal(3, Regex.Matches(region, "<span>Paper buy at the next open, at whatever price it opens; last close</span>").Count);
+        Assert.Equal(2, Regex.Matches(region, "<span>Buy at the next open, at whatever price it opens; last close</span>").Count);
 
         // A watched card opens on the words alone, then says why its rule picked it and why it is not bought, with the test's
         // years and the cents it did worse by for each dollar at risk; an idea's card does neither, and no card says when it

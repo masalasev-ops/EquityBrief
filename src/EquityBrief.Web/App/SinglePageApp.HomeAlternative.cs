@@ -147,7 +147,7 @@ public sealed partial class SinglePageApp
         block.Append("<div class=\"home-prices\">");
         block.Append(plan.Buy is { } level
             ? Invariant($"<div><span>Buy if it dips to about</span><b>{Dollars(level)}</b></div>")
-            : Invariant($"<div><span>Buy at about</span><b>{Dollars(plan.Close)}</b></div>"));
+            : Invariant($"<div><span>Buy at the next open, at whatever price it opens; last close</span><b>{Dollars(plan.Close)}</b></div>"));
         block.Append(Invariant($"<div><span>Sell if it falls to</span><b class=\"stop\">{Dollars(plan.GiveUp)}</b></div>"));
 
         foreach (var line in EquityBrief.Web.Marks.MarkRenderer.PlanSaleLines(sale, "this plan"))

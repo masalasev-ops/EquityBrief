@@ -34,7 +34,7 @@ public partial class ReadSurface
         var planless = SinglePageApp.PlanlessBuys("600", card, null, null);
         var buys = WebUtility.HtmlDecode(new MarkRenderer().TomorrowsBuys(points, null, night: FixNight, planless: planless));
 
-        Assert.Contains("4 stocks to buy at tomorrow's open, at about tonight's close.", buys, StringComparison.Ordinal);
+        Assert.Contains("4 stocks to buy at tomorrow's open, at whatever price each opens.", buys, StringComparison.Ordinal);
         Assert.DoesNotContain("on their own card below", buys, StringComparison.Ordinal);
         Assert.DoesNotContain("these ", buys, StringComparison.Ordinal);
 

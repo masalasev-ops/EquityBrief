@@ -531,7 +531,7 @@ public static class BriefScreen
 
             return
             [
-                new BriefLine("buy", Invariant($"Picked tonight by {Label(listed.Family)}: buy at the next open, near tonight's close of {Price(entry)}."), entry.ToString(CultureInfo.InvariantCulture)),
+                new BriefLine("buy", Invariant($"Picked tonight by {Label(listed.Family)}: buy at the next open, at whatever price it opens; tonight's close {Price(entry)}."), entry.ToString(CultureInfo.InvariantCulture)),
                 new BriefLine("stop", steps.Count > 0 ? steps[0] : "No stop is stored."),
                 new BriefLine("exit", steps.Count > 1 ? string.Join(" ", steps.Skip(1)) : "No target or exit is stored."),
                 .. Size(inputs, plan),
