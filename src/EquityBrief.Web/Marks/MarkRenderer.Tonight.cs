@@ -458,10 +458,10 @@ public sealed partial class MarkRenderer
         var summary = (picked == 0
                 ? "No stock to buy at " + opens + " open: no setup picked one tonight."
                 : onDip == 0
-                    ? Counted(picked, "stock", "stocks") + " to buy at " + opens + " open, at about tonight's close."
+                    ? Counted(picked, "stock", "stocks") + " to buy at " + opens + " open, at whatever price each opens."
                     : atOpen == 0
                         ? Formatted($"{onDip} new, each bought only if its price dips to the buy price.")
-                        : Formatted($"{atOpen} to buy at {opens} open, at about tonight's close, {onDip} more bought only on a dip."))
+                        : Formatted($"{atOpen} to buy at {opens} open, at whatever price each opens, {onDip} more bought only on a dip."))
             + (reshuffled == 0 ? string.Empty : Formatted($" The monthly books' reshuffle adds {reshuffled} more, each a row below."));
 
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary data-buy-points=\"{rows.Count}\">{Escaped(summary)}</p>");

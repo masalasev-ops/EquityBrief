@@ -408,7 +408,7 @@ public sealed partial class MarkRenderer
 
         body.Append(card.Zone is { } zone
             ? PlanTile("buy", "Buy if it dips to about", Price(zone.Price), Formatted($"within {zone.Within} trading days"))
-            : PlanTile("buy", "Buy at about", card.Entry is { } entry ? Price(entry) : "Not stored", "at the next day's open"));
+            : PlanTile("buy", "Last close", card.Entry is { } entry ? Price(entry) : "Not stored", BuysAtTheOpen));
         body.Append(card.Stop is { } stop && TrailOf(card, pick) is null ? PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is null || card.Zone?.Sale is not null ? StaysUnlessChanged(card) : null, "loss") : StopTile(card, pick));
 
         // From the 23.10 correction of 2026-11-13 a plan buying at a price draws the sale it was registered with, as the app does.
@@ -449,7 +449,7 @@ public sealed partial class MarkRenderer
             : card.Zone is { NoBuy: true }
             ? ", with no price to buy at from its levels tonight"
             : card.Entry is { } entry
-            ? Formatted($" and bought at the next trading day's open, at about {Price(entry)}")
+            ? Formatted($" and bought at the next trading day's open, at whatever price it opens, its last close {Price(entry)}")
             : ", with no buy price stored for it";
         var buys = SetupWords.TryGetValue(card.Family, out var words) ? " " + words.Plain : string.Empty;
 
@@ -646,6 +646,10 @@ public sealed partial class MarkRenderer
     // The route of the settings page the plan links to where the account is not set.
     public const string AccountRoute = "#/account";
 
+    // From the 24.0 correction of 2026-11-20, what a pick bought at the open says beside its last close.
+    // see: No line states or implies the price a stock will open at, and a buy at the open buys at whatever price it opens
+    public const string BuysAtTheOpen = "Buys at the next open, at whatever price it opens";
+
     // One tile of the plan or the record: what it says, the figure and the line beneath, with any attributes it carries.
     static string PlanTile(string tile, string label, string figure, string? beneath, string? figureClass = null, string? extra = null) =>
         Formatted($"<div class=\"plan-tile\" data-tile=\"{tile}\"{extra}><span class=\"tile-label\">{Escaped(label)}</span><b{(figureClass is null ? string.Empty : Formatted($" class=\"{figureClass}\""))}>{Escaped(figure)}</b>{(beneath is null ? string.Empty : Formatted($"<span class=\"tile-under\">{Escaped(beneath)}</span>"))}</div>");
@@ -841,7 +845,7 @@ public sealed partial class MarkRenderer
 
         body.Append(card.Zone is { } zone
             ? PlanTile("buy", "Buy if it dips to about", Price(zone.Price), Formatted($"within {zone.Within} trading days"))
-            : PlanTile("buy", "Buy", "At the next day's open", card.Entry is { } entry ? Formatted($"at about {Price(entry)}") : "no buy price stored"));
+            : PlanTile("buy", "Buy", "At the next open", card.Entry is { } entry ? Formatted($"at whatever price it opens; last close {Price(entry)}") : "at whatever price it opens"));
         body.Append(StopTile(card, pick));
 
         // From the 23.10 correction of 2026-11-13 a plan buying at a price draws the sale it was registered with in the target's

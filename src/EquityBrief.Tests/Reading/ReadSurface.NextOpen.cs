@@ -33,7 +33,7 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
 
         Assert.Contains("Monday's buys", page, StringComparison.Ordinal);
-        Assert.Contains("7 stocks to buy at Monday's open, at about tonight's close.", page, StringComparison.Ordinal);
+        Assert.Contains("7 stocks to buy at Monday's open, at whatever price each opens.", page, StringComparison.Ordinal);
         Assert.Contains("7 new picks to buy at Monday's open", page, StringComparison.Ordinal);
         Assert.DoesNotContain("omorrow's buys", page, StringComparison.Ordinal);
         Assert.DoesNotContain("tomorrow's open", page, StringComparison.Ordinal);

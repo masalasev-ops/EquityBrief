@@ -203,7 +203,7 @@ public partial class ReadSurface
         // operator's order of 2026-11-14 M3, met again while its pullback trade is open, has its card too, and says the same.
         var m1Plan = Part(CodeSummary(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}"))), "plan");
 
-        Assert.StartsWith("Its trade is the one the breakout picked it for, in at about ", m1Plan, StringComparison.Ordinal);
+        Assert.StartsWith("Its trade is the one the breakout picked it for, bought at the next open at whatever price it opens, its last close ", m1Plan, StringComparison.Ordinal);
         Assert.EndsWith(", drawn on its card below with its exit.", m1Plan, StringComparison.Ordinal);
         Assert.StartsWith("Its trade is the one the pullback picked it for", Part(CodeSummary(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M3/{IndexNight}"))), "plan"), StringComparison.Ordinal);
 

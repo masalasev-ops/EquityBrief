@@ -20583,3 +20583,34 @@ Carried:    the naming test passed on the operator's store at 14:27 UTC over the
             01ceeb9dfebd, 1 of 100 short rows named, Boeing, and 0 of 100 sheets, so the judge picks from tonight's night; the
             S&P 400 breakout's long search run again by hand; 24.8 and 24.9's runs; the correction of the places stating a
             price at the open.
+
+### 24.0 - correction: no line states a price for a buy at the open, the last close beside it instead   2026-11-20
+
+Queue:      done, 24.0 to 24.7, 24.10 and 24.11; in progress, this correction on the operator's order of 2026-11-20 and
+            24.12's fallbacks on its own branch; next, 24.12's fallbacks put to the operator, then 24.8.
+Corrects:   the places the planning pass of 2026-11-17 found stating a price for a buy at the open, which the operator ordered
+            corrected on 2026-11-20, word for word as Appendix J of the plan's file (see: No line states or implies the price a
+            stock will open at, and a buy at the open buys at whatever price it opens). Words only: no figure on a card moves or
+            goes, and no rule, plan, fill or record reads any of them.
+Built:      a pick's card's buy tile reads "Last close" with "Buys at the next open, at whatever price it opens" beneath, and
+            its other tile "At the next open" with "at whatever price it opens; last close" and the close; its sentence, the
+            plan read out in words and a stock's page's trade line say it is bought at the next open at whatever price it opens,
+            its last close beside; Home's ideas, a watched pick's paper buy and the alternative plan read "at the next open, at
+            whatever price it opens; last close"; Tonight's summary says the stocks are bought at whatever price each opens, and
+            the counts proof reads that sentence; the chart page's brief gives tonight's close beside the same words; and a held
+            stock's line states the price it paid at the open, or, not yet bought, that it buys at the next open at whatever
+            price it opens. Section 15's and the guide's pictures say the same.
+Tests:      2 new and 13 changed: no shipped source holds a phrase that joined a price to a buy at the open, and the words now
+            said pass those patterns where the words replaced fail them; the tests reading the cards, Home, Tonight, the brief,
+            the report and the copy read the new words.
+Claims:     1661, from 1661: none, a correction of words.
+Pins:       none moved; no source a rule's version pins is changed.
+Mutated:    the rule: the guard's own property, one replaced line put back. m1 Tonight's summary saying "at about tonight's close"
+            again: red; filtered to its test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3871 of 3871 tests ran with none failed, migrations 0 to 154 with none
+            pending, schema version 154, against `data-ci` and never `data`; the phase report 67 tables, 1661 claims, 1661
+            passing, none out of scope and none unexamined, 1676 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    24.12's fallbacks, built on their own branch and put to the operator; 24.8 and 24.9's runs; the S&P 400 breakout's
+            long search run again by hand.

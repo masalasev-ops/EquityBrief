@@ -390,7 +390,7 @@ public class CopyMethodLeak
 
         Assert.NotEmpty(SiteCopy.Leaks(Page, app, Needles));
         Assert.Empty(SiteCopy.Leaks(Page, copy, Needles));
-        Assert.Contains("<p class=\"card-summary\" data-summary>Picked by the pullback on 30 Oct 2026 and bought at the next trading day's open, at about 197.82.", copy, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-summary\" data-summary>Picked by the pullback on 30 Oct 2026 and bought at the next trading day's open, at whatever price it opens, its last close 197.82.", copy, StringComparison.Ordinal);
         Assert.Equal(3, System.Text.RegularExpressions.Regex.Matches(copy, "class=\"plan-tile\"").Count);
         Assert.DoesNotContain("card-why", copy, StringComparison.Ordinal);
         Assert.DoesNotContain("card-record", copy, StringComparison.Ordinal);

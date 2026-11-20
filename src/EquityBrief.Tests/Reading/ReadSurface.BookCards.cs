@@ -62,7 +62,7 @@ public partial class ReadSurface
         // beside them.
         var card = Read(Regex.Match(drawnHome, "<article class=\"home-idea fam-edge\" data-family=\"improving\" data-ticker=\"M1\">.*?</article>", RegexOptions.Singleline).Value);
 
-        Assert.Contains("Buy at about$50.00", card, StringComparison.Ordinal);
+        Assert.Contains("Buy at the next open, at whatever price it opens; last close$50.00", card, StringComparison.Ordinal);
         Assert.Contains("Sell if it closes below$42.004 typical daily moves under the buy.", card, StringComparison.Ordinal);
         Assert.Contains("Take profit at$74.00No earlier high 3 times the risk or more above the buy, so it aims for 3 times the risk: $24.00 up for $8.00 down.", card, StringComparison.Ordinal);
         Assert.Contains("It also sells when a new filing drops its score below 7 in every 9 of the checks that apply, or after 126 trading days.", card, StringComparison.Ordinal);
