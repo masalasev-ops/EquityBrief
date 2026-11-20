@@ -20540,3 +20540,46 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the S&P 400 breakout's long search run again on the operator's store, by hand, so its stored row reads any range;
             the naming test on the operator's store; 24.8 and 24.9's runs; the correction of the places stating a price at the
             open.
+
+### 24.11 - the split entries and price jumps set aside, by cause   2026-11-20
+
+Queue:      done, 24.0 to 24.7 and 24.10; in progress, this checkpoint, ahead of 24.8 and 24.9 on the operator's word of
+            2026-11-20; next, 24.12's diagnosis of every reading built on operating income.
+Built:      `SplitCauses` in the core, read-only: each step the split rule reads as no split and each entry it reads as none
+            over a stock's closes, given the first cause that holds. A step: beside a table's entry of another size within
+            five days; the provider's step undone by another within 20 days; a dividend within five days whose amount over the
+            close as traded before it makes the step within a tenth; within 2 in 100 of the ratio of a split companies make,
+            3 for 2 or so many for one either way; or no cause found. An entry: under the split step in whole numbers to ten, a
+            small split; under it otherwise, a stock dividend's or a spin-off's adjustment; beside a step of another size; or
+            no step in the closes. The Run page's list of the splits the share check does not read names each one's cause with
+            a count by cause above each list, read beside the dividends the night stored; `split-causes` reads the long history
+            against the three split tables and both dividend tables and the store's year against those the night reads,
+            opening the store for reading alone, and prints the counts by cause and with `--list` each one. Section 15.10's and
+            section 18's rows, the runbook's section.
+Measured:   on the operator's store at 14:30 UTC, read-only, in 194 seconds. The long history: 343 steps set aside, 194 the
+            provider's step undone, 66 special dividends, 49 of no cause found, 22 a split's ratio no table holds, 12 beside an
+            entry of another size; and 469 entries set aside, 328 a stock dividend's or a spin-off's adjustment, 45 small
+            splits, 86 with no step in the closes, 10 beside a step of another size. Against phase 23's trace of 2026-11-17,
+            343 steps and 468 entries in all, the totals agree and the causes differ by a few each way, the trace's own
+            boundaries not having been kept. The store's year: 2 steps, MSGK's 0.506 of 2026-10-26 and PARA's 20 of 2026-05-08,
+            each read as a split's ratio no table holds, MSGK's long split of 1,328 for 1,000 being in no table the night reads;
+            and 8 entries, each a stock dividend's or a spin-off's adjustment: BDX, CBSH, CMCSA, FDX, FNF, HON, SPGI and TR.
+Tests:      3 new and 1 changed: each cause worked by hand over a constructed table and series, a step on its own ratio read as
+            a split and listed nowhere and one off it set aside beside its entry; the long history and the store's year counted
+            by cause with the store file byte for byte as it stood; no source 24.11 writes one a rule's version pins; and the
+            Run page's list read back with each cause and the count by cause, a special dividend among them.
+Claims:     1661, from 1659: section 15.10's row of the splits the share check does not read and section 18's row of their
+            causes, two as the plan counts.
+Pins:       none moved; `StoredSplits`, which the rules pin, is read and not changed.
+Mutated:    the rule: each cause's guard 24.11 adds and the page's drawing of it taken out in turn. m1 the step undone not read:
+            red; m2 the special dividend not read: red, on the core's test and the Run page's; m3 the Run page drawing no cause:
+            red; each filtered to its tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3869 of 3869 tests ran with none failed, migrations 0 to 154 with none
+            pending, schema version 154, against `data-ci` and never `data`; the phase report 67 tables, 1661 claims, 1661
+            passing, none out of scope and none unexamined, 1676 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the naming test passed on the operator's store at 14:27 UTC over the night of 2026-11-19 under field list
+            01ceeb9dfebd, 1 of 100 short rows named, Boeing, and 0 of 100 sheets, so the judge picks from tonight's night; the
+            S&P 400 breakout's long search run again by hand; 24.8 and 24.9's runs; the correction of the places stating a
+            price at the open.
