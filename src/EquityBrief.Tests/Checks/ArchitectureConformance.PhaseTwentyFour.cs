@@ -13,7 +13,8 @@ public partial class ArchitectureConformance
     // writer and naming test, their stores, section 17's two rows and section 18's row; and 24.4's picker, its four stores,
     // section 14's step, section 17's menu and section 18's two rows; 24.5's section 17 row of the four accounts; and 24.6's
     // page, its five regions and Home's line of it; 24.7's section 18 row; and none at 24.10, the long search's live setting
-    // read where its rule stores no range ceiling, landed ahead of 24.8 and 24.9 on the operator's word of 2026-11-20.
+    // read where its rule stores no range ceiling, landed ahead of 24.8 and 24.9 on the operator's word of 2026-11-20; and
+    // 24.11's Run page row of the splits the share check does not read and section 18's row of their causes.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseTwentyFourLanded =>
     [
         ("24.0", [], []),
@@ -24,6 +25,7 @@ public partial class ArchitectureConformance
         ("24.6", [.. Reading.ReadSurface.JudgePageRows], []),
         ("24.7", [.. FixtureExpectations.JudgeReplayClaims], []),
         ("24.10", [], []),
+        ("24.11", [.. Reading.ReadSurface.SplitStepRows, .. FixtureExpectations.SplitCauseClaims], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -33,7 +35,7 @@ public partial class ArchitectureConformance
     // stores a row of its own where the plan counted them as one. 24.5, one of four: the accounts are worked by the core when
     // the judge's page is read, so their rows land with the page at 24.6 and the guide's words are no claim. 24.6, six of six.
     // 24.7, one of two: the replay is a verb over the judge's own components, so it lands as section 18's row and the
-    // runbook's words where the plan counted a row of its own. 24.10, none as counted.
+    // runbook's words where the plan counted a row of its own. 24.10, none as counted. 24.11, two of two.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -44,6 +46,7 @@ public partial class ArchitectureConformance
         ("24.6", 0),
         ("24.7", -1),
         ("24.10", 0),
+        ("24.11", 0),
     ];
 
     [Fact]
@@ -97,6 +100,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1700, 1800, 1659), (before, low, high, actual));
+        Assert.Equal((1632, 1700, 1800, 1661), (before, low, high, actual));
     }
 }

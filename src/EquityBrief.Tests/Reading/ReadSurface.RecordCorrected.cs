@@ -76,8 +76,10 @@ public partial class ReadSurface
 
     // The operator's answer of 2026-11-17: the Run page lists each step in a stock's closes the share check reads as no split,
     // with the stock and the date, and each split the split events or the pulled splits hold whose closes show no step; a stock
-    // holding no bar on the night is not read, and a step a table holds is listed nowhere.
+    // holding no bar on the night is not read, and a step a table holds is listed nowhere; from 24.11 each with its cause and
+    // the count by cause above each list.
     // see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read
+    // see: A split table's entry is read only where the closes step by its own ratio, and an entry of another size is set aside and listed
     [Fact]
     public async Task TheRunPageListsTheStepsTheShareCheckReadsAsNoSplitAndTheHeldSplitsTheClosesDoNotShow()
     {
@@ -101,14 +103,28 @@ public partial class ReadSurface
         store.Execute("INSERT INTO split_event (ticker, ex_date, new_shares, old_shares, run_id) VALUES ('AAA', '2026-09-20', '2', '1', 'night');");
         store.Execute("INSERT INTO pulled_split (ticker, ex_date, new_shares, old_shares, pull) VALUES ('BBB', '2026-09-05', '2', '1', 'pull');");
 
+        // From 24.11 each with its cause: AAA's half a split's ratio no table holds and its split no step in the closes; DDD's
+        // step of 0.6 on 3 Sep the dividend of 40 on its close as traded of 100 makes.
+        Bar("DDD", first, "50", "100");
+        Bar("DDD", first.AddDays(2), "51", "61.2");
+        Bar("DDD", night, "53", "63.6");
+        store.Execute("INSERT INTO dividend_event (ticker, ex_date, amount, unadjusted, source, run_id) VALUES ('DDD', '2026-09-03', '40', '40', 'night', 'night');");
+
         var rows = await Api(store).SplitStepsOnAsync(night);
 
-        Assert.Equal([new SplitStepRow("AAA", first.AddDays(2), 0.5m), new SplitStepRow("AAA", new DateOnly(2026, 9, 20), null)], rows);
+        Assert.Equal(
+            [
+                new SplitStepRow("AAA", first.AddDays(2), 0.5m, "a split's ratio no table holds"),
+                new SplitStepRow("AAA", new DateOnly(2026, 9, 20), null, "no step in the closes"),
+                new SplitStepRow("DDD", first.AddDays(2), 0.6m, "a special dividend"),
+            ],
+            rows);
 
         var drawn = Read(MarkRenderer.SplitSteps(rows));
 
-        Assert.Contains("A jump in the price adjustment with no split in the split tables is not read as a split (1):AAA: 3 Sep 2026, a step of 0.5", drawn, StringComparison.Ordinal);
-        Assert.Contains("A split in the split tables with no matching jump in the prices is not read either (1):AAA: 20 Sep 2026", drawn, StringComparison.Ordinal);
+        Assert.Contains("A jump in the price adjustment with no split in the split tables is not read as a split (2):By cause: a special dividend 1; a split's ratio no table holds 1.AAA: 3 Sep 2026, a step of 0.5: a split's ratio no table holds", drawn, StringComparison.Ordinal);
+        Assert.Contains("DDD: 3 Sep 2026, a step of 0.6: a special dividend", drawn, StringComparison.Ordinal);
+        Assert.Contains("A split in the split tables with no matching jump in the prices is not read either (1):By cause: no step in the closes 1.AAA: 20 Sep 2026: no step in the closes", drawn, StringComparison.Ordinal);
         Assert.Equal(string.Empty, MarkRenderer.SplitSteps([]));
     }
 }

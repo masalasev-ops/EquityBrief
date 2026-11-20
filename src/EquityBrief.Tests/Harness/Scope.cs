@@ -3957,6 +3957,10 @@ internal static class Scope
             Verdict.Pass,
             "the plan worked by hand leaving out the nights on or before the cutoff and those run, its hours the count times the minutes and none stated before a live night is measured; nothing replayed without the word; a waiting process or the instant given stopping it before the next night; a held local lock read as waiting; a night's facts built again held to those stored with each difference named; and the replay's prefix the one the page reads apart",
             ByExpectations),
+        [CheckReach.Key(FailureTable, "A step or an entry the split rule sets aside")] = new Scoped(
+            Verdict.Pass,
+            "each cause worked by hand over a constructed table and series, a step on its own ratio read as a split and listed nowhere and one off it set aside beside its entry; the long history and the store's year read and counted by cause with the store file byte for byte as it stood; and no source the checkpoint writes one a rule's version pins",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A new reading's source refuses")] = new Scoped(
             Verdict.Pass,
             "over constructed stores a refused page of trends stores nothing while the pages after it are asked, a refused FINRA answer stops its run with what it stored kept and says why on its row, and three failed asks of Yahoo in a row stop the refresh",
@@ -4733,6 +4737,10 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Names split for the first time")] = new Scoped(
             Verdict.Pass,
             "each name, its drawn words, its stock and its source read back off the list, and none listed where none was",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Splits the share check does not read")] = new Scoped(
+            Verdict.Pass,
+            "read back off the list over a constructed store: each step and entry with its stock, its date and its cause, a special dividend among them read beside the dividend the night stored, the count by cause above each list, a stock holding no bar on the night not read and a step a table holds listed nowhere",
             ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Entry reader")] = new Scoped(
             Verdict.Pass,
@@ -7809,6 +7817,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "The proof's awaited quarter and waiting story")] = "22.40",
         [CheckReach.Key("15.9 Name", "Entry check")] = "22.41",
         [CheckReach.Key("15.10 Run", "Names split for the first time")] = "22.42",
+        [CheckReach.Key("15.10 Run", "Splits the share check does not read")] = "24.11",
         [CheckReach.Key("15.9 Name", "No resistance level in the year")] = "22.41",
         [CheckReach.Key("15.9 Name", "A figure from before the newest report")] = "22.41",
         [CheckReach.Key("15.18 The decision card", "The entry check's line")] = "22.41",

@@ -118,8 +118,34 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "judge-naming" => await JudgeNamingRun(args),
     "judge-pick" => await JudgePickRun(args),
     "judge-replay" => await JudgeReplayVerb(args),
+    "split-causes" => await SplitCausesVerb(args),
     _ => NoVerb(),
 };
+
+// From 24.11, read-only: every step and entry the split rule sets aside over the long history and the store's year, counted
+// by cause, and with '--list' each one with its stock, its day and its cause. It writes nothing.
+// see: A split table's entry is read only where the closes step by its own ratio, and an entry of another size is set aside and listed
+static async Task<int> SplitCausesVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var found = await EquityBrief.Worker.History.SplitCausesRun.ReadAsync(store.DatabaseFile);
+
+    if (args.Contains("--list", StringComparer.Ordinal))
+    {
+        foreach (var one in found)
+        {
+            Console.Out.WriteLine(EquityBrief.Worker.History.SplitCausesRun.Verb + ": " + EquityBrief.Worker.History.SplitCausesRun.Line(one));
+        }
+    }
+
+    foreach (var line in EquityBrief.Worker.History.SplitCausesRun.Counts(found))
+    {
+        Console.Out.WriteLine(EquityBrief.Worker.History.SplitCausesRun.Verb + ": " + line);
+    }
+
+    return 0;
+}
 
 // The naming test by hand, on the operator's word: a seeded sample of a night's stored facts asked of the local model under
 // its lock, stopping at the instant '--until' names, the next local writer's slot.
