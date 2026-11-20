@@ -397,7 +397,7 @@ public sealed partial class ReadApi
         var newestRelease = quarters.Count > 0 ? await NewestReleaseAsync(ticker, filedBy) : null;
         var sourced = QuarterSources.Of(
             quarters,
-            quarters.Count > 0 ? await FiledFactsAsync(ticker, quarters.Min(quarter => quarter.PeriodEnd).AddDays(-FiguresChecked.DaysRead), filedBy) : [],
+            quarters.Count > 0 ? await FiledFactsAsync(ticker, quarters.Min(quarter => quarter.PeriodEnd).AddDays(-FiguresChecked.DaysRead), filedBy, withFallback: true) : [],
             newestRelease?.Text,
             newestRelease?.AcceptedOn);
 

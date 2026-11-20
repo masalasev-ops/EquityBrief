@@ -7,7 +7,8 @@ namespace EquityBrief.Core.Cards;
 
 // One quarter a pick's card's business line reads: the provider's label and the day it says the quarter was filed, where its
 // figures are drawn from, and its net income, operating income and interest expense from there.
-public sealed record CardQuarter(DateOnly PeriodEnd, DateOnly FilingDate, QuarterSource Source, decimal? NetIncome, decimal? OperatingIncome, decimal? InterestExpense);
+// From 24.12 with the line its operating income is read on.
+public sealed record CardQuarter(DateOnly PeriodEnd, DateOnly FilingDate, QuarterSource Source, decimal? NetIncome, decimal? OperatingIncome, decimal? InterestExpense, IncomeLine Line = IncomeLine.Operating);
 
 // A pick's card's quarters as the pages draw them: the provider's newest fetch before the night keeps the quarters and the
 // days they were filed, and each quarter's net income and operating income are its SEC filing's as first filed where a
@@ -53,7 +54,8 @@ public static class CardQuarters
                     source,
                     lines?.NetIncome,
                     lines?.OperatingIncome,
-                    source == QuarterSource.Filing ? InterestAt(quarter.PeriodEnd) : null);
+                    source == QuarterSource.Filing ? InterestAt(quarter.PeriodEnd) : null,
+                    source == QuarterSource.Filing ? sourced.OperatingLine : IncomeLine.Operating);
             }),
         ];
     }

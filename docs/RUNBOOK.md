@@ -1741,6 +1741,23 @@ dotnet run --project src/EquityBrief.Worker -- split-causes --list
 
 The first prints each span's count by cause; `--list` prints each one first, with its stock, its day, its step or its entry and its cause. A step reads, in order, the first cause that holds: beside a table's entry of another size within five days; the provider's step undone by another within 20 days; a dividend within five days whose amount over the close as traded before it makes the step within a tenth, a special dividend; within 2 in 100 of a split's ratio, 3 for 2 or so many for one either way, that no table holds; or no cause found. An entry reads: under the split step and in whole numbers to ten, a small split; under it otherwise, a stock dividend's or a spin-off's adjustment; beside a step of another size within five days; or no step in the closes. It reads the long prices for a few minutes on this machine's disk and holds the store for reading while it does, so run it while no night, off-peak run or build is writing. Nothing it finds changes what the split rule reads.
 
+### Every reading built on operating income, and the fallbacks the pages read
+
+From 24.12 a filer that files no operating income for a member's four newest quarters has the cards' business word, the entry check's cover line and the report's quarters read on a fallback line, the same for every quarter: income before taxes plus the same period's interest expense, else revenue less costs and expenses, each card and report naming the line used (see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses). The two lines sit in `fallback_fact`, which the filings refresh keeps from each answer it asks and no rule reads. The rules' cover and the ledger's operating margin change still read operating income as filed; their fallback lands only with the change of the monthly run of 2027-02-06, on your word, with its replay.
+
+To fill the two lines once for every member's filer, on your word, from the SEC's answers the long facts pull kept and asking the SEC again for a filer that filed since:
+
+```
+dotnet run --project src/EquityBrief.Worker -- fallback-facts --kept data/long-facts
+```
+
+With `--kept-only` nothing is asked and every filer is read from its kept answer, the count of those kept before the filer's newest filing printed. To read, writing nothing, each reading built on operating income on each index for the newest stored night, the members it reads, those each fallback line would add and those still unread with why:
+
+```
+dotnet run --project src/EquityBrief.Worker -- income-readings --facts data/long-facts
+dotnet run --project src/EquityBrief.Worker -- income-readings --facts data/long-facts --list
+```
+
 ### The fundamentals-first family
 
 From 17.8 a fifth family lists on every index from its first night, on its provisional setting: a company whose four newest quarters and newest quarter are profitable, whose revenue grew on the year-earlier quarter faster than the quarter before grew, whose gross or operating margin widened on the year and whose cash from operations is at least its net income, closing above its 200-day average with the 50-day above it, bought at the pullback's buy point (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). Its business is read from the SEC's facts as the night's filings refresh leaves them, a filing read from the session after the day it was filed. The index families' step reads it on the S&P 400 and 600 beside their own families and on the S&P 500 alone for this family, after the S&P 500's own families, whose picks it holds back. Its card stands after each index's own families' on Tonight; on the S&P 500 the card says the S&P 400's and 600's step read it. From 21.4 the night computes it no longer on any index: the one move of the pins took it out, its rows and record kept and readable, its one open trade run out under its own plan with the index's other page trades, and the S&P 500 read by the step only while such a trade stands open on it (see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan).

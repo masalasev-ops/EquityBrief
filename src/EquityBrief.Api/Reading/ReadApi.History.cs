@@ -40,6 +40,17 @@ public sealed partial class ReadApi
     // The SEC's facts as first filed for the name's filer, of periods ending from a day on and filed by the night, which
     // the sources check the latest quarter's lines against.
     // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the filing's
+    const string FiledAndFallbackFactsOf = @"
+        SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact
+        WHERE cik = (SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1)
+          AND period_end >= $from AND filed <= $on
+        UNION ALL
+        SELECT concept, period_start, period_end, dollars, filed, form, accession FROM fallback_fact
+        WHERE cik = (SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1)
+          AND period_end >= $from AND filed <= $on
+        ORDER BY 1, 3, 2;
+    ";
+
     const string FiledFactsOf = @"
         SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact
         WHERE cik = (SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1)
@@ -72,12 +83,14 @@ public sealed partial class ReadApi
             : null;
     }
 
-    public async Task<IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>> FiledFactsAsync(string ticker, DateOnly from, DateOnly? on = null)
+    // From 24.12 the report's quarters read the fallback lines beside the filed facts, and no other reader does.
+    // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+    public async Task<IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>> FiledFactsAsync(string ticker, DateOnly from, DateOnly? on = null, bool withFallback = false)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = FiledFactsOf;
+        command.CommandText = withFallback ? FiledAndFallbackFactsOf : FiledFactsOf;
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$on", (on ?? DateOnly.MaxValue).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));

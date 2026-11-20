@@ -176,6 +176,9 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Listed names"),
     ];
 
+    // 24.12: the two lines a filer's operating income falls back to.
+    internal static string[] FallbackStoreRows => [CheckReach.Key(Scope.StoresTable, "Fallback facts")];
+
     // 24.3: the AI judge's facts and its naming tests.
     internal static string[] JudgeStoreRows =>
     [
@@ -325,6 +328,7 @@ public class SchemaColumns
             .. NewReadingStoreRows,
             .. NamesStoreRows,
             .. JudgeStoreRows,
+            .. FallbackStoreRows,
             .. JudgePickStoreRows,
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,

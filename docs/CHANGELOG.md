@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the pages read a filer's operating income on a fallback line where it files none, at 24.12
+Decision: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+Was:
+> ARCHITECTURE.html, the Filings refresher's catalogue row: writes "filed facts, facts pulls, filing days", and "... reads from its instance each member's report filed since a day that the store holds no fact of; from 19.13 ..."
+> the Decision cards' catalogue row: reads "... market series, filed facts, release documents, ..." and "... and otherwise not on file (see: A pick's card reads its quarters as the pages draw them, ...), and the night's state, ..."
+> SCHEMA.md: no `fallback_fact`; RUNBOOK.md: no section of the operating income fallbacks
+Now:
+> writes "filed facts, facts pulls, fallback facts, filing days", and "... filed since a day that the store holds no fact of; from 24.12 it keeps from each answer the two lines a filer's operating income falls back to, ... in the fallback facts, which no rule reads (see: ...); from 19.13 ..."
+> reads "... market series, filed facts, fallback facts, release documents, ..." and "... and otherwise not on file (see: ...), from 24.12 the filed quarters' operating income read on a fallback line named where the filer files none for them (see: ...), and the night's state, ..."
+> added: the Fallback facts fill's catalogue and matrix rows, the Fallback facts store's row and section 18's row "A filer that files no operating income for a member's four newest quarters"; SCHEMA.md's ownership row and section of `fallback_fact`; RUNBOOK.md's "Every reading built on operating income, and the fallbacks the pages read"
+Why: 24.12 of phase 24's plan, split on the operator's word of 2026-11-20 kept as Appendix K of the plan's file: the pages' fallback lands now, read from a table no rule reads, and the rules' and the ledger's lands only with the change of the monthly run of 2027-02-06 on their word.
+
 ### 2026-11-20 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the splits set aside, by cause, at 24.11
 Authorised by: A split table's entry is read only where the closes step by its own ratio, and an entry of another size is set aside and listed
 Was:

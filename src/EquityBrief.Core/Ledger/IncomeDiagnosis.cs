@@ -55,6 +55,19 @@ public static class IncomeDiagnosis
 
     public static IReadOnlyList<string> FallbackConcepts { get; } = [.. PretaxIncome, .. CostsAndExpenses];
 
+    // The fallback lines a filer's answer stores, one a concept a period as first filed over the spans and from the first
+    // period the filed facts keep, so the two tables meet period for period.
+    public static IReadOnlyList<FiledFactRow> Stored(IReadOnlyDictionary<string, IReadOnlyList<Providers.ConceptFact>> facts) =>
+    [
+        .. facts
+            .Where(concept => FallbackConcepts.Contains(concept.Key, StringComparer.Ordinal))
+            .SelectMany(concept => concept.Value
+                .Where(fact => fact.End >= FiledFacts.FirstPeriodEnd && FiledFacts.Kept(fact.Start, fact.End))
+                .GroupBy(fact => (fact.Start, fact.End))
+                .Select(period => period.OrderBy(fact => fact.Filed).ThenBy(fact => fact.Accession, StringComparer.Ordinal).First())
+                .Select(fact => new FiledFactRow(concept.Key, fact.Start, fact.End, fact.Value, fact.Filed, fact.Form, fact.Accession))),
+    ];
+
     public static string Words(IncomeLine line) => line switch
     {
         IncomeLine.Operating => "operating income as filed",
@@ -103,7 +116,7 @@ public static class IncomeDiagnosis
     {
         if (CauseOf(facts, session) is not (IncomeCause.NoOperatingLine or IncomeCause.SomeQuarters))
         {
-            return (CauseOf(facts, session) == IncomeCause.Read ? IncomeLine.Operating : IncomeLine.None, facts);
+            return (IncomeLine.Operating, facts);
         }
 
         FiledFactRow[] others = [.. facts.Where(fact => !FiledFacts.OperatingIncome.Contains(fact.Concept, StringComparer.Ordinal))];

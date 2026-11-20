@@ -156,6 +156,8 @@ public partial class FixtureExpectations
             .. JudgeAccountClaims,
             // 24.7: section 18's row of the AI judge's replay.
             .. JudgeReplayClaims,
+            // 24.12: section 18's row of a filer filing no operating income.
+            .. IncomeFallbackClaims,
             // 24.11: section 18's row of the steps and entries the split rule sets aside, by cause.
             .. SplitCauseClaims,
             // 21.8, ranking in place of pass-or-fail gates: section 17's row of the variant.

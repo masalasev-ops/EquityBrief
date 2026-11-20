@@ -1,4 +1,5 @@
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Readings;
 
@@ -34,6 +35,11 @@ public sealed record BusinessReading(decimal? NetIncome, decimal? Cover, bool No
     public bool NotOnFile { get; init; }
 
     public bool InterestNotOnFile { get; init; }
+
+    // From 24.12 the line its operating income was read on: as filed, a fallback the filer's quarters were read on alike,
+    // or none where the filer files no operating income for them and neither fallback covers them.
+    // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+    public IncomeLine OperatingLine { get; init; } = IncomeLine.Operating;
 }
 
 // A sector's place among its index's sectors on a night: its name, its members' mean return over the window, its place
@@ -128,26 +134,36 @@ public static class CardLines
         var full = read.Length >= MemberReadings.Quarters;
         var notOnFile = read.Any(quarter => quarter.Source == EquityBrief.Core.Report.QuarterSource.NotOnFile);
         decimal? net = full && read.All(quarter => quarter.NetIncome is not null) ? read.Sum(quarter => quarter.NetIncome!.Value) : null;
+        var line = read.Select(quarter => quarter.Line).FirstOrDefault(one => one != IncomeLine.Operating);
 
         if (!full || read.Any(quarter => quarter.OperatingIncome is null))
         {
-            return new BusinessReading(net, null, false, financial, read.Length) { NotOnFile = notOnFile };
+            return new BusinessReading(net, null, false, financial, read.Length) { NotOnFile = notOnFile, OperatingLine = line };
         }
 
         if (read.Any(quarter => quarter.Source != EquityBrief.Core.Report.QuarterSource.Filing))
         {
-            return new BusinessReading(net, null, false, financial, read.Length) { InterestNotOnFile = true };
+            return new BusinessReading(net, null, false, financial, read.Length) { InterestNotOnFile = true, OperatingLine = line };
         }
 
         var interest = read.Sum(quarter => Math.Abs(quarter.InterestExpense ?? 0m));
 
         return interest == 0m
-            ? new BusinessReading(net, null, true, financial, read.Length)
-            : new BusinessReading(net, read.Sum(quarter => quarter.OperatingIncome!.Value) / interest, false, financial, read.Length);
+            ? new BusinessReading(net, null, true, financial, read.Length) { OperatingLine = line }
+            : new BusinessReading(net, read.Sum(quarter => quarter.OperatingIncome!.Value) / interest, false, financial, read.Length) { OperatingLine = line };
     }
 
     // The business line: a warning where the four quarters sum their net income to nothing or less, cover their interest
     // under the card's floor, or read deteriorating, and where any of the three is not held, saying which.
+    // From 24.12 what the cover's income is named by on the card: its operating income as filed, or the fallback line its
+    // quarters were read on, named.
+    public static string CoverRead(IncomeLine line) => line switch
+    {
+        IncomeLine.PretaxPlusInterest => "its income before taxes plus interest expense, its filings stating no operating income,",
+        IncomeLine.RevenueLessCosts => "its revenue less costs and expenses, its filings stating no operating income,",
+        _ => "its operating income",
+    };
+
     public static CardLine Business(BusinessReading reading, string? state, CardSettings settings)
     {
         var against = new List<string>();
@@ -186,15 +202,17 @@ public static class CardLines
         {
             missing.Add(reading.NotOnFile
                 ? "its cover cannot be read, a quarter's operating income being not on file until its filing"
+                : reading.OperatingLine == IncomeLine.None
+                ? "its cover cannot be read: its filer files no operating income for its four quarters and neither income before taxes plus interest expense nor revenue less costs and expenses covers them"
                 : "its cover cannot be read from fewer than four quarters' operating income");
         }
         else if (cover < settings.CoverFloor)
         {
-            against.Add(FormattableString.Invariant($"its operating income is {cover:0.00} times its interest, under the card's floor of {settings.CoverFloor:0.##}"));
+            against.Add(FormattableString.Invariant($"{CoverRead(reading.OperatingLine)} is {cover:0.00} times its interest, under the card's floor of {settings.CoverFloor:0.##}"));
         }
         else
         {
-            said.Add(FormattableString.Invariant($"its operating income is {cover:0.00} times its interest"));
+            said.Add(FormattableString.Invariant($"{CoverRead(reading.OperatingLine)} is {cover:0.00} times its interest"));
         }
 
         if (state is null)

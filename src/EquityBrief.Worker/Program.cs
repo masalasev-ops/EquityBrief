@@ -120,8 +120,35 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "judge-replay" => await JudgeReplayVerb(args),
     "split-causes" => await SplitCausesVerb(args),
     "income-readings" => await IncomeReadingsVerb(args),
+    "fallback-facts" => await FallbackFactsVerb(args),
     _ => NoVerb(),
 };
+
+// From 24.12, by hand on the operator's word: the two fallback lines filled once for every member's filer, from the SEC's
+// answers the long facts pull kept under '--kept <folder>' and asked again of the SEC for a filer that filed since.
+// see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+static async Task<int> FallbackFactsVerb(string[] args)
+{
+    if (VerbArguments.Value(args, "--kept") is not { } kept)
+    {
+        Console.Error.WriteLine("fallback-facts: give '--kept <folder>', the folder the long facts pull kept the SEC's answers in.");
+
+        return 2;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    // With '--kept-only' nothing is asked of the SEC: every filer is read from its kept answer, and those kept before the
+    // filer's newest filing are counted.
+    var feed = args.Contains("--kept-only", StringComparer.Ordinal) ? null : SecEdgarFilerFactsFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty));
+    var fill = await new EquityBrief.Worker.Ledger.FallbackFactFill(clock, store.DatabaseFile)
+        .FillAsync(kept, feed, FormattableString.Invariant($"{EquityBrief.Worker.Ledger.FallbackFactFill.Stage}-{clock.UtcNow:yyyyMMddTHHmmssZ}"), Console.Out.WriteLine);
+
+    Console.Out.WriteLine("fallback-facts: " + EquityBrief.Worker.Ledger.FallbackFactFill.Words(fill));
+
+    return fill.Refused == 0 ? 0 : 1;
+}
 
 // From 24.12, read-only: each reading built on operating income on each index, the members it did not read for a stored
 // night, the newest or with '--session <yyyy-MM-dd>' the one named, counted by cause, and with '--list' each member.
@@ -1200,7 +1227,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 90 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 92 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1480,6 +1507,9 @@ static int NoVerb()
         "'judge-replay' prints the AI judge's replay of the nights after the model's cutoff, their count, the minutes a night and the hours in all, " +
         "writing nothing, and with '--go --until yyyy-MM-ddTHH:mmZ' on the operator's word replays them until that instant, yielding the model to any other local writer, " +
         "'split-causes' counts by cause every step and entry the split rule sets aside over the long history and the store's year, and with '--list' prints each, writing nothing, " +
+        "'income-readings' counts for a stored night each reading built on operating income on each index, the members it reads and those it does not for want of the line, " +
+        "with '--facts <folder>' what each fallback line would add read from the SEC's answers kept there, and with '--list' each member, writing nothing, " +
+        "'fallback-facts --kept <folder>' fills the two fallback lines once for every member's filer, from the answers kept there or asked again of the SEC, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

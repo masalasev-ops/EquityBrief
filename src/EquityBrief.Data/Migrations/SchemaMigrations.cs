@@ -775,7 +775,27 @@ public static class SchemaMigrations
         new Migration(152, "create listed_name", CreateListedName),
         new Migration(153, "create judge_fact and judge_naming", CreateJudgeFacts),
         new Migration(154, "create judge_pin, judge_run, judge_ask and judge_pick", CreateJudgePicks),
+        new Migration(155, "create fallback_fact", CreateFallbackFacts),
     ];
+
+    // From 24.12 the two lines a filer's operating income falls back to where it files none, income before taxes and costs and
+    // expenses, as first filed, kept apart from filed_fact and its pinned concepts so that no rule, ledger reading or gate
+    // reads them: only the cards' business word, the entry check's cover line and the report's margins do.
+    // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+    const string CreateFallbackFacts = @"
+        CREATE TABLE fallback_fact (
+            cik           TEXT NOT NULL,
+            concept       TEXT NOT NULL,
+            period_start  TEXT NOT NULL,
+            period_end    TEXT NOT NULL,
+            dollars       TEXT NOT NULL,
+            filed         TEXT NOT NULL,
+            form          TEXT NOT NULL,
+            accession     TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (cik, concept, period_start, period_end)
+        ) STRICT;
+    ";
 
     // From 24.4 the AI judge's nightly picks: its pin, the model, its file and window from the reading pin it was written
     // under with the judge's prompt version, append-only; one run row a night it ran for, its outcome among them a night

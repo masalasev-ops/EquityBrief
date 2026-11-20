@@ -92,6 +92,7 @@ public sealed class FilingsRefresher : IComponent
             new StoreTouch(Store.PulledCompany, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.FiledFactPull, Touch.Insert),
+            new StoreTouch(Store.FallbackFact, Touch.Insert),
             new StoreTouch(Store.FilingDay, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -196,6 +197,18 @@ public sealed class FilingsRefresher : IComponent
         VALUES ($cik, $concept, $period_start, $period_end, $dollars, $filed, $form, $accession, $run_id)
         ON CONFLICT (cik, concept, period_start, period_end) DO NOTHING;
     ";
+
+    // From 24.12 the two fallback lines kept apart from the filed facts, each period as first filed.
+    // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+    internal const string InsertFallback = @"
+        INSERT INTO fallback_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id)
+        VALUES ($cik, $concept, $period_start, $period_end, $dollars, $filed, $form, $accession, $run_id)
+        ON CONFLICT (cik, concept, period_start, period_end) DO NOTHING;
+    ";
+
+    // The concepts asked of a filer's facts: those the filed facts keep and, from 24.12, the two fallback lines, which the
+    // filed facts' own reading leaves out by its concepts.
+    static readonly IReadOnlyList<string> Asked = [.. FiledFacts.Concepts, .. IncomeDiagnosis.FallbackConcepts];
 
     const string InsertPull = @"
         INSERT INTO filed_fact_pull (cik, pulled_at, run_id, accession, stored)
@@ -383,7 +396,7 @@ public sealed class FilingsRefresher : IComponent
 
                     asked++;
 
-                    var answer = await feed.FactsAsync(cik, FiledFacts.Concepts, cancellation);
+                    var answer = await feed.FactsAsync(cik, Asked, cancellation);
 
                     facts += await StoreAsync(connection, cik, accession, runId, answer, cancellation);
 
@@ -573,9 +586,10 @@ public sealed class FilingsRefresher : IComponent
             .GroupBy(filing => filing.Accession, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
 
-    // Whether a facts answer carries any figure of the report.
+    // Whether a facts answer carries any figure of the report among the concepts the filed facts keep, so a fallback line
+    // alone never stands for the report's figures.
     public static bool Carries(IReadOnlyDictionary<string, IReadOnlyList<ConceptFact>>? answer, string accession) =>
-        answer is not null && answer.Values.Any(figures => figures.Any(figure => figure.Accession == accession));
+        answer is not null && answer.Where(concept => FiledFacts.Concepts.Contains(concept.Key, StringComparer.Ordinal)).Any(concept => concept.Value.Any(figure => figure.Accession == accession));
 
     // One report read from its own instance: its listing, then the instance it names, each one document at the
     // archive's pace, its facts stored as first filed under the report's accession and filing day. A listing naming no
@@ -626,7 +640,7 @@ public sealed class FilingsRefresher : IComponent
 
         try
         {
-            answer = SecEdgarInstance.Facts(xml, report.Accession, report.Filed, report.Form, FiledFacts.Concepts);
+            answer = SecEdgarInstance.Facts(xml, report.Accession, report.Filed, report.Form, Asked);
         }
         catch (FormatException unreadable)
         {
@@ -683,7 +697,7 @@ public sealed class FilingsRefresher : IComponent
                 await pause(TimeSpan.FromSeconds(1.0 / RequestsASecond), cancellation);
 
                 asked++;
-                facts += await StoreAsync(connection, cik, null, runId, await feed.FactsAsync(cik, FiledFacts.Concepts, cancellation), cancellation);
+                facts += await StoreAsync(connection, cik, null, runId, await feed.FactsAsync(cik, Asked, cancellation), cancellation);
 
                 if (asked % 100 == 0)
                 {
@@ -966,6 +980,24 @@ public sealed class FilingsRefresher : IComponent
             stored += inserted == 0 && predecessor is not null
                 ? await RestateJoinedAsync(connection, transaction, predecessor, cik, row, runId, cancellation)
                 : inserted;
+        }
+
+        foreach (var row in answered is null ? [] : IncomeDiagnosis.Stored(answered))
+        {
+            await using var command = connection.CreateCommand();
+
+            command.Transaction = transaction;
+            command.CommandText = InsertFallback;
+            command.Parameters.AddWithValue("$cik", cik);
+            command.Parameters.AddWithValue("$concept", row.Concept);
+            command.Parameters.AddWithValue("$period_start", Stamp(row.Start));
+            command.Parameters.AddWithValue("$period_end", Stamp(row.End));
+            command.Parameters.AddWithValue("$dollars", Money.ToStorage(row.Value));
+            command.Parameters.AddWithValue("$filed", Stamp(row.Filed));
+            command.Parameters.AddWithValue("$form", row.Form);
+            command.Parameters.AddWithValue("$accession", row.Accession);
+            command.Parameters.AddWithValue("$run_id", runId);
+            await command.ExecuteNonQueryAsync(cancellation);
         }
 
         await using (var pull = connection.CreateCommand())

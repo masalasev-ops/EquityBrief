@@ -21,6 +21,11 @@ public sealed record SourcedQuarters(IReadOnlyList<QuarterRow> Quarters, IReadOn
     // The filed quarters whose revenue concept states a part of the company's revenue, which is not drawn.
     public IReadOnlySet<DateOnly> PartRevenue { get; init; } = new HashSet<DateOnly>();
 
+    // From 24.12 the line the filed quarters' operating income is read on: as filed, or where the filer files none for its
+    // four newest quarters a fallback line the same for every quarter, or none.
+    // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+    public IncomeLine OperatingLine { get; init; } = IncomeLine.Operating;
+
     public QuarterSource? SourceOf(DateOnly quarter) => Sources.TryGetValue(quarter, out var source) ? source : null;
 
     // Why a line of a quarter reads nothing, by where the quarter is drawn from; none for a quarter not handed.
@@ -50,6 +55,10 @@ public static class QuarterSources
 
     public const string NotInFiling = "not stated in the filing";
 
+    // From 24.12 what a filed quarter's operating income says where it is read on a fallback line.
+    // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+    public static string ReadAs(IncomeLine line) => "read as " + IncomeDiagnosis.Words(line) + ", the filing stating no operating income";
+
     public const string NoCapitalSpending = "not read: the filings stored carry no capital spending";
 
     public const string PartOfTheCompany = "not read: the revenue the filing states is below its net income, a part of the company's revenue";
@@ -67,7 +76,12 @@ public static class QuarterSources
         var revenue = FirstFiledRevenue.Quarters(known, FiledFacts.Revenue);
         var gross = FirstFiledRevenue.Quarters(known, FiledFacts.GrossProfit);
         var costs = FirstFiledRevenue.Quarters(known, FiledFacts.CostOfSales);
-        var operating = FirstFiledRevenue.Quarters(known, FiledFacts.OperatingIncome);
+        // From 24.12 the operating income line read as filed, or a fallback the same for every quarter where the filer files
+        // none for its four newest quarters, read from the fallback facts handed beside the filed ones.
+        var (line, withLine) = IncomeDiagnosis.WithLine(filed, filed.Count > 0 ? filed.Max(fact => fact.Filed).AddDays(1) : DateOnly.MinValue);
+        var operating = FirstFiledRevenue.Quarters(
+            withLine.Select(fact => new FiledRevenue(fact.Concept, fact.Start, fact.End, fact.Value, fact.Filed, fact.Form, fact.Accession)),
+            FiledFacts.OperatingIncome);
         var net = FirstFiledRevenue.Quarters(known, FiledFacts.NetIncome);
         var cash = CashQuarters(known, FiledFacts.OperatingCash);
 
@@ -137,7 +151,7 @@ public static class QuarterSources
             });
         }
 
-        return new SourcedQuarters(drawn, sources, fetched) { FiledOn = filedOn, PartRevenue = parts };
+        return new SourcedQuarters(drawn, sources, fetched) { FiledOn = filedOn, PartRevenue = parts, OperatingLine = line };
     }
 
     // Why a line of a quarter reads nothing, by where its quarter is drawn from.

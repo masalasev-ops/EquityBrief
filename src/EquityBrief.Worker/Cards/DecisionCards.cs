@@ -78,6 +78,7 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.FallbackFact, Touch.Read),
             new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
             new StoreTouch(Store.SetupNight, Touch.Read),
@@ -253,8 +254,15 @@ public sealed class DecisionCards : IComponent
     ";
 
     // The facts the member's own filer filed by the night, which its quarters are read from as the pages read them.
+    // From 24.12 with the two fallback lines kept apart from the filed facts, which the card's quarters read where the filer
+    // files no operating income for them.
+    // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
     const string FiledFactsBefore = @"
         SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact
+        WHERE cik = (SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1)
+          AND period_end >= $from AND filed <= $night
+        UNION ALL
+        SELECT concept, period_start, period_end, dollars, filed, form, accession FROM fallback_fact
         WHERE cik = (SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1)
           AND period_end >= $from AND filed <= $night;
     ";
