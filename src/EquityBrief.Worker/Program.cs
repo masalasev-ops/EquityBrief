@@ -114,8 +114,53 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "card-plans" => await CardPlansRun(args),
     "outcomes-again" => await OutcomesAgainRun(args),
     "quarters-moved" => await QuartersMovedRun(args),
+    "judge-facts" => await JudgeFactsRun(args),
     _ => NoVerb(),
 };
+
+// The AI judge's facts of a stored night, read from the store opened for reading and writing nothing: one member's short
+// row and full sheet as the judge is shown them, or for every member each field's count held and not on file.
+// see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+static async Task<int> JudgeFactsRun(string[] args)
+{
+    if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--session") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
+    {
+        Console.Error.WriteLine("judge-facts: give '--session <yyyy-MM-dd>', with '--ticker <ticker>' for one member's row and sheet.");
+
+        return 2;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var ticker = VerbArguments.Value(args, "--ticker");
+    var facts = await EquityBrief.Worker.Judge.JudgeFactReader.ReadAsync(store.DatabaseFile, session, ticker);
+
+    if (ticker is not null)
+    {
+        foreach (var fact in facts)
+        {
+            Console.Out.WriteLine($"judge-facts: {fact.Ticker} on {fact.Index}, {session:yyyy-MM-dd}, which the judge is not shown");
+            Console.Out.WriteLine("Round one, the short row:");
+            Console.Out.WriteLine(EquityBrief.Core.Judge.JudgeFacts.RowText(fact));
+            Console.Out.WriteLine("Round two, the full sheet:");
+            Console.Out.WriteLine(EquityBrief.Core.Judge.JudgeFacts.SheetText(fact));
+        }
+
+        return facts.Count == 0 ? 1 : 0;
+    }
+
+    foreach (var index in facts.GroupBy(fact => fact.Index).OrderBy(group => group.Key, StringComparer.Ordinal))
+    {
+        foreach (var field in EquityBrief.Core.Judge.JudgeFacts.All)
+        {
+            var missing = index.Count(fact => fact.Of(field.Key) == EquityBrief.Core.Judge.JudgeFacts.NotOnFile);
+
+            Console.Out.WriteLine(FormattableString.Invariant($"judge-facts: {index.Key} {field.Key}: {index.Count() - missing} of {index.Count()} held"));
+        }
+    }
+
+    return 0;
+}
 
 // What reading each quarter from its filing and then its results release moves on each index's lists over the nights from a
 // day, read against what each night stored, writing nothing and asking nothing of anyone.
