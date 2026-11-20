@@ -14,6 +14,15 @@ public enum IncomeCause
     SomeQuarters,
 }
 
+// The line a member's operating income is read on: as filed, or one of the two fallbacks, or none.
+public enum IncomeLine
+{
+    Operating,
+    PretaxPlusInterest,
+    RevenueLessCosts,
+    None,
+}
+
 // From 24.12, read-only: the diagnosis of every reading built on operating income. A member's cause over the four newest
 // quarters of net income its filer filed before the session: read where each holds an operating income line; no filer
 // where no filer is on file; fewer quarters where fewer than four quarters of net income were filed; no operating line
@@ -33,6 +42,102 @@ public static class IncomeDiagnosis
         IncomeCause.NoOperatingLine => "its filer files no operating income line",
         _ => "operating income filed for some of the four quarters only",
     };
+
+    // The two fallback lines, in the order read: income before taxes plus interest expense, then revenue less costs and
+    // expenses.
+    public static IReadOnlyList<string> PretaxIncome { get; } =
+    [
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+    ];
+
+    public static IReadOnlyList<string> CostsAndExpenses { get; } = ["CostsAndExpenses"];
+
+    public static IReadOnlyList<string> FallbackConcepts { get; } = [.. PretaxIncome, .. CostsAndExpenses];
+
+    public static string Words(IncomeLine line) => line switch
+    {
+        IncomeLine.Operating => "operating income as filed",
+        IncomeLine.PretaxPlusInterest => "income before taxes plus interest expense",
+        IncomeLine.RevenueLessCosts => "revenue less costs and expenses",
+        _ => "neither fallback line covers its four quarters",
+    };
+
+    // A filing's operating income line built from a fallback for each period it states both parts of, as that filing filed
+    // them: income before taxes plus the interest expense of the same period, none filed read as nought, or revenue less
+    // costs and expenses of the same period.
+    static IReadOnlyList<FiledFactRow> Built(IReadOnlyList<FiledFactRow> facts, IncomeLine line)
+    {
+        IEnumerable<FiledFactRow> Of(IReadOnlyList<string> concepts) =>
+            facts.Where(fact => concepts.Contains(fact.Concept, StringComparer.Ordinal))
+                .GroupBy(fact => (fact.Start, fact.End))
+                .Select(group => group.OrderBy(fact => IndexIn(concepts, fact.Concept)).ThenBy(fact => fact.Filed).First());
+
+        static int IndexIn(IReadOnlyList<string> concepts, string concept) => concepts.ToList().IndexOf(concept);
+
+        var interest = Of(FiledFacts.InterestExpense).ToDictionary(fact => (fact.Start, fact.End));
+
+        if (line == IncomeLine.PretaxPlusInterest)
+        {
+            return [.. Of(PretaxIncome).Select(pretax => pretax with
+            {
+                Concept = FiledFacts.OperatingIncome[0],
+                Value = pretax.Value + (interest.TryGetValue((pretax.Start, pretax.End), out var paid) ? Math.Abs(paid.Value) : 0m),
+            })];
+        }
+
+        var costs = Of(CostsAndExpenses).ToDictionary(fact => (fact.Start, fact.End));
+
+        return
+        [
+            .. Of(FiledFacts.Revenue)
+                .Where(revenue => costs.ContainsKey((revenue.Start, revenue.End)))
+                .Select(revenue => revenue with { Concept = FiledFacts.OperatingIncome[0], Value = revenue.Value - costs[(revenue.Start, revenue.End)].Value }),
+        ];
+    }
+
+    // The line a member's four newest quarters are read on and the facts with it: operating income as filed where it covers
+    // them; else, for every quarter alike, income before taxes plus interest expense where that covers them; else revenue less
+    // costs and expenses; else none, the facts as they stand.
+    public static (IncomeLine Line, IReadOnlyList<FiledFactRow> Facts) WithLine(IReadOnlyList<FiledFactRow> facts, DateOnly session)
+    {
+        if (CauseOf(facts, session) is not (IncomeCause.NoOperatingLine or IncomeCause.SomeQuarters))
+        {
+            return (CauseOf(facts, session) == IncomeCause.Read ? IncomeLine.Operating : IncomeLine.None, facts);
+        }
+
+        FiledFactRow[] others = [.. facts.Where(fact => !FiledFacts.OperatingIncome.Contains(fact.Concept, StringComparer.Ordinal))];
+
+        foreach (var line in new[] { IncomeLine.PretaxPlusInterest, IncomeLine.RevenueLessCosts })
+        {
+            FiledFactRow[] with = [.. others, .. Built(facts, line)];
+
+            if (CauseOf(with, session) == IncomeCause.Read)
+            {
+                return (line, with);
+            }
+        }
+
+        return (IncomeLine.None, facts);
+    }
+
+    // Whether the four newest quarters' operating income covers their interest by the cover's floor, none stated read as
+    // covered, as the rules' cover reads it; none where fewer than four quarters hold the line.
+    public static bool? Covers(IReadOnlyList<FiledFactRow> facts, DateOnly session)
+    {
+        FiledRevenue[] known = [.. facts.Where(fact => fact.Filed < session).Select(fact => new FiledRevenue(fact.Concept, fact.Start, fact.End, fact.Value, fact.Filed, fact.Form, fact.Accession))];
+        var operating = FirstFiledRevenue.Quarters(known, FiledFacts.OperatingIncome).OrderBy(quarter => quarter.End).TakeLast(MemberReadings.Quarters).ToArray();
+
+        if (operating.Length < MemberReadings.Quarters)
+        {
+            return null;
+        }
+
+        var interest = FirstFiledRevenue.Quarters(known, FiledFacts.InterestExpense);
+        var paid = operating.Sum(quarter => Math.Abs(interest.FirstOrDefault(line => Math.Abs(line.End.DayNumber - quarter.End.DayNumber) <= SameQuarterWithin)?.Value ?? 0m));
+
+        return paid == 0m || operating.Sum(quarter => quarter.Value) >= MemberReadings.CoverageFloor * paid;
+    }
 
     public static IncomeCause CauseOf(IReadOnlyList<FiledFactRow>? facts, DateOnly session)
     {

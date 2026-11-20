@@ -144,7 +144,7 @@ static async Task<int> IncomeReadingsVerb(string[] args)
 
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
-    var (night, members) = await EquityBrief.Worker.History.IncomeDiagnosisRun.ReadAsync(store.DatabaseFile, session);
+    var (night, members) = await EquityBrief.Worker.History.IncomeDiagnosisRun.ReadAsync(store.DatabaseFile, session, VerbArguments.Value(args, "--facts"));
 
     Console.Out.WriteLine(FormattableString.Invariant($"income-readings: the night of {night:yyyy-MM-dd}, {members.Count} member(s) read"));
 
