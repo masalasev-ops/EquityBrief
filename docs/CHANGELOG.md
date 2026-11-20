@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the splits set aside, by cause, at 24.11
+Authorised by: A split table's entry is read only where the closes step by its own ratio, and an entry of another size is set aside and listed
+Was:
+> ARCHITECTURE.html, section 15.10's table: no row of the Run page's list of the splits the share check does not read; section 18: no row of a step or an entry the split rule sets aside
+> RUNBOOK.md: no section of the splits set aside
+Now:
+> ARCHITECTURE.html: added 15.10's row "Splits the share check does not read", from 24.11 each with its cause and a count by cause above each list, and section 18's row "A step or an entry the split rule sets aside", each cause in the order read
+> RUNBOOK.md: added "The splits set aside, by cause", the verb `split-causes` and its `--list`
+Why: 24.11 of phase 24's plan, carried from phase 23's split rule of 2026-11-17: every split table entry the rule reads as none and every price step it reads as no split listed by cause, read-only.
+
 ### 2026-11-20 - docs/BUILD_PLAN.md - 24.8's years, the operator's open questions settled and the counts of 24.8 to 24.11 each on a line of its own
 Decision: A pin move a replay carries with every trade the same registers no live rule, and one moving a trade comes to the operator first
 Was:

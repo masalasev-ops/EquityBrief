@@ -182,6 +182,10 @@ public partial class ArchitectureConformance
 
         // And from 24.7: section 18's row of the judge's replay.
         .. FixtureExpectations.JudgeReplayClaims,
+
+        // And from 24.11: the Run page's row of the splits the share check does not read and section 18's row of their causes.
+        .. Reading.ReadSurface.SplitStepRows,
+        .. FixtureExpectations.SplitCauseClaims,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

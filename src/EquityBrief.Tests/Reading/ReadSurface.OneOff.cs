@@ -13,6 +13,9 @@ public sealed partial class ReadSurface
 {
     internal static string[] SplitNameRows => [CheckReach.Key("15.10 Run", "Names split for the first time")];
 
+    // 24.11: the Run page's list of the splits the share check does not read, each with its cause.
+    internal static string[] SplitStepRows => [CheckReach.Key("15.10 Run", "Splits the share check does not read")];
+
     internal static ReadApi ApiOf(TemporaryStore store) => Api(store);
 
     // SWK's own bullet, each figure read off the filed text: the $0.67 stands beside the phrase and the sentence ties it to earnings per share.

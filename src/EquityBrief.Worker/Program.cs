@@ -118,8 +118,34 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "judge-naming" => await JudgeNamingRun(args),
     "judge-pick" => await JudgePickRun(args),
     "judge-replay" => await JudgeReplayVerb(args),
+    "split-causes" => await SplitCausesVerb(args),
     _ => NoVerb(),
 };
+
+// From 24.11, read-only: every step and entry the split rule sets aside over the long history and the store's year, counted
+// by cause, and with '--list' each one with its stock, its day and its cause. It writes nothing.
+// see: A split table's entry is read only where the closes step by its own ratio, and an entry of another size is set aside and listed
+static async Task<int> SplitCausesVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var found = await EquityBrief.Worker.History.SplitCausesRun.ReadAsync(store.DatabaseFile);
+
+    if (args.Contains("--list", StringComparer.Ordinal))
+    {
+        foreach (var one in found)
+        {
+            Console.Out.WriteLine(EquityBrief.Worker.History.SplitCausesRun.Verb + ": " + EquityBrief.Worker.History.SplitCausesRun.Line(one));
+        }
+    }
+
+    foreach (var line in EquityBrief.Worker.History.SplitCausesRun.Counts(found))
+    {
+        Console.Out.WriteLine(EquityBrief.Worker.History.SplitCausesRun.Verb + ": " + line);
+    }
+
+    return 0;
+}
 
 // The naming test by hand, on the operator's word: a seeded sample of a night's stored facts asked of the local model under
 // its lock, stopping at the instant '--until' names, the next local writer's slot.
@@ -1132,7 +1158,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 89 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 90 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1411,6 +1437,7 @@ static int NoVerb()
         "picks up to five under the local model's lock, stored before the next open or written as missed, or with '--session <yyyy-MM-dd>' a night named, " +
         "'judge-replay' prints the AI judge's replay of the nights after the model's cutoff, their count, the minutes a night and the hours in all, " +
         "writing nothing, and with '--go --until yyyy-MM-ddTHH:mmZ' on the operator's word replays them until that instant, yielding the model to any other local writer, " +
+        "'split-causes' counts by cause every step and entry the split rule sets aside over the long history and the store's year, and with '--list' prints each, writing nothing, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
