@@ -1038,7 +1038,7 @@ public sealed class DecisionCards : IComponent
         CardLine[] lines =
         [
             CardLines.Trend(words, named, plan.Gates),
-            CardLines.Business(CardLines.Business(quarters, night, sector), state, settings),
+            CardLines.Business(CardLines.Business(quarters, night, sector) with { Kind = await KindAsync(connection, transaction, ticker, cancellation) }, state, settings),
             CardLines.Market(market, sector is null ? null : ranks.FirstOrDefault(rank => rank.Sector == sector), named, settings),
             CardLines.Earnings(report, held, plan.Cap, settings),
             CardLines.Cost(dollarVolume, trip, noStop, index == IndexFamilies.LargeIndex, settings),
@@ -1887,6 +1887,26 @@ public sealed class DecisionCards : IComponent
         }
 
         return sectors;
+    }
+
+    const string IndustryOf = @"
+        SELECT industry_group, industry, sub_industry FROM company
+        WHERE ticker = $ticker
+        ORDER BY fetched_at DESC
+        LIMIT 1;
+    ";
+
+    // From the 24.12 correction the kind of company a member's newest filed industry names, a real estate trust, a bank or an
+    // insurer, which its business line names where its cover is not read; none otherwise.
+    // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+    static async Task<string?> KindAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, CancellationToken cancellation)
+    {
+        await using var command = Command(connection, transaction, IndustryOf, [("$ticker", ticker)]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation)
+            ? IncomeDiagnosis.KindOf(reader.IsDBNull(0) ? null : reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2))
+            : null;
     }
 
     // The index's sectors ranked by their members' mean return over the window to the night, each member's from its close

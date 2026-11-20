@@ -20665,3 +20665,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the fill on the operator's store and its migration, on their word; the rules' half, put to the operator for the
             change of the monthly run of 2027-02-06; 24.8 and 24.9's runs; the S&P 400 breakout's long search run again by hand.
+
+### 24.12 - correction: income before taxes filed in its domestic and foreign parts, and a card naming a real estate trust, a bank or an insurer as the reason its cover is not read   2026-11-20
+
+Queue:      done, 24.0 to 24.7, 24.10 to 24.12, the 24.0 correction, and the fill on the operator's store on the afternoon of
+            2026-11-20 after #732 merged with no pin moving: 1,496 filers, 1,382 from the kept answers, 112 asked of the SEC,
+            2 refused with no facts at the SEC, 128,787 rows; in progress, this correction, on the operator's word of
+            2026-11-20 kept as Appendix L of the plan's file; next, 24.8 with the monthly per-rule long test on a copy.
+Built:      the pretax fallback reads, after the two totals, income before taxes filed in its domestic and foreign parts, the
+            domestic part alone where the filer files no foreign part in any period and otherwise the two of the same period
+            summed, so a quarter derived from an annual figure never mixes the two; the fallback table keeps both parts. A
+            card whose cover is not read names a real estate trust, a bank or an insurer as the reason, read from the company's
+            newest filed industry group, industry and sub-industry, a financial company's line saying its kind files no
+            operating income line, and a company of no such kind keeping its line as it was.
+Measured:   over a copy of the store with the SEC's answers the long facts pull kept, the night of 2026-11-19, read-only: of
+            the 41 members the fill left unread on the pages, 6 now read, CPT, NVR, PHM, EXP, KBH and ZION, each filing the
+            domestic part every quarter, and no member read before is lost. The 35 still unread: 16 real estate trusts, 4 banks
+            and 4 insurers, each card now naming its kind; and 11 others, CASY, CLX, DOW, PSX, SRE, VMRK, VYLR, XOM, CNK, REX and
+            RJF, whose filings in the SEC's own taxonomy state income before taxes for some periods only, XOM from its second
+            quarter of 2026, DOW with none for its second, SRE none after its first, CLX with no figure for its fiscal 2026
+            year, PSX, CNK and RJF in their annual reports alone or nearly, CASY, VMRK and REX for some quarters, and VYLR with
+            no kept answer. The new concepts reach the store by running the fill again
+            once this is merged.
+Tests:      2 new: income before taxes filed in parts read as their sum, a period missing a part read as none and a total
+            read before the parts, worked by hand; and a real estate trust, a bank and an insurer named from their industry,
+            each card naming its kind and one of no kind as before.
+Claims:     1665, unchanged: the correction moves the words of section 18's row of a filer filing no operating income and adds
+            none.
+Pins:       none moved; every source the correction changes is on the list the 24.12 check holds apart from every pinned
+            source.
+Mutated:    the rule: each guard the correction adds taken out in turn. m1 the foreign part's guard: red, a period missing its
+            foreign part read on the domestic part alone; m2 the card's kind on a company not financial: red; m3 the card's kind
+            on a financial company: red; each filtered to its test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3878 of 3878 tests ran with none failed, migrations 0 to 155 with none
+            pending, schema version 155, against `data-ci` and never `data`; the phase report 67 tables, 1665 claims, 1665
+            passing, none out of scope and none unexamined, 1680 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the fill run again on the operator's store once merged, on their word; the rules' half for the change of the
+            monthly run of 2027-02-06; 24.8 and 24.9's runs.

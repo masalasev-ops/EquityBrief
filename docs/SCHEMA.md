@@ -3009,7 +3009,7 @@ Grain: one row per filer, concept and period, as first filed.
 | Column | Type | Notes |
 |---|---|---|
 | `cik` | TEXT | the filer's CIK padded to ten digits |
-| `concept` | TEXT | the archive's concept the figure was filed under: one of the two income before taxes concepts, or costs and expenses |
+| `concept` | TEXT | the archive's concept the figure was filed under: one of the two income before taxes concepts, from the 24.12 correction its domestic or its foreign part, or costs and expenses |
 | `period_start` | TEXT | the first day of the period, a quarter, six or nine months or a year |
 | `period_end` | TEXT | the last day of the period, from the first period `filed_fact` keeps |
 | `dollars` | TEXT | decimal in code, the figure as the first filing stating the period states it |

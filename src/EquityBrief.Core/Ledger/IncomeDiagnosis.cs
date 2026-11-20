@@ -51,9 +51,15 @@ public static class IncomeDiagnosis
         "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
     ];
 
+    // Income before taxes filed in its domestic and foreign parts, read where no total is filed for the period: the domestic
+    // part alone where the filer files no foreign part in any period, and otherwise the two of the same period summed.
+    public const string PretaxDomestic = "IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic";
+
+    public const string PretaxForeign = "IncomeLossFromContinuingOperationsBeforeIncomeTaxesForeign";
+
     public static IReadOnlyList<string> CostsAndExpenses { get; } = ["CostsAndExpenses"];
 
-    public static IReadOnlyList<string> FallbackConcepts { get; } = [.. PretaxIncome, .. CostsAndExpenses];
+    public static IReadOnlyList<string> FallbackConcepts { get; } = [.. PretaxIncome, PretaxDomestic, PretaxForeign, .. CostsAndExpenses];
 
     // The fallback lines a filer's answer stores, one a concept a period as first filed over the spans and from the first
     // period the filed facts keep, so the two tables meet period for period.
@@ -67,6 +73,21 @@ public static class IncomeDiagnosis
                 .Select(period => period.OrderBy(fact => fact.Filed).ThenBy(fact => fact.Accession, StringComparer.Ordinal).First())
                 .Select(fact => new FiledFactRow(concept.Key, fact.Start, fact.End, fact.Value, fact.Filed, fact.Form, fact.Accession))),
     ];
+
+    // The kind of company whose filings state no operating income line by the nature of its business, named from its industry
+    // as filed: a real estate trust, a bank or an insurer; none otherwise.
+    public static string? KindOf(params string?[] industries)
+    {
+        string[] named = [.. industries.OfType<string>()];
+
+        return named.Any(one => one.Contains("Real Estate Investment Trust", StringComparison.Ordinal) || one.Contains("REIT", StringComparison.Ordinal))
+            ? "a real estate trust"
+            : named.Any(one => one.Contains("Banks", StringComparison.Ordinal))
+            ? "a bank"
+            : named.Any(one => one.Contains("Insurance", StringComparison.Ordinal))
+            ? "an insurer"
+            : null;
+    }
 
     public static string Words(IncomeLine line) => line switch
     {
@@ -92,7 +113,14 @@ public static class IncomeDiagnosis
 
         if (line == IncomeLine.PretaxPlusInterest)
         {
-            return [.. Of(PretaxIncome).Select(pretax => pretax with
+            var totals = Of(PretaxIncome).ToList();
+            var held = totals.Select(fact => (fact.Start, fact.End)).ToHashSet();
+            var foreign = Of([PretaxForeign]).ToDictionary(fact => (fact.Start, fact.End));
+            var parts = Of([PretaxDomestic])
+                .Where(domestic => !held.Contains((domestic.Start, domestic.End)) && (foreign.Count == 0 || foreign.ContainsKey((domestic.Start, domestic.End))))
+                .Select(domestic => domestic with { Value = domestic.Value + (foreign.TryGetValue((domestic.Start, domestic.End), out var abroad) ? abroad.Value : 0m) });
+
+            return [.. totals.Concat(parts).Select(pretax => pretax with
             {
                 Concept = FiledFacts.OperatingIncome[0],
                 Value = pretax.Value + (interest.TryGetValue((pretax.Start, pretax.End), out var paid) ? Math.Abs(paid.Value) : 0m),
