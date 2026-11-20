@@ -108,8 +108,8 @@ public partial class FixtureExpectations
             found.Select(one => (one.Span, one.Ticker, one.SetAside.Cause)));
         Assert.Equal(
             [
-                "the long history: 1 step(s) and 1 entr(ies) set aside; a split's ratio no table holds 1, a small split under the split step 1",
-                "the store's year: 1 step(s) and 0 entr(ies) set aside; a split's ratio no table holds 1",
+                "the long history: 1 step(s) and 1 entr(ies) set aside; a split's ratio no table holds: 1; a small split under the split step: 1",
+                "the store's year: 1 step(s) and 0 entr(ies) set aside; a split's ratio no table holds: 1",
             ],
             SplitCausesRun.Counts(found));
         Assert.Equal("the long history: LNG 2020-01-31, an entry of 5 for 4: a small split under the split step", SplitCausesRun.Line(found[1]));

@@ -153,8 +153,8 @@ public static class SplitCausesRun
             var steps = inSpan.Count(one => one.SetAside.Step is not null);
 
             return FormattableString.Invariant($"{span}: {steps} step(s) and {inSpan.Count - steps} entr(ies) set aside; ")
-                + string.Join(", ", Enum.GetValues<SplitCause>().Select(cause => (Cause: cause, Count: inSpan.Count(one => one.SetAside.Cause == cause))).Where(one => one.Count > 0)
-                    .Select(one => FormattableString.Invariant($"{SplitCauses.Words(one.Cause)} {one.Count}")));
+                + string.Join("; ", Enum.GetValues<SplitCause>().Select(cause => (Cause: cause, Count: inSpan.Count(one => one.SetAside.Cause == cause))).Where(one => one.Count > 0)
+                    .Select(one => FormattableString.Invariant($"{SplitCauses.Words(one.Cause)}: {one.Count}")));
         }),
     ];
 

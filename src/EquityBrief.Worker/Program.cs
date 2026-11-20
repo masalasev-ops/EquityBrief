@@ -1158,7 +1158,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 89 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 90 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1437,6 +1437,7 @@ static int NoVerb()
         "picks up to five under the local model's lock, stored before the next open or written as missed, or with '--session <yyyy-MM-dd>' a night named, " +
         "'judge-replay' prints the AI judge's replay of the nights after the model's cutoff, their count, the minutes a night and the hours in all, " +
         "writing nothing, and with '--go --until yyyy-MM-ddTHH:mmZ' on the operator's word replays them until that instant, yielding the model to any other local writer, " +
+        "'split-causes' counts by cause every step and entry the split rule sets aside over the long history and the store's year, and with '--list' prints each, writing nothing, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
