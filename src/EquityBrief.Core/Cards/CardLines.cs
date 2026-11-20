@@ -40,6 +40,10 @@ public sealed record BusinessReading(decimal? NetIncome, decimal? Cover, bool No
     // or none where the filer files no operating income for them and neither fallback covers them.
     // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
     public IncomeLine OperatingLine { get; init; } = IncomeLine.Operating;
+
+    // The kind of company its filed industry names where its filings state no operating income line by the nature of its
+    // business, a real estate trust, a bank or an insurer, which a cover not read names as its reason.
+    public string? Kind { get; init; }
 }
 
 // A sector's place among its index's sectors on a night: its name, its members' mean return over the window, its place
@@ -188,7 +192,9 @@ public static class CardLines
 
         if (reading.Financial)
         {
-            said.Add("its cover is not read, a financial company's interest being its cost of business");
+            said.Add(reading.Kind is { } financialKind
+                ? $"its cover is not read: {financialKind} files no operating income line, its interest being its cost of business"
+                : "its cover is not read, a financial company's interest being its cost of business");
         }
         else if (reading.NoInterest)
         {
@@ -202,6 +208,8 @@ public static class CardLines
         {
             missing.Add(reading.NotOnFile
                 ? "its cover cannot be read, a quarter's operating income being not on file until its filing"
+                : reading.Kind is { } kind && reading.Quarters >= MemberReadings.Quarters
+                ? $"its cover cannot be read: {kind} files no operating income line, and neither income before taxes plus interest expense nor revenue less costs and expenses covers its four quarters"
                 : reading.OperatingLine == IncomeLine.None
                 ? "its cover cannot be read: its filer files no operating income for its four quarters and neither income before taxes plus interest expense nor revenue less costs and expenses covers them"
                 : "its cover cannot be read from fewer than four quarters' operating income");

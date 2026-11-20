@@ -156,6 +156,69 @@ public partial class FixtureExpectations
         Assert.True(FilingsRefresher.Carries(answer, "acc-1"));
     }
 
+    // From the 24.12 correction income before taxes filed in parts: the domestic part alone where the filer files no foreign
+    // part, the two summed where it files both for the period, a period it files the domestic part of alone read as none once
+    // it files a foreign part anywhere, and a total filed for the period read before the parts.
+    [Fact]
+    public void IncomeBeforeTaxesFiledInPartsIsReadAsTheirSumAndAPeriodMissingAPartIsNotRead()
+    {
+        // Domestic 18 a quarter and interest of 3 on two: 21, 21, 18, 18.
+        List<FiledFactRow> domestic = [.. Each("NetIncomeLoss", 10, 10, 10, 10), .. Each(IncomeDiagnosis.PretaxDomestic, 18, 18, 18, 18), .. Each("InterestExpense", 3, 3, 3, 3).Take(2)];
+        var (line, facts) = IncomeDiagnosis.WithLine(domestic, FallbackSession);
+
+        Assert.Equal(IncomeLine.PretaxPlusInterest, line);
+        Assert.Equal([21m, 21m, 18m, 18m], OperatingRead(facts));
+
+        // Foreign 2 filed for every quarter: 23, 23, 20, 20.
+        Assert.Equal([23m, 23m, 20m, 20m], OperatingRead(IncomeDiagnosis.WithLine([.. domestic, .. Each(IncomeDiagnosis.PretaxForeign, 2, 2, 2, 2)], FallbackSession).Facts));
+
+        // Foreign filed for the first quarter alone: the three others hold no line, so neither fallback covers the four.
+        Assert.Equal(IncomeLine.None, IncomeDiagnosis.WithLine([.. domestic, .. Each(IncomeDiagnosis.PretaxForeign, 2, 2, 2, 2).Take(1)], FallbackSession).Line);
+
+        // A total of 20 filed for every quarter is read before the parts: 23, 23, 20, 20, not 21, 21, 18, 18.
+        Assert.Equal([23m, 23m, 20m, 20m], OperatingRead(IncomeDiagnosis.WithLine([.. domestic, .. Each(IncomeDiagnosis.PretaxIncome[0], 20, 20, 20, 20)], FallbackSession).Facts));
+        Assert.Contains(IncomeDiagnosis.PretaxDomestic, IncomeDiagnosis.FallbackConcepts);
+        Assert.Contains(IncomeDiagnosis.PretaxForeign, IncomeDiagnosis.FallbackConcepts);
+    }
+
+    // From the 24.12 correction a real estate trust, a bank or an insurer, named from its industry as filed, and the card's
+    // business line naming the kind as the reason its cover is not read, a company of no such kind keeping the line as it was.
+    [Fact]
+    public void ACardNamesARealEstateTrustABankOrAnInsurerAsTheReasonItsCoverIsNotRead()
+    {
+        Assert.Equal("a real estate trust", IncomeDiagnosis.KindOf("Equity Real Estate Investment Trusts (REITs)", "Residential REITs", null));
+        Assert.Equal("a real estate trust", IncomeDiagnosis.KindOf("Financial Services", "Mortgage Real Estate Investment Trusts (REITs)", "Mortgage REITs"));
+        Assert.Equal("a bank", IncomeDiagnosis.KindOf("Banks", "Banks", "Regional Banks"));
+        Assert.Equal("an insurer", IncomeDiagnosis.KindOf("Insurance", "Insurance", "Property & Casualty Insurance"));
+        Assert.Null(IncomeDiagnosis.KindOf("Energy", "Oil, Gas & Consumable Fuels", "Integrated Oil & Gas"));
+        Assert.Null(IncomeDiagnosis.KindOf("Financial Services", "Capital Markets", "Investment Banking & Brokerage"));
+        Assert.Null(IncomeDiagnosis.KindOf(null, null, null));
+
+        var settings = CardSettings.Defaults;
+
+        Assert.Contains(
+            "its cover cannot be read: a real estate trust files no operating income line, and neither income before taxes plus interest expense nor revenue less costs and expenses covers its four quarters",
+            CardLines.Business(new BusinessReading(40m, null, false, false, 4) { OperatingLine = IncomeLine.None, Kind = "a real estate trust" }, "improving", settings).Words,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "its cover cannot be read: its filer files no operating income for its four quarters",
+            CardLines.Business(new BusinessReading(40m, null, false, false, 4) { OperatingLine = IncomeLine.None }, "improving", settings).Words,
+            StringComparison.Ordinal);
+
+        // A bank or an insurer, a financial company whose cover is not read, is named by its kind; one of no kind as before.
+        Assert.Contains(
+            "its cover is not read: a bank files no operating income line, its interest being its cost of business",
+            CardLines.Business(new BusinessReading(40m, null, false, true, 4) { Kind = "a bank" }, "improving", settings).Words,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "its cover is not read, a financial company's interest being its cost of business",
+            CardLines.Business(new BusinessReading(40m, null, false, true, 4), "improving", settings).Words,
+            StringComparison.Ordinal);
+
+        // Fewer than four quarters filed says so, whatever the kind.
+        Assert.DoesNotContain("a real estate trust", CardLines.Business(new BusinessReading(null, null, false, false, 2) { Kind = "a real estate trust" }, "improving", settings).Words, StringComparison.Ordinal);
+    }
+
     sealed class OneAnswer(string json) : IFilerFactsFeed
     {
         public int Requests { get; private set; }

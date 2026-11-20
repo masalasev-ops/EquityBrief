@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - income before taxes filed in its domestic and foreign parts, and a card naming a real estate trust, a bank or an insurer as its reason, the 24.12 correction
+Decision: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+Was:
+> ARCHITECTURE.html, section 18's row "A filer that files no operating income for a member's four newest quarters": "... from the fallback facts the filings refresh keeps apart from the filed facts; a filer covered by neither line is said to be so."
+> SCHEMA.md, `fallback_fact.concept`: "one of the two income before taxes concepts, or costs and expenses"
+> RUNBOOK.md, "Every reading built on operating income, and the fallbacks the pages read": "... each card and report naming the line used (see: ...). The two lines sit in `fallback_fact`, ..."
+Now:
+> "... from the fallback facts the filings refresh keeps apart from the filed facts, and from the 24.12 correction income before taxes filed in its domestic and foreign parts read where no total is filed for the period, the domestic part alone where the filer files no foreign part and otherwise the two of the same period summed; a filer covered by neither line is said to be so, and from that correction a card names a real estate trust, a bank or an insurer, read from its filed industry, as the reason."
+> "one of the two income before taxes concepts, from the 24.12 correction its domestic or its foreign part, or costs and expenses"
+> "... each card and report naming the line used (see: ...). From the 24.12 correction income before taxes filed in its domestic and foreign parts is read where no total is filed for the period, and a card whose cover still cannot be read names a real estate trust, a bank or an insurer as the reason, read from the company's filed industry. The new concepts reach the store by running the fill below again once the change is merged. The two lines sit in `fallback_fact`, ..."
+Why: the operator's word of 2026-11-20 on the fill, kept as Appendix L of the plan's file: XOM, PSX, CLX, NVR and DOW file an income before taxes line, so the concepts each uses join the pretax fallback in order, and the members that still cannot read show the real reason on their cards.
+
 ### 2026-11-20 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the pages read a filer's operating income on a fallback line where it files none, at 24.12
 Decision: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
 Was:
