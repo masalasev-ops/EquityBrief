@@ -441,7 +441,7 @@ public sealed partial class SinglePageApp : IComponent
         + $"<a href=\"{PaperRoute}\" data-view=\"paper\">Paper trading</a>"
         + $"<a href=\"{LoopRoute}\" data-view=\"loop\">{MarkRenderer.CheckUpName}<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a>"
         + MenuGroup("research", "Research", $"<a href=\"{ResearchedRoute}\" data-view=\"researched\">Researched</a><a href=\"{QueueRoute}\" data-view=\"queue\">Queue</a><a href=\"{WatchRoute}\" data-view=\"watch\">Watch list</a>" + LaneSwitch(lane))
-        + MenuGroup("records", "Records", $"<a href=\"{PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{RunRoute}\" data-view=\"run\">Run</a><a href=\"{LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{HistoryRoute}\" data-view=\"history\">History</a>")
+        + MenuGroup("records", "Records", $"<a href=\"{PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{RunRoute}\" data-view=\"run\">Run</a><a href=\"{LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{HistoryRoute}\" data-view=\"history\">History</a><a href=\"{JudgeRoute}\" data-view=\"judge\">AI judge</a>")
         + "</nav>";
 
     public string Shell(string title, string lane = PaidLane) =>
@@ -511,6 +511,10 @@ public sealed partial class SinglePageApp : IComponent
             view = 'history';
             const history = await fetch('/screens/history');
             screen.innerHTML = await history.text();
+          } else if (path === '{{{JudgeRoute}}}') {
+            view = 'judge';
+            const judge = await fetch('/screens/judge');
+            screen.innerHTML = await judge.text();
           } else if (path === '{{{MarkingRoute}}}') {
             view = 'marking';
             const marking = await fetch('/screens/marking');

@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - docs/ARCHITECTURE.html - the AI judge's page at #/judge and Home's line of it, at 24.6
+Authorised by: The AI judge's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the judge waits for that run
+Was:
+> section 15's routes: "... <code>#/history</code> from 23.1, <code>#/loop</code>, ..."
+Now:
+> "... <code>#/history</code> from 23.1, <code>#/judge</code> from 24.6, <code>#/loop</code>, ..."; and added: section 15.26 The AI judge with its five regions, a row of section 15.23's pages the plain-words check covers, and section 15.24's row of the judge's line on Home
+Why: 24.6 of phase 24's plan: the judge's page as the mockup the operator approved draws it, its record read live and a replayed night apart.
+
 ### 2026-11-20 - CLAUDE.md, .claude/rules/checks.md and docs/ARCHITECTURE.html - the night starts the AI judge after its last step, at 24.4
 Authorised by: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
 Was:

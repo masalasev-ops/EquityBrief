@@ -3160,6 +3160,7 @@ async Task<IResult> HomeAsync(
         StillWaiting = paper.StillWaiting,
         LeftOrders = paper.Groups?.LeftOrders ?? [],
         Revisions = RevisionTags.Of(paper.Views),
+        Judge = copying ? null : await JudgeViewAsync(read, store, withRules: false),
 
         // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
         HeldAgain = [.. families.SelectMany(family => family.HeldAgain)],
@@ -3224,6 +3225,53 @@ static IReadOnlyList<FamilyCardView> WithRecords(IReadOnlyList<FamilyCardView> c
 // An index's paper accounts as of a night: its stored trades in one shape, each costed, walked and judged, with the
 // sessions they were walked over, each stock's company and night readings, the fund's closes and each open holding's
 // standing tonight.
+// The AI judge's page as the store holds it: its rows, every member's sessions from its first night, each index's live
+// rules' accounts and their trades, the three funds and the account the operator saved or the example one; Home's line reads
+// it without the rules' accounts, which it does not draw.
+async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLocation store, bool withRules = true)
+{
+    var settings = (copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) ?? EquityBrief.Core.Cards.AccountSettings.Example;
+    var runs = await read.JudgeRunsAsync();
+    var picks = await read.JudgePicksAsync();
+    var newest = await read.NewestNightAsync();
+    DateOnly[] nights = [.. runs.Select(run => run.Session).Distinct()];
+    var first = nights.DefaultIfEmpty(newest ?? DateOnly.MinValue).Min();
+    var bars = nights.Length == 0 ? new Dictionary<string, IReadOnlyList<(DateOnly, double, double)>>() : await read.JudgeBarsAsync(first);
+    var typicals = await read.JudgeTypicalsAsync(nights);
+    var members = await read.JudgeMembersAsync(nights);
+    var costs = await read.JudgeCostsAsync(nights);
+    var rules = new List<(string, EquityBrief.Core.Cards.PaperWalk)>();
+    var ruleTrades = new List<(string, DateOnly, double?)>();
+    var funds = new List<Func<DateOnly, decimal?>>();
+
+    foreach (var universe in new[] { Universes.Large, Universes.Mid, Universes.Small })
+    {
+        if (withRules && nights.Length > 0 && newest is { } night)
+        {
+            var accounts = await PaperAccountsAsync(read, universe, night, settings);
+
+            if (accounts.Combined is { } combined)
+            {
+                rules.Add((universe.Code, combined.Walk));
+            }
+
+            ruleTrades.AddRange(accounts.Views
+                .Where(view => view.Head && view.Walk is not null)
+                .SelectMany(view => view.Walk!.Trades.Where(one => one.Skipped is null && one.Trade.Bought >= first))
+                .Select(one => (one.Trade.Ticker, one.Trade.Bought, EquityBrief.Core.Judge.JudgeAccounts.ResultOf(one.Trade))));
+        }
+
+        var fund = nights.Length == 0 ? new Dictionary<DateOnly, decimal>() : await read.FundClosesAsync(PaperScreen.Fund(universe.Code), first);
+
+        funds.Add(session => fund.TryGetValue(session, out var close) ? close : null);
+    }
+
+    decimal? RoundTrip(string ticker, DateOnly night, decimal buy) =>
+        costs.TryGetValue((ticker, night), out var percent) ? EquityBrief.Core.Cards.PaperAccount.RoundTripOf(buy, null, null, null, percent, true, null) : null;
+
+    return JudgeScreen.Build(runs, picks, bars, typicals, members, rules, ruleTrades, funds, settings, RoundTrip);
+}
+
 async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice reading, DateOnly night, EquityBrief.Core.Cards.AccountSettings? settings)
 {
     var large = reading == Universes.Large;
@@ -3880,6 +3928,12 @@ IResult SweepReportPage(StoreLocation store, string? run)
 // see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
 app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
     Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync(), await read.LongPricesAsync(), await read.LongYearsAsync(), await read.NewsMoodAsync()), "text/html; charset=utf-8"));
+
+// From 24.6 the AI judge's page: its four accounts worked when the page is read, the scoreboard of its live record, the
+// newest night's cards, where it looked against the rules' picks, and a replayed record apart.
+// see: The AI judge's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the judge waits for that run
+app.MapGet("/screens/judge", async (ReadApi read, SinglePageApp page, StoreLocation store) =>
+    Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store)), "text/html; charset=utf-8"));
 
 // From the 23.4 correction the marking page and its confirm: every unexplained jump and unsettled end with its evidence and a
 // proposed mark, and the operator's confirm writing the marks chosen, every one shown or one alone, under the page's header.
