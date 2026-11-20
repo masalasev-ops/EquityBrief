@@ -117,6 +117,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "judge-facts" => await JudgeFactsRun(args),
     "judge-naming" => await JudgeNamingRun(args),
     "judge-pick" => await JudgePickRun(args),
+    "judge-replay" => await JudgeReplayVerb(args),
     _ => NoVerb(),
 };
 
@@ -164,6 +165,69 @@ static async Task<int> JudgeNamingRun(string[] args)
     Console.Out.WriteLine("judge-naming: " + EquityBrief.Worker.Judge.JudgeNamingTest.Words(outcome));
 
     return outcome.Passed ? 0 : 1;
+}
+
+// The AI judge's replay of the nights after the model's cutoff: its plan printed, writing nothing, and with '--go' on the
+// operator's word the nights replayed until the instant given, each yielding the model to any other local writer.
+// see: The AI judge's replays print their hours before they start on the operator's word, a new version's over the same 60 nights
+static async Task<int> JudgeReplayVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var plan = await EquityBrief.Worker.Judge.JudgeReplayRun.PlanAsync(store.DatabaseFile);
+    var word = args.Contains("--go", StringComparer.Ordinal);
+
+    Console.Out.WriteLine("judge-replay: " + EquityBrief.Core.Judge.JudgeReplay.Words(plan));
+
+    if (plan.Refused is { } refused)
+    {
+        Console.Out.WriteLine("judge-replay: it does not start: " + refused);
+
+        return word ? 1 : 0;
+    }
+
+    if (!word)
+    {
+        Console.Out.WriteLine("judge-replay: nothing was replayed; " + EquityBrief.Core.Judge.JudgeReplay.NoWord);
+
+        return 0;
+    }
+
+    if (!DateTimeOffset.TryParseExact(VerbArguments.Value(args, "--until") ?? string.Empty, "yyyy-MM-dd'T'HH:mm'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var until))
+    {
+        Console.Error.WriteLine("judge-replay: with '--go' give '--until yyyy-MM-ddTHH:mmZ', the instant before the next local writer's slot it stops at.");
+
+        return 2;
+    }
+
+    LocalModelSettings local;
+
+    try
+    {
+        local = LocalLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("judge-replay: " + refusal.Message);
+
+        return 1;
+    }
+
+    var done = await EquityBrief.Worker.Judge.JudgeReplayRun.RunAsync(
+        plan,
+        word,
+        until,
+        clock,
+        () => EquityBrief.Worker.Judge.JudgeReplayRun.Waiting(store.DataRoot),
+        night => EquityBrief.Worker.Judge.JudgeReplayRun.NightAsync(() => LmStudioReadingFeed.Live(local), local, clock, store.DatabaseFile, store.DataRoot, night));
+
+    foreach (var (night, outcome) in done)
+    {
+        Console.Out.WriteLine(FormattableString.Invariant($"judge-replay: {night:yyyy-MM-dd}: {outcome}"));
+    }
+
+    return 0;
 }
 
 // The AI judge's picks of a night, the process the night starts after its last step, or by hand for a night named: it
@@ -1068,7 +1132,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 88 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 89 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1345,6 +1409,8 @@ static int NoVerb()
         "behind a seeded sample of that night's stored facts, on the operator's word, " +
         "'judge-pick' is the AI judge's process the night starts after its last step, which writes the newest night's facts and " +
         "picks up to five under the local model's lock, stored before the next open or written as missed, or with '--session <yyyy-MM-dd>' a night named, " +
+        "'judge-replay' prints the AI judge's replay of the nights after the model's cutoff, their count, the minutes a night and the hours in all, " +
+        "writing nothing, and with '--go --until yyyy-MM-ddTHH:mmZ' on the operator's word replays them until that instant, yielding the model to any other local writer, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

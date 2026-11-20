@@ -1714,6 +1714,22 @@ dotnet run --project src/EquityBrief.Worker -- judge-pick --session 2026-11-20
 
 A night holding a run that picked, picked none or was missed is never run again. A run refused, for no facts, no passed naming test or a pin differing, writes its row and may be run again once the cause is put right. Its questions and answers stand in `judge_ask`, its picks in `judge_pick` and its outcome in `judge_run`.
 
+### The AI judge's replayed nights
+
+From 24.7 the judge can be replayed over the nights after the local model's cutoff whose facts the store can build as they stood, which today are the nights the ledger's readings stand for, from 13 Oct 2026, and none the judge has a run of already (see: The AI judge's replays print their hours before they start on the operator's word, a new version's over the same 60 nights). To see what a replay would run, writing nothing:
+
+```
+dotnet run --project src/EquityBrief.Worker -- judge-replay
+```
+
+It prints the nights, the minutes a night as the judge's live runs measured them and the hours of the local model in all, and starts nothing; until a live night is measured it states no hours. On your word, while no other local process holds the model, and stopping before the next local writer's slot:
+
+```
+dotnet run --project src/EquityBrief.Worker -- judge-replay --go --until 2026-11-22T11:55Z
+```
+
+Before each night it yields the model to the night, the drain, the monthly run, the labeller or a local run, and stops; run it again and it carries on from the nights not yet run. A night whose facts built again differ from those stored is named and left out. Every replayed run carries the `judge-replay-` prefix, and the judge's page draws its record apart from the live one and never adds them together.
+
 ### The fundamentals-first family
 
 From 17.8 a fifth family lists on every index from its first night, on its provisional setting: a company whose four newest quarters and newest quarter are profitable, whose revenue grew on the year-earlier quarter faster than the quarter before grew, whose gross or operating margin widened on the year and whose cash from operations is at least its net income, closing above its 200-day average with the 50-day above it, bought at the pullback's buy point (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). Its business is read from the SEC's facts as the night's filings refresh leaves them, a filing read from the session after the day it was filed. The index families' step reads it on the S&P 400 and 600 beside their own families and on the S&P 500 alone for this family, after the S&P 500's own families, whose picks it holds back. Its card stands after each index's own families' on Tonight; on the S&P 500 the card says the S&P 400's and 600's step read it. From 21.4 the night computes it no longer on any index: the one move of the pins took it out, its rows and record kept and readable, its one open trade run out under its own plan with the index's other page trades, and the S&P 500 read by the step only while such a trade stands open on it (see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan).

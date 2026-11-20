@@ -20464,3 +20464,35 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the judge picks on the operator's store only once a naming test of the field list's version has passed there; the
             three fields set aside at 24.3; the operator's word on whether a pin move a replay carries counts as registering a
             live rule, and on correcting the places stating a price at the open.
+
+### 24.7 - the AI judge's replayed nights after the model's cutoff: its plan printed with its hours first, run only on the operator's word, the model yielded before each night, every run read apart as replayed   2026-11-20
+
+Queue:      done, 24.0 to 24.6; in progress, this checkpoint; next, 24.8, the heavyweights' history from 2018.
+Built:      `JudgeReplay` in the core, the replay's plan: the nights whose facts the store can build as they stood, after the
+            model's cutoff of 2025-01-31 and with no run of the judge, the minutes a night as its live runs measured them and
+            the hours in all, the product of the two, none stated before a live night is measured; and the differences between
+            a night's facts built again and those stored, by name. `JudgeReplayRun` and the `judge-replay` verb: the plan
+            printed and nothing written, and with `--go --until` on the operator's word each night in turn, its facts held to
+            those stored, written and picked by the judge's own picker under the `judge-replay-` prefix with no open to meet,
+            yielding the model before each night to the night, the drain, the monthly run or a local process holding its lock.
+            Section 18's row, the runbook's section.
+Measured:   on the operator's store, read-only, the ledger's readings stand for 28 nights, 13 Oct to 19 Nov 2026, all after the
+            cutoff; no live night of the judge is measured yet, so the replay states no hours and does not start.
+Tests:      3 new: the plan worked by hand, the cutoff's night and a night run left out and 3 nights at 5 minutes a quarter of an
+            hour; nothing replayed without the word, a waiting night, the instant given and a held local lock each stopping it
+            before the next night; and a night's facts built again held to those stored, a changed row and a member no longer
+            stored each named.
+Claims:     1659, from 1658: section 18's row of the replay, one where the plan counted about two.
+Pins:       none moved.
+Mutated:    the rule: each guard 24.7 adds taken out in turn. m1 the word not read: red, the nights run without it; m2 the cutoff's
+            own night let in: red, the plan holding it; each run filtered to its test and reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3865 of 3865 tests ran with none failed, migrations 0 to 154 with none
+            pending, schema version 154, against `data-ci` and never `data`; the phase report 67 tables, 1659 claims, 1659
+            passing, none out of scope and none unexamined, 1674 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the replay's run, on the operator's word once a live night is measured and its hours printed; the judge picks on the
+            operator's store only once a naming test of the field list's version has passed there; the three fields set aside
+            at 24.3; the operator's word on whether a pin move a replay carries counts as registering a live rule, and on
+            correcting the places stating a price at the open.
