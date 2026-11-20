@@ -119,8 +119,50 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "judge-pick" => await JudgePickRun(args),
     "judge-replay" => await JudgeReplayVerb(args),
     "split-causes" => await SplitCausesVerb(args),
+    "income-readings" => await IncomeReadingsVerb(args),
     _ => NoVerb(),
 };
+
+// From 24.12, read-only: each reading built on operating income on each index, the members it did not read for a stored
+// night, the newest or with '--session <yyyy-MM-dd>' the one named, counted by cause, and with '--list' each member.
+// see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+static async Task<int> IncomeReadingsVerb(string[] args)
+{
+    DateOnly? session = null;
+
+    if (VerbArguments.Value(args, "--session") is { } named)
+    {
+        if (!DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day))
+        {
+            Console.Error.WriteLine("income-readings: give '--session <yyyy-MM-dd>', or nothing for the newest stored night.");
+
+            return 2;
+        }
+
+        session = day;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var (night, members) = await EquityBrief.Worker.History.IncomeDiagnosisRun.ReadAsync(store.DatabaseFile, session);
+
+    Console.Out.WriteLine(FormattableString.Invariant($"income-readings: the night of {night:yyyy-MM-dd}, {members.Count} member(s) read"));
+
+    if (args.Contains("--list", StringComparer.Ordinal))
+    {
+        foreach (var one in EquityBrief.Worker.History.IncomeDiagnosisRun.Failing(members))
+        {
+            Console.Out.WriteLine("income-readings: " + EquityBrief.Worker.History.IncomeDiagnosisRun.Line(one));
+        }
+    }
+
+    foreach (var line in EquityBrief.Worker.History.IncomeDiagnosisRun.Counts(members))
+    {
+        Console.Out.WriteLine("income-readings: " + line);
+    }
+
+    return 0;
+}
 
 // From 24.11, read-only: every step and entry the split rule sets aside over the long history and the store's year, counted
 // by cause, and with '--list' each one with its stock, its day and its cause. It writes nothing.
