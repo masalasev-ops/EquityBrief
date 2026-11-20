@@ -220,8 +220,8 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
     }
 
     // An S&P 400 or 600 family's live rule's setting on its grid and its stop floor, none where no live rule of it stands or
-    // its setting leaves the grid.
-    static (int[] Places, double StopFloor)? LiveSetting(IReadOnlyList<Indices.IndexRule> standing, string family)
+    // its setting leaves the grid. A stored range ceiling of nought stands for any range, the grid's level of no ceiling.
+    public static (int[] Places, double StopFloor)? LiveSetting(IReadOnlyList<Indices.IndexRule> standing, string family)
     {
         if (standing.FirstOrDefault(rule => rule.Family == family) is not { } rule)
         {
@@ -229,8 +229,9 @@ public sealed class LongSearch(IClock clock, string databaseFile, string dataRoo
         }
 
         var p = rule.Parameters;
+        var ceiling = p.GetValueOrDefault(Core.Candidates.IndexBreakoutCandidate.RangeCeilingParameter);
         double[] values = family == BreakoutRule.Name
-            ? [p[Core.Candidates.IndexBreakoutCandidate.HighSessionsParameter], p[Core.Candidates.IndexBreakoutCandidate.VolumeMultipleParameter], p[Core.Candidates.IndexBreakoutCandidate.RangeCeilingParameter], p[Core.Candidates.IndexBreakoutCandidate.StopMovesParameter]]
+            ? [p[Core.Candidates.IndexBreakoutCandidate.HighSessionsParameter], p[Core.Candidates.IndexBreakoutCandidate.VolumeMultipleParameter], ceiling == 0 ? double.PositiveInfinity : ceiling, p[Core.Candidates.IndexBreakoutCandidate.StopMovesParameter]]
             : [p[Core.Candidates.IndexDriftCandidate.WindowSessionsParameter], p[Core.Candidates.IndexDriftCandidate.ReactionMovesParameter], p[Core.Candidates.IndexDriftCandidate.VolumeMultipleParameter], p[Core.Candidates.IndexDriftCandidate.TargetMultipleParameter]];
         var places = IndexNightRead.Places(family == BreakoutRule.Name ? BreakoutSweep.Grid : DriftSweep.Grid, values);
 

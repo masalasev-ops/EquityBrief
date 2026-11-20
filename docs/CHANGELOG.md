@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - docs/BUILD_PLAN.md - 24.8's years, the operator's open questions settled and the counts of 24.8 to 24.11 each on a line of its own
+Decision: A pin move a replay carries with every trade the same registers no live rule, and one moving a trade comes to the operator first
+Was:
+> phase 24, "What is the operator's.": "... promotion or keeping at each monthly run from 2027-02-06; the correction of the places stating a price at the open; and whether a pin move a replay carries counts as registering a live rule."
+> 24.8: "... so each index's book is judged over those years too, its record box naming the years it reads. A result that would change a book's exit ..."
+> the claims phase 24 predicts: "- about 2 at 24.8; about 1 at 24.9; none at 24.10; about 2 at 24.11;"
+Now:
+> "... promotion or keeping at each monthly run from 2027-02-06; and a pin move a replay carries in which any trade differs (see: ...)."
+> 24.8: "... its record box naming the years it reads. On the operator's word of 2026-11-20, ... the chosen years start where the S&P 500's holdings begin, October 2018, and end in 2022, and the judged years stay from 2023, unchanged. The long test runs on a copy of the store, ... and the books' figures go to the operator before anything is registered. A result that would change a book's exit ..."
+> "- about 2 at 24.8, the History page's row and the long test's years;", "- about 1 at 24.9, the roster's row;", "- none at 24.10, the long search's row read again on its next run;", "- about 2 at 24.11, the Run page's rows;"
+Why: the operator's word of 2026-11-20, kept as Appendix J of the phase 24 plan's file, ordered the correction of the places stating a price at the open, ruled on a pin move a replay carries and set 24.8's chosen years; and the conformance check reads each checkpoint's count from a line of its own, so 24.10 landing ahead of 24.8 needs its count on one.
+
 ### 2026-11-20 - docs/ARCHITECTURE.html - the AI judge's page at #/judge and Home's line of it, at 24.6
 Authorised by: The AI judge's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the judge waits for that run
 Was:
