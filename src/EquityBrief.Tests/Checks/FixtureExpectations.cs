@@ -154,6 +154,8 @@ public partial class FixtureExpectations
             .. JudgePickClaims,
             // 24.5: section 17's row of the AI judge's four accounts.
             .. JudgeAccountClaims,
+            // 24.7: section 18's row of the AI judge's replay.
+            .. JudgeReplayClaims,
             // 21.8, ranking in place of pass-or-fail gates: section 17's row of the variant.
             .. RankingClaims,
             // 21.9, graded exposure: section 17's row of the variant.

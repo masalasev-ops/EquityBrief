@@ -39,8 +39,8 @@ public partial class ArchitectureConformance
         ("23.11", [], []),
     ];
 
-    // The rows the document gains after phase 23's report: phase 24's from 24.3 to 24.6.
-    internal static string[] AfterPhaseTwentyThree => [.. FixtureExpectations.JudgeFactRows, .. FixtureExpectations.JudgePickRows, .. FixtureExpectations.JudgeAccountClaims, .. Reading.ReadSurface.JudgePageRows];
+    // The rows the document gains after phase 23's report: phase 24's from 24.3 to 24.7.
+    internal static string[] AfterPhaseTwentyThree => [.. FixtureExpectations.JudgeFactRows, .. FixtureExpectations.JudgePickRows, .. FixtureExpectations.JudgeAccountClaims, .. Reading.ReadSurface.JudgePageRows, .. FixtureExpectations.JudgeReplayClaims];
 
     // The rows corrections of phase 22's work landed while phase 23 was built, named beside the pair and counted in none of
     // it: the 22.6 correction of 2026-11-09's setup's record over the long history on a pick's card, on Home's idea and on a

@@ -179,6 +179,9 @@ public partial class ArchitectureConformance
 
         // And from 24.6: the AI judge's page's five regions and Home's line of it.
         .. Reading.ReadSurface.JudgePageRows,
+
+        // And from 24.7: section 18's row of the judge's replay.
+        .. FixtureExpectations.JudgeReplayClaims,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

@@ -21,6 +21,7 @@ public partial class ArchitectureConformance
         ("24.4", [.. FixtureExpectations.JudgePickRows], []),
         ("24.5", [.. FixtureExpectations.JudgeAccountClaims], []),
         ("24.6", [.. Reading.ReadSurface.JudgePageRows], []),
+        ("24.7", [.. FixtureExpectations.JudgeReplayClaims], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -29,6 +30,8 @@ public partial class ArchitectureConformance
     // line and the check's row landing as words where the plan counted them as rows. 24.4, ten of eight: each of its four
     // stores a row of its own where the plan counted them as one. 24.5, one of four: the accounts are worked by the core when
     // the judge's page is read, so their rows land with the page at 24.6 and the guide's words are no claim. 24.6, six of six.
+    // 24.7, one of two: the replay is a verb over the judge's own components, so it lands as section 18's row and the
+    // runbook's words where the plan counted a row of its own.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -37,6 +40,7 @@ public partial class ArchitectureConformance
         ("24.4", 2),
         ("24.5", -3),
         ("24.6", 0),
+        ("24.7", -1),
     ];
 
     [Fact]
@@ -90,6 +94,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1700, 1800, 1658), (before, low, high, actual));
+        Assert.Equal((1632, 1700, 1800, 1659), (before, low, high, actual));
     }
 }

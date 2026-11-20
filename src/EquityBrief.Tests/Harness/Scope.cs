@@ -3953,6 +3953,10 @@ internal static class Scope
             Verdict.Pass,
             "a pick walked by hand under each take-profit from the price it paid, the random draw repeated from its seed with the judge's count a night and a member placing no trade drawn past, the median and band read off eleven sorted accounts, the index held grown by its fund, a pick against two members worked by hand, and the accounts sizing and costing through the one account function alone; the figures read off the document against the constants",
             ByExpectations),
+        [CheckReach.Key(FailureTable, "An AI judge replay without the operator's word, over a night on or before the model's cutoff, or with another process waiting on the model")] = new Scoped(
+            Verdict.Pass,
+            "the plan worked by hand leaving out the nights on or before the cutoff and those run, its hours the count times the minutes and none stated before a live night is measured; nothing replayed without the word; a waiting process or the instant given stopping it before the next night; a held local lock read as waiting; a night's facts built again held to those stored with each difference named; and the replay's prefix the one the page reads apart",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A new reading's source refuses")] = new Scoped(
             Verdict.Pass,
             "over constructed stores a refused page of trends stores nothing while the pages after it are asked, a refused FINRA answer stops its run with what it stored kept and says why on its row, and three failed asks of Yahoo in a row stop the refresh",
