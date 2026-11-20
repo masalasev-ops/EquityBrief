@@ -20614,3 +20614,54 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    24.12's fallbacks, built on their own branch and put to the operator; 24.8 and 24.9's runs; the S&P 400 breakout's
             long search run again by hand.
+
+### 24.12 - every reading built on operating income: the diagnosis, the pages' fallback lines, and the rules' put to the operator   2026-11-20
+
+Queue:      done, 24.0 to 24.7, 24.10, 24.11 and the 24.0 correction; in progress, this checkpoint, split on the operator's
+            word of 2026-11-20 kept as Appendix K of the plan's file; next, 24.8 on a copy of the store.
+Built:      `income-readings`, read-only: for a stored night each reading built on operating income on each index, the members
+            it reads and those it does not for want of the line with the cause, and with `--facts` what each fallback line
+            would add from the SEC's answers the long facts pull kept. The pages' half: `fallback_fact`, migration 155, the two
+            lines kept apart from the filed facts and read by no rule; the filings refresh keeping them from each answer, its
+            check of whether an answer carries a report reading the filed facts' concepts alone; `fallback-facts --kept` filling
+            them once; and the cards' business word, the entry check's cover line and the report's quarters reading every quarter
+            alike on income before taxes plus interest expense, else revenue less costs and expenses, where the filer files no
+            operating income for its four newest quarters, each naming the line used, and a filer neither line covers saying
+            so. The rules' half, branch `phase-24-12-rules-fallback` at 0f388df3, unmerged: the filed facts' readers, the
+            quarters as read and the three filed facts queries the rules read taking the same line, landing only with the change
+            of the monthly run of 2027-02-06 on the operator's word.
+Measured:   the diagnosis over the night of 2026-11-19, read-only. The scorecard's checks read no operating income. The rules'
+            interest cover: passed by 397 of 503, 312 of 400 and 440 of 602; not passed for want of the line 70, 44 and 51,
+            income before taxes plus interest adding 48, 24 and 36, revenue less costs and expenses 3, 8 and 6, and 19, 12 and 9
+            still unread, neither line covering their four quarters, banks, insurers and trusts most of them. The ledger's
+            operating margin change: read for 384, 299 and 455; 117, 94 and 138 for want of the line, adding 84 and 3, 56 and
+            8, 82 and 6, and 30, 30 and 50 still unread. The cards' business word, the entry check's cover line and the report's
+            margins: read for 382, 299 and 456; 120, 96 and 139 for want of the line, adding 89 and 3, 71 and 8, 115 and 6, and
+            28, 17 and 18 still unread; with 1, 3 and 6 members with fewer than four quarters filed and 0, 2 and 1 with no filer.
+            AVY and HCA fail each for a filer filing no operating income line, TJX for one filing it for two of the four, and
+            each reads on income before taxes plus interest. The copy of the store at 14:57 UTC filled offline from the kept
+            answers in 89 seconds: 1,496 filers, 1,488 read, 106 of them kept before the filer's newest filing, 8 with none,
+            128,412 rows; the fill on the operator's store asks the SEC for those. The replay of the rules' half against the
+            pages' over two copies of that copy, the nights of 2026-11-16 to 2026-11-19, in 11 minutes: 276 of 276 rule and book
+            tables the same, no trade of a running revision or variant changed; over those nights the ledger's cover reading
+            turns to passed for 40, 26 and 33 members, JNJ among them, and its operating margin change becomes readable for 87,
+            64 and 88.
+Tests:      5 new: each cause and each line worked by hand over a constructed filer, the same line read for every quarter; the
+            card's and the report's words naming the line and a filer neither covers saying so; the two lines kept apart from
+            the filed facts and a fallback alone never standing for a report's figures; the fill reading a kept answer and
+            asking for a filer that filed since; and no source the pages' fallback writes one a rule's version pins.
+Claims:     1665, from 1661: the fill's catalogue and matrix rows, its store's row and section 18's row of a filer filing no
+            operating income, four as the plan counts.
+Pins:       none moved at this checkpoint; the rules' half moves the pins of `FiledFacts.cs` and `QuartersAsRead.cs` on its own
+            branch, whose replay shows every trade the same and which waits for the operator's word on the monthly run of
+            2027-02-06 (see: A pin move a replay carries with every trade the same registers no live rule, and one moving a trade comes to the operator first).
+Mutated:    the rule: each guard 24.12 adds taken out in turn. m1 the filed operating income kept beside a fallback line: red,
+            two quarters read as filed and two on the fallback; m2 the card naming no line: red; m3 a fallback line alone taken
+            for a report's figures: red; each filtered to its test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3876 of 3876 tests ran with none failed, migrations 0 to 155 with none
+            pending, schema version 155, against `data-ci` and never `data`; the phase report 67 tables, 1665 claims, 1665
+            passing, none out of scope and none unexamined, 1680 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the fill on the operator's store and its migration, on their word; the rules' half, put to the operator for the
+            change of the monthly run of 2027-02-06; 24.8 and 24.9's runs; the S&P 400 breakout's long search run again by hand.
