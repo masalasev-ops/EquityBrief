@@ -14,13 +14,15 @@ public enum IncomeCause
     SomeQuarters,
 }
 
-// The line a member's operating income is read on: as filed, or one of the two fallbacks, or none.
+// The line a member's operating income is read on: as filed, or one of the fallbacks, or none; from the 24.12 correction of
+// the eleven the last fallback, net income plus income tax expense plus interest, placed after none so no stored value moves.
 public enum IncomeLine
 {
     Operating,
     PretaxPlusInterest,
     RevenueLessCosts,
     None,
+    NetPlusTaxPlusInterest,
 }
 
 // From 24.12, read-only: the diagnosis of every reading built on operating income. A member's cause over the four newest
@@ -59,7 +61,11 @@ public static class IncomeDiagnosis
 
     public static IReadOnlyList<string> CostsAndExpenses { get; } = ["CostsAndExpenses"];
 
-    public static IReadOnlyList<string> FallbackConcepts { get; } = [.. PretaxIncome, PretaxDomestic, PretaxForeign, .. CostsAndExpenses];
+    // From the 24.12 correction of the eleven, on the operator's word of 2026-11-20, the tax the last fallback adds back to net
+    // income where a filer tags no income before taxes: net income, as the filed facts keep it, plus this, plus interest.
+    public const string IncomeTax = "IncomeTaxExpenseBenefit";
+
+    public static IReadOnlyList<string> FallbackConcepts { get; } = [.. PretaxIncome, PretaxDomestic, PretaxForeign, .. CostsAndExpenses, IncomeTax];
 
     // The fallback lines a filer's answer stores, one a concept a period as first filed over the spans and from the first
     // period the filed facts keep, so the two tables meet period for period.
@@ -94,6 +100,7 @@ public static class IncomeDiagnosis
         IncomeLine.Operating => "operating income as filed",
         IncomeLine.PretaxPlusInterest => "income before taxes plus interest expense",
         IncomeLine.RevenueLessCosts => "revenue less costs and expenses",
+        IncomeLine.NetPlusTaxPlusInterest => "net income plus tax plus interest",
         _ => "neither fallback line covers its four quarters",
     };
 
@@ -127,6 +134,22 @@ public static class IncomeDiagnosis
             })];
         }
 
+        if (line == IncomeLine.NetPlusTaxPlusInterest)
+        {
+            var tax = Of([IncomeTax]).ToDictionary(fact => (fact.Start, fact.End));
+
+            return
+            [
+                .. Of(FiledFacts.NetIncome)
+                    .Where(net => tax.ContainsKey((net.Start, net.End)))
+                    .Select(net => net with
+                    {
+                        Concept = FiledFacts.OperatingIncome[0],
+                        Value = net.Value + tax[(net.Start, net.End)].Value + (interest.TryGetValue((net.Start, net.End), out var paid) ? Math.Abs(paid.Value) : 0m),
+                    }),
+            ];
+        }
+
         var costs = Of(CostsAndExpenses).ToDictionary(fact => (fact.Start, fact.End));
 
         return
@@ -139,7 +162,8 @@ public static class IncomeDiagnosis
 
     // The line a member's four newest quarters are read on and the facts with it: operating income as filed where it covers
     // them; else, for every quarter alike, income before taxes plus interest expense where that covers them; else revenue less
-    // costs and expenses; else none, the facts as they stand.
+    // costs and expenses; else, from the 24.12 correction of the eleven, net income plus income tax expense plus interest
+    // expense; else none, the facts as they stand.
     public static (IncomeLine Line, IReadOnlyList<FiledFactRow> Facts) WithLine(IReadOnlyList<FiledFactRow> facts, DateOnly session)
     {
         if (CauseOf(facts, session) is not (IncomeCause.NoOperatingLine or IncomeCause.SomeQuarters))
@@ -149,7 +173,7 @@ public static class IncomeDiagnosis
 
         FiledFactRow[] others = [.. facts.Where(fact => !FiledFacts.OperatingIncome.Contains(fact.Concept, StringComparer.Ordinal))];
 
-        foreach (var line in new[] { IncomeLine.PretaxPlusInterest, IncomeLine.RevenueLessCosts })
+        foreach (var line in new[] { IncomeLine.PretaxPlusInterest, IncomeLine.RevenueLessCosts, IncomeLine.NetPlusTaxPlusInterest })
         {
             FiledFactRow[] with = [.. others, .. Built(facts, line)];
 

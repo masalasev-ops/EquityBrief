@@ -20704,3 +20704,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the fill run again on the operator's store once merged, on their word; the rules' half for the change of the
             monthly run of 2027-02-06; 24.8 and 24.9's runs.
+
+### 24.12 - correction: net income plus income tax expense plus interest as the last fallback, for the eleven that tag no pretax line in some quarters   2026-11-20
+
+Queue:      done, 24.0 to 24.7, 24.10 to 24.12, the 24.0 correction and the correction of the domestic and foreign parts,
+            merged as #733, its fill run again on the operator's store adding 20,658 rows; in progress, this correction, on the
+            operator's word of 2026-11-20 kept as Appendix M of the plan's file; next, 24.8 with the monthly per-rule long test.
+Built:      the last fallback line, read only where neither income before taxes nor costs and expenses covers a member's four
+            newest quarters: net income as the filed facts keep it, `NetIncomeLoss` and else `ProfitLoss`, plus income tax
+            expense, `IncomeTaxExpenseBenefit`, kept in the fallback table alone, plus interest expense as the pretax line adds
+            it; the card saying "Operating income read as net income plus tax plus interest; the company tags no pretax line
+            that quarter" and naming its cover's income by it, the report's operating income line saying what it was read as,
+            and the income readings verb counting what it adds. No raw XBRL filing is read. The line's value stands after none
+            in its list, so no value a page or card stored moves.
+Measured:   over a copy of the store with the SEC's answers the long facts pull kept, the night of 2026-11-19, read-only: of
+            the 35 members still unread on the pages, 12 now read and no member read before is lost. Of the eleven, 4 read,
+            CASY, PSX, RJF and REX, and 7 do not, CLX, DOW, SRE, VMRK, VYLR, XOM and CNK, their four newest quarters not each
+            holding both net income and income tax expense in the SEC's facts, or VYLR's answer not kept. The line reads 8 more among the banks, insurers and real
+            estate trusts, ACGL, ALL, BNY, PFG, COLB, SFNC, FCPT and PECO, a financial company's cover still not read. The 23
+            still unread: 14 real estate trusts, 1 bank, 1 insurer and the 7 of the eleven.
+Tests:      1 new: the last line worked by hand over a constructed filer, read only where neither earlier line covers the four
+            and none where the tax is filed for three, and the card's sentence in the operator's words.
+Claims:     1665, unchanged: the correction moves the words of section 18's row of a filer filing no operating income and adds
+            none.
+Pins:       none moved; every source the correction changes is on the list the 24.12 check holds apart from every pinned
+            source.
+Mutated:    the rule: each guard the correction adds taken out in turn. m1 the last line left out of the order read: red, the
+            constructed filer reading none; m2 the card's sentence taken out: red; each filtered to its test and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3879 of 3879 tests ran with none failed, migrations 0 to 155 with none
+            pending, schema version 155, against `data-ci` and never `data`; the phase report 67 tables, 1665 claims, 1665
+            passing, none out of scope and none unexamined, 1680 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the fill run again on the operator's store once merged; the margins chart, which already reads the filed quarters
+            and the fallback lines and agrees with CPT's margin text, both reading no margin because CPT's revenue is filed as
+            lease income beside a contract revenue under its net income, put to the operator as a revenue fallback; for the
+            monthly run of 2027-02-06, on the operator's word kept as Appendix M, the S&P 400 heavyweights book's chosen exit
+            trailing its own exit by 0.35 points a month judged from 2023, and the S&P 500 heavyweights book below the index on
+            both spans; the rules' half for that run; 24.8 and 24.9's runs.
