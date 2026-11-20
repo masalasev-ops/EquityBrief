@@ -219,6 +219,32 @@ public partial class FixtureExpectations
         Assert.DoesNotContain("a real estate trust", CardLines.Business(new BusinessReading(null, null, false, false, 2) { Kind = "a real estate trust" }, "improving", settings).Words, StringComparison.Ordinal);
     }
 
+    // From the 24.12 correction of the eleven the last fallback: net income plus income tax expense plus interest, read only
+    // where neither income before taxes nor costs and expenses covers the four, and the card saying so in the operator's words.
+    [Fact]
+    public void NetIncomePlusTaxPlusInterestIsReadLastAndTheCardSaysTheCompanyTagsNoPretaxLine()
+    {
+        // Net income of 10, tax of 4 and interest of 3 on two: 17, 17, 14, 14.
+        List<FiledFactRow> taxed = [.. Filer(), .. Each(IncomeDiagnosis.IncomeTax, 4, 4, 4, 4), .. Each("InterestExpense", 3, 3, 3, 3).Take(2)];
+        var (line, facts) = IncomeDiagnosis.WithLine(taxed, FallbackSession);
+
+        Assert.Equal(IncomeLine.NetPlusTaxPlusInterest, line);
+        Assert.Equal([17m, 17m, 14m, 14m], OperatingRead(facts));
+
+        // Income before taxes or costs and expenses covering the four are read before it.
+        Assert.Equal(IncomeLine.PretaxPlusInterest, IncomeDiagnosis.WithLine([.. taxed, .. Each(IncomeDiagnosis.PretaxIncome[0], 20, 20, 20, 20)], FallbackSession).Line);
+        Assert.Equal(IncomeLine.RevenueLessCosts, IncomeDiagnosis.WithLine([.. Filer(costs: true), .. Each(IncomeDiagnosis.IncomeTax, 4, 4, 4, 4)], FallbackSession).Line);
+
+        // Tax filed for three of the four: none.
+        Assert.Equal(IncomeLine.None, IncomeDiagnosis.WithLine([.. Filer(), .. Each(IncomeDiagnosis.IncomeTax, 4, 4, 4, 4).Take(3)], FallbackSession).Line);
+        Assert.Contains(IncomeDiagnosis.IncomeTax, IncomeDiagnosis.FallbackConcepts);
+
+        var words = CardLines.Business(new BusinessReading(40m, 5m, false, false, 4) { OperatingLine = IncomeLine.NetPlusTaxPlusInterest }, "improving", CardSettings.Defaults).Words;
+
+        Assert.Contains("Operating income read as net income plus tax plus interest; the company tags no pretax line that quarter", words, StringComparison.Ordinal);
+        Assert.Contains("its net income plus tax plus interest is 5.00 times its interest", words, StringComparison.Ordinal);
+    }
+
     sealed class OneAnswer(string json) : IFilerFactsFeed
     {
         public int Requests { get; private set; }

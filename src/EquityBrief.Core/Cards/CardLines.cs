@@ -165,14 +165,24 @@ public static class CardLines
     {
         IncomeLine.PretaxPlusInterest => "its income before taxes plus interest expense, its filings stating no operating income,",
         IncomeLine.RevenueLessCosts => "its revenue less costs and expenses, its filings stating no operating income,",
+        IncomeLine.NetPlusTaxPlusInterest => "its net income plus tax plus interest",
         _ => "its operating income",
     };
+
+    // From the 24.12 correction of the eleven, on the operator's word of 2026-11-20, what a card says where its quarters were
+    // read on the last fallback.
+    public const string NetPlusTaxWords = "operating income read as net income plus tax plus interest; the company tags no pretax line that quarter";
 
     public static CardLine Business(BusinessReading reading, string? state, CardSettings settings)
     {
         var against = new List<string>();
         var missing = new List<string>();
         var said = new List<string>();
+
+        if (reading.OperatingLine == IncomeLine.NetPlusTaxPlusInterest)
+        {
+            said.Add(NetPlusTaxWords);
+        }
 
         if (reading.NetIncome is not { } net)
         {

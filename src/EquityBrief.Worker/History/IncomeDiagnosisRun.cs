@@ -162,8 +162,9 @@ public static class IncomeDiagnosisRun
                 var all = wanting.ToList();
                 var pretax = all.Count(member => member.Line == IncomeLine.PretaxPlusInterest && reads(member));
                 var costs = all.Count(member => member.Line == IncomeLine.RevenueLessCosts && reads(member));
+                var netPlusTax = all.Count(member => member.Line == IncomeLine.NetPlusTaxPlusInterest && reads(member));
 
-                return FormattableString.Invariant($"{all.Count} for want of the line; income before taxes plus interest adds {pretax}, revenue less costs and expenses {costs}; still unread {all.Count - pretax - costs}");
+                return FormattableString.Invariant($"{all.Count} for want of the line; income before taxes plus interest adds {pretax}, revenue less costs and expenses {costs}, net income plus tax plus interest {netPlusTax}; still unread {all.Count - pretax - costs - netPlusTax}");
             }
 
             var cover = on.Where(member => member.Coverage == false && WantsTheLine(member)).ToList();

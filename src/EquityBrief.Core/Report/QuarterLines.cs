@@ -233,7 +233,7 @@ public static class QuarterLines
                 Line(GrossProfit, quarter => quarter.GrossProfit, NonePublished, kept: true, margin: true),
                 // From 24.12 the line names a fallback its filed quarters were read on.
                 Line(OperatingIncome, quarter => quarter.OperatingIncome, NonePublished, margin: true) is var operating
-                    && sourced?.OperatingLine is IncomeLine.PretaxPlusInterest or IncomeLine.RevenueLessCosts
+                    && sourced?.OperatingLine is IncomeLine.PretaxPlusInterest or IncomeLine.RevenueLessCosts or IncomeLine.NetPlusTaxPlusInterest
                     && SourceOf(newest) == QuarterSource.Filing
                     ? operating with { From = QuarterSources.ReadAs(sourced.OperatingLine) }
                     : operating,

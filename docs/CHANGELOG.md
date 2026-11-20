@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - net income plus income tax expense plus interest as the last fallback, the 24.12 correction of the eleven
+Decision: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+Was:
+> ARCHITECTURE.html, section 18's row "A filer that files no operating income for a member's four newest quarters": "... the domestic part alone where the filer files no foreign part and otherwise the two of the same period summed; a filer covered by neither line ..."
+> SCHEMA.md, `fallback_fact.concept`: "... from the 24.12 correction its domestic or its foreign part, or costs and expenses"
+> RUNBOOK.md, "Every reading built on operating income, and the fallbacks the pages read": "... read from the company's filed industry. The new concepts reach the store ..."
+Now:
+> "... the domestic part alone where the filer files no foreign part and otherwise the two of the same period summed, and from the correction of the eleven, last, net income plus income tax expense plus interest, its card saying the company tags no pretax line; a filer covered by neither line ..."
+> "... from the 24.12 correction its domestic or its foreign part, costs and expenses, or from the correction of the eleven income tax expense"
+> "... read from the company's filed industry. From the correction of the eleven the last fallback is net income plus income tax expense plus interest, the card saying "Operating income read as net income plus tax plus interest; the company tags no pretax line that quarter." The new concepts reach the store ..."
+Why: the operator's word of 2026-11-20 kept as Appendix M of the plan's file: the eleven members whose filings tag income before taxes for some periods only rebuild it as net income plus income tax expense, as the last fallback, in the fallback table only, and no raw XBRL filing is read.
+
 ### 2026-11-20 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - income before taxes filed in its domestic and foreign parts, and a card naming a real estate trust, a bank or an insurer as its reason, the 24.12 correction
 Decision: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
 Was:
