@@ -20356,3 +20356,46 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the cod
             the tree carrying this entry, 165 of 165 passed.
 Carried:    24.12's diagnosis, built at its checkpoint; the operator's word on whether a pin move a replay carries counts as
             registering a live rule, and on correcting the places stating a price at the open.
+
+### 24.4 - the AI judge's nightly picks: the night starts it after its last step, and it picks up to five a night for its own account under the local model's lock, its prices code's   2026-11-20
+
+Queue:      done, 24.0's planning and its amendment, 24.1's fields, 24.2 and 24.3; in progress, this checkpoint; next, 24.5, the
+            four accounts.
+Built:      `JudgeMenu`, the menu the operator approved with the mockup: a hold of 5, 10, 20 or 63 trading days, its stop 1, 1.5,
+            2 or 3 typical daily moves under the buy, the take-profit the whole at 2 times the risk or half there and the rest
+            on a give-up price as far behind the highest close, every price worked by code from the price it buys at;
+            `JudgePrompt`, round one's short rows 50 a question under made-up labels drawn by a seeded shuffle keeping at most
+            one, round two's full sheets together picking up to 5 ranked with a reason holding no digit and no name, both held
+            to closed choices, and the prompts' version; `JudgePicker` and the `judge-pick` verb, which wait for the night and
+            then the local model's lock until 9:30 New York time on the next weekday, start only under a passed naming test,
+            refuse any model, file, window or prompt but its pin's, its first written from the newest reading pin, ask each
+            question once more where its answer cannot be read and then count it, and write once under the drain's lock or
+            write the night as missed; the night's last step starting it as a process of its own, in the Run page's group
+            after the close. Migration 154,
+            `judge_pin`, `judge_run`, `judge_ask` and `judge_pick`. `CLAUDE.md`'s hard rule names it a fourteenth carve-out,
+            the architecture's catalogue, matrix, stores, section 14's step, section 17's menu and section 18's two rows, the
+            schema, the runbook, the roster's row and the changelog.
+Tests:      7 new: a constructed night of 120 members screened in batches of 50, 50 and 20 and picked through recorded answers
+            into two ranked picks priced by hand, its first pin written and the night refused a second run; each hold priced
+            by hand from a close and from a fill and a choice off the menu refused; a reason holding a digit, a label picked
+            twice, a choice off the menu and a reason naming its company refused, the last asked once more; a night at the
+            next open and one waiting on the local model's lock at it asking nothing and stored missed; a run under another
+            prompt or model than its pin refused; the night constructing no reader of the judge's tables; and no source a rule
+            pins among those 24.4 writes. 4 rewritten, the night's steps and rows counted from its end with the judge last.
+Claims:     1651, from 1641: the picker's catalogue and matrix rows, its four stores, section 14's step, section 17's menu and
+            section 18's two rows, ten where the plan counted about eight.
+Pins:       none moved; no rule's version moves, asserted.
+Mutated:    the rule: each bound 24.4 adds moved and each guard taken out in turn. m1 the take-profit at 3 times the risk:
+            red at the menu's test, a week's target 106 for 104; m2 the refusal of a reason holding a digit taken out: red,
+            the reason read; m3 the next open's check before a question taken out: red, 3 questions asked at the open; m4 the
+            pin's prompt comparison taken out: red, the run picked under another prompt's pin; m5 the night's start of the
+            judge taken out: red, no judge asked for; each run filtered to its test and reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3854 of 3854 tests ran with none failed, migrations 0 to 154 with none
+            pending, schema version 154, against `data-ci` and never `data`; the phase report 66 tables, 1651 claims, 1651
+            passing, none out of scope and none unexamined, 1666 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the judge picks on the operator's store only once a naming test of the field list's version has passed there; the
+            three fields set aside at 24.3; the operator's word on whether a pin move a replay carries counts as registering a
+            live rule, and on correcting the places stating a price at the open.

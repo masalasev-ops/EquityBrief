@@ -983,7 +983,7 @@ public static class Nightly
 
                 return said;
             }),
-            // Section 14's last step, after the labeller's row. The night starts the store's copy: one process of
+            // Section 14's step after the labeller's row. The night starts the store's copy: one process of
             // its own, which waits until the night has finished, copies the store and writes one row of its own.
             // It waits for no labeller and no drain, since the night starts neither, and a night handed nothing to
             // start one with says so and starts none.
@@ -995,6 +995,23 @@ public static class Nightly
                     ?? "No copy of the store was started, since this night was handed nothing to start one with.";
 
                 await Backup.StoreBackup.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, said);
+
+                return said;
+            }),
+            // Section 14's last step, after the store's copy. The night starts the AI judge: one process of its own, which
+            // waits until the night has finished, writes the night's facts and picks under the local model's lock, its
+            // calls on its own row and never the night's. A night run again for an earlier session starts none, since a
+            // night the judge missed is never filled in later.
+            // see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+            new("judge", async () =>
+            {
+                var started = clock.UtcNow;
+                var said = !askForTheFirstName
+                    ? "no judge was started, since this night was run again for an earlier session"
+                    : launcher?.StartTheJudge().Line
+                        ?? "No judge was started, since this night was handed nothing to start one with.";
+
+                await Judge.JudgePicker.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, said);
 
                 return said;
             }),

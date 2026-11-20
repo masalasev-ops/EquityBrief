@@ -1698,6 +1698,22 @@ dotnet run --project src/EquityBrief.Worker -- judge-naming --session 2026-11-19
 
 It draws 100 members of that night's stored facts by the seed and asks the local model, under its lock, to name the company behind each one's short row and then its full sheet, 200 asks. It prints each round's named, answered and asked and exits non-zero where it did not pass; every answer is kept in `judge_naming`. The judge starts under a field list's version only where the newest test under it passed both rounds (see: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts). Where a round fails, the answers show which members were named; the field giving them away is made coarser on your ruling and the test runs again.
 
+### The AI judge's nightly picks
+
+From 24.4 the night's last step starts the judge as a process of its own, `judge-pick`, and its row on the run log says so (see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed). The judge waits for the night to let go of its lock, writes the night's facts, and then waits for the local model's lock, which the labeller and the local run's two slots take too, until 9:30 New York time on the next weekday at the latest. It starts only under a passed naming test of the field list's version, so a night after the field list changes picks nothing until the test is run again and passes.
+
+Its first run writes its pin from the newest reading pin with the judge's prompt version; every later run is refused where the model, its file, the window or the prompt differs, its row naming the part. A change to the judge's prompts is a new version that every run refuses until its own pin is written, and that pin comes to you with the change.
+
+It asks about 32 questions a night: the short rows about 50 at a time, keeping at most one of each batch, and then the kept members' full sheets together, picking up to five ranked. Each pick's stop and take-profit are code's, worked from the last close and the typical daily move by the hold it chose, and moved to the price it pays once bought. Its picks set none of Tonight's buys and no rule reads them (see: The AI judge's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the judge waits for that run).
+
+To run it by hand for a night named, while no other local process holds the model:
+
+```
+dotnet run --project src/EquityBrief.Worker -- judge-pick --session 2026-11-20
+```
+
+A night holding a run that picked, picked none or was missed is never run again. A run refused, for no facts, no passed naming test or a pin differing, writes its row and may be run again once the cause is put right. Its questions and answers stand in `judge_ask`, its picks in `judge_pick` and its outcome in `judge_run`.
+
 ### The fundamentals-first family
 
 From 17.8 a fifth family lists on every index from its first night, on its provisional setting: a company whose four newest quarters and newest quarter are profitable, whose revenue grew on the year-earlier quarter faster than the quarter before grew, whose gross or operating margin widened on the year and whose cash from operations is at least its net income, closing above its 200-day average with the 50-day above it, bought at the pullback's buy point (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). Its business is read from the SEC's facts as the night's filings refresh leaves them, a filing read from the session after the day it was filed. The index families' step reads it on the S&P 400 and 600 beside their own families and on the S&P 500 alone for this family, after the S&P 500's own families, whose picks it holds back. Its card stands after each index's own families' on Tonight; on the S&P 500 the card says the S&P 400's and 600's step read it. From 21.4 the night computes it no longer on any index: the one move of the pins took it out, its rows and record kept and readable, its one open trade run out under its own plan with the index's other page trades, and the S&P 500 read by the step only while such a trade stands open on it (see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan).

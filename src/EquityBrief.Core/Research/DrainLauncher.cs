@@ -36,6 +36,12 @@ public interface IDrainLauncher
     DrainStart StartTheBackup(bool afterTheLabeller) =>
         new(false, "The store's copy was not started, because this surface holds no way to start the worker.");
 
+    // The AI judge, which the night starts after the store's copy as a process of its own, waiting until the night has
+    // finished.
+    // see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+    DrainStart StartTheJudge() =>
+        new(false, "The AI judge was not started, because this surface holds no way to start the worker.");
+
     // The quote job for one name's delayed quote, which a name page's press starts as a process of its own once its
     // request is written, handed the name and the instant the page asked.
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
@@ -111,6 +117,9 @@ public sealed class WorkerDrainLauncher(
 
     public static readonly IReadOnlyList<string> CopyTheStoreAfterTheLabeller = ["backup", "--after-labeller"];
 
+    // The verb that runs the AI judge over the newest night.
+    public static readonly IReadOnlyList<string> RunTheJudge = ["judge-pick"];
+
     // The verb that asks one name's delayed quote, and its two flags.
     public const string QuoteVerb = "quote";
 
@@ -173,6 +182,9 @@ public sealed class WorkerDrainLauncher(
             afterTheLabeller ? CopyTheStoreAfterTheLabeller : CopyTheStore,
             "The store's copy has started as a process of its own, and waits until the night, its drain and its labeller have finished.",
             "the store waits for the backup verb run by hand");
+
+    public DrainStart StartTheJudge() =>
+        Launch(RunTheJudge, "The AI judge has started as a process of its own, and waits until the night has finished.", "the judge's night waits for the judge-pick verb run by hand");
 
     public DrainStart StartTheQuote(string ticker, DateTimeOffset askedAt) =>
         Launch(AskTheQuote(ticker, askedAt), "The quote has been asked as a process of its own.", "the page keeps the last stored price");

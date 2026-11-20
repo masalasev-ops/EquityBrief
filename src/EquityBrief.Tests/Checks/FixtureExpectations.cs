@@ -150,6 +150,8 @@ public partial class FixtureExpectations
             .. NamesClaims,
             // 24.3: section 17's rows of the AI judge's facts and its naming test, and section 18's row.
             .. JudgeFactClaims,
+            // 24.4: section 17's row of the AI judge's menu and section 18's two rows.
+            .. JudgePickClaims,
             // 21.8, ranking in place of pass-or-fail gates: section 17's row of the variant.
             .. RankingClaims,
             // 21.9, graded exposure: section 17's row of the variant.
