@@ -20291,3 +20291,49 @@ Carried:    the long test run again from main over the long history once this me
             the operator; the S&P 400's and 600's breakout and drift variants read by their sweep's own reading, which still
             scores from 2019 on a long run; and the sweep's eight figure years ending in 2026, which from 2027 leave a pick of
             that year out of the sweeps' figures and the own search's walks, both for the operator.
+
+### 24.3 - the AI judge's fact rows and its naming test: a night's facts written for every member under the approved fields, and the local model naming 1 in 100 of the companies behind them   2026-11-20
+
+Queue:      done, 24.0's planning, 24.1's fields approved and 24.2; in progress, this checkpoint; next, 24.4, the judge's
+            nightly picks and plans.
+Ruled:      the operator's approval of the judge's fields of 2026-11-19, word for word in
+            `prompts/2026-11-19-24.1-judge-fields-approved.md`, which closes 24.1.
+Built:      `JudgeFacts`, the 47 approved fields, a short row and a full sheet, each a reading from `ledger_reading`, the
+            size from the company value, the sector from `company` on all three indexes, and the 12-month return less the
+            last month, the distance from the 52-week high and the reward against risk computed from the stored closes and
+            the night's plan, so no pin moves; a field a member does not hold reads "not on file"; the field list's version a
+            hash of its fields and bounds. `JudgeFactWriter` and the `judge-facts` verb, writing a night's facts into
+            `judge_fact`; `JudgeNamingTest` and the `judge-naming` verb, asking the local model under its lock to name the
+            company behind 100 seeded rows and then 100 sheets, each alone, into `judge_naming`, passing at 2 named in 100 of
+            each round with 95 in 100 answered, the judge starting only under a passed test of its version. Migration 153.
+            The rules-choose-the-stocks decision superseded by one naming the judge's account as the one exception, two
+            decisions of its own, the architecture's catalogue, matrix, stores and sections 17 and 18, the schema, the
+            runbook, the guide and the changelog.
+Measured:   on a copy of the store taken by SQLite's backup into this worktree and deleted after, the night of 19 Nov 2026:
+            1,505 members' facts written in 17 s under field list 01ceeb9dfebd. The first naming run had every question
+            refused, the schema handed the feed already wrapped as a structured output, which the feed wraps again; fixed,
+            the second run answered 200 of 200 in 2 min 38 s and named 1 of 100 rows, Boeing, and 0 of 100 sheets: passed.
+            Reward against risk is held by 322 of 503 S&P 500 members and none on the S&P 400 or 600, whose families lay
+            out no ladder plan.
+Tests:      8 new: a constructed night's facts worked by hand to the row's exact text, no name, ticker, industry or date in
+            any text; each size on both sides of its edge and a short year reading none; the naming test passing and
+            failing on each side of its bounds, a refusal stored with its message; the naming question's body wrapping its
+            schema once; an answer naming a company by its ticker or its name's first word; the judge's components the one
+            exception to rules-choose-the-stocks, and a planted read of its tables found.
+Claims:     1641, from 1632: the judge's two components, its two stores and three rows of sections 17 and 18.
+Pins:       none moved; the judge's code sits under folders no rule's version pins, asserted.
+Mutated:    the rule: each bound 24.3 adds put on its other side, and each guard taken out. m1 the mid-size edge moved so
+            exactly $5 billion reads small: red at the size test; m2 the naming bound moved so 2 in 100 fails: red in both
+            naming tests; m3 the next morning's cut-off on the news labels taken out: red, a story labelled after it counted;
+            m4 the check's reader of the judge's tables emptied: red, the planted read not found; m5 the schema wrapped twice
+            again: red at the body's test, "object" expected and "json_schema" read; each run filtered to its test and
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3847 of 3847 tests ran with none failed, migrations 0 to 153 with none
+            pending, schema version 153, against `data-ci` and never `data`; the phase report 66 tables, 1641 claims, 1641
+            passing, none out of scope and none unexamined, 1656 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the three fields set aside, the nearest support's strength, upgrades less downgrades and a cluster of insider
+            buyers; the build plan's amendment placing the business word's stage of 2026-11-20 by what it depends on; the
+            operator's word on whether a pin move a replay carries counts as registering a live rule, and on correcting the
+            places stating a price at the open.

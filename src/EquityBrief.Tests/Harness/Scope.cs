@@ -3872,6 +3872,43 @@ internal static class Scope
             Verdict.Pass,
             "a constructed refresh over a recorded list keeps each member's name, the common stock's where a code is listed twice, asks nothing inside the week and asks again after it, and a refused list keeps every name held; the week read off the document against the constant",
             ByExpectations),
+        // 24.3, the AI judge's fact writer, its naming test and what they keep.
+        [CheckReach.Key(CatalogueTable, "Judge fact writer")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the night's rows it reads, the judge facts and the run log it writes and no feed, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Judge fact writer")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Judge naming test")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the judge facts, the names and the naming tests it reads, the naming tests and the run log it writes and the local model, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Judge naming test")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Judge facts")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Judge naming tests")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The AI judge's facts")] = new Scoped(
+            Verdict.Pass,
+            "a constructed night's short row worked by hand, the year's return and high over 252 closes and the stories of the 30 days to the next morning among it, each size read on both sides of each band's edge, no name, ticker, industry or date in any member's texts and the fields written the approved list's alone; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The naming test")] = new Scoped(
+            Verdict.Pass,
+            "over constructed answers a seeded draw of 100 members, two named in each round passing, three failing, five refused passing and six failing, and the judge starting only under a passed test of its field list's version; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A judge's fact a member does not hold, or a naming test that fails")] = new Scoped(
+            Verdict.Pass,
+            "a member holding a ledger row alone reading not on file in every field but the news, a store's year short of 252 closes reading no year's return or high, a plan holding no reward reading none, and a failed or untested field list starting no judge",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A new reading's source refuses")] = new Scoped(
             Verdict.Pass,
             "over constructed stores a refused page of trends stores nothing while the pages after it are asked, a refused FINRA answer stops its run with what it stored kept and says why on its row, and three failed asks of Yahoo in a row stop the refresh",

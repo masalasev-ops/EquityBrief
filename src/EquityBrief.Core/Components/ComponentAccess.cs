@@ -192,6 +192,9 @@ public enum Store
     QuoteRequest,
     AnalystRequest,
     WatchList,
+    // From 24.3 the AI judge's facts of each night and its naming test's answers, which no rule reads.
+    JudgeFact,
+    JudgeNaming,
     RunLog,
 }
 
