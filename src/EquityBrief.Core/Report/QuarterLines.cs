@@ -229,7 +229,12 @@ public static class QuarterLines
             newest.ReportDate,
             earlier?.PeriodEnd,
             [
-                Line(Revenue, quarter => quarter.Revenue, revenueAbsent, estimate: revenueEstimate, implied: revenueImplied),
+                // From the 24.12 correction of the trusts the line names a trust's revenue read as its two parts.
+                Line(Revenue, quarter => quarter.Revenue, revenueAbsent, estimate: revenueEstimate, implied: revenueImplied) is var sold
+                    && sourced?.LeaseRevenue.Contains(newest.PeriodEnd) == true
+                    && SourceOf(newest) == QuarterSource.Filing
+                    ? sold with { From = QuarterSources.LeaseAndContracts }
+                    : sold,
                 Line(GrossProfit, quarter => quarter.GrossProfit, NonePublished, kept: true, margin: true),
                 // From 24.12 the line names a fallback its filed quarters were read on.
                 Line(OperatingIncome, quarter => quarter.OperatingIncome, NonePublished, margin: true) is var operating

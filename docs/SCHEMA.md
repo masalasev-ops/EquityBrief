@@ -3009,7 +3009,7 @@ Grain: one row per filer, concept and period, as first filed.
 | Column | Type | Notes |
 |---|---|---|
 | `cik` | TEXT | the filer's CIK padded to ten digits |
-| `concept` | TEXT | the archive's concept the figure was filed under: one of the two income before taxes concepts, from the 24.12 correction its domestic or its foreign part, costs and expenses, or from the correction of the eleven income tax expense |
+| `concept` | TEXT | the archive's concept the figure was filed under: one of the two income before taxes concepts, from the 24.12 correction its domestic or its foreign part, costs and expenses, from the correction of the eleven income tax expense, or from the correction of the trusts one of the two lease income concepts |
 | `period_start` | TEXT | the first day of the period, a quarter, six or nine months or a year |
 | `period_end` | TEXT | the last day of the period, from the first period `filed_fact` keeps |
 | `dollars` | TEXT | decimal in code, the figure as the first filing stating the period states it |
@@ -3020,7 +3020,7 @@ Grain: one row per filer, concept and period, as first filed.
 
 Primary key: `cik`, `concept`, `period_start`, `period_end`.
 
-**The two lines a filer's operating income falls back to, kept apart from the filed facts so that no rule reads them** (see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses). From migration 155 the filings refresh stores them from each answer it asks, beside the filed facts and under the same rule, a period's figure inserted only where none is stored; `fallback-facts --kept` fills them once by hand for every member's filer from the SEC's answers the long facts pull kept, asking the archive again for a filer that filed since. Nothing updates or deletes a row. Only the cards' business word, the entry check's cover line and the report's quarters read them, through the core's one choice of the line a filer's quarters are read on; no rule, ledger reading, gate, sweep or record reads them, and no source a rule's version pins names the table.
+**The two lines a filer's operating income falls back to, kept apart from the filed facts so that no rule reads them** (see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses). From migration 155 the filings refresh stores them from each answer it asks, beside the filed facts and under the same rule, a period's figure inserted only where none is stored; `fallback-facts --kept` fills them once by hand for every member's filer from the SEC's answers the long facts pull kept, asking the archive again for a filer that filed since, and from the correction of the trusts for a filer whose kept answer holds no filing as new as the newest the store holds of it, read off the answer itself and never off its file's date. Nothing updates or deletes a row. Only the cards' business word, the entry check's cover line and the report's quarters read them, through the core's one choice of the line a filer's quarters are read on; no rule, ledger reading, gate, sweep or record reads them, and no source a rule's version pins names the table.
 
 ### filed_fact_pull
 Grain: one row per filer each time the refresh asked for its facts.

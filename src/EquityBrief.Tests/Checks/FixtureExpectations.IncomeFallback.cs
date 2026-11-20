@@ -245,6 +245,42 @@ public partial class FixtureExpectations
         Assert.Contains("its net income plus tax plus interest is 5.00 times its interest", words, StringComparison.Ordinal);
     }
 
+    // From the 24.12 correction of the trusts: a real estate trust's lease income plus its revenue from contracts stands for its
+    // revenue where the revenue it files is none or a part, in the fallback line and on the pages, and a whole revenue filed is
+    // read before it.
+    [Fact]
+    public void ATrustsLeaseIncomePlusItsRevenueFromContractsStandsForItsRevenueWhereTheRevenueFiledIsAPart()
+    {
+        // Net income of 10, lease income of 90, revenue from contracts of 5, a part below net income, and costs of 70:
+        // 90 plus 5 less 70 is 25 a quarter.
+        List<FiledFactRow> trust = [.. Filer(), .. Each(IncomeDiagnosis.LeaseIncome[0], 90, 90, 90, 90), .. Each(IncomeDiagnosis.ContractRevenue, 5, 5, 5, 5), .. Each(IncomeDiagnosis.CostsAndExpenses[0], 70, 70, 70, 70)];
+        var (line, facts) = IncomeDiagnosis.WithLine(trust, FallbackSession);
+
+        Assert.Equal(IncomeLine.RevenueLessCosts, line);
+        Assert.Equal([25m, 25m, 25m, 25m], OperatingRead(facts));
+
+        // Lease income filed under its other concept and no revenue from contracts: 90 less 70.
+        Assert.Equal([20m, 20m, 20m, 20m], OperatingRead(IncomeDiagnosis.WithLine([.. Filer(), .. Each(IncomeDiagnosis.LeaseIncome[1], 90, 90, 90, 90), .. Each(IncomeDiagnosis.CostsAndExpenses[0], 70, 70, 70, 70)], FallbackSession).Facts));
+
+        // A whole revenue of 100 filed is read before the two parts: 30 a quarter, not 25.
+        Assert.Equal([30m, 30m, 30m, 30m], OperatingRead(IncomeDiagnosis.WithLine([.. trust, .. Each(FiledFacts.Revenue[1], 100, 100, 100, 100)], FallbackSession).Facts));
+
+        // The pages draw 95 for the newest quarter, not the part of 5, and say what it was read as.
+        QuarterRow[] labels = [.. FallbackEnds.Select(end => new QuarterRow(end, null, null, null, null, null, null, null, null, null, null, null, null, false))];
+        var sourced = QuarterSources.Of(labels, trust);
+
+        Assert.Equal(95m, sourced.Quarters.Single(quarter => quarter.PeriodEnd == FallbackEnds[^1]).Revenue);
+        Assert.DoesNotContain(FallbackEnds[^1], sourced.PartRevenue);
+        Assert.Equal(QuarterSources.LeaseAndContracts, QuarterLines.Latest(sourced.Quarters, sourced: sourced)!.Lines.Single(one => one.Line == QuarterLines.Revenue).From);
+
+        // A whole revenue filed is drawn as filed and says nothing of the parts.
+        var whole = QuarterSources.Of(labels, [.. trust, .. Each(FiledFacts.Revenue[1], 100, 100, 100, 100)]);
+
+        Assert.Equal(100m, whole.Quarters.Single(quarter => quarter.PeriodEnd == FallbackEnds[^1]).Revenue);
+        Assert.Empty(whole.LeaseRevenue);
+        Assert.All(IncomeDiagnosis.LeaseIncome, concept => Assert.Contains(concept, IncomeDiagnosis.FallbackConcepts));
+    }
+
     sealed class OneAnswer(string json) : IFilerFactsFeed
     {
         public int Requests { get; private set; }
@@ -257,8 +293,10 @@ public partial class FixtureExpectations
         }
     }
 
-    // Two filers of the newest night's members: one whose kept answer is newer than its newest filing, read from it, and
-    // one that filed after its answer was kept, asked again; each period stored as first filed, a second fill adding none.
+    // Three filers of the newest night's members: one with no filing stored, read from its kept answer; one that filed after
+    // its answer was kept, asked again; and from the 24.12 correction of the trusts one whose kept file is dated after its
+    // newest filing while the answer in it holds no filing after 2025-04-30, asked again, its answer read off itself and not
+    // its file's date; each period stored as first filed, a second fill adding none.
     [Fact]
     public async Task TheFillReadsAKeptAnswerAndAsksAgainForAFilerThatFiledSinceItWasKept()
     {
@@ -270,11 +308,18 @@ public partial class FixtureExpectations
             + value.ToString(System.Globalization.CultureInfo.InvariantCulture) + ",\"filed\":\"2025-04-30\",\"form\":\"10-Q\",\"accn\":\"acc-1\",\"fy\":2025,\"fp\":\"Q1\"}]}}}}}";
 
         {
-            store.Execute("INSERT INTO member_reading (index_code, session_date, ticker) VALUES ('GSPC', '2026-11-19', 'OLD'), ('GSPC', '2026-11-19', 'NEW');");
-            store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('OLD', '2026-11-01T00:00:00Z', '0000000001'), ('NEW', '2026-11-01T00:00:00Z', '0000000002');");
-            store.Execute("INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('0000000002', 'NetIncomeLoss', '2025-07-01', '2025-09-30', '1', '2026-11-15', '10-Q', 'acc-9', 'run');");
+            store.Execute("INSERT INTO member_reading (index_code, session_date, ticker) VALUES ('GSPC', '2026-11-19', 'OLD'), ('GSPC', '2026-11-19', 'NEW'), ('GSPC', '2026-11-19', 'STALE');");
+            store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('OLD', '2026-11-01T00:00:00Z', '0000000001'), ('NEW', '2026-11-01T00:00:00Z', '0000000002'), ('STALE', '2026-11-01T00:00:00Z', '0000000003');");
+            store.Execute("INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('0000000002', 'NetIncomeLoss', '2025-07-01', '2025-09-30', '1', '2026-11-15', '10-Q', 'acc-9', 'run'), ('0000000003', 'NetIncomeLoss', '2025-07-01', '2025-09-30', '1', '2026-11-06', '10-Q', 'acc-8', 'run');");
 
-            foreach (var cik in new[] { "0000000001", "0000000002" })
+            Assert.Equal(new DateOnly(2025, 4, 30), FallbackFactFill.NewestFiledIn(Answer(20m)));
+            Assert.Null(FallbackFactFill.NewestFiledIn("{\"cik\":1}"));
+            Assert.True(FallbackFactFill.KeptIsCurrent(new DateOnly(2026, 11, 6), new DateOnly(2026, 11, 6)));
+            Assert.False(FallbackFactFill.KeptIsCurrent(new DateOnly(2026, 8, 6), new DateOnly(2026, 11, 6)));
+            Assert.False(FallbackFactFill.KeptIsCurrent(null, new DateOnly(2026, 11, 6)));
+            Assert.True(FallbackFactFill.KeptIsCurrent(null, null));
+
+            foreach (var cik in new[] { "0000000001", "0000000002", "0000000003" })
             {
                 var file = LongFactPull.FileOf(kept, cik);
 
@@ -292,8 +337,8 @@ public partial class FixtureExpectations
             var clock = Core.Time.FixedClock.At(new DateTimeOffset(2026, 11, 20, 15, 0, 0, TimeSpan.Zero), Core.Time.SessionZones.UnitedStates);
             var fill = await new FallbackFactFill(clock, store.DatabaseFile).FillAsync(kept, feed, "fallback-facts-test", _ => { });
 
-            Assert.Equal((2, 1, 1, 0, 2), (fill.Filers, fill.FromKept, fill.Asked, fill.Refused, fill.Stored));
-            Assert.Equal(1, feed.Requests);
+            Assert.Equal((3, 1, 2, 0, 3), (fill.Filers, fill.FromKept, fill.Asked, fill.Refused, fill.Stored));
+            Assert.Equal(2, feed.Requests);
 
             var stored = new List<string>();
 
@@ -310,7 +355,7 @@ public partial class FixtureExpectations
                 }
             }
 
-            Assert.Equal(["0000000001 20", "0000000002 25"], stored);
+            Assert.Equal(["0000000001 20", "0000000002 25", "0000000003 25"], stored);
             Assert.Equal(0, (await new FallbackFactFill(clock, store.DatabaseFile).FillAsync(kept, null, "fallback-facts-again", _ => { })).Stored);
         }
     }

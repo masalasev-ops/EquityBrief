@@ -21,6 +21,10 @@ public sealed record SourcedQuarters(IReadOnlyList<QuarterRow> Quarters, IReadOn
     // The filed quarters whose revenue concept states a part of the company's revenue, which is not drawn.
     public IReadOnlySet<DateOnly> PartRevenue { get; init; } = new HashSet<DateOnly>();
 
+    // From the 24.12 correction of the trusts the filed quarters whose revenue is read as a real estate trust's lease income
+    // plus its revenue from contracts.
+    public IReadOnlySet<DateOnly> LeaseRevenue { get; init; } = new HashSet<DateOnly>();
+
     // From 24.12 the line the filed quarters' operating income is read on: as filed, or where the filer files none for its
     // four newest quarters a fallback line the same for every quarter, or none.
     // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
@@ -59,7 +63,10 @@ public static class QuarterSources
     // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
     public static string ReadAs(IncomeLine line) => "read as " + IncomeDiagnosis.Words(line) + ", the filing stating no operating income";
 
-    public const string NoCapitalSpending = "not read: the filings stored carry no capital spending";
+    // From the 24.12 correction of the trusts what a filed quarter's revenue says where it is read as a trust's two parts.
+    public const string LeaseAndContracts = "read as lease income plus revenue from contracts, the filing stating no revenue of the whole company";
+
+    public const string NoCapitalSpending ="not read: the filings stored carry no capital spending";
 
     public const string PartOfTheCompany = "not read: the revenue the filing states is below its net income, a part of the company's revenue";
 
@@ -84,6 +91,11 @@ public static class QuarterSources
             FiledFacts.OperatingIncome);
         var net = FirstFiledRevenue.Quarters(known, FiledFacts.NetIncome);
         var cash = CashQuarters(known, FiledFacts.OperatingCash);
+        // From the 24.12 correction of the trusts a real estate trust's lease income plus its revenue from contracts, read where
+        // the revenue it files for a quarter is none or a part of the company's.
+        var trust = FirstFiledRevenue.Quarters(
+            IncomeDiagnosis.TrustRevenue(filed).Select(fact => new FiledRevenue(fact.Concept, fact.Start, fact.End, fact.Value, fact.Filed, fact.Form, fact.Accession)),
+            [IncomeDiagnosis.LeaseIncome[0]]);
 
         // The filed quarter ending nearest a label within a month, where no other label of the fetch, or the label a year
         // before, stands nearer to it.
@@ -99,10 +111,14 @@ public static class QuarterSources
         decimal? At(IReadOnlyList<QuarterRevenue> quarters, DateOnly end) => Near(quarters, end)?.Value;
 
         var parts = new HashSet<DateOnly>();
+        var leased = new HashSet<DateOnly>();
 
-        // The quarter's filed revenue where it is the company's whole, none where it states a part.
+        // The quarter's filed revenue where it is the company's whole, else a trust's lease income plus its revenue from
+        // contracts above nought, none where it states a part and files no lease income.
         decimal? Whole(DateOnly end) =>
-            At(revenue, end) is { } sales && (sales <= 0m || (At(net, end) is { } earned && earned > 0m && sales < earned)) ? null : At(revenue, end);
+            At(revenue, end) is { } sales && IncomeDiagnosis.IsWhole(sales, At(net, end)) ? sales
+            : At(trust, end) is { } rent && rent > 0m ? rent
+            : null;
 
         var sources = new Dictionary<DateOnly, QuarterSource>();
         var filedOn = new Dictionary<DateOnly, DateOnly>();
@@ -120,12 +136,17 @@ public static class QuarterSources
                 parts.Add(end);
             }
 
-            if (stated is not null || income is not null || earned is not null)
+            if (sales is not null && !(stated is { } filedSales && IncomeDiagnosis.IsWhole(filedSales, earned)))
+            {
+                leased.Add(end);
+            }
+
+            if (stated is not null || sales is not null || income is not null || earned is not null)
             {
                 var grossProfit = At(gross, end) ?? (sales is { } whole && At(costs, end) is { } cost ? whole - cost : null);
 
                 sources[end] = QuarterSource.Filing;
-                filedOn[end] = new[] { Near(revenue, end), Near(operating, end), Near(net, end) }.OfType<QuarterRevenue>().Min(read => read.Filed);
+                filedOn[end] = new[] { Near(revenue, end), Near(trust, end), Near(operating, end), Near(net, end) }.OfType<QuarterRevenue>().Min(read => read.Filed);
                 drawn.Add(quarter with { Revenue = sales, GrossProfit = grossProfit, OperatingIncome = income, NetIncome = earned, OperatingCashFlow = At(cash, end), FreeCashFlow = null });
                 continue;
             }
@@ -151,7 +172,7 @@ public static class QuarterSources
             });
         }
 
-        return new SourcedQuarters(drawn, sources, fetched) { FiledOn = filedOn, PartRevenue = parts, OperatingLine = line };
+        return new SourcedQuarters(drawn, sources, fetched) { FiledOn = filedOn, PartRevenue = parts, LeaseRevenue = leased, OperatingLine = line };
     }
 
     // Why a line of a quarter reads nothing, by where its quarter is drawn from.

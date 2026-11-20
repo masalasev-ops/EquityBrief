@@ -65,7 +65,14 @@ public static class IncomeDiagnosis
     // income where a filer tags no income before taxes: net income, as the filed facts keep it, plus this, plus interest.
     public const string IncomeTax = "IncomeTaxExpenseBenefit";
 
-    public static IReadOnlyList<string> FallbackConcepts { get; } = [.. PretaxIncome, PretaxDomestic, PretaxForeign, .. CostsAndExpenses, IncomeTax];
+    // From the 24.12 correction of the trusts, on the operator's word of 2026-11-20: a real estate trust's lease income, under the
+    // first of these it files for a period, which with its revenue from contracts of the same period stands for its revenue
+    // where the revenue it files for the period is none or a part of the company's.
+    public static IReadOnlyList<string> LeaseIncome { get; } = ["OperatingLeaseLeaseIncome", "LeaseIncome"];
+
+    public const string ContractRevenue = "RevenueFromContractWithCustomerExcludingAssessedTax";
+
+    public static IReadOnlyList<string> FallbackConcepts { get; } = [.. PretaxIncome, PretaxDomestic, PretaxForeign, .. CostsAndExpenses, IncomeTax, .. LeaseIncome];
 
     // The fallback lines a filer's answer stores, one a concept a period as first filed over the spans and from the first
     // period the filed facts keep, so the two tables meet period for period.
@@ -104,17 +111,55 @@ public static class IncomeDiagnosis
         _ => "neither fallback line covers its four quarters",
     };
 
+    // Each period's fact under the first of the concepts the facts hold for it, as first filed.
+    static IEnumerable<FiledFactRow> Of(IReadOnlyList<FiledFactRow> facts, IReadOnlyList<string> concepts) =>
+        facts.Where(fact => concepts.Contains(fact.Concept, StringComparer.Ordinal))
+            .GroupBy(fact => (fact.Start, fact.End))
+            .Select(group => group.OrderBy(fact => concepts.ToList().IndexOf(fact.Concept)).ThenBy(fact => fact.Filed).First());
+
+    // From the 24.12 correction of the trusts each period's revenue as a real estate trust files it in parts: its lease income
+    // plus its revenue from contracts of the same period, none filed read as nought, under the first lease income concept;
+    // none for a period it files no lease income for.
+    public static IReadOnlyList<FiledFactRow> TrustRevenue(IReadOnlyList<FiledFactRow> facts)
+    {
+        var contracts = Of(facts, [ContractRevenue]).ToDictionary(fact => (fact.Start, fact.End));
+
+        return
+        [
+            .. Of(facts, LeaseIncome).Select(lease => lease with
+            {
+                Concept = LeaseIncome[0],
+                Value = lease.Value + (contracts.TryGetValue((lease.Start, lease.End), out var sold) ? sold.Value : 0m),
+            }),
+        ];
+    }
+
+    // A filed revenue that is the company's whole: above nought, and not below the same period's net income where that is
+    // above nought, as the pages draw it.
+    public static bool IsWhole(decimal revenue, decimal? netIncome) => revenue > 0m && !(netIncome is { } earned && earned > 0m && revenue < earned);
+
+    // Each period's revenue a fallback reads: the revenue filed where it is the company's whole, else a trust's lease income
+    // plus its revenue from contracts, else the revenue filed.
+    static IEnumerable<FiledFactRow> RevenueOf(IReadOnlyList<FiledFactRow> facts)
+    {
+        var filed = Of(facts, FiledFacts.Revenue).ToDictionary(fact => (fact.Start, fact.End));
+        var net = Of(facts, FiledFacts.NetIncome).ToDictionary(fact => (fact.Start, fact.End), fact => fact.Value);
+        var trust = TrustRevenue(facts).ToDictionary(fact => (fact.Start, fact.End));
+
+        foreach (var period in filed.Keys.Union(trust.Keys))
+        {
+            yield return filed.TryGetValue(period, out var stated) && IsWhole(stated.Value, net.TryGetValue(period, out var earned) ? earned : null)
+                ? stated
+                : trust.TryGetValue(period, out var parts) ? parts : stated!;
+        }
+    }
+
     // A filing's operating income line built from a fallback for each period it states both parts of, as that filing filed
     // them: income before taxes plus the interest expense of the same period, none filed read as nought, or revenue less
-    // costs and expenses of the same period.
+    // costs and expenses of the same period, the revenue a trust files in parts read as their sum.
     static IReadOnlyList<FiledFactRow> Built(IReadOnlyList<FiledFactRow> facts, IncomeLine line)
     {
-        IEnumerable<FiledFactRow> Of(IReadOnlyList<string> concepts) =>
-            facts.Where(fact => concepts.Contains(fact.Concept, StringComparer.Ordinal))
-                .GroupBy(fact => (fact.Start, fact.End))
-                .Select(group => group.OrderBy(fact => IndexIn(concepts, fact.Concept)).ThenBy(fact => fact.Filed).First());
-
-        static int IndexIn(IReadOnlyList<string> concepts, string concept) => concepts.ToList().IndexOf(concept);
+        IEnumerable<FiledFactRow> Of(IReadOnlyList<string> concepts) => IncomeDiagnosis.Of(facts, concepts);
 
         var interest = Of(FiledFacts.InterestExpense).ToDictionary(fact => (fact.Start, fact.End));
 
@@ -154,7 +199,7 @@ public static class IncomeDiagnosis
 
         return
         [
-            .. Of(FiledFacts.Revenue)
+            .. RevenueOf(facts)
                 .Where(revenue => costs.ContainsKey((revenue.Start, revenue.End)))
                 .Select(revenue => revenue with { Concept = FiledFacts.OperatingIncome[0], Value = revenue.Value - costs[(revenue.Start, revenue.End)].Value }),
         ];
