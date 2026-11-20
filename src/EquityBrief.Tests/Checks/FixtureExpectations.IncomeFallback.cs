@@ -174,13 +174,12 @@ public partial class FixtureExpectations
     public async Task TheFillReadsAKeptAnswerAndAsksAgainForAFilerThatFiledSinceItWasKept()
     {
         using var store = new TemporaryStore().Migrated();
-        var kept = Path.Combine(Path.GetTempPath(), "equitybrief-kept-" + Guid.NewGuid().ToString("N"));
+        var kept = Path.Combine(store.Root, "kept");
 
         static string Answer(decimal value) =>
             "{\"cik\":1,\"facts\":{\"us-gaap\":{\"" + IncomeDiagnosis.PretaxIncome[0] + "\":{\"units\":{\"USD\":[{\"start\":\"2025-01-01\",\"end\":\"2025-03-31\",\"val\":"
             + value.ToString(System.Globalization.CultureInfo.InvariantCulture) + ",\"filed\":\"2025-04-30\",\"form\":\"10-Q\",\"accn\":\"acc-1\",\"fy\":2025,\"fp\":\"Q1\"}]}}}}}";
 
-        try
         {
             store.Execute("INSERT INTO member_reading (index_code, session_date, ticker) VALUES ('GSPC', '2026-11-19', 'OLD'), ('GSPC', '2026-11-19', 'NEW');");
             store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('OLD', '2026-11-01T00:00:00Z', '0000000001'), ('NEW', '2026-11-01T00:00:00Z', '0000000002');");
@@ -224,10 +223,6 @@ public partial class FixtureExpectations
 
             Assert.Equal(["0000000001 20", "0000000002 25"], stored);
             Assert.Equal(0, (await new FallbackFactFill(clock, store.DatabaseFile).FillAsync(kept, null, "fallback-facts-again", _ => { })).Stored);
-        }
-        finally
-        {
-            Directory.Delete(kept, recursive: true);
         }
     }
 
