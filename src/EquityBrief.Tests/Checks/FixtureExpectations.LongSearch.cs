@@ -96,6 +96,31 @@ public partial class FixtureExpectations
         Assert.Equal(WalkForwardTester.Judge(read, [proposal])[0].Verdict, LongSearch.Verdict(evidence, calendar, folds, 63));
     }
 
+    // 24.10: the S&P 400 breakout's live rule stores its range ceiling as nought for any range, so its setting is read at the
+    // grid's level of no ceiling and its row names any range; one naming a ceiling of 0.85 reads its range, and the drift,
+    // holding no ceiling, reads its own setting.
+    [Fact]
+    public void TheBreakoutsRowReadsAnyRangeWhereItsRuleStoresNoCeilingAndASettingNamingARangeReadsItsRange()
+    {
+        var breakout = IndexEvaluator("breakout-400");
+        var drift = IndexEvaluator("drift-400");
+
+        Dictionary<string, double> At(double ceiling) => new(FrozenBreakout(), StringComparer.Ordinal) { [IndexBreakoutCandidate.RangeCeilingParameter] = ceiling };
+
+        string? Row(double ceiling)
+        {
+            var live = LongSearch.LiveSetting([new Worker.Indices.IndexRule("the live S&P 400 breakout", breakout, At(ceiling), FreezeAt)], Core.Families.BreakoutRule.Name);
+
+            return live is { } setting ? Worker.Cards.RuleReplay.SwingWords(Core.Families.BreakoutRule.Name, setting.Places) : null;
+        }
+
+        Assert.Equal("the breakout rule at a 251-session high, 1.5 times the volume, any range and the stop 3 typical moves beneath", Row(0));
+        Assert.Equal("the breakout rule at a 251-session high, 1.5 times the volume, ranges at 0.85 and the stop 3 typical moves beneath", Row(0.85));
+        Assert.Null(Row(0.5));
+        Assert.Equal([2], LongSearch.LiveSetting([new Worker.Indices.IndexRule("the live S&P 400 breakout", breakout, At(0), FreezeAt)], Core.Families.BreakoutRule.Name)!.Value.Places[2..3]);
+        Assert.NotNull(LongSearch.LiveSetting([new Worker.Indices.IndexRule("the live S&P 400 drift", drift, FrozenDrift(), FreezeAt)], Core.Families.DriftRule.Name));
+    }
+
     // One pick over a constructed path, its close 10 and the rule's stop 9: the next open buys at 10 and the zone at 9.5 on the
     // second session after it, the low trading through it; the close of 11.2 at or over the target of 11 sells at the next
     // open, 11.3. The next open's result is 1.3 risks of its own, the zone's 3.6 of its own over its 3 sessions held; a level
