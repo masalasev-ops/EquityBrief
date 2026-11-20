@@ -302,6 +302,7 @@ public partial class FixtureExpectations
     // The shipped sources 24.4 writes outside their comments.
     static readonly string[] JudgePickSources =
     [
+        "src/EquityBrief.Api/Reading/RunScreen.cs",
         "src/EquityBrief.Core/Components/ComponentAccess.cs",
         "src/EquityBrief.Core/Judge/JudgeMenu.cs",
         "src/EquityBrief.Core/Judge/JudgePrompt.cs",

@@ -20370,7 +20370,8 @@ Built:      `JudgeMenu`, the menu the operator approved with the mockup: a hold 
             then the local model's lock until 9:30 New York time on the next weekday, start only under a passed naming test,
             refuse any model, file, window or prompt but its pin's, its first written from the newest reading pin, ask each
             question once more where its answer cannot be read and then count it, and write once under the drain's lock or
-            write the night as missed; the night's last step starting it as a process of its own. Migration 154,
+            write the night as missed; the night's last step starting it as a process of its own, in the Run page's group
+            after the close. Migration 154,
             `judge_pin`, `judge_run`, `judge_ask` and `judge_pick`. `CLAUDE.md`'s hard rule names it a fourteenth carve-out,
             the architecture's catalogue, matrix, stores, section 14's step, section 17's menu and section 18's two rows, the
             schema, the runbook, the roster's row and the changelog.
