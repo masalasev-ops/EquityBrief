@@ -151,6 +151,9 @@ public sealed class IndexFamilies : IComponent
     // The filer's facts for the periods ending from a day, filed by the night.
     const string FactsOf = @"
         SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact
+        WHERE cik = $cik AND period_end >= $from AND filed <= $night
+        UNION ALL
+        SELECT concept, period_start, period_end, dollars, filed, form, accession FROM fallback_fact
         WHERE cik = $cik AND period_end >= $from AND filed <= $night;
     ";
 

@@ -121,6 +121,11 @@ public static class FiledFacts
 
     public static BusinessReading Read(IReadOnlyList<FiledFactRow> facts, DateOnly session)
     {
+        // The rules' half of 24.12, landing only with the monthly run of 2027-02-06 on the operator's word: the operating
+        // income of a filer filing none for its four newest quarters read on a fallback line alike for each.
+        // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+        facts = IncomeDiagnosis.WithLine(facts, session).Facts;
+
         var known = Known(facts, session);
         var revenue = FirstFiledRevenue.Quarters(known, Revenue);
         var gross = FirstFiledRevenue.Quarters(known, GrossProfit);
@@ -152,6 +157,8 @@ public static class FiledFacts
     // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
     public static string? StateOf(IReadOnlyList<FiledFactRow> facts, DateOnly session)
     {
+        facts = IncomeDiagnosis.WithLine(facts, session).Facts;
+
         var known = Known(facts, session);
         var revenue = FirstFiledRevenue.Quarters(known, Revenue);
         var operating = FirstFiledRevenue.Quarters(known, OperatingIncome);

@@ -160,7 +160,7 @@ public sealed partial class SetupLedger : IComponent
 
     const string PulledFilers = "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;";
 
-    const string FactsOfFiler = "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik;";
+    const string FactsOfFiler = "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik UNION ALL SELECT concept, period_start, period_end, dollars, filed, form, accession FROM fallback_fact WHERE cik = $cik;";
 
     // From 19.13 the insiders' transactions the four readings read, filed on or after a day: every open-market purchase
     // and sale, and every row of an amendment, which may stand in for an original's; and the spans the insider history

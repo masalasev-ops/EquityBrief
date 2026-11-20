@@ -172,7 +172,14 @@ public static class QuartersAsRead
 
             near = [.. labels.SelectMany(end => new[] { end, end.AddYears(-1) }).Distinct()];
             revenue = FirstFiledRevenue.Quarters(known, FiledFacts.Revenue);
-            operating = FirstFiledRevenue.Quarters(known, FiledFacts.OperatingIncome);
+            // On the operator's word of 2026-11-20, the rules' half of 24.12, landing only with the monthly run of 2027-02-06:
+            // a filer filing no operating income for its four newest quarters read on a fallback line alike for each.
+            // see: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+            operating = FirstFiledRevenue.Quarters(
+                IncomeDiagnosis.WithLine(filed, session).Facts
+                    .Where(fact => fact.Filed < session)
+                    .Select(fact => new FiledRevenue(fact.Concept, fact.Start, fact.End, fact.Value, fact.Filed, fact.Form, fact.Accession)),
+                FiledFacts.OperatingIncome);
             net = FirstFiledRevenue.Quarters(known, FiledFacts.NetIncome);
             interest = FirstFiledRevenue.Quarters(known, FiledFacts.InterestExpense);
             cash = CashQuarters(known, FiledFacts.OperatingCash);

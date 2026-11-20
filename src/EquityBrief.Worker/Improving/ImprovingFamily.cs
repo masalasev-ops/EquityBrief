@@ -118,7 +118,7 @@ public sealed class ImprovingFamily : IComponent
         WHERE c.cik IS NOT NULL AND c.fetched_at = (SELECT MAX(fetched_at) FROM company WHERE ticker = c.ticker);
     ";
 
-    const string FactsOfFiler = "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik;";
+    const string FactsOfFiler = "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik UNION ALL SELECT concept, period_start, period_end, dollars, filed, form, accession FROM fallback_fact WHERE cik = $cik;";
 
     // The newest night before this one the step read without a failure.
     const string NightBefore = "SELECT MAX(session_date) FROM improving_night WHERE rule = $rule AND index_code = $index AND session_date < $night AND fault IS NULL;";
