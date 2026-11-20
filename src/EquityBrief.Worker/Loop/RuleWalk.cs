@@ -363,11 +363,7 @@ public sealed class RuleWalk(
         {
             var (plan, year) = plans[places[(listing.Name, listing.Session)]];
 
-            return year is >= 0 and < SweepFigures.Years
-                && plan.Code[exit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved
-                && !float.IsNaN(plan.Multiple[exit])
-                && !float.IsNaN(plan.Benchmark[exit])
-                && plan.IsATradeAt(exit, floor)
+            return RuleTests.OwnTrade(plan, year, exit, floor)
                     ? (plan.Multiple[exit], plan.Benchmark[exit], plan.Ends[exit])
                     : (null, double.NaN, plan.Ends[exit]);
         }

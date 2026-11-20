@@ -774,7 +774,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         if (large && await OpenVersionAsync(databaseFile, cancellation) is { } open)
         {
-            var (replay, _, candidates) = SweepIdeasRunner.ReadWithCandidates(read.Inputs, market, output.WriteLine);
+            var (replay, candidates) = PullbackCandidates(read, market, output.WriteLine);
 
             filter = (open.Version, open.Settings, new LargePullback(replay.Series, candidates));
             pullbacks = replay;
@@ -1416,6 +1416,16 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             Folds = LoopFolds.Of(calendar, through, Core.Loop.LongTest.PriceFirstTestYear),
             Long = true,
         };
+    }
+
+    // The S&P 500 pullback's candidates the swing filter's walk reads, scored from the read's own first scored session: the
+    // sweep's first on the standing years, and the long history's first on the long test's, so a setup of 2010 walks there.
+    // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
+    public static (IdeaReplay Replay, IReadOnlyList<SweepCandidate> Candidates) PullbackCandidates(LoopRead read, IReadOnlyList<SweepMarketSeries> market, Action<string>? progress = null)
+    {
+        var (replay, _, candidates) = SweepIdeasRunner.ReadWithCandidates(read.Inputs, market, progress, read.FirstScored >= 0 ? read.Calendar[read.FirstScored] : null);
+
+        return (replay, candidates);
     }
 
     // From 23.7 a rule the long walk could not walk, kept with the reason that it is read on the standing years alone.
