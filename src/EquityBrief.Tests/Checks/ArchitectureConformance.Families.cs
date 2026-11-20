@@ -438,9 +438,9 @@ public partial class ArchitectureConformance
         // its names, and 1641 from 24.3, the AI judge's fact writer's and naming test's catalogue and matrix rows, their two
         // stores, section 17's two rows and section 18's row, and 1651 from 24.4, the judge picker's catalogue and matrix
         // rows, its four stores, section 14's step, section 17's menu and section 18's two rows, and 1652 from 24.5, section
-        // 17's row of the AI judge's four accounts.
+        // 17's row of the AI judge's four accounts, and 1658 from 24.6, the AI judge's page's five regions and Home's line of it.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1652),
+            (789, 853, 6, 4, 855, 876, 1658),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

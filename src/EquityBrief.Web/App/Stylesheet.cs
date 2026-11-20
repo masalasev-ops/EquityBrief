@@ -1187,6 +1187,37 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
 .history p.named{color:var(--ink-2);font-size:13.5px}
 .history details summary,.history p.read{cursor:pointer;color:var(--ink-2);font-size:13.5px}
 
+/* the AI judge: its scoreboard's tiles, its chart of the four accounts with the random accounts' band, its pick cards and
+   where it looked, every colour from the palette so both themes read it */
+.judge-tiles{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 10px}
+.judge-tiles .tile{flex:1 1 150px;background:var(--plot);border:1px solid var(--hair);border-radius:6px;padding:8px 10px;font-size:13.5px;color:var(--ink-2)}
+.judge-tiles .tile b{display:block;font-size:20px;color:var(--ink)}
+.judge-tiles .tile span{display:block;font-size:12px;color:var(--soft)}
+.judge-verdict{font-size:14px}
+.judge-chart{width:100%;height:220px;background:var(--plot);border:1px solid var(--hair);border-radius:6px}
+.judge-band{fill:var(--hair);opacity:.45}
+.judge-zero{stroke:var(--hair-2);stroke-width:1}
+.judge-line{fill:none;stroke-width:2;vector-effect:non-scaling-stroke}
+.judge-line-0{stroke:var(--research)}
+.judge-line-1{stroke:var(--accent)}
+.judge-line-2{stroke:var(--soft);stroke-dasharray:5 4}
+.judge-line-3{stroke:var(--sup)}
+.judge-key{list-style:none;display:flex;flex-wrap:wrap;gap:6px 16px;padding:0;margin:8px 0 0;font-size:13px;color:var(--ink-2)}
+.judge-key li::before{content:"";display:inline-block;width:14px;height:3px;margin-right:6px;vertical-align:middle;background:var(--soft)}
+.judge-key .judge-key-0::before{background:var(--research)}
+.judge-key .judge-key-1::before{background:var(--accent)}
+.judge-key .judge-key-3::before{background:var(--sup)}
+.judge-card{border:1px solid var(--hair);border-radius:6px;padding:10px 12px;margin:0 0 10px;background:var(--surface)}
+.judge-card-h{font-weight:700;margin:0 0 6px}
+.judge-card-h .tag{font-weight:400;font-size:12px;border:1px solid var(--hair-2);border-radius:10px;padding:1px 7px;color:var(--ink-2);margin-left:4px}
+.judge-card p{margin:4px 0;font-size:14px}
+.judge-card .judge-stop{color:var(--down)}
+.judge-card .judge-target{color:var(--up)}
+.judge-card .note{font-size:12.5px;color:var(--soft)}
+.judge-looked{width:100%;border-collapse:collapse;font-size:13.5px}
+.judge-looked td,.judge-looked th{padding:6px 8px;border-top:1px solid var(--hair);text-align:left;vertical-align:top}
+.judge-home{font-size:14px;color:var(--ink-2)}
+
 /* run */
 .stage-table td.detail{font-size:12px;color:var(--ink-2);max-width:340px;overflow-wrap:anywhere}
 .stage-table tr[data-outcome='failed'] td{font-weight:700}

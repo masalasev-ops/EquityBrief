@@ -44,9 +44,12 @@ public partial class PlainWords
         (PaperPage, "21.13", ["account", "paper-chart", "paper-revision", "paper-variants", "paper-scorecard", "paper-yours"], true),
         (LoopPage, "21.13", ["loop-none", "loop-headline", "loop-passed", "loop-summary", "loop-pullback", "loop-breakout", "loop-drift", "loop-dip", "loop-heavyweight", "loop-quality", "loop-improving", "loop-decisions", "loop-alarm", "loop-long"], true),
         (LedgerPage, "21.13", ["ledger-none", "ledger-pullback", "ledger-breakout", "ledger-drift", "ledger-dip", "ledger-heavyweight", "ledger-quality", "ledger-improving", "ledger-fundamentals", "ledger-path", "reading-links", "release-answers"], true),
+        (JudgePage, "24.6", ["judge-lede", "judge-score", "judge-chart", "judge-picks", "judge-looked", "judge-replayed"], true),
     ];
 
     internal const string PaperPage = "Paper trading";
+
+    internal const string JudgePage = "The AI judge";
 
     internal const string LoopPage = "The Loop page";
 

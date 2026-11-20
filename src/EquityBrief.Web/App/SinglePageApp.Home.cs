@@ -63,6 +63,9 @@ public sealed record HomeView(
     // tag names the one that placed it from.
     public IReadOnlyList<LeftOrderView> LeftOrders { get; init; } = [];
 
+    // From 24.6 the AI judge's line: what it picked tonight and its live record per $1 risked beside random picks'.
+    public JudgeView? Judge { get; init; }
+
     public IReadOnlyDictionary<string, IReadOnlyList<RevisionView>> Revisions { get; init; } = new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal);
 
     // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
@@ -524,6 +527,12 @@ public sealed partial class SinglePageApp
         // first, in no count of tonight's buys.
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, view.LeftOrders));
+
+        // From 24.6 the AI judge's one line, its own account and never one of the rules' buys.
+        if (view.Judge is { } judge)
+        {
+            region.Append(JudgeHomeLine(judge));
+        }
 
         // From the operator's order of 2026-11-14 the stocks a setup's rules met again while a trade holds them, a group of their
         // own under tonight's ideas, each a full card, counted in none of the ideas.

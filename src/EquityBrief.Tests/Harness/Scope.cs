@@ -4787,6 +4787,30 @@ internal static class Scope
             Verdict.Pass,
             "the counts of a store the check wrote read back off the page by class, kind and era, the run's line above them, and a store it has not run over saying so",
             ByReadSurface),
+        [CheckReach.Key("15.26 The AI judge", "The judge's scoreboard")] = new Scoped(
+            Verdict.Pass,
+            "read back off the page over a constructed store: the trades closed against the 300, the winners and what they made per $1 risked worked by hand, and the verdict against random picks read better, worse and not told apart on each side of the band",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI judge", "The four accounts' chart")] = new Scoped(
+            Verdict.Pass,
+            "read back off the page over a constructed store: one line for each of the four accounts with its name and its return, the band shaded, and the line saying a replayed night is drawn apart",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI judge", "The judge's picks tonight")] = new Scoped(
+            Verdict.Pass,
+            "read back off the page over a constructed store: each card's tags, reason, sector and size with no name, ticker or date, the buy at the next open at whatever price it opens beside the last close, its stop and take-profit, its hold, and no line stating a price the stock opens at",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI judge", "Where the AI looked")] = new Scoped(
+            Verdict.Pass,
+            "the three groups worked by hand over constructed picks of the judge and the rules matched by stock and the session bought, and read back off the page",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI judge", "Replayed nights")] = new Scoped(
+            Verdict.Pass,
+            "a replayed night's picks read in a region of their own labelled replayed and never in the live record's figures, over a constructed store holding both",
+            ByReadSurface),
+        [CheckReach.Key("15.24 Home", "The AI judge's line")] = new Scoped(
+            Verdict.Pass,
+            "read back off Home over a constructed store: tonight's count of the judge's picks, its record per $1 risked beside random picks' and the link to its page",
+            ByReadSurface),
         [CheckReach.Key("15.25 History", "To read against the filings")] = new Scoped(
             Verdict.Pass,
             "an unexplained jump listed with its words and its chart's link, and a fold counting none",
@@ -7814,6 +7838,12 @@ internal static class Scope
         [CheckReach.Key("15.24 Home", "How it works")] = "22.16",
         [CheckReach.Key("15.25 History", "Counts by class and era")] = "23.1",
         [CheckReach.Key("15.25 History", "To read against the filings")] = "23.1",
+        [CheckReach.Key("15.26 The AI judge", "The judge's scoreboard")] = "24.6",
+        [CheckReach.Key("15.26 The AI judge", "The four accounts' chart")] = "24.6",
+        [CheckReach.Key("15.26 The AI judge", "The judge's picks tonight")] = "24.6",
+        [CheckReach.Key("15.26 The AI judge", "Where the AI looked")] = "24.6",
+        [CheckReach.Key("15.26 The AI judge", "Replayed nights")] = "24.6",
+        [CheckReach.Key("15.24 Home", "The AI judge's line")] = "24.6",
         [CheckReach.Key(LoopPage, "All three indexes together")] = "23.2",
         [CheckReach.Key(LoopPage, "The passes luck alone would bring")] = "23.2",
         [CheckReach.Key("15.21 Paper trading", "An account's verdict across the indexes")] = "23.2",
@@ -8474,6 +8504,7 @@ internal static class Scope
         "15.22 Chart",
         "15.24 Home",
         "15.25 History",
+        "15.26 The AI judge",
         "15.11 How a reason's record is displayed",
     ];
 

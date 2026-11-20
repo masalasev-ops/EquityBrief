@@ -20431,3 +20431,36 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the accounts drawn on the judge's page at 24.6; the judge picks on the operator's store only once a naming test of
             the field list's version has passed there; the three fields set aside at 24.3; the operator's word on whether a pin
             move a replay carries counts as registering a live rule, and on correcting the places stating a price at the open.
+
+### 24.6 - the AI judge's page, its pick cards and Home's line: the four accounts' chart, its scoreboard, each pick in the words of the rule on the open, where it looked and a replayed night apart   2026-11-20
+
+Queue:      done, 24.0 to 24.5; in progress, this checkpoint; next, 24.7, the judge's replayed nights after the model's cutoff.
+Built:      the judge's page at `#/judge` under Records, as the mockup the operator approved draws it: a scoreboard of its live
+            record's trades closed against the 300, the winners, what they made per $1 risked and over the same plans bought on
+            every stock, and whether it beats random picks so far; the four accounts' chart with the random accounts' band; a
+            card for each of the newest night's picks with its reason, what it saw and its plan, buying at the next open at
+            whatever price it opens with the last close beside it; where it looked against the rules' picks; and a replayed
+            night's record apart. `JudgeScore` in the core; `JudgeScreen` and the judge's reader over the store, every account
+            worked when the page is read through 24.5's functions and Paper trading's accounts on the three indices; Home's
+            line on the app alone. Section 15.26, section 15.24's row, section 15.23's pages row, the routes, the guide and
+            the changelog.
+Read back:  the page over a constructed store migrated fresh in the scratchpad, at 1440 and a true 390 in both palettes, no
+            page wider than its screen.
+Tests:      3 new: the page over a constructed store, its scoreboard worked by hand, $3.00 per $1 risked and $2.25 over the
+            same plan on four members, its cards word for word, no line stating a price at the open and a replayed night
+            apart; the verdict on each side of the band and where it looked worked by hand; and Home's line. The page under
+            the plain-words check; 1 rewritten, the menu's Records group.
+Claims:     1658, from 1652: the page's five regions and Home's line of it, six where the plan counted about six.
+Pins:       none moved.
+Mutated:    the rule: each property its tests hold, broken in turn. m1 the verdict inverted: red, "Worse" above the band; m2
+            the rules' picks matched by nothing: red, the groups differing; m3 a replayed night counted in the live record: red
+            at the page's figures; m4 the card's buy priced at about its close: red at the card's words; each run filtered to its
+            test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3862 of 3862 tests ran with none failed, migrations 0 to 154 with none
+            pending, schema version 154, against `data-ci` and never `data`; the phase report 67 tables, 1658 claims, 1658
+            passing, none out of scope and none unexamined, 1673 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the judge picks on the operator's store only once a naming test of the field list's version has passed there; the
+            three fields set aside at 24.3; the operator's word on whether a pin move a replay carries counts as registering a
+            live rule, and on correcting the places stating a price at the open.
