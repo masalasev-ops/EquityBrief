@@ -20337,3 +20337,22 @@ Carried:    the three fields set aside, the nearest support's strength, upgrades
             buyers; the build plan's amendment placing the business word's stage of 2026-11-20 by what it depends on; the
             operator's word on whether a pin move a replay carries counts as registering a live rule, and on correcting the
             places stating a price at the open.
+
+### 24.0 planning - amendment: 24.12, every reading built on operating income reading every member that files its quarters, and the loop and the judge's later part one number on   2026-11-20
+
+Not a checkpoint entry. It amends 24.0's plan and builds none of it.
+Queue:      done, 24.0's planning, 24.1's fields, 24.2 and 24.3; in progress, this amendment; next, 24.4, the judge's nightly
+            picks and plans.
+Ruled:      the operator's words of 2026-11-20, adding the stage and widening it the same day to every reading built on
+            operating income, word for word as Appendices H and I of
+            `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`; and their order of 2026-11-20 moving phase 24's worktree
+            from C: to E:, removed after each merge.
+Planned:    `BUILD_PLAN.md`'s 24.12, placed after the safe changes since it depends on nothing earlier; the loop's mockup and
+            every checkpoint after it moved from 24.12 to 24.28 to 24.13 to 24.29, the readings for every stock on every
+            session, now 24.19, depending on it; the predicted claims about 1,749, about 4 at 24.12; section 20's row; the
+            decision on the fallback lines; three decisions' checkpoint pointers moved with the numbers.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the code merged as 907eeadb, the 24.3 entry above
+            recording 3847 of 3847 tests and 1641 claims; documents alone change, so the checks reading them run filtered over
+            the tree carrying this entry, 165 of 165 passed.
+Carried:    24.12's diagnosis, built at its checkpoint; the operator's word on whether a pin move a replay carries counts as
+            registering a live rule, and on correcting the places stating a price at the open.
