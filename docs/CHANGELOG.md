@@ -19,6 +19,16 @@ Now:
 > added: the Fallback facts fill's catalogue and matrix rows, the Fallback facts store's row and section 18's row "A filer that files no operating income for a member's four newest quarters"; SCHEMA.md's ownership row and section of `fallback_fact`; RUNBOOK.md's "Every reading built on operating income, and the fallbacks the pages read"
 Why: 24.12 of phase 24's plan, split on the operator's word of 2026-11-20 kept as Appendix K of the plan's file: the pages' fallback lands now, read from a table no rule reads, and the rules' and the ledger's lands only with the change of the monthly run of 2027-02-06 on their word.
 
+### 2026-11-20 - docs/ARCHITECTURE.html - no picture states a price for a buy at the open, the 24.0 correction
+Decision: No line states or implies the price a stock will open at, and a buy at the open buys at whatever price it opens
+Was:
+> section 15's picture of Tonight: "n stocks to buy at tomorrow's open, at about tonight's close."
+> the pictures of a pick's card, twice: "Picked by the earnings drift on dd mmm yyyy and bought at the next trading day's open, at about nn.nn."
+Now:
+> "n stocks to buy at tomorrow's open, at whatever price each opens."
+> "Picked by the earnings drift on dd mmm yyyy and bought at the next trading day's open, at whatever price it opens, its last close nn.nn."
+Why: the operator's order of 2026-11-20, kept as Appendix J of the phase 24 plan's file, correcting the places that state a price for a buy at the open under the wording rule, words only.
+
 ### 2026-11-20 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the splits set aside, by cause, at 24.11
 Authorised by: A split table's entry is read only where the closes step by its own ratio, and an entry of another size is set aside and listed
 Was:

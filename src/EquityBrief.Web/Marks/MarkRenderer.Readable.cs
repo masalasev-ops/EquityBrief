@@ -145,7 +145,7 @@ public sealed partial class MarkRenderer
         {
             var parts = new List<string>
             {
-                card.Entry is { } entry ? Formatted($"buy at the next open, at about {Price(entry)}") : "buy at the next open",
+                card.Entry is { } entry ? Formatted($"buy at the next open, at whatever price it opens, its last close {Price(entry)}") : "buy at the next open, at whatever price it opens",
             };
 
             if (card.Stop is { } stop)

@@ -147,7 +147,7 @@ public partial class ReadSurface
         Assert.Contains("It trades at 18.4 times its last four quarters' earnings, as the data provider reports, the middle of its own range of 15.2 to 24.8.", LinesOf(unscored, "business"));
         Assert.Equal(
             [
-                $"Picked tonight by {pullback}: buy at the next open, near tonight's close of 100.00.",
+                $"Picked tonight by {pullback}: buy at the next open, at whatever price it opens; tonight's close 100.00.",
                 "Sell at the next trading day's open after a day that closes below 96.00.",
                 "Sell at the next trading day's open after a day that closes at or above 110.00. Otherwise sell at the close 21 trading days after the buy.",
                 "Your size: 250 shares, 25,000.00, 25.0% of the account, 1,000.00 at risk to the stop, 2,500.00 to the target.",
@@ -302,7 +302,7 @@ public partial class ReadSurface
         var f1 = await Brief("F1");
 
         Assert.EndsWith($"Tonight {pullback} picked it.", f1.Summary, StringComparison.Ordinal);
-        Assert.Equal($"Picked tonight by {pullback}: buy at the next open, near tonight's close of 100.00.", f1.Lines["buy"]);
+        Assert.Equal($"Picked tonight by {pullback}: buy at the next open, at whatever price it opens; tonight's close 100.00.", f1.Lines["buy"]);
         Assert.Equal("Sell at the next trading day's open after a day that closes below 96.00.", f1.Lines["stop"]);
         Assert.Equal("Sell at the next trading day's open after a day that closes at or above 110.00. Otherwise sell at the close 21 trading days after the buy.", f1.Lines["exit"]);
         Assert.Equal("On the example account: 200 shares, 20,000.00, 20.0% of the account, 800.00 at risk to the stop, 2,000.00 to the target.", f1.Lines["size"]);

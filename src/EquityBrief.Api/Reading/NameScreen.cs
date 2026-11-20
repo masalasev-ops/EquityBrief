@@ -2248,10 +2248,12 @@ public static partial class NameScreen
         if (held is { } trade)
         {
             var setup = (EquityBrief.Core.Families.SetupFamilies.Named(trade.Card.Family)?.Label ?? trade.Card.Family).ToLowerInvariant();
-            var bought = trade.Pick.FilledOn ?? trade.Pick.Night;
-            var line = trade.Pick.Buy is { } at
-                ? FormattableString.Invariant($"{named} is held: bought by {setup} on {bought:d MMM} at about ${at:0.00}.")
-                : FormattableString.Invariant($"{named} is held: bought by {setup} on {bought:d MMM}.");
+            // From the 24.0 correction of 2026-11-20 a buy made states the price it paid at the open, and one not yet made says it
+            // buys at the next open at whatever price it opens.
+            // see: No line states or implies the price a stock will open at, and a buy at the open buys at whatever price it opens
+            var line = trade.Pick is { FilledOn: { } filled, Buy: { } paid }
+                ? FormattableString.Invariant($"{named} is held: bought by {setup} on {filled:d MMM} at ${paid:0.00}, the price it opened at.")
+                : FormattableString.Invariant($"{named} is held: picked by {setup} on {trade.Pick.Night:d MMM}, it buys at the next open, at whatever price it opens.");
 
             return new HeadlineView(card is { } again && string.Equals(again.Family, trade.Card.Family, StringComparison.Ordinal)
                 ? line + $" It met the {setup} rules again tonight; not bought again while the trade is open."

@@ -776,7 +776,7 @@ public partial class ReadSurface
         var picked = MarkRenderer.ShortVersionLead(card, quarter);
 
         Assert.Equal(["pick", "quarter"], Parts(picked));
-        Assert.Contains("buy at the next open, at about 441.65; sell at the next open after a close below 420.10; sell at the next open after a close at or above 478.74", WebUtility.HtmlDecode(picked), StringComparison.Ordinal);
+        Assert.Contains("buy at the next open, at whatever price it opens, its last close 441.65; sell at the next open after a close below 420.10; sell at the next open after a close at or above 478.74", WebUtility.HtmlDecode(picked), StringComparison.Ordinal);
         Assert.Contains("an operating margin of 28.7% against 28.4% a year earlier", picked, StringComparison.Ordinal);
         Assert.Equal(["quarter"], Parts(MarkRenderer.ShortVersionLead(null, quarter)));
         Assert.Equal(string.Empty, MarkRenderer.ShortVersionLead(null, null));

@@ -691,7 +691,9 @@ public sealed partial class SinglePageApp
         var card = new StringBuilder();
 
         card.Append("<div class=\"home-prices\">");
-        card.Append(Invariant($"<div><span>{buying} at about</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
+        // From the 24.0 correction of 2026-11-20 the buy at the open with the last close beside it, never a price it opens at.
+        // see: No line states or implies the price a stock will open at, and a buy at the open buys at whatever price it opens
+        card.Append(Invariant($"<div><span>{buying} at the next open, at whatever price it opens; last close</span><b>{(idea.Buy is { } buy ? Dollars(buy) : NoFigure)}</b></div>"));
         // On the operator's ruling of 2026-11-15 on the review of PR 699 a book's buy draws the stop its card placed, and how it
         // sells only on a night before its card held one.
         // see: A book's pick draws the stop and the take-profit its exit places, worked from the close it was chosen at

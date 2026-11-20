@@ -25,7 +25,7 @@ public partial class ReadSurface
         // starting setting, 7 in every 9 and 126 trading days.
         string[] parts =
         [
-            "Buy at about",
+            "Buy at the next open, at whatever price it opens; last close",
             "Sell when",
             "its filings weaken",
             "This setup's record on the S&P 400",

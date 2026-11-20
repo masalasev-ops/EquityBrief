@@ -4745,7 +4745,7 @@ public sealed partial class MarkRenderer : IComponent
             : gates is { LivePlan: FilterSettings.LadderWord, LadderRewardToRisk: { } ratio, LadderStopMoves: { } moves }
                 ? Formatted($"{Capitalised(PlanWords(FilterSettings.LadderWord))}, the plan the trade gate read: reward to risk {ratio:0.00}, its stop {moves:0.00} typical moves below the entry.")
                 : card is not null
-                    ? Formatted($"Its trade is the one the {SetupOf(card.Family)} picked it for{(card.Entry is { } price ? Formatted($", in at about {Price(price)}") : string.Empty)}, drawn on its card below with its exit.")
+                    ? Formatted($"Its trade is the one the {SetupOf(card.Family)} picked it for{(card.Entry is { } price ? Formatted($", bought at the next open at whatever price it opens, its last close {Price(price)}") : string.Empty)}, drawn on its card below with its exit.")
                     : held is { Card: var heldCard } heldTrade
                         ? FormattableString.Invariant($"Its trade is the one the {SetupOf(heldCard.Family)} picked it for on {heldTrade.Pick.Night:yyyy-MM-dd}, sold{(heldCard.Target is { } aim ? Formatted($" at the next open after a close at or above {Price(aim)},") : string.Empty)}{(heldCard.Stop is { } floor ? Formatted($" at the next open after a close below {Price(floor)}") : string.Empty)}{(heldCard.Cap is { } most ? Formatted($" or after {most} trading days") : string.Empty)}, drawn on its short card below.")
                         : "No plan with an entry, a stop and a target is stored for this night.";
