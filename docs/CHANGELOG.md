@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - docs/BUILD_PLAN.md and docs/ARCHITECTURE.html - phase 24 gains 24.12, every reading built on operating income reading every member that files its quarters, and the checkpoints after it move one number on
+Authorised by: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+Was:
+> BUILD_PLAN.md, phase 24: checkpoints 24.0 to 24.28, "24.12 The loop page's mockup" through "24.28 The phase report"; "After 24.28 about 1,745"; "none at 24.12" among the predicted claims; "their changes of 2026-11-16 and 2026-11-17"; the estimate "built in a worktree of its own on the operator's C: drive"
+> ARCHITECTURE.html, section 20's row for phase 24: "the refusal of an approval inside the rule freeze; the carried items; and one loop: ..." and "the build plan's phase 24 checkpoints, 24.0 to 24.28"
+Now:
+> BUILD_PLAN.md, phase 24: a new "24.12 Every reading built on operating income reads every member that files its quarters" with its done condition, the loop's mockup and every checkpoint after it one number on, 24.13 to 24.29, and every reference to them moved with them; "After 24.29 about 1,749"; "about 4 at 24.12, the Run page's row, section 17's row for the fallback, section 18's row and the cards' line" and "none at 24.13"; "their changes of 2026-11-16, 2026-11-17 and 2026-11-20"; the estimate "built in a worktree of its own on the operator's E: drive beside the checkout and removed once its pull request merges"
+> ARCHITECTURE.html, the row: "...; the carried items; every reading built on operating income reading every member that files its quarters; and one loop: ..." and "24.0 to 24.29"
+Why: the operator's words of 2026-11-20, kept as Appendices H and I of the phase 24 plan's file, add the stage and place it by what it depends on, after the safe changes; and their order of 2026-11-20 moved phase 24's worktree from C: to E:, removed after each merge.
+
 ### 2026-11-20 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md and .claude/rules/checks.md - a model judges a stock only for the AI judge's own account, at 24.3
 Decision: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and a model judges a stock only for the AI judge's own account
 Decision: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
