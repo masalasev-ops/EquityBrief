@@ -277,6 +277,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Judge naming test"),
     ];
 
+    // 24.4: the AI judge's picker.
+    internal static string[] JudgePickerRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Judge picker"),
+        CheckReach.Key(Scope.MatrixTable, "Judge picker"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -373,6 +380,7 @@ public partial class ComponentAccess
             .. NewReadingSourceRows,
             .. NamesRows,
             .. JudgeRows,
+            .. JudgePickerRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

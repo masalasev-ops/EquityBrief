@@ -9,24 +9,28 @@ namespace EquityBrief.Tests.Checks;
 public partial class ArchitectureConformance
 {
     // The rows each checkpoint of phase 24 landed so far, in the plan's order, and the rows each took out, none: none at 24.0;
-    // none at 24.2, whose refusal landed as clauses of section 15.20's and section 18's rows that stood; and 24.3's fact
-    // writer and naming test, their stores, section 17's two rows and section 18's row.
+    // none at 24.2, whose refusal landed as clauses of section 15.20's and section 18's rows that stood; 24.3's fact
+    // writer and naming test, their stores, section 17's two rows and section 18's row; and 24.4's picker, its four stores,
+    // section 14's step, section 17's menu and section 18's two rows.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseTwentyFourLanded =>
     [
         ("24.0", [], []),
         ("24.2", [], []),
         ("24.3", [.. FixtureExpectations.JudgeFactRows], []),
+        ("24.4", [.. FixtureExpectations.JudgePickRows], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
     // none as counted. 24.2, none of two: its refusal landed as clauses of two rows that stood. 24.3, nine of six: each
     // component's catalogue and matrix rows and each store a row of its own, section 17's settings two rows, and section 1's
-    // line and the check's row landing as words where the plan counted them as rows.
+    // line and the check's row landing as words where the plan counted them as rows. 24.4, ten of eight: each of its four
+    // stores a row of its own where the plan counted them as one.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
         ("24.2", -2),
         ("24.3", 3),
+        ("24.4", 2),
     ];
 
     [Fact]
@@ -80,6 +84,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1700, 1800, 1641), (before, low, high, actual));
+        Assert.Equal((1632, 1700, 1800, 1651), (before, low, high, actual));
     }
 }

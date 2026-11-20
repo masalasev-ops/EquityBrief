@@ -195,6 +195,11 @@ public enum Store
     // From 24.3 the AI judge's facts of each night and its naming test's answers, which no rule reads.
     JudgeFact,
     JudgeNaming,
+    // From 24.4 the judge's pin, its runs, every question it asked and its picks, which no rule reads.
+    JudgePin,
+    JudgeRun,
+    JudgeAsk,
+    JudgePick,
     RunLog,
 }
 

@@ -183,6 +183,15 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Judge naming tests"),
     ];
 
+    // 24.4: the AI judge's pins, runs, questions and picks.
+    internal static string[] JudgePickStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Judge pins"),
+        CheckReach.Key(Scope.StoresTable, "Judge runs"),
+        CheckReach.Key(Scope.StoresTable, "Judge questions"),
+        CheckReach.Key(Scope.StoresTable, "Judge picks"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -316,6 +325,7 @@ public class SchemaColumns
             .. NewReadingStoreRows,
             .. NamesStoreRows,
             .. JudgeStoreRows,
+            .. JudgePickStoreRows,
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,
             .. SessionMarkStoreRows,

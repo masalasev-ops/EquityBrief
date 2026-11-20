@@ -205,6 +205,10 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `analyst_request` | ReadApi | none | none |
 | `judge_fact` | JudgeFactWriter | none | JudgeFactWriter |
 | `judge_naming` | JudgeNamingTest | none | none |
+| `judge_pin` | JudgePicker | none | none |
+| `judge_run` | JudgePicker | none | none |
+| `judge_ask` | JudgePicker | none | none |
+| `judge_pick` | JudgePicker | none | none |
 | `run_log` | every component that writes appends | RunLog | none |
 
 **`bar` has four inserters and two deleters, and that is the one exception this file argues for.** Backfill inserts a name's first year, once, on the run that finds it holding none. BarFetcher inserts the day's bars and drops the sessions that fall out of the retention window on the night they fall out of it. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices. LateBarAsker appends a member's one bar of the night, which the day file did not carry, and moves no stored bar (see: A member missing from the night's day file is asked for with its own request at the end of the fetch and once more in the off-peak run, at most 20 asks a night).
@@ -1100,6 +1104,85 @@ Grain: one row per naming test, round and member asked, from 24.3.
 Primary key: `run_id`, `round`, `index_code`, `ticker`.
 
 **The naming test's answers, append-only, written by the naming test alone** (see: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts). From migration 153 a test run by hand draws 100 members of a night's `judge_fact` rows by its seed and asks the local model each one's short row and then its full sheet alone, under the local model's lock; a member's name is read from `listed_name`, and from its `membership` row where none is listed. The judge starts under a field list's version only where the newest test under it passed both rounds. Nothing updates or deletes a row, and no rule reads the table.
+
+### judge_pin
+Grain: one row per version of the AI judge, from 24.4.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the pin, rising |
+| `reading_pin_id` | INTEGER | the reading pin it was written from |
+| `model` | TEXT | the model the local profile names |
+| `file` | TEXT | the model's file by its path under LM Studio's models folder |
+| `sha256` | TEXT | the file's hash as the reading pin holds it |
+| `size` | INTEGER | the file's size in bytes |
+| `modified` | TEXT | the file's last-modified UTC instant |
+| `context` | INTEGER | the window the model is loaded at |
+| `prompt_version` | TEXT | the judge's prompts' version, a hash over both instructions, the labels, the menu and the bounds |
+| `written_at` | TEXT | UTC instant |
+
+Primary key: `id`.
+
+### judge_run
+Grain: one row per run of the AI judge, from 24.4.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `session_date` | TEXT | the night picked for |
+| `fact_version` | TEXT | the field list's version of the facts read |
+| `pin_id` | INTEGER | the judge pin asked under, null where refused before one was read |
+| `seed` | INTEGER | the night's seed, its date as a number |
+| `outcome` | TEXT | `picked`, `none`, `missed`, `refused` or `failed` |
+| `started_at` | TEXT | UTC instant |
+| `ended_at` | TEXT | UTC instant |
+| `screened` | INTEGER | members whose short rows were read |
+| `kept` | INTEGER | members kept in round one |
+| `asks` | INTEGER | questions asked, each time counted |
+| `asks_failed` | INTEGER | questions whose answer could not be read twice |
+| `detail` | TEXT | why, where it picked nothing or dropped a pick |
+
+Primary key: `run_id`.
+
+### judge_ask
+Grain: one row per question the AI judge asked and each time it asked it, from 24.4.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `round` | TEXT | `screen` or `pick` |
+| `batch` | INTEGER | round one's batch, 0 in round two |
+| `attempt` | INTEGER | 1, or 2 where the first answer could not be read |
+| `outcome` | TEXT | `answered`, `unreadable` or `refused` |
+| `cause` | TEXT | why it could not be read, null where answered |
+| `answer` | TEXT | the answer as the runtime sent it, null where refused |
+| `model` | TEXT | the model the runtime said answered |
+| `asked_at` | TEXT | UTC instant |
+
+Primary key: `run_id`, `round`, `batch`, `attempt`.
+
+### judge_pick
+Grain: one row per pick of a night, up to five, from 24.4.
+
+| Column | Type | Notes |
+|---|---|---|
+| `session_date` | TEXT | the night picked for |
+| `rank` | INTEGER | 1 to 5, as the model ranked them |
+| `run_id` | TEXT | the run that picked it |
+| `index_code` | TEXT | |
+| `ticker` | TEXT | the member, which the model was not shown |
+| `hold` | TEXT | the hold chosen from the menu |
+| `take_profit` | TEXT | the take-profit chosen from the menu |
+| `reason` | TEXT | the model's reason, holding no digit and no name |
+| `last_close` | TEXT | the night's close, a price |
+| `typical_move` | REAL | the night's average true range, a statistic |
+| `stop` | TEXT | the stop worked from the last close, a price |
+| `target` | TEXT | the take-profit worked from the last close, a price |
+| `give_up_distance` | TEXT | how far the give-up price keeps behind the highest close, a price, null for the whole at the target |
+
+Primary key: `session_date`, `rank`.
+
+**The AI judge's pin, runs, questions and picks, each written by the judge's picker alone** (see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed). From migration 154 the picker the night starts after its last step reads the night's `judge_fact` rows under the field list's version, starts only under a passed `judge_naming` test of that version, and asks the local model under its lock and under the newest `judge_pin`, its first written from the newest `reading_pin`. A run's pin where it is the first, its questions, its picks and its row are one write under the drain's lock; a night not stored before the next open is written as `missed` with no pick, and a night holding a run `picked`, `none` or `missed` is never run again. Nothing updates or deletes a row, and no rule reads any of the four tables.
 
 ### calendar
 Grain: one row per ticker, event date and kind.

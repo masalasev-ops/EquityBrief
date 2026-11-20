@@ -774,7 +774,77 @@ public static class SchemaMigrations
         new Migration(151, "add the night a live rule's holding took its exit at the rules restart to index_heavyweight_rule_holding", AddRuleExitAdded),
         new Migration(152, "create listed_name", CreateListedName),
         new Migration(153, "create judge_fact and judge_naming", CreateJudgeFacts),
+        new Migration(154, "create judge_pin, judge_run, judge_ask and judge_pick", CreateJudgePicks),
     ];
+
+    // From 24.4 the AI judge's nightly picks: its pin, the model, its file and window from the reading pin it was written
+    // under with the judge's prompt version, append-only; one run row a night it ran for, its outcome among them a night
+    // missed; every question it asked and what came back, append-only; and its picks, up to 5 a night ranked, each with the
+    // hold and take-profit it chose, its reason and the prices code worked from the last close. All four written by the
+    // judge's picker alone, and no rule reads any.
+    // see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+    const string CreateJudgePicks = @"
+        CREATE TABLE judge_pin (
+            id              INTEGER PRIMARY KEY,
+            reading_pin_id  INTEGER NOT NULL,
+            model           TEXT NOT NULL,
+            file            TEXT NOT NULL,
+            sha256          TEXT NOT NULL,
+            size            INTEGER NOT NULL,
+            modified        TEXT NOT NULL,
+            context         INTEGER NOT NULL,
+            prompt_version  TEXT NOT NULL,
+            written_at      TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE judge_run (
+            run_id          TEXT NOT NULL PRIMARY KEY,
+            session_date    TEXT NOT NULL,
+            fact_version    TEXT NOT NULL,
+            pin_id          INTEGER,
+            seed            INTEGER NOT NULL,
+            outcome         TEXT NOT NULL CHECK (outcome IN ('picked', 'none', 'missed', 'refused', 'failed')),
+            started_at      TEXT NOT NULL,
+            ended_at        TEXT NOT NULL,
+            screened        INTEGER NOT NULL,
+            kept            INTEGER NOT NULL,
+            asks            INTEGER NOT NULL,
+            asks_failed     INTEGER NOT NULL,
+            detail          TEXT NOT NULL
+        ) STRICT;
+
+        CREATE INDEX judge_run_session ON judge_run (session_date);
+
+        CREATE TABLE judge_ask (
+            run_id      TEXT NOT NULL,
+            round       TEXT NOT NULL CHECK (round IN ('screen', 'pick')),
+            batch       INTEGER NOT NULL,
+            attempt     INTEGER NOT NULL,
+            outcome     TEXT NOT NULL CHECK (outcome IN ('answered', 'unreadable', 'refused')),
+            cause       TEXT,
+            answer      TEXT,
+            model       TEXT,
+            asked_at    TEXT NOT NULL,
+            PRIMARY KEY (run_id, round, batch, attempt)
+        ) STRICT;
+
+        CREATE TABLE judge_pick (
+            session_date      TEXT NOT NULL,
+            rank              INTEGER NOT NULL,
+            run_id            TEXT NOT NULL,
+            index_code        TEXT NOT NULL,
+            ticker            TEXT NOT NULL,
+            hold              TEXT NOT NULL,
+            take_profit       TEXT NOT NULL,
+            reason            TEXT NOT NULL,
+            last_close        TEXT NOT NULL,
+            typical_move      REAL NOT NULL,
+            stop              TEXT NOT NULL,
+            target            TEXT NOT NULL,
+            give_up_distance  TEXT,
+            PRIMARY KEY (session_date, rank)
+        ) STRICT;
+    ";
 
     // From 24.3 the AI judge's facts of each night, a member's short row and full sheet as the judge is shown them under the
     // field list's version, written by the judge's fact writer alone, a night written again replacing its own rows; and the

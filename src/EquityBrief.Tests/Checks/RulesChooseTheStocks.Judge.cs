@@ -17,6 +17,7 @@ public partial class RulesChooseTheStocks
     [
         (nameof(JudgeFactWriter), JudgeFactWriter.Access),
         (nameof(JudgeNamingTest), JudgeNamingTest.Access),
+        (nameof(JudgePicker), JudgePicker.Access),
     ];
 
     // The judge's tables, by the store a declaration names and by the table a query names.
@@ -24,6 +25,10 @@ public partial class RulesChooseTheStocks
     [
         (DataStore.JudgeFact, "judge_fact"),
         (DataStore.JudgeNaming, "judge_naming"),
+        (DataStore.JudgePin, "judge_pin"),
+        (DataStore.JudgeRun, "judge_run"),
+        (DataStore.JudgeAsk, "judge_ask"),
+        (DataStore.JudgePick, "judge_pick"),
     ];
 
     // The folders the judge's code sits under.
@@ -54,7 +59,7 @@ public partial class RulesChooseTheStocks
     {
         // The exception, by name: the judge's components are none of the deciding ones, and their folders none of the
         // deciding folders.
-        Assert.Equal(2, Judge.Length);
+        Assert.Equal(3, Judge.Length);
         Assert.Empty(Judge.Select(one => one.Name).Intersect(Deciding.Select(one => one.Name), StringComparer.Ordinal));
         Assert.Empty(JudgeFolders.Intersect(Folders, StringComparer.Ordinal));
         Assert.All(JudgeFolders, folder => Assert.True(Directory.Exists(Path.Combine(Repository.Root, folder)), folder));

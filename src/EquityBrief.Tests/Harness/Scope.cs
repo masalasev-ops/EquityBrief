@@ -2982,7 +2982,11 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.StoreCopyStep)] = new Scoped(
             Verdict.Pass,
-            "over a constructed night the launcher the night was handed is asked to start one copy after the labeller, waiting for the labeller, as the last row the night writes, and a night run again for an earlier session starts one that waits for none",
+            "over a constructed night the launcher the night was handed is asked to start one copy after the labeller, waiting for the labeller, and a night run again for an earlier session starts one that waits for none",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.JudgeStep)] = new Scoped(
+            Verdict.Pass,
+            "over a constructed night the launcher the night was handed is asked to start the AI judge once, its row the last the night writes with no model call on it, a night run again for an earlier session starts none and says so, and the night's source constructs no reader of the judge's tables",
             ByNight),
         [CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopyLine)] = new Scoped(
             Verdict.Pass,
@@ -3908,6 +3912,42 @@ internal static class Scope
         [CheckReach.Key(FailureTable, "A judge's fact a member does not hold, or a naming test that fails")] = new Scoped(
             Verdict.Pass,
             "a member holding a ledger row alone reading not on file in every field but the news, a store's year short of 252 closes reading no year's return or high, a plan holding no reward reading none, and a failed or untested field list starting no judge",
+            ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Judge picker")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the judge facts, naming tests, names, membership, bars, indicators and pins it reads, the judge's pins, runs, questions and picks and the run log it writes and the local model, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Judge picker")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Judge pins")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Judge runs")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Judge questions")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Judge picks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The AI judge's menu")] = new Scoped(
+            Verdict.Pass,
+            "each hold's stop and take-profit worked by hand from a close of 100 and again from a fill, a choice off the menu or a missing typical move pricing nothing, and a constructed night of 120 members asked in batches of 50, 50 and 20 keeping at most one each and picking two ranked; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A night the AI judge does not store before the next open, or a question it cannot read")] = new Scoped(
+            Verdict.Pass,
+            "a run at the next open and one still waiting on the local model's lock at it asking nothing, storing no pick and writing the night as missed, a reason naming its company refused and asked once more, and a reason holding a digit, a label picked twice and a choice off the menu each refused",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "An AI judge run under another model, file, window or prompt than its pin")] = new Scoped(
+            Verdict.Pass,
+            "a run under a pin holding another prompt refused naming the prompt, one under another model refused naming the model, each asking nothing, and a first run writing its pin from the reading pin with the prompt's version",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A new reading's source refuses")] = new Scoped(
             Verdict.Pass,
@@ -8996,6 +9036,8 @@ internal static class Scope
         ["Fill forward returns"] = "5.5",
         ["Count today"] = "5.5",
         ["Close the arithmetic"] = "5.5",
+        // 24.4's step, the AI judge after the store's copy.
+        ["From 24.4, start the AI judge"] = "24.4",
     };
 
     // Figure 12.1's boxes, which are the research flow and land in phase 6.
