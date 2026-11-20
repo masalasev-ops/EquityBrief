@@ -170,6 +170,9 @@ public partial class ArchitectureConformance
 
         // Phase 24's from 24.3: the AI judge's fact writer and naming test, their stores, section 17's two rows and section 18's.
         .. FixtureExpectations.JudgeFactRows,
+
+        // And from 24.4: the AI judge's picker, its four stores, section 14's step, section 17's menu and section 18's two rows.
+        .. FixtureExpectations.JudgePickRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

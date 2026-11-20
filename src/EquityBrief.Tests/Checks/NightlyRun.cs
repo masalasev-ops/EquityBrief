@@ -95,8 +95,11 @@ public partial class NightlyRun
             // 12.6's correction, the news labeller the night starts after its own request.
             CheckReach.Key(NightlyRunSteps.Heading, "Start no news labeller, writing the night's row saying the off-peak run labels tonight's list five minutes after each peak window ends, a process of its own that labels the stored admitted articles of the names on the newest night's list, of every name a report is written for and then of every other member holding one it has not labelled, each name's own newest first and every one of them over the thirty days before the night, through the local model one article at a time under a pin of its own, with every call on the labeller's own run and never the night's, bounded by its own time and month limits, the row saying on a night run again for an earlier session that its list is not tonight's (see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own) (see: The news labeller labels the S&P 500's list, every name a report is written for and then every other member holding a story it has not labelled)."),
 
-            // The store's copy, on the operator's ruling of 2026-10-02, the night's last step.
+            // The store's copy, on the operator's ruling of 2026-10-02.
             CheckReach.Key(NightlyRunSteps.Heading, FixtureExpectations.StoreCopyStep),
+
+            // 24.4, the AI judge, the night's last step.
+            CheckReach.Key(NightlyRunSteps.Heading, FixtureExpectations.JudgeStep),
 
             // 5.4, tonight's list.
             CheckReach.Key(NightlyRunSteps.Heading, "Evaluate the list reasons for every name."),
@@ -1376,14 +1379,15 @@ public partial class NightlyRun
         // see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^8], StringComparison.Ordinal);
-        Assert.StartsWith("Read the archive's daily index", steps[^7], StringComparison.Ordinal);
-        Assert.StartsWith("From 22.9, read Quality at a fair price", steps[^6], StringComparison.Ordinal);
-        Assert.StartsWith("From 22.13, read the Fundamentals family", steps[^5], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the Treasury, and not the provider, for its daily par yields", steps[^4], StringComparison.Ordinal);
-        Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("Start no news labeller", steps[^2], StringComparison.Ordinal);
-        Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^9], StringComparison.Ordinal);
+        Assert.StartsWith("Read the archive's daily index", steps[^8], StringComparison.Ordinal);
+        Assert.StartsWith("From 22.9, read Quality at a fair price", steps[^7], StringComparison.Ordinal);
+        Assert.StartsWith("From 22.13, read the Fundamentals family", steps[^6], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the Treasury, and not the provider, for its daily par yields", steps[^5], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for six reports taken in turn", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("Start no news labeller", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("Start the store's copy", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("From 24.4, start the AI judge", steps[^1], StringComparison.Ordinal);
         Assert.DoesNotContain(steps, step => step.Contains("overnight queue", StringComparison.OrdinalIgnoreCase));
 
         using var store = new TemporaryStore();
@@ -1414,16 +1418,17 @@ public partial class NightlyRun
         // quality family's row follows them, and from 22.13 the Fundamentals family's follows that; from 23.10's second part
         // the quarters fetch's row sits in the swing filter's step, after the S&P 500's heavyweights' book and before the S&P
         // 400's and 600's families; and from the review of PR 699 the books' cards' row follows the Fundamentals family's.
-        Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^1]);
-        Assert.Equal(NewsLabeller.NightStage, stages[^2]);
-        Assert.Equal("report", stages[^3]);
-        Assert.Equal(EquityBrief.Worker.Treasury.TreasuryReader.Stage, stages[^4]);
-        Assert.Equal(EquityBrief.Worker.Cards.DecisionCards.BookStage, stages[^5]);
-        Assert.Equal(EquityBrief.Worker.Improving.ImprovingFamily.Stage, stages[^6]);
-        Assert.Equal(EquityBrief.Worker.Quality.QualityFamily.Stage, stages[^7]);
-        Assert.Equal(EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, stages[^8]);
-        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^9]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^10]);
+        Assert.Equal(EquityBrief.Worker.Judge.JudgePicker.NightStage, stages[^1]);
+        Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^2]);
+        Assert.Equal(NewsLabeller.NightStage, stages[^3]);
+        Assert.Equal("report", stages[^4]);
+        Assert.Equal(EquityBrief.Worker.Treasury.TreasuryReader.Stage, stages[^5]);
+        Assert.Equal(EquityBrief.Worker.Cards.DecisionCards.BookStage, stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Improving.ImprovingFamily.Stage, stages[^7]);
+        Assert.Equal(EquityBrief.Worker.Quality.QualityFamily.Stage, stages[^8]);
+        Assert.Equal(EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, stages[^9]);
+        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^10]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^11]);
         Assert.Equal(
             [EquityBrief.Worker.Families.HeavyweightBook.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, EquityBrief.Worker.Indices.IndexFamilies.Stage],
             stages.Where(stage => stage is EquityBrief.Worker.Families.HeavyweightBook.Stage or EquityBrief.Worker.Quarters.QuarterFetcher.Stage or EquityBrief.Worker.Indices.IndexFamilies.Stage));
@@ -1573,12 +1578,13 @@ public partial class NightlyRun
         var improving = steps.ToList().FindIndex(step => step.StartsWith("From 22.13, read the Fundamentals family", StringComparison.Ordinal)) + 1;
         var treasury = steps.ToList().FindIndex(step => step.StartsWith("Ask the Treasury", StringComparison.Ordinal)) + 1;
 
-        Assert.Equal(steps.Count - 3, treasury);
+        Assert.Equal(steps.Count - 4, treasury);
         Assert.Equal((close + 1, close + 2, close + 3, close + 4), (filings, quality, improving, treasury));
         Assert.DoesNotContain(steps, step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal));
-        Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("Start no news labeller", steps[^2], StringComparison.Ordinal);
-        Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for six reports taken in turn", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("Start no news labeller", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("Start the store's copy", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("From 24.4, start the AI judge", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.
         var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);

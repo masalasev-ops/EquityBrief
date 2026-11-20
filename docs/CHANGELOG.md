@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - CLAUDE.md, .claude/rules/checks.md and docs/ARCHITECTURE.html - the night starts the AI judge after its last step, at 24.4
+Authorised by: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+Was:
+> CLAUDE.md, the nightly run's hard rule: "Thirteen carve-outs are named rather than left to be discovered, ..." and "... so it follows the provider's late posts rather than the index, on the operator's rulings of 2026-11-04. (see: The nightly run is arithmetic only) ... (see: FINRA's short interest is read once a settlement after the labeller, and its history once by hand)"
+> checks.md, the rules-choose-the-stocks row: "... and from 24.3 the AI judge's fact writer and naming test are the check's one exception, named in it, ..."
+> ARCHITECTURE.html, section 14: the store's copy the night's last step
+Now:
+> CLAUDE.md: "Fourteen carve-outs are named ..." and "... on the operator's rulings of 2026-11-04, and the AI judge, a process of its own the night starts after its last step, which from 24.4 asks the local model on the operator's own machine for up to five picks for its own account under the local model's lock and a pin of its own, its calls on its own run and never on the night's, and asks nothing of a network, on the operator's approval of its fields of 2026-11-19." with its citation added after FINRA's
+> checks.md: "... and from 24.3 the AI judge's fact writer and naming test, and from 24.4 its picker, are the check's one exception, ..."
+> ARCHITECTURE.html, section 14: a step after the store's copy, "From 24.4, start the AI judge, ...", the night's last; the judge picker's catalogue and matrix rows, its four stores, section 17's menu and section 18's two rows added
+Why: 24.4 of phase 24's plan, on the operator's approval of the judge's fields and menu with its mockup on 2026-11-19: the night starts the judge as a process of its own after its last step, its model calls on its own run.
+
 ### 2026-11-20 - docs/BUILD_PLAN.md and docs/ARCHITECTURE.html - phase 24 gains 24.12, every reading built on operating income reading every member that files its quarters, and the checkpoints after it move one number on
 Authorised by: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
 Was:

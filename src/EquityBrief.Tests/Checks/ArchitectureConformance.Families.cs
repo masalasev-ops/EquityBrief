@@ -436,9 +436,10 @@ public partial class ArchitectureConformance
         // matrix rows, and 1628 from the operator's ruling of 2026-11-16, Tonight's row of a book's own exit, and 1632 from the
         // 23.10 correction of 2026-11-17, the names refresh's catalogue and matrix rows, its store's row and section 17's row of
         // its names, and 1641 from 24.3, the AI judge's fact writer's and naming test's catalogue and matrix rows, their two
-        // stores, section 17's two rows and section 18's row.
+        // stores, section 17's two rows and section 18's row, and 1651 from 24.4, the judge picker's catalogue and matrix
+        // rows, its four stores, section 14's step, section 17's menu and section 18's two rows.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1641),
+            (789, 853, 6, 4, 855, 876, 1651),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

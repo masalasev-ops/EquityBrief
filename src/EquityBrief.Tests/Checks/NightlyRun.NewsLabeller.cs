@@ -26,11 +26,15 @@ public partial class NightlyRun
         Assert.Equal(EquityBrief.Worker.Nightly.LabelledByTheOffPeakRun, Texts(store, $"SELECT detail FROM run_log WHERE stage = '{NewsLabeller.NightStage}';").Single());
         Assert.Equal(0, Scalar(store, $"SELECT model_calls FROM run_log WHERE stage = '{NewsLabeller.NightStage}';"));
 
-        // The step comes after the report's, and the store's copy last, waiting for no labeller.
+        // The step comes after the report's, the store's copy after it, waiting for no labeller, and from 24.4 the AI judge
+        // last, started once as a process of its own with no model call on the night's row.
         Assert.Equal(
-            ["report", NewsLabeller.NightStage, StoreBackup.NightStage],
-            Texts(store, "SELECT stage FROM run_log WHERE run_id LIKE 'night-%' AND instr(run_id, '-queue-') = 0 ORDER BY rowid DESC LIMIT 3;").Reverse());
+            ["report", NewsLabeller.NightStage, StoreBackup.NightStage, EquityBrief.Worker.Judge.JudgePicker.NightStage],
+            Texts(store, "SELECT stage FROM run_log WHERE run_id LIKE 'night-%' AND instr(run_id, '-queue-') = 0 ORDER BY rowid DESC LIMIT 4;").Reverse());
         Assert.Equal([false], launcher.BackupStarts);
+        Assert.Equal(1, launcher.JudgeStarts);
+        Assert.Equal(NightLauncherForTheSuite.JudgeLine, Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Judge.JudgePicker.NightStage}';").Single());
+        Assert.Equal(0, Scalar(store, $"SELECT model_calls FROM run_log WHERE stage = '{EquityBrief.Worker.Judge.JudgePicker.NightStage}';"));
         Assert.Equal(NightLauncherForTheSuite.BackupLine, Texts(store, $"SELECT detail FROM run_log WHERE stage = '{StoreBackup.NightStage}';").Single());
         Assert.Equal(0, Scalar(store, $"SELECT model_calls FROM run_log WHERE stage = '{StoreBackup.NightStage}';"));
 
@@ -44,6 +48,8 @@ public partial class NightlyRun
         Assert.Equal(0, still.LabellerStarts);
         Assert.Equal("no labeller was started, since this night was run again for an earlier session", Texts(earlier, $"SELECT detail FROM run_log WHERE stage = '{NewsLabeller.NightStage}';").Single());
         Assert.Equal([false], still.BackupStarts);
+        Assert.Equal(0, still.JudgeStarts);
+        Assert.Equal("no judge was started, since this night was run again for an earlier session", Texts(earlier, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Judge.JudgePicker.NightStage}';").Single());
 
         // The night's own source asks its launcher for neither, so a night whose list asks for reports leaves them
         // queued as the fixture's night, which asks for none, shows.

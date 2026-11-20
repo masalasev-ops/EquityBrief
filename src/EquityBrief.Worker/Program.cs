@@ -116,6 +116,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "quarters-moved" => await QuartersMovedRun(args),
     "judge-facts" => await JudgeFactsRun(args),
     "judge-naming" => await JudgeNamingRun(args),
+    "judge-pick" => await JudgePickRun(args),
     _ => NoVerb(),
 };
 
@@ -163,6 +164,81 @@ static async Task<int> JudgeNamingRun(string[] args)
     Console.Out.WriteLine("judge-naming: " + EquityBrief.Worker.Judge.JudgeNamingTest.Words(outcome));
 
     return outcome.Passed ? 0 : 1;
+}
+
+// The AI judge's picks of a night, the process the night starts after its last step, or by hand for a night named: it
+// waits for the night to let go of its lock, writes the night's facts under the field list's version, and picks under the
+// local model's lock, stored before the next open or written as missed.
+// see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+static async Task<int> JudgePickRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    DateOnly session;
+
+    // The night lets go of its lock before anything of it is read.
+    while (NightLock.Holder(store.DataRoot) is not null)
+    {
+        await Task.Delay(EquityBrief.Worker.Local.LocalRun.Poll);
+    }
+
+    if (VerbArguments.Value(args, "--session") is { } named)
+    {
+        if (!DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out session))
+        {
+            Console.Error.WriteLine("judge-pick: '--session' takes a night as yyyy-MM-dd; without it the newest night the ledger read is picked for.");
+
+            return 2;
+        }
+    }
+    else
+    {
+        await using var connection = new Microsoft.Data.Sqlite.SqliteConnection(EquityBrief.Worker.Judge.JudgeFactReader.ReadOnly(store.DatabaseFile));
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT MAX(session_date) FROM ledger_reading;";
+
+        if (await command.ExecuteScalarAsync() is not string newest)
+        {
+            Console.Error.WriteLine("judge-pick: the ledger holds no night's readings, so there is nothing to pick from.");
+
+            return 1;
+        }
+
+        session = DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    LocalModelSettings local;
+
+    try
+    {
+        local = LocalLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("judge-pick: " + refusal.Message);
+
+        return 1;
+    }
+
+    var written = await new EquityBrief.Worker.Judge.JudgeFactWriter(clock, store.DatabaseFile)
+        .WriteAsync(session, FormattableString.Invariant($"{EquityBrief.Worker.Judge.JudgeFactWriter.Stage}-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.Out.WriteLine(FormattableString.Invariant($"judge-pick: {written} member(s) of {session:yyyy-MM-dd} written under field list {EquityBrief.Core.Judge.JudgeFacts.Version}"));
+
+    var outcome = await new EquityBrief.Worker.Judge.JudgePicker(LmStudioReadingFeed.Live(local), local, clock, store.DatabaseFile, store.DataRoot)
+        .RunAsync(session, EquityBrief.Worker.Judge.JudgePicker.NextOpen(session, clock.SessionZone), FormattableString.Invariant($"{EquityBrief.Worker.Judge.JudgePicker.Stage}-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.Out.WriteLine("judge-pick: " + EquityBrief.Worker.Judge.JudgePicker.Words(outcome));
+
+    foreach (var pick in outcome.Picks)
+    {
+        Console.Out.WriteLine(FormattableString.Invariant($"judge-pick: {pick.Rank}. {pick.Ticker} on {pick.Index}, {pick.Hold}, {pick.Shape}: {pick.Reason}"));
+    }
+
+    return outcome.Outcome is EquityBrief.Worker.Judge.JudgePicker.Picked or EquityBrief.Worker.Judge.JudgePicker.NonePicked ? 0 : 1;
 }
 
 // The AI judge's facts of a stored night: with '--write' the night's rows written under the field list's version, a night
@@ -992,7 +1068,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 87 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 88 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1267,6 +1343,8 @@ static int NoVerb()
         "with '--ticker <ticker>' or each field's count held, writing nothing, and with '--write' stores the night's, " +
         "'judge-naming --session <yyyy-MM-dd> --seed <n> --until yyyy-MM-ddTHH:mmZ' asks the local model to name the companies " +
         "behind a seeded sample of that night's stored facts, on the operator's word, " +
+        "'judge-pick' is the AI judge's process the night starts after its last step, which writes the newest night's facts and " +
+        "picks up to five under the local model's lock, stored before the next open or written as missed, or with '--session <yyyy-MM-dd>' a night named, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
