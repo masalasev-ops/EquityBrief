@@ -115,6 +115,8 @@ public enum Store
     SetupNight,
     FiledFact,
     FiledFactPull,
+    // From 24.12 the two fallback lines a filer's operating income falls back to, read by no rule.
+    FallbackFact,
     FilingDay,
     InsiderTrade,
     InsiderRead,

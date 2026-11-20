@@ -268,6 +268,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Names refresh"),
     ];
 
+    // 24.12: the fill of the two lines a filer's operating income falls back to.
+    internal static string[] FallbackRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Fallback facts fill"),
+        CheckReach.Key(Scope.MatrixTable, "Fallback facts fill"),
+    ];
+
     // 24.3: the AI judge's fact writer and its naming test.
     internal static string[] JudgeRows =>
     [
@@ -380,6 +387,7 @@ public partial class ComponentAccess
             .. NewReadingSourceRows,
             .. NamesRows,
             .. JudgeRows,
+            .. FallbackRows,
             .. JudgePickerRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.

@@ -1,3 +1,4 @@
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Quarters;
 
@@ -230,7 +231,12 @@ public static class QuarterLines
             [
                 Line(Revenue, quarter => quarter.Revenue, revenueAbsent, estimate: revenueEstimate, implied: revenueImplied),
                 Line(GrossProfit, quarter => quarter.GrossProfit, NonePublished, kept: true, margin: true),
-                Line(OperatingIncome, quarter => quarter.OperatingIncome, NonePublished, margin: true),
+                // From 24.12 the line names a fallback its filed quarters were read on.
+                Line(OperatingIncome, quarter => quarter.OperatingIncome, NonePublished, margin: true) is var operating
+                    && sourced?.OperatingLine is IncomeLine.PretaxPlusInterest or IncomeLine.RevenueLessCosts
+                    && SourceOf(newest) == QuarterSource.Filing
+                    ? operating with { From = QuarterSources.ReadAs(sourced.OperatingLine) }
+                    : operating,
                 Line(NetIncome, quarter => quarter.NetIncome, NonePublished, margin: true),
                 Line(Eps, quarter => quarter.EpsActual, NotFiled, perShare: true, estimate: newest.EpsEstimate),
                 Line(OperatingCashFlow, quarter => quarter.OperatingCashFlow, NonePublished),

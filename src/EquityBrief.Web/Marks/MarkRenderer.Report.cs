@@ -107,7 +107,7 @@ public sealed partial class MarkRenderer
                     : Formatted($"<td class=\"num degraded\" data-{name}=\"absent\">{Escaped(absent)}</td>");
 
             table.Append(Formatted($"<tr data-line=\"{Escaped(line.Line)}\"{(line.Line == QuarterLines.Eps ? " class=\"key-row\"" : string.Empty)}><td>{Escaped(line.Line)}</td>"));
-            table.Append(Amount(line.Reported, "reported", line.NotRead ?? QuarterLines.NotFiled, line.From is { } from ? Formatted($" <small class=\"line-from\" data-from=\"release\">{Escaped(from)}</small>") : string.Empty));
+            table.Append(Amount(line.Reported, "reported", line.NotRead ?? QuarterLines.NotFiled, line.From is { } from ? Formatted($" <small class=\"line-from\" data-from=\"{(from == EquityBrief.Core.Report.QuarterSources.FromRelease ? "release" : "fallback")}\">{Escaped(from)}</small>") : string.Empty));
             table.Append(Amount(line.Estimate, "estimate", line.EstimateAbsent ?? QuarterLines.NonePublished, line.Implied is null ? string.Empty : " implied", line.Implied is not null));
             table.Append(line.Difference is { } difference
                 ? "<td class=\"num\">" + SignedAmount(difference, line.PerShare, view.Currency, "difference") + (line.AgainstEstimate is { } against ? " (" + Signed(against, "against") + ")" : string.Empty) + "</td>"

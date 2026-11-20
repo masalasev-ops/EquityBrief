@@ -3961,6 +3961,23 @@ internal static class Scope
             Verdict.Pass,
             "each cause worked by hand over a constructed table and series, a step on its own ratio read as a split and listed nowhere and one off it set aside beside its entry; the long history and the store's year read and counted by cause with the store file byte for byte as it stood; and no source the checkpoint writes one a rule's version pins",
             ByExpectations),
+        // 24.12, the operating income fallbacks the pages read.
+        [CheckReach.Key(CatalogueTable, "Fallback facts fill")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the member readings, the companies and the filed facts it reads, the fallback facts and the run log it writes and the filings archive, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Fallback facts fill")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Fallback facts")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(FailureTable, "A filer that files no operating income for a member's four newest quarters")] = new Scoped(
+            Verdict.Pass,
+            "each cause and each fallback line worked by hand over a constructed filer, the same line read for every quarter compared and named on the card and the report; a filer covered by neither line saying so; the refresh keeping the two lines apart from the filed facts and leaving them as they were; the fill reading the kept answers and asking for a filer that filed since; and no source a rule's version pins among those the pages' fallback writes",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A new reading's source refuses")] = new Scoped(
             Verdict.Pass,
             "over constructed stores a refused page of trends stores nothing while the pages after it are asked, a refused FINRA answer stops its run with what it stored kept and says why on its row, and three failed asks of Yahoo in a row stop the refresh",

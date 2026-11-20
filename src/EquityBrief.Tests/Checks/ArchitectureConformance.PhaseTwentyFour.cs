@@ -26,6 +26,7 @@ public partial class ArchitectureConformance
         ("24.7", [.. FixtureExpectations.JudgeReplayClaims], []),
         ("24.10", [], []),
         ("24.11", [.. Reading.ReadSurface.SplitStepRows, .. FixtureExpectations.SplitCauseClaims], []),
+        ("24.12", [.. FixtureExpectations.IncomeFallbackRows], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -35,7 +36,9 @@ public partial class ArchitectureConformance
     // stores a row of its own where the plan counted them as one. 24.5, one of four: the accounts are worked by the core when
     // the judge's page is read, so their rows land with the page at 24.6 and the guide's words are no claim. 24.6, six of six.
     // 24.7, one of two: the replay is a verb over the judge's own components, so it lands as section 18's row and the
-    // runbook's words where the plan counted a row of its own. 24.10, none as counted. 24.11, two of two.
+    // runbook's words where the plan counted a row of its own. 24.10, none as counted. 24.11, two of two. 24.12, four of four:
+    // the fill's catalogue and matrix rows and its store's row where the plan counted the Run page's row and section 17's,
+    // and section 18's row, the cards' line naming the line used landing as its words.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -47,6 +50,7 @@ public partial class ArchitectureConformance
         ("24.7", -1),
         ("24.10", 0),
         ("24.11", 0),
+        ("24.12", 0),
     ];
 
     [Fact]
@@ -100,6 +104,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1700, 1800, 1661), (before, low, high, actual));
+        Assert.Equal((1632, 1700, 1800, 1665), (before, low, high, actual));
     }
 }
