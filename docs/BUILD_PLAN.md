@@ -2678,7 +2678,7 @@ Every screen the phase touched at 1440 pixels and a true 390 in both palettes, r
 - **The open.** Eleven places on main state a price for a buy at the open, listed with their words in the plan's file.
 - **The local model.** Its cutoff is 2025-01-31; the local run takes it at 12:05 and 21:40 UTC and the labeller at 04:05 and 10:05 UTC.
 
-**What is the operator's.** Any spend, named with its amount; the judge's fields, what it is never shown and its menu, with each empty field kept or dropped; the loop's mockup; the pullbacks' registered list before their search; the start of the readings for every stock on every session; each replay of the judge; the filing text's requests before the first; promotion or keeping at each monthly run from 2027-02-06; the correction of the places stating a price at the open; and whether a pin move a replay carries counts as registering a live rule.
+**What is the operator's.** Any spend, named with its amount; the judge's fields, what it is never shown and its menu, with each empty field kept or dropped; the loop's mockup; the pullbacks' registered list before their search; the start of the readings for every stock on every session; each replay of the judge; the filing text's requests before the first; promotion or keeping at each monthly run from 2027-02-06; and a pin move a replay carries in which any trade differs (see: A pin move a replay carries with every trade the same registers no live rule, and one moving a trade comes to the operator first).
 
 **The claims phase 24 predicts.** 1,632 claims and 1,632 PASS on main at 6c7a22b7. After 24.29 about 1,749, within 1,700 to 1,800:
 - none at 24.0, which adds section 20's row and no row of a table the harness reads;
@@ -2689,7 +2689,10 @@ Every screen the phase touched at 1440 pixels and a true 390 in both palettes, r
 - about 4 at 24.5, the accounts' rows and section 17's draw;
 - about 6 at 24.6, the page's rows and section 15's rows;
 - about 2 at 24.7, the replay's row and section 18's row;
-- about 2 at 24.8; about 1 at 24.9; none at 24.10; about 2 at 24.11;
+- about 2 at 24.8, the History page's row and the long test's years;
+- about 1 at 24.9, the roster's row;
+- none at 24.10, the long search's row read again on its next run;
+- about 2 at 24.11, the Run page's rows;
 - about 4 at 24.12, the Run page's row, section 17's row for the fallback, section 18's row and the cards' line;
 - none at 24.13;
 - about 5 at 24.14, the page's rows, section 17's floors and section 18's row;
@@ -2747,7 +2750,7 @@ Only nights after the cutoff of 2025-01-31 are replayed (see: A rule or a change
 **Done when** a replayed night's fact rows equal the stored night's on a sample where both exist, each difference named; a night on or before the cutoff is refused, asserted; the print states the count, the time a night and the total hours, the total the product of the other two, asserted, and the replay refuses to start without the word, on both sides; it yields the model's lock to the night, a local run, the labeller, the ledger build and the monthly run, asserted; a replayed pick is labelled so on every surface drawing it; and one mutation is shown red, the rule stated before the run.
 
 ### 24.8 The heavyweights' history from 2018
-Carried from the second restart's entry. The heavyweights' test over the long history reads the funds from the first year the pull holds them, so each index's book is judged over those years too, its record box naming the years it reads. A result that would change a book's exit goes to the operator and changes nothing by itself. Writes the History page's row, the runbook and the changelog.
+Carried from the second restart's entry. The heavyweights' test over the long history reads the funds from the first year the pull holds them, so each index's book is judged over those years too, its record box naming the years it reads. On the operator's word of 2026-11-20, kept word for word as Appendix J of the plan's file, the chosen years start where the S&P 500's holdings begin, October 2018, and end in 2022, and the judged years stay from 2023, unchanged. The long test runs on a copy of the store, never the operator's, while no night, local run or monthly test uses the machine, and the books' figures go to the operator before anything is registered. A result that would change a book's exit goes to the operator and changes nothing by itself. Writes the History page's row, the runbook and the changelog.
 
 **Done when** the book's long test reads a constructed fund series from its first year held, worked by hand; each index's book stands in the entry with its years and its figures beside those of the second restart; nothing registers, asserted; no rule's code version moves, asserted; and one mutation is shown red, the rule stated before the run.
 

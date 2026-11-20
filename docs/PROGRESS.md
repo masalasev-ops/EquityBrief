@@ -20496,3 +20496,24 @@ Carried:    the replay's run, on the operator's word once a live night is measur
             operator's store only once a naming test of the field list's version has passed there; the three fields set aside
             at 24.3; the operator's word on whether a pin move a replay carries counts as registering a live rule, and on
             correcting the places stating a price at the open.
+
+### 24.0 ruling - the operator's word of 2026-11-20 on the naming test, the order, 24.8's years, the replay, a pin move a replay carries and the price at the open   2026-11-20
+
+Not a checkpoint entry: it records the operator's word of 2026-11-20 on the report of the night's build, and lands nothing.
+Ruled:      word for word as Appendix J of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`. (1) The naming test runs
+            on the operator's store on their word, once nothing else is using the model and before the night; a failure keeps
+            the judge refused and comes to them with its cause before anything changes. (2) 24.10, 24.11 and 24.12's diagnosis
+            are built next, ahead of 24.8 and 24.9, none needing a run. (3) 24.8's chosen years start where the S&P 500's
+            holdings begin, October 2018, and end in 2022, the judged years staying from 2023; its long test runs on a copy of
+            the store while no night, local run or monthly test uses the machine, and the books' figures go to the operator
+            before anything is registered. (4) 24.9's two timed builds run after 24.8, overlapping no night or monthly test.
+            (5) The judge's replay runs after its first live night, its printed plan and hours shown to the operator first and
+            run outside the nights on their word. (6) A pin move a replay carries with every trade the same registers no live
+            rule; any trade differing comes to the operator first (see: A pin move a replay carries with every trade the same
+            registers no live rule, and one moving a trade comes to the operator first). (7) The places stating a price at the
+            open on the rules' own cards and pages are corrected under the wording rule, words only, nothing on the cards moving
+            or going (see: No line states or implies the price a stock will open at, and a buy at the open buys at whatever
+            price it opens).
+In this PR: the decision of (6); 24.8's years and the open questions settled in the build plan; and the counts of 24.8 to
+            24.11 each on a line of its own, so 24.10 lands ahead of 24.8 against its own count.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request.
