@@ -100,6 +100,12 @@ public static class JudgeFacts
         new("vix_over_median", JudgeRound.Sheet, "The VIX against its own median", "ledger_reading: vix_over_median"),
     ];
 
+    // The field list's version: a hash of every field and every bound above, which a night's rows and a naming test are
+    // stored under, so a test passed under one list answers for no other.
+    public static string Version { get; } = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(
+        string.Join("\n", All.Select(field => $"{field.Key}|{field.Round}|{field.Words}|{field.Source}"))
+        + FormattableString.Invariant($"\n{MidSizeFrom}|{LargeFrom}|{VeryLargeFrom}|{YearSessions}|{MonthSessions}|{NewsDays}"))))[..12];
+
     // The three fields of the mockup dropped at 24.1 until a change that moves the ledger's pins anyway fills them.
     public static IReadOnlyList<string> Dropped { get; } = ["band_strength", "rating_actions_net", "insider_cluster_buyers"];
 

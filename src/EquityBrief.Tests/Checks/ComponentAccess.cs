@@ -268,6 +268,15 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Names refresh"),
     ];
 
+    // 24.3: the AI judge's fact writer and its naming test.
+    internal static string[] JudgeRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Judge fact writer"),
+        CheckReach.Key(Scope.MatrixTable, "Judge fact writer"),
+        CheckReach.Key(Scope.CatalogueTable, "Judge naming test"),
+        CheckReach.Key(Scope.MatrixTable, "Judge naming test"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -363,6 +372,7 @@ public partial class ComponentAccess
             // 21.6, the new readings' sources.
             .. NewReadingSourceRows,
             .. NamesRows,
+            .. JudgeRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

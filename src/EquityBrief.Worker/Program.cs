@@ -115,23 +115,83 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "outcomes-again" => await OutcomesAgainRun(args),
     "quarters-moved" => await QuartersMovedRun(args),
     "judge-facts" => await JudgeFactsRun(args),
+    "judge-naming" => await JudgeNamingRun(args),
     _ => NoVerb(),
 };
 
-// The AI judge's facts of a stored night, read from the store opened for reading and writing nothing: one member's short
-// row and full sheet as the judge is shown them, or for every member each field's count held and not on file.
-// see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
-static async Task<int> JudgeFactsRun(string[] args)
+// The naming test by hand, on the operator's word: a seeded sample of a night's stored facts asked of the local model under
+// its lock, stopping at the instant '--until' names, the next local writer's slot.
+// see: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
+static async Task<int> JudgeNamingRun(string[] args)
 {
-    if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--session") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
+    if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--session") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session)
+        || !int.TryParse(VerbArguments.Value(args, "--seed") ?? string.Empty, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seed)
+        || !DateTimeOffset.TryParseExact(VerbArguments.Value(args, "--until") ?? string.Empty, "yyyy-MM-dd'T'HH:mm'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var until))
     {
-        Console.Error.WriteLine("judge-facts: give '--session <yyyy-MM-dd>', with '--ticker <ticker>' for one member's row and sheet.");
+        Console.Error.WriteLine("judge-naming: give '--session <yyyy-MM-dd>', '--seed <whole number>' and '--until yyyy-MM-ddTHH:mmZ', the instant before the next local writer's slot it stops at.");
 
         return 2;
     }
 
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+
+    if (LocalLocks.Holder(store.DataRoot) is { } holder)
+    {
+        Console.Error.WriteLine($"judge-naming: {holder} holds the store, so the test does not start while it writes.");
+
+        return 1;
+    }
+
+    LocalModelSettings local;
+
+    try
+    {
+        local = LocalLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("judge-naming: " + refusal.Message);
+
+        return 1;
+    }
+
+    var outcome = await new EquityBrief.Worker.Judge.JudgeNamingTest(LmStudioReadingFeed.Live(local), local, clock, store.DatabaseFile, store.DataRoot)
+        .RunAsync(session, seed, until, FormattableString.Invariant($"{EquityBrief.Worker.Judge.JudgeNamingTest.Stage}-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.Out.WriteLine("judge-naming: " + EquityBrief.Worker.Judge.JudgeNamingTest.Words(outcome));
+
+    return outcome.Passed ? 0 : 1;
+}
+
+// The AI judge's facts of a stored night: with '--write' the night's rows written under the field list's version, a night
+// written again replacing its own; otherwise read from the store opened for reading and writing nothing, one member's short
+// row and full sheet as the judge is shown them, or for every member each field's count held and not on file.
+// see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+static async Task<int> JudgeFactsRun(string[] args)
+{
+    if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--session") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
+    {
+        Console.Error.WriteLine("judge-facts: give '--session <yyyy-MM-dd>', with '--ticker <ticker>' for one member's row and sheet, or '--write' to store the night's.");
+
+        return 2;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (args.Contains("--write", StringComparer.Ordinal))
+    {
+        var clock = SystemClock.ForUnitedStatesSessions();
+        var written = await new EquityBrief.Worker.Judge.JudgeFactWriter(clock, store.DatabaseFile)
+            .WriteAsync(session, FormattableString.Invariant($"{EquityBrief.Worker.Judge.JudgeFactWriter.Stage}-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+        Console.Out.WriteLine(FormattableString.Invariant($"judge-facts: {written} member(s) of {session:yyyy-MM-dd} written under field list {EquityBrief.Core.Judge.JudgeFacts.Version}"));
+
+        return 0;
+    }
+
     var ticker = VerbArguments.Value(args, "--ticker");
     var facts = await EquityBrief.Worker.Judge.JudgeFactReader.ReadAsync(store.DatabaseFile, session, ticker);
 
@@ -139,7 +199,7 @@ static async Task<int> JudgeFactsRun(string[] args)
     {
         foreach (var fact in facts)
         {
-            Console.Out.WriteLine($"judge-facts: {fact.Ticker} on {fact.Index}, {session:yyyy-MM-dd}, which the judge is not shown");
+            Console.Out.WriteLine(FormattableString.Invariant($"judge-facts: {fact.Ticker} on {fact.Index}, {session:yyyy-MM-dd}, which the judge is not shown"));
             Console.Out.WriteLine("Round one, the short row:");
             Console.Out.WriteLine(EquityBrief.Core.Judge.JudgeFacts.RowText(fact));
             Console.Out.WriteLine("Round two, the full sheet:");
@@ -932,7 +992,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 85 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 87 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1203,6 +1263,10 @@ static int NoVerb()
         "member's state over its quarters read from their filings and then their results releases on every night from that day, " +
         "draws each index's list again five a family with the trades each night held and prints the picks it adds and removes " +
         "and the parts of EW, OHI, SBRA and LTC on 2026-11-05, writing nothing, " +
+        "'judge-facts --session <yyyy-MM-dd>' prints the AI judge's facts of a stored night, a member's short row and full sheet " +
+        "with '--ticker <ticker>' or each field's count held, writing nothing, and with '--write' stores the night's, " +
+        "'judge-naming --session <yyyy-MM-dd> --seed <n> --until yyyy-MM-ddTHH:mmZ' asks the local model to name the companies " +
+        "behind a seeded sample of that night's stored facts, on the operator's word, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

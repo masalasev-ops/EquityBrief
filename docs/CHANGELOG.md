@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md and .claude/rules/checks.md - a model judges a stock only for the AI judge's own account, at 24.3
+Decision: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and a model judges a stock only for the AI judge's own account
+Decision: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+Decision: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
+Was:
+> ARCHITECTURE.html, section 1: <b>Rules choose the stocks, and no model judges a stock.</b> ... and it orders a list only as a rule's registered setting the operator approved (see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock) (see: A fitted statistical model is a rule)
+> BUILD_PLAN.md, five citations: (see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock)
+> checks.md, the rules-choose-the-stocks row: ... and to pass a clean one (see: Rules choose the stocks ..., and no model judges a stock); ... and from 22.14 the walk-forward tester reading each filer's releases through the same reader for the flags of that family's history test |
+Now:
+> ARCHITECTURE.html, section 1: <b>Rules choose the stocks, and a model judges a stock only for the AI judge's own account.</b> ... the operator approved. From 24.3 the AI judge is the one exception: the local model reads facts code wrote with every name, ticker, industry, date and price removed, and chooses stocks for the judge's own paper account alone, which no rule, list, gate or record reads (see: Rules choose the stocks ..., and a model judges a stock only for the AI judge's own account) (see: A fitted statistical model is a rule)
+> BUILD_PLAN.md, the five citations: (see: Rules choose the stocks ..., and a model judges a stock only for the AI judge's own account)
+> checks.md, the row: its citation repointed, and "; and from 24.3 the AI judge's fact writer and naming test are the check's one exception, named in it, ..." before the row's end
+Why: 24.3 of phase 24's plan, on the operator's brief of 2026-11-16 and their approval of the judge's fields on 2026-11-19, kept in `prompts/2026-11-19-24.1-judge-fields-approved.md`: the AI judge's own account is the one place a model judges a stock, and the decision that no model does is superseded for it alone.
+
 ### 2026-11-19 - docs/ARCHITECTURE.html and docs/BUILD_PLAN.md - Paper trading by revisions, one exit a trade, the reader's words, on the operator's order of 2026-11-18
 Decision: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
 Was:

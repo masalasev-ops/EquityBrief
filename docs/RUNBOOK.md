@@ -1680,6 +1680,24 @@ On macOS the job runs every hour at five past and twenty to, and the script runs
 
 Load it with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.localrun.plist`. The Run page's Local model region names each run once it has run.
 
+### The AI judge's facts and its naming test
+
+From 24.3 the judge's fact writer writes, for a stored night, every member's short row and full sheet as the AI judge is shown them, under the field list's version (see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price). To see one member's row and sheet, writing nothing:
+
+```
+dotnet run --project src/EquityBrief.Worker -- judge-facts --session 2026-11-19 --ticker ABNB
+```
+
+Without `--ticker` it prints each field's count held on each index. With `--write` it stores the night's rows, a night written again replacing its own; from 24.4 the judge writes them itself straight after the night.
+
+The naming test runs by hand on your word, while no night, drain, local run or labeller holds the store or the local model, and stops at the instant `--until` names, before the next local writer's slot:
+
+```
+dotnet run --project src/EquityBrief.Worker -- judge-naming --session 2026-11-19 --seed 7 --until 2026-11-20T11:55Z
+```
+
+It draws 100 members of that night's stored facts by the seed and asks the local model, under its lock, to name the company behind each one's short row and then its full sheet, 200 asks. It prints each round's named, answered and asked and exits non-zero where it did not pass; every answer is kept in `judge_naming`. The judge starts under a field list's version only where the newest test under it passed both rounds (see: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts). Where a round fails, the answers show which members were named; the field giving them away is made coarser on your ruling and the test runs again.
+
 ### The fundamentals-first family
 
 From 17.8 a fifth family lists on every index from its first night, on its provisional setting: a company whose four newest quarters and newest quarter are profitable, whose revenue grew on the year-earlier quarter faster than the quarter before grew, whose gross or operating margin widened on the year and whose cash from operations is at least its net income, closing above its 200-day average with the 50-day above it, bought at the pullback's buy point (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). Its business is read from the SEC's facts as the night's filings refresh leaves them, a filing read from the session after the day it was filed. The index families' step reads it on the S&P 400 and 600 beside their own families and on the S&P 500 alone for this family, after the S&P 500's own families, whose picks it holds back. Its card stands after each index's own families' on Tonight; on the S&P 500 the card says the S&P 400's and 600's step read it. From 21.4 the night computes it no longer on any index: the one move of the pins took it out, its rows and record kept and readable, its one open trade run out under its own plan with the index's other page trades, and the S&P 500 read by the step only while such a trade stands open on it (see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan).

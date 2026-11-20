@@ -39,6 +39,9 @@ public partial class ArchitectureConformance
         ("23.11", [], []),
     ];
 
+    // The rows the document gains after phase 23's report: phase 24's from 24.3.
+    internal static string[] AfterPhaseTwentyThree => [.. FixtureExpectations.JudgeFactRows];
+
     // The rows corrections of phase 22's work landed while phase 23 was built, named beside the pair and counted in none of
     // it: the 22.6 correction of 2026-11-09's setup's record over the long history on a pick's card, on Home's idea and on a
     // tile; the 22.16 corrections' Home picks watched and not drawn and a plan that buys at a zone; and the 22.17
@@ -129,7 +132,7 @@ public partial class ArchitectureConformance
         // Every row the phase added reached once and passing, and the report holding the phase's rows and the rows beside
         // them over what stood before it, none out of scope and none unexamined.
         var report = Report();
-        var total = actual + BesidePhaseTwentyThree.Length;
+        var total = actual + BesidePhaseTwentyThree.Length + AfterPhaseTwentyThree.Length;
 
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
         Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));

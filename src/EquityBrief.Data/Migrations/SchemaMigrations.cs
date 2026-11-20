@@ -773,7 +773,44 @@ public static class SchemaMigrations
         new Migration(150, "rebuild quality_holding and improving_trade so their end reasons admit a close under its stop and a take-profit", AdmitTheBookExits),
         new Migration(151, "add the night a live rule's holding took its exit at the rules restart to index_heavyweight_rule_holding", AddRuleExitAdded),
         new Migration(152, "create listed_name", CreateListedName),
+        new Migration(153, "create judge_fact and judge_naming", CreateJudgeFacts),
     ];
+
+    // From 24.3 the AI judge's facts of each night, a member's short row and full sheet as the judge is shown them under the
+    // field list's version, written by the judge's fact writer alone, a night written again replacing its own rows; and the
+    // naming test's answers, one row a member and round asked, append-only, written by the naming test alone. No rule reads
+    // either.
+    // see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+    const string CreateJudgeFacts = @"
+        CREATE TABLE judge_fact (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            version       TEXT NOT NULL,
+            fields        TEXT NOT NULL,
+            row_text      TEXT NOT NULL,
+            sheet_text    TEXT NOT NULL,
+            written_at    TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (index_code, session_date, ticker)
+        ) STRICT;
+
+        CREATE TABLE judge_naming (
+            run_id        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            version       TEXT NOT NULL,
+            round         TEXT NOT NULL CHECK (round IN ('row', 'sheet')),
+            index_code    TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            seed          INTEGER NOT NULL,
+            outcome       TEXT NOT NULL CHECK (outcome IN ('answered', 'refused')),
+            answer        TEXT,
+            named         INTEGER NOT NULL CHECK (named IN (0, 1)),
+            model         TEXT,
+            asked_at      TEXT NOT NULL,
+            PRIMARY KEY (run_id, round, index_code, ticker)
+        ) STRICT;
+    ";
 
     // On the operator's answer of 2026-11-17, item 6, each member's company name as the provider's symbol list spells it in
     // full, the newest read standing, written by the names refresh alone once a week in the off-peak run.

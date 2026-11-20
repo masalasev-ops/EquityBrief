@@ -234,12 +234,21 @@ public class PriceStorageForm
         // earnings or the dividend's rate in, the multiple or the yield a page draws out, each through
         // `Statistic.FromRatio`. They are each concept's one value worked at the close.
         // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+        //
+        // `JudgeFacts.ReturnTwelveLessOne`, `HighRatio` and `RewardToRisk` joined it at 24.3: a member's stored closes and
+        // highs, or its plan's reward and risk, in, the year's return less the last month, the close over the year's high
+        // and the reward over the risk out, each through `Statistic.FromRatio`. They are the three fields the AI judge's
+        // own fact reader works from the stored prices.
+        // see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
                 "ForwardReturnSeries.cs: BreakEven",
                 "ForwardReturnSeries.cs: ChangeFromEntry",
                 "FundamentalScorecard.cs: Ratio",
+                "JudgeFacts.cs: HighRatio",
+                "JudgeFacts.cs: ReturnTwelveLessOne",
+                "JudgeFacts.cs: RewardToRisk",
                 "MarkRenderer.cs: PlotValue",
                 "MarkRenderer.cs: Y",
                 "OneValue.cs: Multiple",

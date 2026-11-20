@@ -167,6 +167,9 @@ public partial class ArchitectureConformance
         .. ComponentAccess.NamesRows,
         .. SchemaColumns.NamesStoreRows,
         .. FixtureExpectations.NamesClaims,
+
+        // Phase 24's from 24.3: the AI judge's fact writer and naming test, their stores, section 17's two rows and section 18's.
+        .. FixtureExpectations.JudgeFactRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

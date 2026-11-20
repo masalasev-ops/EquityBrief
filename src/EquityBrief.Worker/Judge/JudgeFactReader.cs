@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Judge;
 using EquityBrief.Core.Ledger;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Judge;
@@ -50,8 +51,14 @@ public static class JudgeFactReader
         SELECT ticker, SUM(direction = 'positive'), SUM(direction = 'negative'), COUNT(*) FROM labels WHERE n = 1 GROUP BY ticker;";
 
     // The read-only connection the reader opens on a store file.
-    public static string ReadOnly(string databaseFile) =>
-        new SqliteConnectionStringBuilder { DataSource = databaseFile, Mode = SqliteOpenMode.ReadOnly, DefaultTimeout = 30 }.ConnectionString;
+    public static string ReadOnly(string databaseFile)
+    {
+        var builder = StoreConnection.Builder(databaseFile);
+
+        builder.Mode = SqliteOpenMode.ReadOnly;
+
+        return builder.ConnectionString;
+    }
 
     public static async Task<IReadOnlyList<JudgeFact>> ReadAsync(string databaseFile, DateOnly session, string? ticker = null, CancellationToken cancellation = default)
     {
