@@ -20871,3 +20871,40 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1681 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06; 24.8 and 24.9's runs.
+
+### 24.14 - the AI judge's picks say why, with the facts it named   2026-11-21
+
+Queue:      done, 24.0 to 24.7, 24.10 to 24.13 and their corrections; in progress, this checkpoint; next, 24.15, with 24.8's
+            runs and 24.9.
+Built:      round two asks each pick for the 3 to 5 facts of its sheet that decided it, by the words the sheet shows; code
+            reads each against that member's own sheet and refuses the pick, naming it on its run's row, where it names none,
+            fewer than three or more than five, one twice, or one its sheet lacks or shows as not on file, the night's other
+            picks kept. `judge_pick.fields`, migration 156, holds the keys named. The new prompt is a new judge pin: a pin under
+            the one earlier version the code names, 837506398bd8, is followed by a pin of its own, and any other is refused. The
+            page's cards are drawn with Home's pick card: the sentence in quotes, "The AI's reasons" with each value and a
+            plain comparison where its sign says one, the rest of the sheet folded under "Everything else it saw", the price
+            boxes, the record box and the gain and loss bar; a pick made before the judge named its facts keeps its sentence
+            and shows its whole sheet, marked; the record counts the newest version's picks from its first night and the page
+            says from when. The decision, section 15.26's two rows, section 17's and 18's rows, SCHEMA, the guide and the
+            changelog.
+Measured:   the judge page and Home read back over a constructed store holding the night of 20 Nov under the earlier pin and
+            the night of 23 Nov under a new one naming its facts, at 1440 and a true 390 in both palettes: the cards' facts in
+            one column with their values, the record counting from 23 Nov, and Home's line as before.
+Tests:      3 new: each refusal worked by hand over a constructed sheet, and over recorded answers a pick naming none and one
+            naming a fact its sheet holds none of refused and logged and the pick naming three stored with their keys; a pin
+            under the earlier prompt followed by a new pin and the run stored under it; and the cards and the record over a
+            constructed store holding two versions, the earlier closed trade counted in no account, worked by hand.
+Claims:     1670, from 1666: section 15.26's two rows, section 17's row of the facts a pick names and section 18's row of a
+            pick refused for them, four as the plan counts.
+Pins:       no rule's version moved; the judge's prompt is a new judge pin of its own, written by its first run.
+Mutated:    the rule: each guard 24.14 adds taken out in turn. m1 the facts' check refusing nothing: red; m2 the pin move taken
+            out: red, the run refused; m3 the record counted over every version: red, the earlier trade counted; m4 a pick
+            made before drawn as one naming its facts: red; each filtered to its test and reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3887 of 3887 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 67 tables, 1670 claims, 1670
+            passing, none out of scope and none unexamined, 1685 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    migration 156 applied to the operator's store by `tools/merge`; the rules' half for the monthly run of 2027-02-06;
+            24.8 and 24.9's runs.

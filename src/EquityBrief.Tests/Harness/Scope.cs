@@ -3947,7 +3947,16 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "An AI judge run under another model, file, window or prompt than its pin")] = new Scoped(
             Verdict.Pass,
-            "a run under a pin holding another prompt refused naming the prompt, one under another model refused naming the model, each asking nothing, and a first run writing its pin from the reading pin with the prompt's version",
+            "a run under a pin holding another prompt refused naming the prompt, one under another model refused naming the model, each asking nothing, and a first run writing its pin from the reading pin with the prompt's version; from 24.14 a pin under the one earlier prompt version followed by a new pin under this one, the run stored under it",
+            ByExpectations),
+        // 24.14, the operator's word of 2026-11-21.
+        [CheckReach.Key(LimitsTable, "The facts an AI judge pick names")] = new Scoped(
+            Verdict.Pass,
+            "three facts a constructed sheet shows standing, none, two, one twice, a word no field is, one shown as not on file and the sector a sheet does not show each refused, and a constructed night's picks stored with the keys of the three facts each named; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "An AI judge pick naming no fact or one its sheet lacks")] = new Scoped(
+            Verdict.Pass,
+            "over recorded answers a pick naming no fact and one naming the business score its sheet shows as not on file each refused, named on the run's row and its run log row and stored as no pick, the night's one pick naming three facts its sheet shows kept and ranked first",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "The AI judge's four accounts")] = new Scoped(
             Verdict.Pass,
@@ -4840,6 +4849,15 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI judge", "An empty record")] = new Scoped(
             Verdict.Pass,
             "over a constructed store holding the picks of the night of 20 Nov and no open after it, the scoreboard and the four accounts each read the operator's words with the night and its next open, Mon 23 Nov, worked by hand off the exchange's calendar, and no tile or chart; and over a store whose pick opened, the tiles and chart as before and the replayed night labelled",
+            ByReadSurface),
+        // 24.14, the operator's word of 2026-11-21.
+        [CheckReach.Key("15.26 The AI judge", "The facts it named")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store a card drawn with Home's pick card reading the sentence in quotes, the three facts named in the order named with their values and the comparisons their signs say, and the rest of the sheet folded under its count worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.26 The AI judge", "A pick made before it named its facts")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store holding a night under the earlier prompt and one under this, a pick with no facts stored keeping its sentence and its whole sheet under the mark with nothing folded, and the record counting the newer version's picks alone, the earlier closed trade in no account, worked by hand, with the night it counts from",
             ByReadSurface),
         [CheckReach.Key("15.24 Home", "The AI judge's line")] = new Scoped(
             Verdict.Pass,
@@ -7879,6 +7897,8 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI judge", "Where the AI looked")] = "24.6",
         [CheckReach.Key("15.26 The AI judge", "Replayed nights")] = "24.6",
         [CheckReach.Key("15.26 The AI judge", "An empty record")] = "24.13",
+        [CheckReach.Key("15.26 The AI judge", "The facts it named")] = "24.14",
+        [CheckReach.Key("15.26 The AI judge", "A pick made before it named its facts")] = "24.14",
         [CheckReach.Key("15.24 Home", "The AI judge's line")] = "24.6",
         [CheckReach.Key(LoopPage, "All three indexes together")] = "23.2",
         [CheckReach.Key(LoopPage, "The passes luck alone would bring")] = "23.2",

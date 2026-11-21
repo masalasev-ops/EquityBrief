@@ -28,7 +28,13 @@ public static class JudgeScreen
         Func<string, DateOnly, decimal, decimal?> roundTrip,
         int draws = JudgeAccounts.RandomDraws)
     {
-        var live = picks.Where(pick => !pick.Replayed).ToArray();
+        // From 24.14 the record counts the live picks of the newest judge version alone, from its first night; the picks of
+        // an earlier version are drawn on their night's cards and counted in no account.
+        // see: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
+        var every = picks.Where(pick => !pick.Replayed).ToArray();
+        var version = every.OrderByDescending(pick => pick.Session).Select(pick => pick.Version).FirstOrDefault();
+        var live = every.Where(pick => string.Equals(pick.Version, version, StringComparison.Ordinal)).ToArray();
+        var earlier = every.Length > live.Length;
         var replayed = picks.Where(pick => pick.Replayed).ToArray();
         var newest = runs.FirstOrDefault(run => !run.Replayed);
 
@@ -61,7 +67,9 @@ public static class JudgeScreen
 
         double? Typical(string ticker, DateOnly night) => typicals.TryGetValue((ticker, night), out var move) ? move : null;
 
-        var first = live.Select(pick => pick.Session).Concat(runs.Where(run => !run.Replayed).Select(run => run.Session)).DefaultIfEmpty(DateOnly.MaxValue).Min();
+        var first = earlier
+            ? live.Select(pick => pick.Session).DefaultIfEmpty(DateOnly.MaxValue).Min()
+            : live.Select(pick => pick.Session).Concat(runs.Where(run => !run.Replayed).Select(run => run.Session)).DefaultIfEmpty(DateOnly.MaxValue).Min();
         var sessions = bars.Values.SelectMany(rows => rows.Select(row => row.Session)).Where(session => session >= first).Distinct().Order().ToArray();
         var closes = bars.ToDictionary(pair => pair.Key, pair => pair.Value.ToDictionary(row => row.Session, row => row.Close), StringComparer.Ordinal);
 
@@ -106,13 +114,17 @@ public static class JudgeScreen
                 .Select(result => (result, default(double?))),
         ];
 
-        var tonight = newest is null ? [] : live.Where(pick => pick.Session == newest.Session).OrderBy(pick => pick.Rank).ToArray();
+        var tonight = newest is null ? [] : every.Where(pick => pick.Session == newest.Session).OrderBy(pick => pick.Rank).ToArray();
 
         return new JudgeView(
             newest?.Session,
             newest?.Outcome,
             newest?.Why,
-            [.. tonight.Select(pick => new JudgeCardView(pick.Rank, tonight.Length, pick.Ticker, pick.Company, pick.Sector, pick.Size, pick.Reason, pick.LastClose, pick.Stop, pick.Target, pick.GiveUp, pick.Hold, pick.Shape))],
+            [.. tonight.Select(pick => new JudgeCardView(pick.Rank, tonight.Length, pick.Ticker, pick.Company, pick.Sector, pick.Size, pick.Reason, pick.LastClose, pick.Stop, pick.Target, pick.GiveUp, pick.Hold, pick.Shape) with
+            {
+                Named = pick.Named is { } named ? [.. named.Select(key => Fact(key, pick.Sheet))] : null,
+                Rest = [.. JudgeFacts.In(JudgeRound.Sheet).Where(field => pick.Named?.Contains(field.Key, StringComparer.Ordinal) != true).Select(field => Fact(field.Key, pick.Sheet))],
+            })],
             JudgeScore.Of(record),
             JudgeScore.AgainstRandom(judgeWalk.Values.Count > 0 ? judgeWalk.Values[^1].Value : null, band.Count > 0 ? band[^1] : null),
             randomResults.Length == 0 ? null : randomResults.Average(),
@@ -130,7 +142,17 @@ public static class JudgeScreen
             FirstNight = live.Length == 0 ? null : live.Min(pick => pick.Session),
             FirstOpen = live.Length == 0 ? null : OpenAfter(live.Min(pick => pick.Session)),
             Bought = judged.Any(one => one.Trade is not null),
+            CountedFrom = earlier && live.Length > 0 ? live.Min(pick => pick.Session) : null,
         };
+    }
+
+    // One fact of a pick's sheet: its words and its value as the judge was shown it, a field it held none of not on file.
+    static JudgeFactView Fact(string key, IReadOnlyDictionary<string, string> sheet)
+    {
+        var field = JudgeFacts.All.FirstOrDefault(one => one.Key == key);
+        var shown = sheet.TryGetValue(key, out var text) ? text : JudgeFacts.NotOnFile;
+
+        return new JudgeFactView(field?.Words ?? key, shown, JudgeFactView.Compared(key, shown));
     }
 
     // From 24.13 the first session the exchange trades after a night, the open its picks buy at.

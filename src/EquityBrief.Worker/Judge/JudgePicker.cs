@@ -15,8 +15,11 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Worker.Judge;
 
 // One of the judge's picks as stored: its rank, the member, the menu's choices, its reason, the last close and typical
-// daily move code worked its prices from, and those prices.
-public sealed record JudgePickRow(int Rank, string Index, string Ticker, string Hold, string Shape, string Reason, decimal LastClose, double TypicalMove, JudgePrices Prices);
+// daily move code worked its prices from, those prices, and from 24.14 the keys of the facts it named as deciding it.
+public sealed record JudgePickRow(int Rank, string Index, string Ticker, string Hold, string Shape, string Reason, decimal LastClose, double TypicalMove, JudgePrices Prices)
+{
+    public IReadOnlyList<string> Fields { get; init; } = [];
+}
 
 // What one of the judge's runs came to: its outcome, why where it picked nothing, the members screened and kept, the
 // questions asked and those that failed twice, and its picks.
@@ -103,8 +106,8 @@ public sealed class JudgePicker(
         VALUES ($run, $round, $batch, $attempt, $outcome, $cause, $answer, $model, $at);";
 
     const string InsertPick = @"
-        INSERT INTO judge_pick (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance)
-        VALUES ($session, $rank, $run, $index, $ticker, $hold, $shape, $reason, $close, $typical, $stop, $target, $giveup);";
+        INSERT INTO judge_pick (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance, fields)
+        VALUES ($session, $rank, $run, $index, $ticker, $hold, $shape, $reason, $close, $typical, $stop, $target, $giveup, $fields);";
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
@@ -330,10 +333,19 @@ public sealed class JudgePicker(
         var pickLabels = JudgePrompt.Labels(seed - 1, Math.Max(kept.Count, 1));
         var rows = new List<JudgePickRow>();
         var unpriced = new List<string>();
+        var refusedPicks = new List<string>();
 
         foreach (var choice in choices)
         {
             var member = kept[pickLabels.ToList().IndexOf(choice.Label)];
+
+            // From 24.14 a pick naming no fact, or one its sheet lacks, is refused and logged, and skipped.
+            if (JudgePrompt.FieldsRefused(choice.Fields, member.Sheet) is { } refusal)
+            {
+                refusedPicks.Add(member.Ticker + ": " + refusal);
+                continue;
+            }
+
             decimal? close = null;
 
             if (await ScalarAsync(connection, Close, [("$ticker", member.Ticker), ("$session", day)], cancellation) is string text)
@@ -349,12 +361,20 @@ public sealed class JudgePicker(
                 continue;
             }
 
-            rows.Add(new JudgePickRow(rows.Count + 1, member.Index, member.Ticker, choice.Hold, choice.Shape, choice.Reason, last, move, prices));
+            rows.Add(new JudgePickRow(rows.Count + 1, member.Index, member.Ticker, choice.Hold, choice.Shape, choice.Reason, last, move, prices)
+            {
+                Fields = [.. choice.Fields.Select(words => JudgePrompt.KeyOf(words)!)],
+            });
         }
 
         var said = rows.Count == 0
-            ? kept.Count == 0 ? "no member was kept in round one" : "the model picked none of the members it kept"
+            ? kept.Count == 0 ? "no member was kept in round one" : refusedPicks.Count > 0 ? "every pick the model made was refused" : "the model picked none of the members it kept"
             : null;
+
+        if (refusedPicks.Count > 0)
+        {
+            said = (said is null ? string.Empty : said + "; ") + "refused for the facts it named, " + string.Join("; ", refusedPicks);
+        }
 
         if (unpriced.Count > 0)
         {
@@ -425,6 +445,13 @@ public sealed class JudgePicker(
                     : settings.ContextTokens != reader.GetInt32(5) ? ReadingPins.WindowPart
                     : !string.Equals(JudgePrompt.Version, reader.GetString(6), StringComparison.Ordinal) ? ReadingPins.PromptPart
                     : null;
+
+                // From 24.14 a pin under the one prompt version this one moves from, its model, file and window the run's own,
+                // is followed by a new pin under this version: a new judge version, its record counted from its first night.
+                if (part == ReadingPins.PromptPart && string.Equals(reader.GetString(6), JudgePrompt.Previous, StringComparison.Ordinal))
+                {
+                    return (new PinRead(readingId, settings.Model, facts.Relative, sha, facts.Size, facts.Modified, settings.ContextTokens, null), string.Empty);
+                }
 
                 return part is null
                     ? (new PinRead(readingId, settings.Model, facts.Relative, sha, facts.Size, facts.Modified, settings.ContextTokens, id), string.Empty)
@@ -530,6 +557,7 @@ public sealed class JudgePicker(
                     ("$shape", pick.Shape), ("$reason", pick.Reason), ("$close", Text(pick.LastClose)), ("$typical", pick.TypicalMove),
                     ("$stop", Text(pick.Prices.Stop)), ("$target", Text(pick.Prices.TakeProfit)),
                     ("$giveup", pick.Prices.GiveUpDistance is { } distance ? Text(distance) : null),
+                    ("$fields", pick.Fields.Count == 0 ? null : string.Join(",", pick.Fields)),
                 ], cancellation);
             }
 

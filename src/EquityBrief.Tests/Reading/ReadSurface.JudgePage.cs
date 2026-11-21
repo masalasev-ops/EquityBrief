@@ -98,16 +98,18 @@ public partial class ReadSurface
 
         // The cards, in the words of the rule on the open, AAA first.
         Assert.Contains("The AI judge's picks tonight (2)", page, StringComparison.Ordinal);
-        Assert.Contains("Alpha Corp <span class=\"tag\">AI judge</span> <span class=\"tag\">Not one of the rules' buys</span>", page, StringComparison.Ordinal);
-        Assert.Contains("<b>Why the AI picked it.</b> Rising estimates and a breakout on heavy volume.", page, StringComparison.Ordinal);
-        Assert.Contains("It saw: Industrials, a large company. No name, ticker or date. Ranked 1 of 2 tonight.", page, StringComparison.Ordinal);
-        Assert.Contains("Buys at the next open, at whatever price it opens. Last close $100.00. The prices below are worked from the last close until it is bought, then from the price it paid.", page, StringComparison.Ordinal);
-        Assert.Contains("Sell if it closes below $98.00, 1 typical daily move under its buy price.", page, StringComparison.Ordinal);
-        Assert.Contains("Take profit at $104.00, 2 times the risk: $4.00 up for $2.00 down.", page, StringComparison.Ordinal);
-        Assert.Contains("Otherwise sell after 1 week.", page, StringComparison.Ordinal);
-        Assert.Contains("It saw: Health Care, a mid-size company. No name, ticker or date. Ranked 2 of 2 tonight.", page, StringComparison.Ordinal);
-        Assert.Contains("Sell if it closes below $97.00, 1.5 typical daily moves under its buy price.", page, StringComparison.Ordinal);
-        Assert.Contains("Take profit on half at $106.00, 2 times the risk: $6.00 up for $3.00 down. Sell the other half on a close under a give-up price that rises behind its highest close, $3.00 under it.", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"home-co\">Alpha Corp</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI judge</span><span class=\"ai-note\">Not one of the rules' buys</span></span>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"ai-quote\">\"Rising estimates and a breakout on heavy volume.\"<small>Its sentence, as the local model wrote it.</small></p>", page, StringComparison.Ordinal);
+        Assert.Contains("<b>The AI judge's pick, ranked 1 of 2 tonight.</b> It saw Industrials, a large company, with no name, ticker or date.", page, StringComparison.Ordinal);
+        Assert.Contains("<span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close $100.00.</span>", page, StringComparison.Ordinal);
+        Assert.Contains("The prices are worked from the last close until it is bought, then again from the price it actually paid.", page, StringComparison.Ordinal);
+        Assert.Contains("<span>Sell if it closes below</span><b class=\"stop\">$98.00</b><span class=\"sale-note judge-stop\">1 typical daily move under the price it pays.</span>", page, StringComparison.Ordinal);
+        Assert.Contains("<span>Take profit at</span><b class=\"aim\">$104.00</b><span class=\"sale-note judge-target\">2 times the risk: $4.00 up for $2.00 down.</span>", page, StringComparison.Ordinal);
+        Assert.Contains("<span>Otherwise sell after</span><b class=\"aim judge-hold\">1 week</b>", page, StringComparison.Ordinal);
+        Assert.Contains("<b>The AI judge's pick, ranked 2 of 2 tonight.</b> It saw Health Care, a mid-size company, with no name, ticker or date.", page, StringComparison.Ordinal);
+        Assert.Contains("<b class=\"stop\">$97.00</b><span class=\"sale-note judge-stop\">1.5 typical daily moves under the price it pays.</span>", page, StringComparison.Ordinal);
+        Assert.Contains("<span>Take profit on half at</span><b class=\"aim\">$106.00</b><span class=\"sale-note judge-target\">2 times the risk: $6.00 up for $3.00 down.</span>", page, StringComparison.Ordinal);
+        Assert.Contains("Sells on a close under a give-up price that rises behind its highest close, $3.00 under it.", page, StringComparison.Ordinal);
         Assert.True(page.IndexOf("Alpha Corp", StringComparison.Ordinal) < page.IndexOf("Beta Inc", StringComparison.Ordinal));
 
         // No line states the price a stock opens at.
@@ -209,6 +211,101 @@ public partial class ReadSurface
 
         // Before the judge has picked at all, no words of a first night.
         Assert.Null(SinglePageApp.EmptyRecord(new JudgeView(null, null, null, [], new JudgeScoreboard(0, 0, null, null, 300), JudgeScore.NotToldApart, null, [], [], [], null, 0)));
+    }
+
+    // From 24.14, the operator's word of 2026-11-21: each card names the facts the judge named with their values above the rest
+    // of its sheet folded; a pick made before it named its facts keeps its sentence and shows its sheet, marked; and the record
+    // counts the new version's picks from its first night.
+    internal static string[] JudgeNamedRows =>
+    [
+        CheckReach.Key("15.26 The AI judge", "The facts it named"),
+        CheckReach.Key("15.26 The AI judge", "A pick made before it named its facts"),
+    ];
+
+    [Fact]
+    public async Task EachCardDrawsTheFactsTheJudgeNamedAndTheRecordCountsFromTheVersionThatNamedThem()
+    {
+        // The night of 19 Nov under pin 1, the prompt before facts were named: AAA, which closes at 3 risks as above. The night
+        // of 20 Nov under pin 2, this prompt: BBB naming three facts, two of them signed. By hand the record counts BBB alone,
+        // which stands open at 100, so no trade has closed, AAA's 3 risks counted in no account.
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(
+            "INSERT INTO judge_pin (id, reading_pin_id, model, file, sha256, size, modified, context, prompt_version, written_at) VALUES "
+            + $"(1, 1, 'm', 'f', 's', 1, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Previous}', '2026-11-20T01:00:00Z'), "
+            + $"(2, 1, 'm', 'f', 's', 1, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Version}', '2026-11-21T01:00:00Z');");
+        store.Execute(
+            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail) VALUES "
+            + "('judge-pick-1', '2026-11-19', 'v', 1, 20261119, 'picked', '2026-11-20T01:00:00Z', '2026-11-20T01:10:00Z', 4, 1, 2, 0, ''), "
+            + "('judge-pick-2', '2026-11-20', 'v', 2, 20261120, 'picked', '2026-11-21T01:00:00Z', '2026-11-21T01:10:00Z', 4, 2, 2, 0, '');");
+        store.Execute(
+            "INSERT INTO judge_pick (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance, fields) VALUES "
+            + $"('2026-11-19', 1, 'judge-pick-1', 'GSPC', 'AAA', '1 week', '{JudgeMenu.Whole}', 'An earlier pick.', '100', 2.0, '98', '104', NULL, NULL), "
+            + $"('2026-11-20', 1, 'judge-pick-2', 'GSPC', 'BBB', '1 week', '{JudgeMenu.Whole}', 'Rising estimates on heavy volume.', '100', 2.0, '98', '104', NULL, 'estimate_revision_month,volume_ratio,rsi'), "
+            + $"('2026-11-20', 2, 'judge-pick-2', 'GSPC', 'CCC', '1 week', '{JudgeMenu.Whole}', 'Picked before the facts were stored.', '100', 2.0, '98', '104', NULL, NULL);");
+        store.Execute(
+            "INSERT INTO judge_fact (index_code, session_date, ticker, version, fields, row_text, sheet_text, written_at, run_id) VALUES "
+            + "('GSPC', '2026-11-19', 'AAA', 'v', '{\"sector\":\"Industrials\"}', 'r', 's', '2026-11-20T01:00:00Z', 'f'), "
+            + "('GSPC', '2026-11-20', 'BBB', 'v', '{\"sector\":\"Energy\",\"size\":\"large\",\"estimate_revision_month\":\"+4%\",\"volume_ratio\":\"-12%\",\"rsi\":\"61 of 100\",\"depth\":\"3%\"}', 'r', 's', '2026-11-21T01:00:00Z', 'f'), "
+            + "('GSPC', '2026-11-20', 'CCC', 'v', '{\"sector\":\"Energy\",\"rsi\":\"40 of 100\"}', 'r', 's', '2026-11-21T01:00:00Z', 'f');");
+
+        var bars = new List<string>();
+        string[] opens = ["100", "101", "104", "107", "107", "107", "107"];
+        string[] closes = ["100", "103", "106", "107", "107", "107", "107"];
+
+        for (var at = 0; at < JudgeSessions.Length; at++)
+        {
+            bars.Add($"('AAA', '{JudgeSessions[at]}', '{opens[at]}', '{closes[at]}', '{opens[at]}', '{closes[at]}', 1000, 'eod', '{JudgeSessions[at]}T22:00:00Z')");
+
+            foreach (var flat in new[] { "BBB", "CCC" })
+            {
+                bars.Add($"('{flat}', '{JudgeSessions[at]}', '100', '100', '100', '100', 1000, 'eod', '{JudgeSessions[at]}T22:00:00Z')");
+            }
+        }
+
+        store.Execute("INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at) VALUES " + string.Join(", ", bars) + ";");
+        store.Execute("INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES ('AAA', '2026-11-19', 'atr14', 2.0, 14), ('BBB', '2026-11-20', 'atr14', 2.0, 14), ('CCC', '2026-11-20', 'atr14', 2.0, 14);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/judge"));
+
+        // BBB's card: the three facts it named in the order named, each with its value and its comparison where signed, then
+        // the rest of the sheet folded under its count, the sheet's fields less the three.
+        var bbb = Blocks(page, "<article class=\"home-idea judge-card\" data-ticker=\"BBB\">.*?</article>").Single();
+        var rest = JudgeFacts.In(JudgeRound.Sheet).Count() - 3;
+
+        Assert.Contains(
+            "<ul class=\"ai-facts\" data-facts=\"named\">"
+            + "<li class=\"why\"><span>Analysts' estimates over the last month</span><b>+4%</b><span class=\"cmp\">Analysts raised their estimates.</span></li>"
+            + "<li class=\"why\"><span>Volume against its own average</span><b>-12%</b><span class=\"cmp\">Less volume than it usually trades.</span></li>"
+            + "<li class=\"why\"><span>Momentum (RSI)</span><b>61 of 100</b></li></ul>",
+            bbb, StringComparison.Ordinal);
+        Assert.Contains($"<summary>Everything else it saw ({rest} facts)</summary>", bbb, StringComparison.Ordinal);
+        Assert.Contains("<li class=\"\"><span>How deep the pullback from its 20-day high</span><b>3%</b></li>", bbb, StringComparison.Ordinal);
+        Assert.Contains("<li class=\"\"><span>Gap up into the night</span><b>not on file</b></li>", bbb, StringComparison.Ordinal);
+        Assert.DoesNotContain(SinglePageApp.JudgeBeforeNamed, bbb, StringComparison.Ordinal);
+
+        // CCC, picked with no facts stored: its sentence, then its whole sheet under the mark, nothing folded.
+        var ccc = Blocks(page, "<article class=\"home-idea judge-card\" data-ticker=\"CCC\">.*?</article>").Single();
+
+        Assert.Contains("\"Picked before the facts were stored.\"", ccc, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"facts-h\" data-facts=\"before\">{SinglePageApp.JudgeBeforeNamed}</p>", ccc, StringComparison.Ordinal);
+        Assert.Contains("<li class=\"\"><span>Momentum (RSI)</span><b>40 of 100</b></li>", ccc, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-facts=\"named\"", ccc, StringComparison.Ordinal);
+        Assert.DoesNotContain("<details", ccc, StringComparison.Ordinal);
+
+        // The record counts the version of 20 Nov alone: AAA's closed trade is not in it, and the page says from when.
+        Assert.Contains("<b>0</b> trades closed<span>0 of 300 needed for a firm verdict</span>", page, StringComparison.Ordinal);
+        Assert.Contains(SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 20)), page, StringComparison.Ordinal);
+        Assert.Equal("Its record counts from the night of 20 Nov 2026, when the judge began naming the facts behind each pick. Its earlier picks are counted in no account.", SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 20)));
+
+        // A store with one version only says nothing of a count from a later night.
+        using var one = JudgePageStore();
+        using var oneHost = new Host(one.Root);
+        using var oneClient = oneHost.CreateClient();
+
+        Assert.DoesNotContain("data-version=\"counted\"", await oneClient.GetStringAsync("/screens/judge"), StringComparison.Ordinal);
     }
 
     // No source a rule's version pins is one 24.13 writes, so no rule's version moves.
