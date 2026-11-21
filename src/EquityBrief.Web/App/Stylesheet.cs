@@ -1237,7 +1237,7 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
  .lm-table,.lm-table tbody,.lm-table tr,.lm-table td{display:block;width:auto}
  .lm-table tr{border-top:1px solid var(--hair-2);padding:8px 0}
  .lm-table td{border:0;padding:3px 0}
- .lm-table td[data-h]:not([data-h=""])::before{content:attr(data-h);display:block;font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+ .lm-table td[data-h]::before{content:attr(data-h);display:block;font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
  .lm-table .r{text-align:left}
  .lm-table .num{white-space:normal}
 }
