@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-21 - docs/ARCHITECTURE.html - Home's past nights, at 24.15
+Decision: Home shows a past night's picks as they were listed with what has happened since, and tonight's as before
+Was:
+> ARCHITECTURE.html, 15.24's table: no row of a past night's picks or of a card's line on what has happened since
+Now:
+> ARCHITECTURE.html: added 15.24's rows "A past night's picks" and "What has happened since"
+Why: 24.15 of phase 24's plan, the operator's word of 2026-11-20 and 2026-11-21 kept as Appendices O and Q of the plan's file: Home could show only tonight's picks, and nothing said what became of an earlier night's.
+
 ### 2026-11-21 - docs/ARCHITECTURE.html and docs/SCHEMA.md - the judge's picks naming the facts that decided them, at 24.14
 Decision: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
 Was:

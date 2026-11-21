@@ -123,9 +123,10 @@ public sealed partial class SinglePageApp
         return region.ToString();
     }
 
-    // The line Home draws for the judge: what it picked tonight, and its live record per $1 risked beside random picks'.
-    public static string JudgeHomeLine(JudgeView view) =>
-        $"<p class=\"judge-home\" data-home=\"judge\"><b>AI judge</b> Picked {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} tonight in its own paper account. "
+    // The line Home draws for the judge: what it picked tonight, or from 24.15 on a past night that night, and its live record
+    // per $1 risked beside random picks'.
+    public static string JudgeHomeLine(JudgeView view, bool past = false) =>
+        $"<p class=\"judge-home\" data-home=\"judge\"><b>AI judge</b> Picked {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} {(past ? "that night" : "tonight")} in its own paper account. "
         + (view.Score.PerDollar is { } made
             ? $"Since it started: {Dollars(made)} per $1 risked, against {(view.RandomPerDollar is { } random ? Dollars(random) : "nothing yet")} for random picks. "
             : "No trade of it has closed yet. ")

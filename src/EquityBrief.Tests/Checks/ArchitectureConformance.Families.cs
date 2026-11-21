@@ -443,9 +443,10 @@ public partial class ArchitectureConformance
         // share check does not read and section 18's row of their causes, and 1665 from 24.12, the fallback facts fill's catalogue
         // and matrix rows, its store's row and section 18's row of a filer filing no operating income, and 1666 from 24.13, the AI
         // judge's page on an empty record, and 1670 from 24.14, section 17's row of the facts a judge pick names, section 18's
-        // row of a pick refused for them and the judge's page's two rows.
+        // row of a pick refused for them and the judge's page's two rows, and 1672 from 24.15, Home's past nights and each card's
+        // line on what has happened since.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1670),
+            (789, 853, 6, 4, 855, 876, 1672),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

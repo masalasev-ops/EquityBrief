@@ -20908,3 +20908,38 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    migration 156 applied to the operator's store by `tools/merge`; the rules' half for the monthly run of 2027-02-06;
             24.8 and 24.9's runs.
+
+### 24.15 - Home shows any past night's picks   2026-11-21
+
+Queue:      done, 24.0 to 24.7, 24.10 to 24.14 and their corrections; in progress, this checkpoint; next, 24.8's runs on a
+            copy of the store with their figures put to the operator, and 24.9; then 24.16, the loop page's mockup, for their
+            approval.
+Built:      Home's picks carry Tonight's night picker, and `#/home/<date>` draws Home for a past night from that night's
+            figures under the banner "Showing the picks of the night of <date>, not tonight's. Back to tonight". Each card of
+            a live rule's pick listed that night adds one line read off its trade as the newest night stores it: bought on its
+            day at its price and open with its return to the newest close so far; took profit, stopped out or sold, each on its
+            day at its price with its return, a sale at or past its take-profit worked from the price it paid reading as
+            profit and one at or under its stop so worked as stopped out; waited and was not bought, cancelled on its last day;
+            or still waiting. The waiting cards and the left-the-list notes as they stood that night; the judge's line naming
+            that night's picks, none where it did not run. Tonight's Home as before. The decision, 15.24's two rows, the guide
+            and the changelog.
+Measured:   Home read back over a constructed store holding the S&P 400's night of 2 Oct and a night after it, for 2 Oct and
+            for tonight, at 1440 and a true 390 in both palettes: the banner, the picker on the night drawn, M1's line "Bought
+            on 5 Oct at $48.00 and open, +2.5% so far." and M2's order still waiting as it stood that night.
+Tests:      2 new: each line worked by hand over a constructed trade open, at its take-profit, under its stop, between them,
+            never filled and still waiting, read under its family and stock of the night drawn alone; and Home for a past night
+            and for tonight over a constructed store, the notes of the night after absent from the night before, and tonight's
+            Home with no banner and no line.
+Claims:     1672, from 1670: 15.24's rows of a past night's picks and of what has happened since, two of the four the plan
+            counts, the picker, the banner, the waiting cards and the judge's line landing as clauses of the first.
+Pins:       none moved; nothing a rule reads changes.
+Mutated:    the rule: each guard 24.15 adds taken out in turn. m1 the take-profit reading of a sale: red, read as sold; m2 the
+            banner: red; m3 the judge's line read for the newest night: red, no line for the night drawn; m4 the waiting list
+            read as of the newest night: red, the note of the night after drawn; m5 tonight read as a past night: red, the
+            banner on tonight's Home; each filtered to its test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3889 of 3889 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 67 tables, 1672 claims, 1672
+            passing, none out of scope and none unexamined, 1687 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06; 24.8 and 24.9's runs.

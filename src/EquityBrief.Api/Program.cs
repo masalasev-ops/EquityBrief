@@ -1773,8 +1773,8 @@ static bool Traded(DateOnly day)
 // see: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
 app.MapGet("/screens/tonight/{night?}", (string? night, HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store, StripQuotes stripQuotes) =>
     TonightScreenAsync(night, request, read, marks, page, caps, clock, store, stripQuotes, false));
-app.MapGet("/screens/home", (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store, StripQuotes stripQuotes) =>
-    TonightScreenAsync(null, request, read, marks, page, caps, clock, store, stripQuotes, true));
+app.MapGet("/screens/home/{night?}", (string? night, HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store, StripQuotes stripQuotes) =>
+    TonightScreenAsync(night, request, read, marks, page, caps, clock, store, stripQuotes, true));
 
 async Task<IResult> TonightScreenAsync(
     string? night,
@@ -2548,7 +2548,7 @@ app.MapGet(CountsProof.Route, async (HttpRequest request, ReadApi read, Endpoint
             var accounts = await PaperAccountsAsync(read, universe, newest, null);
             var verdicts = CountsProof.Check(
                 accounts.Groups!,
-                await Drawn("/screens/home", query),
+                await Drawn("/screens/home/{night?}", query),
                 await Drawn("/screens/tonight/{night?}", query),
                 await Drawn("/screens/paper", query)).ToList();
 
@@ -3133,6 +3133,20 @@ async Task<IResult> HomeAsync(
     // On the S&P 400 and 600 each rule checks its own market level, a rule reading none counted open.
     var checks = ownShare is null ? null : line?.Checks;
 
+    // From 24.15 Home drawn for a past night: its picks as they were listed, each with what has happened since, read off the
+    // live rules' trades as the newest night stores them and the newest close of each stock still held.
+    // see: Home shows a past night's picks as they were listed with what has happened since, and tonight's as before
+    var newestNight = await read.NewestNightAsync();
+    var pastNight = newestNight is { } newestHeld && dated < newestHeld ? newestHeld : (DateOnly?)null;
+    IReadOnlyDictionary<string, string> since = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    if (pastNight is { } through)
+    {
+        var tradesSince = await read.PlannedTradesAsync(reading.Code, through);
+
+        since = HomeSince.Of(tradesSince, dated, await read.ClosesOnAsync([.. tradesSince.Where(row => row.Listed == dated).Select(row => row.Ticker).Distinct()], through));
+    }
+
     var view = new HomeView(
         reading,
         dated,
@@ -3160,7 +3174,10 @@ async Task<IResult> HomeAsync(
         StillWaiting = paper.StillWaiting,
         LeftOrders = paper.Groups?.LeftOrders ?? [],
         Revisions = RevisionTags.Of(paper.Views),
-        Judge = copying ? null : await JudgeViewAsync(read, store, withRules: false),
+        Judge = copying ? null : await JudgeViewAsync(read, store, withRules: false, drawnNight: pastNight is null ? null : dated),
+        Newest = pastNight,
+        Held = copying ? [] : await read.NightsAsync(),
+        Since = since,
 
         // From the operator's order of 2026-11-14 the cards of the stocks a setup's rules met again while a trade holds them.
         HeldAgain = [.. families.SelectMany(family => family.HeldAgain)],
@@ -3228,7 +3245,7 @@ static IReadOnlyList<FamilyCardView> WithRecords(IReadOnlyList<FamilyCardView> c
 // The AI judge's page as the store holds it: its rows, every member's sessions from its first night, each index's live
 // rules' accounts and their trades, the three funds and the account the operator saved or the example one; Home's line reads
 // it without the rules' accounts, which it does not draw.
-async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLocation store, bool withRules = true)
+async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLocation store, bool withRules = true, DateOnly? drawnNight = null)
 {
     var settings = (copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) ?? EquityBrief.Core.Cards.AccountSettings.Example;
     var runs = await read.JudgeRunsAsync();
@@ -3269,7 +3286,7 @@ async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLoca
     decimal? RoundTrip(string ticker, DateOnly night, decimal buy) =>
         costs.TryGetValue((ticker, night), out var percent) ? EquityBrief.Core.Cards.PaperAccount.RoundTripOf(buy, null, null, null, percent, true, null) : null;
 
-    return JudgeScreen.Build(runs, picks, bars, typicals, members, rules, ruleTrades, funds, settings, RoundTrip);
+    return JudgeScreen.Build(runs, picks, bars, typicals, members, rules, ruleTrades, funds, settings, RoundTrip, drawnNight: drawnNight);
 }
 
 async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice reading, DateOnly night, EquityBrief.Core.Cards.AccountSettings? settings)

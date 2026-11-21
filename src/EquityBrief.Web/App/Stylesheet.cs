@@ -1592,6 +1592,8 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .home-idea-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .home-ticker{font:700 20px var(--sans)} .home-co{font-size:13.5px;color:var(--soft)}
 .home-why{margin:0;font-size:15px;line-height:1.5}
+.home-since{margin:0;padding:7px 10px;border:1px solid var(--hair-2);border-radius:6px;font-size:13.5px;line-height:1.45;color:var(--ink)}
+.home-past-night{margin:0 0 10px;padding:8px 12px;border:1px solid var(--hair-2);border-radius:6px;font-size:14px;color:var(--ink)}
 .home-prices{display:flex;flex-direction:column;gap:4px;font-size:14px;font-variant-numeric:tabular-nums}
 .home-prices div{display:flex;justify-content:space-between;gap:12px}
 .home-prices span{color:var(--ink-2)}

@@ -26,7 +26,8 @@ public static class JudgeScreen
         IReadOnlyList<Func<DateOnly, decimal?>> funds,
         AccountSettings settings,
         Func<string, DateOnly, decimal, decimal?> roundTrip,
-        int draws = JudgeAccounts.RandomDraws)
+        int draws = JudgeAccounts.RandomDraws,
+        DateOnly? drawnNight = null)
     {
         // From 24.14 the record counts the live picks of the newest judge version alone, from its first night; the picks of
         // an earlier version are drawn on their night's cards and counted in no account.
@@ -36,7 +37,8 @@ public static class JudgeScreen
         var live = every.Where(pick => string.Equals(pick.Version, version, StringComparison.Ordinal)).ToArray();
         var earlier = every.Length > live.Length;
         var replayed = picks.Where(pick => pick.Replayed).ToArray();
-        var newest = runs.FirstOrDefault(run => !run.Replayed);
+        // From 24.15 Home drawn for a past night reads that night's run and picks in place of the newest.
+        var newest = runs.FirstOrDefault(run => !run.Replayed && (drawnNight is null || run.Session == drawnNight));
 
         JudgeBars? BarsFrom(string ticker, DateOnly night)
         {

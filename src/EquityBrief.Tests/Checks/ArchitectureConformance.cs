@@ -1506,8 +1506,9 @@ public partial class ArchitectureConformance
         // a zone. 308 at the 22.17 correction of 2026-11-09: the records and the picks watched on the read-only copy. 309 at
         // 23.10 on the operator's ruling of 2026-11-16: a book's own exit on Tonight. 315 at 24.6: the AI judge's page's five
         // regions and Home's line of it. 316 at 24.11: the Run page's splits the share check does not read. 317 at 24.13: the AI
-        // judge's page on an empty record. 319 at 24.14: the facts the judge named and a pick made before it named them.
-        Assert.Equal(319, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // judge's page on an empty record. 319 at 24.14: the facts the judge named and a pick made before it named them. 321 at
+        // 24.15: Home's past nights and each card's line on what has happened since.
+        Assert.Equal(321, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1695,8 +1696,9 @@ public partial class ArchitectureConformance
         // 710 at the 22.17 correction of 2026-11-09: the records and the picks watched on the read-only copy. 711 at 23.10 on
         // the operator's ruling of 2026-11-16: a book's own exit on Tonight. 717 at 24.6: the AI judge's page's five regions and
         // Home's line of it. 718 at 24.11: the Run page's splits the share check does not read. 719 at 24.13: the AI judge's page
-        // on an empty record. 721 at 24.14: the facts the judge named and a pick made before it named them.
-        Assert.Equal(721, inDocument.Length);
+        // on an empty record. 721 at 24.14: the facts the judge named and a pick made before it named them. 723 at 24.15: Home's
+        // past nights and each card's line on what has happened since.
+        Assert.Equal(723, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
