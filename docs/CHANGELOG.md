@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-20 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - a real estate trust's lease income plus its revenue from contracts as its revenue, and the fill reading a kept answer's own newest filing, the 24.12 correction of the trusts
+Decision: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
+Was:
+> ARCHITECTURE.html, section 18's row "A filer that files no operating income for a member's four newest quarters": "... net income plus income tax expense plus interest, its card saying the company tags no pretax line; a filer covered by neither line ..."
+> ARCHITECTURE.html, the component row "Fallback facts fill": "... where the filer filed nothing after it was kept and otherwise asked of the archive again, free and at its pace, each period as first filed ..."
+> SCHEMA.md, `fallback_fact.concept`: "... costs and expenses, or from the correction of the eleven income tax expense"
+> SCHEMA.md, `fallback_fact`'s note: "... asking the archive again for a filer that filed since. Nothing updates ..."
+> RUNBOOK.md, "Every reading built on operating income, and the fallbacks the pages read": "... the company tags no pretax line that quarter." The new concepts reach the store ..."
+Now:
+> "... net income plus income tax expense plus interest, its card saying the company tags no pretax line, and from the correction of the trusts, on the operator's word of 2026-11-20, a real estate trust's lease income plus its revenue from contracts of the same period read as its revenue where the revenue it files for the period is none or below its net income, in the costs and expenses line and on the pages' revenue, the report's revenue line saying so; a filer covered by neither line ..."
+> "... where the filer filed nothing after it was kept and otherwise asked of the archive again, free and at its pace, from the 24.12 correction of the trusts an answer read as kept after a filing only where it holds a filing as new as the newest the store holds of the filer, read off the answer and never off its file's date, each period as first filed ..."
+> "... costs and expenses, from the correction of the eleven income tax expense, or from the correction of the trusts one of the two lease income concepts"
+> "... asking the archive again for a filer that filed since, and from the correction of the trusts for a filer whose kept answer holds no filing as new as the newest the store holds of it, read off the answer itself and never off its file's date. Nothing updates ..."
+> "... the company tags no pretax line that quarter." From the correction of the trusts a real estate trust's lease income plus its revenue from contracts stands for its revenue where the revenue it files is none or below its net income, the report's revenue line saying "read as lease income plus revenue from contracts, the filing stating no revenue of the whole company", and the fill asks the SEC again for every filer whose kept answer holds no filing as new as the store's newest of it, whatever the file's date. The new concepts reach the store ..."
+Why: the operator's word of 2026-11-20 kept as Appendix N of the plan's file: a revenue fallback for every real estate trust, lease income plus revenue from contracts, in the fallback table, read by the pages only; and a defect the count for it found, the fill taking every kept answer, all dated 8 Nov, as current, though 152 of the 1,496 filers' answers hold no filing as new as the store's newest of them.
+
 ### 2026-11-20 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - net income plus income tax expense plus interest as the last fallback, the 24.12 correction of the eleven
 Decision: Where operating income is not filed a reading takes income before taxes plus interest expense, else revenue less costs and expenses
 Was:

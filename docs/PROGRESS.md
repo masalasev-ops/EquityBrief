@@ -20743,3 +20743,45 @@ Carried:    the fill run again on the operator's store once merged; the margins 
             monthly run of 2027-02-06, on the operator's word kept as Appendix M, the S&P 400 heavyweights book's chosen exit
             trailing its own exit by 0.35 points a month judged from 2023, and the S&P 500 heavyweights book below the index on
             both spans; the rules' half for that run; 24.8 and 24.9's runs.
+
+### 24.12 - correction: a real estate trust's lease income plus its revenue from contracts as its revenue, and the fill reading a kept answer's own newest filing   2026-11-20
+
+Queue:      done, 24.0 to 24.7, 24.10 to 24.12 and their corrections through the correction of the eleven, merged as #734; in
+            progress, this correction, on the operator's word of 2026-11-20 kept as Appendix N of the plan's file; next, 24.8
+            with the sectors as they stood, its three indexes run after the AI judge's first live night and its replay plan.
+Built:      the revenue a fallback reads for a real estate trust: its lease income, `OperatingLeaseLeaseIncome` and else
+            `LeaseIncome`, kept in the fallback table, plus its revenue from contracts of the same period, none filed read as
+            nought, read where the revenue it files for the period is none or below its net income; in the costs and expenses
+            line and on the pages' revenue, the report's revenue line saying "read as lease income plus revenue from contracts,
+            the filing stating no revenue of the whole company". A whole revenue filed is read first, so no company filing one
+            moves. And a defect the count found: the fill took a kept answer as current by its file's date, every kept file
+            being dated 8 Nov, so 152 of the 1,496 filers whose answers end before their newest stored filing were never asked
+            again and their newest quarters hold no fallback line; it now reads the newest filing the answer itself holds.
+Measured:   over a copy of the store with the 17 trusts' kept answers, the night of 2026-11-19, read-only: of the 16 trusts
+            unread before the correction of the eleven, AMH now reads, its lease income less costs and expenses, FCPT and
+            PECO read as before on net income plus tax plus interest, and 13 do not. Of those, BXP, FR, CUBE and MPT file
+            revenue and costs and expenses, their kept answers ending before their newest filing, and wait on the fill's
+            answers from the SEC; BRX, HR, KRC, MAA, NHI, UE and VNO file no costs and expenses line, BRX, UE and VNO filing
+            operating costs alone; AGNC and ARR are mortgage trusts filing interest income alone. CPT's pages read its revenue
+            as $385 million, its lease income of $381 million plus $4.4 million from contracts, where they read none.
+Tests:      1 new: a trust's lease income plus its revenue from contracts worked by hand in the costs and expenses line, under
+            either lease concept, a whole revenue read before it, and the pages' revenue and its note; and the fill's test
+            given a third filer whose kept file is dated after its newest filing while its answer holds no filing after
+            2025-04-30, asked again.
+Claims:     1665, unchanged: the correction moves the words of section 18's row of a filer filing no operating income and adds
+            none.
+Pins:       none moved; every source the correction changes is on the list the 24.12 check holds apart from every pinned
+            source.
+Mutated:    the rule: each guard the correction adds taken out in turn. m1 the trust's revenue left out of the pages' revenue:
+            red, 95 expected and none read; m2 the kept answer read as current by its file's date again: red, the fill reading
+            2 filers from their kept answers and asking 1, where it reads 1 and asks 2; m3 the trust's revenue left out of the
+            costs and expenses line: red, each quarter read as 5 less 70; each filtered to its test and reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3880 of 3880 tests ran with none failed, migrations 0 to 155 with none
+            pending, schema version 155, against `data-ci` and never `data`; the phase report 67 tables, 1665 claims, 1665
+            passing, none out of scope and none unexamined, 1680 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the fill run again on the operator's store once merged, asking the SEC for the 152 filers whose kept answers end
+            early, and the 16 trusts counted again from it; the rules' half for the monthly run of 2027-02-06; 24.8 and 24.9's
+            runs.

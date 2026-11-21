@@ -52,8 +52,48 @@ public sealed class FallbackFactFill(IClock clock, string databaseFile)
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
         VALUES ($run_id, $stage, $started_at, $ended_at, $outcome, $rows, 0, $requests, '0', $detail);";
 
-    // The filer's kept answer where it was kept after the filer's newest filing the store holds, else none.
-    public static bool KeptIsCurrent(DateTime keptAt, DateOnly? newestFiled) => newestFiled is not { } filed || DateOnly.FromDateTime(keptAt) > filed;
+    // The filer's kept answer where the newest filing it holds is on or after the filer's newest filing the store holds, else
+    // none: from the 24.12 correction of the trusts read off the answer itself and never off its file's date, since an answer
+    // copied or written after a filing need not hold it.
+    public static bool KeptIsCurrent(DateOnly? keptThrough, DateOnly? newestFiled) => newestFiled is not { } filed || keptThrough is { } through && through >= filed;
+
+    // The newest filing day any fact of an answer of the SEC's facts holds, none where it holds no fact.
+    public static DateOnly? NewestFiledIn(string answer)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(answer);
+        DateOnly? newest = null;
+
+        if (!document.RootElement.TryGetProperty("facts", out var facts) || facts.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        foreach (var taxonomy in facts.EnumerateObject().Where(one => one.Value.ValueKind == System.Text.Json.JsonValueKind.Object))
+        {
+            foreach (var concept in taxonomy.Value.EnumerateObject())
+            {
+                if (!concept.Value.TryGetProperty("units", out var units) || units.ValueKind != System.Text.Json.JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                foreach (var unit in units.EnumerateObject().Where(one => one.Value.ValueKind == System.Text.Json.JsonValueKind.Array))
+                {
+                    foreach (var fact in unit.Value.EnumerateArray())
+                    {
+                        if (fact.TryGetProperty("filed", out var filed) && filed.ValueKind == System.Text.Json.JsonValueKind.String
+                            && DateOnly.TryParseExact(filed.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day)
+                            && (newest is null || day > newest))
+                        {
+                            newest = day;
+                        }
+                    }
+                }
+            }
+        }
+
+        return newest;
+    }
 
     public async Task<FallbackFill> FillAsync(string kept, IFilerFactsFeed? feed, string runId, Action<string> progress, CancellationToken cancellation = default)
     {
@@ -94,13 +134,15 @@ public sealed class FallbackFactFill(IClock clock, string databaseFile)
             }
 
             var file = LongFactPull.FileOf(kept, cik);
+            var keptAnswer = File.Exists(file) ? LongFactPull.Read(file) : null;
+            var current = keptAnswer is not null && KeptIsCurrent(NewestFiledIn(keptAnswer), newest);
             string answer;
 
-            if (File.Exists(file) && (feed is null || KeptIsCurrent(File.GetLastWriteTimeUtc(file), newest)))
+            if (keptAnswer is not null && (feed is null || current))
             {
-                answer = LongFactPull.Read(file);
+                answer = keptAnswer;
                 fromKept++;
-                keptBefore += KeptIsCurrent(File.GetLastWriteTimeUtc(file), newest) ? 0 : 1;
+                keptBefore += current ? 0 : 1;
             }
             else if (feed is null)
             {
