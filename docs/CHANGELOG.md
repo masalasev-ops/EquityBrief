@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-21 - docs/ARCHITECTURE.html and docs/SCHEMA.md - the judge's picks naming the facts that decided them, at 24.14
+Decision: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
+Was:
+> ARCHITECTURE.html, section 18's row "An AI judge run under another model, file, window or prompt than its pin": "... is refused the same way, and a refused night may be run again once the cause is put right (see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed)"
+> ARCHITECTURE.html, 15.26's table: no row of the facts a pick named or of a pick made before it named them; section 17: no row of the facts a pick names; section 18: no row of a pick refused for them
+> SCHEMA.md, `judge_pick`: no `fields` column; its note: "... a night holding a run `picked`, `none` or `missed` is never run again. Nothing updates or deletes a row, ..."
+Now:
+> "... is refused the same way, and a refused night may be run again once the cause is put right; from 24.14 a pin under the one earlier prompt version the code names is followed by a new pin under the run's, a new judge version, and any other version is refused (see: ...) (see: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused)"
+> ARCHITECTURE.html: added 15.26's rows "The facts it named" and "A pick made before it named its facts", section 17's row "The facts an AI judge pick names" and section 18's row "An AI judge pick naming no fact or one its sheet lacks"
+> SCHEMA.md: `judge_pick.fields` from migration 156, and "From migration 156 a pick naming no fact of its sheet, or one its sheet lacks, is refused and named on its run's `detail` and stores no row, and a pin under the one earlier prompt version the code names is followed by a pin of its own under the new version (see: ...)."
+Why: 24.14 of phase 24's plan, the operator's word of 2026-11-21 kept as Appendix Q of the plan's file with the mockup `prompts/2026-11-20-ai-judge-card-mockup.html`: each card says why in the facts the judge named, drawn by code with their values.
+
 ### 2026-11-21 - docs/ARCHITECTURE.html - the judge's page on an empty record, at 24.13
 Authorised by: The AI judge reads only the fields the operator approved with its mockup, and never a stock's industry
 Was:

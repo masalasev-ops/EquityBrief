@@ -226,6 +226,9 @@ public partial class ReadSurface
             // 24.13, the judge's page on an empty record.
             .. JudgeEmptyRecordRows,
 
+            // 24.14, the judge's cards naming the facts it named and a pick made before it named them.
+            .. JudgeNamedRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

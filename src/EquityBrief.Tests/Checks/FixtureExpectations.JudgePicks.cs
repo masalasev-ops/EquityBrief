@@ -36,6 +36,16 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.FailureTable, "An AI judge run under another model, file, window or prompt than its pin"),
     ];
 
+    // From 24.14 section 17's row of the facts a pick names and section 18's row of a pick refused for them.
+    internal static readonly string[] JudgeNamedClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "The facts an AI judge pick names"),
+        CheckReach.Key(Scope.FailureTable, "An AI judge pick naming no fact or one its sheet lacks"),
+    ];
+
+    // Every row 24.14 adds: the two claims above and the judge's page's two rows.
+    internal static string[] JudgeNamedRows => [.. JudgeNamedClaims, .. Reading.ReadSurface.JudgeNamedRows];
+
     // Every row 24.4 adds: the picker's catalogue and matrix rows, its four stores, section 14's step, section 17's row and
     // section 18's two rows.
     internal static string[] JudgePickRows =>
