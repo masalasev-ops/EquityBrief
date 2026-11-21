@@ -20820,3 +20820,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the task 'EquityBrief backup' registered on the operator's machine once merged, as the runbook states, its first run
             on 2026-11-24; the fill on the operator's store; the rules' half for the monthly run of 2027-02-06; 24.8 and 24.9's
             runs.
+
+### 24.0 planning - amendment: 24.13 to 24.15, the judge's page explaining an empty record, its picks naming their facts and Home's past nights, and the loop and the judge's later part three numbers on   2026-11-21
+
+Not a checkpoint entry. It amends 24.0's plan and builds none of it.
+Queue:      done, 24.0 to 24.7, 24.10 to 24.12 and their corrections, the store's copy merged as #736 and its task registered,
+            first run on 2026-11-24, and the fill run again on the operator's store; in progress, this amendment; next, 24.13
+            before the night of 2026-11-23, then 24.14 and 24.15, with 24.8's runs and 24.9.
+Ruled:      the operator's word of 2026-11-21 adding three stages each placed by what it depends on, their words the done
+            conditions, word for word as Appendix Q of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, its Home stage
+            restating Appendix O; and their approval of the changed table the same night, "ok please continue building the stages
+            of phase 24 to completion".
+Planned:    `BUILD_PLAN.md`'s 24.13, 24.14 and 24.15, each depending on 24.4 to 24.7 and nothing after; the loop's mockup and every
+            checkpoint after it moved from 24.13 to 24.29 to 24.16 to 24.32, each reference and operating row's checkpoint with
+            them; the predicted claims about 1,759, about 2, 4 and 4 at the three; migrations about nineteen; section 20's row;
+            three decisions' checkpoint pointers moved with the numbers.
+Measured:   the fill on the operator's store after #735, read from the kept answers for 1,337 filers and asked of the SEC for
+            158, 2 refused as the archive holds no facts for them, 9,038 fallback rows stored. Of the 17 real estate trusts the
+            trusts' correction counted, AMH, CPT, FCPT and PECO read and the 13 others do not, BXP, CUBE, FR and MPT among them
+            though their answers are now current: BRX, BXP, CUBE, FR, HR, KRC, MAA, MPT, NHI, UE and VNO cover their four quarters
+            with neither fallback line, and AGNC and ARR are mortgage trusts read as financials.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures below stated before that run: all six steps, 0
+            warnings, 0 errors, 3882 of 3882 tests ran with none failed, migrations 0 to 155 with none pending, schema version
+            155, against `data-ci` and never `data`; documents alone change, so the phase report is not run.
+Carried:    24.13 before the night of 2026-11-23, since its words stand only until the judge's first bought trade; the rules'
+            half for the monthly run of 2027-02-06; 24.8 and 24.9's runs.

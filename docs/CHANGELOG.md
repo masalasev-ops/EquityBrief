@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-21 - docs/BUILD_PLAN.md and docs/ARCHITECTURE.html - phase 24 gains 24.13 to 24.15, the judge's page explaining an empty record, its picks naming their facts and Home's past nights, and the checkpoints after them move three numbers on
+Authorised by: The AI judge reads only the fields the operator approved with its mockup, and never a stock's industry
+Was:
+> BUILD_PLAN.md, phase 24: checkpoints 24.0 to 24.29, "24.13 The loop page's mockup" through "24.29 The phase report"; "At 24.14 the case page, filling each night. At 24.15 the notebook. At 24.17 the researcher's ideas on the Loop page. At 24.20 the reviewer's line on each pick's card."; "After 24.29 about 1,749"; "none at 24.13" through "about 1 at 24.29" among the predicted claims; the estimate "Checkpoints 24.0 to 24.29", "Migrations about eighteen", "cited at 24.6, 24.14 and 24.23", "Pin moves at 24.21, 24.22 and 24.23", "about 54,000 requests at 24.23" and "the researcher each week from 24.17"; "Until 24.19's table stands"; "which 24.23 adds"; "as 24.16 sets out"; "before 24.20"; "The reviewer of 24.20 ... 24.19's table"; "as 24.14 draws one"; the operating rows "which 24.14 builds" twice and "which 24.23 builds"
+> ARCHITECTURE.html, section 20's phase 24 row: "... every reading built on operating income reading every member that files its quarters; and one loop: ..." and "the build plan's phase 24 checkpoints, 24.0 to 24.29"
+Now:
+> BUILD_PLAN.md: 24.13 The judge's page explains an empty record, 24.14 The AI judge's picks say why, with the facts it named, and 24.15 Home shows any past night's picks, each with the operator's words as its done condition; the loop's mockup and every checkpoint after it moved from 24.13 to 24.29 to 24.16 to 24.32, each reference moved with them; "After 24.32 about 1,759"; "about 2 at 24.13", "about 4 at 24.14", "about 4 at 24.15"; "Migrations about nineteen ..., the one more at 24.14 for the fields a pick names"
+> ARCHITECTURE.html: "... every member that files its quarters; the judge's page explaining an empty record, its picks naming the facts they rest on, and Home's past nights; and one loop: ..." and "the build plan's phase 24 checkpoints, 24.0 to 24.32"
+Why: the operator's word of 2026-11-21, kept as Appendix Q of the phase 24 plan's file, adding three stages each placed by what it depends on, and approving the changed table; each depends on 24.4 to 24.7 and nothing after, so they follow the built checkpoints and the loop moves on.
+
 ### 2026-11-20 - CLAUDE.md, .claude/rules/checks.md, docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the store copied by a run of its own at 07:00 UTC, the drain's lock held for the copy alone and no kept copy read again, the 24.0 correction
 Decision: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
 Was:
