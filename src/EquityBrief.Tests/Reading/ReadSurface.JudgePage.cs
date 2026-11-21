@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using EquityBrief.Api.Reading;
 using EquityBrief.Core.Judge;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
@@ -155,5 +156,75 @@ public partial class ReadSurface
 
         Assert.Contains($"<b>AI judge</b> Picked 2 stocks tonight in its own paper account. Since it started: $3.00 per $1 risked, against $0.40 for random picks. <a href=\"{SinglePageApp.JudgeRoute}\">See the AI judge</a>", drawn, StringComparison.Ordinal);
         Assert.DoesNotContain("data-home=\"judge\"", WebUtility.HtmlDecode(new SinglePageApp().HomeRegion(new MarkRenderer(), Day(), string.Empty)), StringComparison.Ordinal);
+    }
+
+    // From 24.13, the operator's word of 2026-11-21: until the judge has a bought trade, the scoreboard and the four accounts
+    // say why they are empty, the night read from its first stored picks and the open from the session after it.
+    internal static string[] JudgeEmptyRecordRows =>
+    [
+        CheckReach.Key("15.26 The AI judge", "An empty record"),
+    ];
+
+    [Fact]
+    public async Task UntilTheJudgeHasABoughtTradeItsScoreboardAndFourAccountsSayWhyTheyAreEmpty()
+    {
+        // The night of Friday 20 Nov picks AAA and nothing holds an open after it: the session after it is Monday 23 Nov, the
+        // weekend between, worked by hand off the exchange's calendar.
+        Assert.Equal(new DateOnly(2026, 11, 23), JudgeScreen.OpenAfter(new DateOnly(2026, 11, 20)));
+        Assert.Equal(new DateOnly(2026, 11, 27), JudgeScreen.OpenAfter(new DateOnly(2026, 11, 25)));
+        Assert.Equal(new DateOnly(2026, 11, 20), JudgeScreen.OpenAfter(new DateOnly(2026, 11, 19)));
+
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(
+            "INSERT INTO judge_run (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail) VALUES "
+            + "('judge-pick-1', '2026-11-20', 'v', 1, 20261120, 'picked', '2026-11-21T01:00:00Z', '2026-11-21T02:39:00Z', 4, 2, 2, 0, '');");
+        store.Execute(
+            "INSERT INTO judge_pick (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance) VALUES "
+            + $"('2026-11-20', 1, 'judge-pick-1', 'GSPC', 'AAA', '1 week', '{JudgeMenu.Whole}', 'Rising estimates.', '100', 2.0, '98', '104', NULL);");
+        store.Execute("INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at) VALUES ('AAA', '2026-11-20', '100', '100', '100', '100', 1000, 'eod', '2026-11-20T22:00:00Z');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/judge"));
+        const string Words = "The judge's first picks, made on the night of 20 Nov, are bought at the open on Mon 23 Nov. The accounts start from then.";
+
+        Assert.Equal(Words, SinglePageApp.EmptyRecordWords(new DateOnly(2026, 11, 20), new DateOnly(2026, 11, 23)));
+        Assert.Equal(2, Blocks(page, "<p class=\"empty\" data-empty=\"record\" data-summary>" + System.Text.RegularExpressions.Regex.Escape(Words) + "</p>").Count);
+        Assert.DoesNotContain("trades closed<span>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("<svg class=\"judge-chart\"", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("No account has a session to draw yet.", page, StringComparison.Ordinal);
+
+        // Once a pick is bought, the store above whose AAA opened on the session after its night, the tiles and the chart draw
+        // as before and the words are gone; and its replayed night is drawn apart, labelled replayed.
+        using var bought = JudgePageStore();
+        using var boughtHost = new Host(bought.Root);
+        using var boughtClient = boughtHost.CreateClient();
+        var drawn = WebUtility.HtmlDecode(await boughtClient.GetStringAsync("/screens/judge"));
+
+        Assert.DoesNotContain("data-empty=\"record\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("trades closed<span>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<svg class=\"judge-chart\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("<p data-replayed=\"record\" data-summary>Replayed, 1 night:", drawn, StringComparison.Ordinal);
+
+        // Before the judge has picked at all, no words of a first night.
+        Assert.Null(SinglePageApp.EmptyRecord(new JudgeView(null, null, null, [], new JudgeScoreboard(0, 0, null, null, 300), JudgeScore.NotToldApart, null, [], [], [], null, 0)));
+    }
+
+    // No source a rule's version pins is one 24.13 writes, so no rule's version moves.
+    [Fact]
+    public void NoSourceARulesVersionPinsIsOneTheJudgesEmptyRecordWrites()
+    {
+        string[] written = ["src/EquityBrief.Api/Reading/JudgeScreen.cs", "src/EquityBrief.Web/App/SinglePageApp.Judge.cs"];
+        var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
+            .SelectMany(evaluator => evaluator.OwnSources)
+            .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
+            .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(pinned.Length >= 30, $"Read {pinned.Length} pinned source(s), expected at least 30.");
+        Assert.All(written, path => Assert.True(File.Exists(Path.Combine(Repository.Root, path)), path));
+        Assert.Empty(written.Intersect(pinned, StringComparer.Ordinal));
     }
 }

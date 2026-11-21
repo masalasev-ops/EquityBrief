@@ -189,6 +189,9 @@ public partial class ArchitectureConformance
 
         // And from 24.12: the fallback facts fill's rows, its store's and section 18's row of a filer filing no operating income.
         .. FixtureExpectations.IncomeFallbackRows,
+
+        // And from 24.13: the judge's page on an empty record.
+        .. Reading.ReadSurface.JudgeEmptyRecordRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

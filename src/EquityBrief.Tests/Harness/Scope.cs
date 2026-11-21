@@ -4836,6 +4836,11 @@ internal static class Scope
             Verdict.Pass,
             "a replayed night's picks read in a region of their own labelled replayed and never in the live record's figures, over a constructed store holding both",
             ByReadSurface),
+        // 24.13, the operator's word of 2026-11-21.
+        [CheckReach.Key("15.26 The AI judge", "An empty record")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store holding the picks of the night of 20 Nov and no open after it, the scoreboard and the four accounts each read the operator's words with the night and its next open, Mon 23 Nov, worked by hand off the exchange's calendar, and no tile or chart; and over a store whose pick opened, the tiles and chart as before and the replayed night labelled",
+            ByReadSurface),
         [CheckReach.Key("15.24 Home", "The AI judge's line")] = new Scoped(
             Verdict.Pass,
             "read back off Home over a constructed store: tonight's count of the judge's picks, its record per $1 risked beside random picks' and the link to its page",
@@ -7873,6 +7878,7 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI judge", "The judge's picks tonight")] = "24.6",
         [CheckReach.Key("15.26 The AI judge", "Where the AI looked")] = "24.6",
         [CheckReach.Key("15.26 The AI judge", "Replayed nights")] = "24.6",
+        [CheckReach.Key("15.26 The AI judge", "An empty record")] = "24.13",
         [CheckReach.Key("15.24 Home", "The AI judge's line")] = "24.6",
         [CheckReach.Key(LoopPage, "All three indexes together")] = "23.2",
         [CheckReach.Key(LoopPage, "The passes luck alone would bring")] = "23.2",

@@ -15,7 +15,8 @@ public sealed record JudgeLineView(string Name, IReadOnlyList<(DateOnly Session,
 
 // What the AI judge's page draws: the newest night it ran for and what came of it, that night's picks, the live record's
 // scoreboard, whether it beats random so far and what random picks made per $1 risked, where it looked, the four accounts'
-// lines and the random accounts' band, and a replayed record apart from the live one.
+// lines and the random accounts' band, and a replayed record apart from the live one; from 24.13 the night of its first live
+// picks, the open they buy at, and whether any of its picks has been bought.
 public sealed record JudgeView(
     DateOnly? Night,
     string? Outcome,
@@ -28,7 +29,14 @@ public sealed record JudgeView(
     IReadOnlyList<JudgeLineView> Lines,
     IReadOnlyList<JudgeBand> Band,
     JudgeScoreboard? Replayed,
-    int ReplayedNights);
+    int ReplayedNights)
+{
+    public DateOnly? FirstNight { get; init; }
+
+    public DateOnly? FirstOpen { get; init; }
+
+    public bool Bought { get; init; }
+}
 
 // The AI judge's page: the four accounts' chart, the scoreboard of its live record, each pick's card in the words of the rule
 // on the open, where it looked, and one line on Home. A replayed figure stands apart from the live record, which alone counts.
@@ -57,8 +65,8 @@ public sealed partial class SinglePageApp
         region.Append("<section class=\"judge\">");
         region.Append(Cards.Masthead("AI judge", "<span class=\"m-screen\">AI judge</span>", view.Night is { } night ? "Computed for " + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "Not run yet"));
         region.Append(Cards.Computed("AI judge", $"<p data-summary>{Escaped(JudgeLede)}</p>{RunLine(view)}", title: "Your local AI picks its own stocks, in its own paper account", region: "judge-lede"));
-        region.Append(Cards.Computed("Scoreboard", Scoreboard(view), title: "How its live record stands", region: "judge-score"));
-        region.Append(Cards.Computed("Four accounts", "<p data-summary>The judge's account beside the rules', random picks' and the index's, each from the judge's first night.</p>" + JudgeChart(view), title: "Four accounts, same money, same sizing, same costs", lede: Escaped(JudgeReplayedLine), region: "judge-chart"));
+        region.Append(Cards.Computed("Scoreboard", EmptyRecord(view) ?? Scoreboard(view), title: "How its live record stands", region: "judge-score"));
+        region.Append(Cards.Computed("Four accounts", EmptyRecord(view) ?? "<p data-summary>The judge's account beside the rules', random picks' and the index's, each from the judge's first night.</p>" + JudgeChart(view), title: "Four accounts, same money, same sizing, same costs", lede: Escaped(JudgeReplayedLine), region: "judge-chart"));
         region.Append(Cards.Computed("Tonight", $"<p data-summary>{(view.Picks.Count == 0 ? "The judge picked no stock tonight." : $"The judge picked {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} tonight, best first.")}</p>" + PickCards(view), title: $"The AI judge's picks tonight ({view.Picks.Count})", lede: "Each card shows what the AI saw, why it picked the stock, and the plan code set for it. Each buys at the next open, at whatever price it opens; nobody knows that price beforehand.", region: "judge-picks"));
         region.Append(Cards.Computed("Where the AI looked", LookedSummary(view) + Looked(view), title: "How its picks compare with the rules', since it started", region: "judge-looked"));
 
@@ -84,6 +92,18 @@ public sealed partial class SinglePageApp
         view.Night is not { } night ? "<p class=\"empty\">The judge has not run yet. The night starts it after its last step.</p>"
         : view.Outcome is "picked" or "none" or null ? string.Empty
         : $"<p class=\"judge-run\" data-outcome=\"{Escaped(view.Outcome)}\">The judge's run for {night.ToString("d MMM yyyy", CultureInfo.InvariantCulture)} was {Escaped(view.Outcome)}{(string.IsNullOrEmpty(view.Why) ? string.Empty : ": " + Escaped(view.Why))}. A night it misses is never filled in later.</p>";
+
+    // From 24.13, until any of the judge's live picks has been bought, why the scoreboard and the four accounts hold nothing,
+    // the night and the open read from its first stored picks; none once one is bought, or before it has picked.
+    public static string? EmptyRecord(JudgeView view) =>
+        view.Bought || view.FirstNight is not { } night || view.FirstOpen is not { } open
+            ? null
+            : "<p class=\"empty\" data-empty=\"record\" data-summary>" + Escaped(EmptyRecordWords(night, open)) + "</p>";
+
+    public static string EmptyRecordWords(DateOnly night, DateOnly open) =>
+        "The judge's first picks, made on the night of " + night.ToString("d MMM", CultureInfo.InvariantCulture)
+        + ", are bought at the open on " + open.ToString("ddd d MMM", CultureInfo.InvariantCulture)
+        + ". The accounts start from then.";
 
     static string Scoreboard(JudgeView view)
     {

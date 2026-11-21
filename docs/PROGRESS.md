@@ -20845,3 +20845,29 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures 
             155, against `data-ci` and never `data`; documents alone change, so the phase report is not run.
 Carried:    24.13 before the night of 2026-11-23, since its words stand only until the judge's first bought trade; the rules'
             half for the monthly run of 2027-02-06; 24.8 and 24.9's runs.
+
+### 24.13 - the judge's page explains an empty record   2026-11-21
+
+Queue:      done, 24.0 to 24.7, 24.10 to 24.12 and their corrections, and the amendment adding 24.13 to 24.15; in progress,
+            this checkpoint; next, 24.14 and 24.15, with 24.8's runs and 24.9.
+Built:      until the judge has a bought trade, its scoreboard and its four-accounts card each draw "The judge's first picks,
+            made on the night of 20 Nov, are bought at the open on Mon 23 Nov. The accounts start from then." in place of an
+            empty chart and zero tiles, the night read from the judge's first stored picks and the open from the session the
+            exchange trades after it; once a pick is bought the tiles and the chart draw as before, and a replayed night stays
+            in 24.7's region labelled replayed. Section 15.26's row "An empty record", the guide's line and the changelog.
+Measured:   the page read back over a constructed store holding the picks of the night of 2026-11-20 and none bought, at 1440
+            and a true 390 in both palettes: the words stand in both regions and no tile or chart is drawn.
+Tests:      2 new: the words, the night and the open worked by hand off the exchange's calendar over a weekend, a weekday and
+            the Thanksgiving close, the chart and tiles drawn once a pick is bought, the replayed night labelled, and no words
+            before the judge has picked; and no source a rule's version pins is one 24.13 writes.
+Claims:     1666, from 1665: section 15.26's row of an empty record, one of the two the plan counts, a replayed night drawn
+            labelled being 24.6's row, which stood.
+Pins:       none moved; the page's two sources are pinned by no rule's version, asserted.
+Mutated:    the rule: the guard 24.13 adds taken out. m1 `EmptyRecord` returning null whatever the record: red, the words drawn in
+            neither region; filtered to its test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3884 of 3884 tests ran with none failed, migrations 0 to 155 with none
+            pending, schema version 155, against `data-ci` and never `data`; the phase report 67 tables, 1666 claims, 1666
+            passing, none out of scope and none unexamined, 1681 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06; 24.8 and 24.9's runs.
