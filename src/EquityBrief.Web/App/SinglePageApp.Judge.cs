@@ -279,6 +279,12 @@ public sealed partial class SinglePageApp
             html.Append($"<article class=\"home-idea judge-card\" data-ticker=\"{Escaped(pick.Ticker)}\">");
             html.Append($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\"><a href=\"{MarkRenderer.ChartRoute}{Escaped(pick.Ticker)}\">{Escaped(pick.Ticker)}</a></div><div class=\"home-co\">{Escaped(pick.Company ?? string.Empty)}</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI judge</span><span class=\"ai-note\">Not one of the rules' buys</span></span></div>");
             html.Append(CultureInfo.InvariantCulture, $"<p class=\"home-verdict judge-saw\"><b>The AI judge's pick, ranked {pick.Rank} of {pick.Of} {night}.</b> It saw {Escaped(pick.Sector is null or JudgeFacts.NotOnFile ? "no sector on file" : pick.Sector)}, {Escaped(SizeWords(pick.Size))}, with no name, ticker or date.</p>");
+
+            if (version is not null)
+            {
+                html.Append($"<p class=\"judge-since\" data-since>{Escaped(HeldWords(pick, version))}</p>");
+            }
+
             html.Append("<p class=\"facts-h\">Why the AI picked it, in its words</p>");
             html.Append($"<p class=\"ai-quote\">\"{Escaped(pick.Reason)}\"<small>Its sentence, as the local model wrote it.</small></p>");
 
@@ -292,11 +298,6 @@ public sealed partial class SinglePageApp
             {
                 html.Append($"<p class=\"facts-h\" data-facts=\"before\">{Escaped(JudgeBeforeNamed)}</p>");
                 html.Append("<ul class=\"ai-facts\" data-facts=\"sheet\">").Append(string.Concat(pick.Rest.Select(fact => FactItem(fact, string.Empty)))).Append("</ul>");
-            }
-
-            if (version is not null)
-            {
-                html.Append($"<p class=\"judge-since\" data-since>{Escaped(HeldWords(pick, version))}</p>");
             }
 
             html.Append("<div class=\"home-prices\">");
