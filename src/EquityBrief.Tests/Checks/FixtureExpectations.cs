@@ -160,6 +160,8 @@ public partial class FixtureExpectations
             .. IncomeFallbackClaims,
             // 24.14: section 17's row of the facts an AI judge pick names and section 18's row of a pick refused for them.
             .. JudgeNamedClaims,
+            // 24.17: section 17's row of the rule a variant replaces its running revision by.
+            .. PromotionRuleClaims,
             // 24.11: section 18's row of the steps and entries the split rule sets aside, by cause.
             .. SplitCauseClaims,
             // 21.8, ranking in place of pass-or-fail gates: section 17's row of the variant.

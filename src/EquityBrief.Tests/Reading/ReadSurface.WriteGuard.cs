@@ -45,10 +45,10 @@ public partial class ReadSurface
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        // Sixteen, stated in advance: the passes, the quote, the analysts, the ratings, the night's resume, the withdraw, the
+        // Seventeen, stated in advance: the passes, the quote, the analysts, the ratings, the night's resume, the withdraw, the
         // write now, the watch and unwatch, the account, the taken, not taken and exit presses, the Loop page's decide and restore,
-        // and the marking page's confirm.
-        Assert.Equal(16, writes.Length);
+        // the marking page's confirm, and from 24.17 the case for promotion's Promote and Keep, which write nothing yet.
+        Assert.Equal(17, writes.Length);
 
         using var bare = host.Server.CreateClient();
 

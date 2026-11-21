@@ -442,7 +442,7 @@ public sealed partial class SinglePageApp : IComponent
         + $"<a href=\"{TonightRoute}\" data-view=\"tonight\">Tonight</a>"
         + $"<a href=\"{UniverseRoute}\" data-view=\"universe\">Universe</a>"
         + $"<a href=\"{PaperRoute}\" data-view=\"paper\">Paper trading</a>"
-        + $"<a href=\"{LoopRoute}\" data-view=\"loop\">{MarkRenderer.CheckUpName}<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a>"
+        + MenuGroup("loop", MarkRenderer.CheckUpName, $"<a href=\"{LoopRoute}\" data-view=\"loop\">This week<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a><a href=\"{CaseRoute}\" data-view=\"case\">{CaseName}</a>")
         + MenuGroup("research", "Research", $"<a href=\"{ResearchedRoute}\" data-view=\"researched\">Researched</a><a href=\"{QueueRoute}\" data-view=\"queue\">Queue</a><a href=\"{WatchRoute}\" data-view=\"watch\">Watch list</a>" + LaneSwitch(lane))
         + MenuGroup("records", "Records", $"<a href=\"{PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{RunRoute}\" data-view=\"run\">Run</a><a href=\"{LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{HistoryRoute}\" data-view=\"history\">History</a><a href=\"{JudgeRoute}\" data-view=\"judge\">AI judge</a>")
         + "</nav>";
@@ -523,6 +523,10 @@ public sealed partial class SinglePageApp : IComponent
             view = 'marking';
             const marking = await fetch('/screens/marking');
             screen.innerHTML = await marking.text();
+          } else if (path === '{{{CaseRoute}}}') {
+            view = 'case';
+            const loopCase = await fetch('/screens/loop/case');
+            screen.innerHTML = await loopCase.text();
           } else if (path === '{{{LoopRoute}}}') {
             view = 'loop';
             const loop = await fetch('/screens/loop' + (query ? '?' + query : ''));

@@ -445,9 +445,10 @@ public partial class ArchitectureConformance
         // judge's page on an empty record, and 1670 from 24.14, section 17's row of the facts a judge pick names, section 18's
         // row of a pick refused for them and the judge's page's two rows, and 1672 from 24.15, Home's past nights and each card's
         // line on what has happened since, and 1673 from the 24.14 correction of 2026-11-21, the judge's page's row of an earlier
-        // version's picks in an account of their own.
+        // version's picks in an account of their own, and 1678 from 24.17, the case for promotion's three regions, section 18's row
+        // of a press on a case and section 17's row of the rule.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1673),
+            (789, 853, 6, 4, 855, 876, 1678),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

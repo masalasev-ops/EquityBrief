@@ -1214,6 +1214,33 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
 .facts-h{font:600 11.5px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:10px 0 2px}
 .ai-quote{margin:6px 0 4px;padding:8px 12px;border-left:3px solid var(--research);background:var(--surface);font-size:14.5px;color:var(--ink)}
 .ai-quote small{display:block;color:var(--soft);font-size:12px;margin-top:2px}
+.lm-h{margin:18px 0 6px;font-size:16px;color:var(--ink)}
+.lm-p{margin:0 0 10px;font-size:14.5px;color:var(--ink-2);max-width:820px}
+.lm-small{margin:8px 0 0;font-size:13px;color:var(--soft);max-width:820px}
+.lm-table{width:100%;border-collapse:collapse;font-size:14px}
+.lm-table th{text-align:left;font:600 12px var(--sans);color:var(--soft);padding:6px 8px;border-bottom:1px solid var(--hair-2);vertical-align:bottom}
+.lm-table td{padding:8px;border-top:1px solid var(--hair);vertical-align:top;color:var(--ink)}
+.lm-table .r{text-align:right}
+.lm-table .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.lm-narrow{max-width:640px}
+.lm-freeze{margin:0 0 12px;padding:8px 12px;border:1px solid var(--warn);background:var(--warn-fill);border-radius:6px;font-size:14px;color:var(--ink)}
+.lm-case{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.lm-case > div{border:1px solid var(--hair);border-radius:8px;padding:10px 12px;background:var(--surface)}
+.lm-case > .lm-wide{grid-column:1/-1}
+.lm-case h4{margin:0 0 6px;font-size:14.5px;color:var(--ink)}
+.lm-case p{margin:0 0 8px;font-size:14.5px;color:var(--ink)}
+.lm-buttons{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 4px}
+.lm-buttons button[disabled]{opacity:.55;cursor:not-allowed}
+@media (max-width:600px){
+ .tbl-wrap .lm-table{min-width:0}
+ .lm-table thead{display:none}
+ .lm-table,.lm-table tbody,.lm-table tr,.lm-table td{display:block;width:auto}
+ .lm-table tr{border-top:1px solid var(--hair-2);padding:8px 0}
+ .lm-table td{border:0;padding:3px 0}
+ .lm-table td[data-h]::before{content:attr(data-h);display:block;font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+ .lm-table .r{text-align:left}
+ .lm-table .num{white-space:normal}
+}
 .ai-facts{margin:6px 0 10px;padding:0;list-style:none;display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
 .ai-facts li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto);gap:2px 12px;padding:7px 10px;border:1px solid var(--hair-2);border-radius:6px;font-size:14px}
 .ai-facts li b{font-variant-numeric:tabular-nums;text-align:right;overflow-wrap:anywhere}

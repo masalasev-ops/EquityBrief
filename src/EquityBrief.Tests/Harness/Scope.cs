@@ -3950,6 +3950,11 @@ internal static class Scope
             "a run under a pin holding another prompt refused naming the prompt, one under another model refused naming the model, each asking nothing, and a first run writing its pin from the reading pin with the prompt's version; from 24.14 a pin under the one earlier prompt version followed by a new pin under this one, the run stored under it",
             ByExpectations),
         // 24.14, the operator's word of 2026-11-21.
+        // 24.17, the operator's rulings of 2026-11-15 and 2026-11-16.
+        [CheckReach.Key(LimitsTable, "The case for promotion's rule")] = new Scoped(
+            Verdict.Pass,
+            "each condition worked by hand on both sides over constructed records, a tie no win, 49 closed trades short and 50 enough, a book's 11 months short and 12 enough, a variant registered after the restart read from its own first night and one before it from the freeze's first day, and the long history's years before 2019 never read; the figures read off the document against the constants",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "The facts an AI judge pick names")] = new Scoped(
             Verdict.Pass,
             "three facts a constructed sheet shows standing, none, two, one twice, a word no field is, one shown as not on file and the sector a sheet does not show each refused, and a constructed night's picks stored with the keys of the three facts each named; the figures read off the document against the constants",
@@ -4863,6 +4868,23 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI judge", "An earlier version's picks")] = new Scoped(
             Verdict.Pass,
             "over a constructed store holding version 1's two picks of 19 Nov and version 2's one of 23 Nov, version 1's region read back with each card saying what its account did, one bought and sold at 3 risks and one bought and open, its prices from the price paid and its account's summary worked by hand, its line drawn apart beneath the four, the record version 2's alone from its first night, every card drawn under an account that buys it; the same store before version 2 runs reading version 1 as the record with nothing apart; and Home on version 1's night naming its account",
+            ByReadSurface),
+        // 24.17, the operator's answers of 2026-11-21.
+        [CheckReach.Key("15.27 The case for promotion", "Every running revision against its variants")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store the page read back with each index's table of running revisions under its heading and held to the Improvement loop's word check; and over constructed records a revision's best variant short of its count read as not yet with its trades against the 50",
+            ByReadSurface),
+        [CheckReach.Key("15.27 The case for promotion", "A case")] = new Scoped(
+            Verdict.Pass,
+            "a constructed case read through its renderer with the operator's title, both records over the same nights and over the long history, each condition met with its count, the picks a night and those shared, the counted part above code's words, the picks kept and left out tonight, the line on the revision it becomes, and code's words for and against holding no digit; its buttons drawn unpressable inside the freeze and pressable once it ends",
+            ByReadSurface),
+        [CheckReach.Key("15.27 The case for promotion", "No case")] = new Scoped(
+            Verdict.Pass,
+            "constructed records with no variant meeting the rule read back saying so and naming the nearest miss with its setup, index, revision, change, count and lead over the same nights",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A press on a case for promotion")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store a press of Promote and of Keep on the freeze's last day refused naming the run that ends it, and a press on the day it ends refused naming the swap as not yet built, the register, the decisions and the answers read unchanged after each",
             ByReadSurface),
         // 24.15, the operator's word of 2026-11-21.
         [CheckReach.Key("15.24 Home", "A past night's picks")] = new Scoped(
@@ -7914,6 +7936,9 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI judge", "The facts it named")] = "24.14",
         [CheckReach.Key("15.26 The AI judge", "A pick made before it named its facts")] = "24.14",
         [CheckReach.Key("15.26 The AI judge", "An earlier version's picks")] = "24.14",
+        [CheckReach.Key("15.27 The case for promotion", "Every running revision against its variants")] = "24.17",
+        [CheckReach.Key("15.27 The case for promotion", "A case")] = "24.17",
+        [CheckReach.Key("15.27 The case for promotion", "No case")] = "24.17",
         [CheckReach.Key("15.24 Home", "A past night's picks")] = "24.15",
         [CheckReach.Key("15.24 Home", "What has happened since")] = "24.15",
         [CheckReach.Key("15.24 Home", "The AI judge's line")] = "24.6",
@@ -8578,6 +8603,7 @@ internal static class Scope
         "15.24 Home",
         "15.25 History",
         "15.26 The AI judge",
+        "15.27 The case for promotion",
         "15.11 How a reason's record is displayed",
     ];
 
