@@ -33,6 +33,7 @@ public partial class ArchitectureConformance
         ("24.13", [.. Reading.ReadSurface.JudgeEmptyRecordRows], []),
         ("24.14", [.. FixtureExpectations.JudgeNamedRows], []),
         ("24.15", [.. Reading.ReadSurface.HomePastNightRows], []),
+        ("24.9", [], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -47,7 +48,8 @@ public partial class ArchitectureConformance
     // and section 18's row, the cards' line naming the line used landing as its words. 24.13, one of two: a replayed night drawn
     // labelled is 24.6's row, which stood. 24.14, four of four: the store's column landing as words in its store's row. 24.15,
     // two of four: the night picker, the banner, the waiting cards as they stood and the judge's line that night landing as
-    // clauses of one row where the plan counted the picker and the judge's line as rows of their own.
+    // clauses of one row where the plan counted the picker and the judge's line as rows of their own. 24.9, none of one: the
+    // roster's row of the nightly run stood, its words gaining the build across the cores.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -63,6 +65,7 @@ public partial class ArchitectureConformance
         ("24.13", -1),
         ("24.14", 0),
         ("24.15", -2),
+        ("24.9", -1),
     ];
 
     [Fact]

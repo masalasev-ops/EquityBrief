@@ -20943,3 +20943,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1687 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06; 24.8 and 24.9's runs.
+
+### 24.9 - the faster history build, proved row for row   2026-11-21
+
+Queue:      done, 24.0 to 24.7 and 24.10 to 24.15 and their corrections; in progress, this checkpoint; next, 24.8's figures
+            with the operator, then 24.16, the loop page's mockup, for their approval.
+Built:      on the operator's ruling of 2026-11-15 on item 5, the history build, its monthly rebuild and the long build
+            compute each chunk's sessions across the machine's cores before the drain's lock is taken, each session read alone
+            and kept in its place, the earliest of several failures raised and nothing of the chunk written; `ledger-build`'s
+            `--one-at-a-time` reads them one by one. The decision, the runbook's line, the roster's words and the changelog.
+Measured:   on the operator's machine over a copy of the store on the C: drive, one year of each index's standing history,
+            2025-11-03 through 2026-10-08, 234 sessions, written again both ways with every setup count the same: the S&P 600's
+            50,673 setups in 410 seconds across the cores, its four chunks 55, 59, 57 and 42 seconds, against 465 seconds one
+            at a time, 86, 89, 85 and 59; the S&P 400's 36,094 in 278 seconds, 37, 42, 37 and 25, against 362, 64, 71, 62 and
+            43. Each build also reads its 1,212 names first, which takes the same either way. The build used about 12 of the
+            machine's 16 logical processors across the cores.
+Tests:      5 new: the same span built one session at a time and across the cores over a constructed S&P 500, 400 and 600,
+            every column of every history row and night row the same, one planted difference found; sessions computed across
+            the cores kept in their places with the earliest of several failures raised; and no source a rule's version pins
+            among those 24.9 writes.
+Claims:     1672, unchanged: the roster's row of the nightly run stood, its words gaining the build across the cores, where
+            the plan counted one.
+Pins:       none moved; the history build's sources are pinned by no rule's version, asserted.
+Mutated:    the rule: the guard 24.9 adds taken out. m1 a session computed across the cores written in another's place: red,
+            the rows differing on each index and the places out of order; filtered to its tests and reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3894 of 3894 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 67 tables, 1672 claims, 1672
+            passing, none out of scope and none unexamined, 1687 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06; 24.8's figures with the operator.

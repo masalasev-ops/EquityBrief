@@ -187,7 +187,7 @@ public partial class NightlyRun
     // quarter-end holdings, DDD held to the newest quarter and gone from today's members, so it stands to the day after
     // that quarter, and GGG held from that quarter alone; and the members the night reads, two held since before the
     // history and three first stored by a members pull on the newest session.
-    static TemporaryStore ComparisonStore()
+    static TemporaryStore ComparisonStore(string index = "SML")
     {
         var store = new TemporaryStore().Migrated();
         var statements = new List<string>();
@@ -207,18 +207,18 @@ public partial class NightlyRun
 
         foreach (var period in new[] { "2025-12-31", "2026-03-31", "2026-06-30" })
         {
-            statements.Add($"INSERT INTO pulled_snapshot (index_code, period, accession, filed, holdings, equity, pull) VALUES ('SML', '{period}', 'filing-{period}', '{period}', 6, 6, 'holdings-pull-test');");
+            statements.Add($"INSERT INTO pulled_snapshot (index_code, period, accession, filed, holdings, equity, pull) VALUES ('{index}', '{period}', 'filing-{period}', '{period}', 6, 6, 'holdings-pull-test');");
 
             foreach (var ticker in period == "2026-06-30" ? new[] { "AAA", "BBB", "CCC", "DDD", "EEE", "GGG" } : new[] { "AAA", "BBB", "CCC", "DDD", "EEE" })
             {
-                statements.Add($"INSERT INTO pulled_holding (index_code, period, holding, name, ticker, matched_by, pull) VALUES ('SML', '{period}', '{ticker}-{period}', '{ticker} Corp', '{ticker}', 'isin', 'holdings-pull-test');");
+                statements.Add($"INSERT INTO pulled_holding (index_code, period, holding, name, ticker, matched_by, pull) VALUES ('{index}', '{period}', '{ticker}-{period}', '{ticker} Corp', '{ticker}', 'isin', 'holdings-pull-test');");
             }
         }
 
         foreach (var ticker in new[] { "AAA", "BBB", "CCC", "EEE", "GGG" })
         {
-            statements.Add($"INSERT INTO pulled_member (index_code, ticker, exchange, pull) VALUES ('SML', '{ticker}', 'US', 'members-pull-test');");
-            statements.Add($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('SML', '{ticker}', '{(ticker is "AAA" or "BBB" ? "2025-01-02" : LedgerStamp(ComparisonNewest))}', NULL, '{LedgerStamp(ComparisonNewest)}T21:00:00Z');");
+            statements.Add($"INSERT INTO pulled_member (index_code, ticker, exchange, pull) VALUES ('{index}', '{ticker}', 'US', 'members-pull-test');");
+            statements.Add($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('{index}', '{ticker}', '{(ticker is "AAA" or "BBB" ? "2025-01-02" : LedgerStamp(ComparisonNewest))}', NULL, '{LedgerStamp(ComparisonNewest)}T21:00:00Z');");
         }
 
         ComparisonExecute(store, statements);

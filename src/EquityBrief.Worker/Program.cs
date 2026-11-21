@@ -1978,7 +1978,10 @@ static async Task<int> LedgerBuildRun(string[] args)
         return 1;
     }
 
-    return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
+    // From 24.9 a chunk's sessions are computed across the machine's cores, `--one-at-a-time` reading them one by one, as the
+    // timed comparison does.
+    // see: The ledger's builds compute a chunk's sessions across the machine's cores, every row the same as one at a time on each index
+    return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile) { Cores = args.Contains("--one-at-a-time", StringComparer.Ordinal) ? 1 : Environment.ProcessorCount }
         .BuildAsync(store.DataRoot, index, fromDay, throughDay, Console.Out, again: args.Contains("--again", StringComparer.Ordinal));
 }
 
