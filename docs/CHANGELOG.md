@@ -15,7 +15,9 @@ Was:
 > ARCHITECTURE.html, figure 15.5's title, description, caption and key: "The Monthly check-up, its parts numbered ...", "The Monthly check-up from its opening ...", "Figure 15.5. The Monthly check-up and its parts ...", "The Monthly check-up as the operator opens it ..."
 > BUILD_PLAN.md, 24.16: "... and their answer is kept word for word. Builds nothing and writes nothing in the corpus but its entry." and its done condition ending "... and the operator's answer on it is stored word for word and cited by the entry."
 > RUNBOOK.md, the freeze's line: "... to the day before the monthly run of 6 Feb 2027, the Monthly check-up offers no Approve ..."
+> BUILD_PLAN.md, the claims phase 24 predicts: "- none at 24.16;"
 Now:
+> "- none at 24.16, a mockup in `prompts/`, the Loop page's name and words landing as clauses of rows that stood;"
 > "... drawn under the name Monthly check-up from 22.61 and Improvement loop from 24.16, its words naming a setup's running revision and each copy run beside it a variant of that revision as Paper trading's do, and no visible word naming a version, a live rule or a list (see: The Improvement loop names a setup's revision and its variants in Paper trading's words), where a badge counts ..."
 > "Choosing a variant by its recent record"
 > each "The Monthly check-up" in figure 15.5's words reads "The Improvement loop"

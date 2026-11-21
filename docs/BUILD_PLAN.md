@@ -2697,7 +2697,7 @@ Every screen the phase touched at 1440 pixels and a true 390 in both palettes, r
 - about 2 at 24.13, the page's two rows on an empty record;
 - about 4 at 24.14, the card's rows, section 17's count of fields named and section 18's row of a pick refused;
 - about 4 at 24.15, Home's rows on a past night;
-- none at 24.16;
+- none at 24.16, a mockup in `prompts/`, the Loop page's name and words landing as clauses of rows that stood;
 - about 5 at 24.17, the page's rows, section 17's floors and section 18's row;
 - about 8 at 24.18, the notebook's and the tester's catalogue and matrix rows, their stores and section 17's list;
 - about 6 at 24.19, the survivors' rows, section 17's minimum and section 18's rows;
