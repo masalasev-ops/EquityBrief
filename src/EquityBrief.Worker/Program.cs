@@ -218,7 +218,7 @@ static async Task<int> SplitCausesVerb(string[] args)
 
 // The naming test by hand, on the operator's word: a seeded sample of a night's stored facts asked of the local model under
 // its lock, stopping at the instant '--until' names, the next local writer's slot.
-// see: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
+// see: The AI stock picker starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
 static async Task<int> JudgeNamingRun(string[] args)
 {
     if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--session") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session)
@@ -262,9 +262,9 @@ static async Task<int> JudgeNamingRun(string[] args)
     return outcome.Passed ? 0 : 1;
 }
 
-// The AI judge's replay of the nights after the model's cutoff: its plan printed, writing nothing, and with '--go' on the
+// The AI stock picker's replay of the nights after the model's cutoff: its plan printed, writing nothing, and with '--go' on the
 // operator's word the nights replayed until the instant given, each yielding the model to any other local writer.
-// see: The AI judge's replays print their hours before they start on the operator's word, a new version's over the same 60 nights
+// see: The AI stock picker's replays print their hours before they start on the operator's word, a new version's over the same 60 nights
 static async Task<int> JudgeReplayVerb(string[] args)
 {
     var configuration = Configuration();
@@ -325,10 +325,10 @@ static async Task<int> JudgeReplayVerb(string[] args)
     return 0;
 }
 
-// The AI judge's picks of a night, the process the night starts after its last step, or by hand for a night named: it
+// The AI stock picker's picks of a night, the process the night starts after its last step, or by hand for a night named: it
 // waits for the night to let go of its lock, writes the night's facts under the field list's version, and picks under the
 // local model's lock, stored before the next open or written as missed.
-// see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+// see: The AI stock picker picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
 static async Task<int> JudgePickRun(string[] args)
 {
     var configuration = Configuration();
@@ -400,10 +400,10 @@ static async Task<int> JudgePickRun(string[] args)
     return outcome.Outcome is EquityBrief.Worker.Judge.JudgePicker.Picked or EquityBrief.Worker.Judge.JudgePicker.NonePicked ? 0 : 1;
 }
 
-// The AI judge's facts of a stored night: with '--write' the night's rows written under the field list's version, a night
+// The AI stock picker's facts of a stored night: with '--write' the night's rows written under the field list's version, a night
 // written again replacing its own; otherwise read from the store opened for reading and writing nothing, one member's short
 // row and full sheet as the judge is shown them, or for every member each field's count held and not on file.
-// see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+// see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price
 static async Task<int> JudgeFactsRun(string[] args)
 {
     if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--session") ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
@@ -434,7 +434,7 @@ static async Task<int> JudgeFactsRun(string[] args)
     {
         foreach (var fact in facts)
         {
-            Console.Out.WriteLine(FormattableString.Invariant($"judge-facts: {fact.Ticker} on {fact.Index}, {session:yyyy-MM-dd}, which the judge is not shown"));
+            Console.Out.WriteLine(FormattableString.Invariant($"judge-facts: {fact.Ticker} on {fact.Index}, {session:yyyy-MM-dd}, which the picker is not shown"));
             Console.Out.WriteLine("Round one, the short row:");
             Console.Out.WriteLine(EquityBrief.Core.Judge.JudgeFacts.RowText(fact));
             Console.Out.WriteLine("Round two, the full sheet:");
@@ -1498,13 +1498,13 @@ static int NoVerb()
         "member's state over its quarters read from their filings and then their results releases on every night from that day, " +
         "draws each index's list again five a family with the trades each night held and prints the picks it adds and removes " +
         "and the parts of EW, OHI, SBRA and LTC on 2026-11-05, writing nothing, " +
-        "'judge-facts --session <yyyy-MM-dd>' prints the AI judge's facts of a stored night, a member's short row and full sheet " +
+        "'judge-facts --session <yyyy-MM-dd>' prints the AI stock picker's facts of a stored night, a member's short row and full sheet " +
         "with '--ticker <ticker>' or each field's count held, writing nothing, and with '--write' stores the night's, " +
         "'judge-naming --session <yyyy-MM-dd> --seed <n> --until yyyy-MM-ddTHH:mmZ' asks the local model to name the companies " +
         "behind a seeded sample of that night's stored facts, on the operator's word, " +
-        "'judge-pick' is the AI judge's process the night starts after its last step, which writes the newest night's facts and " +
+        "'judge-pick' is the AI stock picker's process the night starts after its last step, which writes the newest night's facts and " +
         "picks up to five under the local model's lock, stored before the next open or written as missed, or with '--session <yyyy-MM-dd>' a night named, " +
-        "'judge-replay' prints the AI judge's replay of the nights after the model's cutoff, their count, the minutes a night and the hours in all, " +
+        "'judge-replay' prints the AI stock picker's replay of the nights after the model's cutoff, their count, the minutes a night and the hours in all, " +
         "writing nothing, and with '--go --until yyyy-MM-ddTHH:mmZ' on the operator's word replays them until that instant, yielding the model to any other local writer, " +
         "'split-causes' counts by cause every step and entry the split rule sets aside over the long history and the store's year, and with '--list' prints each, writing nothing, " +
         "'income-readings' counts for a stored night each reading built on operating income on each index, the members it reads and those it does not for want of the line, " +

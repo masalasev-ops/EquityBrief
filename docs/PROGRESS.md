@@ -21133,3 +21133,64 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1693 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06.
+
+### 24.17 - correction: a book inside its first month on the case page reads its points so far   2026-11-21
+
+Queue:      done, 24.0 to 24.17, merged as #745 on 2026-11-21; in progress, this correction and 24.18 in one pull request;
+            next, 24.19, the readings for every stock on every session.
+Corrects:   the live case page drew a book whose holdings closed inside its first month as "-8.59 points a month over 0
+            months". On the operator's change of 2026-11-21, kept as Appendix X of the plan's file, a book's record before a
+            whole month has passed reads "x points so far, in its first month": its closed holdings' mean change, never spread
+            over a month not yet passed, and from its first whole month a rate as before. Section 15.27's row and the
+            changelog.
+Tests:      1 new: a book from 1 Mar 2027 with holdings closed at +4% and +2% reads +3.00 points so far on 31 Mar, 22 sessions
+            in, never 2.86, and a rate again on 1 Apr, worked by hand.
+Pins:       none moved, asserted: both sources changed are among 24.17's, which no rule's version pins.
+Mutated:    the rule: each branch the correction adds taken out. m1 the first month spread over its sessions again: red, 2.86
+            read for 3.00. m2 the page's first-month branch never taken: red, "points a month over 0 months" read back. Each
+            filtered to its test and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3914 of 3914 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 68 tables, 1678 claims, 1678
+            passing, none out of scope and none unexamined, 1693 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06.
+
+### 24.18 - the AI judge renamed the AI stock picker, and phase 24 reordered   2026-11-21
+
+Queue:      done, 24.0 to 24.17 and its correction; in progress, 24.18; next, 24.19, the readings for every stock on every
+            session, and its build run on the operator's word.
+Ruled:      the operator's approval of 2026-11-21 of the AI stock picker's table with five changes, kept word for word as
+            Appendix X of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, after their order adding its stages,
+            Appendix W: the readings for every stock on every session move to 24.19, as early as their dependencies allow, and
+            the stages the picker's own rules need follow it, so 24.18 to 24.40 now run the rename, the table, the picker's
+            mockup, the notebook, survivors, the researcher, recipes, the picker's own rules, the three case checkpoints, the
+            picker using its rules, the AI judge's weekly review, then the rest as before; the table's build of about 12 hours
+            runs on their word, on a copy first, in a window no night, local run, Sunday run or replay overlaps; the rename
+            keeps "judge" in code names and store tables, with no migration; both routes to a new picker version go through
+            the case page and their click; and the Sunday run's added model time is measured before its first run, naming what
+            waits a week past its cap. Three decisions, ten superseded under the new name, and four checkpoint pointers moved.
+Built:      every page, menu, card, tag, account, run message, document, decision and test name naming what picks for its own
+            account says the AI stock picker or the picker: its page at `#/picker`, the old address redirecting to it, its
+            menu entry under Records, its cards' tag and "The AI stock picker's picks tonight", Home's line, the four accounts'
+            line, its rows in sections 14 to 18 and CLAUDE.md's carve-out. Its classes, folders, store tables, run log stage
+            and worker verbs keep "judge". A word check under banned-prose fails on the old name used for the picker in the
+            shipped source, the specs, the guide and the decisions standing.
+Tests:      3 new: the word check over the tree, and its matcher finding a planted use in source and documents while passing
+            the monitor's sentences, the operator's quoted words and a superseded name; and the picker's page, before and after
+            its first run, and Home's line naming the AI stock picker with no visible word saying judge, the menu linking
+            `#/picker`, the router sending the old address there first, and the picker's six tables standing under their
+            names. 13 tests renamed for the picker.
+Claims:     1678, none moved: the rows renamed where they stood, as the plan counted none.
+Pins:       none moved: the picker's prompt version hashes its prompt's words, which did not change, and no rule's sources
+            changed but in comments.
+Mutated:    the rule, stated before the run: each guard the checkpoint adds taken out in turn. m1 the old name put back on the
+            cards' tag: red, the page's test and the word check. m2 the redirect taken out of the router: red. m3 the monitor's
+            words no longer exempt in the matcher: red, the matcher's test. Each filtered to its tests and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3914 of 3914 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 68 tables, 1678 claims, 1678
+            passing, none out of scope and none unexamined, 1693 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06.

@@ -5,7 +5,7 @@ using EquityBrief.Data;
 
 namespace EquityBrief.Api.Reading;
 
-// One run of the AI judge as its page reads it: the night, its outcome and why, the members it screened and kept, and
+// One run of the AI stock picker as its page reads it: the night, its outcome and why, the members it screened and kept, and
 // whether it was a replayed night's.
 public sealed record JudgeRunRow(string RunId, DateOnly Session, string Outcome, string Why, int Screened, int Kept, bool Replayed)
 {
@@ -13,7 +13,7 @@ public sealed record JudgeRunRow(string RunId, DateOnly Session, string Outcome,
     public string? Version { get; init; }
 }
 
-// One of the AI judge's picks as its page reads it: the night, its rank, the member, the hold and take-profit it chose, its
+// One of the AI stock picker's picks as its page reads it: the night, its rank, the member, the hold and take-profit it chose, its
 // reason, the last close and typical move its prices were worked from, those prices, the company's name and the sector and
 // size the judge was shown, and whether a replayed night's.
 public sealed record JudgePickRow(
@@ -43,9 +43,9 @@ public sealed record JudgePickRow(
     public IReadOnlyDictionary<string, string> Sheet { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 }
 
-// The AI judge's page reads its runs, its picks and the members' sessions from its first night, all from the store opened
+// The AI stock picker's page reads its runs, its picks and the members' sessions from its first night, all from the store opened
 // for reading, writing nothing.
-// see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+// see: The AI stock picker picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
 public sealed partial class ReadApi
 {
     // A replayed night's run, which 24.7's replay writes under this prefix, read apart from the live record.

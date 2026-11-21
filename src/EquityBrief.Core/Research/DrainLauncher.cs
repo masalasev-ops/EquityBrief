@@ -30,11 +30,11 @@ public interface IDrainLauncher
     DrainStart StartTheLabeller() =>
         new(false, "The labeller was not started, because this surface holds no way to start the worker.");
 
-    // The AI judge, which the night starts after its last step as a process of its own, waiting until the night has
+    // The AI stock picker, which the night starts after its last step as a process of its own, waiting until the night has
     // finished.
-    // see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+    // see: The AI stock picker picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
     DrainStart StartTheJudge() =>
-        new(false, "The AI judge was not started, because this surface holds no way to start the worker.");
+        new(false, "The AI stock picker was not started, because this surface holds no way to start the worker.");
 
     // The quote job for one name's delayed quote, which a name page's press starts as a process of its own once its
     // request is written, handed the name and the instant the page asked.
@@ -106,7 +106,7 @@ public sealed class WorkerDrainLauncher(
     // The verb that labels tonight's news.
     public static readonly IReadOnlyList<string> LabelTheNews = ["label-news"];
 
-    // The verb that runs the AI judge over the newest night.
+    // The verb that runs the AI stock picker over the newest night.
     public static readonly IReadOnlyList<string> RunTheJudge = ["judge-pick"];
 
     // The verb that asks one name's delayed quote, and its two flags.
@@ -167,7 +167,7 @@ public sealed class WorkerDrainLauncher(
         Launch(LabelTheNews, "The labeller has started on tonight's list as a process of its own.", "tonight's news waits for the label-news verb run by hand");
 
     public DrainStart StartTheJudge() =>
-        Launch(RunTheJudge, "The AI judge has started as a process of its own, and waits until the night has finished.", "the judge's night waits for the judge-pick verb run by hand");
+        Launch(RunTheJudge, "The AI stock picker has started as a process of its own, and waits until the night has finished.", "the picker's night waits for the judge-pick verb run by hand");
 
     public DrainStart StartTheQuote(string ticker, DateTimeOffset askedAt) =>
         Launch(AskTheQuote(ticker, askedAt), "The quote has been asked as a process of its own.", "the page keeps the last stored price");

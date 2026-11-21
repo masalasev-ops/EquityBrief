@@ -63,7 +63,7 @@ public sealed record HomeView(
     // tag names the one that placed it from.
     public IReadOnlyList<LeftOrderView> LeftOrders { get; init; } = [];
 
-    // From 24.6 the AI judge's line: what it picked tonight and its live record per $1 risked beside random picks'.
+    // From 24.6 the AI stock picker's line: what it picked tonight and its live record per $1 risked beside random picks'.
     public JudgeView? Judge { get; init; }
 
     public IReadOnlyDictionary<string, IReadOnlyList<RevisionView>> Revisions { get; init; } = new Dictionary<string, IReadOnlyList<RevisionView>>(StringComparer.Ordinal);
@@ -546,7 +546,7 @@ public sealed partial class SinglePageApp
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, view.LeftOrders));
 
-        // From 24.6 the AI judge's one line, its own account and never one of the rules' buys; from 24.15 on a past night that
+        // From 24.6 the AI stock picker's one line, its own account and never one of the rules' buys; from 24.15 on a past night that
         // night's picks, and none where the judge did not run that night.
         if (view.Judge is { } judge && (view.Newest is null || judge.Night == view.Night))
         {

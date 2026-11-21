@@ -1187,7 +1187,7 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
 .history p.named{color:var(--ink-2);font-size:13.5px}
 .history details summary,.history p.read{cursor:pointer;color:var(--ink-2);font-size:13.5px}
 
-/* the AI judge: its scoreboard's tiles, its chart of the four accounts with the random accounts' band, its pick cards and
+/* the AI stock picker: its scoreboard's tiles, its chart of the four accounts with the random accounts' band, its pick cards and
    where it looked, every colour from the palette so both themes read it */
 .judge-tiles{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 10px}
 .judge-tiles .tile{flex:1 1 150px;background:var(--plot);border:1px solid var(--hair);border-radius:6px;padding:8px 10px;font-size:13.5px;color:var(--ink-2)}

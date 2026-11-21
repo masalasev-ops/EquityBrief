@@ -17,7 +17,7 @@ namespace EquityBrief.Tests.Checks;
 // either pattern, so it was a check narrower than it read rather than a live
 // fault, and that is the survivorship shape the Checks section argues about: a
 // check that silently narrows its own scope keeps passing.
-public class BannedProse
+public partial class BannedProse
 {
     static readonly string Banned = "hon" + "est";
 

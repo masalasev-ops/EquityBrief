@@ -8,11 +8,11 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Judge;
 
-// The AI judge's fact writer: for a night, every member of the three indices the night's ledger read, its fields, its
+// The AI stock picker's fact writer: for a night, every member of the three indices the night's ledger read, its fields, its
 // short row and its full sheet as the judge is shown them under the field list's version, a night written again replacing
 // its own rows, with one run log row of its own. It reads the night's stored rows alone, asks nothing of a network and
 // calls no model, and no rule reads what it writes.
-// see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+// see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price
 public sealed class JudgeFactWriter(IClock clock, string databaseFile) : IComponent
 {
     public static ComponentAccess Access => new(
@@ -73,7 +73,7 @@ public sealed class JudgeFactWriter(IClock clock, string databaseFile) : ICompon
         await ExecuteAsync(connection, transaction, AppendRun,
         [
             ("$run_id", runId), ("$stage", Stage), ("$started_at", Stamp(started)), ("$ended_at", Stamp(clock.UtcNow)), ("$rows", facts.Count),
-            ("$detail", FormattableString.Invariant($"the judge's facts of {day} under field list {JudgeFacts.Version}: {facts.Count} member(s), {(facts.Count == 0 ? "none" : counts)}")),
+            ("$detail", FormattableString.Invariant($"the picker's facts of {day} under field list {JudgeFacts.Version}: {facts.Count} member(s), {(facts.Count == 0 ? "none" : counts)}")),
         ], cancellation);
 
         await transaction.CommitAsync(cancellation);

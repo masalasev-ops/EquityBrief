@@ -781,7 +781,7 @@ public static class SchemaMigrations
 
     // From 24.14 the keys of the three to five facts of its sheet each of the judge's picks named as deciding it, in the order
     // named; null on a pick made before the judge named its facts.
-    // see: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
+    // see: Each of the picker's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
     const string AddJudgeFields = @"
         ALTER TABLE judge_pick ADD COLUMN fields TEXT;
     ";
@@ -805,12 +805,12 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
-    // From 24.4 the AI judge's nightly picks: its pin, the model, its file and window from the reading pin it was written
+    // From 24.4 the AI stock picker's nightly picks: its pin, the model, its file and window from the reading pin it was written
     // under with the judge's prompt version, append-only; one run row a night it ran for, its outcome among them a night
     // missed; every question it asked and what came back, append-only; and its picks, up to 5 a night ranked, each with the
     // hold and take-profit it chose, its reason and the prices code worked from the last close. All four written by the
     // judge's picker alone, and no rule reads any.
-    // see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
+    // see: The AI stock picker picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed
     const string CreateJudgePicks = @"
         CREATE TABLE judge_pin (
             id              INTEGER PRIMARY KEY,
@@ -874,11 +874,11 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
-    // From 24.3 the AI judge's facts of each night, a member's short row and full sheet as the judge is shown them under the
+    // From 24.3 the AI stock picker's facts of each night, a member's short row and full sheet as the judge is shown them under the
     // field list's version, written by the judge's fact writer alone, a night written again replacing its own rows; and the
     // naming test's answers, one row a member and round asked, append-only, written by the naming test alone. No rule reads
     // either.
-    // see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+    // see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price
     const string CreateJudgeFacts = @"
         CREATE TABLE judge_fact (
             index_code    TEXT NOT NULL,

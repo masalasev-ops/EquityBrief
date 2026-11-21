@@ -27,7 +27,7 @@ public sealed record JudgeNamingOutcome(string Run, DateOnly Session, string Ver
 // alone of the local model under the local model's lock, its short row and then its full sheet, every answer stored with
 // whether it named the company; a round passes where at most 2 in 100 of its answers named it and at most 5 in 100 were
 // refused. It asks nothing of a network, takes the lock or asks nothing, and writes one run log row of its own.
-// see: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
+// see: The AI stock picker starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts
 public sealed class JudgeNamingTest(IReadingModelFeed feed, LocalModelSettings settings, IClock clock, string databaseFile, string dataRoot, Func<TimeSpan, CancellationToken, Task>? pause = null) : IComponent
 {
     public static ComponentAccess Access => new(

@@ -10,15 +10,15 @@ public sealed record JudgeBars(IReadOnlyList<DateOnly> Sessions, double[] Opens,
 // What the median random account and its middle band stood at on a session.
 public sealed record JudgeBand(DateOnly Session, decimal Low, decimal Median, decimal High);
 
-// The AI judge's four accounts, walked by the core's one account function with the same money, sizing and costs: the
+// The AI stock picker's four accounts, walked by the core's one account function with the same money, sizing and costs: the
 // rules', every live rule's trades on the three indices as Paper trading averages them; the judge's, each pick bought at
 // the open after its night and walked under the plan it chose, its stop and take-profit set from the price it paid; random
 // picks', as many members each night as the judge picked, each under a plan drawn from the same menu, by a seeded draw
 // repeated 1,000 times and drawn as its median and the band 8 in 10 of them fall in; and the index held. Until the readings
 // for every stock on every session stand, each of the judge's picks is read against the same plan bought on every member
 // that night. No store holds a figure of any of them.
-// see: The AI judge's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the judge waits for that run
-// see: The readings for every stock on every session are built once before the reviewer, the judge's comparison reading the same plan on every stock until then
+// see: The AI stock picker's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the picker waits for that run
+// see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
 public static class JudgeAccounts
 {
     public const int RandomDraws = 1000;

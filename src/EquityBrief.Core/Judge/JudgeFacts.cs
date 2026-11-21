@@ -26,7 +26,7 @@ public sealed record JudgeFact(string Index, string Ticker, DateOnly Session, IR
 // step leaves empty are worked here from the stored daily bars, never in that step, so no rule's version moves: the
 // return over the year to a month ago, the distance from the year's high and, where the night's ladder holds a plan, its
 // reward against its risk.
-// see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+// see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price
 public static class JudgeFacts
 {
     public const string NotOnFile = "not on file";

@@ -179,14 +179,14 @@ public class SchemaColumns
     // 24.12: the two lines a filer's operating income falls back to.
     internal static string[] FallbackStoreRows => [CheckReach.Key(Scope.StoresTable, "Fallback facts")];
 
-    // 24.3: the AI judge's facts and its naming tests.
+    // 24.3: the AI stock picker's facts and its naming tests.
     internal static string[] JudgeStoreRows =>
     [
         CheckReach.Key(Scope.StoresTable, "Judge facts"),
         CheckReach.Key(Scope.StoresTable, "Judge naming tests"),
     ];
 
-    // 24.4: the AI judge's pins, runs, questions and picks.
+    // 24.4: the AI stock picker's pins, runs, questions and picks.
     internal static string[] JudgePickStoreRows =>
     [
         CheckReach.Key(Scope.StoresTable, "Judge pins"),

@@ -98,7 +98,7 @@ public partial class ReadSurface
         Assert.Matches("<article class=\"wo-card fam-edge\" data-family=\"breakout\" data-ticker=\"M2\" data-listed=\"2026-09-30\"", past);
 
         // The judge's line names that night's one pick, not the newest night's two.
-        Assert.Contains("<b>AI judge</b> Picked 1 stock that night in its own paper account.", past, StringComparison.Ordinal);
+        Assert.Contains("<b>AI stock picker</b> Picked 1 stock that night in its own paper account.", past, StringComparison.Ordinal);
 
         // Tonight's Home on the same store: no banner and no line on what happened since, the picker on the newest night.
         var tonight = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/home?universe=400"));

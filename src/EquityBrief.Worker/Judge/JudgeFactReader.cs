@@ -13,7 +13,7 @@ namespace EquityBrief.Worker.Judge;
 // business score the night's own, the news the stories published in the 30 days to the next morning as the labeller read
 // them by then, and the three fields the ledger's night step leaves empty worked from the bars to the night and the
 // night's ladder plan. It reads the store alone, opened for reading, and writes nothing.
-// see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price
+// see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price
 public static class JudgeFactReader
 {
     // The hour of the next morning, in UTC, before which everything read was stored: ahead of the next open.

@@ -1082,7 +1082,7 @@ Grain: one row per index, night and member the night's ledger read, from 24.3.
 
 Primary key: `index_code`, `session_date`, `ticker`.
 
-**The AI judge's facts of each night, written by the judge's fact writer alone and its own deleter: a night written again replaces its own rows** (see: The AI judge sees the fields the operator approved and nothing that names a company, a date or a price). From migration 153 each row holds the fields the operator approved at 24.1 and no other, read from the night's stored rows: the readings from `ledger_reading`, the sector from the newest `company` row filed by 13:00 UTC the next morning, the size as a band of the night's `member_reading` company value, the business score from `fundamental_score`, the stories published in the 30 days to that morning from `news_article` as `news_label` read them by then, and three fields the ledger's night step leaves empty worked from the stored year of `bar` rows and the night's `ladder` plan. No name, ticker, industry, date or price is in a row's texts. No rule, list, gate or record reads the table.
+**The AI stock picker's facts of each night, written by the picker's fact writer alone and its own deleter: a night written again replaces its own rows** (see: The AI stock picker sees the fields the operator approved and nothing that names a company, a date or a price). From migration 153 each row holds the fields the operator approved at 24.1 and no other, read from the night's stored rows: the readings from `ledger_reading`, the sector from the newest `company` row filed by 13:00 UTC the next morning, the size as a band of the night's `member_reading` company value, the business score from `fundamental_score`, the stories published in the 30 days to that morning from `news_article` as `news_label` read them by then, and three fields the ledger's night step leaves empty worked from the stored year of `bar` rows and the night's `ladder` plan. No name, ticker, industry, date or price is in a row's texts. No rule, list, gate or record reads the table.
 
 ### judge_naming
 Grain: one row per naming test, round and member asked, from 24.3.
@@ -1104,10 +1104,10 @@ Grain: one row per naming test, round and member asked, from 24.3.
 
 Primary key: `run_id`, `round`, `index_code`, `ticker`.
 
-**The naming test's answers, append-only, written by the naming test alone** (see: The AI judge starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts). From migration 153 a test run by hand draws 100 members of a night's `judge_fact` rows by its seed and asks the local model each one's short row and then its full sheet alone, under the local model's lock; a member's name is read from `listed_name`, and from its `membership` row where none is listed. The judge starts under a field list's version only where the newest test under it passed both rounds. Nothing updates or deletes a row, and no rule reads the table.
+**The naming test's answers, append-only, written by the naming test alone** (see: The AI stock picker starts only where the local model names no more than 2 in 100 of the companies behind a sample of its facts). From migration 153 a test run by hand draws 100 members of a night's `judge_fact` rows by its seed and asks the local model each one's short row and then its full sheet alone, under the local model's lock; a member's name is read from `listed_name`, and from its `membership` row where none is listed. The picker starts under a field list's version only where the newest test under it passed both rounds. Nothing updates or deletes a row, and no rule reads the table.
 
 ### judge_pin
-Grain: one row per version of the AI judge, from 24.4.
+Grain: one row per version of the AI stock picker, from 24.4.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -1119,13 +1119,13 @@ Grain: one row per version of the AI judge, from 24.4.
 | `size` | INTEGER | the file's size in bytes |
 | `modified` | TEXT | the file's last-modified UTC instant |
 | `context` | INTEGER | the window the model is loaded at |
-| `prompt_version` | TEXT | the judge's prompts' version, a hash over both instructions, the labels, the menu and the bounds |
+| `prompt_version` | TEXT | the picker's prompts' version, a hash over both instructions, the labels, the menu and the bounds |
 | `written_at` | TEXT | UTC instant |
 
 Primary key: `id`.
 
 ### judge_run
-Grain: one row per run of the AI judge, from 24.4.
+Grain: one row per run of the AI stock picker, from 24.4.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -1146,7 +1146,7 @@ Grain: one row per run of the AI judge, from 24.4.
 Primary key: `run_id`.
 
 ### judge_ask
-Grain: one row per question the AI judge asked and each time it asked it, from 24.4.
+Grain: one row per question the AI stock picker asked and each time it asked it, from 24.4.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -1184,7 +1184,7 @@ Grain: one row per pick of a night, up to five, from 24.4.
 
 Primary key: `session_date`, `rank`.
 
-**The AI judge's pin, runs, questions and picks, each written by the judge's picker alone** (see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed). From migration 154 the picker the night starts after its last step reads the night's `judge_fact` rows under the field list's version, starts only under a passed `judge_naming` test of that version, and asks the local model under its lock and under the newest `judge_pin`, its first written from the newest `reading_pin`. A run's pin where it is the first, its questions, its picks and its row are one write under the drain's lock; a night not stored before the next open is written as `missed` with no pick, and a night holding a run `picked`, `none` or `missed` is never run again. From migration 156 a pick naming no fact of its sheet, or one its sheet lacks, is refused and named on its run's `detail` and stores no row, and a pin under the one earlier prompt version the code names is followed by a pin of its own under the new version (see: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused). Nothing updates or deletes a row, and no rule reads any of the four tables.
+**The AI stock picker's pin, runs, questions and picks, each written by the judge picker alone** (see: The AI stock picker picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed). From migration 154 the picker the night starts after its last step reads the night's `judge_fact` rows under the field list's version, starts only under a passed `judge_naming` test of that version, and asks the local model under its lock and under the newest `judge_pin`, its first written from the newest `reading_pin`. A run's pin where it is the first, its questions, its picks and its row are one write under the drain's lock; a night not stored before the next open is written as `missed` with no pick, and a night holding a run `picked`, `none` or `missed` is never run again. From migration 156 a pick naming no fact of its sheet, or one its sheet lacks, is refused and named on its run's `detail` and stores no row, and a pin under the one earlier prompt version the code names is followed by a pin of its own under the new version (see: Each of the picker's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused). Nothing updates or deletes a row, and no rule reads any of the four tables.
 
 ### calendar
 Grain: one row per ticker, event date and kind.

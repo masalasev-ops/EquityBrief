@@ -8,18 +8,18 @@ using EquityBrief.Worker.Local;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, 24.7: the AI judge's replay of the nights after the model's cutoff: its plan worked by hand, a night
+// fixture-expectations, 24.7: the AI stock picker's replay of the nights after the model's cutoff: its plan worked by hand, a night
 // on or before the cutoff and a night already run left out, the total hours the product of the count and the minutes a
 // night; nothing replayed without the operator's word and the model yielded before each night to any process waiting on
 // it; a night's facts built again held to those stored, each difference named; and the replay's runs carrying the prefix
 // every surface reads apart.
-// see: The AI judge's replays print their hours before they start on the operator's word, a new version's over the same 60 nights
+// see: The AI stock picker's replays print their hours before they start on the operator's word, a new version's over the same 60 nights
 public partial class FixtureExpectations
 {
     // The row of section 18 24.7 adds that this check reaches.
     internal static readonly string[] JudgeReplayClaims =
     [
-        CheckReach.Key(Scope.FailureTable, "An AI judge replay without the operator's word, over a night on or before the model's cutoff, or with another process waiting on the model"),
+        CheckReach.Key(Scope.FailureTable, "An AI stock picker replay without the operator's word, over a night on or before the model's cutoff, or with another process waiting on the model"),
     ];
 
     static DateOnly ReplayDay(string day) => DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -36,7 +36,7 @@ public partial class FixtureExpectations
         Assert.Equal([ReplayDay("2025-02-03"), ReplayDay("2026-10-13"), ReplayDay("2026-10-14")], plan.Nights);
         Assert.Equal((5.0, 0.25, (string?)null), (plan.MinutesANight!.Value, plan.Hours!.Value, plan.Refused));
         Assert.Equal(plan.Nights.Count * plan.MinutesANight!.Value / 60.0, plan.Hours!.Value);
-        Assert.Equal("3 nights from 2025-02-03 to 2026-10-14, 5 minutes a night as the judge's live runs measured them, 0.25 hours of the local model in all", JudgeReplay.Words(plan));
+        Assert.Equal("3 nights from 2025-02-03 to 2026-10-14, 5 minutes a night as the picker's live runs measured them, 0.25 hours of the local model in all", JudgeReplay.Words(plan));
 
         // The cutoff's own night and the day before it are refused; the day after is not.
         Assert.True(JudgeReplay.OnOrBeforeCutoff(cutoff, cutoff));

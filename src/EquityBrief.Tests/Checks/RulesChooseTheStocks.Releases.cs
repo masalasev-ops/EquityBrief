@@ -10,7 +10,7 @@ namespace EquityBrief.Tests.Checks;
 // registered version whose history read is complete, so no source under the deciding folders names their table; the
 // research sections, the theme sections and the news labels stay barred to every deciding component. From 20.8 the setup
 // ledger and the walk-forward tester read them as well, through the same reader.
-// see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and a model judges a stock only for the AI judge's own account
+// see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and a model judges a stock only for the AI stock picker's own account
 // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
 // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
 public partial class RulesChooseTheStocks

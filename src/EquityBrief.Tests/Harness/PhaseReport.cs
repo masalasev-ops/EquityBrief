@@ -117,7 +117,7 @@ internal static class PhaseReport
         "15.22 Chart",
         "15.24 Home",
         "15.25 History",
-        "15.26 The AI judge",
+        "15.26 The AI stock picker",
         "15.27 The case for promotion",
         "15.11 How a reason's record is displayed",
         "16. Data stores and the read and write matrix",

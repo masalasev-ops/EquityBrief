@@ -5,11 +5,11 @@ using EquityBrief.Web.App;
 
 namespace EquityBrief.Api.Reading;
 
-// The AI judge's page as the store holds it, worked when the page is read: the judge's live picks walked into its account,
+// The AI stock picker's page as the store holds it, worked when the page is read: the judge's live picks walked into its account,
 // the random accounts drawn from one seed over the same nights and members, the rules' accounts on the three indices given
 // an equal share, the three indices' funds held, the scoreboard, whether it beats random so far, where it looked against the
 // rules' picks, the newest night's cards, and a replayed night's record apart from the live one.
-// see: The AI judge's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the judge waits for that run
+// see: The AI stock picker's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the picker waits for that run
 public static class JudgeScreen
 {
     // The seed the random accounts are drawn from, so the page draws the same band each time it is read.
@@ -32,8 +32,8 @@ public static class JudgeScreen
         // From 24.14 the record counts the live picks of the newest judge version alone, from its first night; and from the
         // 24.14 correction of 2026-11-21 each version's picks are bought and walked to their exits in an account of their own,
         // numbered in the order the versions first ran, an earlier version's drawn apart under its number.
-        // see: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
-        // see: Each judge version's picks are bought and walked in an account of its own, and the record counts the newest version's
+        // see: Each of the picker's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
+        // see: Each picker version's picks are bought and walked in an account of its own, and the record counts the newest version's
         var every = picks.Where(pick => !pick.Replayed).ToArray();
         var versions = Versions(every, runs);
         var version = versions.Length == 0 ? string.Empty : versions.OrderByDescending(one => one.Last).ThenByDescending(one => one.First).First().Key;

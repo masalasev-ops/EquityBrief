@@ -44,9 +44,9 @@ public partial class NightlyRun
             return new DrainStart(true, LabellerLine);
         }
 
-        public const string JudgeLine = "The AI judge was asked to start by the suite.";
+        public const string JudgeLine = "The AI stock picker was asked to start by the suite.";
 
-        // How many times the night asked for the AI judge.
+        // How many times the night asked for the AI stock picker.
         public int JudgeStarts { get; private set; }
 
         public DrainStart StartTheJudge()

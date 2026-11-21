@@ -5,11 +5,11 @@ using Declared = EquityBrief.Core.Components.ComponentAccess;
 
 namespace EquityBrief.Tests.Checks;
 
-// rules-choose-the-stocks, from 24.3: the AI judge is the one place a model judges a stock. Its components may read what a
+// rules-choose-the-stocks, from 24.3: the AI stock picker is the one place a model judges a stock. Its components may read what a
 // model wrote and ask the local model, and are named here as the check's one exception; they write the judge's own tables
 // and the run log alone, sit under folders no deciding component's code runs through, and no deciding component declares
 // a touch of the judge's tables nor any source under the deciding folders names one.
-// see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and a model judges a stock only for the AI judge's own account
+// see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and a model judges a stock only for the AI stock picker's own account
 public partial class RulesChooseTheStocks
 {
     // The judge's components, the check's one exception.
@@ -55,7 +55,7 @@ public partial class RulesChooseTheStocks
     ];
 
     [Fact]
-    public void TheJudgesComponentsAreTheOneExceptionAndNoDecidingComponentOrSourceTouchesTheJudgesTables()
+    public void ThePickersComponentsAreTheOneExceptionAndNoDecidingComponentOrSourceTouchesThePickersTables()
     {
         // The exception, by name: the judge's components are none of the deciding ones, and their folders none of the
         // deciding folders.
@@ -83,7 +83,7 @@ public partial class RulesChooseTheStocks
     }
 
     [Fact]
-    public void AReadOfTheJudgesTablesIsFoundWhereverItIsPlanted()
+    public void AReadOfThePickersTablesIsFoundWhereverItIsPlanted()
     {
         // A deciding component's declaration planted with a read of the judge's facts is found, and a clean one passes.
         var planted = new Declared([new StoreTouch(DataStore.Bar, Touch.Read), new StoreTouch(DataStore.JudgeFact, Touch.Read)], []);

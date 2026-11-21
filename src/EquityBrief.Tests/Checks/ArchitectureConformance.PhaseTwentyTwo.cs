@@ -168,16 +168,16 @@ public partial class ArchitectureConformance
         .. SchemaColumns.NamesStoreRows,
         .. FixtureExpectations.NamesClaims,
 
-        // Phase 24's from 24.3: the AI judge's fact writer and naming test, their stores, section 17's two rows and section 18's.
+        // Phase 24's from 24.3: the AI stock picker's fact writer and naming test, their stores, section 17's two rows and section 18's.
         .. FixtureExpectations.JudgeFactRows,
 
-        // And from 24.4: the AI judge's picker, its four stores, section 14's step, section 17's menu and section 18's two rows.
+        // And from 24.4: the AI stock picker's picker, its four stores, section 14's step, section 17's menu and section 18's two rows.
         .. FixtureExpectations.JudgePickRows,
 
-        // And from 24.5: section 17's row of the AI judge's four accounts.
+        // And from 24.5: section 17's row of the AI stock picker's four accounts.
         .. FixtureExpectations.JudgeAccountClaims,
 
-        // And from 24.6: the AI judge's page's five regions and Home's line of it.
+        // And from 24.6: the AI stock picker's page's five regions and Home's line of it.
         .. Reading.ReadSurface.JudgePageRows,
 
         // And from 24.7: section 18's row of the judge's replay.
