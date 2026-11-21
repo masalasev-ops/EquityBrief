@@ -91,7 +91,10 @@ public static class JudgeScreen
             var walk = PaperAccount.Walk(settings, [.. itsTrades.OfType<PaperTrade>()], [.. allSessions.Where(session => session >= one.First)], Close);
             var cards = its.Select((pick, at) => Card(pick, its.Count(other => other.Session == pick.Session)) with { Night = pick.Session, Held = HeldOf(itsTrades[at], walk) }).ToArray();
 
-            return new JudgeVersionView(number, one.First, one.Last, cards, JudgeScore.Of([.. itsTrades.Select(trade => (trade is { } held ? JudgeAccounts.ResultOf(held) : null, (double?)null))]), walk.Values);
+            double? noOverSamePlan = null;
+            (double? Result, double? OverSamePlan)[] results = [.. itsTrades.Select(trade => (trade is { } held ? JudgeAccounts.ResultOf(held) : null, noOverSamePlan))];
+
+            return new JudgeVersionView(number, one.First, one.Last, cards, JudgeScore.Of(results), walk.Values);
         }
 
         var numbered = versions.Select((one, at) => (One: one, Number: at + 1)).ToArray();
