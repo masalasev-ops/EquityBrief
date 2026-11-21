@@ -33,7 +33,7 @@ public partial class FixtureExpectations
 
     // The checklist's two items on the copies, the 13.10 correction of 2026-10-08.
     internal const string StoreCopiedItem =
-        "Anything to worry about, the store copied after the night began, a copy started since waiting or copying or the copy's own run " +
+        "Anything to worry about, the store copied after the night began or a copy started since waiting or copying or the copy's own run " +
         "after the night not yet come, and where one was ended before it finished or none was started by its run its start or the run's named";
 
     internal const string StoreCopiesKeptItem =

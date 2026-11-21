@@ -1386,7 +1386,7 @@ public partial class NightlyRun
         Assert.StartsWith("Ask the Treasury, and not the provider, for its daily par yields", steps[^5], StringComparison.Ordinal);
         Assert.StartsWith("Ask for six reports taken in turn", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Start no news labeller", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("Start the store's copy", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Start no copy of the store", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("From 24.4, start the AI judge", steps[^1], StringComparison.Ordinal);
         Assert.DoesNotContain(steps, step => step.Contains("overnight queue", StringComparison.OrdinalIgnoreCase));
 
@@ -1583,7 +1583,7 @@ public partial class NightlyRun
         Assert.DoesNotContain(steps, step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal));
         Assert.StartsWith("Ask for six reports taken in turn", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Start no news labeller", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("Start the store's copy", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Start no copy of the store", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("From 24.4, start the AI judge", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.
