@@ -162,7 +162,7 @@ public sealed partial class MarkRenderer
 
             if (variant is not null)
             {
-                body.Append(Invariant, $"<div class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\"><p class=\"band-head\">A variant being tested, not tonight's holdings</p><p>{Escaped(VersionName(variant.Chosen))}</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better and you approve it on the Monthly check-up.</p></div>");
+                body.Append(Invariant, $"<div class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\"><p class=\"band-head\">A variant being tested, not tonight's holdings</p><p>{Escaped(VersionName(variant.Chosen))}</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better and you approve it on the Improvement loop.</p></div>");
 
                 // A version registered before its setup's settings were fixed says how the tester judged its design.
                 // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one

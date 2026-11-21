@@ -110,7 +110,7 @@ public partial class ReadSurface
         Assert.Equal(
             ["251-day high", "volume 1.5 times", "ranges at 0.85", "stop 1.5 moves"],
             Regex.Matches(card, "<li class=\"rule-chip(?: differs)?\">([^<]*)</li>").Select(match => match.Groups[1].Value));
-        Assert.Contains("<div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A variant being tested, not tonight's picks</p><p>Variant: needs a close at a 251-day high</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better over enough trades and you approve it on the Monthly check-up.</p></div>", card, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A variant being tested, not tonight's picks</p><p>Variant: needs a close at a 251-day high</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better over enough trades and you approve it on the Improvement loop.</p></div>", card, StringComparison.Ordinal);
 
         // Its words with the clause the live rule's lack marked: the 251-session high, where the live rule reads 126.
         Assert.Contains("<mark class=\"differs\">", card, StringComparison.Ordinal);

@@ -209,9 +209,9 @@ public sealed partial class MarkRenderer
     // From the operator's order of 2026-11-14 why a setup reading filings has no record here from 2019: the walk that gives the
     // other setups theirs replays prices alone, and its filings reach back only so far; its own per-rule test over the long
     // history judges it from its first test year on the index, three learning years after its filings cover the index, on the
-    // Monthly check-up.
+    // Improvement loop.
     public static string FilingsUntested(SetupLongRecord record) => FormattableString.Invariant(
-        $"the walk that gives the other setups their record from {EquityBrief.Core.History.LongLedger.StandingFrom.Year} replays prices alone, and this setup buys on filings, which reach back only to {record.ReachesBack}. Its own test over the long history judges it from {EquityBrief.Core.Loop.LongTest.FirstTestYear(record.Family, record.Index)}, on the Monthly check-up.");
+        $"the walk that gives the other setups their record from {EquityBrief.Core.History.LongLedger.StandingFrom.Year} replays prices alone, and this setup buys on filings, which reach back only to {record.ReachesBack}. Its own test over the long history judges it from {EquityBrief.Core.Loop.LongTest.FirstTestYear(record.Family, record.Index)}, on the Improvement loop.");
 
     public static string FilingsUntestedShort(SetupLongRecord record) => FormattableString.Invariant(
         $"the walk from {EquityBrief.Core.History.LongLedger.StandingFrom.Year} replays prices alone, and this setup buys on filings; its own test over the long history judges it from {EquityBrief.Core.Loop.LongTest.FirstTestYear(record.Family, record.Index)}.");

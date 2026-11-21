@@ -283,7 +283,7 @@ public partial class ReadSurface
         Assert.Contains("<span class=\"lr-years\">better in 3 of 4</span>", row, StringComparison.Ordinal);
         Assert.Contains("<span class=\"lr-count\">400 trade(s) of 300</span>", row, StringComparison.Ordinal);
         Assert.Contains("<g data-year=\"2024\" data-current=\"2.5\" data-proposed=\"4\">", row, StringComparison.Ordinal);
-        Assert.Contains("Its buttons are at the top of the <a href=\"#/loop?universe=400&month=2026-10\">Monthly check-up</a>.", row, StringComparison.Ordinal);
+        Assert.Contains("Its buttons are at the top of the <a href=\"#/loop?universe=400&month=2026-10\">Improvement loop</a>.", row, StringComparison.Ordinal);
         Assert.True(page.IndexOf("data-card=\"loop-summary\"", StringComparison.Ordinal) < page.IndexOf("data-card=\"loop-pullback\"", StringComparison.Ordinal));
     }
 

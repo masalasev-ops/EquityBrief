@@ -74,6 +74,20 @@ public class RevisionPages
         }
     }
 
+    // The Improvement loop's page joins the word check on the operator's approval of 24.16's mockup of 2026-11-21: a setup
+    // runs a revision and each copy beside it is a variant of that revision, and no visible word says otherwise.
+    [Fact]
+    public async Task TheImprovementLoopKeepsTheFourRulesOverEveryConstructedStore()
+    {
+        var pages = (await Reading.ReadSurface.LoopPagesForPlainWords()).Where(page => page.Page == PlainWords.LoopPage).ToArray();
+
+        Assert.NotEmpty(pages);
+
+        string[] faults = [.. pages.SelectMany(page => Faults(page.Html).Select(fault => page.Drawn + ": " + fault))];
+
+        Assert.True(faults.Length == 0, string.Join("\n", faults));
+    }
+
     [Fact]
     public void EachRuleIsFoundWhereAPageBreaksIt()
     {

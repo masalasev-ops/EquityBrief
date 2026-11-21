@@ -7,6 +7,22 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-21 - docs/ARCHITECTURE.html, docs/BUILD_PLAN.md and docs/RUNBOOK.md - the Loop page drawn as the Improvement loop and held to Paper trading's words, at 24.16
+Decision: The Improvement loop names a setup's revision and its variants in Paper trading's words
+Was:
+> ARCHITECTURE.html, section 15.20's route: "... reached from the header's menu from 19.2 and drawn under the name Monthly check-up from 22.61, where a badge counts ..."
+> ARCHITECTURE.html, section 15.20's row: "Choosing a version by its recent record"
+> ARCHITECTURE.html, figure 15.5's title, description, caption and key: "The Monthly check-up, its parts numbered ...", "The Monthly check-up from its opening ...", "Figure 15.5. The Monthly check-up and its parts ...", "The Monthly check-up as the operator opens it ..."
+> BUILD_PLAN.md, 24.16: "... and their answer is kept word for word. Builds nothing and writes nothing in the corpus but its entry." and its done condition ending "... and the operator's answer on it is stored word for word and cited by the entry."
+> RUNBOOK.md, the freeze's line: "... to the day before the monthly run of 6 Feb 2027, the Monthly check-up offers no Approve ..."
+Now:
+> "... drawn under the name Monthly check-up from 22.61 and Improvement loop from 24.16, its words naming a setup's running revision and each copy run beside it a variant of that revision as Paper trading's do, and no visible word naming a version, a live rule or a list (see: The Improvement loop names a setup's revision and its variants in Paper trading's words), where a badge counts ..."
+> "Choosing a variant by its recent record"
+> each "The Monthly check-up" in figure 15.5's words reads "The Improvement loop"
+> "... and their answer is kept word for word. On their approval of 2026-11-21, kept as Appendix S of the plan's file, the mockup speaks Paper trading's words of a revision and its variants, and the page it draws is renamed Improvement loop in the menu and on every page that points to it and joins the word check Paper trading is held to (see: ...). Writes the decision, the Loop page's route paragraph and row name, the guide, the runbook's line and the changelog." and its done condition gaining "; the Loop page over every constructed store passes the word check, asserted, and the menu and each page pointing to it name the Improvement loop, asserted; and one mutation is shown red, the rule stated before the run."
+> "... the Improvement loop, the Monthly check-up until 24.16, offers no Approve ..."
+Why: the operator approved 24.16's mockup on 2026-11-21 with five changes, kept word for word as Appendix S of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`: the loop speaks Paper trading's and Past picks' words, the loop page joins the word check, and the menu item "Monthly check-up" becomes "Improvement loop". The page's choosing table heading said "version", and four of its lines said "live" or "list", which the word check refuses.
+
 ### 2026-11-21 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the heavyweights' books chosen over the long history, at 24.8
 Decision: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
 Was:

@@ -121,11 +121,11 @@ public partial class ReadSurface
         Assert.DoesNotContain("waits for your word", whole, StringComparison.Ordinal);
         Assert.DoesNotContain("Waiting for you", whole, StringComparison.Ordinal);
         Assert.Contains("Nothing needs you this month.", whole, StringComparison.Ordinal);
-        Assert.Contains("You approved one change on October 9, 2026. It goes live with the next night's run.", whole, StringComparison.Ordinal);
+        Assert.Contains("You approved one change on October 9, 2026. It runs from the next night.", whole, StringComparison.Ordinal);
         Assert.Contains("one beat luck and you have decided on it", whole, StringComparison.Ordinal);
         Assert.Contains("one passed, and you have decided on it.", whole, StringComparison.Ordinal);
         Assert.Contains("data-result=\"changed\">Changed</td>", whole, StringComparison.Ordinal);
-        Assert.Contains("Approved, goes live with the next night's run", whole, StringComparison.Ordinal);
+        Assert.Contains("Approved, runs from the next night", whole, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -186,7 +186,7 @@ public partial class ReadSurface
             [new CardLineView(1, EquityBrief.Core.Cards.CardLines.TrendName, "tick", "breakout: its rule, the setting; its change approved on the Loop page, exit: the seventh")], null);
         var read = Regex.Replace(WebUtility.HtmlDecode(new MarkRenderer().DecisionCard(card)), "<[^>]+>", " ");
 
-        Assert.Contains("approved on the Monthly check-up", read, StringComparison.Ordinal);
+        Assert.Contains("approved on the Improvement loop", read, StringComparison.Ordinal);
         Assert.DoesNotContain("the Loop page", read, StringComparison.Ordinal);
     }
 

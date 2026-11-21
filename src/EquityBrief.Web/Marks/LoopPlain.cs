@@ -11,7 +11,9 @@ namespace EquityBrief.Web.Marks;
 // see: The Monthly check-up opens on what needs the reader and draws each setup's changes on a page of its own
 public static class LoopPlain
 {
-    public const string PageName = "Monthly check-up";
+    // The menu's name for the page from 24.16, on the operator's approval of its mockup of 2026-11-21.
+    // see: The Improvement loop names a setup's revision and its variants in Paper trading's words
+    public const string PageName = "Improvement loop";
 
     public const string ScoreGroup = "A score learned from past results";
 

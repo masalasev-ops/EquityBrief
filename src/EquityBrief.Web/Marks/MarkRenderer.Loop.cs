@@ -118,7 +118,7 @@ public sealed partial class MarkRenderer
 
         var html = new StringBuilder();
 
-        html.Append(Invariant, $"<div class=\"loop-choices\" data-family=\"{Escaped(family)}\" data-choices=\"{own.Length}\"><h5>Choosing a version by its recent record</h5>");
+        html.Append(Invariant, $"<div class=\"loop-choices\" data-family=\"{Escaped(family)}\" data-choices=\"{own.Length}\"><h5>Choosing a variant by its recent record</h5>");
         html.Append("<div class=\"tbl-wrap\"><table class=\"loop-choices-table\"><thead><tr><th>Procedure</th><th>What it does</th><th class=\"r\">Trades</th><th class=\"r\">Could this be luck</th><th>Beat staying put</th></tr></thead><tbody>");
 
         foreach (var choice in own)
@@ -127,7 +127,7 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<td class=\"r num\">{(choice.Units is { } units ? units.ToString(Invariant) : "none")}</td><td class=\"r num\">{(choice.Adjusted is { } adjusted ? adjusted.ToString("0.000", Invariant) : "not read")}</td><td>{(choice.Why is { } why ? Escaped(why) : choice.Passed ? "yes" : "no")}</td></tr>");
         }
 
-        html.Append("</tbody></table></div><p class=\"loop-choices-note\">Each walks the setup's own versions and switches to the one with the best recent record each month. Making one the way the setup runs waits on your word; there is no press for it here.</p></div>");
+        html.Append("</tbody></table></div><p class=\"loop-choices-note\">Each walks the setup's own variants and switches to the one with the best recent record each month. Making one the way the setup runs waits on your word; there is no press for it here.</p></div>");
 
         return html.ToString();
     }
@@ -371,7 +371,7 @@ public sealed partial class MarkRenderer
     {
         if (decided.Alarms.Count == 0)
         {
-            return "<p class=\"degraded\" data-loop-alarm=\"none\">The live alarm has read no period on this index yet: a month, or a book's quarter, is read once it has closed with every trade that ended in it holding its edge, against the newest tester run's reference.</p>";
+            return "<p class=\"degraded\" data-loop-alarm=\"none\">The safety alarm has read no period on this index yet: a month, or a book's quarter, is read once it has closed with every trade that ended in it holding its edge, against the newest tester run's reference.</p>";
         }
 
         var html = new StringBuilder();
