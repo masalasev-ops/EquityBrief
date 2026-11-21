@@ -21014,3 +21014,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1687 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06.
+
+### 24.14 - correction: each judge version's picks bought and walked in an account of their own   2026-11-21
+
+Queue:      done, 24.0 to 24.15 and their corrections; in progress, this correction, before the night of 2026-11-23; next,
+            24.16, the loop page's mockup, with the operator for their approval.
+Built:      on the operator's word of 2026-11-21, kept as Appendix R of the plan's file: 24.14 counted an earlier judge
+            version's picks in no account, so the five picks of the night of 2026-11-20 would have been drawn with no
+            account buying them once the new prompt ran. The judge's page now numbers its versions in the order each first
+            ran, off its live picks and the live runs under each pin. The newest version's picks are the record and the four
+            accounts, drawn from its first night. Each earlier version's picks are bought at the open after their night and
+            walked to their exits in that version's own account, worked when the page is read; drawn in a region of their own
+            under "Version 1, picked 20 Nov", each card saying what its account did with the pick, its prices from the price
+            it paid once bought; its account's line drawn apart beneath the four accounts, labelled. A card says bought only
+            where the account's walk took the trade. Home on that night names the version's account. Section 15.26's row,
+            the decision, the guide and the changelog.
+Measured:   read back over a constructed scratch store, never the operator's, at 1440 and a true 390 in both palettes: version
+            1's five picks of 20 Nov bought on Mon 23 Nov, AAA sold at 3 risks and DDD at -1.2, $0.90 per $1 risked over
+            the two closed, worked by hand; version 2's record from 23 Nov; no page wider than its screen.
+Tests:      3 new: a version's picks keeping their own account when the version changes, read back off the page and worked by
+            hand, with the store before version 2 runs reading version 1 as the record and every card drawn under an account
+            that buys it; Home on an earlier version's night naming its account; and no source the correction writes pinned
+            by a rule's version.
+Claims:     1673, one more: section 15.26's row of an earlier version's picks.
+Pins:       none moved, asserted.
+Mutated:    the rule: each guard the correction adds taken out. m1 the earlier versions left off the page: red, version 1's
+            region and its account gone. m2 an earlier version's account walked with no trades: survived at first, the cards
+            still reading bought; the cards now say bought only where the account's walk took the trade, and m2 is red.
+            Each filtered to its tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3900 of 3900 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 67 tables, 1673 claims, 1673
+            passing, none out of scope and none unexamined, 1688 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06.

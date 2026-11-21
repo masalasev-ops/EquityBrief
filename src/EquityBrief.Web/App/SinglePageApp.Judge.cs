@@ -15,7 +15,22 @@ public sealed record JudgeCardView(int Rank, int Of, string Ticker, string? Comp
     public IReadOnlyList<JudgeFactView>? Named { get; init; }
 
     public IReadOnlyList<JudgeFactView> Rest { get; init; } = [];
+
+    // From the 24.14 correction of 2026-11-21, on an earlier version's card, the night it was picked on and what that
+    // version's account did with it.
+    public DateOnly? Night { get; init; }
+
+    public JudgeHeld? Held { get; init; }
 }
+
+// What an account did with one of the judge's picks: the session it bought at the open and the price it paid, its stop,
+// take-profit and give-up distance from that price, the session and price it sold at with its result per $1 risked once its
+// walk ended, and why the account skipped it where it did.
+public sealed record JudgeHeld(DateOnly Bought, decimal Paid, decimal? Stop, decimal? Target, decimal? Trail, DateOnly? Ended, decimal? Sold, double? Result, string? Skipped);
+
+// From the 24.14 correction of 2026-11-21 an earlier judge version as its page draws it apart from the record: its number in
+// the order the versions first ran, its first and last nights, its picks' cards, its own account's scoreboard and its line.
+public sealed record JudgeVersionView(int Number, DateOnly First, DateOnly Last, IReadOnlyList<JudgeCardView> Picks, JudgeScoreboard Score, IReadOnlyList<(DateOnly Session, decimal Value)> Values);
 
 // One fact of a pick's sheet as its card draws it: its words, its value as the judge was shown it, and a plain comparison
 // where its value's sign says one.
@@ -79,6 +94,14 @@ public sealed record JudgeView(
     // From 24.14 the first night of the newest judge version where an earlier version picked before it, the night its
     // record counts from.
     public DateOnly? CountedFrom { get; init; }
+
+    // From the 24.14 correction of 2026-11-21 each earlier version apart from the record, the record's own number where
+    // there is one, and the earlier version whose picks the drawn night's are.
+    public IReadOnlyList<JudgeVersionView> Earlier { get; init; } = [];
+
+    public int? RecordNumber { get; init; }
+
+    public JudgeVersionView? PicksFrom { get; init; }
 }
 
 // The AI judge's page: the four accounts' chart, the scoreboard of its live record, each pick's card in the words of the rule
@@ -109,9 +132,14 @@ public sealed partial class SinglePageApp
         region.Append(Cards.Masthead("AI judge", "<span class=\"m-screen\">AI judge</span>", view.Night is { } night ? "Computed for " + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "Not run yet"));
         region.Append(Cards.Computed("AI judge", $"<p data-summary>{Escaped(JudgeLede)}</p>{RunLine(view)}{CountedFromLine(view)}", title: "Your local AI picks its own stocks, in its own paper account", region: "judge-lede"));
         region.Append(Cards.Computed("Scoreboard", EmptyRecord(view) ?? Scoreboard(view), title: "How its live record stands", region: "judge-score"));
-        region.Append(Cards.Computed("Four accounts", EmptyRecord(view) ?? "<p data-summary>The judge's account beside the rules', random picks' and the index's, each from the judge's first night.</p>" + JudgeChart(view), title: "Four accounts, same money, same sizing, same costs", lede: Escaped(JudgeReplayedLine), region: "judge-chart"));
-        region.Append(Cards.Computed("Tonight", $"<p data-summary>{(view.Picks.Count == 0 ? "The judge picked no stock tonight." : $"The judge picked {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} tonight, best first.")}</p>" + PickCards(view), title: $"The AI judge's picks tonight ({view.Picks.Count})", lede: "Each card shows what the AI saw, why it picked the stock, and the plan code set for it. Each buys at the next open, at whatever price it opens; nobody knows that price beforehand.", region: "judge-picks"));
+        region.Append(Cards.Computed("Four accounts", (EmptyRecord(view) ?? $"<p data-summary>The judge's account beside the rules', random picks' and the index's, each from {(view.RecordNumber is { } number ? $"version {number}'s" : "the judge's")} first night.</p>" + JudgeChart(view.Lines, view.Band, "The four accounts' returns since the judge started")) + ApartCharts(view), title: "Four accounts, same money, same sizing, same costs", lede: Escaped(JudgeReplayedLine), region: "judge-chart"));
+        region.Append(Cards.Computed("Tonight", $"<p data-summary>{(view.Picks.Count == 0 ? "The judge picked no stock tonight." : $"The judge picked {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} tonight, best first.")}</p>" + PickCards(view.Picks, view.Score, null), title: $"The AI judge's picks tonight ({view.Picks.Count})", lede: "Each card shows what the AI saw, why it picked the stock, and the plan code set for it. Each buys at the next open, at whatever price it opens; nobody knows that price beforehand.", region: "judge-picks"));
         region.Append(Cards.Computed("Where the AI looked", LookedSummary(view) + Looked(view), title: "How its picks compare with the rules', since it started", region: "judge-looked"));
+
+        foreach (var earlier in view.Earlier)
+        {
+            region.Append(Cards.Computed(VersionWords(earlier), VersionSummary(earlier, view.RecordNumber) + PickCards(earlier.Picks, earlier.Score, earlier), title: VersionWords(earlier) + ": its own account, apart from the record", region: string.Create(CultureInfo.InvariantCulture, $"judge-version-{earlier.Number}")));
+        }
 
         if (view.Replayed is { } replayed)
         {
@@ -126,7 +154,7 @@ public sealed partial class SinglePageApp
     // The line Home draws for the judge: what it picked tonight, or from 24.15 on a past night that night, and its live record
     // per $1 risked beside random picks'.
     public static string JudgeHomeLine(JudgeView view, bool past = false) =>
-        $"<p class=\"judge-home\" data-home=\"judge\"><b>AI judge</b> Picked {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} {(past ? "that night" : "tonight")} in its own paper account. "
+        $"<p class=\"judge-home\" data-home=\"judge\"><b>AI judge</b> Picked {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} {(past ? "that night" : "tonight")} {(view.PicksFrom is { } from ? $"in the account of {Escaped(VersionWords(from))}, kept apart from its record" : "in its own paper account")}. "
         + (view.Score.PerDollar is { } made
             ? $"Since it started: {Dollars(made)} per $1 risked, against {(view.RandomPerDollar is { } random ? Dollars(random) : "nothing yet")} for random picks. "
             : "No trade of it has closed yet. ")
@@ -137,27 +165,73 @@ public sealed partial class SinglePageApp
         : view.Outcome is "picked" or "none" or null ? string.Empty
         : $"<p class=\"judge-run\" data-outcome=\"{Escaped(view.Outcome)}\">The judge's run for {night.ToString("d MMM yyyy", CultureInfo.InvariantCulture)} was {Escaped(view.Outcome)}{(string.IsNullOrEmpty(view.Why) ? string.Empty : ": " + Escaped(view.Why))}. A night it misses is never filled in later.</p>";
 
-    // From 24.14 where an earlier judge version picked before the newest, the night the record counts from.
+    // From 24.14 where an earlier judge version picked before the newest, the night the record counts from; from the 24.14
+    // correction of 2026-11-21 with the newest version's number, each earlier version's picks walked in an account of its own.
     static string CountedFromLine(JudgeView view) =>
         view.CountedFrom is { } from
-            ? $"<p class=\"judge-version\" data-version=\"counted\">{Escaped(CountedFromWords(from))}</p>"
+            ? $"<p class=\"judge-version\" data-version=\"counted\">{Escaped(CountedFromWords(from, view.RecordNumber ?? 2))}</p>"
             : string.Empty;
 
-    public static string CountedFromWords(DateOnly from) =>
-        "Its record counts from the night of " + from.ToString("d MMM yyyy", CultureInfo.InvariantCulture)
-        + ", when the judge began naming the facts behind each pick. Its earlier picks are counted in no account.";
+    public static string CountedFromWords(DateOnly from, int number) =>
+        string.Create(CultureInfo.InvariantCulture, $"Its record counts version {number}'s picks alone, from the night of ")
+        + from.ToString("d MMM yyyy", CultureInfo.InvariantCulture)
+        + ". Each earlier version's picks are bought and walked to their exits in an account of their own, drawn apart under its number and never added to the record.";
+
+    // An earlier version's name: its number and the nights it picked on.
+    public static string VersionWords(JudgeVersionView version) =>
+        string.Create(CultureInfo.InvariantCulture, $"Version {version.Number}, picked ")
+        + version.First.ToString("d MMM", CultureInfo.InvariantCulture)
+        + (version.Last > version.First ? " to " + version.Last.ToString("d MMM", CultureInfo.InvariantCulture) : string.Empty);
+
+    // What an earlier version's account holds: its picks, where each was bought, and its closed trades.
+    public static string VersionSummaryWords(JudgeVersionView version, int? recordNumber)
+    {
+        var count = version.Picks.Count;
+        var bought = version.Picks.Count(pick => pick.Held is { Skipped: null });
+        var opens = version.First == version.Last ? "at the open on " + Open(version.First).ToString("ddd d MMM", CultureInfo.InvariantCulture) : "each at the open after its night";
+        var closed = version.Score.Closed == 0
+            ? "None of its trades has closed yet."
+            : string.Create(CultureInfo.InvariantCulture, $"{version.Score.Closed} of its trades {(version.Score.Closed == 1 ? "has" : "have")} closed, {version.Score.Winners} of them winners") + (version.Score.PerDollar is { } made ? $", {Dollars(made)} made per $1 risked." : ".");
+
+        return string.Create(CultureInfo.InvariantCulture, $"{VersionWords(version)}: {count} pick{(count == 1 ? string.Empty : "s")}, bought {opens} in this version's own account and walked to their exits by their plans, the same money, sizing and costs as the record's. {bought} of {count} bought so far. They are never added to ")
+            + (recordNumber is { } number ? string.Create(CultureInfo.InvariantCulture, $"version {number}'s record. ") : "the record. ")
+            + closed;
+    }
+
+    static string VersionSummary(JudgeVersionView version, int? recordNumber) =>
+        $"<p class=\"judge-version\" data-version=\"{version.Number}\" data-summary>{Escaped(VersionSummaryWords(version, recordNumber))}</p>";
+
+    // The first session the exchange trades after a night, the open its picks buy at.
+    static DateOnly Open(DateOnly night)
+    {
+        var day = night.AddDays(1);
+
+        while (!Core.Bars.ExchangeClosures.IsSession(day))
+        {
+            day = day.AddDays(1);
+        }
+
+        return day;
+    }
+
+    // Each earlier version's account drawn apart beneath the four, labelled with its number and never added to them.
+    static string ApartCharts(JudgeView view) =>
+        string.Concat(view.Earlier.Select(version =>
+            $"<div class=\"judge-apart\" data-apart=\"{version.Number.ToString(CultureInfo.InvariantCulture)}\"><p class=\"judge-apart-h\"><b>{Escaped(VersionWords(version))}, apart from the record.</b> Its own account, the same money, sizing and costs, never added to the four above.</p>"
+            + JudgeChart([new JudgeLineView(VersionWords(version) + ", its own account", version.Values)], [], VersionWords(version) + "'s own account") + "</div>"));
 
     // From 24.13, until any of the judge's live picks has been bought, why the scoreboard and the four accounts hold nothing,
     // the night and the open read from its first stored picks; none once one is bought, or before it has picked.
     public static string? EmptyRecord(JudgeView view) =>
         view.Bought || view.FirstNight is not { } night || view.FirstOpen is not { } open
             ? null
-            : "<p class=\"empty\" data-empty=\"record\" data-summary>" + Escaped(EmptyRecordWords(night, open)) + "</p>";
+            : "<p class=\"empty\" data-empty=\"record\" data-summary>" + Escaped(EmptyRecordWords(night, open, view.RecordNumber)) + "</p>";
 
-    public static string EmptyRecordWords(DateOnly night, DateOnly open) =>
-        "The judge's first picks, made on the night of " + night.ToString("d MMM", CultureInfo.InvariantCulture)
+    public static string EmptyRecordWords(DateOnly night, DateOnly open, int? number = null) =>
+        (number is { } version ? string.Create(CultureInfo.InvariantCulture, $"Version {version}'s first picks") : "The judge's first picks")
+        + ", made on the night of " + night.ToString("d MMM", CultureInfo.InvariantCulture)
         + ", are bought at the open on " + open.ToString("ddd d MMM", CultureInfo.InvariantCulture)
-        + ". The accounts start from then.";
+        + (number is null ? ". The accounts start from then." : ". Its record and the four accounts start from then.");
 
     static string Scoreboard(JudgeView view)
     {
@@ -178,26 +252,39 @@ public sealed partial class SinglePageApp
         return html.ToString();
     }
 
-    static string PickCards(JudgeView view)
+    // The cards of the record's newest night, or from the 24.14 correction of 2026-11-21 of an earlier version, each of those
+    // saying what that version's account did with it and its prices worked from the price it paid once bought.
+    static string PickCards(IReadOnlyList<JudgeCardView> picks, JudgeScoreboard score, JudgeVersionView? version)
     {
-        if (view.Picks.Count == 0)
+        if (picks.Count == 0)
         {
             return string.Empty;
         }
 
         var html = new StringBuilder("<div class=\"home-ideas judge-ideas\">");
 
-        foreach (var pick in view.Picks)
+        foreach (var pick in picks)
         {
-            var risk = pick.LastClose - pick.Stop;
+            var held = pick.Held is { Skipped: null } taken ? taken : null;
+            var from = held?.Paid ?? pick.LastClose;
+            var stop = held?.Stop ?? pick.Stop;
+            var target = held?.Target ?? pick.Target;
+            var risk = from - stop;
             var moves = JudgeMenu.HoldOf(pick.Hold)?.StopMoves;
             var whole = string.Equals(pick.Shape, JudgeMenu.Whole, StringComparison.Ordinal);
+            var night = pick.Night is { } on ? "on the night of " + on.ToString("d MMM", CultureInfo.InvariantCulture) : "tonight";
 
             // From 24.14 Home's pick card: its head and tags, the sentence in quotes, the facts the judge named and the rest of
             // its sheet folded, the price boxes, the judge's record and the gain and loss bar.
             html.Append($"<article class=\"home-idea judge-card\" data-ticker=\"{Escaped(pick.Ticker)}\">");
             html.Append($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\"><a href=\"{MarkRenderer.ChartRoute}{Escaped(pick.Ticker)}\">{Escaped(pick.Ticker)}</a></div><div class=\"home-co\">{Escaped(pick.Company ?? string.Empty)}</div></div><span class=\"tag-stack\"><span class=\"ai-tag\">AI judge</span><span class=\"ai-note\">Not one of the rules' buys</span></span></div>");
-            html.Append(CultureInfo.InvariantCulture, $"<p class=\"home-verdict judge-saw\"><b>The AI judge's pick, ranked {pick.Rank} of {pick.Of} tonight.</b> It saw {Escaped(pick.Sector is null or JudgeFacts.NotOnFile ? "no sector on file" : pick.Sector)}, {Escaped(SizeWords(pick.Size))}, with no name, ticker or date.</p>");
+            html.Append(CultureInfo.InvariantCulture, $"<p class=\"home-verdict judge-saw\"><b>The AI judge's pick, ranked {pick.Rank} of {pick.Of} {night}.</b> It saw {Escaped(pick.Sector is null or JudgeFacts.NotOnFile ? "no sector on file" : pick.Sector)}, {Escaped(SizeWords(pick.Size))}, with no name, ticker or date.</p>");
+
+            if (version is not null)
+            {
+                html.Append($"<p class=\"judge-since\" data-since>{Escaped(HeldWords(pick, version))}</p>");
+            }
+
             html.Append("<p class=\"facts-h\">Why the AI picked it, in its words</p>");
             html.Append($"<p class=\"ai-quote\">\"{Escaped(pick.Reason)}\"<small>Its sentence, as the local model wrote it.</small></p>");
 
@@ -214,19 +301,21 @@ public sealed partial class SinglePageApp
             }
 
             html.Append("<div class=\"home-prices\">");
-            html.Append($"<div><span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close ${Figures.Price(pick.LastClose)}.</span></div>");
-            html.Append(CultureInfo.InvariantCulture, $"<div><span>Sell if it closes below</span><b class=\"stop\">${Figures.Price(pick.Stop)}</b><span class=\"sale-note judge-stop\">{moves:0.##} typical daily move{(moves == 1 ? string.Empty : "s")} under the price it pays.</span></div>");
-            html.Append($"<div data-sale=\"target\"><span>{(whole ? "Take profit at" : "Take profit on half at")}</span><b class=\"aim\">${Figures.Price(pick.Target)}</b><span class=\"sale-note judge-target\">2 times the risk: ${Figures.Price(2 * risk)} up for ${Figures.Price(risk)} down.</span></div>");
+            html.Append(held is not null
+                ? $"<div><span>Bought at</span><b>${Figures.Price(held.Paid)}</b><span class=\"sale-note judge-buy\">At the open on {held.Bought.ToString("ddd d MMM", CultureInfo.InvariantCulture)}. Last close before it ${Figures.Price(pick.LastClose)}.</span></div>"
+                : $"<div><span>Buys at</span><b>the next open</b><span class=\"sale-note judge-buy\">At whatever price it opens. Last close ${Figures.Price(pick.LastClose)}.</span></div>");
+            html.Append(CultureInfo.InvariantCulture, $"<div><span>Sell if it closes below</span><b class=\"stop\">${Figures.Price(stop)}</b><span class=\"sale-note judge-stop\">{moves:0.##} typical daily move{(moves == 1 ? string.Empty : "s")} under the price it {(held is null ? "pays" : "paid")}.</span></div>");
+            html.Append($"<div data-sale=\"target\"><span>{(whole ? "Take profit at" : "Take profit on half at")}</span><b class=\"aim\">${Figures.Price(target)}</b><span class=\"sale-note judge-target\">2 times the risk: ${Figures.Price(2 * risk)} up for ${Figures.Price(risk)} down.</span></div>");
 
             if (!whole)
             {
-                html.Append($"<div data-sale=\"trail\"><span>The other half</span><b class=\"aim\">Trails</b><span class=\"sale-note\">Sells on a close under a give-up price that rises behind its highest close, ${Figures.Price(pick.GiveUp ?? risk)} under it. Its stop moves up to the price it paid once the first half sells.</span></div>");
+                html.Append($"<div data-sale=\"trail\"><span>The other half</span><b class=\"aim\">Trails</b><span class=\"sale-note\">Sells on a close under a give-up price that rises behind its highest close, ${Figures.Price(held?.Trail ?? pick.GiveUp ?? risk)} under it. Its stop moves up to the price it paid once the first half sells.</span></div>");
             }
 
             html.Append($"<div data-sale=\"limit\"><span>Otherwise sell after</span><b class=\"aim judge-hold\">{Escaped(pick.Hold)}</b></div>");
             html.Append("</div>");
-            html.Append($"<p class=\"home-cond\">The prices are worked from the last close until it is bought, then again from the price it actually paid. {Escaped(JudgeMenuLine)}</p>");
-            html.Append(CultureInfo.InvariantCulture, $"<div class=\"setup-record\"><span class=\"rec-h\">The AI judge's record</span><span>{(view.Score.Closed == 0 ? $"Too early to judge: <b>0</b> of {view.Score.Needed} trades closed." : $"<b>{view.Score.Closed}</b> of {view.Score.Needed} trades closed{(view.Score.PerDollar is { } made ? $", {Dollars(made)} made per $1 risked" : string.Empty)}.")} It is measured against the rules, 1,000 random picks and holding the index, with the same money, sizing and costs.</span><span class=\"rec-sub\">The judge's record over every pick it made, not this stock's chance.</span></div>");
+            html.Append($"<p class=\"home-cond\">{(held is null ? "The prices are worked from the last close until it is bought, then again from the price it actually paid." : "The prices are worked from the price it paid.")} {Escaped(JudgeMenuLine)}</p>");
+            html.Append(CultureInfo.InvariantCulture, $"<div class=\"setup-record\"><span class=\"rec-h\">{(version is null ? "The AI judge's record" : Escaped(VersionWords(version)) + ": its own account")}</span><span>{(score.Closed == 0 ? $"Too early to judge: <b>0</b> of {score.Needed} trades closed." : $"<b>{score.Closed}</b> of {score.Needed} trades closed{(score.PerDollar is { } made ? $", {Dollars(made)} made per $1 risked" : string.Empty)}.")} {(version is null ? "It is measured against the rules, 1,000 random picks and holding the index, with the same money, sizing and costs." : "Kept apart from the record, with the same money, sizing and costs.")}</span><span class=\"rec-sub\">{(version is null ? "The judge's record over every pick it made, not this stock's chance." : "This version's record over every pick it made, not this stock's chance.")}</span></div>");
             html.Append($"<div class=\"home-rr\" role=\"img\" aria-label=\"Risks $1 to make about $2.00\"><div class=\"risk\" style=\"flex:1\"></div><div class=\"reward\" style=\"flex:2\"></div></div>");
             html.Append($"<div class=\"home-odds\">Risks $1 to make about $2.00{(whole ? string.Empty : " on the first half")}</div>");
             html.Append("</article>");
@@ -238,6 +327,24 @@ public sealed partial class SinglePageApp
     }
 
     public const string JudgeBeforeNamed = "Made before the judge named its facts: everything it saw";
+
+    // What an earlier version's account did with a pick: waiting for its open, skipped and why, bought and still open, or
+    // bought and sold with its result per $1 risked.
+    public static string HeldWords(JudgeCardView pick, JudgeVersionView version)
+    {
+        var account = string.Create(CultureInfo.InvariantCulture, $"version {version.Number}'s own account");
+
+        static string Day(DateOnly day) => day.ToString("ddd d MMM", CultureInfo.InvariantCulture);
+
+        return pick.Held switch
+        {
+            null => $"Buys at the next open after its night in {account}.",
+            { Skipped: { } why } => $"Not bought in {account}: {why}.",
+            { Ended: { } ended, Sold: { } sold } held => $"Bought on {Day(held.Bought)} at ${Figures.Price(held.Paid)} and sold on {Day(ended)} at ${Figures.Price(sold)}"
+                + (held.Result is { } made ? $", {(made < 0 ? "losing" : "making")} {Dollars(Math.Abs(made))} per $1 risked" : string.Empty) + $", in {account}.",
+            { } held => $"Bought on {Day(held.Bought)} at ${Figures.Price(held.Paid)} and still open in {account}.",
+        };
+    }
 
     static string FactItem(JudgeFactView fact, string kind) =>
         $"<li class=\"{kind}\"><span>{Escaped(fact.Words)}</span><b>{Escaped(fact.Value)}</b>{(fact.Comparison is { } said ? $"<span class=\"cmp\">{Escaped(said)}</span>" : string.Empty)}</li>";
@@ -276,10 +383,11 @@ public sealed partial class SinglePageApp
         return html.ToString();
     }
 
-    // The four accounts as their return from the first session drawn, each a line, the random accounts' band shaded behind.
-    static string JudgeChart(JudgeView view)
+    // The four accounts as their return from the first session drawn, each a line, the random accounts' band shaded behind; or
+    // from the 24.14 correction of 2026-11-21 an earlier version's own account alone.
+    static string JudgeChart(IReadOnlyList<JudgeLineView> drawn, IReadOnlyList<JudgeBand> drawnBand, string label)
     {
-        var lines = view.Lines.Where(line => line.Values.Count > 0).ToArray();
+        var lines = drawn.Where(line => line.Values.Count > 0).ToArray();
 
         if (lines.Length == 0)
         {
@@ -289,7 +397,7 @@ public sealed partial class SinglePageApp
         var sessions = lines.SelectMany(line => line.Values.Select(value => value.Session)).Distinct().Order().ToArray();
         var at = sessions.Select((session, index) => (session, index)).ToDictionary(pair => pair.session, pair => pair.index);
         var returns = lines.Select(line => (line.Name, Points: line.Values.Select(value => (at[value.Session], ReturnFrom(value.Value, line.Values[0].Value))).ToArray())).ToArray();
-        var band = view.Band.Where(row => at.ContainsKey(row.Session)).Select(row => (X: at[row.Session], Low: ReturnFrom(row.Low, view.Band[0].Median), High: ReturnFrom(row.High, view.Band[0].Median))).ToArray();
+        var band = drawnBand.Where(row => at.ContainsKey(row.Session)).Select(row => (X: at[row.Session], Low: ReturnFrom(row.Low, drawnBand[0].Median), High: ReturnFrom(row.High, drawnBand[0].Median))).ToArray();
         var all = returns.SelectMany(line => line.Points.Select(point => point.Item2)).Concat(band.SelectMany(row => new[] { row.Low, row.High })).Append(0.0).ToArray();
         var (low, high) = (all.Min(), all.Max());
 
@@ -303,7 +411,7 @@ public sealed partial class SinglePageApp
         string X(int index) => (sessions.Length == 1 ? Width / 2 : index * Width / (sessions.Length - 1)).ToString("0.#", CultureInfo.InvariantCulture);
         string Y(double value) => (Height - ((value - low) / (high - low) * Height)).ToString("0.#", CultureInfo.InvariantCulture);
 
-        var svg = new StringBuilder($"<svg class=\"judge-chart\" viewBox=\"0 0 {Width} {Height}\" preserveAspectRatio=\"none\" role=\"img\" aria-label=\"The four accounts' returns since the judge started\">");
+        var svg = new StringBuilder($"<svg class=\"judge-chart\" viewBox=\"0 0 {Width} {Height}\" preserveAspectRatio=\"none\" role=\"img\" aria-label=\"{Escaped(label)}\">");
 
         if (band.Length > 0)
         {

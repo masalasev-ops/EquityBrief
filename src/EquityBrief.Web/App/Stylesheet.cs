@@ -1221,6 +1221,10 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
 .ai-facts li.why{border-color:var(--research);border-width:1px 1px 1px 3px}
 details.all-facts{margin:4px 0 10px} details.all-facts summary{cursor:pointer;font-weight:600;font-size:14px}
 .judge-version{font-size:13.5px;color:var(--ink-2)}
+.judge-since{margin:8px 0;padding:7px 10px;border:1px solid var(--research);border-radius:6px;font-size:14px;color:var(--ink)}
+.judge-apart{margin:16px 0 0;padding:12px 0 0;border-top:1px dashed var(--hair-2)}
+.judge-apart-h{margin:0 0 8px;font-size:13.5px;color:var(--ink-2)}
+.judge-apart .judge-line-0{stroke-dasharray:6 3}
 .judge-looked{width:100%;border-collapse:collapse;font-size:13.5px}
 .judge-looked td,.judge-looked th{padding:6px 8px;border-top:1px solid var(--hair);text-align:left;vertical-align:top}
 .judge-home{font-size:14px;color:var(--ink-2)}

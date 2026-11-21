@@ -23,6 +23,14 @@ Now:
 > "... the Improvement loop, the Monthly check-up until 24.16, offers no Approve ..."
 Why: the operator approved 24.16's mockup on 2026-11-21 with five changes, kept word for word as Appendix S of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`: the loop speaks Paper trading's and Past picks' words, the loop page joins the word check, and the menu item "Monthly check-up" becomes "Improvement loop". The page's choosing table heading said "version", and four of its lines said "live" or "list", which the word check refuses.
 
+### 2026-11-21 - docs/ARCHITECTURE.html - each judge version's picks in an account of their own, the 24.14 correction
+Decision: Each judge version's picks are bought and walked in an account of its own, and the record counts the newest version's
+Was:
+> ARCHITECTURE.html, 15.26's table: no row of an earlier version's picks
+Now:
+> ARCHITECTURE.html: added 15.26's row "An earlier version's picks"
+Why: the 24.14 correction, the operator's word of 2026-11-21 kept as Appendix R of the plan's file: 24.14 counted an earlier version's picks in no account, so the five picks of 2026-11-20 would have been drawn with no account buying them once the new version ran.
+
 ### 2026-11-21 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the heavyweights' books chosen over the long history, at 24.8
 Decision: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
 Was:

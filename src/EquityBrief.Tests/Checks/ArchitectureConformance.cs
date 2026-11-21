@@ -1507,8 +1507,9 @@ public partial class ArchitectureConformance
         // 23.10 on the operator's ruling of 2026-11-16: a book's own exit on Tonight. 315 at 24.6: the AI judge's page's five
         // regions and Home's line of it. 316 at 24.11: the Run page's splits the share check does not read. 317 at 24.13: the AI
         // judge's page on an empty record. 319 at 24.14: the facts the judge named and a pick made before it named them. 321 at
-        // 24.15: Home's past nights and each card's line on what has happened since.
-        Assert.Equal(321, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 24.15: Home's past nights and each card's line on what has happened since. 322 at the 24.14 correction of 2026-11-21:
+        // an earlier judge version's picks in an account of their own.
+        Assert.Equal(322, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1697,8 +1698,9 @@ public partial class ArchitectureConformance
         // the operator's ruling of 2026-11-16: a book's own exit on Tonight. 717 at 24.6: the AI judge's page's five regions and
         // Home's line of it. 718 at 24.11: the Run page's splits the share check does not read. 719 at 24.13: the AI judge's page
         // on an empty record. 721 at 24.14: the facts the judge named and a pick made before it named them. 723 at 24.15: Home's
-        // past nights and each card's line on what has happened since.
-        Assert.Equal(723, inDocument.Length);
+        // past nights and each card's line on what has happened since. 724 at the 24.14 correction of 2026-11-21: an earlier
+        // judge version's picks in an account of their own.
+        Assert.Equal(724, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
