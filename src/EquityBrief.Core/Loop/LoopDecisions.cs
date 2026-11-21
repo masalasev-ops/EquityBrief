@@ -41,7 +41,7 @@ public static class LoopDecisions
             "quality",
             "the learned score, ordering the list",
             new DateOnly(2026, 11, 13),
-            "It was recorded as approved on 2026-11-09 and applied on 2026-11-10, and you did not approve it. At the next restart of the rules the earlier rule is made live again, and the learned score keeps running beside it as a variant on each index."),
+            "It was recorded as approved on 2026-11-09 and applied on 2026-11-10, and you did not approve it. At the next restart of the rules the earlier rule runs again, and the learned score keeps running beside it as a variant on each index."),
     ];
 
     // The withdrawal of an approval given on an index's run, its family and its proposal; none where it stands.

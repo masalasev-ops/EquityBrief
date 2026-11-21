@@ -1230,7 +1230,7 @@ public sealed partial class MarkRenderer
 
     // What a card says in place of the record of a rule standing at a change an approval set.
     public static string ApprovedRecord(string approved) =>
-        $"Not this setup's record: it stands at a change approved on the Monthly check-up, {approved}, and the record stored for it replays its settings before the change, so none is drawn as this setup's.";
+        $"Not this setup's record: it stands at a change approved on the Improvement loop, {approved}, and the record stored for it replays its settings before the change, so none is drawn as this setup's.";
 
     // Beneath the drift's record on the S&P 500, the same rule replayed skipping a fill whose reward to risk at the open is
     // under the floor, beside the rule's own walk over the same sessions, each followed forward from the first replay's last

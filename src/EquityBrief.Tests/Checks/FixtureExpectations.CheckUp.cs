@@ -103,7 +103,7 @@ public partial class FixtureExpectations
 
         Assert.Equal("None of the 119 changes tried is put to you, so every strategy stays as it is.", Beneath(new CheckUpState(119, 7, 0, 0, [], next)));
         Assert.Equal("No change was tried this month.", Beneath(new CheckUpState(0, 7, 0, 0, [], next)));
-        Assert.Equal("You approved one change on November 9, 2026. It goes live with the next night's run.", Beneath(new CheckUpState(119, 7, 1, 0, [Word(LoopDecisions.Approved, null)], next)));
+        Assert.Equal("You approved one change on November 9, 2026. It runs from the next night.", Beneath(new CheckUpState(119, 7, 1, 0, [Word(LoopDecisions.Approved, null)], next)));
         Assert.Equal("You declined one change on November 9, 2026, so every strategy stays as it is.", Beneath(new CheckUpState(119, 7, 1, 0, [Word(LoopDecisions.Declined, null)], next)));
         Assert.Equal("You decided on one change, the last on November 9, 2026. Your decisions below say what was applied.", Beneath(new CheckUpState(119, 7, 1, 0, [Word(LoopDecisions.Approved, LoopDecisions.Applied)], next)));
 

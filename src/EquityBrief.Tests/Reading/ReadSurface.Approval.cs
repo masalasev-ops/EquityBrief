@@ -179,11 +179,11 @@ public partial class ReadSurface
         var large = await LoopWhole(client, "universe=500");
 
         // The page reads the stored words through the reader's plain phrases, the learned score and a variant among them.
-        Assert.Contains("<p class=\"loop-decided\" data-decision=\"withdrawn\"><b>Approval withdrawn</b> on your word of 2026-11-13. It was recorded as approved on 2026-11-09 and applied on 2026-11-10, and you did not approve it. At the next restart of the rules the earlier rule is made live again, and the score fitted to past setups keeps running beside it as a variant on each index.</p>", large, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"loop-decided\" data-decision=\"withdrawn\"><b>Approval withdrawn</b> on your word of 2026-11-13. It was recorded as approved on 2026-11-09 and applied on 2026-11-10, and you did not approve it. At the next restart of the rules the earlier rule runs again, and the score fitted to past setups keeps running beside it as a variant on each index.</p>", large, StringComparison.Ordinal);
         Assert.Contains("<td>approval withdrawn on your word of 2026-11-13</td>", large, StringComparison.Ordinal);
         Assert.Contains("You gave your word on 1 change on this index: 0 approved, 0 declined and 1 approval withdrawn.", large, StringComparison.Ordinal);
         Assert.DoesNotContain("data-decision=\"approved\"", large, StringComparison.Ordinal);
-        Assert.DoesNotContain("Approved and live", large, StringComparison.Ordinal);
+        Assert.DoesNotContain("Approved and running", large, StringComparison.Ordinal);
         Assert.DoesNotContain("Passed, approved", large, StringComparison.Ordinal);
         Assert.DoesNotContain("You approved", large, StringComparison.Ordinal);
 
@@ -200,7 +200,7 @@ public partial class ReadSurface
 
         Assert.Contains("<span class=\"pill cu-state\" data-state=\"withdrawn\">Approval withdrawn</span>", block, StringComparison.Ordinal);
         Assert.DoesNotContain("Approved", block, StringComparison.Ordinal);
-        Assert.Equal("The approval recorded on November 9, 2026 was withdrawn on your word of November 13, 2026: at the next restart of the rules the earlier rule is made live again.", MarkRenderer.CheckUpOpening(new CheckUpState(119, 7, 1, 0, [withdrawn], new DateOnly(2026, 12, 5))).Beneath);
+        Assert.Equal("The approval recorded on November 9, 2026 was withdrawn on your word of November 13, 2026: at the next restart of the rules the earlier rule runs again.", MarkRenderer.CheckUpOpening(new CheckUpState(119, 7, 1, 0, [withdrawn], new DateOnly(2026, 12, 5))).Beneath);
     }
 
     [Fact]
@@ -285,8 +285,8 @@ public partial class ReadSurface
         // A family the alarm flags on the index is named above its Tonight, and none on another index.
         var notice = WebUtility.HtmlDecode(SinglePageApp.LoopAlarmNotice(Universes.Of("600"), [("drift", new DateOnly(2026, 8, 1), 2)]));
 
-        Assert.Contains("<b>The live alarm flags the drift rule on the S&P 600.</b> Its edge after costs stood under its reference's low 2 counted periods running, the newest from 2026-08-01.", notice, StringComparison.Ordinal);
-        Assert.Contains("<a href=\"#/loop?universe=600\">the Monthly check-up</a>", notice, StringComparison.Ordinal);
+        Assert.Contains("<b>The safety alarm flags the drift rule on the S&P 600.</b> Its edge after costs stood under its reference's low 2 counted periods running, the newest from 2026-08-01.", notice, StringComparison.Ordinal);
+        Assert.Contains("<a href=\"#/loop?universe=600\">the Improvement loop</a>", notice, StringComparison.Ordinal);
         Assert.Empty(SinglePageApp.LoopAlarmNotice(Universes.Of("400"), []));
     }
 
@@ -328,10 +328,10 @@ public partial class ReadSurface
         // Read back off the rendered pages: the S&P 600's breakout card states the change; the S&P 400's and the S&P 500's
         // pages are drawn as before it, byte for byte.
         var small600 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600"));
-        var stated = Assert.Single(Blocks(small600, "<p class=\"rule-words\">[^<]*approved on the Monthly check-up[^<]*</p>"));
+        var stated = Assert.Single(Blocks(small600, "<p class=\"rule-words\">[^<]*approved on the Improvement loop[^<]*</p>"));
 
         Assert.StartsWith("<p class=\"rule-words\">A stock closes above its highest price of the 126 trading days before", stated, StringComparison.Ordinal);
-        Assert.Contains("its list closes while the S&P 600's own share above the 200-day average is under 45%; each trade's result is read after the published spread, half paid at each end. It stands at a change approved on the Monthly check-up: exit: ", stated, StringComparison.Ordinal);
+        Assert.Contains("its list closes while the S&P 600's own share above the 200-day average is under 45%; each trade's result is read after the published spread, half paid at each end. It stands at a change approved on the Improvement loop: exit: ", stated, StringComparison.Ordinal);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
         Assert.Equal(large, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}")));
         Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", mid, StringComparison.Ordinal);
@@ -376,7 +376,7 @@ public partial class ReadSurface
         var replaced = EquityBrief.Worker.Candidates.TheSetupFamilies.Breakouts[0].Candidate;
         var picker = Assert.Single(Blocks(large, "<select id=\"rule-breakout\" class=\"rule-select\" data-rule-choice=\"breakout\".*?</select>"));
 
-        Assert.Contains("It stands at a change approved on the Monthly check-up: exit: a target at 1.5 times the risk.", large, StringComparison.Ordinal);
+        Assert.Contains("It stands at a change approved on the Improvement loop: exit: a target at 1.5 times the risk.", large, StringComparison.Ordinal);
         Assert.Contains($"data-variant=\"none\" title=\"{replaced}; exit: a target at 1.5 risks\" selected>The revision running now</option>", picker, StringComparison.Ordinal);
         Assert.Matches($"data-variant=\"[0-9]+\" title=\"{Regex.Escape(replaced)}\">Variant: sells by its setup's own sale, without the running revision's exit, ", picker);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
@@ -459,7 +459,7 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}"));
 
-        Assert.Contains($"It stands at a change approved on the Monthly check-up: {ReaderWords.Plain(change.Words())}.", page, StringComparison.Ordinal);
+        Assert.Contains($"It stands at a change approved on the Improvement loop: {ReaderWords.Plain(change.Words())}.", page, StringComparison.Ordinal);
     }
 
     [Fact]

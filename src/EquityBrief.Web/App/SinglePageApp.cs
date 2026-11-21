@@ -4250,7 +4250,7 @@ public sealed partial class SinglePageApp : IComponent
                 MarkRenderer.CheckUpName,
                 MarkRenderer.CardSummary(MarkRenderer.LoopAlarmSaid(decided)) + marks.LoopAlarm(reading.Code, decided) + Cards.Key(
                     "The safety alarm.",
-                    "Each month a live strategy's trades that ended in it are compared with how its trades did in the test years. If it does clearly worse two months running, the strategy is flagged. A sector heavyweights' holdings are read by quarter.",
+                    "Each month a running strategy's trades that ended in it are compared with how its trades did in the test years. If it does clearly worse two months running, the strategy is flagged. A sector heavyweights' holdings are read by quarter.",
                     "Today's rule was chosen on those same test years, so the comparison is a demanding one and the alarm is for a strategy that has broken, not one drifting a little."),
                 title: "The safety alarm",
                 stamp: Cards.Night(night),
@@ -4345,7 +4345,7 @@ public sealed partial class SinglePageApp : IComponent
             ("Stop", "A price set under the buy price. A stock that falls below it is sold, to limit the loss."),
             ("Target", "A price set above the buy price. A stock that reaches it is sold, to take the gain."),
             ("A typical day's move", "How far a stock usually moves in one day."),
-            ("Reshuffle", "The day a monthly list of holdings is chosen again. A company that no longer qualifies is sold and new ones are bought."),
+            ("Reshuffle", "The day a book's monthly holdings are chosen again. A company that no longer qualifies is sold and new ones are bought."),
             ("The index's own fund", "A single fund that tracks the whole index. Holding it for the same days is a second, simpler comparison."))
         + "</details>";
 
@@ -4402,7 +4402,7 @@ public sealed partial class SinglePageApp : IComponent
             ? string.Empty
             : Invariant($"<div class=\"loop-alarm-notice\" data-flagged=\"{flags.Count}\" data-universe=\"{reading.Word}\">")
                 + string.Concat(flags.Select(flag => Invariant(
-                    $"<p data-family=\"{Escaped(flag.Family)}\" data-period=\"{flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\" data-streak=\"{flag.Streak}\"><b>The live alarm flags the {Escaped(flag.Family)} rule on the {Escaped(reading.Name)}.</b> Its edge after costs stood under its reference's low {flag.Streak} counted periods running, the newest from {flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}. It changes nothing by itself; <a href=\"{LoopRoute}?universe={reading.Word}\">the Monthly check-up</a> holds the periods and any restore waiting for your approval.</p>")))
+                    $"<p data-family=\"{Escaped(flag.Family)}\" data-period=\"{flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\" data-streak=\"{flag.Streak}\"><b>The safety alarm flags the {Escaped(flag.Family)} rule on the {Escaped(reading.Name)}.</b> Its edge after costs stood under its reference's low {flag.Streak} counted periods running, the newest from {flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}. It changes nothing by itself; <a href=\"{LoopRoute}?universe={reading.Word}\">the Improvement loop</a> holds the periods and any restore waiting for your approval.</p>")))
                 + "</div>";
 
     public string YourTradesRegion(string indexName, IReadOnlyList<YourTradeView> trades)

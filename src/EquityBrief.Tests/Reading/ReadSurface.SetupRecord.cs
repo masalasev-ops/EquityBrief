@@ -95,7 +95,7 @@ public partial class ReadSurface
         // From the operator's order of 2026-11-14 the box says why 2019 on is not walked for a setup reading filings, and where
         // it is judged instead.
         Assert.Contains(
-            "No long record yet: the walk that gives the other setups their record from 2019 replays prices alone, and this setup buys on filings, which reach back only to 2013. Its own test over the long history judges it from 2016, on the Monthly check-up.",
+            "No long record yet: the walk that gives the other setups their record from 2019 replays prices alone, and this setup buys on filings, which reach back only to 2013. Its own test over the long history judges it from 2016, on the Improvement loop.",
             Read(MarkRenderer.SetupRecordBox(SetupLongRecord.Filings("GSPC", ImprovingRule.Name))),
             StringComparison.Ordinal);
         Assert.Contains(

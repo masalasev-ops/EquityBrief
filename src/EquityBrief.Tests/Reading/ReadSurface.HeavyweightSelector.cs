@@ -56,7 +56,7 @@ public partial class ReadSurface
 
         Assert.Contains($"data-rule=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\"", chosen, StringComparison.Ordinal);
         Assert.Contains($"<option value=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\" title=\"{bothExits}\" selected>Variant: sells when it loses the lead or closes under its 200-day average</option>", chosen, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A variant being tested, not tonight's holdings</p><p>Variant: sells when it loses the lead or closes under its 200-day average</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better and you approve it on the Monthly check-up.</p></div>", chosen, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A variant being tested, not tonight's holdings</p><p>Variant: sells when it loses the lead or closes under its 200-day average</p><p class=\"band-note\">It runs every night beside the revision running now, on paper only. It becomes the next revision only if it proves better and you approve it on the Improvement loop.</p></div>", chosen, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"H5\"", chosen, StringComparison.Ordinal);
         Assert.DoesNotContain("<tr data-ticker=\"H3\"", chosen, StringComparison.Ordinal);
 

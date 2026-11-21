@@ -26,7 +26,7 @@ public partial class ReadSurface
         ];
         var drawn = WebUtility.HtmlDecode(new MarkRenderer().LoopChoices("drift", choices));
 
-        Assert.Contains("<h5>Choosing a version by its recent record</h5>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<h5>Choosing a variant by its recent record</h5>", drawn, StringComparison.Ordinal);
         Assert.Contains("data-choices=\"2\"", drawn, StringComparison.Ordinal);
         Assert.Contains("it would run 'the S&P 400 drift rule, graded' now, and switched 3 time(s) over the 58 month(s) of the test years", drawn, StringComparison.Ordinal);
         Assert.Contains("over the 126 trading days before", drawn, StringComparison.Ordinal);

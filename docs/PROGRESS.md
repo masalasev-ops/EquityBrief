@@ -21048,3 +21048,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1688 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06.
+
+### 24.16 - the loop page's mockup, approved, and the Loop page drawn as the Improvement loop   2026-11-21
+
+Queue:      done, 24.0 to 24.15 and the 24.14 correction, merged as #743 on 2026-11-21; in progress, 24.16; next, 24.17,
+            the case for promotion.
+Built:      the mockup, `prompts/2026-11-21-24.16-loop-page-mockup.html`, with its screenshots at 1440 and a true 390 in both
+            palettes beside it: this week's summary and its three nearest misses, the researcher's run, the notebook,
+            survivors and their queue, the case for promotion, the idea box and the reviewer's line on a pick's card, with
+            every value the plan proposed. The operator approved it on 2026-11-21 with five changes, kept word for word as
+            Appendix S of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, each made in the mockup before this
+            entry: Paper trading's words of a revision and its variants, with no "version" anywhere; each of the week's ideas
+            with its plain sentence above its grammar line; a retired variant keeping its record and its place in the
+            notebook with "Bring it back", which queues it like a survivor; the menu item "Monthly check-up" becoming
+            "Improvement loop" with the case page under it as "The case for promotion"; and the values approved as proposed.
+            On the same approval the Loop page is renamed Improvement loop in the menu and on every page pointing to it, and
+            joins the word check Paper trading is held to: its choosing table names a variant, a stored procedure's name
+            drawn in those words, and its lines on the safety alarm and on an approval running no longer say "live" or
+            "list". This checkpoint amends its own done condition: the build plan's 24.16 said it builds nothing, and on the
+            operator's approval it now writes the rename and the word check, with their assertions and a mutation. The
+            decision, section 15.20's route and row name, figure 15.5's words, the guide, the runbook's line and the
+            changelog.
+Tests:      1 new: the Improvement loop's page over every constructed store, and its choosing table read through its
+            renderer, holding to the four rules Paper trading is held to, no visible word naming a version, a live rule or
+            a list among them; and the tests that read the old words now reading the new.
+Claims:     1673, none moved: section 15.20's row of choosing a version renamed for a variant, as the plan counted none.
+Pins:       none moved, asserted: every source changed is one a test lists as no rule's version pins.
+Mutated:    the rule, stated before the run: each property the checkpoint adds taken out. m1 "version" put back in the
+            choosing table's heading: survived at first, since no constructed store draws the table; the check now reads it
+            through its renderer, and m1 is red. m2 the page named "Monthly check-up" again: red, the menu's test and the
+            Loop page's link to its buttons. Each filtered to its tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3901 of 3901 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 67 tables, 1673 claims, 1673
+            passing, none out of scope and none unexamined, 1688 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06.

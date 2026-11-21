@@ -84,7 +84,7 @@ internal static class Scope
 
     internal const string PaperTwoFamilies = "Two families pick one stock in the combined account";
 
-    internal const string LoopChoices = "Choosing a version by its recent record";
+    internal const string LoopChoices = "Choosing a variant by its recent record";
     internal const string CardApproved = "A rule standing at an approved change";
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";

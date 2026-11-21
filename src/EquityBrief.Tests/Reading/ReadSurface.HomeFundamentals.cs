@@ -29,7 +29,7 @@ public partial class ReadSurface
             "Sell when",
             "its filings weaken",
             "This setup's record on the S&P 400",
-            "No long record yet: the walk that gives the other setups their record from 2019 replays prices alone, and this setup buys on filings, which reach back only to 2013. Its own test over the long history judges it from 2016, on the Monthly check-up.",
+            "No long record yet: the walk that gives the other setups their record from 2019 replays prices alone, and this setup buys on filings, which reach back only to 2013. Its own test over the long history judges it from 2016, on the Improvement loop.",
             "The rule's record over every stock it bought, not this stock's chance.",
             "No price is set in advance: it sells when a new filing drops its score below 7 in every 9 of the checks that apply, or after 126 trading days.",
             "How it sells",

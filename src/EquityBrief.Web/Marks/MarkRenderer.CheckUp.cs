@@ -50,11 +50,11 @@ public sealed partial class MarkRenderer
         return (
             "Nothing needs you this month.",
             approved.Length == 0 && withdrawn.Length > 0
-                ? Formatted($"The approval recorded on {day} was withdrawn on your word of {LongDay(withdrawn.Max(word => word.Withdrawal!.On))}: at the next restart of the rules the earlier rule is made live again.")
+                ? Formatted($"The approval recorded on {day} was withdrawn on your word of {LongDay(withdrawn.Max(word => word.Withdrawal!.On))}: at the next restart of the rules the earlier rule runs again.")
             : approved.Length == 0
                 ? Formatted($"You declined {what} on {day}, so every strategy stays as it is.")
                 : approved.Any(word => word.Outcome is null)
-                    ? Formatted($"You approved {what} on {day}. {(approved.Length == 1 ? "It goes" : "They go")} live with the next night's run.")
+                    ? Formatted($"You approved {what} on {day}. {(approved.Length == 1 ? "It runs" : "They run")} from the next night.")
                     : Formatted($"You decided on {what}, the last on {day}. Your decisions below say what was applied."),
             "decided");
     }
@@ -89,9 +89,9 @@ public sealed partial class MarkRenderer
         null => ("Waiting for you", "waiting"),
         { Decision: LoopDecisions.Declined } => ("Declined", "declined"),
         { Withdrawal: not null } => ("Approval withdrawn", "withdrawn"),
-        { Outcome: LoopDecisions.Applied } => ("Approved and live", "applied"),
+        { Outcome: LoopDecisions.Applied } => ("Approved and running", "applied"),
         { Outcome: LoopDecisions.Refused } => ("Approved, not applied", "refused"),
-        _ => ("Approved, goes live with the next night's run", "approved"),
+        _ => ("Approved, runs from the next night", "approved"),
     };
 
     // A change that reached the operator: what it does, its years against today's rule, its four checks, what the three
