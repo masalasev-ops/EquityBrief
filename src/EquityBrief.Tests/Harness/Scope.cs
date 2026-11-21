@@ -2982,7 +2982,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.StoreCopyStep)] = new Scoped(
             Verdict.Pass,
-            "over a constructed night the launcher the night was handed is asked to start one copy after the labeller, waiting for the labeller, and a night run again for an earlier session starts one that waits for none",
+            "over a constructed night the night's row after the labeller's says the copy's own run copies the store and no copy stands in the folder, a night run again for an earlier session and a night handed no launcher writing the same row, and the night's source asks for none",
             ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.JudgeStep)] = new Scoped(
             Verdict.Pass,
@@ -2996,7 +2996,7 @@ internal static class Scope
         // ended before it finished and on copies gone that no copy removed.
         [CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopiedItem)] = new Scoped(
             Verdict.Pass,
-            "held by a copy made since the night began and by a start since it waiting, failed by a start past a copy's longest wait and an hour with no end, by an attempt since that made none and by none started since, and not read over a store holding no copy's row, each worked by hand over constructed rows",
+            "held by a copy made since the night began, by a start since it waiting and by none started before the copy's own run after the night, failed by a start past a copy's longest wait and an hour with no end, by an attempt since that made none and by none started once that run's instant has passed, and not read over a store holding no copy's row, each worked by hand over constructed rows",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopiesKeptItem)] = new Scoped(
             Verdict.Pass,

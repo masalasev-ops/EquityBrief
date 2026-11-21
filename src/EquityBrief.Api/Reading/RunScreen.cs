@@ -2022,7 +2022,7 @@ public static class RunScreen
     // failed by one that was ended before it finished, by one that made none, or by none started since; and
     // every copy the newest copy's row before it kept still in the folder, failed where the newest copy found
     // any gone that no copy removed, each named. Neither is read where the store holds no copy's row.
-    // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    // see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
     public static IReadOnlyList<WorryItem> Worries(
         IReadOnlyList<string> stale,
         NightView night,
@@ -2245,7 +2245,11 @@ public static class RunScreen
                     : new WorryItem(copied, WorryItem.Held, $"a copy started at {At(started)} is waiting or copying")
                 : copy.FailedAt is { } tried && tried >= began
                     ? new WorryItem(copied, WorryItem.Failed, $"the copy tried at {At(tried)} was not made: {copy.Failed ?? "no reason was recorded"}")
-                    : new WorryItem(copied, WorryItem.Failed, night.Started is { } start ? $"no copy has started since the night began at {At(start)}" : "no copy has started since the night");
+                    : night.Started is { } start && storeCopy.ReadAt is { } read && read < EquityBrief.Core.Configuration.StoreCopies.RunAfter(start)
+                        ? new WorryItem(copied, WorryItem.Held, $"the copy's own run after the night starts at {At(EquityBrief.Core.Configuration.StoreCopies.RunAfter(start))}")
+                        : new WorryItem(copied, WorryItem.Failed, night.Started is { } begun
+                            ? $"no copy has started since its run due at {At(EquityBrief.Core.Configuration.StoreCopies.RunAfter(begun))}, after the night began at {At(begun)}"
+                            : "no copy has started since the night");
 
         // A copy gone from the folder is named only where no copy newer than it stands, with the newest that does.
         var unreplaced = copy.Unreplaced ?? [];
@@ -2335,7 +2339,7 @@ public static class RunScreen
     // newest attempt after it that made none, with why, the newest copy started after it that has written no end,
     // waiting or copying still or ended before it finished where its start is older than a copy's longest wait
     // and an hour, and the copies the newest copy found gone from the folder that no copy removed.
-    // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    // see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
     public static StoreCopyRead StoreCopy(IReadOnlyList<StoreBackupRow> rows, string dataRoot, DateTimeOffset now)
     {
         var placed = rows.Select((row, place) => (Row: row, Place: place)).ToArray();
@@ -2350,7 +2354,7 @@ public static class RunScreen
 
         if (made.Row is null && failed.Row is null && open.Row is null)
         {
-            return new StoreCopyRead(null);
+            return new StoreCopyRead(null, now);
         }
 
         static JsonElement Detail(StoreBackupRow row)
@@ -2409,7 +2413,7 @@ public static class RunScreen
         // The copies gone, the newest copy's and those an attempt after it found, and the newest copy the rows show
         // standing: the newest copy and those its row kept, less any gone. A copy gone is a worry only where no copy
         // newer than it stands.
-        // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+        // see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
         string[] goneSince = notMade is null ? [] : Listed(Detail(notMade), "missing");
         string[] allGone = [.. missing.Concat(goneSince).Distinct(StringComparer.Ordinal)];
         DateTimeOffset[] stands =
@@ -2434,7 +2438,7 @@ public static class RunScreen
             gone,
             missing,
             standingAt,
-            unreplaced));
+            unreplaced), now);
     }
 
     static decimal Spent(string spend) =>

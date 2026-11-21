@@ -19,8 +19,9 @@ public sealed record StoreCopyView(
     DateTimeOffset? Standing = null,
     IReadOnlyList<string>? Unreplaced = null);
 
-// The copies' rows as the surface read them, the newest copy among them or none where no row is recorded.
-public sealed record StoreCopyRead(StoreCopyView? Newest);
+// The copies' rows as the surface read them, the newest copy among them or none where no row is recorded, and the
+// instant they were read, against which the copy's own run after a night is due or past.
+public sealed record StoreCopyRead(StoreCopyView? Newest, DateTimeOffset? ReadAt = null);
 
 public sealed partial class MarkRenderer
 {
@@ -28,12 +29,12 @@ public sealed partial class MarkRenderer
     // kept, the newest attempt that made none with why, a copy started since that has written no end, waiting or
     // copying still or ended before it finished, the copies the newest copy found gone from its folder that no
     // copy removed, or that no copy is recorded yet.
-    // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    // see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
     public string StoreCopyLine(StoreCopyView? copy)
     {
         if (copy is null)
         {
-            return "<p class=\"store-copy\" data-copies=\"none\">No copy of the store is recorded yet. The night starts one after its labeller, and it waits until the night, its drain and its labeller have finished.</p>";
+            return "<p class=\"store-copy\" data-copies=\"none\">No copy of the store is recorded yet. Its own run copies the store at 07:00 UTC the morning after a weekday night.</p>";
         }
 
         var folder = Escaped(copy.Folder ?? "a folder the store cannot name");

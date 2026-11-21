@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# What the scheduler calls at 07:00 UTC on the mornings after the weekday nights, Tuesday to Saturday, and what copies
+# the store by hand. Runs the worker's backup verb from the build the newest night made, the copy the data root's
+# night.build names in its folder of nights, so it builds nothing, removes nothing and runs the code the night ran;
+# the data root and the secrets file are the checkout's, each named by absolute path. A data root holding no night's
+# build is refused before any worker exists.
+#
+# The worker waits while a night or a drain holds the store, holds the drain's lock while it writes the copy alone,
+# then opens and reads the copy and keeps the newest two that read.
+#
+#   tools/backup            copy the store
+#   tools/backup --check    print what a run would run, and run nothing
+# see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
+set -euo pipefail
+
+# The root in the form the platform's own tools read, as tools/nightly reads it.
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && (pwd -W 2>/dev/null || pwd))"
+cd "$root"
+
+data="${EquityBrief__DataRoot:-$root/data}"
+case "$data" in
+    /*|[A-Za-z]:*) ;;
+    *) data="$root/$data" ;;
+esac
+
+check=0
+
+for argument in "$@"; do
+    case "$argument" in
+        --check) check=1 ;;
+        *) echo "backup: '$argument' is not an argument this script takes" >&2; exit 1 ;;
+    esac
+done
+
+refuse() {
+    echo "backup: refused before any worker exists: $1" >&2
+    exit 1
+}
+
+build="$data/night.build"
+
+if [ ! -s "$build" ]; then
+    refuse "$build names no night's build"
+fi
+
+short="$(tr -d '[:space:]' < "$build" | cut -c1-12)"
+copy="$data/nights/$short"
+built="$(find "$copy/src/EquityBrief.Worker/bin/Release" -name EquityBrief.Worker.dll 2>/dev/null | head -n 1 || true)"
+secrets="$root/src/EquityBrief.Worker/appsettings.Secrets.json"
+
+if [ -z "$built" ]; then
+    refuse "the night's build of $short holds no worker assembly under $copy"
+fi
+
+if [ "$check" = 1 ]; then
+    echo "backup: would run $built"
+    echo "backup: data root $data"
+    echo "backup: secrets read from $secrets, none copied"
+    echo "backup: would copy the store, holding the drain's lock for the copy alone"
+    exit 0
+fi
+
+echo "backup: run from the night's build of $short"
+
+export EquityBrief__DataRoot="$data"
+export EquityBrief__SecretsFile="$secrets"
+
+exec dotnet "$built" backup

@@ -67,10 +67,11 @@ public class KeysUnread
 
         Assert.Empty(reads);
 
-        // Six scripts build a copy of main's commit and start the worker from it, each naming the file three times.
-        Assert.True(handing.Length == 18, $"Read {handing.Length} lines handing the secrets file's path on, expected 18: {string.Join("; ", handing)}");
+        // Seven scripts start the worker, six from a copy of main's commit they build and the store's copy from the night's
+        // own build, each naming the file three times.
+        Assert.True(handing.Length == 21, $"Read {handing.Length} lines handing the secrets file's path on, expected 21: {string.Join("; ", handing)}");
         Assert.Equal(
-            ["tools/ledger-build", "tools/localrun", "tools/monthly", "tools/nightly", "tools/offpeak", "tools/publish-site"],
+            ["tools/backup", "tools/ledger-build", "tools/localrun", "tools/monthly", "tools/nightly", "tools/offpeak", "tools/publish-site"],
             handing.Select(line => line[..line.IndexOf(':', StringComparison.Ordinal)]).Distinct().Order(StringComparer.Ordinal));
     }
 

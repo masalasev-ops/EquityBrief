@@ -29,6 +29,7 @@ public partial class NightlyRun
             File.Copy(Repository.Tool("offpeak"), Path.Combine(Root, "tools", "offpeak"));
             File.Copy(Repository.Tool("localrun"), Path.Combine(Root, "tools", "localrun"));
             File.Copy(Repository.Tool("publish-site"), Path.Combine(Root, "tools", "publish-site"));
+            File.Copy(Repository.Tool("backup"), Path.Combine(Root, "tools", "backup"));
 
             Run("init", "-q", "-b", "main");
             Run("config", "user.email", "suite@example.invalid");
