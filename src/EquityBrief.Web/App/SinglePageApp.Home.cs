@@ -73,6 +73,15 @@ public sealed record HomeView(
 
     // From the operator's word of 2026-11-17 the public copy's newest upload and attempt, none on the copy's own Home.
     public SiteUploadView? Upload { get; init; }
+
+    // From 24.15 the newest night where Home is drawn for an earlier one, none for tonight's; every night the listings hold,
+    // which the picks' night picker offers; and on a past night each card's line on what has happened since, by its family
+    // and stock.
+    public DateOnly? Newest { get; init; }
+
+    public IReadOnlyList<DateOnly> Held { get; init; } = [];
+
+    public IReadOnlyDictionary<string, string> Since { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 }
 
 // The record of the public copy's uploads as the app's Home reads it, none where no run has written one, and the zone its
@@ -478,7 +487,16 @@ public sealed partial class SinglePageApp
         var title = IdeasTitle(view);
         var onDip = view.Ideas.Count(idea => idea.Zone is not null);
 
-        region.Append(Invariant($"<section class=\"card\" id=\"ideas\" data-ideas=\"{view.IdeasCount}\" data-at-open=\"{view.IdeasCount - onDip}\" data-on-dip=\"{onDip}\"><div class=\"card-h\"><div><div class=\"lbl\">Tonight's ideas</div><h2>{Escaped(title)}</h2></div><div>{stamp}</div></div><div class=\"card-b\">"));
+        // From 24.15 the same night picker Tonight uses, and on a past night a banner saying whose picks these are.
+        // see: Home shows a past night's picks as they were listed with what has happened since, and tonight's as before
+        var picker = marks.Copying ? string.Empty : Cards.NightPicker(view.Night, view.Held, HomeNightRoute, HomeRoute);
+
+        region.Append(Invariant($"<section class=\"card\" id=\"ideas\" data-ideas=\"{view.IdeasCount}\" data-at-open=\"{view.IdeasCount - onDip}\" data-on-dip=\"{onDip}\"><div class=\"card-h\"><div><div class=\"lbl\">Tonight's ideas</div><h2>{Escaped(title)}</h2></div><div>{stamp}{picker}</div></div><div class=\"card-b\">"));
+
+        if (view.Newest is not null)
+        {
+            region.Append(Invariant($"<p class=\"home-past-night\" data-past-night=\"{Cards.Day(view.Night)}\">{Escaped(PastNightWords(view.Night))} <a href=\"{HomeRoute}\">Back to tonight</a></p>"));
+        }
 
         // Every pick is a card, the ideas to buy first and the picks watched after them, each in Tonight's order; the heading
         // counts the ideas to buy, and the line above the cards says what splits them.
@@ -504,7 +522,7 @@ public sealed partial class SinglePageApp
 
             foreach (var idea in view.Ideas)
             {
-                region.Append(Idea(idea, marks.Copying, view.Reading, watched: false, view.Night));
+                region.Append(Idea(idea, marks.Copying, view.Reading, watched: false, view.Night, view.Since.GetValueOrDefault(idea.Family + "|" + idea.Ticker)));
             }
 
             region.Append("</div>");
@@ -528,10 +546,11 @@ public sealed partial class SinglePageApp
         // see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
         region.Append(MarkRenderer.WaitingCarousel(view.StillWaiting, view.Reading.Name, view.Night, view.LeftOrders));
 
-        // From 24.6 the AI judge's one line, its own account and never one of the rules' buys.
-        if (view.Judge is { } judge)
+        // From 24.6 the AI judge's one line, its own account and never one of the rules' buys; from 24.15 on a past night that
+        // night's picks, and none where the judge did not run that night.
+        if (view.Judge is { } judge && (view.Newest is null || judge.Night == view.Night))
         {
-            region.Append(JudgeHomeLine(judge));
+            region.Append(JudgeHomeLine(judge, view.Newest is not null));
         }
 
         // From the operator's order of 2026-11-14 the stocks a setup's rules met again while a trade holds them, a group of their
@@ -614,8 +633,13 @@ public sealed partial class SinglePageApp
     static string Signal(string key, string label, string tone, string word, string meaning, bool plainWord = false) =>
         Invariant($"<div class=\"home-signal\" data-signal=\"{key}\" data-tone=\"{tone}\"><span class=\"st-label\"><span class=\"home-dot {tone}\" aria-hidden=\"true\"></span>{Escaped(label)}</span><span class=\"home-word{(plainWord ? string.Empty : " " + tone)}\">{Escaped(word)}</span><span class=\"home-meaning\">{Escaped(meaning)}</span></div>");
 
-    // A pick's card: an idea to buy, or a pick watched, whose buy price reads as bought on paper.
-    static string Idea(HomeIdea idea, bool copying, UniverseChoice reading, bool watched, DateOnly? night = null)
+    // "Showing the picks of the night of 20 Nov 2026, not tonight's."
+    public static string PastNightWords(DateOnly night) =>
+        "Showing the picks of the night of " + night.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + ", not tonight's.";
+
+    // A pick's card: an idea to buy, or a pick watched, whose buy price reads as bought on paper; from 24.15 on a past night
+    // with its line on what has happened since.
+    static string Idea(HomeIdea idea, bool copying, UniverseChoice reading, bool watched, DateOnly? night = null, string? since = null)
     {
         var card = new StringBuilder();
         var family = Escaped(idea.Family);
@@ -623,6 +647,7 @@ public sealed partial class SinglePageApp
 
         card.Append(Invariant($"<article class=\"home-idea fam-edge{(watched ? " watched" : string.Empty)}\" data-family=\"{family}\" data-ticker=\"{Escaped(idea.Ticker)}\">"));
         card.Append(Invariant($"<div class=\"home-idea-h\"><div><div class=\"home-ticker\">{Escaped(idea.Ticker)}</div>{(idea.Company is { } company ? Invariant($"<div class=\"home-co\">{Escaped(company)}</div>") : string.Empty)}</div><span class=\"tag-stack\"><span class=\"fam-tag\" data-family=\"{family}\"><span class=\"fam-swatch\" data-family=\"{family}\"></span>{Escaped(IdeaTag(idea.Family))}</span>{RevisionTags.For(idea.Family, night ?? DateOnly.MaxValue)}</span></div>"));
+        card.Append(since is { } happened ? Invariant($"<p class=\"home-since\" data-since><b>Since then:</b> {Escaped(happened)}</p>") : string.Empty);
         card.Append(VerdictLine(idea, reading));
 
         // A watched card says why its rule picked it and why it is not bought.

@@ -36,12 +36,27 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.FailureTable, "An AI judge run under another model, file, window or prompt than its pin"),
     ];
 
+    // From 24.14 section 17's row of the facts a pick names and section 18's row of a pick refused for them.
+    internal static readonly string[] JudgeNamedClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "The facts an AI judge pick names"),
+        CheckReach.Key(Scope.FailureTable, "An AI judge pick naming no fact or one its sheet lacks"),
+    ];
+
+    // Every row 24.14 adds: the two claims above and the judge's page's two rows.
+    internal static string[] JudgeNamedRows => [.. JudgeNamedClaims, .. Reading.ReadSurface.JudgeNamedRows];
+
     // Every row 24.4 adds: the picker's catalogue and matrix rows, its four stores, section 14's step, section 17's row and
     // section 18's two rows.
     internal static string[] JudgePickRows =>
         [.. ComponentAccess.JudgePickerRows, .. SchemaColumns.JudgePickStoreRows, CheckReach.Key(NightlyRunSteps.Heading, JudgeStep), .. JudgePickClaims];
 
     const string PickNight = "2026-11-19";
+
+    // From 24.14 each member's sheet shows four facts, the business score not on file, and a pick names three of the rest.
+    const string PickSheet = "Return over 1 month: +5%\nMomentum (RSI): 61 of 100\nVolume against its own average: +40%\nBusiness score: not on file";
+
+    static readonly string[] PickFacts = ["Return over 1 month", "Momentum (RSI)", "Volume against its own average"];
 
     static readonly ModelFileFacts PickFile = new("m/judge.gguf", 1000, new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero));
 
@@ -80,7 +95,7 @@ public partial class FixtureExpectations
                 answer = JsonSerializer.Serialize(new
                 {
                     picks = targets.Where(target => shown.ContainsKey(target.Ticker))
-                        .Select(target => new Dictionary<string, string> { ["label"] = shown[target.Ticker], ["hold"] = target.Hold, ["take_profit"] = target.Shape, ["reason"] = target.Reason }),
+                        .Select(target => new Dictionary<string, object> { ["label"] = shown[target.Ticker], ["hold"] = target.Hold, ["take_profit"] = target.Shape, ["reason"] = target.Reason, ["facts"] = PickFacts }),
                 });
             }
 
@@ -94,7 +109,7 @@ public partial class FixtureExpectations
     {
         var store = new TemporaryStore().Migrated();
         var facts = Enumerable.Range(0, 120).Select(at => FormattableString.Invariant(
-            $"('GSPC', '{PickNight}', 'T{at:000}', '{JudgeFacts.Version}', '{{}}', 'row of member T{at:000}', 'sheet of member T{at:000}', '2026-11-20T01:00:00Z', 'r')"));
+            $"('GSPC', '{PickNight}', 'T{at:000}', '{JudgeFacts.Version}', '{{}}', 'row of member T{at:000}', 'sheet of member T{at:000}\n{PickSheet}', '2026-11-20T01:00:00Z', 'r')"));
 
         store.Execute("INSERT INTO judge_fact (index_code, session_date, ticker, version, fields, row_text, sheet_text, written_at, run_id) VALUES " + string.Join(", ", facts) + ";");
 
@@ -159,6 +174,7 @@ public partial class FixtureExpectations
             outcome.Picks.Select(pick => (pick.Rank, pick.Ticker, pick.Hold, pick.LastClose, pick.Prices.Stop, pick.Prices.TakeProfit, pick.Prices.GiveUpDistance)));
 
         Assert.Equal(["1|T093|49|52|", "2|T007|97|106|3"], FamilyRows(store, "SELECT rank || '|' || ticker || '|' || stop || '|' || target || '|' || COALESCE(give_up_distance, '') FROM judge_pick ORDER BY rank;"));
+        Assert.Equal(["return_month,rsi,volume_ratio", "return_month,rsi,volume_ratio"], FamilyRows(store, "SELECT fields FROM judge_pick ORDER BY rank;"));
         Assert.Equal(["picked|120|2|4|0"], FamilyRows(store, "SELECT outcome || '|' || screened || '|' || kept || '|' || asks || '|' || asks_failed FROM judge_run;"));
         Assert.Equal(["4"], FamilyRows(store, "SELECT COUNT(*) FROM judge_ask WHERE outcome = 'answered';"));
 
@@ -283,6 +299,105 @@ public partial class FixtureExpectations
         store.Execute($"UPDATE judge_pin SET prompt_version = '{JudgePrompt.Version}', model = 'another model';");
 
         Assert.Equal("the model is not judge pin 1's", (await PickRun(store, feed, PickEvening, "judge-pinned-model")).Why);
+    }
+
+    // From 24.14, over recorded answers: a pick naming no fact, and one naming a fact its sheet shows as not on file, are each
+    // refused, named on the run's row and skipped, and the pick naming three facts its sheet shows is stored with their keys.
+    [Fact]
+    public async Task APickNamingNoFactOrOneItsSheetLacksIsRefusedLoggedAndSkipped()
+    {
+        // The rules read by hand off the sheet the store writes: three facts it shows stand; none, two, one twice, a word no
+        // field is and a field it shows as not on file are each refused.
+        var sheet = "sheet of member T007\n" + PickSheet;
+
+        Assert.Null(JudgePrompt.FieldsRefused(PickFacts, sheet));
+        Assert.Equal(JudgePrompt.NamedNone, JudgePrompt.FieldsRefused([], sheet));
+        Assert.Equal(JudgePrompt.NamedTooFewOrMany, JudgePrompt.FieldsRefused(["Return over 1 month", "Momentum (RSI)"], sheet));
+        Assert.Equal(JudgePrompt.NamedTwice, JudgePrompt.FieldsRefused(["Return over 1 month", "Momentum (RSI)", "Momentum (RSI)"], sheet));
+        Assert.Equal(JudgePrompt.NamedLacking, JudgePrompt.FieldsRefused(["Return over 1 month", "Momentum (RSI)", "Its share price"], sheet));
+        Assert.Equal(JudgePrompt.NamedLacking, JudgePrompt.FieldsRefused(["Return over 1 month", "Momentum (RSI)", "Business score"], sheet));
+        Assert.Equal(JudgePrompt.NamedLacking, JudgePrompt.FieldsRefused(["Return over 1 month", "Momentum (RSI)", "Sector"], sheet));
+
+        // Round two picks the three targets: T093 naming none, T007 naming three its sheet shows, T050 naming the business
+        // score its sheet holds none of.
+        (string Ticker, string Hold, string Shape, string Reason)[] targets =
+        [
+            ("T093", "1 week", JudgeMenu.Whole, "Fell hard on light volume."),
+            ("T007", "2 weeks", JudgeMenu.HalfThenGiveUp, "Rising estimates on heavy volume."),
+            ("T050", "1 week", JudgeMenu.Whole, "A steady climb."),
+        ];
+
+        using var store = PickStore();
+
+        store.Execute($"INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at) VALUES ('T050', '{PickNight}', '20', '20', '20', '20', 1000, 'eod', '{PickNight}T22:00:00Z');");
+        store.Execute($"INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES ('T050', '{PickNight}', 'atr14', 1.0, 14);");
+
+        var outcome = await PickRun(store, new FactsFeed(targets), PickEvening, "judge-facts");
+
+        Assert.Equal((JudgePicker.Picked, 0), (outcome.Outcome, outcome.AsksFailed));
+        Assert.Equal([(1, "T007")], outcome.Picks.Select(pick => (pick.Rank, pick.Ticker)));
+        Assert.Equal(["T007|return_month,rsi,volume_ratio"], FamilyRows(store, "SELECT ticker || '|' || fields FROM judge_pick;"));
+        Assert.Equal(
+            [$"refused for the facts it named, T093: {JudgePrompt.NamedNone}; T050: {JudgePrompt.NamedLacking}"],
+            FamilyRows(store, "SELECT detail FROM judge_run;"));
+        Assert.Contains($"T050: {JudgePrompt.NamedLacking}", FamilyRows(store, $"SELECT detail FROM run_log WHERE stage = '{JudgePicker.Stage}';").Single(), StringComparison.Ordinal);
+    }
+
+    // Round one keeps each target; round two picks them in order, T093 naming no fact, T050 the business score, and every other
+    // the three facts its sheet shows.
+    sealed class FactsFeed(IReadOnlyList<(string Ticker, string Hold, string Shape, string Reason)> targets) : IReadingModelFeed
+    {
+        readonly PickFeed screen = new(targets);
+
+        public int Requests => screen.Requests;
+
+        public Task<bool> PrepareAsync(CancellationToken cancellation = default) => Task.FromResult(false);
+
+        public Task ReleaseAsync(bool loadedHere, CancellationToken cancellation = default) => Task.CompletedTask;
+
+        public Task<ReadingReply> AskAsync(ReadingRequest request, CancellationToken cancellation = default)
+        {
+            if (request.Instruction == JudgePrompt.ScreenSystem)
+            {
+                return screen.AskAsync(request, cancellation);
+            }
+
+            var shown = Regex.Matches(request.Text, @"^(?<label>[A-Za-z]+ [A-Za-z]+)\nsheet of member (?<ticker>T[0-9]+)$", RegexOptions.Multiline)
+                .ToDictionary(match => match.Groups["ticker"].Value, match => match.Groups["label"].Value);
+            var answer = JsonSerializer.Serialize(new
+            {
+                picks = targets.Where(target => shown.ContainsKey(target.Ticker)).Select(target => new Dictionary<string, object>
+                {
+                    ["label"] = shown[target.Ticker], ["hold"] = target.Hold, ["take_profit"] = target.Shape, ["reason"] = target.Reason,
+                    ["facts"] = target.Ticker switch
+                    {
+                        "T093" => Array.Empty<string>(),
+                        "T050" => ["Return over 1 month", "Momentum (RSI)", "Business score"],
+                        _ => PickFacts,
+                    },
+                }),
+            });
+
+            return Task.FromResult(new ReadingReply("the model", answer, "stop", 10, 5, 0, "lm", "1", 0.1));
+        }
+    }
+
+    // From 24.14 a judge pin under the one earlier prompt version is followed by a new pin under this one, a new judge version;
+    // a pin under any other version is refused as before.
+    [Fact]
+    public async Task APinUnderTheEarlierPromptMovesToANewPinAndAnyOtherIsRefused()
+    {
+        Assert.NotEqual(JudgePrompt.Previous, JudgePrompt.Version);
+
+        using var store = PickStore();
+
+        store.Execute($"INSERT INTO judge_pin (reading_pin_id, model, file, sha256, size, modified, context, prompt_version, written_at) VALUES (1, 'the model', 'm/judge.gguf', 'abc', 1000, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Previous}', '2026-11-02T00:00:00Z');");
+
+        var outcome = await PickRun(store, new PickFeed(PickTargets), PickEvening, "judge-moved");
+
+        Assert.Equal(JudgePicker.Picked, outcome.Outcome);
+        Assert.Equal([$"1|{JudgePrompt.Previous}", $"2|{JudgePrompt.Version}"], FamilyRows(store, "SELECT id || '|' || prompt_version FROM judge_pin ORDER BY id;"));
+        Assert.Equal(["2"], FamilyRows(store, "SELECT pin_id FROM judge_run;"));
     }
 
     [Fact]

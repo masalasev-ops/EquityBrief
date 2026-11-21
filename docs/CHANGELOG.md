@@ -17,6 +17,26 @@ Now:
 > "... and one ten short written; and from 24.9 the history built over one span one session at a time and across the cores on a constructed S&P 500, 400 and 600 writing every column of every history row and night row the same, one planted difference found, and sessions computed across the cores kept in their places with the earliest of several failures raised; and from 19.2 ..."
 Why: 24.9 of phase 24's plan, the operator's ruling of 2026-11-15 on item 5: the speed-up comes back only behind a test building the same sessions both ways on all three indexes.
 
+### 2026-11-21 - docs/ARCHITECTURE.html - Home's past nights, at 24.15
+Decision: Home shows a past night's picks as they were listed with what has happened since, and tonight's as before
+Was:
+> ARCHITECTURE.html, 15.24's table: no row of a past night's picks or of a card's line on what has happened since
+Now:
+> ARCHITECTURE.html: added 15.24's rows "A past night's picks" and "What has happened since"
+Why: 24.15 of phase 24's plan, the operator's word of 2026-11-20 and 2026-11-21 kept as Appendices O and Q of the plan's file: Home could show only tonight's picks, and nothing said what became of an earlier night's.
+
+### 2026-11-21 - docs/ARCHITECTURE.html and docs/SCHEMA.md - the judge's picks naming the facts that decided them, at 24.14
+Decision: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
+Was:
+> ARCHITECTURE.html, section 18's row "An AI judge run under another model, file, window or prompt than its pin": "... is refused the same way, and a refused night may be run again once the cause is put right (see: The AI judge picks straight after the night under the local model's lock, its picks stored before the next open or shown as missed)"
+> ARCHITECTURE.html, 15.26's table: no row of the facts a pick named or of a pick made before it named them; section 17: no row of the facts a pick names; section 18: no row of a pick refused for them
+> SCHEMA.md, `judge_pick`: no `fields` column; its note: "... a night holding a run `picked`, `none` or `missed` is never run again. Nothing updates or deletes a row, ..."
+Now:
+> "... is refused the same way, and a refused night may be run again once the cause is put right; from 24.14 a pin under the one earlier prompt version the code names is followed by a new pin under the run's, a new judge version, and any other version is refused (see: ...) (see: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused)"
+> ARCHITECTURE.html: added 15.26's rows "The facts it named" and "A pick made before it named its facts", section 17's row "The facts an AI judge pick names" and section 18's row "An AI judge pick naming no fact or one its sheet lacks"
+> SCHEMA.md: `judge_pick.fields` from migration 156, and "From migration 156 a pick naming no fact of its sheet, or one its sheet lacks, is refused and named on its run's `detail` and stores no row, and a pin under the one earlier prompt version the code names is followed by a pin of its own under the new version (see: ...)."
+Why: 24.14 of phase 24's plan, the operator's word of 2026-11-21 kept as Appendix Q of the plan's file with the mockup `prompts/2026-11-20-ai-judge-card-mockup.html`: each card says why in the facts the judge named, drawn by code with their values.
+
 ### 2026-11-21 - docs/ARCHITECTURE.html - the judge's page on an empty record, at 24.13
 Authorised by: The AI judge reads only the fields the operator approved with its mockup, and never a stock's industry
 Was:

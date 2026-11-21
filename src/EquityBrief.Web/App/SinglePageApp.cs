@@ -136,6 +136,9 @@ public sealed partial class SinglePageApp : IComponent
     // see: Home is the landing page for a reader new to investing, drawn by code from the newest night's figures in plain words
     public const string HomeRoute = "#/";
 
+    // From 24.15 Home drawn for a past night, its date after the route.
+    public const string HomeNightRoute = "#/home/";
+
     public const string TonightRoute = "#/tonight";
 
     public const string NameRoute = "#/name/";
@@ -485,9 +488,10 @@ public sealed partial class SinglePageApp : IComponent
           const path = cut < 0 ? hash : hash.slice(0, cut);
           const query = cut < 0 ? '' : hash.slice(cut + 1);
           let view = 'tonight';
-          if (path === '' || path === '{{{HomeRoute}}}') {
+          if (path === '' || path === '{{{HomeRoute}}}' || path.startsWith('{{{HomeNightRoute}}}')) {
             view = 'home';
-            const home = await fetch('/screens/home' + (query ? '?' + query : ''));
+            const date = path.startsWith('{{{HomeNightRoute}}}') ? path.slice('{{{HomeNightRoute}}}'.length) : '';
+            const home = await fetch('/screens/home' + (date === '' ? '' : '/' + encodeURIComponent(date)) + (query ? '?' + query : ''));
             screen.innerHTML = await home.text();
           } else if (path === '{{{TonightRoute}}}' || path.startsWith('{{{NightRoute}}}')) {
             const date = path.startsWith('{{{NightRoute}}}') ? path.slice('{{{NightRoute}}}'.length) : '';

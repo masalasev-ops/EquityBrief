@@ -776,7 +776,15 @@ public static class SchemaMigrations
         new Migration(153, "create judge_fact and judge_naming", CreateJudgeFacts),
         new Migration(154, "create judge_pin, judge_run, judge_ask and judge_pick", CreateJudgePicks),
         new Migration(155, "create fallback_fact", CreateFallbackFacts),
+        new Migration(156, "add judge_pick.fields", AddJudgeFields),
     ];
+
+    // From 24.14 the keys of the three to five facts of its sheet each of the judge's picks named as deciding it, in the order
+    // named; null on a pick made before the judge named its facts.
+    // see: Each of the judge's picks names the three to five facts that decided it, and a pick naming none or one its sheet lacks is refused
+    const string AddJudgeFields = @"
+        ALTER TABLE judge_pick ADD COLUMN fields TEXT;
+    ";
 
     // From 24.12 the two lines a filer's operating income falls back to where it files none, income before taxes and costs and
     // expenses, as first filed, kept apart from filed_fact and its pinned concepts so that no rule, ledger reading or gate
