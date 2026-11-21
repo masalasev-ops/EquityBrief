@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-21 - docs/ARCHITECTURE.html - each judge version's picks in an account of their own, the 24.14 correction
+Decision: Each judge version's picks are bought and walked in an account of its own, and the record counts the newest version's
+Was:
+> ARCHITECTURE.html, 15.26's table: no row of an earlier version's picks
+Now:
+> ARCHITECTURE.html: added 15.26's row "An earlier version's picks"
+Why: the 24.14 correction, the operator's word of 2026-11-21 kept as Appendix R of the plan's file: 24.14 counted an earlier version's picks in no account, so the five picks of 2026-11-20 would have been drawn with no account buying them once the new version ran.
+
 ### 2026-11-21 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the heavyweights' books chosen over the long history, at 24.8
 Decision: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
 Was:

@@ -7,7 +7,11 @@ namespace EquityBrief.Api.Reading;
 
 // One run of the AI judge as its page reads it: the night, its outcome and why, the members it screened and kept, and
 // whether it was a replayed night's.
-public sealed record JudgeRunRow(string RunId, DateOnly Session, string Outcome, string Why, int Screened, int Kept, bool Replayed);
+public sealed record JudgeRunRow(string RunId, DateOnly Session, string Outcome, string Why, int Screened, int Kept, bool Replayed)
+{
+    // The prompt version of the pin it ran under, none where it ran under no pin.
+    public string? Version { get; init; }
+}
 
 // One of the AI judge's picks as its page reads it: the night, its rank, the member, the hold and take-profit it chose, its
 // reason, the last close and typical move its prices were worked from, those prices, the company's name and the sector and
@@ -48,7 +52,9 @@ public sealed partial class ReadApi
     public const string JudgeReplayPrefix = "judge-replay-";
 
     const string JudgeRuns = @"
-        SELECT run_id, session_date, outcome, detail, screened, kept FROM judge_run ORDER BY session_date DESC, ended_at DESC;";
+        SELECT run_id, session_date, outcome, detail, screened, kept,
+               (SELECT n.prompt_version FROM judge_pin n WHERE n.id = judge_run.pin_id)
+        FROM judge_run ORDER BY session_date DESC, ended_at DESC;";
 
     const string JudgePicks = @"
         SELECT p.session_date, p.rank, p.index_code, p.ticker, p.hold, p.take_profit, p.reason, p.last_close, p.typical_move,
@@ -131,7 +137,10 @@ public sealed partial class ReadApi
         {
             var run = reader.GetString(0);
 
-            rows.Add(new JudgeRunRow(run, Day(reader.GetString(1)), reader.GetString(2), reader.GetString(3), reader.GetInt32(4), reader.GetInt32(5), run.StartsWith(JudgeReplayPrefix, StringComparison.Ordinal)));
+            rows.Add(new JudgeRunRow(run, Day(reader.GetString(1)), reader.GetString(2), reader.GetString(3), reader.GetInt32(4), reader.GetInt32(5), run.StartsWith(JudgeReplayPrefix, StringComparison.Ordinal))
+            {
+                Version = reader.IsDBNull(6) ? null : reader.GetString(6),
+            });
         }
 
         return rows;

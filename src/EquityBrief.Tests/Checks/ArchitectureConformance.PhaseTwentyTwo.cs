@@ -196,6 +196,9 @@ public partial class ArchitectureConformance
         // And from 24.14: the facts a judge pick names, a pick refused for them and the page's two rows.
         .. FixtureExpectations.JudgeNamedRows,
 
+        // And from the 24.14 correction: the page's row of an earlier version's picks in an account of their own.
+        .. Reading.ReadSurface.JudgeVersionRows,
+
         // And from 24.15: Home's past nights and each card's line on what has happened since.
         .. Reading.ReadSurface.HomePastNightRows,
     ];

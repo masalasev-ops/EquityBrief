@@ -229,6 +229,9 @@ public partial class ReadSurface
             // 24.14, the judge's cards naming the facts it named and a pick made before it named them.
             .. JudgeNamedRows,
 
+            // The 24.14 correction, an earlier judge version's picks in an account of their own.
+            .. JudgeVersionRows,
+
             // 24.15, Home's past nights and each card's line on what has happened since.
             .. HomePastNightRows,
 
