@@ -897,7 +897,9 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             standingRules,
             await StandingAsync(databaseFile, index, cancellation),
             market,
-            await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation),
+            longHistory is null
+                ? await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation)
+                : await HeavyweightLay.ReadLongAsync(read, history, longHistory, through, output.WriteLine, cancellation, large ? null : await LargeReadAsync()),
             await LoopReadings.ReadAsync(read, databaseFile, through, cancellation),
             await StoredTreesAsync(databaseFile, cancellation),
             filter,

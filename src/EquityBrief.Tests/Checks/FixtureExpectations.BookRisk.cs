@@ -71,8 +71,8 @@ public partial class FixtureExpectations
     }
 
     // On the operator's answers on the tables: a box whose mean rounds to nothing says the picks made about the same; a heavyweights
-    // book's box counts from 2023, the year after it chooses on 2019 to 2022; and one taking the middle exit, holding no month
-    // to choose on, counts from its first pick.
+    // book's box counts from 2023, the year after it chooses to 2022, from 24.8 on the S&P 600 from 2016; and one taking the
+    // middle exit, holding no month to choose on, counts from its first pick.
     [Fact]
     public void ABooksBoxSaysAboutTheSameWhereItRoundsToNothingAndAHeavyweightsBookCountsFrom2023()
     {
@@ -92,7 +92,7 @@ public partial class FixtureExpectations
             "at the choice in points a month, X: From 2023 to 2024, picks like this made about the same for every $1 risked as buying the index's other stocks the same way, over 2 picks.",
             BookRisk.Line(HeavyweightRule.Name, "the live rule", "SML", calendar, choices, "X"),
             StringComparison.Ordinal);
-        Assert.Contains("X +0.400 over 2 from 2019 to 2022, +0.004 over 2 from 2023", BookRisk.Line(HeavyweightRule.Name, "the live rule", "SML", calendar, choices, "X"), StringComparison.Ordinal);
+        Assert.Contains("X +0.400 over 2 from 2016 to 2022, +0.004 over 2 from 2023", BookRisk.Line(HeavyweightRule.Name, "the live rule", "SML", calendar, choices, "X"), StringComparison.Ordinal);
         Assert.EndsWith(
             "at the middle exit, holding no month before 2023, X: From 2019 to 2024, picks like this made $0.20 more for every $1 risked than buying the index's other stocks the same way, over 4 picks.",
             BookRisk.Line(HeavyweightRule.Name, "the live rule", "SML", calendar, choices, "X", boxFromFirst: true),

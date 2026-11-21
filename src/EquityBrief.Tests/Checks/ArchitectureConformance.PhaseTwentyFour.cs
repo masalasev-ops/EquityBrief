@@ -17,7 +17,7 @@ public partial class ArchitectureConformance
     // 24.11's Run page row of the splits the share check does not read and section 18's row of their causes; and 24.13's
     // row of the judge's page on an empty record; and 24.14's section 17 row of the facts a judge pick names, section 18's row
     // of a pick refused for them and the judge's page's two rows of the facts named and a pick made before; and 24.15's two
-    // rows of Home's past nights and each card's line on what has happened since.
+    // rows of Home's past nights and each card's line on what has happened since; and none at 24.9 or 24.8.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseTwentyFourLanded =>
     [
         ("24.0", [], []),
@@ -34,6 +34,7 @@ public partial class ArchitectureConformance
         ("24.14", [.. FixtureExpectations.JudgeNamedRows], []),
         ("24.15", [.. Reading.ReadSurface.HomePastNightRows], []),
         ("24.9", [], []),
+        ("24.8", [], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -49,7 +50,9 @@ public partial class ArchitectureConformance
     // labelled is 24.6's row, which stood. 24.14, four of four: the store's column landing as words in its store's row. 24.15,
     // two of four: the night picker, the banner, the waiting cards as they stood and the judge's line that night landing as
     // clauses of one row where the plan counted the picker and the judge's line as rows of their own. 24.9, none of one: the
-    // roster's row of the nightly run stood, its words gaining the build across the cores.
+    // roster's row of the nightly run stood, its words gaining the build across the cores. 24.8, none of two: the History page
+    // draws no book's years, which each book's record box draws off the monthly run's lines, and the long test's years landed
+    // as clauses of section 17's paragraph and the runbook's line, which stood.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -66,6 +69,7 @@ public partial class ArchitectureConformance
         ("24.14", 0),
         ("24.15", -2),
         ("24.9", -1),
+        ("24.8", -2),
     ];
 
     [Fact]

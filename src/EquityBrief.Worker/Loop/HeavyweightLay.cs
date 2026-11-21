@@ -48,21 +48,79 @@ public sealed class HeavyweightLay
 
     // The S&P 500's book reads its index's own series, and the S&P 400's and 600's their funds'; every month's first
     // session and every week's are laid, so a book rebalancing weekly reads its sessions as a monthly one does.
-    public static async Task<HeavyweightLay> ReadAsync(LoopRead read, SweepHistory history, DateOnly through, Action<string> progress, CancellationToken cancellation, SweepHistoryInputs? largeRead = null)
+    // From 24.8 on the operator's word of 2026-11-20 the lay over the long history: the long pull's index, SPY and sector funds'
+    // closes with the standing pull's after them, and the S&P 500 as it stood over the long history for an S&P 400's or 600's
+    // industries, so its months reach before the standing pull's first session; the books' long test and the monthly per-rule
+    // long test both read it. From the operator's word of 2026-11-20 on the older sectors a session before today's eleven began
+    // reads each member's sector as it stood off the funds' industry headings, each sector against the fund that held it then.
+    public static async Task<HeavyweightLay> ReadLongAsync(LoopRead read, SweepHistory history, History.LongHistoryReader longHistory, DateOnly through, Action<string> progress, CancellationToken cancellation, SweepHistoryInputs? largeRead = null)
+    {
+        Task<IReadOnlyList<SweepMarketSeries>> SeriesOf(IReadOnlyList<string> named) => WalkForwardTester.LongSeriesAsync(longHistory, history, named, through, cancellation);
+
+        var laid = read with { Companies = read.Companies with { Funds = await SeriesOf(Bars.HistoryPull.SectorFunds) } };
+        var large = read.Index == WalkForwardTester.LargeIndex ? null : largeRead ?? await longHistory.ReadAsync(WalkForwardTester.LargeIndex, through, null, cancellation);
+        var headings = await longHistory.HeadingsAsync(read.Index, cancellation);
+
+        return await ReadAsync(laid, history, through, progress, cancellation, large, SeriesOf, (ticker, day) => SectorAsItStood(headings, ticker, day));
+    }
+
+    // A code's sector on a session before today's eleven, as it stood: its heading at the newest quarter end on or before the
+    // session, the first where the session is before every one, read through the sector splits' map; none where the schedules
+    // hold no heading of it or the map names nothing for the heading.
+    public static string? SectorAsItStood(IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Period, string Heading)>> headings, string ticker, DateOnly day)
+    {
+        if (!headings.TryGetValue(ticker, out var held) || held.Count == 0)
+        {
+            return null;
+        }
+
+        var at = 0;
+
+        while (at + 1 < held.Count && held[at + 1].Period <= day)
+        {
+            at++;
+        }
+
+        return Core.History.SectorMap.AsItStood(held[at].Heading, day);
+    }
+
+    // Every session laid before today's eleven began read with each member's sector as it stood, every later one as laid; the
+    // funds' returns stand as laid, so a member reads the fund of the sector that held it.
+    public static IReadOnlyDictionary<int, HeavyweightSession> AsItStood(IReadOnlyDictionary<int, HeavyweightSession> sessions, IReadOnlyList<DateOnly> calendar, Func<string, DateOnly, string?> sectorOn) =>
+        sessions.ToDictionary(
+            pair => pair.Key,
+            pair => calendar[pair.Key] >= GicsSectors.First
+                ? pair.Value
+                : pair.Value with { Members = [.. pair.Value.Members.Select(one => one with { Member = one.Member with { Sector = sectorOn(one.Member.Ticker, calendar[pair.Key]) } })] });
+
+    // A read over the long history names its series reader, which reads the index's series and SPY from the long pull with the
+    // standing pull's closes after it, as the sector funds it hands in are read, and its sectors as they stood before today's
+    // eleven.
+    public static async Task<HeavyweightLay> ReadAsync(LoopRead read, SweepHistory history, DateOnly through, Action<string> progress, CancellationToken cancellation, SweepHistoryInputs? largeRead = null, Func<IReadOnlyList<string>, Task<IReadOnlyList<SweepMarketSeries>>>? seriesOf = null, Func<string, DateOnly, string?>? olderSector = null)
     {
         var months = HeavyweightSweep.Rebalances(read.Calendar, read.FirstScored, HeavyweightPeriod.Month);
         var weeks = HeavyweightSweep.Rebalances(read.Calendar, read.FirstScored, HeavyweightPeriod.Week);
-        var fund = read.Index == WalkForwardTester.LargeIndex
+        var fund = seriesOf is not null
+            ? (await seriesOf([read.Index == WalkForwardTester.LargeIndex ? "GSPC" : IndexSweepRunner.IndexFunds[read.Index]])).FirstOrDefault()
+            : read.Index == WalkForwardTester.LargeIndex
             ? (await history.MarketAsync(through, cancellation)).FirstOrDefault(series => series.Series == "GSPC")
             : (await history.SeriesOfAsync([IndexSweepRunner.IndexFunds[read.Index]], through, cancellation)).FirstOrDefault();
-        var (tape, sessions) = HeavyweightSweep.Lay(read.Inputs, read.Companies, fund, months.Union(weeks).ToHashSet(), read.FirstScored);
+        var (tape, laidSessions) = HeavyweightSweep.Lay(read.Inputs, read.Companies, fund, months.Union(weeks).ToHashSet(), read.FirstScored);
+        var sessions = olderSector is null ? laidSessions : AsItStood(laidSessions, read.Calendar, olderSector);
+
+        if (olderSector is not null)
+        {
+            var before = sessions.Where(pair => read.Calendar[pair.Key] < GicsSectors.First).SelectMany(pair => pair.Value.Members).ToArray();
+
+            progress(FormattableString.Invariant($"the heavyweights' lay on the {read.Index}: {before.Count(one => one.Member.Sector is not null):N0} of {before.Length:N0} members on the sessions read before {GicsSectors.First:yyyy-MM-dd} read a sector as it stood"));
+        }
 
         if (read.Index == WalkForwardTester.LargeIndex)
         {
             return new HeavyweightLay(read, tape, sessions, months, (_, _) => [], _ => null);
         }
         var industries = await history.IndustriesAsync(cancellation);
-        var spy = (await history.SeriesOfAsync(["SPY"], through, cancellation)).FirstOrDefault();
+        var spy = (seriesOf is not null ? await seriesOf(["SPY"]) : await history.SeriesOfAsync(["SPY"], through, cancellation)).FirstOrDefault();
 
         if (largeRead is null)
         {
