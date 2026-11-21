@@ -2982,7 +2982,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.StoreCopyStep)] = new Scoped(
             Verdict.Pass,
-            "over a constructed night the launcher the night was handed is asked to start one copy after the labeller, waiting for the labeller, and a night run again for an earlier session starts one that waits for none",
+            "over a constructed night the night's row after the labeller's says the copy's own run copies the store and no copy stands in the folder, a night run again for an earlier session and a night handed no launcher writing the same row, and the night's source asks for none",
             ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.JudgeStep)] = new Scoped(
             Verdict.Pass,
@@ -2996,7 +2996,7 @@ internal static class Scope
         // ended before it finished and on copies gone that no copy removed.
         [CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopiedItem)] = new Scoped(
             Verdict.Pass,
-            "held by a copy made since the night began and by a start since it waiting, failed by a start past a copy's longest wait and an hour with no end, by an attempt since that made none and by none started since, and not read over a store holding no copy's row, each worked by hand over constructed rows",
+            "held by a copy made since the night began, by a start since it waiting and by none started before the copy's own run after the night, failed by a start past a copy's longest wait and an hour with no end, by an attempt since that made none and by none started once that run's instant has passed, and not read over a store holding no copy's row, each worked by hand over constructed rows",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopiesKeptItem)] = new Scoped(
             Verdict.Pass,
@@ -8216,7 +8216,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "How each report did")] =
             ["one row per report over the seven nights with its stock and day and what it cost", "a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's", "the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did", "each section's share passed first time and its share left out over the newest twenty reports that warranted it"],
         [CheckReach.Key("15.10 Run", "Anything to worry about")] =
-            ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date", "no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost", "no drain stopped on an error, and where one did the time it started named with its error", "the store copied after the night began or a copy started since waiting or copying, and where one was ended before it finished or none was started its start or the night's named", "every copy the newest copy's row before it kept still in the folder, and where any is gone each named", "no live rule gone longer without a pick than its own past empty nights say it does, and where one has its family named with its stretch against its mark", "the newest monthly run having held every step it ran, and where it stopped its month and step named with why", "the four harness counts beneath", "the store's newest copy beneath them with the time it was made and its folder and the copies kept and the newest attempt that made none with why, with a copy started since that has written no end and whether it was ended before it finished and the copies the newest copy found gone from its folder that no copy removed"],
+            ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date", "no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost", "no drain stopped on an error, and where one did the time it started named with its error", "the store copied after the night began or a copy started since waiting or copying or the copy's own run after the night not yet come, and where one was ended before it finished or none was started by its run its start or the run's named", "every copy the newest copy's row before it kept still in the folder, and where any is gone each named", "no live rule gone longer without a pick than its own past empty nights say it does, and where one has its family named with its stretch against its mark", "the newest monthly run having held every step it ran, and where it stopped its month and step named with why", "the four harness counts beneath", "the store's newest copy beneath them with the time it was made and its folder and the copies kept and the newest attempt that made none with why, with a copy started since that has written no end and whether it was ended before it finished and the copies the newest copy found gone from its folder that no copy removed"],
         // 12.2. The name page's gates and the run page's funnel, each read as the parts its row enumerates.
         [CheckReach.Key("15.9 Name", "Gates")] =
             ["each of the five gates with whether it passed and why", "the setup's family and whether the trigger's event happened", "the trade read from the ladder's first tranche and from the one swing plan that night's live rule used with that plan marked and no candidate's plan drawn whichever filter version the night ran under", "the exclusions with a key saying how to read it"],
@@ -9094,8 +9094,8 @@ internal static class Scope
         ["Ask for six reports taken in turn"] = "11.4",
         // 12.6's correction, the news labeller's row after the night's request, the off-peak run starting the labeller.
         ["Start no news labeller"] = "12.6",
-        // The store's copy, the operator's ruling of 2026-10-02.
-        ["Start the store's copy"] = "13.10",
+        // The store's copy, the operator's ruling of 2026-10-02, the night starting none from their word of 2026-11-20.
+        ["Start no copy of the store"] = "13.10",
         ["Write the facts file"] = "5.3",
 
         ["Fill forward returns"] = "5.5",

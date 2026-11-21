@@ -13,19 +13,19 @@ namespace EquityBrief.Worker.Backup;
 
 public sealed record StoreBackupOutcome(string Outcome, string? Copy, string Detail);
 
-// The store's copy, made once the night, the drain it started and the labeller have finished. It waits while
-// the night holds its lock and, started by the night, until the labeller has written its last row or the latest
-// instant a labeller started with it could end has passed, its time limit counted over the hours outside any peak
-// window a paid labeller waited through, none on the local model, then holds the drain's lock so no pass writes beneath it, copies the store page by
-// page through SQLite's own backup into a file of its own in the copies' folder, names it by its instant once
-// written, and opens and reads it against the store. It keeps the newest two of the copies its own rows
-// name, opening and reading each before any older one is removed, and removes nothing where one of them does
-// not open and read; a copy another store made in the same folder is neither counted nor removed. It gives up
-// waiting after twenty hours, well before the next night is built. It writes two rows of its own on the run
-// log and nothing else: one as it starts, so a copy ended before it finished leaves a start with no end, and
-// one as it ends, naming the folder relative to the data root and never as an absolute path, and naming the
-// copies its own earlier rows kept that are gone from the folder, removed by no copy.
-// see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+// The store's copy, run by its own schedule and by hand. It waits while a night holds its lock and, with
+// '--after-labeller', until the labeller has written its last row or the latest instant a labeller started with it
+// could end has passed, its time limit counted over the hours outside any peak window a paid labeller waited through,
+// none on the local model, then holds the drain's lock so no pass writes beneath it while it copies the store page by
+// page through SQLite's own backup into a file of its own in the copies' folder, and lets the lock go once the copy
+// is written. It then names the copy by its instant and opens and reads it against the store. Where it reads, the
+// copies its own rows name beyond the newest two are removed, the copy kept from before trusted to the reading made
+// the night it was written; a copy another store made in the same folder is neither counted nor removed. It gives up
+// waiting after twenty hours. It writes two rows of its own on the run log and nothing else: one as it starts, so a
+// copy ended before it finished leaves a start with no end, and one as it ends, naming the folder relative to the
+// data root and never as an absolute path, and naming the copies its own earlier rows kept that are gone from the
+// folder, removed by no copy.
+// see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
 // see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
 // see: The operator's store is never deleted, and every site that removes a file is stated where a check holds it
 // see: The news labeller waits for the local model's lock and stops before the local run's next slot, its time limit counted from its start
@@ -69,8 +69,8 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
     const string LabellerEnded = "SELECT COUNT(*) FROM run_log WHERE stage = $stage AND started_at >= $since;";
 
     // The ending rows this store's copies wrote, newest first: each naming the copy it made, kept or refused, and
-    // the copies it kept.
-    const string OwnRows = "SELECT detail FROM run_log WHERE stage = $stage ORDER BY rowid DESC;";
+    // the copies it kept, with its outcome, which says whether its copy opened and read.
+    const string OwnRows = "SELECT detail, outcome FROM run_log WHERE stage = $stage ORDER BY rowid DESC;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -129,7 +129,7 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             await pause(Between, cancellation);
         }
 
-        // The drain's lock, held while the copy is made so no pass writes beneath it.
+        // The drain's lock, held while the copy is written so no pass writes beneath it, and let go before the copy is read.
         FileStream? drain;
 
         while ((drain = TheDrainsLock()) is null)
@@ -143,13 +143,10 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             await pause(Between, cancellation);
         }
 
-        using (drain)
-        {
-            return await CopyAsync(started, waitedFor, cancellation);
-        }
+        return await CopyAsync(started, waitedFor, drain, cancellation);
     }
 
-    async Task<StoreBackupOutcome> CopyAsync(DateTimeOffset started, IReadOnlyCollection<string> waitedFor, CancellationToken cancellation)
+    async Task<StoreBackupOutcome> CopyAsync(DateTimeOffset started, IReadOnlyCollection<string> waitedFor, FileStream drain, CancellationToken cancellation)
     {
         Directory.CreateDirectory(folder);
 
@@ -173,13 +170,15 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
         // The copies this store's own rows name, and the ones its newest ending row kept that are gone from the
         // folder before this copy is counted: removed by no copy, since a copy removes only beyond the two it
         // keeps and names each removal, so a copy gone unnamed went by another hand, and the row says so.
-        var (own, lastKept) = await OwnCopiesAsync(cancellation);
+        var (own, read, lastKept) = await OwnCopiesAsync(cancellation);
         var missing = lastKept.Where(kept => !File.Exists(Path.Combine(folder, kept))).ToArray();
 
         (string? Newest, long Bars) source;
 
-        await using (var store = new SqliteConnection(StoreConnection.For(databaseFile)))
+        using (drain)
         {
+            await using var store = new SqliteConnection(StoreConnection.For(databaseFile));
+
             await store.OpenAsync(cancellation);
             source = await BarsAsync(store, cancellation);
 
@@ -215,33 +214,20 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             }, name, cancellation);
         }
 
-        // The newest two of this store's own copies kept, each opened and read before any older one is removed.
+        // The newest two of this store's own copies that opened and read kept once the new one has, each trusted to the
+        // reading made the night it was written; a copy refused as it was made counts as none of the two, and only a copy
+        // older than both kept is removed.
         own.Add(name);
+        read.Add(name);
 
         var copies = StoreCopies.In(folder).Where(one => own.Contains(Path.GetFileName(one.File))).ToArray();
+        var kept = copies.Where(one => read.Contains(Path.GetFileName(one.File))).Take(StoreCopies.Kept).ToArray();
         var removed = new List<string>();
-        var unread = new List<string>();
 
-        if (copies.Length > StoreCopies.Kept)
+        foreach (var (old, _) in copies.Where(one => !kept.Contains(one) && one.MadeAt < kept[^1].MadeAt))
         {
-            foreach (var (kept, _) in copies.Take(StoreCopies.Kept).Where(one => !string.Equals(one.File, finished, StringComparison.Ordinal)))
-            {
-                var keptCheck = await CheckAsync(kept, cancellation);
-
-                if (!keptCheck.Reads)
-                {
-                    unread.Add(Path.GetFileName(kept) + ", " + keptCheck.Said);
-                }
-            }
-
-            if (unread.Count == 0)
-            {
-                foreach (var (old, _) in copies.Skip(StoreCopies.Kept))
-                {
-                    File.Delete(old);
-                    removed.Add(Path.GetFileName(old));
-                }
-            }
+            File.Delete(old);
+            removed.Add(Path.GetFileName(old));
         }
 
         return await RecordAsync(started, Copied, new
@@ -254,7 +240,6 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             bars = check.Bars,
             kept = StoreCopies.In(folder).Select(one => Path.GetFileName(one.File)).Where(own.Contains).ToArray(),
             removed,
-            unread,
             missing,
             waited = waitedFor,
         }, name, cancellation);
@@ -325,11 +310,13 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
         return await reader.ReadAsync(cancellation) ? (reader.IsDBNull(0) ? null : reader.GetString(0), reader.GetInt64(1)) : (null, 0);
     }
 
-    // The copies this store's own rows name, read off each ending row's copy, whether it was kept or refused, and
-    // the copies the newest row that kept any says it kept; a row written as a copy started names none.
-    async Task<(HashSet<string> Own, IReadOnlyList<string> LastKept)> OwnCopiesAsync(CancellationToken cancellation)
+    // The copies this store's own rows name, read off each ending row's copy, whether it was kept or refused, the ones
+    // among them whose row says they opened and read, and the copies the newest row that kept any says it kept; a row
+    // written as a copy started names none.
+    async Task<(HashSet<string> Own, HashSet<string> Read, IReadOnlyList<string> LastKept)> OwnCopiesAsync(CancellationToken cancellation)
     {
         var own = new HashSet<string>(StringComparer.Ordinal);
+        var read = new HashSet<string>(StringComparer.Ordinal);
         IReadOnlyList<string>? lastKept = null;
 
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -353,12 +340,17 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             if (copy is not null)
             {
                 own.Add(copy);
+
+                if (!reader.IsDBNull(1) && reader.GetString(1) == Copied)
+                {
+                    read.Add(copy);
+                }
             }
 
             lastKept ??= kept;
         }
 
-        return (own, lastKept ?? []);
+        return (own, read, lastKept ?? []);
     }
 
     // The copy an ending row names, and the copies it kept where it kept any.

@@ -9,24 +9,21 @@ using EquityBrief.Worker.Research;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, the operator's ruling of 2026-10-02: the store's copy after every night. The copy is made
-// through SQLite's own backup into the copies' folder, named by its instant, opened and read against the store,
-// and its row names the folder relative to the data root; the newest two of the store's own copies are kept,
-// each opened and read before an older one is removed and none removed where one does not, a copy another store
-// made in the folder neither counted nor removed; and the copy waits for the night, the labeller the night
-// started and the drain, holding the drain's lock while it copies, and gives up after twenty hours.
-// see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+// fixture-expectations, the operator's ruling of 2026-10-02: the store's copy. The copy is made through SQLite's own
+// backup into the copies' folder, named by its instant, opened and read against the store, and its row names the
+// folder relative to the data root; once it reads, the store's own copies beyond the newest two are removed, a copy
+// another store made in the folder neither counted nor removed; and the copy waits for the night, the labeller where
+// it is told to and the drain, and gives up after twenty hours. From the operator's word of 2026-11-20 it runs by a
+// schedule of its own and holds the drain's lock while it writes the copy alone, and reads back no copy kept before it.
+// see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
 // see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
 public partial class FixtureExpectations
 {
-    // The night's step that starts the copy, as section 14 states it.
+    // The night's step on the copy, as section 14 states it.
     internal const string StoreCopyStep =
-        "Start the store's copy, a process of its own that waits until the night has finished, " +
-        "holding the drain's lock while it copies the store through SQLite's own backup into the copies' folder, " +
-        "opens and reads the copy against the store, keeps the newest two after opening and reading each, and writes a row of its own as " +
-        "it starts and one as it ends and nothing else; it waits for no labeller and no drain, since the night starts neither (see: " +
-        "The store is copied once the night and every process it started have finished and the newest two copies are kept after each is " +
-        "opened and read, and the copy writes a row as it starts and one as it ends).";
+        "Start no copy of the store, writing the night's row saying its own run copies the store at 07:00 UTC the morning after a " +
+        "weekday night, so nothing the night started waits behind the copy (see: The store is copied by a scheduled run of its own " +
+        "holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read).";
 
     // The part of the run page's worry row the copy adds.
     internal const string StoreCopyLine =
@@ -36,8 +33,8 @@ public partial class FixtureExpectations
 
     // The checklist's two items on the copies, the 13.10 correction of 2026-10-08.
     internal const string StoreCopiedItem =
-        "Anything to worry about, the store copied after the night began or a copy started since waiting or copying, and where one was ended " +
-        "before it finished or none was started its start or the night's named";
+        "Anything to worry about, the store copied after the night began or a copy started since waiting or copying or the copy's own run " +
+        "after the night not yet come, and where one was ended before it finished or none was started by its run its start or the run's named";
 
     internal const string StoreCopiesKeptItem =
         "Anything to worry about, every copy the newest copy's row before it kept still in the folder, and where any is gone each named";
@@ -201,13 +198,13 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheNewestTwoAreKeptEachOpenedAndReadBeforeAnOlderOneIsRemoved()
+    public async Task TheNewestTwoThatReadAreKeptOnceTheNewCopyReadsAndNoCopyKeptBeforeIsReadAgain()
     {
         using var store = CopyStore();
         var folder = Path.Combine(store.Root, "copies");
         var names = new List<string>();
 
-        // Three nights' copies: the third removes the first, once the second has opened and read.
+        // Three nights' copies: the third removes the first once it has itself opened and read.
         for (var night = 0; night < 3; night++)
         {
             var (backup, _) = Copying(store, CopyStart.AddDays(night), folder);
@@ -222,11 +219,12 @@ public partial class FixtureExpectations
         var third = CopyRow(store, StoreBackup.RunIdAt(CopyStart.AddDays(2)), out _);
 
         Assert.Equal([names[0]], Names(third, "removed"));
-        Assert.Empty(Names(third, "unread"));
+        Assert.False(third.TryGetProperty("unread", out _));
         Assert.Equal([names[2], names[1]], Names(third, "kept"));
 
-        // A kept copy that no longer opens stops every removal: the fourth night's copy is made and read, the third
-        // night's does not open, and all three stay.
+        // From the operator's word of 2026-11-20 a kept copy is trusted to the reading made the night it was written and
+        // not read again: the third night's copy no longer opens, the fourth night's copy is made and read, and the
+        // second night's, older than both kept, is removed.
         using (var damaged = new FileStream(Path.Combine(folder, names[2]), FileMode.Open, FileAccess.Write))
         {
             damaged.Write("this is no database at all"u8);
@@ -236,12 +234,28 @@ public partial class FixtureExpectations
         var latest = await fourth.RunAsync(afterTheLabeller: false);
 
         Assert.Equal(StoreBackup.Copied, latest.Outcome);
-        Assert.Equal(3, StoreCopies.In(folder).Count);
+        Assert.Equal([latest.Copy!, names[2]], StoreCopies.In(folder).Select(copy => Path.GetFileName(copy.File)));
+        Assert.Equal([names[1]], Names(CopyRow(store, StoreBackup.RunIdAt(CopyStart.AddDays(3)), out _), "removed"));
 
-        var row = CopyRow(store, StoreBackup.RunIdAt(CopyStart.AddDays(3)), out _);
+        // A copy refused as it was made counts as none of the two: one refused on the fifth night stands in the folder
+        // under its name, and the sixth night's copy keeps itself and the fourth's, the newest two that read, removes the
+        // third's, older than both, and leaves the refused one, newer than the fourth's.
+        var refused = StoreCopies.NameAt(CopyStart.AddDays(4));
 
-        Assert.Empty(Names(row, "removed"));
-        Assert.StartsWith(names[2] + ", it did not open", Assert.Single(Names(row, "unread")), StringComparison.Ordinal);
+        File.WriteAllText(Path.Combine(folder, refused), "a copy that did not read");
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+            $"VALUES ('{StoreBackup.RunIdAt(CopyStart.AddDays(4))}', '{StoreCopies.Stage}', '2026-10-07T00:05:00Z', '2026-10-07T00:06:00Z', 'failed', 0, 0, 0, '0', " +
+            $"'{{\"copy\":\"{refused}\",\"reason\":\"the copy did not open and read as the store does\"}}');");
+
+        var (sixth, _) = Copying(store, CopyStart.AddDays(5), folder);
+        var newest = await sixth.RunAsync(afterTheLabeller: false);
+        var row = CopyRow(store, StoreBackup.RunIdAt(CopyStart.AddDays(5)), out _);
+
+        Assert.Equal(StoreBackup.Copied, newest.Outcome);
+        Assert.Equal([names[2]], Names(row, "removed"));
+        Assert.Equal([newest.Copy!, refused, latest.Copy!], Names(row, "kept"));
+        Assert.Equal([newest.Copy!, refused, latest.Copy!], StoreCopies.In(folder).Select(copy => Path.GetFileName(copy.File)));
     }
 
     // A copy of this store made at an instant and named by a row of its own, as an earlier copy would have left
@@ -400,7 +414,6 @@ public partial class FixtureExpectations
 
         Assert.Equal([names[2], names[1]], Names(third, "kept"));
         Assert.Equal([names[0]], Names(third, "removed"));
-        Assert.Empty(Names(third, "unread"));
         Assert.All(others, other => Assert.True(File.Exists(Path.Combine(folder, other)), other));
         Assert.Equal(
             [others[2], names[2], names[1], others[1], others[0]],
@@ -409,8 +422,9 @@ public partial class FixtureExpectations
         // A day on, the unfinished copy at the wait is past it, and the next copy removes it.
         Assert.False(File.Exists(waited));
 
-        // A copy this store made and refused is its own as much as one it kept: named by a failed row and newer
-        // than the rest, it is among the newest two, does not open, and stops every removal.
+        // A copy this store made and refused is its own as much as one it kept, and counts as none of the two: named by
+        // a failed row and newer than the rest, it stands, the new copy and the third night's are kept as the newest two
+        // that read, and the second night's, older than both, is removed.
         var refused = StoreCopies.NameAt(CopyStart.AddDays(10));
 
         File.WriteAllText(Path.Combine(folder, refused), "a copy that did not read");
@@ -424,9 +438,8 @@ public partial class FixtureExpectations
         var row = CopyRow(store, StoreBackup.RunIdAt(CopyStart.AddDays(3)), out _);
 
         Assert.Equal(StoreBackup.Copied, latest.Outcome);
-        Assert.Empty(Names(row, "removed"));
-        Assert.StartsWith(refused + ", it did not open", Assert.Single(Names(row, "unread")), StringComparison.Ordinal);
-        Assert.Equal([refused, latest.Copy!, names[2], names[1]], Names(row, "kept"));
+        Assert.Equal([names[1]], Names(row, "removed"));
+        Assert.Equal([refused, latest.Copy!, names[2]], Names(row, "kept"));
     }
 
     [Fact]
@@ -582,12 +595,12 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheCopyHoldsTheDrainsLockFromTheMomentItNamesTheCopyUntilItWritesItsRow()
+    public async Task TheCopyHoldsTheDrainsLockWhileItWritesTheCopyAndLetsItGoBeforeItReadsItBack()
     {
         // Nothing holds the store, so the copy takes the drain's lock at once, the lock's file made as a drain leaves
-        // it. The read as the copy starts finds the lock free; the read that names the copy and the read that stamps
-        // its row's end, after the copy is written and read back, find it held; and once the copy has finished it is
-        // free again.
+        // it. The read as the copy starts finds the lock free; the read that names the copy finds it held; from the
+        // operator's word of 2026-11-20 the read that stamps its row's end, after the copy is written and read back,
+        // finds it free, since the lock is let go once the copy is written; and it is free once the copy has finished.
         using var store = CopyStore();
         var drains = Path.Combine(store.Root, WorkerDrainLauncher.CopiesFolder);
 
@@ -608,7 +621,7 @@ public partial class FixtureExpectations
 
         Assert.False(clock.Held[CopyStart]);
         Assert.True(clock.Held[StoreCopies.MadeAt(made.Copy!)!.Value]);
-        Assert.True(clock.Held[ended]);
+        Assert.False(clock.Held[ended]);
         Assert.False(DrainHeld(store.Root));
     }
 }

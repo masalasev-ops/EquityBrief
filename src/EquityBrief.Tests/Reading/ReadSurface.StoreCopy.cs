@@ -11,8 +11,9 @@ namespace EquityBrief.Tests.Reading;
 // attempt that made none with why, and that none is recorded where the store holds no copy's row; and from the 13.10
 // correction of 2026-10-08 a copy started since that has written no end, waiting or copying within a copy's longest
 // wait and an hour and ended before it finished past it, the copies the newest copy found gone from its folder that
-// no copy removed, and the checklist's two items on the copies.
-// see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+// no copy removed, and the checklist's two items on the copies; from the operator's word of 2026-11-20 the first item
+// held until the copy's own run after the night is due.
+// see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
 public partial class ReadSurface
 {
     static StoreBackupRow StartedRow(string runId, string startedAt, bool afterTheLabeller = true) =>
@@ -106,7 +107,35 @@ public partial class ReadSurface
 
         Assert.Equal((WorryItem.Held, (string?)null), (Items(copiedSince)[8].State, Items(copiedSince)[8].Why));
         Assert.Equal((WorryItem.Held, (string?)null), (Items(copiedSince)[9].State, Items(copiedSince)[9].Why));
-        Assert.Equal((WorryItem.Failed, "no copy has started since the night began at 23:30 UTC on 2026-09-18"), (Items(nothingSince)[8].State, Items(nothingSince)[8].Why));
+
+        // From the operator's word of 2026-11-20 the copy is its own run's, at 07:00 UTC on the morning after a weekday
+        // night: the night of Friday the 18th began at 23:30, so its copy's run is Saturday the 19th at 07:00. Read at
+        // 01:00 or a second before 07:00 with no copy started since, the item holds naming the run; read at 07:00 or
+        // after, it fails naming the run and the night's start.
+        var beforeTheRun = RunScreen.StoreCopy(rows[3..], Path.GetTempPath(), new DateTimeOffset(2026, 9, 19, 6, 59, 59, TimeSpan.Zero));
+        var atTheRun = RunScreen.StoreCopy(rows[3..], Path.GetTempPath(), new DateTimeOffset(2026, 9, 19, 7, 0, 0, TimeSpan.Zero));
+
+        Assert.Equal((WorryItem.Held, "the copy's own run after the night starts at 07:00 UTC on 2026-09-19"), (Items(nothingSince)[8].State, Items(nothingSince)[8].Why));
+        Assert.Equal((WorryItem.Held, "the copy's own run after the night starts at 07:00 UTC on 2026-09-19"), (Items(beforeTheRun)[8].State, Items(beforeTheRun)[8].Why));
+        Assert.Equal(
+            (WorryItem.Failed, "no copy has started since its run due at 07:00 UTC on 2026-09-19, after the night began at 23:30 UTC on 2026-09-18"),
+            (Items(atTheRun)[8].State, Items(atTheRun)[8].Why));
+    }
+
+    [Fact]
+    public void TheCopysOwnRunIsAtSevenUtcOnTheMorningsAfterTheWeekdayNights()
+    {
+        // Worked by hand over the week of Monday 2026-11-16: a weekday night at 23:00 is copied at 07:00 the next morning,
+        // Friday's on the Saturday; a night run by hand on Saturday waits for Tuesday, since no run starts on a Sunday or
+        // a Monday; an instant at the run's own second is past it, and one a second before is not.
+        static DateTimeOffset Utc(int day, int hour, int minute, int second = 0) => new(2026, 11, day, hour, minute, second, TimeSpan.Zero);
+
+        Assert.Equal(Utc(17, 7, 0), StoreCopies.RunAfter(Utc(16, 23, 0)));
+        Assert.Equal(Utc(21, 7, 0), StoreCopies.RunAfter(Utc(20, 23, 0)));
+        Assert.Equal(Utc(24, 7, 0), StoreCopies.RunAfter(Utc(21, 23, 30)));
+        Assert.Equal(Utc(24, 7, 0), StoreCopies.RunAfter(Utc(23, 6, 59)));
+        Assert.Equal(Utc(17, 7, 0), StoreCopies.RunAfter(Utc(17, 6, 59, 59)));
+        Assert.Equal(Utc(18, 7, 0), StoreCopies.RunAfter(Utc(17, 7, 0)));
     }
     // A copy's row as the worker writes it: its end under the copies' stage, or its start under the start's stage.
     static void CopyRowOf(TemporaryStore store, string runId, string outcome, string endedAt, string detail) =>
@@ -128,7 +157,7 @@ public partial class ReadSurface
         var none = await Line();
 
         Assert.Contains("data-copies=\"none\"", none, StringComparison.Ordinal);
-        Assert.Contains("No copy of the store is recorded yet.", none, StringComparison.Ordinal);
+        Assert.Contains("No copy of the store is recorded yet. Its own run copies the store at 07:00 UTC the morning after a weekday night.", none, StringComparison.Ordinal);
 
         // A copy made at 00:41:12 on the 17th into a folder beside the data root, three kept, read back against
         // this surface's own data root.

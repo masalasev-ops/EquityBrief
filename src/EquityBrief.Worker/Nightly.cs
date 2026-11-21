@@ -983,16 +983,14 @@ public static class Nightly
 
                 return said;
             }),
-            // Section 14's step after the labeller's row. The night starts the store's copy: one process of
-            // its own, which waits until the night has finished, copies the store and writes one row of its own.
-            // It waits for no labeller and no drain, since the night starts neither, and a night handed nothing to
-            // start one with says so and starts none.
-            // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+            // Section 14's step after the labeller's row. The night starts no copy of the store: its own scheduled run
+            // copies it the morning after, so nothing the night started waits behind the copy. The step writes the
+            // night's row saying so.
+            // see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
             new("backup", async () =>
             {
                 var started = clock.UtcNow;
-                var said = launcher?.StartTheBackup(afterTheLabeller: false).Line
-                    ?? "No copy of the store was started, since this night was handed nothing to start one with.";
+                var said = CopiedByItsOwnRun;
 
                 await Backup.StoreBackup.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, said);
 
@@ -1260,6 +1258,8 @@ public static class Nightly
     public const string QueuedForTheOffPeakRun = "The requests wait for the off-peak run, which starts the drain five minutes after each peak window ends; the night starts none.";
 
     public const string LabelledByTheOffPeakRun = "No labeller was started: the off-peak run labels tonight's list five minutes after each peak window ends.";
+
+    public const string CopiedByItsOwnRun = "No copy of the store was started: its own run copies the store at 07:00 UTC the morning after a weekday night.";
 
     public static async Task<int> RefusedAsync(
         StoreLocation store,

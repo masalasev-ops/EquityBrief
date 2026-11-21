@@ -4388,10 +4388,10 @@ static async Task<int> LabelNews(string[] args)
     return 0;
 }
 
-// The store copied into the copies' folder, as the night starts it after its labeller or by hand: it waits while a
-// night or a drain holds the store, and for the labeller where '--after-labeller' says the night started one, then
-// copies, opens and reads the copy and keeps the newest two.
-// see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+// The store copied into the copies' folder, as tools/backup runs it on its schedule or by hand: it waits while a night
+// or a drain holds the store, and for the labeller where '--after-labeller' says to, then copies under the drain's
+// lock, lets it go, opens and reads the copy and keeps the newest two.
+// see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
 static async Task<int> BackupRun(string[] args)
 {
     var configuration = Configuration();

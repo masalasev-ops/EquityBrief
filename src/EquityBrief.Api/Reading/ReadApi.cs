@@ -3400,7 +3400,7 @@ public sealed partial class ReadApi : IComponent
     }
 
     // The store's copies as their own rows record them, newest first.
-    // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    // see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
     public async Task<IReadOnlyList<StoreBackupRow>> StoreBackupsAsync()
     {
         await using var connection = Open();

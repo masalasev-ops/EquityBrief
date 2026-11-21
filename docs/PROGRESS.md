@@ -20785,3 +20785,38 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the fill run again on the operator's store once merged, asking the SEC for the 152 filers whose kept answers end
             early, and the 16 trusts counted again from it; the rules' half for the monthly run of 2027-02-06; 24.8 and 24.9's
             runs.
+
+### 24.0 - correction: the store copied by a run of its own at 07:00 UTC, the drain's lock held for the copy alone and no kept copy read again   2026-11-20
+
+Queue:      done, 24.0 to 24.7, 24.10 to 24.12 and their corrections, the trusts' revenue merged as #735; in progress, this
+            correction, on the operator's word of 2026-11-20 kept as Appendix P of the plan's file, put ahead of everything else;
+            next, the fill on the operator's store, the stage adding Home's past nights kept as Appendix O, then 24.8.
+Built:      the night starts no copy of the store, its `backup` row saying the copy's own run copies it; `tools/backup` and its
+            wrapper run the worker's `backup` verb from the build the newest night made, the copy `data/night.build` names,
+            building and removing nothing, for a task at 07:00 UTC on Tuesday to Saturday; the copy holds the drain's lock while
+            it writes the copy alone and lets it go before it reads it back; no kept copy is read again, and the two kept are the
+            new copy and the newest before it whose row says it opened and read, a copy refused as it was made counting as none
+            and only copies older than both removed; the Run page's item on the store copied after the night holding until the
+            copy's run after the night is due; the launcher's start of a copy taken out; and the merge rule naming the copy.
+Measured:   the copy's run on the operator's store in November, 27 to 106 minutes a night with the drain's lock held for all of
+            it; on the night of 2026-11-20 the copy ran from 00:58 to 02:38 UTC and the AI judge, answered by 00:59, stored its
+            five picks at 02:39.
+Tests:      2 new: `tools/backup` in its check mode over a temporary repository, refusing a data root holding no night's build
+            and running the night's own; the copy's run after a night worked by hand over the week of 2026-11-16. The copy's
+            tests reworked: the lock let go before the copy is read back, a damaged kept copy not read again and a refused copy
+            counting as none of the two; the night's row; the Run page's item held before the run and failed at it.
+Claims:     1665, unchanged: the correction moves the words of the catalogue's row, section 14's step, 15.10's item and
+            section 18's four rows on the copy and adds none.
+Pins:       none moved; no source the correction changes is one a rule's version pins.
+Mutated:    the rule: each guard the correction adds taken out in turn. m1 the drain's lock never let go: red, the probe finding
+            it held as the row is stamped; m2 a refused copy counted among the two: red in both tests over a refused copy; m3 the
+            Run page's item held only before the night began: red; each filtered to its tests and reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3882 of 3882 tests ran with none failed, migrations 0 to 155 with none
+            pending, schema version 155, against `data-ci` and never `data`; the phase report 67 tables, 1665 claims, 1665
+            passing, none out of scope and none unexamined, 1680 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the task 'EquityBrief backup' registered on the operator's machine once merged, as the runbook states, its first run
+            on 2026-11-24; the fill on the operator's store; the rules' half for the monthly run of 2027-02-06; 24.8 and 24.9's
+            runs.

@@ -5,8 +5,9 @@ namespace EquityBrief.Core.Configuration;
 // The store's copies: the folder the setting names, absolute or under the data root, and `backups` under the
 // data root where it names none; each copy named by the instant it was made, which orders them; and the folder
 // as a store row carries it, relative to the data root with forward separators, since no absolute path is
-// written into a store row, or by its name alone where it lies on a volume no relative path reaches.
-// see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+// written into a store row, or by its name alone where it lies on a volume no relative path reaches; and the copy's
+// own run, which the scheduler starts at 07:00 UTC on the mornings after the weekday nights.
+// see: The store is copied by a scheduled run of its own holding the drain's lock for the copy alone, and the oldest beyond two is removed once the new copy is opened and read
 public static class StoreCopies
 {
     public const string FolderKey = "EquityBrief:Backup:Folder";
@@ -28,8 +29,34 @@ public static class StoreCopies
 
     // How long after a copy started its ending row is waited for before the copy is read as ended before it
     // finished: its longest wait, and an hour for the copy itself and its reading back.
-    // see: The store is copied once the night and every process it started have finished and the newest two copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
     public static readonly TimeSpan EndsBy = WaitsAtMost + TimeSpan.FromHours(1);
+
+    // The copy's own run, as the scheduler starts it: 07:00 UTC, between the off-peak run's two slots, on the mornings
+    // after the weekday nights.
+    public static readonly TimeOnly RunsAt = new(7, 0);
+
+    public static readonly IReadOnlySet<DayOfWeek> RunsOn = new HashSet<DayOfWeek>
+    {
+        DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday,
+    };
+
+    // The first instant the copy's own run starts after the one given.
+    public static DateTimeOffset RunAfter(DateTimeOffset instant)
+    {
+        var day = DateOnly.FromDateTime(instant.UtcDateTime);
+
+        while (true)
+        {
+            var run = new DateTimeOffset(day.ToDateTime(RunsAt, DateTimeKind.Utc));
+
+            if (run > instant && RunsOn.Contains(day.DayOfWeek))
+            {
+                return run;
+            }
+
+            day = day.AddDays(1);
+        }
+    }
 
     // A copy written and not yet checked and named, which a copy that did not finish leaves behind.
     public const string Unfinished = ".partial";

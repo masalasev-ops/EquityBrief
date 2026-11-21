@@ -44,18 +44,6 @@ public partial class NightlyRun
             return new DrainStart(true, LabellerLine);
         }
 
-        public const string BackupLine = "The store's copy was asked to start by the suite.";
-
-        // Each copy the night asked for, and whether it was to wait for the labeller.
-        public List<bool> BackupStarts { get; } = [];
-
-        public DrainStart StartTheBackup(bool afterTheLabeller)
-        {
-            BackupStarts.Add(afterTheLabeller);
-
-            return new DrainStart(true, BackupLine);
-        }
-
         public const string JudgeLine = "The AI judge was asked to start by the suite.";
 
         // How many times the night asked for the AI judge.
