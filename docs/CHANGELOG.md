@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-21 - docs/ARCHITECTURE.html - a book inside its first month on the case page reads its points so far, the 24.17 correction
+Corrects: the case page drew a book whose holdings closed inside its first month as "-8.59 points a month over 0 months" on the live store on 2026-11-21, a rate over no months; the operator's change of that day, kept as Appendix X of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`: "where a book has closed holdings in its first month, the table says "x points so far, in its first month", not "points a month over 0 months"."
+Was:
+> ARCHITECTURE.html, section 15.27's row of every running revision against its variants: "... per $1 risked for a setup and points a month for a book; its best variant ..."
+Now:
+> "... per $1 risked for a setup and points a month for a book, a book inside its first month its points so far and never a rate over no months; its best variant ..."
+Why: a rate over a month not yet passed states a figure the book has not made; inside its first month its record is the change so far.
+
 ### 2026-11-21 - docs/ARCHITECTURE.html and docs/BUILD_PLAN.md - the case for promotion, and three checkpoints placed after it, at 24.17
 Decision: A promotion's swap is its own checkpoint rehearsed on a copy of the store, and until it lands a press on a case writes nothing
 Decision: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words

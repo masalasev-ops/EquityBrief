@@ -285,6 +285,7 @@ public sealed partial class SinglePageApp
     public static string Record(bool book, PromotionRecord record) =>
         record.Figure is not { } figure
             ? (book ? "none yet" : $"none yet, {record.Closed} closed")
+            : book && record.Months == 0 ? FirstMonth(figure)
             : book ? string.Create(CultureInfo.InvariantCulture, $"{Points(figure)} over {record.Months} month{(record.Months == 1 ? string.Empty : "s")}")
             : string.Create(CultureInfo.InvariantCulture, $"{Signed(figure)} over {record.Closed} closed");
 
@@ -294,6 +295,9 @@ public sealed partial class SinglePageApp
         : Signed(made);
 
     static string Points(double points) => string.Create(CultureInfo.InvariantCulture, $"{(points >= 0 ? "+" : "-")}{Math.Abs(points):0.00} points a month");
+
+    // A book's record before a whole month has passed: its change so far, never a rate over no months.
+    public static string FirstMonth(double points) => string.Create(CultureInfo.InvariantCulture, $"{(points >= 0 ? "+" : "-")}{Math.Abs(points):0.00} points so far, in its first month");
 
     static string Signed(double risks) => string.Create(CultureInfo.InvariantCulture, $"{(risks >= 0 ? "+" : "-")}${Math.Abs(risks):0.00}");
 

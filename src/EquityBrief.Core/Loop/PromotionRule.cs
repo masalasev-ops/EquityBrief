@@ -53,13 +53,13 @@ public static class PromotionRule
     // A record over the nights from a day to the night: the trades listed in them, those closed by the night with a result, and
     // its figure. A swing rule's is the mean result of its closed trades, per $1 risked. A book's is the mean change of its
     // closed holdings in percentage points over the trading months the nights span, at least one, as the books' own exit
-    // reads it.
+    // reads it; inside its first month, before a whole month has passed, the change so far, spread over no month.
     public static PromotionRecord Record(bool book, IReadOnlyList<PromotionTrade> trades, DateOnly from, DateOnly night)
     {
         var listed = trades.Where(trade => trade.Listed >= from && trade.Listed <= night).ToArray();
         double[] results = [.. listed.Where(trade => trade.Ended is { } end && end <= night && trade.Result is not null).Select(trade => trade.Result!.Value)];
         var months = RuleVerdict.MonthsBetween(from, night);
-        double? figure = results.Length == 0 ? null : book ? results.Average() * 100 / TradingMonths(from, night) : results.Average();
+        double? figure = results.Length == 0 ? null : book ? results.Average() * 100 / (months == 0 ? 1.0 : TradingMonths(from, night)) : results.Average();
 
         return new PromotionRecord(from, night, listed.Length, results.Length, figure, months);
     }
