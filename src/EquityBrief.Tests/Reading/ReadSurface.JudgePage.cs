@@ -295,10 +295,10 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-facts=\"named\"", ccc, StringComparison.Ordinal);
         Assert.DoesNotContain("<details", ccc, StringComparison.Ordinal);
 
-        // The record counts the version of 20 Nov alone: AAA's closed trade is not in it, and the page says from when.
+        // The record counts the version of 20 Nov alone: AAA's closed trade is not in it, and the page says from when; from
+        // the 24.14 correction AAA's trade stands in version 1's own account apart.
         Assert.Contains("<b>0</b> trades closed<span>0 of 300 needed for a firm verdict</span>", page, StringComparison.Ordinal);
-        Assert.Contains(SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 20)), page, StringComparison.Ordinal);
-        Assert.Equal("Its record counts from the night of 20 Nov 2026, when the judge began naming the facts behind each pick. Its earlier picks are counted in no account.", SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 20)));
+        Assert.Contains(SinglePageApp.CountedFromWords(new DateOnly(2026, 11, 20), 2), page, StringComparison.Ordinal);
 
         // A store with one version only says nothing of a count from a later night.
         using var one = JudgePageStore();

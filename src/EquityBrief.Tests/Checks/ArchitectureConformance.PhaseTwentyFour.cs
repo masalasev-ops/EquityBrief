@@ -16,7 +16,8 @@ public partial class ArchitectureConformance
     // read where its rule stores no range ceiling, landed ahead of 24.8 and 24.9 on the operator's word of 2026-11-20; and
     // 24.11's Run page row of the splits the share check does not read and section 18's row of their causes; and 24.13's
     // row of the judge's page on an empty record; and 24.14's section 17 row of the facts a judge pick names, section 18's row
-    // of a pick refused for them and the judge's page's two rows of the facts named and a pick made before; and 24.15's two
+    // of a pick refused for them and the judge's page's two rows of the facts named and a pick made before, and from its
+    // correction the row of an earlier version's picks; and 24.15's two
     // rows of Home's past nights and each card's line on what has happened since.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseTwentyFourLanded =>
     [
@@ -31,7 +32,7 @@ public partial class ArchitectureConformance
         ("24.11", [.. Reading.ReadSurface.SplitStepRows, .. FixtureExpectations.SplitCauseClaims], []),
         ("24.12", [.. FixtureExpectations.IncomeFallbackRows], []),
         ("24.13", [.. Reading.ReadSurface.JudgeEmptyRecordRows], []),
-        ("24.14", [.. FixtureExpectations.JudgeNamedRows], []),
+        ("24.14", [.. FixtureExpectations.JudgeNamedRows, .. Reading.ReadSurface.JudgeVersionRows], []),
         ("24.15", [.. Reading.ReadSurface.HomePastNightRows], []),
         ("24.9", [], []),
     ];
@@ -46,7 +47,8 @@ public partial class ArchitectureConformance
     // runbook's words where the plan counted a row of its own. 24.10, none as counted. 24.11, two of two. 24.12, four of four:
     // the fill's catalogue and matrix rows and its store's row where the plan counted the Run page's row and section 17's,
     // and section 18's row, the cards' line naming the line used landing as its words. 24.13, one of two: a replayed night drawn
-    // labelled is 24.6's row, which stood. 24.14, four of four: the store's column landing as words in its store's row. 24.15,
+    // labelled is 24.6's row, which stood. 24.14, five of four: the store's column landing as words in its store's row, and
+    // its correction of 2026-11-21 adding the judge's page's row of an earlier version's picks in an account of their own. 24.15,
     // two of four: the night picker, the banner, the waiting cards as they stood and the judge's line that night landing as
     // clauses of one row where the plan counted the picker and the judge's line as rows of their own. 24.9, none of one: the
     // roster's row of the nightly run stood, its words gaining the build across the cores.
@@ -63,7 +65,7 @@ public partial class ArchitectureConformance
         ("24.11", 0),
         ("24.12", 0),
         ("24.13", -1),
-        ("24.14", 0),
+        ("24.14", 1),
         ("24.15", -2),
         ("24.9", -1),
     ];
@@ -119,6 +121,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1700, 1800, 1672), (before, low, high, actual));
+        Assert.Equal((1632, 1700, 1800, 1673), (before, low, high, actual));
     }
 }

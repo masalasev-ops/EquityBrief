@@ -4857,7 +4857,12 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.26 The AI judge", "A pick made before it named its facts")] = new Scoped(
             Verdict.Pass,
-            "over a constructed store holding a night under the earlier prompt and one under this, a pick with no facts stored keeping its sentence and its whole sheet under the mark with nothing folded, and the record counting the newer version's picks alone, the earlier closed trade in no account, worked by hand, with the night it counts from",
+            "over a constructed store holding a night under the earlier prompt and one under this, a pick with no facts stored keeping its sentence and its whole sheet under the mark with nothing folded, and the record counting the newer version's picks alone, the earlier closed trade not in it, worked by hand, with the night it counts from",
+            ByReadSurface),
+        // The 24.14 correction, the operator's word of 2026-11-21.
+        [CheckReach.Key("15.26 The AI judge", "An earlier version's picks")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store holding version 1's two picks of 19 Nov and version 2's one of 23 Nov, version 1's region read back with each card saying what its account did, one bought and sold at 3 risks and one bought and open, its prices from the price paid and its account's summary worked by hand, its line drawn apart beneath the four, the record version 2's alone from its first night, every card drawn under an account that buys it; the same store before version 2 runs reading version 1 as the record with nothing apart; and Home on version 1's night naming its account",
             ByReadSurface),
         // 24.15, the operator's word of 2026-11-21.
         [CheckReach.Key("15.24 Home", "A past night's picks")] = new Scoped(
@@ -7908,6 +7913,7 @@ internal static class Scope
         [CheckReach.Key("15.26 The AI judge", "An empty record")] = "24.13",
         [CheckReach.Key("15.26 The AI judge", "The facts it named")] = "24.14",
         [CheckReach.Key("15.26 The AI judge", "A pick made before it named its facts")] = "24.14",
+        [CheckReach.Key("15.26 The AI judge", "An earlier version's picks")] = "24.14",
         [CheckReach.Key("15.24 Home", "A past night's picks")] = "24.15",
         [CheckReach.Key("15.24 Home", "What has happened since")] = "24.15",
         [CheckReach.Key("15.24 Home", "The AI judge's line")] = "24.6",
