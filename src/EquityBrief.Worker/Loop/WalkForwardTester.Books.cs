@@ -18,7 +18,9 @@ public sealed partial class WalkForwardTester
         Func<IEnumerable<string>, Task<IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>>>? factsOf = longHistory is null
             ? null
             : ciks => longHistory.FiledFactsAsync(ciks, through, cancellation);
-        var heavyweights = await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation);
+        var heavyweights = longHistory is null
+            ? await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation)
+            : await HeavyweightLay.ReadLongAsync(read, history, longHistory, through, output.WriteLine, cancellation);
         var quality = ReadsQuality(standing, index) ? await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation, factsOf) : null;
         var releases = ReadsImproving(standing, index) ? await ReleasesAsync(databaseFile, clock, cancellation) : null;
         var improving = releases is not null ? await ImprovingLay.ReadAsync(read, history, releases.ByFiler, through, output.WriteLine, cancellation, factsOf) : null;

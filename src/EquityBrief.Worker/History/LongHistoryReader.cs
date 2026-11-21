@@ -30,6 +30,7 @@ public sealed class LongHistoryReader : IComponent
         Stores:
         [
             new StoreTouch(Store.LongSpan, Touch.Read),
+            new StoreTouch(Store.LongHolding, Touch.Read),
             new StoreTouch(Store.LongBar, Touch.Read),
             new StoreTouch(Store.LongSplit, Touch.Read),
             new StoreTouch(Store.PulledSplit, Touch.Read),
@@ -228,6 +229,32 @@ public sealed class LongHistoryReader : IComponent
         }
 
         return found;
+    }
+
+    // From 24.8 each code's industry headings on an index as the funds' schedules filed them, by quarter end in order, which the
+    // heavyweights' lay over the long history reads a sector as it stood from before today's eleven began.
+    // see: The sector splits read a sector as it stood off the funds' industry headings through a stated map, and the filed GICS sector after the schedules end
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Period, string Heading)>>> HeadingsAsync(string index, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        var headings = new Dictionary<string, List<(DateOnly Period, string Heading)>>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(
+            connection,
+            "SELECT period, ticker, industry FROM long_holding WHERE index_code = $index AND ticker IS NOT NULL AND industry IS NOT NULL ORDER BY period;",
+            [("$index", index)],
+            cancellation))
+        {
+            if (!headings.TryGetValue(row.GetString(1), out var held))
+            {
+                headings[row.GetString(1)] = held = [];
+            }
+
+            held.Add((Day(row.GetString(0)), row.GetString(2)));
+        }
+
+        return headings.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<(DateOnly, string)>)pair.Value, StringComparer.Ordinal);
     }
 
     // On the operator's answer of 2026-11-14 to item 15 each filer's facts as first filed by the history's end, the standing

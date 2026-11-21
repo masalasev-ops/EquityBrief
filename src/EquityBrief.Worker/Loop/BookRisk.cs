@@ -145,11 +145,12 @@ public static class BookRisk
     // first test year on the index to 2018 and from 2019, and the record box's sentence at the one chosen in points a month.
     public static string Line(string family, string rule, string index, IReadOnlyList<DateOnly> calendar, IReadOnlyList<(string Words, IReadOnlyList<(int Entry, double? Edge)> Edges)> choices, string? chosen, bool boxFromFirst = false)
     {
-        var (first, from) = RuleTests.BookSplit(family, index);
-        bool Early(int entry) => calendar[entry].Year >= first && calendar[entry].Year < from;
+        var from = RuleTests.BookSplit(family, index).From;
+        var chosenFrom = RuleTests.BookChosenFrom(family, index);
+        bool Early(int entry) => calendar[entry] >= chosenFrom && calendar[entry].Year < from;
         bool Late(int entry) => calendar[entry].Year >= from;
         static string Shown((double? Mean, int Picks) figure) => figure.Mean is { } mean ? FormattableString.Invariant($"{mean:+0.000;-0.000;0.000} over {figure.Picks}") : FormattableString.Invariant($"none over {figure.Picks}");
-        var years = first < from ? FormattableString.Invariant($"from {first} to {from - 1}") : FormattableString.Invariant($"before {from}");
+        var years = RuleTests.BookChosenYears(family, index);
         var at = choices.FirstOrDefault(one => one.Words == chosen);
 
         return FormattableString.Invariant($"book risk: {family}, {rule}, per $1 risked against the index's other stocks bought the same way: ")

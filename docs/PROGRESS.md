@@ -20974,3 +20974,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1687 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06; 24.8's figures with the operator.
+
+### 24.8 - the heavyweights' history from 2018   2026-11-21
+
+Queue:      done, 24.0 to 24.7 and 24.9 to 24.15 and their corrections; in progress, this checkpoint; next, the judge's
+            version change corrected before the night of 2026-11-23, then 24.16, the loop page's mockup, for the operator's
+            approval.
+Built:      on the operator's word of 2026-11-20, kept as Appendix J of the plan's file, the books' test and the monthly
+            per-rule test lay the heavyweights over the long history: the index's, SPY's and the sector funds' closes read
+            from the long pull with the standing pull's after its last, and on every session before 2018-09-24 each member's
+            sector as it stood, read off the heading its fund's schedule filed it under. A heavyweights book chooses on the
+            S&P 500 from October 2018, where its holdings begin, and on the S&P 400 and 600 from 2015 and 2016, its family's
+            first test years, each to 2022, judged from 2023 as before; each record box names those years. Section 17's
+            paragraph, the long history reader's catalogue row, the runbook's line, the guide and the changelog. The History
+            page draws no book's years, so no row of it is written.
+Measured:   on the operator's machine over a copy of the store on the C: drive, never theirs, the books' test on each index,
+            50, 8 and 8 minutes. Each index chose the exit the second restart chose, in points a month, the book's own exit
+            beside it:
+            S&P 500, a stop 2 typical days under the buy and half sold at 3 times the risk: -0.06 from October 2018 to
+            2022, its own -0.27 over 48 months; from 2023 -0.13 against its own -0.04 over 46.
+            S&P 400, a stop 4 and the first price it turned down at 3 times the risk or more: +0.19 from 2015 to 2022, its
+            own +0.07 over 95 months; from 2023 +0.42 against its own +0.78.
+            S&P 600, a stop 2 and the first price it turned down at 1.5 times the risk or more: +0.12 from 2016 to 2022, its
+            own -0.09 over 84 months; from 2023 +0.63 against its own +0.55.
+            On 2026-11-21 the operator accepted the figures: no book's exit changes and nothing registers.
+Tests:      3 new: a constructed fund read from its first year in the long pull, the standing pull's closes after it, and
+            each book's chosen and judged years; each sector read as it stood off constructed headings before today's eleven
+            and as laid after; and no source 24.8 changes pinned by a rule's version or writing the register. Two tests of
+            the books' years read the new years, the S&P 400's worked again by hand from 2015.
+Claims:     1672, unchanged: the plan counted two, the History page's row, which draws no book's years, and the long test's
+            years, which landed as clauses of section 17's paragraph and the runbook's line.
+Pins:       none moved; the sources 24.8 changes are pinned by no rule's version, asserted.
+Mutated:    the rule: the guard 24.8 adds taken out. m1 every session read with the sectors as laid, none as it stood: red,
+            the constructed members reading no sector before 2018-09-24; filtered to its tests and reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3897 of 3897 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 67 tables, 1672 claims, 1672
+            passing, none out of scope and none unexamined, 1687 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06.
