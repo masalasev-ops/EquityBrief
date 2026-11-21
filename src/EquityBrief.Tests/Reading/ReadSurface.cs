@@ -223,6 +223,9 @@ public partial class ReadSurface
             // 24.6, the AI judge's page and Home's line of it.
             .. JudgePageRows,
 
+            // 24.13, the judge's page on an empty record.
+            .. JudgeEmptyRecordRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

@@ -125,6 +125,24 @@ public static class JudgeScreen
             ],
             band,
             replayed.Length == 0 ? null : JudgeScore.Of(replayedResults),
-            replayed.Select(pick => pick.Session).Distinct().Count());
+            replayed.Select(pick => pick.Session).Distinct().Count())
+        {
+            FirstNight = live.Length == 0 ? null : live.Min(pick => pick.Session),
+            FirstOpen = live.Length == 0 ? null : OpenAfter(live.Min(pick => pick.Session)),
+            Bought = judged.Any(one => one.Trade is not null),
+        };
+    }
+
+    // From 24.13 the first session the exchange trades after a night, the open its picks buy at.
+    public static DateOnly OpenAfter(DateOnly night)
+    {
+        var day = night.AddDays(1);
+
+        while (!Core.Bars.ExchangeClosures.IsSession(day))
+        {
+            day = day.AddDays(1);
+        }
+
+        return day;
     }
 }
