@@ -175,8 +175,8 @@ public sealed partial class SinglePageApp
     public static string PicksLine(PromotionCaseView one)
     {
         var nights = Math.Max(1, one.Sessions);
-        var own = one.Same.Listed / (double)nights;
-        var ran = one.RunningSame.Listed / (double)nights;
+        var own = one.Same.Listed * 1.0 / nights;
+        var ran = one.RunningSame.Listed * 1.0 / nights;
         var more = own < ran ? "Fewer" : own > ran ? "More" : "As many";
         var revision = RevisionView.Named(one.Revision).ToLowerInvariant();
 

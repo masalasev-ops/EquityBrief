@@ -104,7 +104,7 @@ public static class PromotionRule
     // count held, then its lead over the same nights.
     public static (int Met, double Share, double Lead) Nearness(bool book, PromotionConditions conditions, PromotionRecord variant, PromotionRecord running) =>
         (conditions.Met,
-         Math.Min(1.0, (book ? variant.Months : variant.Closed) / (double)(book ? Months : Trades)),
+         Math.Min(1.0, (book ? variant.Months : variant.Closed) * 1.0 / (book ? Months : Trades)),
          variant.Figure is { } made && running.Figure is { } ran ? made - ran : double.NegativeInfinity);
 
     // The chance an idea with no edge passes the bar each is held to, and how many of the ideas tested luck alone would pass.
