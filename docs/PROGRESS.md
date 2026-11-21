@@ -21084,3 +21084,52 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1688 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06.
+
+### 24.17 - the case for promotion, under the Improvement loop   2026-11-21
+
+Queue:      done, 24.0 to 24.16, merged as #744 on 2026-11-21; in progress, 24.17; next, the operator's stages of the AI
+            stock picker put to them as a changed table, then 24.18.
+Ruled:      the operator's answers of 2026-11-21, kept word for word as Appendices T, U and V of
+            `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`: the case's words are the local model's, asked when a
+            case first stands and refused holding a number, a ticker or a name; the swap is its own checkpoint, rehearsed end
+            to end on a copy of the store well before the run of 2027-02-06; and Paper trading's account computation moves
+            into Core so the monthly run works out the cases by itself, its own checkpoint where it is larger than 24.17. It
+            is, so 24.18, 24.19 and 24.20 are placed after 24.17, the notebook through the phase report moving from 24.18 to
+            24.32 to 24.21 to 24.35 and four decisions' checkpoint pointers with them; and their order of the same day adding
+            the AI stock picker's stages, kept as Appendix W, waits for their approval of a changed table before anything is
+            stored or built.
+Built:      the case for promotion at `#/loop/case`, under the Improvement loop, now a menu holding "This week" and "The case
+            for promotion". For each index every running revision against its variants over the same nights, read off Paper
+            trading's accounts as its page walks them, per $1 risked for a setup and points a month for a book, each book's
+            own exit beside it; a case for each variant meeting the rule, titled in the operator's words, with what changes,
+            the figures over the same nights and the long history's years from 2019, each condition met with its count, its
+            picks a night, the case for and against in code's words holding no figure with code's counted part above the
+            against, and what would change on Tonight's cards; with no case, why and the three nearest misses. Promote and
+            Keep are drawn, unpressable inside the freeze, and a press writes nothing: inside the freeze refused naming the run
+            that ends it, after it naming the swap as not yet built. The rule's three conditions in Core. Section 15.27 and its
+            three regions, section 17's row of the rule, section 18's row of a press, the two decisions, the guide and the
+            changelog. This checkpoint amends its own done condition: the swap keeping both records moves to 24.20 and the
+            model's words to 24.19, on the operator's answers.
+Read back:  the page rendered by its own code through the site's shell and stylesheet over constructed views, a case and the
+            table of running revisions on two indexes, and no case with its nearest misses, at 1440 and a true 390 in both
+            palettes, no page wider than its screen.
+Tests:      9 new: each condition worked by hand on both sides, a tie no win, 49 and 50 trades, 11 and 12 months, a variant
+            registered after the restart read from its own first night and one before from the freeze's first day; the long
+            history's years before 2019 never read; a case put from the run that ends the freeze; a press of Promote and Keep
+            on the freeze's last day and the day it ends writing nothing over a constructed store; the menu; a constructed case
+            read through its renderer, code's words holding no digit read off the page; no case and its nearest miss; and no
+            source changed one a rule's version pins; and the case page over a constructed store held to the Improvement
+            loop's word check.
+Claims:     1678, five of five: section 15.27's three regions, section 17's row of the rule and section 18's row of a press.
+Pins:       none moved, asserted: every source changed is one a test lists as no rule's version pins.
+Mutated:    the rule, stated before the run: the one comparison or branch each property's test holds, taken out in turn. m1 a
+            tie counted as beating the running revision: red; m2 the press's freeze branch inverted: red; m3 a figure in
+            code's case against: red; m4 "version" in the table's heading: red, the word check over the constructed store and
+            the renderer's test; m5 a pinned source among 24.17's: red. Each filtered to its tests and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3910 of 3910 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 68 tables, 1678 claims, 1678
+            passing, none out of scope and none unexamined, 1693 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06.

@@ -3952,6 +3952,87 @@ app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
 app.MapGet("/screens/judge", async (ReadApi read, SinglePageApp page, StoreLocation store) =>
     Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store)), "text/html; charset=utf-8"));
 
+// From 24.17 the case for promotion under the Improvement loop: every running revision on each index against its variants over
+// the same nights, from Paper trading's accounts walked as its page walks them, each book's own exit beside it, and a case for
+// each variant meeting the rule.
+// see: A background version replaces a live rule at a monthly run only where it beat it over the same nights and over the long history and closed 50 trades or a book's 12 months
+app.MapGet("/screens/loop/case", async (ReadApi read, SinglePageApp page, StoreLocation store) =>
+{
+    var night = await read.NewestNightAsync();
+    var rows = new List<PromotionRowView>();
+
+    if (night is { } on)
+    {
+        var held = copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
+        var register = await read.RegisteredCandidatesAsync();
+
+        foreach (var reading in Universes.Offered)
+        {
+            var accounts = await PaperAccountsAsync(read, reading, on, held ?? EquityBrief.Core.Cards.AccountSettings.Example);
+            var (_, longYears) = await read.RuleTestsAsync(reading.Code, EquityBrief.Core.Loop.LongTest.Long);
+
+            rows.AddRange(CaseScreen.Rows(reading.Code, reading.Name, accounts, longYears, on, await CaseOwnExitsAsync(read, reading, on, register, accounts)));
+        }
+    }
+
+    var (tested, passed) = await read.IdeasTestedAsync();
+
+    return Results.Content(page.CaseRegion(new PromotionPageView(night, read.FrozenUntil(), rows, tested, passed)), "text/html; charset=utf-8");
+});
+
+// A press of Promote or Keep on a case: refused inside the rule freeze, and until the swap's own checkpoint lands refused after
+// it too, nothing written either way.
+// see: An approval inside the rule freeze is refused and replaces no live rule
+app.MapPost(SinglePageApp.CasePostRoute + "{index}/{family}", async (string index, string family, HttpRequest request, ReadApi read) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("nothing was promoted");
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+    var written = read.Promote(form?["press"].ToString() != "keep");
+
+    return Said(written.Written, written.Line);
+});
+
+// From 24.17 each book's own exit on an index as its card draws it, for the case for promotion's table: Quality at a fair
+// price's and the Fundamentals family's off their cards, and the sector heavyweights' from the live book's first night.
+// see: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
+async Task<IReadOnlyDictionary<string, OwnExitView>> CaseOwnExitsAsync(ReadApi read, UniverseChoice reading, DateOnly night, IReadOnlyList<CandidateRow> register, PaperAccounts accounts)
+{
+    var exits = new Dictionary<string, OwnExitView>(StringComparer.Ordinal);
+    var none = new Dictionary<string, UniverseCell>(StringComparer.Ordinal);
+
+    if ((await QualityCardAsync(read, reading.Code, night, none)).OwnExit is { } quality)
+    {
+        exits[EquityBrief.Core.Families.QualityRule.Name] = quality;
+    }
+
+    if ((await ImprovingCardAsync(read, reading.Code, night, none)).OwnExit is { } improving)
+    {
+        exits[EquityBrief.Core.Families.ImprovingRule.Name] = improving;
+    }
+
+    if (reading == Universes.Large)
+    {
+        if (accounts.Views.FirstOrDefault(view => view.Family == EquityBrief.Core.Families.HeavyweightRule.Name && view.Standing == PaperAccountView.Live) is { Since: { } since }
+            && await OwnExitCards.HeavyweightsAsync(read, reading.Code, null, since, night, EquityBrief.Core.Families.HeavyweightRule.Live.SoldOnLeading, EquityBrief.Core.Families.HeavyweightRule.Live.SoldUnderAverage) is { } large)
+        {
+            exits[EquityBrief.Core.Families.HeavyweightRule.Name] = large;
+        }
+    }
+    else if (await read.IndexNightAsync(reading.Code, night) is { } indexNight
+        && TonightScreen.IndexLiveRule(reading.Code, EquityBrief.Core.Families.HeavyweightRule.Name, register, indexNight) is { } rule
+        && OwnExitCards.IndexHeavyweightLive(register, rule) is { } live
+        && await OwnExitCards.HeavyweightsAsync(read, reading.Code, rule, live.Since, night, live.SoldOnLeading, live.SoldUnderAverage) is { } index)
+    {
+        exits[EquityBrief.Core.Families.HeavyweightRule.Name] = index;
+    }
+
+    return exits;
+}
+
 // From the 23.4 correction the marking page and its confirm: every unexplained jump and unsettled end with its evidence and a
 // proposed mark, and the operator's confirm writing the marks chosen, every one shown or one alone, under the page's header.
 // see: The marking page proposes a mark for each unexplained jump and unsettled end from its evidence, and writes none without the operator's confirm

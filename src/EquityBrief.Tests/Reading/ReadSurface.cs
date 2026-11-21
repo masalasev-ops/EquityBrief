@@ -235,6 +235,9 @@ public partial class ReadSurface
             // 24.15, Home's past nights and each card's line on what has happened since.
             .. HomePastNightRows,
 
+            // 24.17, the case for promotion and a press on it.
+            .. PromotionCaseRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

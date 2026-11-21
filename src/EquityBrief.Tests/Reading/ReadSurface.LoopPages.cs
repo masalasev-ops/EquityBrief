@@ -31,6 +31,9 @@ public partial class ReadSurface
         using (var example = await FamilyPagesStore())
         {
             await Read(PlainWords.PaperPage, "the S&P 500 on the example account", example, "/screens/paper");
+
+            // From 24.17 the case for promotion, under the Improvement loop and held to its words.
+            await Read(PlainWords.LoopPage, "the case for promotion over the example account", example, "/screens/loop/case");
         }
 
         using (var set = await PaperIndexStore())
