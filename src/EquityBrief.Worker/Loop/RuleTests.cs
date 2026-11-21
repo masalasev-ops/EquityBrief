@@ -1661,7 +1661,7 @@ public static class RuleTests
         static string Shown(double? points) => points is { } value ? FormattableString.Invariant($"{value:+0.00;-0.00;0.00}") : "none";
 
         var (first, from, early, late) = BookYears(rule.Family, index, calendar, inTestYears);
-        var years = first < from ? FormattableString.Invariant($"from {first} to {from - 1}") : FormattableString.Invariant($"before {from}");
+        var years = BookChosenYears(rule.Family, index);
         var own = rule.Months ?? [];
         var choices = rule.BookBeside ?? [];
         var best = BookChosen(rule, index, calendar, inTestYears);
@@ -1694,17 +1694,42 @@ public static class RuleTests
     static (int First, int From, Func<int, bool> Early, Func<int, bool> Late) BookYears(string family, string index, IReadOnlyList<DateOnly> calendar, Func<int, bool> inTestYears)
     {
         var (first, from) = BookSplit(family, index);
+        var chosenFrom = BookChosenFrom(family, index);
 
-        return (first, from, opens => inTestYears(opens) && calendar[opens].Year >= first && calendar[opens].Year < from, opens => inTestYears(opens) && calendar[opens].Year >= from);
+        return (first, from, opens => inTestYears(opens) && calendar[opens] >= chosenFrom && calendar[opens].Year < from, opens => inTestYears(opens) && calendar[opens].Year >= from);
+    }
+
+    // The first day a live book chooses on: its first year's first, and a heavyweights book's its family's first test year on
+    // the index where that comes before the judged years, October 2018 where it does not.
+    public static DateOnly BookChosenFrom(string family, string index) =>
+        family == HeavyweightRule.Name ? HeavyweightsChosenFrom(index) : new DateOnly(BookSplit(family, index).First, 1, 1);
+
+    static DateOnly HeavyweightsChosenFrom(string index) =>
+        LongTest.FirstTestYear(HeavyweightRule.Name, index) is var year && year < HeavyweightsJudgedFrom ? new DateOnly(year, 1, 1) : HeavyweightsChosenFromDay;
+
+    // The words for the years a live book chooses on, a heavyweights book's naming its first month.
+    public static string BookChosenYears(string family, string index)
+    {
+        var (first, from) = BookSplit(family, index);
+        var chosenFrom = BookChosenFrom(family, index);
+
+        return first >= from
+            ? FormattableString.Invariant($"before {from}")
+            : chosenFrom.Month == 1
+                ? FormattableString.Invariant($"from {first} to {from - 1}")
+                : FormattableString.Invariant($"from {chosenFrom.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture)} to {from - 1}");
     }
 
     // The years a live book chooses its stop and take-profit on and is judged from: its family's first test year on the index to
-    // 2018 and from 2019; and on the operator's answer of 2026-11-14 on the tables a heavyweights book, whose history test holds no
-    // month before 2019, 2019 to 2022 and from 2023.
+    // 2018 and from 2019; and on the operator's answer of 2026-11-14 on the tables a heavyweights book 2019 to 2022 and from 2023,
+    // from 24.8 on their word of 2026-11-20 chosen from October 2018, and on their word of that day on the older sectors the
+    // S&P 400's and 600's from their family's first test years, the judged years unchanged.
     public static (int First, int From) BookSplit(string family, string index) =>
         family == HeavyweightRule.Name
-            ? (Core.History.LongLedger.StandingFrom.Year, HeavyweightsJudgedFrom)
+            ? (HeavyweightsChosenFrom(index).Year, HeavyweightsJudgedFrom)
             : (LongTest.FirstTestYear(family, index), Core.History.LongLedger.StandingFrom.Year);
+
+    public static DateOnly HeavyweightsChosenFromDay { get; } = new(2018, 10, 1);
 
     public const int HeavyweightsJudgedFrom = 2023;
 

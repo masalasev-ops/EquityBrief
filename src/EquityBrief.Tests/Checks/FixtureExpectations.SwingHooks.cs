@@ -163,8 +163,8 @@ public partial class FixtureExpectations
     // On the operator's ruling of 2026-11-14, item 4: a book's stop and take-profit chosen on its months from its family's first
     // test year on the index to 2018 and judged from 2019, by the calendar year of each month's opening session. The S&P 400's
     // Quality is judged from 2016, so the choice doing well in 2014 alone is not chosen. On their answer on the tables a
-    // heavyweights book, which holds no month before 2019, chooses on 2019 to 2022 and is judged from 2023. Worked by hand in points
-    // a month, an edge times 100.
+    // heavyweights book chooses to 2022 and is judged from 2023, from 24.8 choosing on the S&P 500 from October 2018 and on the
+    // S&P 400 from its family's first test year. Worked by hand in points a month, an edge times 100.
     [Fact]
     public void ABooksStopAndTakeProfitAreChosenFromItsFirstTestYearTo2018AndJudgedFrom2019ByCalendarYear()
     {
@@ -184,11 +184,17 @@ public partial class FixtureExpectations
             RuleTests.BookChoiceLine(quality, "MID", calendar, _ => true));
         Assert.Contains("no choice holds a month from 2016 to 2018", RuleTests.BookChoiceLine(quality, "MID", calendar, opens => opens >= 5), StringComparison.Ordinal);
 
-        // The heavyweights on any index: chosen on 2019 and 2021, A at +10.00 against B's -5.00; judged on 2023 alone.
+        // The heavyweights on the S&P 500 from 24.8: chosen from October 2018, so on 2019 and 2021 and not June 2018, A at +10.00
+        // against B's -5.00; judged on 2023 alone.
         Assert.Equal(
-            "book choice: heavyweight, the live rule: its own -1.00 from 2019 to 2022 over 2 month(s), +6.00 from 2023 over 1; A +10.00 before, -2.00 from; B -5.00 before, +1.00 from; chosen from 2019 to 2022: A, -2.00 points a month from 2023 against its own +6.00, 8.00 points a month short of its own exit from 2023",
+            "book choice: heavyweight, the live rule: its own -1.00 from October 2018 to 2022 over 2 month(s), +6.00 from 2023 over 1; A +10.00 before, -2.00 from; B -5.00 before, +1.00 from; chosen from October 2018 to 2022: A, -2.00 points a month from 2023 against its own +6.00, 8.00 points a month short of its own exit from 2023",
             RuleTests.BookChoiceLine(heavyweights, "GSPC", calendar, _ => true));
-        Assert.Equal(RuleTests.BookChoiceLine(heavyweights, "GSPC", calendar, _ => true)["book choice: heavyweight".Length..], RuleTests.BookChoiceLine(heavyweights, "MID", calendar, _ => true)["book choice: heavyweight".Length..]);
+
+        // On the S&P 400 from 2015, its family's first test year: its own on 2015, 2016, 2019 and 2021, +1, +3, +2 and -4, a mean
+        // of +0.50; A's -1, -1, +10 and +10, +4.50; B's +2, +2, -10 and 0, -1.50; A chosen, judged on 2023 alone.
+        Assert.Equal(
+            "book choice: heavyweight, the live rule: its own +0.50 from 2015 to 2022 over 4 month(s), +6.00 from 2023 over 1; A +4.50 before, -2.00 from; B -1.50 before, +1.00 from; chosen from 2015 to 2022: A, -2.00 points a month from 2023 against its own +6.00, 8.00 points a month short of its own exit from 2023",
+            RuleTests.BookChoiceLine(heavyweights, "MID", calendar, _ => true));
 
         // A month's edge under nothing that rounds to nothing is shown as nothing, not as "-+0.00".
         var flat = new RuleUnderTest(QualityRule.Name, "the live rule", "live", "words", LoopProcedures.Points, 21, Months: [(5, -0.00001)]);

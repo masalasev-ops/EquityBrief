@@ -15,6 +15,18 @@ Now:
 > ARCHITECTURE.html: added 15.26's row "An earlier version's picks"
 Why: the 24.14 correction, the operator's word of 2026-11-21 kept as Appendix R of the plan's file: 24.14 counted an earlier version's picks in no account, so the five picks of 2026-11-20 would have been drawn with no account buying them once the new version ran.
 
+### 2026-11-21 - docs/ARCHITECTURE.html and docs/RUNBOOK.md - the heavyweights' books chosen over the long history, at 24.8
+Decision: Each rule takes profit in the shape its test chose on the early years, never at the nearest price it turned down at
+Was:
+> ARCHITECTURE.html, section 17's paragraph of the take-profit's shapes: "... on the years before 2019 and on 2019 to 2022 for the heavyweights, stated in the code by family and index; a book's half sells ..."
+> RUNBOOK.md, the books' test: "... and the heavyweights choose on 2019 to 2022 and are judged from 2023; on their ruling of 2026-11-15 ..."
+> ARCHITECTURE.html, the catalogue's row of the long history reader: its reads "long spans, long bars, ..." and its words ending "... (see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read)"
+Now:
+> the catalogue's row: its reads "long spans, long holdings, long bars, ..." and its words ending "...; and from 24.8 each code's industry headings on an index off the long holdings by quarter end, which the heavyweights' lay over the long history reads a sector as it stood from before today's eleven began"
+> "... stated in the code by family and index, and from 24.8 the books' test over the long history chooses the heavyweights' on the S&P 500 from October 2018, where its holdings begin, and on the S&P 400 and 600 from their family's first test years, each to 2022, reading the index's, SPY's and the sector funds' closes from the long pull and each member's sector as it stood, a choice differing from the exit stated going to the operator and changing nothing by itself; a book's half sells ..."
+> "... and are judged from 2023, from 24.8 on the operator's word of 2026-11-20 choosing over the long history on the S&P 500 from October 2018 and on the S&P 400 and 600 from their family's first test years, each to 2022, the funds' closes read from the long pull and each member's sector as it stood, the judged years unchanged; on their ruling ..."
+Why: 24.8 of phase 24's plan, the operator's word of 2026-11-20 kept as Appendix J of the plan's file: the heavyweights' test read the funds only from the standing pull's first year, so each book chose on 2019 to 2022 alone. On 2026-11-21 the operator accepted the figures: the same exit chosen on every index, nothing registered.
+
 ### 2026-11-21 - docs/RUNBOOK.md and .claude/rules/checks.md - the ledger's builds across the machine's cores again, at 24.9
 Decision: The ledger's builds compute a chunk's sessions across the machine's cores, every row the same as one at a time on each index
 Was:

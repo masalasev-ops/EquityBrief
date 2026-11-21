@@ -20974,3 +20974,77 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1687 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06; 24.8's figures with the operator.
+
+### 24.8 - the heavyweights' history from 2018   2026-11-21
+
+Queue:      done, 24.0 to 24.7 and 24.9 to 24.15 and their corrections; in progress, this checkpoint; next, the judge's
+            version change corrected before the night of 2026-11-23, then 24.16, the loop page's mockup, for the operator's
+            approval.
+Built:      on the operator's word of 2026-11-20, kept as Appendix J of the plan's file, the books' test and the monthly
+            per-rule test lay the heavyweights over the long history: the index's, SPY's and the sector funds' closes read
+            from the long pull with the standing pull's after its last, and on every session before 2018-09-24 each member's
+            sector as it stood, read off the heading its fund's schedule filed it under. A heavyweights book chooses on the
+            S&P 500 from October 2018, where its holdings begin, and on the S&P 400 and 600 from 2015 and 2016, its family's
+            first test years, each to 2022, judged from 2023 as before; each record box names those years. Section 17's
+            paragraph, the long history reader's catalogue row, the runbook's line, the guide and the changelog. The History
+            page draws no book's years, so no row of it is written.
+Measured:   on the operator's machine over a copy of the store on the C: drive, never theirs, the books' test on each index,
+            50, 8 and 8 minutes. Each index chose the exit the second restart chose, in points a month, the book's own exit
+            beside it:
+            S&P 500, a stop 2 typical days under the buy and half sold at 3 times the risk: -0.06 from October 2018 to
+            2022, its own -0.27 over 48 months; from 2023 -0.13 against its own -0.04 over 46.
+            S&P 400, a stop 4 and the first price it turned down at 3 times the risk or more: +0.19 from 2015 to 2022, its
+            own +0.07 over 95 months; from 2023 +0.42 against its own +0.78.
+            S&P 600, a stop 2 and the first price it turned down at 1.5 times the risk or more: +0.12 from 2016 to 2022, its
+            own -0.09 over 84 months; from 2023 +0.63 against its own +0.55.
+            On 2026-11-21 the operator accepted the figures: no book's exit changes and nothing registers.
+Tests:      3 new: a constructed fund read from its first year in the long pull, the standing pull's closes after it, and
+            each book's chosen and judged years; each sector read as it stood off constructed headings before today's eleven
+            and as laid after; and no source 24.8 changes pinned by a rule's version or writing the register. Two tests of
+            the books' years read the new years, the S&P 400's worked again by hand from 2015.
+Claims:     1672, unchanged: the plan counted two, the History page's row, which draws no book's years, and the long test's
+            years, which landed as clauses of section 17's paragraph and the runbook's line.
+Pins:       none moved; the sources 24.8 changes are pinned by no rule's version, asserted.
+Mutated:    the rule: the guard 24.8 adds taken out. m1 every session read with the sectors as laid, none as it stood: red,
+            the constructed members reading no sector before 2018-09-24; filtered to its tests and reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3897 of 3897 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 67 tables, 1672 claims, 1672
+            passing, none out of scope and none unexamined, 1687 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06.
+
+### 24.14 - correction: each judge version's picks bought and walked in an account of their own   2026-11-21
+
+Queue:      done, 24.0 to 24.15 and their corrections; in progress, this correction, before the night of 2026-11-23; next,
+            24.16, the loop page's mockup, with the operator for their approval.
+Built:      on the operator's word of 2026-11-21, kept as Appendix R of the plan's file: 24.14 counted an earlier judge
+            version's picks in no account, so the five picks of the night of 2026-11-20 would have been drawn with no
+            account buying them once the new prompt ran. The judge's page now numbers its versions in the order each first
+            ran, off its live picks and the live runs under each pin. The newest version's picks are the record and the four
+            accounts, drawn from its first night. Each earlier version's picks are bought at the open after their night and
+            walked to their exits in that version's own account, worked when the page is read; drawn in a region of their own
+            under "Version 1, picked 20 Nov", each card saying what its account did with the pick, its prices from the price
+            it paid once bought; its account's line drawn apart beneath the four accounts, labelled. A card says bought only
+            where the account's walk took the trade. Home on that night names the version's account. Section 15.26's row,
+            the decision, the guide and the changelog.
+Measured:   read back over a constructed scratch store, never the operator's, at 1440 and a true 390 in both palettes: version
+            1's five picks of 20 Nov bought on Mon 23 Nov, AAA sold at 3 risks and DDD at -1.2, $0.90 per $1 risked over
+            the two closed, worked by hand; version 2's record from 23 Nov; no page wider than its screen.
+Tests:      3 new: a version's picks keeping their own account when the version changes, read back off the page and worked by
+            hand, with the store before version 2 runs reading version 1 as the record and every card drawn under an account
+            that buys it; Home on an earlier version's night naming its account; and no source the correction writes pinned
+            by a rule's version.
+Claims:     1673, one more: section 15.26's row of an earlier version's picks.
+Pins:       none moved, asserted.
+Mutated:    the rule: each guard the correction adds taken out. m1 the earlier versions left off the page: red, version 1's
+            region and its account gone. m2 an earlier version's account walked with no trades: survived at first, the cards
+            still reading bought; the cards now say bought only where the account's walk took the trade, and m2 is red.
+            Each filtered to its tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3900 of 3900 tests ran with none failed, migrations 0 to 156 with none
+            pending, schema version 156, against `data-ci` and never `data`; the phase report 67 tables, 1673 claims, 1673
+            passing, none out of scope and none unexamined, 1688 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06.
