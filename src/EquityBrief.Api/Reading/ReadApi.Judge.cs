@@ -28,7 +28,16 @@ public sealed record JudgePickRow(
     string? Company,
     string? Sector,
     string? Size,
-    bool Replayed);
+    bool Replayed)
+{
+    // From 24.14 the keys of the facts it named, none on a pick made before the judge named its facts; the prompt version
+    // of the pin it was picked under; and its sheet as the judge was shown it, each field's shown text by its key.
+    public IReadOnlyList<string>? Named { get; init; }
+
+    public string? Version { get; init; }
+
+    public IReadOnlyDictionary<string, string> Sheet { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+}
 
 // The AI judge's page reads its runs, its picks and the members' sessions from its first night, all from the store opened
 // for reading, writing nothing.
@@ -48,7 +57,10 @@ public sealed partial class ReadApi
                         (SELECT m.name FROM membership m WHERE m.ticker = p.ticker AND m.name IS NOT NULL ORDER BY m.joined DESC LIMIT 1)),
                (SELECT json_extract(f.fields, '$.sector') FROM judge_fact f WHERE f.ticker = p.ticker AND f.session_date = p.session_date),
                (SELECT json_extract(f.fields, '$.size') FROM judge_fact f WHERE f.ticker = p.ticker AND f.session_date = p.session_date),
-               p.run_id
+               p.run_id, p.fields,
+               (SELECT n.prompt_version FROM judge_run r JOIN judge_pin n ON n.id = r.pin_id WHERE r.run_id = p.run_id),
+               (SELECT f.fields FROM judge_fact f JOIN judge_run r ON r.run_id = p.run_id
+                WHERE f.ticker = p.ticker AND f.session_date = p.session_date AND f.version = r.fact_version)
         FROM judge_pick p ORDER BY p.session_date DESC, p.rank;";
 
     const string JudgeBarsFrom = "SELECT ticker, session_date, open, close FROM bar WHERE session_date >= $from ORDER BY ticker, session_date;";
@@ -130,10 +142,34 @@ public sealed partial class ReadApi
                 reader.IsDBNull(12) ? null : reader.GetString(12),
                 reader.IsDBNull(13) ? null : reader.GetString(13),
                 reader.IsDBNull(14) ? null : reader.GetString(14),
-                reader.GetString(15).StartsWith(JudgeReplayPrefix, StringComparison.Ordinal)));
+                reader.GetString(15).StartsWith(JudgeReplayPrefix, StringComparison.Ordinal))
+            {
+                Named = reader.IsDBNull(16) ? null : reader.GetString(16).Split(',', StringSplitOptions.RemoveEmptyEntries),
+                Version = reader.IsDBNull(17) ? null : reader.GetString(17),
+                Sheet = reader.IsDBNull(18) ? new Dictionary<string, string>(StringComparer.Ordinal) : SheetOf(reader.GetString(18)),
+            });
         }
 
         return rows;
+    }
+
+    // A member's stored fields as the judge was shown them, each field's text by its key.
+    static IReadOnlyDictionary<string, string> SheetOf(string json)
+    {
+        var sheet = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        if (System.Text.Json.Nodes.JsonNode.Parse(json) is System.Text.Json.Nodes.JsonObject fields)
+        {
+            foreach (var (key, value) in fields)
+            {
+                if (value is System.Text.Json.Nodes.JsonValue text && text.TryGetValue(out string? shown) && shown is not null)
+                {
+                    sheet[key] = shown;
+                }
+            }
+        }
+
+        return sheet;
     }
 
     // Every member's sessions from a day on, each session's open and close as statistics, oldest first.
