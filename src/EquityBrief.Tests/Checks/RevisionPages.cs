@@ -79,7 +79,10 @@ public class RevisionPages
     [Fact]
     public async Task TheImprovementLoopKeepsTheFourRulesOverEveryConstructedStore()
     {
-        var pages = (await Reading.ReadSurface.LoopPagesForPlainWords()).Where(page => page.Page == PlainWords.LoopPage).ToList();
+        // From 24.17 the case for promotion beside it, under the same menu.
+        var pages = (await Reading.ReadSurface.LoopPagesForPlainWords()).Where(page => page.Page is PlainWords.LoopPage or Reading.ReadSurface.CasePage).ToList();
+
+        Assert.Contains(pages, page => page.Page == Reading.ReadSurface.CasePage);
 
         Assert.NotEmpty(pages);
 

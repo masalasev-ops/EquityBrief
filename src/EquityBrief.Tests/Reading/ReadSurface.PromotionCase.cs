@@ -16,6 +16,10 @@ namespace EquityBrief.Tests.Reading;
 // see: An approval inside the rule freeze is refused and replaces no live rule
 public partial class ReadSurface
 {
+    // The case for promotion as the word checks name it: held to the Improvement loop's four rules, and a page of its own
+    // beside the Loop page, whose cards the plain-words check reads by the Loop page's regions.
+    internal const string CasePage = "The case for promotion";
+
     // Section 15.27's three regions and section 18's row of a press on a case.
     internal static string[] PromotionCaseRows =>
     [
