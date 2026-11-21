@@ -1505,8 +1505,9 @@ public partial class ArchitectureConformance
         // tile. 306 at the 22.16 correction of 2026-11-09: Home's picks watched and not drawn. 307 at its next: a plan that buys at
         // a zone. 308 at the 22.17 correction of 2026-11-09: the records and the picks watched on the read-only copy. 309 at
         // 23.10 on the operator's ruling of 2026-11-16: a book's own exit on Tonight. 315 at 24.6: the AI judge's page's five
-        // regions and Home's line of it. 316 at 24.11: the Run page's splits the share check does not read.
-        Assert.Equal(316, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // regions and Home's line of it. 316 at 24.11: the Run page's splits the share check does not read. 317 at 24.13: the AI
+        // judge's page on an empty record.
+        Assert.Equal(317, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1693,8 +1694,9 @@ public partial class ArchitectureConformance
         // 708 at the 22.16 correction of 2026-11-09: Home's picks watched and not drawn. 709 at its next: a plan that buys at a zone.
         // 710 at the 22.17 correction of 2026-11-09: the records and the picks watched on the read-only copy. 711 at 23.10 on
         // the operator's ruling of 2026-11-16: a book's own exit on Tonight. 717 at 24.6: the AI judge's page's five regions and
-        // Home's line of it. 718 at 24.11: the Run page's splits the share check does not read.
-        Assert.Equal(718, inDocument.Length);
+        // Home's line of it. 718 at 24.11: the Run page's splits the share check does not read. 719 at 24.13: the AI judge's page
+        // on an empty record.
+        Assert.Equal(719, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

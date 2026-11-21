@@ -12,7 +12,7 @@ Authorised by: The AI judge reads only the fields the operator approved with its
 Was:
 > ARCHITECTURE.html, 15.26's table: no row of the page before the judge has a bought trade
 Now:
-> ARCHITECTURE.html: added 15.26's row "An empty record", from 24.13 the scoreboard and the four-accounts card each saying why they are empty until the judge has a bought trade, the night read from its first stored picks and the open from the session the exchange trades after it
+> ARCHITECTURE.html: added 15.26's row "An empty record", "from 24.13 until the judge has a bought trade the scoreboard and the four-accounts card each saying in place of an empty chart and zero tiles that the judge's first picks made on the night of its first stored picks are bought at the open of the session the exchange trades after it and that the accounts start from then", one clause so the row states one part
 Why: 24.13 of phase 24's plan, the operator's word of 2026-11-21 kept as Appendix Q of the plan's file: before the judge's first picks are bought, its page drew an empty chart and zero tiles with nothing saying why.
 
 ### 2026-11-21 - docs/BUILD_PLAN.md and docs/ARCHITECTURE.html - phase 24 gains 24.13 to 24.15, the judge's page explaining an empty record, its picks naming their facts and Home's past nights, and the checkpoints after them move three numbers on
