@@ -79,9 +79,20 @@ public class RevisionPages
     [Fact]
     public async Task TheImprovementLoopKeepsTheFourRulesOverEveryConstructedStore()
     {
-        var pages = (await Reading.ReadSurface.LoopPagesForPlainWords()).Where(page => page.Page == PlainWords.LoopPage).ToArray();
+        var pages = (await Reading.ReadSurface.LoopPagesForPlainWords()).Where(page => page.Page == PlainWords.LoopPage).ToList();
 
         Assert.NotEmpty(pages);
+
+        // The choosing table, which no constructed store draws, read through its renderer over a procedure named as the
+        // per-rule test stores it.
+        Web.Marks.LoopChoiceView[] choices =
+        [
+            new("drift", VersionChoices.Prefix + "126 sessions before", "each month the drift rule standing here whose mean edge after costs over the 126 sessions before stands highest over at least 50 ended trades, the live rule where none does", 1204, 0.412, false, null),
+        ];
+        var table = new Web.Marks.MarkRenderer().LoopChoices("drift", choices);
+
+        Assert.Contains("data-choices=\"1\"", table, StringComparison.Ordinal);
+        pages.Add((PlainWords.LoopPage, "the choosing table", table));
 
         string[] faults = [.. pages.SelectMany(page => Faults(page.Html).Select(fault => page.Drawn + ": " + fault))];
 

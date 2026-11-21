@@ -123,7 +123,7 @@ public sealed partial class MarkRenderer
 
         foreach (var choice in own)
         {
-            html.Append(Invariant, $"<tr data-choice=\"{Escaped(choice.Rule)}\" data-passed=\"{Flag(choice.Passed)}\"><td>{Escaped(choice.Rule)}</td><td>{Escaped(EquityBrief.Web.Marks.ReaderWords.Plain(choice.Words))}</td>");
+            html.Append(Invariant, $"<tr data-choice=\"{Escaped(choice.Rule)}\" data-passed=\"{Flag(choice.Passed)}\"><td>{Escaped(ProcedureWords(choice.Rule))}</td><td>{Escaped(EquityBrief.Web.Marks.ReaderWords.Plain(choice.Words))}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{(choice.Units is { } units ? units.ToString(Invariant) : "none")}</td><td class=\"r num\">{(choice.Adjusted is { } adjusted ? adjusted.ToString("0.000", Invariant) : "not read")}</td><td>{(choice.Why is { } why ? Escaped(why) : choice.Passed ? "yes" : "no")}</td></tr>");
         }
 
@@ -131,6 +131,12 @@ public sealed partial class MarkRenderer
 
         return html.ToString();
     }
+
+    // A procedure's name as the per-rule test stores it, drawn in the page's words of a variant; the stored name stands in
+    // the row's data.
+    // see: The Improvement loop names a setup's revision and its variants in Paper trading's words
+    public static string ProcedureWords(string rule) =>
+        rule.StartsWith(VersionChoices.Prefix, StringComparison.Ordinal) ? "choosing a variant by its record over " + rule[VersionChoices.Prefix.Length..] : rule;
 
     public string LoopScore(string family, IReadOnlyList<LoopProposalRow> proposals, LoopModelRow? model, IReadOnlyList<LoopRankRow> ranks, string? month = null)
     {
