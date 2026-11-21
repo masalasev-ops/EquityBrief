@@ -71,6 +71,30 @@ public sealed partial class ReadApi
 
     const string JudgeCosts = "SELECT ticker, session_date, cost FROM member_reading WHERE cost IS NOT NULL AND session_date IN (SELECT value FROM json_each($nights));";
 
+    const string ClosesOn = "SELECT ticker, close FROM bar WHERE session_date = $on AND ticker IN (SELECT value FROM json_each($tickers));";
+
+    // From 24.15 each stock's close on a night, a price, for Home's line on a past night's pick still held.
+    public async Task<IReadOnlyDictionary<string, decimal>> ClosesOnAsync(IReadOnlyList<string> tickers, DateOnly on)
+    {
+        var closes = new Dictionary<string, decimal>(StringComparer.Ordinal);
+
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ClosesOn;
+        command.Parameters.AddWithValue("$on", Stamp(on));
+        command.Parameters.AddWithValue("$tickers", System.Text.Json.JsonSerializer.Serialize(tickers));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            closes[reader.GetString(0)] = Money.FromStorage(reader.GetString(1));
+        }
+
+        return closes;
+    }
+
     // Each member's round trip on each night named as the member readings state it, in per cent of its price.
     public async Task<IReadOnlyDictionary<(string Ticker, DateOnly Night), double>> JudgeCostsAsync(IReadOnlyList<DateOnly> nights)
     {

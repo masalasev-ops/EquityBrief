@@ -195,6 +195,9 @@ public partial class ArchitectureConformance
 
         // And from 24.14: the facts a judge pick names, a pick refused for them and the page's two rows.
         .. FixtureExpectations.JudgeNamedRows,
+
+        // And from 24.15: Home's past nights and each card's line on what has happened since.
+        .. Reading.ReadSurface.HomePastNightRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported
