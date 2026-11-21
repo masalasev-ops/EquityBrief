@@ -370,6 +370,15 @@ public sealed partial class SetupLedger : IComponent
         this.databaseFile = databaseFile;
     }
 
+    // From 24.9 on the operator's ruling of 2026-11-15 on item 5, the cores a build computes a chunk's sessions across, one
+    // reading them one at a time; behind the test building the same sessions both ways on each index.
+    // see: The ledger's builds compute a chunk's sessions across the machine's cores, every row the same as one at a time on each index
+    public int Cores { get; init; } = Environment.ProcessorCount;
+
+    // The items computed across the build's cores, or one at a time where it has one.
+    T[] Computed<T>(int count, Func<int, T> compute) =>
+        Cores > 1 ? InParallel(count, compute, Cores) : [.. Enumerable.Range(0, count).Select(compute)];
+
     // The night's step: tonight's setups appended on each index and the windows closed, index by index.
     public async Task<LedgerOutcome> NightAsync(string runId, CancellationToken cancellation = default)
     {
@@ -1583,7 +1592,8 @@ public sealed partial class SetupLedger : IComponent
             }
 
             var sessions = SessionsToWrite(prepared.Calendar, first, last, new HashSet<DateOnly>(), again: true, await StoredSessionsAsync(connection, index, NightSource, cancellation));
-            var built = sessions.ToDictionary(at => at, prepared.Compute);
+            var computed = Computed(sessions.Count, item => prepared.Compute(sessions[item]));
+            var built = sessions.Select((at, item) => (at, item)).ToDictionary(pair => pair.at, pair => computed[pair.item]);
             var benchmarks = built.Values
                 .SelectMany(session => session.Families)
                 .GroupBy(family => family.Family.Family, StringComparer.Ordinal)
@@ -1731,6 +1741,34 @@ public sealed partial class SetupLedger : IComponent
 
     // One session the history build computed: each family's setups with each one's path and benchmark beside it.
     sealed record BuiltSession(IReadOnlyList<(FamilySetups Family, IReadOnlyList<SetupRead> Reads)> Families);
+
+    // Each of the items computed across as many cores as given, each read alone and kept in its own place, so the rows
+    // written are those reading the items one by one writes; where any fails, the failure of the earliest item is raised,
+    // as reading them one by one raises it.
+    public static T[] InParallel<T>(int count, Func<int, T> compute, int cores)
+    {
+        var computed = new T[count];
+        var failures = new Exception?[count];
+
+        Parallel.For(0, count, new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, cores) }, item =>
+        {
+            try
+            {
+                computed[item] = compute(item);
+            }
+            catch (Exception failure)
+            {
+                failures[item] = failure;
+            }
+        });
+
+        if (Array.Find(failures, failure => failure is not null) is { } first)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(first).Throw();
+        }
+
+        return computed;
+    }
 
     sealed partial class PreparedHistory(
         string index,
@@ -1931,6 +1969,9 @@ public sealed partial class SetupLedger : IComponent
 
             var watch = Stopwatch.StartNew();
 
+            // The chunk's sessions computed before the drain's lock is taken, across the build's cores, each kept in its place.
+            var computed = Computed(chunkSessions.Length, item => session(chunkSessions[item]));
+
             using var held = await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation);
             await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
@@ -1944,9 +1985,11 @@ public sealed partial class SetupLedger : IComponent
 
             var chunk = 0;
 
-            foreach (var at in chunkSessions)
+            for (var item = 0; item < chunkSessions.Length; item++)
             {
-                foreach (var (family, reads) in session(at).Families)
+                var at = chunkSessions[item];
+
+                foreach (var (family, reads) in computed[item].Families)
                 {
                     for (var place = 0; place < family.Rows.Count; place++)
                     {

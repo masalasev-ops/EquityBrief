@@ -29,6 +29,7 @@ public partial class ArchitectureConformance
         ("24.11", [.. Reading.ReadSurface.SplitStepRows, .. FixtureExpectations.SplitCauseClaims], []),
         ("24.12", [.. FixtureExpectations.IncomeFallbackRows], []),
         ("24.13", [.. Reading.ReadSurface.JudgeEmptyRecordRows], []),
+        ("24.9", [], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -41,7 +42,8 @@ public partial class ArchitectureConformance
     // runbook's words where the plan counted a row of its own. 24.10, none as counted. 24.11, two of two. 24.12, four of four:
     // the fill's catalogue and matrix rows and its store's row where the plan counted the Run page's row and section 17's,
     // and section 18's row, the cards' line naming the line used landing as its words. 24.13, one of two: a replayed night drawn
-    // labelled is 24.6's row, which stood.
+    // labelled is 24.6's row, which stood. 24.9, none of one: the roster's row of the nightly run stood, its words gaining
+    // the build across the cores.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -55,6 +57,7 @@ public partial class ArchitectureConformance
         ("24.11", 0),
         ("24.12", 0),
         ("24.13", -1),
+        ("24.9", -1),
     ];
 
     [Fact]

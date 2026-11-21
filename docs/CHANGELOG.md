@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-21 - docs/RUNBOOK.md and .claude/rules/checks.md - the ledger's builds across the machine's cores again, at 24.9
+Decision: The ledger's builds compute a chunk's sessions across the machine's cores, every row the same as one at a time on each index
+Was:
+> RUNBOOK.md, The setup ledger's history: "... `--check` prints what it would build and run and runs nothing. The worker then waits ..."
+> .claude/rules/checks.md, `nightly-run`: "... and one ten short written; and from 19.2 ..."
+Now:
+> "... `--check` prints what it would build and run and runs nothing. From 24.9 each chunk's sessions are computed across the machine's cores before the chunk is written, every row the same as reading them one at a time, which `--one-at-a-time` does (see: ...). The worker then waits ..."
+> "... and one ten short written; and from 24.9 the history built over one span one session at a time and across the cores on a constructed S&P 500, 400 and 600 writing every column of every history row and night row the same, one planted difference found, and sessions computed across the cores kept in their places with the earliest of several failures raised; and from 19.2 ..."
+Why: 24.9 of phase 24's plan, the operator's ruling of 2026-11-15 on item 5: the speed-up comes back only behind a test building the same sessions both ways on all three indexes.
+
 ### 2026-11-21 - docs/ARCHITECTURE.html - the judge's page on an empty record, at 24.13
 Authorised by: The AI judge reads only the fields the operator approved with its mockup, and never a stock's industry
 Was:
