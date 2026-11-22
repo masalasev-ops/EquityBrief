@@ -1288,7 +1288,7 @@ details.all-facts{margin:10px 0 4px} details.all-facts summary{cursor:pointer;fo
 .idx-tiles a.on{border-color:var(--research);box-shadow:inset 0 0 0 1px var(--research)}
 .idx-tiles b{display:block;margin:2px 0;font:600 18px var(--sans);font-variant-numeric:tabular-nums}
 .idx-tiles span{display:block;font-size:12.5px;color:var(--soft)}
-@media (max-width:640px){.judge-facts col.l{width:50%} .judge-facts col.v{width:26%} .judge-facts col.b{width:24%} .judge-facts col.c{width:0} .judge-facts td.c{display:none}}
+@media (max-width:640px){.judge-facts col.l{width:44%} .judge-facts col.v{width:34%} .judge-facts col.b{width:22%} .judge-facts col.c{width:0} .judge-facts td.c{display:none}}
 .judge-version{font-size:13.5px;color:var(--ink-2)}
 .judge-since{margin:8px 0;padding:7px 10px;border:1px solid var(--research);border-radius:6px;font-size:14px;color:var(--ink)}
 .judge-apart{margin:16px 0 0;padding:12px 0 0;border-top:1px dashed var(--hair-2)}

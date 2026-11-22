@@ -13,6 +13,6 @@ public class PickerFactLabelTests
     {
         Assert.Contains(".judge-facts{width:100%;border-collapse:collapse;table-layout:fixed;", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".judge-facts col.l{width:42%} .judge-facts col.v{width:20%}", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains(".judge-facts col.l{width:50%} .judge-facts col.v{width:26%}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".judge-facts col.l{width:44%} .judge-facts col.v{width:34%}", Stylesheet.Css, StringComparison.Ordinal);
     }
 }

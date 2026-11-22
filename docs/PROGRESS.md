@@ -21609,3 +21609,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1727 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the 24.19 correction, open; migration 161 and `notebook-fill` on the operator's store after the merge.
+
+### 24.14 - correction: the picker's facts drawn in the page's words, and a pick made before it named its facts folded   2026-11-22
+
+Queue:      done, 24.0 to 24.26 and the 24.4 correction, 24.19 done, its correction open; in progress, this correction, ahead
+            of the next stage on the operator's word; next, 24.27, survivors run by themselves.
+Corrects:   the operator's correction of 2026-11-22, kept word for word in `prompts/2026-11-22-24.14-picker-facts-correction.md`:
+            a card drew "+1 points", "1 insiders" and "-0%", labelled the share count "Shares falling", ran its quote into
+            the line under it, and showed a pick made before the picker named its facts with its whole sheet open. Its first
+            item, the facts as a table of fixed columns grouped as the mockup groups them, and the named half of its second
+            stood on main from 24.25 before this was started; the rest is built here.
+Built:      each fact's value drawn in the page's words from the text the picker was shown: a unit of one in the singular, a
+            change that rounds to nothing as "no change" and any other zero with no sign, its comparison then none; the share
+            count, which reads higher where the shares fell, labelled "Share count against a year before" with its change as
+            "15% fewer" or "4% more". A pick made before the picker named its facts folds its whole sheet under "Everything it
+            saw (n facts): made before the picker named its facts". A space between the quote and the line under it. On a
+            phone the value column takes 34 in 100 of the table where it took 26, so a value no longer breaks over four lines.
+            The stored text and the model's sheet stay as they were, so the field list's version and its passed naming tests
+            stand. Section 15.26's two rows and the changelog.
+Measured:   read back over a constructed store of three indices at 1440 and a true 390 in both palettes, a pick named and one
+            made before, with the fold opened: no page wider than its screen; the shots kept beside the correction's file.
+Tests:      2 new: each display rule worked by hand over seventeen values, and a card read back over a constructed store with
+            the stored text unchanged; two tests read the fold and the quote's space in place of the old.
+Claims:     1712, none new.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each item's own effect taken out at its one site. m1 the singular rule: red; m2 a
+            zero change keeping its sign: red in two tests; m3 the share count drawn as stored: red in two tests; m4 a pick
+            before named facts drawn open: red; m5 the quote run into the line under it: red. Each filtered to its tests and
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3956 of 3956 tests ran with none failed, migrations 0 to 161 with none
+            pending, schema version 161, against `data-ci` and never `data`; the phase report 68 tables, 1712 claims, 1712
+            passing, none out of scope and none unexamined, 1727 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open.

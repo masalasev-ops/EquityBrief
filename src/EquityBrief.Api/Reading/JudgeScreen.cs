@@ -263,14 +263,16 @@ public static class JudgeScreen
         return new JudgeHeld(trade.Bought, trade.Buy, trade.Stop, trade.Target, trade.Trail, trade.Ended, trade.Sale, JudgeAccounts.ResultOf(trade), taken is null ? NotTaken : taken.Skipped);
     }
 
-    // One fact of a pick's sheet: its words and its value as the judge was shown it, a field it held none of not on file, with
-    // its key and the tenth it stood in among its index's members that night, none where it was not placed.
+    // One fact of a pick's sheet: its words and its value drawn in the page's own words from the text the judge was shown, a
+    // field it held none of not on file, with its key and the tenth it stood in among its index's members that night, none
+    // where it was not placed.
     static JudgeFactView Fact(string key, IReadOnlyDictionary<string, string> sheet, IReadOnlyDictionary<string, int> tenths)
     {
         var field = JudgeFacts.All.FirstOrDefault(one => one.Key == key);
         var shown = sheet.TryGetValue(key, out var text) ? text : JudgeFacts.NotOnFile;
+        var value = JudgeFactView.ValueOf(key, shown);
 
-        return new JudgeFactView(field?.Words ?? key, shown, JudgeFactView.Compared(key, shown))
+        return new JudgeFactView(JudgeFactView.LabelOf(key, field?.Words ?? key), value, JudgeFactView.Compared(key, value))
         {
             Key = key,
             Tenth = shown != JudgeFacts.NotOnFile && tenths.TryGetValue(key, out var tenth) ? tenth : null,

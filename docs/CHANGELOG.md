@@ -7,6 +7,16 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/ARCHITECTURE.html - the picker's facts drawn in the page's words, at the 24.14 correction
+Corrects: on the operator's correction of 2026-11-22, kept word for word in `prompts/2026-11-22-24.14-picker-facts-correction.md`, a card drew "+1 points", "-0%" and "Shares falling +15%", ran its quote into the line under it, and showed a pick made before the picker named its facts with its whole sheet open.
+Was:
+> section 15.26's row "The facts it named": "... with their values and a plain comparison where the value's sign says one above the rest of its sheet folded under its count (see: ...)"
+> section 15.26's row "A pick made before it named its facts": "from 24.14 its card keeping its sentence and showing its whole sheet under it marked as made before the picker named its facts while ..."
+Now:
+> "The facts it named": "... folded under its count; from the 24.14 correction of 2026-11-22 each value drawn in the page's words from the text the picker was shown with a unit of one in the singular and a change that rounds to nothing reading no change, and the share count read under a label saying it is against a year before with its change as fewer or more shares (see: ...)"
+> "A pick made before it named its facts": "from 24.14 its card keeping its sentence and from the 24.14 correction of 2026-11-22 folding its whole sheet under its count marked as made before the picker named its facts while ..."
+Why: the operator's correction of that day; the text the picker was shown is stored and drawn from as it stands, so the field list's version and its passed naming tests stand.
+
 ### 2026-11-22 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the notebook, the grammar and the one tester, at 24.26
 Decision: An idea is one line of a closed grammar that code parses into one canonical line and tests with no build session
 Was:
