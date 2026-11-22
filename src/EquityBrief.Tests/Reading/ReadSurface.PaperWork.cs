@@ -41,7 +41,7 @@ public partial class ReadSurface
 
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/paper?universe={word}"));
 
-            Assert.Contains($"data-universe=\"{word}\" data-night=\"{OnTheNight:yyyy-MM-dd}\"", page, StringComparison.Ordinal);
+            Assert.Contains($"data-universe=\"{word}\" data-night=\"{OnTheNight.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\"", page, StringComparison.Ordinal);
 
             // Each live or provisional rule's tile: its walk's return, its open and closed trades and the day it counts from.
             foreach (var head in figures.Where(one => one.Standing is "live" or "provisional"))
