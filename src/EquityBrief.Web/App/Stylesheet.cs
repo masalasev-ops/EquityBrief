@@ -1242,7 +1242,7 @@ nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
  .lm-table .num{white-space:normal}
 }
 .ai-facts{margin:6px 0 10px;padding:0;list-style:none;display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
-.ai-facts li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto);gap:2px 12px;padding:7px 10px;border:1px solid var(--hair-2);border-radius:6px;font-size:14px}
+.ai-facts li{display:grid;grid-template-columns:minmax(min(12em,50%),1fr) minmax(0,auto);gap:2px 12px;padding:7px 10px;border:1px solid var(--hair-2);border-radius:6px;font-size:14px}
 .ai-facts li b{font-variant-numeric:tabular-nums;text-align:right;overflow-wrap:anywhere}
 .ai-facts li span.cmp{grid-column:1 / -1;font-size:12.5px;color:var(--soft)}
 .ai-facts li.why{border-color:var(--research);border-width:1px 1px 1px 3px}
