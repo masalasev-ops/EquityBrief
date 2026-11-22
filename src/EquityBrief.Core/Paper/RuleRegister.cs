@@ -16,6 +16,17 @@ public static class RuleRegister
     // night is read on no night before it.
     public static DateTimeOffset PastTheNight(DateOnly night) => new(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
+    // The instant an S&P 400's or 600's page reads the register and the sweep answers as of: past the night's evening, or,
+    // where the night read the register later, as a night run again after a freeze does, the second after that instant,
+    // so a night run again draws the rules it read. A night stored before it stated the instant is read past its evening.
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    public static DateTimeOffset ReadAsOf(IndexNightRow? night, DateOnly session)
+    {
+        var past = PastTheNight(session);
+
+        return night is not null && IndexRuleSettings.Read(night.Settings).RegisterAt is { } read && read.AddSeconds(1) > past ? read.AddSeconds(1) : past;
+    }
+
     // A rule's name as a key a page's link and an account carry: lower case, each run of other characters one hyphen.
     public static string Slug(string candidate) =>
         System.Text.RegularExpressions.Regex.Replace(candidate.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');

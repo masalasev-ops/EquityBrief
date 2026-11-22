@@ -121,8 +121,40 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "split-causes" => await SplitCausesVerb(args),
     "income-readings" => await IncomeReadingsVerb(args),
     "fallback-facts" => await FallbackFactsVerb(args),
+    EquityBrief.Worker.Paper.PaperFiguresRun.Verb => await PaperFiguresVerb(args),
     _ => NoVerb(),
 };
+
+// Read-only: every paper account's figures on each index, or with '--index <code>' one, as of a stored night named with
+// '--session <yyyy-MM-dd>', worked by the function the page works them by, under the account settings the page reads.
+// see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+static async Task<int> PaperFiguresVerb(string[] args)
+{
+    var verb = EquityBrief.Worker.Paper.PaperFiguresRun.Verb;
+
+    if (VerbArguments.Value(args, "--session") is not { } named
+        || !DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var night))
+    {
+        Console.Error.WriteLine($"{verb}: give '--session <yyyy-MM-dd>', a stored night, and '--index <code>' for one index.");
+
+        return 2;
+    }
+
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var settings = EquityBrief.Worker.Paper.PaperFiguresRun.SettingsOf(store.DataRoot);
+    IReadOnlyList<string> indices = VerbArguments.Value(args, "--index") is { } index ? [index] : EquityBrief.Worker.Paper.PaperFiguresRun.Indices;
+
+    foreach (var code in indices)
+    {
+        foreach (var one in await EquityBrief.Worker.Paper.PaperFiguresRun.ReadAsync(store.DatabaseFile, code, night, settings))
+        {
+            Console.Out.WriteLine($"{verb}: " + EquityBrief.Worker.Paper.PaperFiguresRun.Line(code, one));
+        }
+    }
+
+    return 0;
+}
 
 // From 24.12, by hand on the operator's word: the two fallback lines filled once for every member's filer, from the SEC's
 // answers the long facts pull kept under '--kept <folder>' and asked again of the SEC for a filer that filed since.
@@ -1513,6 +1545,7 @@ static int NoVerb()
         "'income-readings' counts for a stored night each reading built on operating income on each index, the members it reads and those it does not for want of the line, " +
         "with '--facts <folder>' what each fallback line would add read from the SEC's answers kept there, and with '--list' each member, writing nothing, " +
         "'fallback-facts --kept <folder>' fills the two fallback lines once for every member's filer, from the answers kept there or asked again of the SEC, " +
+        "'paper-figures --session <yyyy-MM-dd>' prints every paper account's figures on each index as Paper trading draws them, or with '--index <code>' one, writing nothing, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
