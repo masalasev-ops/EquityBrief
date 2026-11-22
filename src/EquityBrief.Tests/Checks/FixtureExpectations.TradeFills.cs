@@ -280,7 +280,9 @@ public partial class FixtureExpectations
         var files = new[]
         {
             Path.Combine(Repository.Root, "src", "EquityBrief.Api", "Reading", "ReadApi.cs"),
-            Path.Combine(Repository.Root, "src", "EquityBrief.Api", "Reading", "ReadApi.Paper.cs"),
+            Path.Combine(Repository.Root, "src", "EquityBrief.Data", "PaperReads.cs"),
+            Path.Combine(Repository.Root, "src", "EquityBrief.Data", "PaperReads.Picks.cs"),
+            Path.Combine(Repository.Root, "src", "EquityBrief.Data", "PaperReads.Register.cs"),
             Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Loop", "LiveAlarmReader.cs"),
         };
 
