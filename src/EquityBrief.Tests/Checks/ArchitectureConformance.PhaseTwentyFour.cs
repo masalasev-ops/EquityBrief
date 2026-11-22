@@ -46,6 +46,7 @@ public partial class ArchitectureConformance
         ("24.19", [.. FixtureExpectations.SessionReadingRows], []),
         ("24.21", [.. ComponentAccess.PaperReadsRows], []),
         ("24.20", [], []),
+        ("24.22", [.. ComponentAccess.CaseRows, .. SchemaColumns.CaseStoreRows, .. FixtureExpectations.CaseClaims], []),
     ];
 
     // How many more rows each checkpoint landed than its count in the plan, a negative figure where it landed fewer. 24.0,
@@ -68,6 +69,7 @@ public partial class ArchitectureConformance
     // 24.18, none as counted. 24.19, three of six: the table's two stores and the History page's row, the setup ledger's
     // catalogue and matrix rows standing with its new work landing as clauses of them. 24.21, two of two: the shared reader's
     // catalogue and matrix rows, its check's row landing as a clause of read-surface's roster row where the plan counted it.
+    // The stored cases, seven of six: two writers' catalogue and matrix rows and two stores where the plan counted one pair.
     static readonly (string Checkpoint, int More)[] PhaseTwentyFourMore =
     [
         ("24.0", 0),
@@ -91,6 +93,7 @@ public partial class ArchitectureConformance
         ("24.19", -3),
         ("24.21", 0),
         ("24.20", 0),
+        ("24.22", 1),
     ];
 
     [Fact]
@@ -144,6 +147,6 @@ public partial class ArchitectureConformance
         Assert.Equal((actual, 0, 0, actual), (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1632, 1720, 1860, 1683), (before, low, high, actual));
+        Assert.Equal((1632, 1720, 1860, 1690), (before, low, high, actual));
     }
 }

@@ -3929,6 +3929,22 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        [CheckReach.Key(CatalogueTable, "Promotion case store")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the listings it reads and the cases and run log it writes, each reconciled against the row, and a constructed monthly run stores each case standing and none short of the rule",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Promotion case store")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Case words")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, pins, cases, words and run log it reads and the words and run log it writes, each reconciled against the row, and recorded answers are kept or refused for a number, a ticker or a name and asked once more",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Case words")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(StoresTable, "Judge pins")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
@@ -4004,6 +4020,18 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(StoresTable, "Promotion cases")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Promotion case words")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(FailureTable, "A case's words the local model answers holding a number, a ticker or a company's name")] = new Scoped(
+            Verdict.Pass,
+            "recorded answers holding a number, a ticker of the members and a company's name each refused with its cause and asked once more, a second refusal kept with its cause, a kept case asked nothing again, and the page drawing code's sentences where no answer was kept",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A filer that files no operating income for a member's four newest quarters")] = new Scoped(
             Verdict.Pass,
             "each cause and each fallback line worked by hand over a constructed filer, the same line read for every quarter compared and named on the card and the report; a filer covered by neither line saying so; the refresh keeping the two lines apart from the filed facts and leaving them as they were; the fill reading the kept answers and asking for a filer that filed since; and no source a rule's version pins among those the pages' fallback writes",

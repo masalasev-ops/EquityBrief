@@ -211,6 +211,11 @@ public partial class ArchitectureConformance
 
         // And the one reader Paper trading's accounts are read through: its catalogue and matrix rows.
         .. ComponentAccess.PaperReadsRows,
+
+        // And the stored cases and their words: their catalogue, matrix and store rows and section 18's row of an answer refused.
+        .. ComponentAccess.CaseRows,
+        .. SchemaColumns.CaseStoreRows,
+        .. FixtureExpectations.CaseClaims,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

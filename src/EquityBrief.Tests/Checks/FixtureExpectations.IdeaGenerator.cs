@@ -426,7 +426,7 @@ public partial class FixtureExpectations
         // verdict across the three indices after their per-rule tests, from 23.7 the long test after the report, and the
         // worker builds its steps in the order the names state, read off its own source.
         Assert.Equal(
-            ["facts", "dividends", "history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "pooled", "report", "long"],
+            ["facts", "dividends", "history", "check-GSPC", "check-MID", "check-SML", "links-GSPC", "links-MID", "links-SML", "ideas-GSPC", "ideas-MID", "ideas-SML", "test-GSPC", "test-MID", "test-SML", "rules-GSPC", "rules-MID", "rules-SML", "pooled", "report", "cases", "long"],
             MonthlyRun.StepNames);
 
         var source = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Program.cs"));
@@ -434,13 +434,13 @@ public partial class FixtureExpectations
 
         month = month[..month.IndexOf("\n}", StringComparison.Ordinal)];
 
-        string[] built = ["new(\"facts\"", "new(\"dividends\"", "\"history\",", "new(\"check-\" + index", "\"links-\" + index", "\"ideas-\" + index", "\"test-\" + index", "\"rules-\" + index", "MonthlyRun.Pooled,", "new(\"report\"", "WalkForwardTester.LongStep,"];
+        string[] built = ["new(\"facts\"", "new(\"dividends\"", "\"history\",", "new(\"check-\" + index", "\"links-\" + index", "\"ideas-\" + index", "\"test-\" + index", "\"rules-\" + index", "MonthlyRun.Pooled,", "new(\"report\"", "PromotionCaseStore.Step,", "WalkForwardTester.LongStep,"];
         var places = built.Select(literal => month.IndexOf(literal, StringComparison.Ordinal)).ToArray();
 
         Assert.All(places, place => Assert.True(place >= 0));
         Assert.Equal(places.Order(), places);
         Assert.Equal(
-            ["facts", "dividends", "history", "check", "links", "ideas", "test", "rules", "pooled", "report", "long"],
+            ["facts", "dividends", "history", "check", "links", "ideas", "test", "rules", "pooled", "report", "cases", "long"],
             MonthlyRun.StepNames.Select(name => name.Split('-')[0]).Distinct());
     }
 

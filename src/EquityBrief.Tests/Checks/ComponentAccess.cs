@@ -298,6 +298,15 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Paper reads"),
     ];
 
+    // The monthly run's store of each case standing and the local run's words over each case's figures.
+    internal static string[] CaseRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Promotion case store"),
+        CheckReach.Key(Scope.MatrixTable, "Promotion case store"),
+        CheckReach.Key(Scope.CatalogueTable, "Case words"),
+        CheckReach.Key(Scope.MatrixTable, "Case words"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -397,6 +406,7 @@ public partial class ComponentAccess
             .. FallbackRows,
             .. JudgePickerRows,
             .. PaperReadsRows,
+            .. CaseRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

@@ -182,6 +182,9 @@ public class SchemaColumns
     // Every member's readings on every session, and each index's years of them counted.
     internal static string[] SessionReadingStoreRows => [.. new[] { "Every member's readings on every session", "Session reading years" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
+    // Each case standing at a monthly run, and the local model's words over each case's figures.
+    internal static string[] CaseStoreRows => [.. new[] { "Promotion cases", "Promotion case words" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
+
     // 24.3: the AI stock picker's facts and its naming tests.
     internal static string[] JudgeStoreRows =>
     [
@@ -333,6 +336,7 @@ public class SchemaColumns
             .. JudgeStoreRows,
             .. FallbackStoreRows,
             .. SessionReadingStoreRows,
+            .. CaseStoreRows,
             .. JudgePickStoreRows,
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,

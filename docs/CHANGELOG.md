@@ -7,6 +7,19 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the monthly run stores each case standing and the local run writes its words, at 24.22
+Decision: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
+Was:
+> ARCHITECTURE.html, the catalogue's row "Monthly run": "... (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator); from 23.7 its last step, after the report, the per-rule test over the long history on each index and the verdict across the three over it, capped at three hours ..."
+> ARCHITECTURE.html: no catalogue or matrix row for the promotion case store or the case words, no stores rows for promotion cases or promotion case words, and no section 18 row of a case's words refused
+> SCHEMA.md: no `promotion_case` or `promotion_case_words`
+> RUNBOOK.md: no paragraph on the stored cases or the case-words verb
+Now:
+> ARCHITECTURE.html, "Monthly run": "... from 24.22 after the report the cases step, the promotion case store storing each case standing on each index with its figures under the drain's lock the run holds for it (see: ...); from 23.7 its last step, after the cases, the per-rule test over the long history ..."; the promotion case store's and the case words' catalogue and matrix rows; the stores rows "Promotion cases" and "Promotion case words"; section 18's row "A case's words the local model answers holding a number, a ticker or a company's name"
+> SCHEMA.md: the two tables' ownership rows and sections, each inserted by its one writer and never updated or deleted
+> RUNBOOK.md: the cases step and the words, with `case-words` by hand
+Why: the operator's answers of 2026-11-21, kept as Appendices T and V of the phase 24 plan's file: the monthly run works out which cases stand by itself and stores each with its figures, and the local run's next slot asks the local model alone for the words, a reply holding a number, a ticker or a name refused and asked once more. The cases step runs before the long test so the long test stays the run's last step, reading the long history's figures the newest long test stored.
+
 ### 2026-11-22 - docs/BUILD_PLAN.md - phase 24 restated for the AI stock picker within each index: the 24.19 correction, 24.24, 24.25 and 24.30 added, the picker's own rules and its later stages made per index, and the checkpoints after 24.23 renumbered to end at 24.43, at 24.20
 Decision: A new picker version's case is judged at each monthly run, and the operator's click before the next night switches the index's version from that night
 Was:
