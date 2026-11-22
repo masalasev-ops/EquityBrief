@@ -21295,3 +21295,38 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06; the store's build of every member's readings on every session,
             running, with each index's counts and the check's findings.
+
+### 24.20 - the AI stock picker's page mockup, approved, and the plan restated for the picker within each index   2026-11-22
+
+Queue:      done, 24.0 to 24.18, 24.19 done, its correction open, and 24.21, merged as #748 on 2026-11-22; in progress,
+            24.20; next, 24.22, the cases stored, with the 24.19 correction's report beside it.
+Built:      documents alone, and the phase check's stated range. The operator approved the mockup,
+            `prompts/2026-11-22-ai-stock-picker-page-mockup.html`, with an amendment, its correction, their approval and
+            their changes of the same day, kept word for word as Appendix Z of
+            `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`. The build plan is restated by it: the 24.19
+            correction, the every-session table traced against the ledger before anything reads it, with 24.19 reading
+            "done; its correction open" until it closes; new stages 24.24, the picker picking within each index, 24.25, its
+            page built from the mockup, and 24.30, the trained partner; the picker's own rules, its use of them, the AI
+            judge's review, the picker's reviewer, its learning and its feeding the rules each made per index, at 24.31,
+            24.32, 24.33, 24.40, 24.41 and 24.42; and the stages after 24.23 renumbered to end at 24.43. Two decisions: a
+            new picker version's case judged at each monthly run, the operator's click counting only until the first night
+            after it, superseding the one that let a click count on any day; and a running version trailing its index's
+            fund and random picks marked failing, its index's paper versions bounded by the survivors' rules. The store's
+            run of the every-session table counted each index's rows equal to the copy's: the S&P 400's 2,102,889, the
+            S&P 600's 3,183,178 and the S&P 500's 2,721,317. The copy's check named 79,005, 103,785 and 107,561 differences
+            between the table and the ledger's stored setups, the point-in-time rebuild holding on every sampled session;
+            the correction traces them.
+Tests:      none new: the phase check states its range as 1,720 to 1,860 and lists 24.20 landing none, as counted.
+Claims:     1683, none moved, none as counted. Restated in the plan from 1,683 on main at 8b18a85a: about 1,791 after
+            24.43, the pair keeping 1,632 at 6c7a22b7 as its start, about 1,800 within 1,720 to 1,860.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the one assertion this checkpoint changes is the plan's stated range, so the
+            plan's figure is moved back. m1 the plan's range read 1,720 to 1,800: red, the phase check's stated tuple
+            (1632, 1720, 1860, 1683) against the plan's (1632, 1720, 1800, 1683). Filtered to its test and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3922 of 3922 tests ran with none failed, migrations 0 to 157 with none
+            pending, schema version 157, against `data-ci` and never `data`; the phase report 68 tables, 1683 claims, 1683
+            passing, none out of scope and none unexamined, 1698 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open; the rules' half for the monthly run of 2027-02-06.
