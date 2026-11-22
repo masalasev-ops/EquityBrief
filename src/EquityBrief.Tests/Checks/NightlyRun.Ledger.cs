@@ -205,6 +205,13 @@ public partial class NightlyRun
         Assert.Equal(["2", "21"], Texts(store, "SELECT COUNT(*) FROM setup UNION ALL SELECT COUNT(*) FROM setup_night;"));
         Assert.Equal([$"{LedgerStamp(70)}|3", $"{LedgerStamp(71)}|3", $"{LedgerStamp(72)}|3"], Texts(store, "SELECT session_date || '|' || COUNT(*) FROM ledger_reading GROUP BY session_date ORDER BY session_date;"));
         Assert.Equal([SetupLedger.Ok, SetupLedger.Ok, SetupLedger.Ok, SetupLedger.Ok], Texts(store, $"SELECT outcome FROM run_log WHERE stage = '{SetupLedger.Stage}' ORDER BY rowid;"));
+
+        // Each night's own rows are copied into every member's readings on every session unchanged, and the year counted.
+        // see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
+        Assert.Equal(
+            Texts(store, "SELECT index_code || '|' || session_date || '|' || ticker || '|' || readings || '|' || pin || '|night' FROM ledger_reading ORDER BY index_code, session_date, ticker;"),
+            Texts(store, "SELECT index_code || '|' || session_date || '|' || ticker || '|' || readings || '|' || pin || '|' || source FROM session_reading ORDER BY index_code, session_date, ticker;"));
+        Assert.Equal([$"GSPC|2026|9|3|3|{LedgerStamp(70)}|{LedgerStamp(72)}"], Texts(store, "SELECT index_code || '|' || year || '|' || rows || '|' || sessions || '|' || night_sessions || '|' || first_session || '|' || last_session FROM session_reading_year;"));
     }
 
     static T LedgerScalar<T>(TemporaryStore store, string sql) where T : struct

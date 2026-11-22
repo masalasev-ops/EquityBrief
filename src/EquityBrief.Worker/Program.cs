@@ -1328,6 +1328,9 @@ static int NoVerb()
         "'ledger-check --index <GSPC, MID or SML>' rebuilds a seeded sample of each year's history setups from the " +
         "history read through the build's own end and cut at each one's session, a swing setup's own readings by its " +
         "family's gates, and names every reading that differs from the one stored, '--long' checking the long ledger's, " +
+        "'ledger-build --every-session --index <GSPC, MID or SML>' states the count and the time of every member's readings on " +
+        "every session from 2005 and writes them only with '--word', and 'ledger-check --every-session' names every reading of a " +
+        "seeded sample that differs, " +
         "'long-ledger --measure' reads the long ledger's measure and writes nothing, " +
         "'sector-splits --measure' reads each family's setups split by its sector as it stood and writes nothing, " +
         "'loop-search --long --index <GSPC, MID or SML>' searches the breakout's, the drift's and the dip's grids again over the " +
@@ -1952,6 +1955,21 @@ static async Task<int> LedgerBuildRun(string[] args)
     var from = VerbArguments.Value(args, "--from");
     var through = VerbArguments.Value(args, "--through");
 
+    // Every member's readings on every session from 2005, written only with '--word'.
+    // see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
+    if (args.Contains("--every-session", StringComparer.Ordinal))
+    {
+        if (index is null || from is not null || through is not null)
+        {
+            Console.Error.WriteLine("ledger-build: give '--every-session --index <GSPC, MID or SML>', with '--word' to write, its span being every session from 2005.");
+
+            return 1;
+        }
+
+        return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
+            .SessionReadingsAsync(store.DataRoot, index, args.Contains("--word", StringComparer.Ordinal), Console.Out);
+    }
+
     // From 23.6 the long ledger over 2005 to 2018, its span its own.
     // see: The long ledger is read over the long spans and the long prices with the store's own closes after them, each setup under the rule as ruled and with a stock whose prices stop ended at its last price
     if (args.Contains("--long", StringComparer.Ordinal))
@@ -2002,7 +2020,9 @@ static async Task<int> LedgerCheckRun(string[] args)
 
     var ledger = new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile);
 
-    return args.Contains("--long", StringComparer.Ordinal) ? await ledger.LongCheckAsync(index, Console.Out) : await ledger.CheckAsync(index, Console.Out);
+    return args.Contains("--every-session", StringComparer.Ordinal) ? await ledger.SessionCheckAsync(index, Console.Out)
+        : args.Contains("--long", StringComparer.Ordinal) ? await ledger.LongCheckAsync(index, Console.Out)
+        : await ledger.CheckAsync(index, Console.Out);
 }
 
 // The fill step by hand, over every stored trade, writing the fills and its run log row alone; the remedy runs it with

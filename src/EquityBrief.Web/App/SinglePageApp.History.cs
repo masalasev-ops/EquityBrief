@@ -34,7 +34,7 @@ public sealed partial class SinglePageApp
     public const string HistoryLede =
         "Every stock's pulled sessions sorted by fixed rules, so the counts are read before anything is tested on the longer history. Nothing here changes a price: a bad print or a start is marked only on the operator's word.";
 
-    public string HistoryRegion(DataCheckView view, LongMembershipView? membership = null, LongPricesView? prices = null, LongYearsView? years = null, IReadOnlyList<NewsMoodRow>? mood = null)
+    public string HistoryRegion(DataCheckView view, LongMembershipView? membership = null, LongPricesView? prices = null, LongYearsView? years = null, IReadOnlyList<NewsMoodRow>? mood = null, IReadOnlyList<SessionCoverageRow>? coverage = null)
     {
         var region = new StringBuilder();
 
@@ -58,6 +58,11 @@ public sealed partial class SinglePageApp
             if (years is not null)
             {
                 region.Append(LongYearsCard(years));
+            }
+
+            if (coverage is not null)
+            {
+                region.Append(SessionCoverageCard(coverage));
             }
 
             if (mood is not null)
@@ -150,6 +155,11 @@ public sealed partial class SinglePageApp
         if (years is not null)
         {
             region.Append(LongYearsCard(years));
+        }
+
+        if (coverage is not null)
+        {
+            region.Append(SessionCoverageCard(coverage));
         }
 
         if (mood is not null)

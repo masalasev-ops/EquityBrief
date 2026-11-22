@@ -101,6 +101,8 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LedgerSummary, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LedgerReading, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
+            new StoreTouch(Store.SessionReading, Touch.Read | Touch.Insert | Touch.Update),
+            new StoreTouch(Store.SessionReadingYear, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LongMarketBar, Touch.Read),
             new StoreTouch(Store.LongFiling, Touch.Read),
             new StoreTouch(Store.LongFact, Touch.Read),
@@ -287,6 +289,37 @@ public sealed partial class SetupLedger : IComponent
     const string ClearTheNightsReadings = "DELETE FROM ledger_reading WHERE index_code = $index AND session_date = $night;";
 
     const string InsertReadings = "INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ($index, $session, $ticker, $readings, $pin);";
+
+    // Every member's readings on every session, and each index's years of them counted.
+    // see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
+    const string SessionsAtPin = "SELECT DISTINCT session_date FROM session_reading WHERE index_code = $index AND pin = $pin;";
+
+    const string NightSessionsOf = "SELECT DISTINCT session_date FROM ledger_reading WHERE index_code = $index;";
+
+    const string InsertSessionReading = @"
+        INSERT INTO session_reading (index_code, session_date, ticker, readings, pin, source) VALUES ($index, $session, $ticker, $readings, $pin, $source)
+        ON CONFLICT (index_code, session_date, ticker) DO UPDATE SET readings = excluded.readings, pin = excluded.pin, source = excluded.source;";
+
+    const string CopyNightReadings = @"
+        INSERT INTO session_reading (index_code, session_date, ticker, readings, pin, source)
+        SELECT index_code, session_date, ticker, readings, pin, 'night' FROM ledger_reading WHERE index_code = $index AND session_date >= $from AND session_date <= $through
+        ON CONFLICT (index_code, session_date, ticker) DO UPDATE SET readings = excluded.readings, pin = excluded.pin, source = excluded.source;";
+
+    const string CountSessionYears = @"
+        SELECT CAST(substr(session_date, 1, 4) AS INTEGER), COUNT(*), COUNT(DISTINCT session_date), MIN(session_date), MAX(session_date)
+        FROM session_reading WHERE index_code = $index AND session_date >= $from AND session_date < $before GROUP BY 1;";
+
+    const string CountNightSessions = @"
+        SELECT CAST(substr(session_date, 1, 4) AS INTEGER), COUNT(DISTINCT session_date)
+        FROM ledger_reading WHERE index_code = $index AND session_date >= $from AND session_date < $before GROUP BY 1;";
+
+    const string ClearSessionYears = "DELETE FROM session_reading_year WHERE index_code = $index AND year >= $from AND year <= $through;";
+
+    const string InsertSessionYear = @"
+        INSERT INTO session_reading_year (index_code, year, rows, sessions, night_sessions, first_session, last_session, counted_at)
+        VALUES ($index, $year, $rows, $sessions, $night_sessions, $first, $last, $counted_at);";
+
+    const string SessionRowsOn = "SELECT ticker, readings, source FROM session_reading WHERE index_code = $index AND session_date = $session ORDER BY ticker;";
 
     // From 23.6 the long build's writes, which only `ledger-build --long` runs: each setup under both readings, the standing
     // setups left open whose prices stop at their last price, and each family's years under both readings, the last two
@@ -819,6 +852,10 @@ public sealed partial class SetupLedger : IComponent
                 }
 
                 again = await ReleasesAgainAsync(connection, transaction, index, night, context, cancellation);
+
+                // The nights before are copied again with this one, since the later steps rewrite their readings in place.
+                // see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
+                await CopyTheNightsReadingsAsync(connection, transaction, index, night, cancellation);
             }
 
             await transaction.CommitAsync(cancellation);
@@ -3178,6 +3215,13 @@ public sealed partial class SetupLedger : IComponent
             ]);
 
             read += await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        // The rows just rewritten are copied again, so every member's readings on every session holds the night's as they stand.
+        foreach (var index in memberRows.Select(row => row.Index).Distinct(StringComparer.Ordinal))
+        {
+            await ExecuteAsync(connection, transaction, CopyNightReadings, [("$index", index), ("$from", Stamp(session)), ("$through", Stamp(session))], cancellation);
+            await CountSessionYearsAsync(connection, transaction, index, session.Year, session.Year, cancellation);
         }
 
         await transaction.CommitAsync(cancellation);

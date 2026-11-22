@@ -256,6 +256,9 @@ public partial class ReadSurface
             // 23.6, the History page's families by year.
             .. LongYearsRows,
 
+            // The History page's coverage of every member on every session.
+            .. SessionCoverageRows,
+
             // 23.7, paper trading's verdict over the long history.
             .. LongVerdictRows,
 

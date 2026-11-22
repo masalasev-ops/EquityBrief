@@ -3988,6 +3988,14 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(StoresTable, "Every member's readings on every session")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Session reading years")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(FailureTable, "A filer that files no operating income for a member's four newest quarters")] = new Scoped(
             Verdict.Pass,
             "each cause and each fallback line worked by hand over a constructed filer, the same line read for every quarter compared and named on the card and the report; a filer covered by neither line saying so; the refresh keeping the two lines apart from the filed facts and leaving them as they were; the fill reading the kept answers and asking for a filer that filed since; and no source a rule's version pins among those the pages' fallback writes",
@@ -5187,6 +5195,10 @@ internal static class Scope
         [CheckReach.Key("15.25 History", "Labels for the industry news mood")] = new Scoped(
             Verdict.Pass,
             "each index's members holding a story, those holding one unlabelled, the day every such story stood labelled from or not yet, and the sessions after it read back over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key("15.25 History", "Every member on every session")] = new Scoped(
+            Verdict.Pass,
+            "each index's years read back off the page over a constructed store, their rows and members a session, the sessions from the nights, each index's total and span, an index holding none of a year, and a store not built saying so",
             ByReadSurface),
         [CheckReach.Key("15.25 History", "Each family by year")] = new Scoped(
             Verdict.Pass,
@@ -7949,6 +7961,7 @@ internal static class Scope
         [CheckReach.Key("15.25 History", "Prices back to 2004")] = "23.4",
         [CheckReach.Key("15.25 History", "Marks owed")] = "23.4",
         [CheckReach.Key("15.25 History", "Each family by year")] = "23.6",
+        [CheckReach.Key("15.25 History", "Every member on every session")] = "24.19",
         [CheckReach.Key("15.25 History", "Labels for the industry news mood")] = "23.9",
         [CheckReach.Key(LoopPage, "The long history")] = "23.8",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",

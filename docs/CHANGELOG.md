@@ -7,6 +7,45 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-21 - docs/SCHEMA.md - the night's rows copied once more as their insider readings are read again, at 24.19
+Decision: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
+Was:
+> `session_reading`: "... their insider, business and release readings having been rewritten in place since, so a copied row is the night's as it stands."
+Now:
+> "... their insider, business and release readings having been rewritten in place since, and copies the night's rows once more in the transaction that reads their insider readings again, so a copied row is the night's as it stands."
+Why: the fixture's replayed night showed the night's copied rows a night behind `ledger_reading`, its insider readings read again after the ledger's step had copied them; the step reading them again now copies the night's rows in its own transaction.
+
+### 2026-11-21 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - every member's readings on every session, at 24.19
+Decision: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
+Was:
+> CLAUDE.md, the hard rule on bars: "... (see: A split is read only where a split table holds it and the closes step by it, and a step no table holds is listed and never read)." ending the rule
+> ARCHITECTURE.html, the Setup ledger's row: Reads "... setups, setup nights, ledger readings, long market bars, ..."; Writes "setups, setup nights, ledger summaries, ledger readings, long setups, ..."; and its work ending "... and its share check takes a step in the closes for a split only where a split table holds one (see: ...)"
+> ARCHITECTURE.html, the Read API's Reads: "... and but the long ledger's setups and departed setups from 23.6, strip quote feed"
+> ARCHITECTURE.html, section 15.25's Reads: "... and from 23.9 the news articles and labels with the members and the bar store's sessions, and from the 23.4 correction ..."; its table ending on the row "Each family by year"
+> ARCHITECTURE.html, the stores table: "Ledger readings" followed by "Filed facts"
+> SCHEMA.md: no `session_reading` and no `session_reading_year`, the ownership summary's `ledger_reading` followed by `loop_run`
+> RUNBOOK.md: the long ledger's paragraph followed by "The sector splits, from 23.9."
+Now:
+> CLAUDE.md, the same rule with "From 24.19 every member's readings on every session from 2005 sit in `session_reading`, holding no bar: worked by hand by the setup ledger over the long history reader's prices, a session a night stored copied from the night's own readings and each night copying its own, read by no night, and counted by year in `session_reading_year` for the History page alone (see: ...)."
+> the Setup ledger's row reading and writing "every member's readings on every session" and writing "session reading years", its work gaining "and from 24.19 by hand <code>ledger-build --every-session --index &lt;index&gt;</code> works every member's readings on every session from 2005 ... and <code>ledger-check --every-session</code> rebuilds a seeded sample of five sessions a year ... no night reads what it writes (see: ...)"
+> "... and but the long ledger's setups and departed setups from 23.6 and every member's readings on every session from 24.19, strip quote feed"
+> "... and from 24.19 the session reading years, and from the 23.4 correction ..."; and the row "Every member on every session" after "Each family by year"
+> the stores table gaining "Every member's readings on every session" and "Session reading years" after "Ledger readings"
+> SCHEMA.md gaining both tables after `ledger_reading`, with their ownership rows: `session_reading` inserted and updated by SetupLedger and deleted by none, `session_reading_year` inserted and deleted by SetupLedger
+> RUNBOOK.md gaining "Every member's readings on every session, from 24.19." before the sector splits
+Why: 24.19 builds the one table of every member's readings on every session that the reviewer, the picker's own rules and the recipes read, on the operator's order of 2026-11-21 kept as Appendix X of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, as a mode of the ledger's existing build and check so it runs from main's clean copy through `tools/ledger-build`.
+
+### 2026-11-21 - docs/BUILD_PLAN.md and docs/ARCHITECTURE.html - the accounts in Core, the cases and the swap moved to straight after the picker's mockup, at 24.19
+Was:
+> BUILD_PLAN.md: 24.21 The notebook, the grammar and the one tester; 24.22 Survivors run by themselves; 24.23 The researcher, weekly; 24.24 Reading recipes; 24.25 The picker writes its own rules; 24.26 Paper trading's accounts computed in Core, one copy for the page and the worker, "Placed after the picker's own rules on the operator's order of the same day moving the readings for every stock on every session as early as they can go, and before the swap, which lands well before the monthly run of 2027-02-06."; 24.27 The monthly run stores the cases, "through 24.26's accounts"; 24.28 The Promote swap, rehearsed on a copy of the store
+> BUILD_PLAN.md, the counts: "- about 8 at 24.21, the notebook's ..." through "- about 3 at 24.28, the swap's rows ..." in that order; the visible output "At 24.21 the notebook. At 24.23 the researcher's ideas on the Loop page. At 24.25 the picker's own rules in the notebook. At 24.27 the cases ... At 24.28 the swap ..."; the estimate's "Pin moves at 24.24, 24.33 and 24.34" and "the researcher each Sunday from 24.23, the picker's own rules in the same run from 24.25, a case's words in the local run's slots from 24.27"; 24.17's "until 24.27 writes the local model's", "the swap 24.28 builds" and "moves to 24.28, and the model's words to 24.27"; 24.19's and 24.20's "24.25"; the researcher's "24.25"; the recipes' "24.25"; the picker's own rules' "24.23" and "24.24's recipes"; and the pullbacks' search's "as 24.22 sets out"
+> ARCHITECTURE.html, section 15.27: "from 24.27 the monthly run stores", "Until 24.27 the case for and against" and "until 24.28 lands it"
+Now:
+> 24.21 Paper trading's accounts computed in Core, "Placed straight after the picker's mockup on the operator's order of the same day, kept word for word as Appendix Y of the plan's file, with the cases and the swap after it, since none of the three needs anything of 24.24 to 24.28 and all three must be working well before the monthly run of 2027-02-06."; 24.22 The monthly run stores the cases, "through 24.21's accounts"; 24.23 The Promote swap; 24.24 The notebook; 24.25 Survivors; 24.26 The researcher; 24.27 Reading recipes; 24.28 The picker writes its own rules
+> the counts in the new order, about 2, 6, 3, 8, 6, 8, 6 and 6 at 24.21 to 24.28, the total unchanged; "At 24.22 the cases ... At 24.23 the swap ... At 24.24 the notebook. At 24.26 the researcher's ideas ... At 24.28 the picker's own rules ..."; "Pin moves at 24.27, 24.33 and 24.34"; "from 24.26", "from 24.28" and "from 24.22"; 24.17's "until 24.22", "the swap 24.23 builds" and "moves to 24.23, and the model's words to 24.22"; "24.28" for the picker's own rules throughout; "24.26" and "24.27's recipes"; "as 24.25 sets out"
+> section 15.27: "from 24.22", "Until 24.22" and "until 24.23 lands it"
+Why: the operator's order of 2026-11-21, kept word for word as Appendix Y of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`: the accounts in Core, the cases and the swap depend on nothing of the notebook to the picker's own rules and must all be working well before the run of 2027-02-06, so they move to right after 24.20 and the rest keeps its order. Seven decisions' checkpoint pointers moved with the numbers.
+
 ### 2026-11-21 - CLAUDE.md, docs/ARCHITECTURE.html, docs/BUILD_PLAN.md, docs/RUNBOOK.md, docs/SCHEMA.md and .claude/rules/checks.md - the picker renamed the AI stock picker, and phase 24's checkpoints reordered, at 24.18
 Decision: What picks stocks each night is the AI stock picker, and the AI judge names only the monitor that reviews it
 Decision: A new picker version from its own rules or from its monthly lessons goes live only through the case for promotion and the operator's click

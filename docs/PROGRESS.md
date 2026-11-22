@@ -21194,3 +21194,73 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1693 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06.
+
+### 24.6 - correction: a fact's label on a picker's card keeps a column of its own   2026-11-21
+
+Queue:      done, 24.0 to 24.18, merged as #746 on 2026-11-21; in progress, this correction and 24.19 in one pull request;
+            next, 24.20, the picker's mockup.
+Corrects:   on the picker's cards at 1440 a fact whose value ran long, the 20-day range lines among them, left its label a
+            column one letter wide, read downwards, found reading 24.18's screenshots back. The label's column now keeps at
+            least 12 ems or half the card's width beside its value.
+Tests:      1 new: the stylesheet's rule holds the label's floor and not the column that could fall to nothing.
+Pins:       none moved: the stylesheet is no rule's source.
+Mutated:    the rule: the floor the correction adds taken out. m4 the old column put back: red. Filtered to its test and
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3920 of 3920 tests ran with none failed, migrations 0 to 157 with none
+            pending, schema version 157, against `data-ci` and never `data`; the phase report 68 tables, 1681 claims, 1681
+            passing, none out of scope and none unexamined, 1696 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06.
+
+### 24.19 - every member's readings on every session   2026-11-21
+
+Queue:      done, 24.0 to 24.18; in progress, 24.19 and the 24.6 correction in one pull request; next, 24.20, the picker's
+            mockup, then 24.21 to 24.23 moved up on the operator's order of the same day.
+Ruled:      the operator's order of 2026-11-21, kept word for word as Appendix Y of
+            `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`: Paper trading's accounts in Core, the cases stored and
+            the Promote swap move to straight after 24.20 as 24.21 to 24.23, since they need nothing of the notebook to the
+            picker's own rules and must all be working well before the run of 2027-02-06; the notebook, survivors, the
+            researcher, recipes and the picker's own rules follow as 24.24 to 24.28, the rest as it stood. Seven decisions'
+            checkpoint pointers moved with the numbers.
+Built:      `session_reading`, every member's readings on every session from 2005 on each index, a row a member as it stood
+            with a bar and no gap, in `ledger_reading`'s form, and `session_reading_year` counting each index's years.
+            `ledger-build --every-session --index` works them over the long history reader's history as the night works a
+            member's, copies a session `ledger_reading` holds from the night's own rows, states its count and its time over
+            the first year it would work before it writes anything, and writes only with `--word`, a chunk at a time under
+            the night's wait and the drain's lock, going on from the sessions it holds under the catalogue's version. Each
+            night copies its own rows and the 14 days' before it, whose readings the later steps rewrite in place, and counts
+            their years, and copies the night's rows once more as their insider readings are read again. `ledger-check --every-session` rebuilds a seeded sample of five sessions a year from the long history
+            cut at each, holds every setup the ledger stored of the session to its stock's row on every reading but its
+            family's own, and holds a session a night stored to the night's own rows. The History page draws each index's rows
+            and members a session by year. No night reads the table.
+Measured:   on a copy of the store on the SSD, from this branch's build: the S&P 400's first year 93,085 rows in 6.7 s across
+            16 cores; its whole build 2,102,889 rows over 5,507 sessions, 5,478 worked and 29 copied from the nights, in 17
+            minutes, the copy growing from 11,296,710,656 to 15,635,529,728 bytes, 2,063 bytes a row. The three indices'
+            counts on the copy and then on the store, and the check's findings on each, stand in the entry after the store's
+            build, which runs from main's clean copy once this merges.
+Tests:      5 new: the build over a constructed long history, refusing without the word and stating its count, then writing
+            AAA's 60 sessions and BBB's 41 before it left, the night's own row copied, AAA's close over its 20-session average
+            on its 31st session worked by hand as 13.0 over 12.05, the year counted and a second build writing nothing, the
+            check finding nothing and then naming a planted row and a setup held to it; a setup's row against its stock's on
+            every reading but its family's own; no source but the ledger's and the migration's naming the table, no component
+            but the setup ledger touching it and the read surface reading its years alone, and neither source a rule's version
+            pins; the History page's coverage read back over a constructed store; and the fixture's night copying its own rows
+            unchanged, each year counted from the rows, its expectation `every-session.json` derived from the night step's form.
+            The night's step's test now holds its copy of the three nights' rows and their year.
+Claims:     1681, three of the plan's six: the table's two stores and the History page's row, the setup ledger's catalogue and
+            matrix rows standing with its new work landing as clauses of them.
+Pins:       none moved, asserted: neither the build's source nor the ledger's is one a rule's version pins.
+Mutated:    the rule, stated before the run: each guard the checkpoint adds taken out in turn. m1 the build writing without
+            the word: red. m2 the night's copy taken out: red, the night's test. m3 a setup's family's own readings no longer
+            passed over: red, both tests holding it. Each filtered to its tests and reverted before anything was committed.
+Amends:     24.19 amends its own done condition: its rows on the copy and then on the store, counted for each index, and the
+            check's findings stand in the entry after the store's build, since that build runs from main's clean copy after the
+            merge, and this entry states the S&P 400's on the copy alone.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3920 of 3920 tests ran with none failed, migrations 0 to 157 with none
+            pending, schema version 157, against `data-ci` and never `data`; the phase report 68 tables, 1681 claims, 1681
+            passing, none out of scope and none unexamined, 1696 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06; the store's build of every member's readings on every session,
+            on the operator's word of 2026-11-21, with each index's counts and the check's findings.
