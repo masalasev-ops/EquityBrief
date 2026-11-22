@@ -205,6 +205,9 @@ public partial class ArchitectureConformance
         // And from 24.17: the case for promotion's three regions, a press on it and the rule's row.
         .. Reading.ReadSurface.PromotionCaseRows,
         .. FixtureExpectations.PromotionRuleClaims,
+
+        // And every member's readings on every session: its two stores and the History page's row.
+        .. FixtureExpectations.SessionReadingRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported
