@@ -24,7 +24,7 @@ public partial class FixtureExpectations
     // The night's step that starts the judge, as section 14 states it.
     internal const string JudgeStep =
         "From 24.4, start the AI stock picker, a process of its own that waits until the night has finished, writes the night's facts and picks up " +
-        "to five for its own account under the local model's lock, its calls on its own row and never the night's, and stores them before " +
+        "to five for its own account under the local model's lock, from 24.24 within each index for that index's account, its calls on its own row and never the night's, and stores them before " +
         "the next open or writes the night as missed; a night run again for an earlier session starts none (see: The AI stock picker picks straight " +
         "after the night under the local model's lock, its picks stored before the next open or shown as missed).";
 
@@ -60,11 +60,14 @@ public partial class FixtureExpectations
 
     static readonly ModelFileFacts PickFile = new("m/judge.gguf", 1000, new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero));
 
-    // Answers as a recorded model gives them: round one keeps a target where its batch shows one, and round two picks the
-    // targets shown in the order given, each with its hold, its take-profit and its reason.
+    // Answers as a recorded model gives them: from 24.24 round one marks every target its batch shows, and round two ranks
+    // the targets shown in the order given, as many as it is asked, each with its hold, its take-profit and its reason.
     sealed class PickFeed(IReadOnlyList<(string Ticker, string Hold, string Shape, string Reason)> targets, Queue<string>? pickAnswers = null) : IReadingModelFeed
     {
         public int Requests { get; private set; }
+
+        // Every question's text, in the order asked.
+        public List<string> Texts { get; } = [];
 
         public Task<bool> PrepareAsync(CancellationToken cancellation = default) => Task.FromResult(false);
 
@@ -73,15 +76,17 @@ public partial class FixtureExpectations
         public Task<ReadingReply> AskAsync(ReadingRequest request, CancellationToken cancellation = default)
         {
             Requests++;
+            Texts.Add(request.Text);
 
             string answer;
 
             if (request.Instruction == JudgePrompt.ScreenSystem)
             {
-                var kept = Regex.Matches(request.Text, @"^(?<label>[A-Za-z]+ [A-Za-z]+): row of member (?<ticker>T[0-9]+)$", RegexOptions.Multiline)
-                    .FirstOrDefault(match => targets.Any(target => target.Ticker == match.Groups["ticker"].Value));
+                var marked = Regex.Matches(request.Text, @"^(?<label>[A-Za-z]+ [A-Za-z]+): row of member (?<ticker>T[0-9]+)$", RegexOptions.Multiline)
+                    .Where(match => targets.Any(target => target.Ticker == match.Groups["ticker"].Value))
+                    .Select(match => match.Groups["label"].Value);
 
-                answer = JsonSerializer.Serialize(new { keep = kept?.Groups["label"].Value ?? JudgePrompt.None });
+                answer = JsonSerializer.Serialize(new { marked });
             }
             else if (pickAnswers is { Count: > 0 })
             {
@@ -89,18 +94,25 @@ public partial class FixtureExpectations
             }
             else
             {
-                var shown = Regex.Matches(request.Text, @"^(?<label>[A-Za-z]+ [A-Za-z]+)\nsheet of member (?<ticker>T[0-9]+)$", RegexOptions.Multiline)
-                    .ToDictionary(match => match.Groups["ticker"].Value, match => match.Groups["label"].Value);
-
-                answer = JsonSerializer.Serialize(new
-                {
-                    picks = targets.Where(target => shown.ContainsKey(target.Ticker))
-                        .Select(target => new Dictionary<string, object> { ["label"] = shown[target.Ticker], ["hold"] = target.Hold, ["take_profit"] = target.Shape, ["reason"] = target.Reason, ["facts"] = PickFacts }),
-                });
+                answer = RankedAnswer(request, targets, _ => PickFacts);
             }
 
             return Task.FromResult(new ReadingReply("the model", answer, "stop", 10, 5, 0, "lm", "1", 0.1));
         }
+    }
+
+    // Round two's answer: the targets the question shows, in the order given, as many as it asks for, each naming the facts given.
+    static string RankedAnswer(ReadingRequest request, IReadOnlyList<(string Ticker, string Hold, string Shape, string Reason)> targets, Func<string, string[]> facts)
+    {
+        var shown = Regex.Matches(request.Text, @"^(?<label>[A-Za-z]+ [A-Za-z]+)\nsheet of member (?<ticker>T[0-9]+)$", RegexOptions.Multiline)
+            .ToDictionary(match => match.Groups["ticker"].Value, match => match.Groups["label"].Value);
+        var asked = int.Parse(Regex.Match(request.Text, @"^Rank (?<count>[0-9]+) of these", RegexOptions.Multiline).Groups["count"].Value, CultureInfo.InvariantCulture);
+
+        return JsonSerializer.Serialize(new
+        {
+            picks = targets.Where(target => shown.ContainsKey(target.Ticker)).Take(asked)
+                .Select(target => new Dictionary<string, object> { ["label"] = shown[target.Ticker], ["hold"] = target.Hold, ["take_profit"] = target.Shape, ["reason"] = target.Reason, ["facts"] = facts(target.Ticker) }),
+        });
     }
 
     // A night of 120 members' facts under the field list's version, a passed naming test of that version, a reading pin
@@ -136,7 +148,11 @@ public partial class FixtureExpectations
 
     static readonly DateTimeOffset PickOpen = JudgePicker.NextOpen(DateOnly.ParseExact(PickNight, "yyyy-MM-dd", CultureInfo.InvariantCulture), SessionZones.ResolveSessionZone(SessionZones.UnitedStates));
 
+    // From 24.24 the night's run on the S&P 500, the one index the constructed night holds facts of.
     static async Task<JudgeRunOutcome> PickRun(TemporaryStore store, IReadingModelFeed feed, DateTimeOffset at, string run) =>
+        (await PickNightRun(store, feed, at, run)).Indices.Single(index => index.Index == "GSPC");
+
+    static async Task<JudgeNightOutcome> PickNightRun(TemporaryStore store, IReadingModelFeed feed, DateTimeOffset at, string run) =>
         await new JudgePicker(
                 feed,
                 new LocalModelSettings("local", "http://127.0.0.1:1234/v1/", "the model", 60, 8192, 60),
@@ -161,9 +177,11 @@ public partial class FixtureExpectations
         var feed = new PickFeed(PickTargets);
         var outcome = await PickRun(store, feed, PickEvening, "judge-picks");
 
-        // 120 members in batches of 50, 50 and 20: three questions in round one and one in round two, each kept member a
-        // target, ranked as the answer ranks them.
+        // 120 members in batches of 50, 50 and 20: three questions in round one and one in round two, each marked member a
+        // target, ranked as the answer ranks them; from 24.24 two marked, so the best quarter is the first, rounded up, and
+        // "a fixed 5" takes both.
         Assert.Equal((JudgePicker.Picked, 120, 2, 4, 0), (outcome.Outcome, outcome.Screened, outcome.Kept, outcome.Asks, outcome.AsksFailed));
+        Assert.Equal([true, false], outcome.Picks.Select(pick => pick.InQuarter));
         Assert.Equal(new DateTimeOffset(2026, 11, 20, 14, 30, 0, TimeSpan.Zero), PickOpen);
 
         // By hand: T093 closes at 50 with a typical move of 1, held a week, so its stop sits 1 move under, its risk 1, its
@@ -175,7 +193,8 @@ public partial class FixtureExpectations
 
         Assert.Equal(["1|T093|49|52|", "2|T007|97|106|3"], FamilyRows(store, "SELECT rank || '|' || ticker || '|' || stop || '|' || target || '|' || COALESCE(give_up_distance, '') FROM judge_pick ORDER BY rank;"));
         Assert.Equal(["return_month,rsi,volume_ratio", "return_month,rsi,volume_ratio"], FamilyRows(store, "SELECT fields FROM judge_pick ORDER BY rank;"));
-        Assert.Equal(["picked|120|2|4|0"], FamilyRows(store, "SELECT outcome || '|' || screened || '|' || kept || '|' || asks || '|' || asks_failed FROM judge_run;"));
+        Assert.Equal(["1|1", "2|0"], FamilyRows(store, "SELECT rank || '|' || in_quarter FROM judge_pick ORDER BY rank;"));
+        Assert.Equal(["judge-picks-500|picked|120|2|4|0|running"], FamilyRows(store, "SELECT run_id || '|' || outcome || '|' || screened || '|' || kept || '|' || asks || '|' || asks_failed || '|' || standing FROM judge_run WHERE index_code = 'GSPC';"));
         Assert.Equal(["4"], FamilyRows(store, "SELECT COUNT(*) FROM judge_ask WHERE outcome = 'answered';"));
 
         // Its first pin is written from the reading pin with the prompt's version, and the night is never filled in again.
@@ -184,7 +203,7 @@ public partial class FixtureExpectations
         var again = await PickRun(store, new PickFeed(PickTargets), PickEvening, "judge-picks-again");
 
         Assert.Equal(JudgePicker.Refused, again.Outcome);
-        Assert.Equal(["1"], FamilyRows(store, "SELECT COUNT(*) FROM judge_run;"));
+        Assert.Equal(["1"], FamilyRows(store, "SELECT COUNT(*) FROM judge_run WHERE index_code = 'GSPC';"));
     }
 
     [Fact]
@@ -209,9 +228,9 @@ public partial class FixtureExpectations
     {
         var labels = new[] { "Amber Bell", "Blue Kite" };
 
-        Assert.Equal("a reason holding a digit or none", JudgePrompt.ReadPick("""{"picks":[{"label":"Amber Bell","hold":"1 week","take_profit":"the whole at 2 times the risk","reason":"Up 12 percent"}]}""", labels).Cause);
-        Assert.Equal("a choice not on the menu", JudgePrompt.ReadPick("""{"picks":[{"label":"Amber Bell","hold":"6 weeks","take_profit":"the whole at 2 times the risk","reason":"Calm"}]}""", labels).Cause);
-        Assert.Equal("a label picked twice", JudgePrompt.ReadPick("""{"picks":[{"label":"Blue Kite","hold":"1 week","take_profit":"the whole at 2 times the risk","reason":"Calm"},{"label":"Blue Kite","hold":"1 week","take_profit":"the whole at 2 times the risk","reason":"Calm"}]}""", labels).Cause);
+        Assert.Equal("a reason holding a digit or none", JudgePrompt.ReadPick("""{"picks":[{"label":"Amber Bell","hold":"1 week","take_profit":"the whole at 2 times the risk","reason":"Up 12 percent"}]}""", labels, 1).Cause);
+        Assert.Equal("a choice not on the menu", JudgePrompt.ReadPick("""{"picks":[{"label":"Amber Bell","hold":"6 weeks","take_profit":"the whole at 2 times the risk","reason":"Calm"}]}""", labels, 1).Cause);
+        Assert.Equal("a label picked twice", JudgePrompt.ReadPick("""{"picks":[{"label":"Blue Kite","hold":"1 week","take_profit":"the whole at 2 times the risk","reason":"Calm"},{"label":"Blue Kite","hold":"1 week","take_profit":"the whole at 2 times the risk","reason":"Calm"}]}""", labels, 2).Cause);
         Assert.True(JudgePrompt.NamesTheMember("Alphabet leads its peers", "GOOGL", "Alphabet Inc."));
         Assert.True(JudgePrompt.NamesTheMember("GOOGL keeps rising", "GOOGL", "Alphabet Inc."));
         Assert.False(JudgePrompt.NamesTheMember("A steady climb on rising estimates", "A", "Agilent Technologies"));
@@ -262,7 +281,7 @@ public partial class FixtureExpectations
 
             Assert.Equal((JudgePicker.Missed, 0), (outcome.Outcome, feed.Requests));
             Assert.Empty(FamilyRows(store, "SELECT ticker FROM judge_pick;"));
-            Assert.Equal(["missed"], FamilyRows(store, "SELECT outcome FROM judge_run;"));
+            Assert.Equal(["missed"], FamilyRows(store, "SELECT outcome FROM judge_run WHERE index_code = 'GSPC';"));
         }
 
         // Another local process holding the local model's lock at the open: nothing is asked and nothing picked.
@@ -335,11 +354,11 @@ public partial class FixtureExpectations
         var outcome = await PickRun(store, new FactsFeed(targets), PickEvening, "judge-facts");
 
         Assert.Equal((JudgePicker.Picked, 0), (outcome.Outcome, outcome.AsksFailed));
-        Assert.Equal([(1, "T007")], outcome.Picks.Select(pick => (pick.Rank, pick.Ticker)));
+        Assert.Equal([(1, "T007", true)], outcome.Picks.Select(pick => (pick.Rank, pick.Ticker, pick.InQuarter)));
         Assert.Equal(["T007|return_month,rsi,volume_ratio"], FamilyRows(store, "SELECT ticker || '|' || fields FROM judge_pick;"));
         Assert.Equal(
             [$"refused for the facts it named, T093: {JudgePrompt.NamedNone}; T050: {JudgePrompt.NamedLacking}"],
-            FamilyRows(store, "SELECT detail FROM judge_run;"));
+            FamilyRows(store, "SELECT detail FROM judge_run WHERE index_code = 'GSPC';"));
         Assert.Contains($"T050: {JudgePrompt.NamedLacking}", FamilyRows(store, $"SELECT detail FROM run_log WHERE stage = '{JudgePicker.Stage}';").Single(), StringComparison.Ordinal);
     }
 
@@ -362,42 +381,73 @@ public partial class FixtureExpectations
                 return screen.AskAsync(request, cancellation);
             }
 
-            var shown = Regex.Matches(request.Text, @"^(?<label>[A-Za-z]+ [A-Za-z]+)\nsheet of member (?<ticker>T[0-9]+)$", RegexOptions.Multiline)
-                .ToDictionary(match => match.Groups["ticker"].Value, match => match.Groups["label"].Value);
-            var answer = JsonSerializer.Serialize(new
+            var answer = RankedAnswer(request, targets, ticker => ticker switch
             {
-                picks = targets.Where(target => shown.ContainsKey(target.Ticker)).Select(target => new Dictionary<string, object>
-                {
-                    ["label"] = shown[target.Ticker], ["hold"] = target.Hold, ["take_profit"] = target.Shape, ["reason"] = target.Reason,
-                    ["facts"] = target.Ticker switch
-                    {
-                        "T093" => Array.Empty<string>(),
-                        "T050" => ["Return over 1 month", "Momentum (RSI)", "Business score"],
-                        _ => PickFacts,
-                    },
-                }),
+                "T093" => [],
+                "T050" => ["Return over 1 month", "Momentum (RSI)", "Business score"],
+                _ => PickFacts,
             });
 
             return Task.FromResult(new ReadingReply("the model", answer, "stop", 10, 5, 0, "lm", "1", 0.1));
         }
     }
 
-    // From 24.14 a judge pin under the one earlier prompt version is followed by a new pin under this one, a new judge version;
-    // a pin under any other version is refused as before.
-    [Fact]
-    public async Task APinUnderTheEarlierPromptMovesToANewPinAndAnyOtherIsRefused()
+    // From 24.14 a judge pin under an earlier prompt version is followed by a new pin under this one, a new judge version, and
+    // from 24.24 each earlier version is: the one before the picker named its facts and the one before it picked within each
+    // index. A pin under any other version is refused as before.
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public async Task APinUnderAnEarlierPromptMovesToANewPinAndAnyOtherIsRefused(int which)
     {
-        Assert.NotEqual(JudgePrompt.Previous, JudgePrompt.Version);
+        Assert.DoesNotContain(JudgePrompt.Version, JudgePrompt.Earlier);
+
+        var earlier = JudgePrompt.Earlier[which];
 
         using var store = PickStore();
 
-        store.Execute($"INSERT INTO judge_pin (reading_pin_id, model, file, sha256, size, modified, context, prompt_version, written_at) VALUES (1, 'the model', 'm/judge.gguf', 'abc', 1000, '2026-11-01T00:00:00Z', 8192, '{JudgePrompt.Previous}', '2026-11-02T00:00:00Z');");
+        store.Execute($"INSERT INTO judge_pin (reading_pin_id, model, file, sha256, size, modified, context, prompt_version, written_at) VALUES (1, 'the model', 'm/judge.gguf', 'abc', 1000, '2026-11-01T00:00:00Z', 8192, '{earlier}', '2026-11-02T00:00:00Z');");
 
         var outcome = await PickRun(store, new PickFeed(PickTargets), PickEvening, "judge-moved");
 
         Assert.Equal(JudgePicker.Picked, outcome.Outcome);
-        Assert.Equal([$"1|{JudgePrompt.Previous}", $"2|{JudgePrompt.Version}"], FamilyRows(store, "SELECT id || '|' || prompt_version FROM judge_pin ORDER BY id;"));
-        Assert.Equal(["2"], FamilyRows(store, "SELECT pin_id FROM judge_run;"));
+        Assert.Equal([$"1|{earlier}", $"2|{JudgePrompt.Version}"], FamilyRows(store, "SELECT id || '|' || prompt_version FROM judge_pin ORDER BY id;"));
+        Assert.Equal(["2"], FamilyRows(store, "SELECT pin_id FROM judge_run WHERE index_code = 'GSPC';"));
+    }
+
+    // The 24.4 correction of 2026-11-22: a picker pin stores its model file's modified instant to the whole second, so a run
+    // under the pin of a file modified at a fraction of a second is read at that second and asks, where before it was
+    // refused naming the file.
+    [Fact]
+    public async Task ARunUnderItsOwnPinOfAFileModifiedAtAFractionOfASecondIsNotRefused()
+    {
+        using var store = PickStore();
+        var fraction = new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero).AddMilliseconds(769);
+
+        store.Execute("UPDATE reading_pin SET modified = '2026-11-01T00:00:00.769Z';");
+
+        async Task<JudgeRunOutcome> Run(string run) =>
+            (await new JudgePicker(
+                    new PickFeed(PickTargets),
+                    new LocalModelSettings("local", "http://127.0.0.1:1234/v1/", "the model", 60, 8192, 60),
+                    FixedClock.At(PickEvening, SessionZones.UnitedStates),
+                    store.DatabaseFile,
+                    store.Root,
+                    (_, _) => Task.CompletedTask,
+                    () => PickFile with { Modified = fraction })
+                .RunAsync(DateOnly.ParseExact(PickNight, "yyyy-MM-dd", CultureInfo.InvariantCulture), PickOpen, run)).Indices.Single(index => index.Index == "GSPC");
+
+        // The first run writes the pin at the whole second; the night cleared, a second run asks under it.
+        Assert.Equal(JudgePicker.Picked, (await Run("pin-first")).Outcome);
+        Assert.Equal(["2026-11-01T00:00:00Z"], FamilyRows(store, "SELECT modified FROM judge_pin;"));
+
+        store.Execute("DELETE FROM judge_pick; DELETE FROM judge_ask; DELETE FROM judge_run; DELETE FROM run_log;");
+
+        var again = await Run("pin-again");
+
+        Assert.Equal((JudgePicker.Picked, (string?)null), (again.Outcome, again.Why));
+        Assert.True(JudgePicker.SameSecond(fraction, new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero)));
+        Assert.False(JudgePicker.SameSecond(fraction, new DateTimeOffset(2026, 11, 1, 0, 0, 1, TimeSpan.Zero)));
     }
 
     [Fact]

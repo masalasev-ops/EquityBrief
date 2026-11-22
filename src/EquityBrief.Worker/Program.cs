@@ -287,12 +287,30 @@ static async Task<int> JudgeNamingRun(string[] args)
         return 1;
     }
 
-    var outcome = await new EquityBrief.Worker.Judge.JudgeNamingTest(LmStudioReadingFeed.Live(local), local, clock, store.DatabaseFile, store.DataRoot)
-        .RunAsync(session, seed, until, FormattableString.Invariant($"{EquityBrief.Worker.Judge.JudgeNamingTest.Stage}-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+    // From 24.24 one test for each index's members, or for the index '--index' names by its word, 500, 400 or 600.
+    var named = VerbArguments.Value(args, "--index");
+    var indices = EquityBrief.Core.Judge.JudgeNight.Indices.Where(index => named is null || EquityBrief.Core.Candidates.OwnStepCandidate.WordOf(index) == named).ToArray();
 
-    Console.Out.WriteLine("judge-naming: " + EquityBrief.Worker.Judge.JudgeNamingTest.Words(outcome));
+    if (indices.Length == 0)
+    {
+        Console.Error.WriteLine("judge-naming: '--index' names 500, 400 or 600.");
 
-    return outcome.Passed ? 0 : 1;
+        return 2;
+    }
+
+    var passed = true;
+
+    foreach (var index in indices)
+    {
+        var outcome = await new EquityBrief.Worker.Judge.JudgeNamingTest(LmStudioReadingFeed.Live(local), local, clock, store.DatabaseFile, store.DataRoot)
+            .RunAsync(session, seed, until, FormattableString.Invariant($"{EquityBrief.Worker.Judge.JudgeNamingTest.Stage}-{clock.UtcNow:yyyyMMddTHHmmssZ}-{EquityBrief.Core.Candidates.OwnStepCandidate.WordOf(index)}"), index);
+
+        Console.Out.WriteLine("judge-naming: " + EquityBrief.Worker.Judge.JudgeNamingTest.Words(outcome));
+
+        passed &= outcome.Passed;
+    }
+
+    return passed ? 0 : 1;
 }
 
 // The AI stock picker's replay of the nights after the model's cutoff: its plan printed, writing nothing, and with '--go' on the

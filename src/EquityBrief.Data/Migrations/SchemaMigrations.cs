@@ -780,7 +780,90 @@ public static class SchemaMigrations
         new Migration(157, "create session_reading and session_reading_year", CreateSessionReadings),
         new Migration(158, "create promotion_case and promotion_case_words", CreatePromotionCases),
         new Migration(159, "create promotion_press and promotion_swap", CreatePromotionSwaps),
+        new Migration(160, "rebuild judge_fact, judge_run and judge_pick for the picker within each index", PickWithinEachIndex),
     ];
+
+    // From 24.24 the picker within each index. Its facts gain their field list's version in their key, so a night written
+    // under a new list keeps the earlier list's rows for the picks made under it; its runs gain the index each ran for and
+    // where its version stood there, both empty on a run across the three indices before 24.24, and a night a version past
+    // its index's running one could not be held to is written "not run"; and its picks are keyed by their run, holding every
+    // member its second round ranked, each marked where it is in the best quarter its version takes, "a fixed 5" taking
+    // them all. Each table is rebuilt with its rows copied across first, the picks before 24.24 each in its version's take.
+    // see: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
+    const string PickWithinEachIndex = @"
+        CREATE TABLE judge_fact_rebuilt (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            version       TEXT NOT NULL,
+            fields        TEXT NOT NULL,
+            row_text      TEXT NOT NULL,
+            sheet_text    TEXT NOT NULL,
+            written_at    TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (index_code, session_date, ticker, version)
+        ) STRICT;
+
+        INSERT INTO judge_fact_rebuilt (index_code, session_date, ticker, version, fields, row_text, sheet_text, written_at, run_id)
+        SELECT index_code, session_date, ticker, version, fields, row_text, sheet_text, written_at, run_id FROM judge_fact;
+
+        DROP TABLE judge_fact;
+
+        ALTER TABLE judge_fact_rebuilt RENAME TO judge_fact;
+
+        CREATE TABLE judge_run_rebuilt (
+            run_id          TEXT NOT NULL PRIMARY KEY,
+            session_date    TEXT NOT NULL,
+            fact_version    TEXT NOT NULL,
+            pin_id          INTEGER,
+            seed            INTEGER NOT NULL,
+            outcome         TEXT NOT NULL CHECK (outcome IN ('picked', 'none', 'missed', 'refused', 'failed', 'not run')),
+            started_at      TEXT NOT NULL,
+            ended_at        TEXT NOT NULL,
+            screened        INTEGER NOT NULL,
+            kept            INTEGER NOT NULL,
+            asks            INTEGER NOT NULL,
+            asks_failed     INTEGER NOT NULL,
+            detail          TEXT NOT NULL,
+            index_code      TEXT,
+            standing        TEXT CHECK (standing IN ('running', 'replaced', 'paper'))
+        ) STRICT;
+
+        INSERT INTO judge_run_rebuilt (run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail)
+        SELECT run_id, session_date, fact_version, pin_id, seed, outcome, started_at, ended_at, screened, kept, asks, asks_failed, detail FROM judge_run;
+
+        DROP TABLE judge_run;
+
+        ALTER TABLE judge_run_rebuilt RENAME TO judge_run;
+
+        CREATE INDEX judge_run_session ON judge_run (session_date);
+
+        CREATE TABLE judge_pick_rebuilt (
+            session_date      TEXT NOT NULL,
+            rank              INTEGER NOT NULL,
+            run_id            TEXT NOT NULL,
+            index_code        TEXT NOT NULL,
+            ticker            TEXT NOT NULL,
+            hold              TEXT NOT NULL,
+            take_profit       TEXT NOT NULL,
+            reason            TEXT NOT NULL,
+            last_close        TEXT NOT NULL,
+            typical_move      REAL NOT NULL,
+            stop              TEXT NOT NULL,
+            target            TEXT NOT NULL,
+            give_up_distance  TEXT,
+            fields            TEXT,
+            in_quarter        INTEGER NOT NULL DEFAULT 1 CHECK (in_quarter IN (0, 1)),
+            PRIMARY KEY (run_id, rank)
+        ) STRICT;
+
+        INSERT INTO judge_pick_rebuilt (session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance, fields)
+        SELECT session_date, rank, run_id, index_code, ticker, hold, take_profit, reason, last_close, typical_move, stop, target, give_up_distance, fields FROM judge_pick;
+
+        DROP TABLE judge_pick;
+
+        ALTER TABLE judge_pick_rebuilt RENAME TO judge_pick;
+    ";
 
     // The operator's presses on the case for promotion, Promote, Keep or Undo, each a row the read surface inserts and never
     // edits; and the night's answer to each, the swap it wrote at its start or why it wrote none, with the records each account

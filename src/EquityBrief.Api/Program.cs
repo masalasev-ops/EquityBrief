@@ -3174,7 +3174,7 @@ async Task<IResult> HomeAsync(
         StillWaiting = paper.StillWaiting,
         LeftOrders = paper.Groups?.LeftOrders ?? [],
         Revisions = RevisionTags.Of(paper.Views),
-        Judge = copying ? null : await JudgeViewAsync(read, store, withRules: false, drawnNight: pastNight is null ? null : dated),
+        Judge = copying ? null : await JudgeViewAsync(read, store, reading, withRules: false, drawnNight: pastNight is null ? null : dated),
         Newest = pastNight,
         Held = copying ? [] : await read.NightsAsync(),
         Since = since,
@@ -3230,8 +3230,10 @@ static IReadOnlyList<FamilyCardView> WithRecords(IReadOnlyList<FamilyCardView> c
 // standing tonight.
 // The AI stock picker's page as the store holds it: its rows, every member's sessions from its first night, each index's live
 // rules' accounts and their trades, the three funds and the account the operator saved or the example one; Home's line reads
-// it without the rules' accounts, which it does not draw.
-async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLocation store, bool withRules = true, DateOnly? drawnNight = null)
+// it without the rules' accounts, which it does not draw. From 24.24 worked for one index: its members, its live rules and
+// its fund alone.
+// see: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
+async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLocation store, UniverseChoice within, bool withRules = true, DateOnly? drawnNight = null)
 {
     var settings = (copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) ?? EquityBrief.Core.Cards.AccountSettings.Example;
     var runs = await read.JudgeRunsAsync();
@@ -3247,7 +3249,7 @@ async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLoca
     var ruleTrades = new List<(string, DateOnly, double?)>();
     var funds = new List<Func<DateOnly, decimal?>>();
 
-    foreach (var universe in new[] { Universes.Large, Universes.Mid, Universes.Small })
+    foreach (var universe in new[] { within })
     {
         if (withRules && nights.Length > 0 && newest is { } night)
         {
@@ -3272,7 +3274,7 @@ async Task<EquityBrief.Web.App.JudgeView> JudgeViewAsync(ReadApi read, StoreLoca
     decimal? RoundTrip(string ticker, DateOnly night, decimal buy) =>
         costs.TryGetValue((ticker, night), out var percent) ? EquityBrief.Core.Cards.PaperAccount.RoundTripOf(buy, null, null, null, percent, true, null) : null;
 
-    return JudgeScreen.Build(runs, picks, bars, typicals, members, rules, ruleTrades, funds, settings, RoundTrip, drawnNight: drawnNight);
+    return JudgeScreen.Build(within.Code, runs, picks, bars, typicals, members, rules, ruleTrades, funds, settings, RoundTrip, drawnNight: drawnNight);
 }
 
 async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice reading, DateOnly night, EquityBrief.Core.Cards.AccountSettings? settings)
@@ -3893,10 +3895,16 @@ app.MapGet("/screens/history", async (ReadApi read, SinglePageApp page) =>
     Results.Content(page.HistoryRegion(await read.DataCheckAsync(), await read.LongMembershipAsync(), await read.LongPricesAsync(), await read.LongYearsAsync(), await read.NewsMoodAsync(), await read.SessionCoverageAsync()), "text/html; charset=utf-8"));
 
 // From 24.6 the AI stock picker's page: its four accounts worked when the page is read, the scoreboard of its live record, the
-// newest night's cards, where it looked against the rules' picks, and a replayed record apart.
+// newest night's cards, where it looked against the rules' picks, and a replayed record apart; from 24.24 for the index
+// the page is read for under Universe.
 // see: The AI stock picker's picks set none of Tonight's buys before the monthly run of 2027-02-06, and nothing else of the picker waits for that run
-app.MapGet("/screens/judge", async (ReadApi read, SinglePageApp page, StoreLocation store) =>
-    Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store)), "text/html; charset=utf-8"));
+app.MapGet("/screens/judge", async (HttpRequest request, ReadApi read, SinglePageApp page, StoreLocation store) =>
+{
+    var within = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
+    var selector = await read.NewestNightAsync() is { } counted ? Cards.Universe(within, await read.MembersByIndexAsync(counted), SinglePageApp.JudgeRoute) : string.Empty;
+
+    return Results.Content(page.JudgeRegion(await JudgeViewAsync(read, store, within), selector), "text/html; charset=utf-8");
+});
 
 // From 24.17 the case for promotion under the Improvement loop: every running revision on each index against its variants over
 // the same nights, from Paper trading's accounts walked as its page walks them, each book's own exit beside it, and a case for

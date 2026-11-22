@@ -21450,3 +21450,79 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the 24.19 correction, open; migration 159 applied to the operator's store by the merge; after a promotion every
             other variant of the setup counts from the new revision's first session, as a variant of the running revision
             does.
+
+### 24.24 - the AI stock picker picks within each index: marks on each stock, the best quarter at most 5, a fixed 5, an account an index   2026-11-22
+
+Queue:      done, 24.0 to 24.23, 24.19 done, its correction open; in progress, 24.24 with a 24.4 correction in one pull
+            request; next, 24.25, the picker's page from the approved mockup.
+Ruled:      the operator's amendment of 2026-11-22, its correction and their answers of that day, word for word as Appendix
+            Z of the plan's file. One new decision.
+Built:      the picker runs once for each index on that index's members alone, the S&P 500 first, each figure of a member's
+            facts placed in the tenth it stands in among that index's members, stored with the fields under "tenths". Round
+            one marks every member the model rates worth buying, 50 rows a question, a label marked twice read once. Round two
+            shows the marked members' sheets at most 16 a question, each ranking its best until one ranks the night's, the
+            best quarter of the marked rounded up and at most 5, a ranking longer than asked keeping its first; "a fixed 5"
+            takes the first 5 of the same ranking and asks nothing of its own. A night with none marked picks none. Each
+            index's naming test runs on its own members, `judge-naming --index`, and an index without a passed test of its own
+            is refused alone. The night's versions run each index's running one first, then the one it replaced, then the
+            rest in the order made, one past the running one only before 04:05 UTC, else written not run. Each index's picks
+            are one write and the night one run log row. The picker's page is read for the index chosen under Universe: its
+            version's account against that index's rules, random picks from its members and its fund; Tonight's line of the
+            night's marks; a fixed 5 in a region of its own; a pick past the cash "Not bought: no cash", its result still in
+            the record; and the version before 24.24, which picked across the three indices, drawn apart on each. Migration
+            160 rebuilds judge_fact, judge_run and judge_pick with their rows copied across. Sections 14, 15.26, 17, 18 and 20,
+            the catalogue and stores rows, SCHEMA, the runbook, the guide and the changelog.
+Measured:   on the C: copy of the store, migrated to 160, under the pinned Gemma 4 at 250 W: the naming test of each index's
+            members on the night of 2026-11-19 named 0 of 100 in rows and in sheets on the S&P 500, 400 and 600. Replayed
+            nights showed round two at 32 sheets a question, with the schema's lists of counts and of field names, broken by
+            the model on every index, answers cut off and the runtime refusing its own format; at 16 sheets, the facts named
+            as plain strings and the answer's budget at 2,048, the nights of 2026-10-14 and 2026-10-15 picked 5 on each index
+            with no question failing twice. A night took 8 min 32 s and 8 min 14 s for the three, each index 2 to 4 minutes,
+            23 to 28 questions on the S&P 500, the card at most 61 C. One version a night, no version kept on paper yet; the
+            most the night can hold is from the picker's start after the night, about 00:30 UTC, to the off-peak run's first
+            slot at 04:05 UTC, about three and a half hours, so the three runs end before it and nothing moves.
+Tests:      13 new: the quarter and the cap worked by hand on both sides of each bound and none marked picking none; an
+            index of 12 marked picking 3 and a fixed 5 taking 5 with no question of its own and the night's row naming each
+            index; an index of 30 marking none; 40 marked ranked by three questions and their best; a short night's order and
+            a paper version written not run; each index's naming test on its own members; a constructed index's figures and a
+            read night's placed among their own index; a label marked twice and a ranking longer than asked; the picker asking
+            the local model alone; no source a rule pins among those 24.24 writes; the page within each index worked by hand;
+            and the earlier prompt versions' move each as its own case.
+Claims:     1701, six of the plan's four: section 17's row, section 18's row and the page's four, where the plan counted the
+            accounts' row and the count of picks as one.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: one guard or bound of each property 24.24 adds taken out in turn. m1 the quarter
+            rounded down: red; m2 the cap of 5 taken out: red; m3 every member placed among the three indices together: red in
+            both placing tests; m4 the no-cash line never drawn: red; m5 a fixed 5 given a question of its own: red; m6 the
+            order without standing: red; m7 a paper version always started: red; m8 the naming test read across the indices:
+            red in two tests; m9 the picker given the paid feed: red; m10 a pinned source among 24.24's: red; m11 a ranking
+            longer than asked refused: red. Each filtered to its tests and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3945 of 3945 tests ran with none failed, migrations 0 to 160 with none
+            pending, schema version 160, against `data-ci` and never `data`; the phase report 68 tables, 1701 claims, 1701
+            passing, none out of scope and none unexamined, 1716 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open; migration 160 applied to the operator's store by the merge; each index's naming test
+            run on the operator's store before the first night picks within each index.
+
+### 24.4 - correction: a picker pin's model file read at the whole second the pin stores   2026-11-22
+
+Queue:      done, 24.0 to 24.23, 24.19 done, its correction open; in progress, 24.24 with this correction in one pull
+            request; next, 24.25.
+Corrects:   a picker pin stores its model file's modified instant to the whole second and the picker compared it with the
+            file's full instant, so every run after the one that wrote the pin was refused, "the model's file is not picker pin
+            1's", and the night of 2026-11-23 would have picked nothing. Found replaying a night on the copy.
+Built:      the file's instant read at the whole second the pin holds.
+Tests:      1 new: a first run writing its pin at the whole second from a file modified at a fraction of one, and a second
+            run under that pin asking and picking.
+Claims:     1701, none new.
+Pins:       none moved.
+Mutated:    the rule: the guard the correction adds is the second's reading, so the exact comparison is put back. m1 the
+            file's full instant compared: red, refused naming the file. Filtered to its test and reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3945 of 3945 tests ran with none failed, migrations 0 to 160 with none
+            pending, schema version 160, against `data-ci` and never `data`; the phase report 68 tables, 1701 claims, 1701
+            passing, none out of scope and none unexamined, 1716 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open.

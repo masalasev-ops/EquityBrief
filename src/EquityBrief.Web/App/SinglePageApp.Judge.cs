@@ -30,7 +30,11 @@ public sealed record JudgeHeld(DateOnly Bought, decimal Paid, decimal? Stop, dec
 
 // From the 24.14 correction of 2026-11-21 an earlier judge version as its page draws it apart from the record: its number in
 // the order the versions first ran, its first and last nights, its picks' cards, its own account's scoreboard and its line.
-public sealed record JudgeVersionView(int Number, DateOnly First, DateOnly Last, IReadOnlyList<JudgeCardView> Picks, JudgeScoreboard Score, IReadOnlyList<(DateOnly Session, decimal Value)> Values);
+public sealed record JudgeVersionView(int Number, DateOnly First, DateOnly Last, IReadOnlyList<JudgeCardView> Picks, JudgeScoreboard Score, IReadOnlyList<(DateOnly Session, decimal Value)> Values)
+{
+    // From 24.24 the variant of its version it is, "a fixed 5", none where it is a version's own account.
+    public string? Variant { get; init; }
+}
 
 // One fact of a pick's sheet as its card draws it: its words, its value as the judge was shown it, and a plain comparison
 // where its value's sign says one.
@@ -102,6 +106,14 @@ public sealed record JudgeView(
     public int? RecordNumber { get; init; }
 
     public JudgeVersionView? PicksFrom { get; init; }
+
+    // From 24.24 the index the page is worked for, the count of that index's stocks the newest night marked worth buying,
+    // none before the picker picked within each index, and the record's variant "a fixed 5" in an account of its own.
+    public string Index { get; init; } = "GSPC";
+
+    public int? Marked { get; init; }
+
+    public JudgeVersionView? FixedFive { get; init; }
 }
 
 // The AI stock picker's page: the four accounts' chart, the scoreboard of its live record, each pick's card in the words of the rule
@@ -117,7 +129,13 @@ public sealed partial class SinglePageApp
     public const string JudgeOldRoute = "#/judge";
 
     public const string JudgeLede =
-        "Each night, straight after the night run finishes, your local model reads a short set of facts about every one of the 1,500 stocks, with names, tickers and dates removed, and picks up to 5. It chooses how long to hold and how to sell from a fixed menu; code sets every price. Its picks are never the rules' buys. They trade only in this account, so we can see whether it beats the rules and beats random picks.";
+        "Each night, straight after the night run finishes, your local model reads a short set of facts about every stock of each index in turn, with names, tickers and dates removed and each figure placed among that index's stocks. It marks every stock it rates worth buying and picks the best quarter of them, at most 5 in each index. It chooses how long to hold and how to sell from a fixed menu; code sets every price. Its picks are never the rules' buys. They trade only in each index's own account, so we can see whether it beats that index's rules and random picks from that index.";
+
+    // From 24.24 what the record's variant is.
+    public const string FixedFiveLine = "A fixed 5 takes the first 5 its version ranked each night, where the version takes the best quarter of the stocks it marked. It asks the model nothing of its own, and its picks trade in an account of their own, kept apart from the record.";
+
+    // From 24.24 a pick its account had no cash for.
+    public const string NoCashLine = "Not bought: no cash. Its result is still recorded in the record.";
 
     public const string JudgeBuysAtTheOpen = "Buys at the next open, at whatever price it opens.";
 
@@ -127,17 +145,25 @@ public sealed partial class SinglePageApp
 
     public static IReadOnlyList<string> JudgeLineNames { get; } = ["AI stock picker", "The rules (every live rule's trades)", "Random picks: the middle of 1,000 random accounts", "Just holding the index"];
 
-    public string JudgeRegion(JudgeView view)
+    public string JudgeRegion(JudgeView view, string selector = "")
     {
         var region = new StringBuilder();
 
-        region.Append("<section class=\"judge\">");
-        region.Append(Cards.Masthead("AI stock picker", "<span class=\"m-screen\">AI stock picker</span>", view.Night is { } night ? "Computed for " + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "Not run yet"));
+        var chosen = Universes.ByCode(view.Index) ?? Universes.Large;
+
+        region.Append(CultureInfo.InvariantCulture, $"<section class=\"judge\" data-index=\"{Escaped(view.Index)}\">");
+        region.Append(Cards.Masthead("AI stock picker: " + chosen.Titled, $"<span class=\"m-screen\">AI stock picker: {Escaped(chosen.Titled)}</span>", view.Night is { } night ? "Computed for " + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "Not run yet"));
+        region.Append(selector);
         region.Append(Cards.Computed("AI stock picker", $"<p data-summary>{Escaped(JudgeLede)}</p>{RunLine(view)}{CountedFromLine(view)}", title: "Your local AI picks its own stocks, in its own paper account", region: "judge-lede"));
         region.Append(Cards.Computed("Scoreboard", EmptyRecord(view) ?? Scoreboard(view), title: "How its live record stands", region: "judge-score"));
         region.Append(Cards.Computed("Four accounts", (EmptyRecord(view) ?? $"<p data-summary>The picker's account beside the rules', random picks' and the index's, each from {(view.RecordNumber is { } number ? $"version {number}'s" : "the picker's")} first night.</p>" + JudgeChart(view.Lines, view.Band, "The four accounts' returns since the picker started")) + ApartCharts(view), title: "Four accounts, same money, same sizing, same costs", lede: Escaped(JudgeReplayedLine), region: "judge-chart"));
-        region.Append(Cards.Computed("Tonight", $"<p data-summary>{(view.Picks.Count == 0 ? "The AI stock picker chose no stock tonight." : $"The AI stock picker chose {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} tonight, best first.")}</p>" + PickCards(view.Picks, view.Score, null), title: $"The AI stock picker's picks tonight ({view.Picks.Count})", lede: "Each card shows what the AI saw, why it picked the stock, and the plan code set for it. Each buys at the next open, at whatever price it opens; nobody knows that price beforehand.", region: "judge-picks"));
+        region.Append(Cards.Computed("Tonight", $"<p data-summary>{TonightWords(view, chosen)}</p>" + PickCards(view.Picks, view.Score, null), title: $"The AI stock picker's picks tonight on the {Escaped(chosen.Name)} ({view.Picks.Count})", lede: "Each card shows what the AI saw, why it picked the stock, and the plan code set for it. Each buys at the next open, at whatever price it opens; nobody knows that price beforehand. A pick the account has no cash for is shown as not bought, and its result is still recorded.", region: "judge-picks"));
         region.Append(Cards.Computed("Where the AI looked", LookedSummary(view) + Looked(view), title: "How its picks compare with the rules', since it started", region: "judge-looked"));
+
+        if (view.FixedFive is { } five)
+        {
+            region.Append(Cards.Computed(VersionWords(five), $"<p class=\"judge-version\" data-version=\"fixed-five\" data-summary>{Escaped(FixedFiveLine)} {Escaped(VersionSummaryWords(five, view.RecordNumber))}</p>" + JudgeChart([new JudgeLineView(VersionWords(five) + ", its own account", five.Values)], [], VersionWords(five) + "'s own account") + PickCards(five.Picks, five.Score, five), title: VersionWords(five) + ": its own account, apart from the record", region: "judge-fixed-five"));
+        }
 
         foreach (var earlier in view.Earlier)
         {
@@ -180,9 +206,18 @@ public sealed partial class SinglePageApp
         + from.ToString("d MMM yyyy", CultureInfo.InvariantCulture)
         + ". Each earlier version's picks are bought and walked to their exits in an account of their own, drawn apart under its number and never added to the record.";
 
-    // An earlier version's name: its number and the nights it picked on.
+    // From 24.24 what Tonight's card says of the night: each index's count of marks and its best quarter, or before then the
+    // count it chose.
+    public static string TonightWords(JudgeView view, UniverseChoice chosen) =>
+        view.Marked is { } marked ? JudgeNight.MarkedWords(chosen.Name, marked, view.Picks.Count)
+        : view.Picks.Count == 0 ? "The AI stock picker chose no stock tonight."
+        : string.Create(CultureInfo.InvariantCulture, $"The AI stock picker chose {view.Picks.Count} stock{(view.Picks.Count == 1 ? string.Empty : "s")} tonight, best first.");
+
+    // An earlier version's name: its number and the nights it picked on; from 24.24 a variant's, as its version's variant.
     public static string VersionWords(JudgeVersionView version) =>
-        string.Create(CultureInfo.InvariantCulture, $"Version {version.Number}, picked ")
+        (version.Variant is { } variant
+            ? string.Create(CultureInfo.InvariantCulture, $"{char.ToUpperInvariant(variant[0])}{variant[1..]}, version {version.Number}'s variant, picked ")
+            : string.Create(CultureInfo.InvariantCulture, $"Version {version.Number}, picked "))
         + version.First.ToString("d MMM", CultureInfo.InvariantCulture)
         + (version.Last > version.First ? " to " + version.Last.ToString("d MMM", CultureInfo.InvariantCulture) : string.Empty);
 
@@ -287,6 +322,10 @@ public sealed partial class SinglePageApp
             {
                 html.Append($"<p class=\"judge-since\" data-since>{Escaped(HeldWords(pick, version))}</p>");
             }
+            else if (pick.Held is { Skipped: Core.Cards.PaperAccount.UnderTheCash })
+            {
+                html.Append($"<p class=\"judge-since\" data-cash>{Escaped(NoCashLine)}</p>");
+            }
 
             html.Append("<p class=\"facts-h\">Why the AI picked it, in its words</p>");
             html.Append($"<p class=\"ai-quote\">\"{Escaped(pick.Reason)}\"<small>Its sentence, as the local model wrote it.</small></p>");
@@ -342,6 +381,7 @@ public sealed partial class SinglePageApp
         return pick.Held switch
         {
             null => $"Buys at the next open after its night in {account}.",
+            { Skipped: Core.Cards.PaperAccount.UnderTheCash } => $"Not bought: no cash, in {account}. Its result is still recorded.",
             { Skipped: { } why } => $"Not bought in {account}: {why}.",
             { Ended: { } ended, Sold: { } sold } held => $"Bought on {Day(held.Bought)} at ${Figures.Price(held.Paid)} and sold on {Day(ended)} at ${Figures.Price(sold)}"
                 + (held.Result is { } made ? $", {(made < 0 ? "losing" : "making")} {Dollars(Math.Abs(made))} per $1 risked" : string.Empty) + $", in {account}.",

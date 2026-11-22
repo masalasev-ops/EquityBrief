@@ -11,6 +11,11 @@ public sealed record JudgeRunRow(string RunId, DateOnly Session, string Outcome,
 {
     // The prompt version of the pin it ran under, none where it ran under no pin.
     public string? Version { get; init; }
+
+    // From 24.24 the index it ran for, none on a run across the three indices before then, and where its version stood there.
+    public string? Index { get; init; }
+
+    public string? Standing { get; init; }
 }
 
 // One of the AI stock picker's picks as its page reads it: the night, its rank, the member, the hold and take-profit it chose, its
@@ -41,6 +46,14 @@ public sealed record JudgePickRow(
     public string? Version { get; init; }
 
     public IReadOnlyDictionary<string, string> Sheet { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    // From 24.24 the index its run was for, none on a run across the three indices, and whether it is in the best quarter its
+    // version takes, "a fixed 5" taking every pick its run ranked.
+    public string? RunIndex { get; init; }
+
+    public bool InQuarter { get; init; } = true;
+
+    public string RunId { get; init; } = string.Empty;
 }
 
 // The AI stock picker's page reads its runs, its picks and the members' sessions from its first night, all from the store opened
@@ -53,27 +66,30 @@ public sealed partial class ReadApi
 
     const string JudgeRuns = @"
         SELECT run_id, session_date, outcome, detail, screened, kept,
-               (SELECT n.prompt_version FROM judge_pin n WHERE n.id = judge_run.pin_id)
+               (SELECT n.prompt_version FROM judge_pin n WHERE n.id = judge_run.pin_id), index_code, standing
         FROM judge_run ORDER BY session_date DESC, ended_at DESC;";
 
+    // Each pick with its sector, size and sheet read from the facts its run read, under its run's field list's version.
     const string JudgePicks = @"
         SELECT p.session_date, p.rank, p.index_code, p.ticker, p.hold, p.take_profit, p.reason, p.last_close, p.typical_move,
                p.stop, p.target, p.give_up_distance,
                COALESCE((SELECT l.name FROM listed_name l WHERE l.ticker = p.ticker),
                         (SELECT m.name FROM membership m WHERE m.ticker = p.ticker AND m.name IS NOT NULL ORDER BY m.joined DESC LIMIT 1)),
-               (SELECT json_extract(f.fields, '$.sector') FROM judge_fact f WHERE f.ticker = p.ticker AND f.session_date = p.session_date),
-               (SELECT json_extract(f.fields, '$.size') FROM judge_fact f WHERE f.ticker = p.ticker AND f.session_date = p.session_date),
-               p.run_id, p.fields,
-               (SELECT n.prompt_version FROM judge_run r JOIN judge_pin n ON n.id = r.pin_id WHERE r.run_id = p.run_id),
-               (SELECT f.fields FROM judge_fact f JOIN judge_run r ON r.run_id = p.run_id
-                WHERE f.ticker = p.ticker AND f.session_date = p.session_date AND f.version = r.fact_version)
-        FROM judge_pick p ORDER BY p.session_date DESC, p.rank;";
+               json_extract(f.fields, '$.sector'),
+               json_extract(f.fields, '$.size'),
+               p.run_id, p.fields, n.prompt_version, f.fields, r.index_code, p.in_quarter
+        FROM judge_pick p
+        LEFT JOIN judge_run r ON r.run_id = p.run_id
+        LEFT JOIN judge_pin n ON n.id = r.pin_id
+        LEFT JOIN judge_fact f ON f.ticker = p.ticker AND f.session_date = p.session_date AND f.version = r.fact_version AND f.index_code = p.index_code
+        ORDER BY p.session_date DESC, p.run_id, p.rank;";
 
     const string JudgeBarsFrom = "SELECT ticker, session_date, open, close FROM bar WHERE session_date >= $from ORDER BY ticker, session_date;";
 
     const string JudgeTypicals = "SELECT ticker, session_date, value FROM indicator WHERE name = $name AND session_date IN (SELECT value FROM json_each($nights));";
 
-    const string JudgeMembers = "SELECT session_date, ticker FROM judge_fact WHERE session_date IN (SELECT value FROM json_each($nights)) ORDER BY session_date, ticker;";
+    // From 24.24 each member with its index, every field list's rows counted once.
+    const string JudgeMembers = "SELECT DISTINCT session_date, index_code, ticker FROM judge_fact WHERE session_date IN (SELECT value FROM json_each($nights)) ORDER BY session_date, ticker;";
 
     const string JudgeCosts = "SELECT ticker, session_date, cost FROM member_reading WHERE cost IS NOT NULL AND session_date IN (SELECT value FROM json_each($nights));";
 
@@ -140,6 +156,8 @@ public sealed partial class ReadApi
             rows.Add(new JudgeRunRow(run, Day(reader.GetString(1)), reader.GetString(2), reader.GetString(3), reader.GetInt32(4), reader.GetInt32(5), run.StartsWith(JudgeReplayPrefix, StringComparison.Ordinal))
             {
                 Version = reader.IsDBNull(6) ? null : reader.GetString(6),
+                Index = reader.IsDBNull(7) ? null : reader.GetString(7),
+                Standing = reader.IsDBNull(8) ? null : reader.GetString(8),
             });
         }
 
@@ -180,6 +198,9 @@ public sealed partial class ReadApi
                 Named = reader.IsDBNull(16) ? null : reader.GetString(16).Split(',', StringSplitOptions.RemoveEmptyEntries),
                 Version = reader.IsDBNull(17) ? null : reader.GetString(17),
                 Sheet = reader.IsDBNull(18) ? new Dictionary<string, string>(StringComparer.Ordinal) : SheetOf(reader.GetString(18)),
+                RunId = reader.GetString(15),
+                RunIndex = reader.IsDBNull(19) ? null : reader.GetString(19),
+                InQuarter = reader.GetInt64(20) == 1,
             });
         }
 
@@ -258,10 +279,11 @@ public sealed partial class ReadApi
         return moves;
     }
 
-    // The members the judge's facts were written for on each night named, the members a random pick is drawn from.
-    public async Task<IReadOnlyDictionary<DateOnly, IReadOnlyList<string>>> JudgeMembersAsync(IReadOnlyList<DateOnly> nights)
+    // The members the picker's facts were written for on each night named, from 24.24 each with its index, the members a random
+    // pick is drawn from.
+    public async Task<IReadOnlyDictionary<DateOnly, IReadOnlyList<(string Index, string Ticker)>>> JudgeMembersAsync(IReadOnlyList<DateOnly> nights)
     {
-        var members = new Dictionary<DateOnly, List<string>>();
+        var members = new Dictionary<DateOnly, List<(string, string)>>();
 
         await using var connection = Open();
         await using var command = connection.CreateCommand();
@@ -280,9 +302,9 @@ public sealed partial class ReadApi
                 members[night] = held = [];
             }
 
-            held.Add(reader.GetString(1));
+            held.Add((reader.GetString(1), reader.GetString(2)));
         }
 
-        return members.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)pair.Value);
+        return members.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<(string, string)>)pair.Value);
     }
 }

@@ -1509,8 +1509,9 @@ public partial class ArchitectureConformance
         // judge's page on an empty record. 319 at 24.14: the facts the judge named and a pick made before it named them. 321 at
         // 24.15: Home's past nights and each card's line on what has happened since. 322 at the 24.14 correction of 2026-11-21:
         // an earlier judge version's picks in an account of their own. 325 at 24.17: the case for promotion's three regions. 326
-        // with the History page's every member on every session.
-        Assert.Equal(326, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // with the History page's every member on every session. 330 at 24.24: the picker's page within one index, the night's
+        // marks, a fixed 5 and a pick past the cash.
+        Assert.Equal(330, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1701,8 +1702,9 @@ public partial class ArchitectureConformance
         // on an empty record. 721 at 24.14: the facts the judge named and a pick made before it named them. 723 at 24.15: Home's
         // past nights and each card's line on what has happened since. 724 at the 24.14 correction of 2026-11-21: an earlier
         // judge version's picks in an account of their own. 727 at 24.17: the case for promotion's three regions. 728 with the
-        // History page's every member on every session.
-        Assert.Equal(728, inDocument.Length);
+        // History page's every member on every session. 732 at 24.24: the picker's page within one index, the night's marks,
+        // a fixed 5 and a pick past the cash.
+        Assert.Equal(732, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

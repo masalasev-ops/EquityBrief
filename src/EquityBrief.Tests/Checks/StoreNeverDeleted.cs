@@ -303,13 +303,15 @@ public class StoreNeverDeleted
         var migrations = File.ReadAllText(shipped.Single(file => Path.GetFileName(file) == "SchemaMigrations.cs"));
         var dropped = Regex.Matches(migrations, @"DROP TABLE\s+(?:IF EXISTS\s+)?(\w+)").Select(match => match.Groups[1].Value).ToArray();
 
-        // Twelve, each a rebuild SQLite forces where a constraint a table was created with has to change, the loop's models
+        // Fifteen, each a rebuild SQLite forces where a constraint a table was created with has to change, the loop's models
         // from 17.15 gaining their kind in their primary key, from the 20.3 correction of 2026-10-22 the results releases
         // and their readings gaining the exhibit in theirs, from the 22.11 ruling the pulled bars and prints gaining the
         // pull in theirs, from 21.16 the two books' holdings gaining the sale under the 200-day average among their
-        // end reasons, from 23.1 the session marks gaining the session a history ends on among their kinds, and from the
-        // 23.10 correction of 2026-11-16 the same two books' holdings gaining a close under the stop and the take-profit.
-        Assert.Equal(["quality_holding", "improving_trade", "session_mark", "quality_holding", "improving_trade", "pulled_bar", "pulled_earnings", "release_document", "release_reading", "loop_model", "research_request", "membership"], dropped);
+        // end reasons, from 23.1 the session marks gaining the session a history ends on among their kinds, from the
+        // 23.10 correction of 2026-11-16 the same two books' holdings gaining a close under the stop and the take-profit,
+        // and from 24.24 the picker's facts gaining their field list's version in their key, its runs a night not run among
+        // their outcomes and its picks their run in theirs.
+        Assert.Equal(["judge_fact", "judge_run", "judge_pick", "quality_holding", "improving_trade", "session_mark", "quality_holding", "improving_trade", "pulled_bar", "pulled_earnings", "release_document", "release_reading", "loop_model", "research_request", "membership"], dropped);
 
         foreach (var table in dropped)
         {
