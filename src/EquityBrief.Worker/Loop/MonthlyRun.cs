@@ -101,6 +101,10 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
         Pooled,
         "report",
 
+        // Each case standing stored with its figures, before the long test so that test stays last.
+        // see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
+        PromotionCaseStore.Step,
+
         // From 23.7 the long test, last, so its failure holds nothing the report needs.
         // see: The monthly run's last step judges every registered rule over the long history from each family's own first test year, capped at three hours
         WalkForwardTester.LongStep,

@@ -3905,7 +3905,7 @@ app.MapGet("/screens/judge", async (ReadApi read, SinglePageApp page, StoreLocat
 app.MapGet("/screens/loop/case", async (ReadApi read, SinglePageApp page, StoreLocation store) =>
 {
     var night = await read.NewestNightAsync();
-    var rows = new List<PromotionRowView>();
+    var rows = new List<EquityBrief.Core.Loop.PromotionRowView>();
 
     if (night is { } on)
     {
@@ -3923,7 +3923,7 @@ app.MapGet("/screens/loop/case", async (ReadApi read, SinglePageApp page, StoreL
 
     var (tested, passed) = await read.IdeasTestedAsync();
 
-    return Results.Content(page.CaseRegion(new PromotionPageView(night, read.FrozenUntil(), rows, tested, passed)), "text/html; charset=utf-8");
+    return Results.Content(page.CaseRegion(new PromotionPageView(night, read.FrozenUntil(), rows, tested, passed, await read.CaseWordsAsync())), "text/html; charset=utf-8");
 });
 
 // A press of Promote or Keep on a case: refused inside the rule freeze, and until the swap's own checkpoint lands refused after

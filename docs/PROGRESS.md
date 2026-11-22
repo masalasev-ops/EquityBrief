@@ -21330,3 +21330,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1698 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the 24.19 correction, open; the rules' half for the monthly run of 2027-02-06.
+
+### 24.22 - the monthly run stores each case standing, and the local run writes their words   2026-11-22
+
+Queue:      done, 24.0 to 24.18, 24.19 done, its correction open, 24.20 and 24.21, merged as #749 and #748 on 2026-11-22;
+            in progress, 24.22; next, 24.23, the Promote swap rehearsed on a copy, with the 24.19 correction's report beside it.
+Built:      the case for promotion's rows and a variant's name worked in the core, the page reading them through it. The
+            monthly run's cases step, after the report and before the long test so that test stays last, works Paper
+            trading's accounts on each index as of the newest night through the core's one function and stores each case
+            standing in `promotion_case` with its figures as one object and their key, whether or not the page is read, the
+            long history's figures as the newest long test stored them. Each local run slot, after its releases, and the
+            worker's `case-words` by hand ask the local model under the pin for the case for and the case against of each
+            stored case whose figures hold no words, a schema holding the answer to no digit, and write them to
+            `promotion_case_words`; an answer holding a number, a ticker of the members or a company's name is asked once
+            more and then kept refused with its cause. A case's figures are asked once, so its words are asked again only
+            where a later run stores them changed, and the earlier words stay. The case page draws the newest words with the
+            day they were written and the model, code's counted part above the case against's, the earlier words beneath,
+            and code's sentences where none is kept. Migration 158 creates the two tables, each with one writer that inserts
+            alone. The two components' catalogue and matrix rows, the two stores' rows, section 18's row of an answer refused,
+            the monthly run's row, the runbook's paragraph, the guide and the changelog.
+Tests:      4 new: an answer read into its two arguments, and refused for a digit, a member's ticker and a company's name
+            shorn of its endings, each worked by hand; over a constructed store the words asked once under the pin, a refused
+            answer asked again, a second refusal kept with its cause, nothing asked on a run again, and a later month's
+            changed figures asked again with the earlier words kept; the cases step storing none where no variant meets the
+            rule, with its run's row, and a case's figures read back whole under the same key; the page drawing the stored
+            words with their day and model the same on two reads, and code's sentences where the answer was refused. The
+            monthly run's step order tests read the cases step before the long test.
+Claims:     1690, seven of the plan's six: the two writers' catalogue and matrix rows and the two stores' rows where the plan
+            counted one pair, and section 18's row of an answer refused.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the guard the checkpoint adds is that an answer holding a figure is refused, so
+            the reader's digit test is taken out. m1 a digit read as no cause: red, the reader's own test reading null for
+            "a number in its words" and the words' run asking 3 times where 4 were asked. Filtered to its tests and reverted
+            before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3926 of 3926 tests ran with none failed, migrations 0 to 158 with none
+            pending, schema version 158, against `data-ci` and never `data`; the phase report 68 tables, 1690 claims, 1690
+            passing, none out of scope and none unexamined, 1705 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open; the rules' half for the monthly run of 2027-02-06; migration 158 applied to the
+            operator's store by the merge.

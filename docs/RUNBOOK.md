@@ -1786,6 +1786,12 @@ dotnet run --project src/EquityBrief.Worker -- paper-figures --session 2026-11-2
 dotnet run --project src/EquityBrief.Worker -- paper-figures --session 2026-11-20 --index MID
 ```
 
+From 24.22 the monthly run's cases step, after the report and before the long test, works those accounts on each index as of the newest night and stores each case standing, a variant meeting the rule, with its figures in `promotion_case`, whether or not the case page is read; its words say how many stood on each index. Each local run slot then asks the local model for the case for and the case against of each stored case whose figures hold no words, under the pin, and writes them to `promotion_case_words`; an answer holding a number, a ticker or a company's name is asked once more and then kept refused with its cause, and the page draws code's sentences in its place. A case's figures are asked once, so its words are asked again only after a later monthly run stores them changed, and the earlier words stay under the case on the page. To ask by hand, the model loaded and no other local process holding the lock:
+
+```
+dotnet run --project src/EquityBrief.Worker -- case-words
+```
+
 Each night, after the cards, the follower follows every open taken trade over the stored closes under its rule's own management, replaces a provisional fill with its session's stored open, ends a trade at its stop, target, cap, its book's sale, your recorded exit or its last close as a member, and writes your record of each family on each index to `taken_record`; its row on the run page says how many it followed and ended. Past picks lists your trades for the chosen index under Your trades. A trade whose fill's session or card's night has no stored bar stays open until the bars arrive.
 
 ### What could hit a pick

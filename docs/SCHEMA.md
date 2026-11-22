@@ -110,6 +110,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `ledger_reading` | SetupLedger | SetupLedger | SetupLedger |
 | `session_reading` | SetupLedger | SetupLedger | none |
 | `session_reading_year` | SetupLedger | none | SetupLedger |
+| `promotion_case` | PromotionCaseStore | none | none |
+| `promotion_case_words` | CaseWords | none | none |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -2633,6 +2635,50 @@ Grain: one row per index and year of `session_reading`, from 24.19.
 Primary key: `index_code`, `year`.
 
 **Each index's years of every member's readings on every session, counted by the setup ledger, its own deleter: a count replaces the years it counts** (see: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then). A build counts every year of its index at its end, and each night's step the years its copy reaches into. Read by the History page alone, so it draws the coverage without counting the rows.
+
+### promotion_case
+Grain: one row per monthly run's month, index, setup and variant meeting the rule, from 24.22.
+
+| Column | Type | Notes |
+|---|---|---|
+| `month` | TEXT | the monthly run's month, `yyyy-MM` |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setup the variant runs beside |
+| `variant` | TEXT | the variant's account key |
+| `night` | TEXT | the newest night the case's figures were worked as of |
+| `figures` | TEXT | the case as the case for promotion reads it, its records over the same nights and over the long history, its three conditions and its picks, as one JSON object |
+| `figures_key` | TEXT | the first 32 hex characters of the SHA-256 of `figures`, which a case's words are kept under |
+| `stored_at` | TEXT | UTC instant of the store |
+| `run_id` | TEXT | the monthly run that stored it |
+
+Primary key: `month`, `index_code`, `family`, `variant`.
+
+**Each case standing at a monthly run, inserted by the monthly run's cases step alone and never updated or deleted** (see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words). The step works Paper trading's accounts on each index as of the newest night through the core's one function and stores each variant meeting the rule with its figures, whether or not the page is read, the long history's figures as the newest long test stored them; a month's case is stored once. Read by the local run's case words alone.
+
+### promotion_case_words
+Grain: one row per index, setup, variant and stored case's figures asked of the local model, from 24.22.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setup |
+| `variant` | TEXT | the variant's account key |
+| `figures_key` | TEXT | the stored case's figures the words were asked over |
+| `pin` | INTEGER | the reading pin the model was checked against |
+| `version` | TEXT | the instruction's version |
+| `outcome` | TEXT | `answered` or `refused` |
+| `cause` | TEXT | why the answer was refused, null when answered |
+| `for_words` | TEXT | the case for, null when refused |
+| `against_words` | TEXT | the case against, null when refused |
+| `answer` | TEXT | the answer as the model sent it, null where none came |
+| `model` | TEXT | the pin's model that wrote it |
+| `seconds` | REAL | the answer's seconds, a statistic |
+| `asked_at` | TEXT | UTC instant of the ask |
+| `run_id` | TEXT | the run that asked |
+
+Primary key: `index_code`, `family`, `variant`, `figures_key`.
+
+**The local model's case for and case against over each stored case's figures, inserted by the local run's case words alone and never updated or deleted** (see: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words). Asked once for each figures a monthly run stores, so words are asked again only where a later run stored a case's figures changed, and the earlier rows stay as the case's history; an answer holding a number, a ticker or a company's name is asked once more and then kept refused with its cause. Read by the case for promotion, which draws the newest answered words with their day and model and code's own sentences where none is answered.
 
 ### loop_run
 Grain: one row per tester run on an index.

@@ -531,7 +531,7 @@ public partial class ReadSurface
     // rule and one variant registered, the variant keeping T7 and T1, ended, T6, open through a split, and K1 off the night
     // the page list bought it; the live rule's own trade of B0 benchmarked at a quarter of a risk; and the newest per-rule
     // test reading the live rule passed against its benchmark over three test years and the variant within luck.
-    static async Task<TemporaryStore> PaperVariantsStore()
+    internal static async Task<TemporaryStore> PaperVariantsStore()
     {
         var store = await FamilyPagesStore();
 

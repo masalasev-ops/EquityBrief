@@ -120,6 +120,10 @@ public enum Store
     // Every member's readings on every session from 2005, and each index's years of them counted; no night reads either.
     SessionReading,
     SessionReadingYear,
+
+    // Each case standing at a monthly run with its figures, and the local model's words over each case's figures.
+    PromotionCase,
+    PromotionCaseWords,
     FilingDay,
     InsiderTrade,
     InsiderRead,
