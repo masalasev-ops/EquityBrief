@@ -129,6 +129,9 @@ public enum Store
     // carried.
     PromotionPress,
     PromotionSwap,
+
+    // Every idea ever tested, from any source, taking inserts alone.
+    Notebook,
     FilingDay,
     InsiderTrade,
     InsiderRead,

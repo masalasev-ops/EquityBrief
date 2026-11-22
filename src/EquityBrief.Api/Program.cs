@@ -4140,7 +4140,11 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     // see: Every price family's traded plan's buy and sell points are tested over the long history and one combination is recommended a family an index
     var longRead = await read.LongSearchAsync(reading.Code);
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered, read.FrozenUntil()), chips, choices, pooled, longRead, request.Query["strategy"].FirstOrDefault(), request.Query["part"].FirstOrDefault()), "text/html; charset=utf-8");
+    // The notebook beneath the page's own regions, its ideas on the index the page reads and the operator's own.
+    // see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from
+    var notebook = page.NotebookRegion(reading, await read.NotebookAsync(reading.Code));
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered, read.FrozenUntil()), chips, choices, pooled, longRead, request.Query["strategy"].FirstOrDefault(), request.Query["part"].FirstOrDefault()) + notebook, "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.

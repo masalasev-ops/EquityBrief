@@ -227,6 +227,13 @@ public partial class ArchitectureConformance
 
         // And the picker's page from its mockup: its four rows.
         .. Reading.ReadSurface.PickerPageRows,
+
+        // And the notebook, the grammar and the one tester: two components' catalogue and matrix rows, the notebook's store,
+        // section 17's row and the Loop page's row.
+        .. ComponentAccess.NotebookRows,
+        .. SchemaColumns.NotebookStoreRows,
+        .. FixtureExpectations.NotebookClaims,
+        .. Reading.ReadSurface.NotebookRows,
     ];
 
     // The rows the document loses after phase 22's report: from 23.10's second part section 14's step asking for the reported

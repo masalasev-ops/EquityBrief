@@ -114,6 +114,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `promotion_case_words` | CaseWords | none | none |
 | `promotion_press` | ReadApi | none | none |
 | `promotion_swap` | PromotionSwap | none | none |
+| `notebook` | IdeaTestRun, NotebookFill | none | none |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -2725,6 +2726,36 @@ Grain: one row per press the night answered, from 24.23.
 Primary key: `press_id`.
 
 **The night's answer to each press, inserted by the promotion swap alone at the start of the swing filter's step and never updated or deleted** (see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record). Its register writes go through the candidate registrar in one transaction, and the answer is written after them. Read by Paper reads, whose accounts read the carries of every swap applied by the night they show and not undone by then.
+
+### notebook
+Grain: one row per idea and test, from 24.26.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the row, in the order written |
+| `entered_at` | TEXT | UTC instant it was written |
+| `source` | TEXT | `the researcher`, `the monthly run`, `a search over the long history`, `a plan test`, `the operator`, `the idea box` or `the picker`, constrained in the table |
+| `source_key` | TEXT | the source row a fill read it from, unique; null for a line the tester wrote |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML`; null for an idea naming no index |
+| `family` | TEXT | the setup its event names; null for an idea naming none |
+| `words` | TEXT | the idea in plain words |
+| `line` | TEXT | its canonical grammar line; null where the grammar does not write it |
+| `built_on` | TEXT | what it was built on |
+| `early_picks` | INTEGER | its picks with a result over 2005 to 2018; null where its source read none |
+| `early_edge` | REAL | their mean edge after costs per $1 risked against the benchmark |
+| `late_picks` | INTEGER | its picks with a result from 2019 |
+| `late_edge` | REAL | their mean edge |
+| `blocks` | INTEGER | the blocks of 63 sessions its gate read |
+| `adjusted` | REAL | its adjusted p-value in its run's step-down; null under the floor of blocks |
+| `bar` | REAL | the bar its run was held to |
+| `verdict` | TEXT | `passed`, `near miss`, `failed` or `waiting`, constrained in the table |
+| `why` | TEXT | why, in words |
+| `tested_on` | TEXT | the newest session its test read; null for an idea waiting to be tested |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `id`.
+
+**Inserted by the one tester and by the notebook's fill alone, and never updated or deleted** (see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from). Its triggers refuse an update, a delete and an insert naming a row or a source row it holds, so an idea tested again is a row of its own. Read by the read surface for the Improvement loop page and by the tester, which refuses a line it holds.
 
 ### loop_run
 Grain: one row per tester run on an index.

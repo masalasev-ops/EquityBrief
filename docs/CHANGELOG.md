@@ -7,6 +7,18 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - the notebook, the grammar and the one tester, at 24.26
+Decision: An idea is one line of a closed grammar that code parses into one canonical line and tests with no build session
+Was:
+> ARCHITECTURE.html: no paragraph in section 13.12 on the grammar and the one tester; no catalogue or matrix rows "Idea test run" and "Notebook fill"; no store row "Notebook"; no row "The notebook" in section 15.20; no row "The idea grammar and the one tester" in section 17
+> SCHEMA.md: no `notebook` in the ownership summary and no table of it
+> RUNBOOK.md: no paragraph on the notebook and the one tester
+Now:
+> ARCHITECTURE.html: section 13.12's paragraph "From 24.26 an idea from any source is one line of a closed grammar, and one tester judges it ..."; the catalogue and matrix rows "Idea test run" and "Notebook fill"; the store row "Notebook"; section 15.20's row "The notebook"; and section 17's row "The idea grammar and the one tester"
+> SCHEMA.md: `notebook` inserted by IdeaTestRun and NotebookFill, its table, and that it takes inserts alone
+> RUNBOOK.md: "The notebook and the one tester, from 24.26." with `notebook-fill` and `idea-test`
+Why: the operator's second brief of phase 24 of 2026-11-16, items 7, 8 and 12, and their answer of 2026-11-22 that a band of tenths on one reading is one condition, kept word for word in `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`; also under the decision "Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from".
+
 ### 2026-11-22 - docs/ARCHITECTURE.html - the AI stock picker's page built from its approved mockup, at 24.25
 Decision: The AI stock picker picks within each index, the best quarter of the stocks it marks and at most 5
 Was:

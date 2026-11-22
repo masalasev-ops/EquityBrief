@@ -781,7 +781,59 @@ public static class SchemaMigrations
         new Migration(158, "create promotion_case and promotion_case_words", CreatePromotionCases),
         new Migration(159, "create promotion_press and promotion_swap", CreatePromotionSwaps),
         new Migration(160, "rebuild judge_fact, judge_run and judge_pick for the picker within each index", PickWithinEachIndex),
+        new Migration(161, "create notebook", CreateNotebook),
     ];
+
+    // The notebook: every idea ever tested, from any source, a row an idea, in plain words and as its grammar line where the
+    // grammar can write it, with what it was built on, its figures on the early and the later years, its verdict and why.
+    // Its triggers refuse an update and a delete, so what an idea came to stays as it was found; an idea tested again is a
+    // row of its own. A row filled from a store's own run carries that row's key, so a fill run twice writes nothing twice.
+    // see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from
+    const string CreateNotebook = @"
+        CREATE TABLE notebook (
+            id           INTEGER PRIMARY KEY,
+            entered_at   TEXT NOT NULL,
+            source       TEXT NOT NULL CHECK (source IN ('the researcher', 'the monthly run', 'a search over the long history', 'a plan test', 'the operator', 'the idea box', 'the picker')),
+            source_key   TEXT UNIQUE,
+            index_code   TEXT CHECK (index_code IS NULL OR index_code IN ('GSPC', 'MID', 'SML')),
+            family       TEXT,
+            words        TEXT NOT NULL,
+            line         TEXT,
+            built_on     TEXT,
+            early_picks  INTEGER,
+            early_edge   REAL,
+            late_picks   INTEGER,
+            late_edge    REAL,
+            blocks       INTEGER,
+            adjusted     REAL,
+            bar          REAL,
+            verdict      TEXT NOT NULL CHECK (verdict IN ('passed', 'near miss', 'failed', 'waiting')),
+            why          TEXT NOT NULL,
+            tested_on    TEXT,
+            run_id       TEXT NOT NULL
+        );
+
+        CREATE INDEX notebook_line ON notebook (line);
+
+        CREATE TRIGGER notebook_takes_inserts_alone_on_change
+        BEFORE UPDATE ON notebook
+        BEGIN
+            SELECT RAISE(ABORT, 'notebook takes inserts alone: an idea tested again is a row of its own.');
+        END;
+
+        CREATE TRIGGER notebook_takes_inserts_alone_on_removal
+        BEFORE DELETE ON notebook
+        BEGIN
+            SELECT RAISE(ABORT, 'notebook takes inserts alone: nothing is deleted from it.');
+        END;
+
+        CREATE TRIGGER notebook_takes_inserts_alone_on_replace
+        BEFORE INSERT ON notebook
+        WHEN EXISTS (SELECT 1 FROM notebook WHERE id = NEW.id OR (NEW.source_key IS NOT NULL AND source_key = NEW.source_key))
+        BEGIN
+            SELECT RAISE(ABORT, 'notebook takes inserts alone: a row it holds is never written over.');
+        END;
+    ";
 
     // From 24.24 the picker within each index. Its facts gain their field list's version in their key, so a night written
     // under a new list keeps the earlier list's rows for the picks made under it; its runs gain the index each ran for and

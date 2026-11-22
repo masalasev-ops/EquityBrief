@@ -21565,3 +21565,47 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             passing, none out of scope and none unexamined, 1720 placements and verdicts reconciled against a floor of 34, 57
             checks on the roster run and passed.
 Carried:    the 24.19 correction, open.
+
+### 24.26 - the notebook, the grammar and the one tester: every idea one line, judged one way, kept for good   2026-11-22
+
+Queue:      done, 24.0 to 24.25 and the 24.4 correction, 24.19 done, its correction open; in progress, 24.26; next, 24.27,
+            survivors run by themselves.
+Ruled:      the operator's second brief of phase 24 of 2026-11-16, items 7, 8 and 12, and their answer of 2026-11-22 that a
+            band of tenths on one reading is one condition, kept word for word in the plan's file. Two new decisions.
+Built:      the grammar: an event the code walks, the pullback, breakout, drift or dip on one index, every setup its loose gates
+            pass or its live setting's; at most three conditions, each a band of a catalogue reading's tenths; a buy, a stop,
+            a take-profit, a time limit and an optional cap a night with the reading that orders it, each from a closed list
+            the plan test already walks. A line is parsed in any order and spelling into one canonical line, and a line outside
+            the grammar is refused naming the part it could not read. The one tester, `idea-test`: each condition's cut points
+            read off its event's setups to 2018 alone, every pick walked through the plan test's own walk against its benchmark,
+            every line of a run judged together from 2019 in one step-down at 0.05 over 52, a line the notebook holds refused.
+            The notebook, migration 161, taking inserts alone, its triggers refusing an update, a delete and a replace;
+            `notebook-fill` filling it from every proposal, long search and plan test the store holds, nothing twice, and the
+            operator's two ideas of 2026-11-17 waiting for their shapes. The Improvement loop's page draws it for the index read,
+            newest first under the count of each verdict. Decisions, section 13.12's paragraph, the catalogue, matrix and
+            store rows, section 15.20's and section 17's rows, SCHEMA, the runbook, the guide and the changelog.
+Measured:   on the C: copy of the store migrated to 161: the fill wrote 952 ideas, 834 monthly proposals, 17 long searches,
+            99 plan tests and the operator's 2; two S&P 600 lines tested in one run, the whole run 69 seconds: the pullback only
+            where its month against its sector stands in its top five tenths, 1,535 setups, 415 bought, 16 with a result to 2018
+            and 395 from 2019, a near miss at 1 in 6 against the bar of 1 in 1,040; the breakout on heavy volume capped at 5 a
+            night by strength, 3,350 setups, 630 bought, failed on its early years. Nothing written on the operator's store.
+Tests:      7 new: a line parsed, two spellings one line and eleven lines refused naming their part, by hand; the cut points of
+            twenty early setups by hand and unmoved by later ones, and a night's cap; the step-down at 1 in 1,024 over the bar
+            and 1 in 2,048 under it, the floor of blocks and the figures' blocks by hand; the notebook refusing an update, a
+            delete and two replaces and its fill counted against its sources; the tester refusing before it walks; no pinned
+            source among those written; and the Loop page's notebook read back.
+Claims:     1712, seven of the plan's eight: the two components' catalogue and matrix rows, the notebook's store, section 17's
+            row and the Loop page's row, the tester's store landing as the notebook it writes.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: each guard 24.26 adds taken out at its one site. m1 the cut points read over every
+            year: red; m2 the canonical line keeping conditions as written: red; m3 two conditions on one reading accepted: red;
+            m4 the weekly bar replaced by the monthly tester's: red; m5 the notebook's update trigger taken out: red; m6 the fill
+            writing rows the notebook holds: red, refused by the replace trigger; m7 the tester walking a line the notebook
+            holds: red; m8 the notebook page reading every index's ideas: red. Each filtered to its test and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3954 of 3954 tests ran with none failed, migrations 0 to 161 with none
+            pending, schema version 161, against `data-ci` and never `data`; the phase report 69 tables, 1712 claims, 1712
+            passing, none out of scope and none unexamined, 1727 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the 24.19 correction, open; migration 161 and `notebook-fill` on the operator's store after the merge.

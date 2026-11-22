@@ -188,6 +188,9 @@ public class SchemaColumns
     // The operator's presses on the case for promotion and the night's answer to each.
     internal static string[] SwapStoreRows => [.. new[] { "Promotion presses", "Promotion swaps" }.Select(row => CheckReach.Key(Scope.StoresTable, row))];
 
+    // Every idea ever tested.
+    internal static string[] NotebookStoreRows => [CheckReach.Key(Scope.StoresTable, "Notebook")];
+
     // 24.3: the AI stock picker's facts and its naming tests.
     internal static string[] JudgeStoreRows =>
     [
@@ -341,6 +344,7 @@ public class SchemaColumns
             .. SessionReadingStoreRows,
             .. CaseStoreRows,
             .. SwapStoreRows,
+            .. NotebookStoreRows,
             .. JudgePickStoreRows,
             .. TickerJoinStoreRows,
             .. ChartCheckStoreRows,
