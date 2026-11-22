@@ -123,8 +123,61 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "fallback-facts" => await FallbackFactsVerb(args),
     "paper-figures" => await PaperFiguresVerb(args),
     "case-words" => await CaseWordsVerb(),
+    "notebook-fill" => await NotebookFillVerb(),
+    "idea-test" => await IdeaTestVerb(args),
     _ => NoVerb(),
 };
+
+// Fills the notebook with every idea the store holds a test of, and the operator's two waiting for their shapes; a fill run
+// again writes only what it has not.
+// see: Every idea from any source is tested by the one tester and kept in a notebook nothing is deleted from
+static async Task<int> NotebookFillVerb()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var runId = FormattableString.Invariant($"{EquityBrief.Worker.Loop.NotebookFill.Verb}-{clock.UtcNow.UtcDateTime:yyyyMMddTHHmmssZ}");
+
+    foreach (var count in await new EquityBrief.Worker.Loop.NotebookFill(clock, store.DatabaseFile).FillAsync(runId))
+    {
+        Console.Out.WriteLine(FormattableString.Invariant($"{EquityBrief.Worker.Loop.NotebookFill.Verb}: {count.Source}: {count.Held} held, {count.Before} in the notebook before, {count.Written} written"));
+    }
+
+    return 0;
+}
+
+// The one tester over the lines given with '--line' or one a line in the file named with '--file', every line of the run
+// judged together, each written to the notebook under the source named with '--source', the operator's by default.
+// see: An idea is one line of a closed grammar that code parses into one canonical line and tests with no build session
+static async Task<int> IdeaTestVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var lines = new List<string>();
+
+    for (var at = 0; at < args.Length - 1; at++)
+    {
+        if (args[at] == "--line")
+        {
+            lines.Add(args[at + 1]);
+        }
+    }
+
+    if (VerbArguments.Value(args, "--file") is { } file)
+    {
+        lines.AddRange(File.ReadAllLines(file).Where(line => line.Trim().Length > 0 && !line.TrimStart().StartsWith('#')));
+    }
+
+    if (lines.Count == 0)
+    {
+        Console.Error.WriteLine("idea-test: give each idea with '--line \"<grammar line>\"', or '--file <path>' holding one a line, and '--source' as 'the operator', 'the researcher', 'the idea box' or 'the picker'.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.IdeaTestRun(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(lines, VerbArguments.Value(args, "--source") ?? "the operator");
+}
 
 // Read-only: every paper account's figures on each index, or with '--index <code>' one, as of a stored night named with
 // '--session <yyyy-MM-dd>', worked by the function the page works them by, under the account settings the page reads.
@@ -1278,7 +1331,7 @@ static async Task<int> OutcomesAgainRun(string[] args)
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 94 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 96 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -1566,6 +1619,8 @@ static int NoVerb()
         "'fallback-facts --kept <folder>' fills the two fallback lines once for every member's filer, from the answers kept there or asked again of the SEC, " +
         "'paper-figures --session <yyyy-MM-dd>' prints every paper account's figures on each index as Paper trading draws them, or with '--index <code>' one, writing nothing, " +
         "'case-words' asks the local model for the case for and the case against of each case the newest monthly run stored that holds no words for its figures, as each local run slot does after its releases, " +
+        "'notebook-fill' writes to the notebook every idea the monthly runs, the searches over the long history and the tests of the buy and sell points tested and the operator's two waiting for their shapes, nothing twice, " +
+        "'idea-test --line <line>' or '--file <path>' tests each grammar line given over the long history, every line of the run judged together from 2019, and writes each to the notebook, '--source' naming who wrote it, " +
         "and 'outcomes-again --names <codes> --from <yyyy-MM-dd>' scores again the named stocks' outcomes decided on or " +
         "after a day, over the bars a ruled correction replaced. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +

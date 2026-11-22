@@ -976,6 +976,32 @@ public sealed class PlanPointTest(IClock clock, string databaseFile, string data
         await command.ExecuteNonQueryAsync(cancellation);
     }
 
+    // The walker over an index's long history and its own year, as this test builds it, and the newest session it reads,
+    // for another reader walking plans over the same setups.
+    public static async Task<(Walker Walker, DateOnly Through, IReadOnlyList<DateOnly> Calendar)> WalkerAsync(string databaseFile, string index, Action<string> progress, CancellationToken cancellation)
+    {
+        var history = new SweepHistory(databaseFile);
+        var through = await history.NewestSessionAsync(cancellation);
+        var longHistory = new LongHistoryReader(databaseFile);
+        var inputs = await longHistory.ReadAsync(index, through, progress, cancellation);
+        var calendar = inputs.Sessions;
+        var sessionAt = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var series = new SweepSeries[inputs.Names.Count];
+
+        Parallel.For(0, inputs.Names.Count, name => series[name] = SweepColumns.Series(inputs.Names[name], sessionAt));
+
+        var market = await longHistory.SeriesOfAsync([Market, Funds[index]], through, cancellation);
+        var held = market.FirstOrDefault(one => one.Series == Funds[index])?.Closes.ToDictionary(one => one.Session, one => one.Close) ?? [];
+        var names = new Dictionary<string, List<int>>(StringComparer.Ordinal);
+
+        for (var name = 0; name < series.Length; name++)
+        {
+            (names.TryGetValue(series[name].Name.Ticker, out var list) ? list : names[series[name].Name.Ticker] = []).Add(name);
+        }
+
+        return (new Walker(series, calendar, names, held, RegimeOf(market.FirstOrDefault(one => one.Series == Market))), through, calendar);
+    }
+
     // Each session's side of the market's 200-day average, none before it holds that many closes.
     static IReadOnlyDictionary<DateOnly, string> RegimeOf(SweepMarketSeries? market)
     {

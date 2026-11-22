@@ -4052,6 +4052,30 @@ internal static class Scope
             Verdict.Pass,
             "a Promote whose variant retired before the night and one naming no variant each answered without a swap, a Keep answered with nothing changed, the register's rows the same, and a night run again answering nothing twice",
             ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Idea test run")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the long setups, setups and notebook it reads and the notebook and run log it writes, each reconciled against the row, and over a constructed store a line outside the grammar and one the notebook holds are refused before anything is walked",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Idea test run")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Notebook fill")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the loop runs, proposals, long searches and plan points it reads and the notebook and run log it writes, each reconciled against the row, and over a constructed store every source row is counted and written once, a fill run again writing nothing",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Notebook fill")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Notebook")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, and an update, a delete and two replaces are each refused over a constructed store",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The idea grammar and the one tester")] = new Scoped(
+            Verdict.Pass,
+            "a line parsed into its parts and two spellings read as one canonical line by hand, eleven lines outside the grammar each refused naming its part, twenty early setups' cut points worked by hand and unmoved by later setups, and the weekly bar worked by hand at 1 in 1,024 over it and 1 in 2,048 under it",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "The AI stock picker within each index")] = new Scoped(
             Verdict.Pass,
             "the best quarter of the marked rounded up and held to 5 worked by hand on both sides of each bound, an index of 12 marked picking 3 and a fixed 5 taking 5 with no question of its own, 40 marked ranked by three questions of 14, 13 and 13 and then one of their best, a label marked twice read once and a ranking longer than asked keeping its first, a constructed index's figures placed in their tenths among its own members alone, and a short night's order with a version past the off-peak run's first slot written not run, each through recorded answers",
@@ -5271,6 +5295,10 @@ internal static class Scope
         [CheckReach.Key(LoopPage, "The long history")] = new Scoped(
             Verdict.Pass,
             "each family's newest long search and plan points read back over a constructed store, a family's newest by the order written, and the line drawn where neither is stored",
+            ByReadSurface),
+        [CheckReach.Key(LoopPage, "The notebook")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store of four ideas on two indices and the operator's, the S&P 600's page read back with its three newest first under the count of each verdict, an idea's words above its grammar line, its figures and its verdict and why, the S&P 500's idea absent; the S&P 500's page drawing its own; and an empty store saying none is in it",
             ByReadSurface),
 
         // 23.9's sector splits: its component, section 17's two rows and the History page's labels row.
@@ -8070,6 +8098,7 @@ internal static class Scope
         [CheckReach.Key("15.25 History", "Every member on every session")] = "24.19",
         [CheckReach.Key("15.25 History", "Labels for the industry news mood")] = "23.9",
         [CheckReach.Key(LoopPage, "The long history")] = "23.8",
+        [CheckReach.Key(LoopPage, "The notebook")] = "24.26",
         [CheckReach.Key("15.24 Home", "The foot")] = "22.16",
         [CheckReach.Key("15.24 Home", "On the read-only copy")] = "22.16",
 

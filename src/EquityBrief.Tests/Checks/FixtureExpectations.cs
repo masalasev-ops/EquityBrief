@@ -169,6 +169,9 @@ public partial class FixtureExpectations
             // A Promote the night answers whose variant or running revision no longer stands.
             .. SwapClaims,
 
+            // Section 17's row of the idea grammar and the one tester.
+            .. NotebookClaims,
+
             // 24.24: section 17's row of the picker within each index and section 18's row of a night with no stock marked.
             .. JudgeIndexClaims,
             // 24.11: section 18's row of the steps and entries the split rule sets aside, by cause.

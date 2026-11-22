@@ -244,6 +244,9 @@ public partial class ReadSurface
             // The picker's page from its approved mockup.
             .. PickerPageRows,
 
+            // The notebook on the Improvement loop page.
+            .. NotebookRows,
+
             // 24.11, the Run page's splits the share check does not read, each with its cause.
             .. SplitStepRows,
 

@@ -314,6 +314,15 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Promotion swap"),
     ];
 
+    // The one tester and the notebook's fill.
+    internal static string[] NotebookRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Idea test run"),
+        CheckReach.Key(Scope.MatrixTable, "Idea test run"),
+        CheckReach.Key(Scope.CatalogueTable, "Notebook fill"),
+        CheckReach.Key(Scope.MatrixTable, "Notebook fill"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -415,6 +424,7 @@ public partial class ComponentAccess
             .. PaperReadsRows,
             .. CaseRows,
             .. SwapRows,
+            .. NotebookRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
