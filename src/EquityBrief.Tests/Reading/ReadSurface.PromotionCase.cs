@@ -41,7 +41,7 @@ public partial class ReadSurface
             using var connection = store.Open();
             using var command = connection.CreateCommand();
 
-            command.CommandText = "SELECT (SELECT COUNT(*) FROM candidate_register) || '|' || (SELECT COUNT(*) FROM loop_decision) || '|' || (SELECT COUNT(*) FROM loop_applied);";
+            command.CommandText = "SELECT (SELECT COUNT(*) FROM candidate_register) || '|' || (SELECT COUNT(*) FROM loop_decision) || '|' || (SELECT COUNT(*) FROM loop_applied) || '|' || (SELECT COUNT(*) FROM promotion_press);";
 
             return (string)command.ExecuteScalar()!;
         }
@@ -66,7 +66,10 @@ public partial class ReadSurface
         using (var client = host.CreateClient())
         {
             Assert.DoesNotContain("data-frozen", await client.GetStringAsync("/screens/loop/case"), StringComparison.Ordinal);
-            Assert.Contains($"Nothing was promoted: {EquityBrief.Api.Reading.ReadApi.SwapNotBuilt}.", (await CardPress(client, SinglePageApp.CasePostRoute + "GSPC/pullback", [("variant", "any"), ("press", "promote")])).Said, StringComparison.Ordinal);
+            // After the freeze a Promote stands only on a variant whose case stands at the newest monthly run, and an Undo only
+            // on a promotion pressed; neither writes anything otherwise.
+            Assert.Contains($"Nothing was promoted: {EquityBrief.Api.Reading.ReadApi.NoCase}.", (await CardPress(client, SinglePageApp.CasePostRoute + "GSPC/pullback", [("variant", "any"), ("press", "promote")])).Said, StringComparison.Ordinal);
+            Assert.Contains($"Nothing was undone: {EquityBrief.Api.Reading.ReadApi.NothingToUndo}.", (await CardPress(client, SinglePageApp.CasePostRoute + "GSPC/pullback", [("variant", "any"), ("press", "undo"), ("undoes", "1")])).Said, StringComparison.Ordinal);
             Assert.Equal(before, Written());
         }
     }

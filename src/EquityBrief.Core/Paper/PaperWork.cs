@@ -80,6 +80,12 @@ public static class PaperWork
                 RuleRegister.ReadAsOf(indexNight, night)),
             planned);
 
+        // From 24.23 each record a promotion's swap carried, from the night it ran.
+        // see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record
+        var (presses, answers) = await reads.PromotionSwapsAsync();
+
+        accounts = PaperBooks.Carried(accounts, rows, PromotionSwaps.CarriesOf(presses, answers, code, night));
+
         return new PaperSources(accounts, planned, register, rows, provisional);
     }
 

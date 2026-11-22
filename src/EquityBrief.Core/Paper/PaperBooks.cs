@@ -656,6 +656,61 @@ public static class PaperBooks
         }
     }
 
+    // From 24.23 the records a promotion's swap carries: each carry hands the trades kept under one name and listed over its
+    // sessions to the account kept under another, among that account's same trades, out of its own and its earlier ones, so
+    // the promoted variant's trades count to the revision it became and the replaced revision's to the variant it became, each
+    // stock a listing night counted once. An account no carry names is returned as it is.
+    // see: A promotion swaps a running revision and its variant at the start of the next night that runs, each carrying its own record
+    public static IReadOnlyList<PaperAccountSource> Carried(IReadOnlyList<PaperAccountSource> accounts, IReadOnlyList<PaperRow> rows, IReadOnlyList<PromotionCarry> carries)
+    {
+        if (carries.Count == 0)
+        {
+            return accounts;
+        }
+
+        return
+        [
+            .. accounts.Select(account =>
+            {
+                // A head names its live rule in its words where it lists the page's own trades under no name of its own.
+                var into = carries.Where(carry => string.Equals(carry.To, account.Listed, StringComparison.Ordinal)
+                    || (account.Standing == PaperAccountView.Live && string.Equals(carry.To, account.Words, StringComparison.Ordinal))).ToArray();
+
+                if (into.Length == 0)
+                {
+                    return account;
+                }
+
+                bool Within(PromotionCarry carry, PaperTrade trade) => trade.ListedOn >= carry.Since && trade.ListedOn < carry.Until;
+
+                // The trades kept under the name carried from, and where a head lists the page's own trades under its live rule,
+                // the head's trades too, as the accounts stood before any carry.
+                var carried = into
+                    .SelectMany(carry => Of(rows.Where(row => row.Account == carry.From || row.Account.StartsWith(carry.From + ", from version ", StringComparison.Ordinal)))
+                        .Concat(accounts.Where(from => from.Standing == PaperAccountView.Live && from.Listed is null && string.Equals(from.Words, carry.From, StringComparison.Ordinal))
+                            .SelectMany(from => from.Trades.Concat((from.Earlier ?? []).Select(one => (one.Trade, one.Result)))))
+                        .Where(one => Within(carry, one.Item1)))
+                    .ToList();
+                var seen = new HashSet<(string, DateOnly)>();
+                (PaperTrade Trade, double? Result)[] same =
+                [
+                    .. account.Same,
+                    .. carried.Where(one => !account.Same.Any(held => held.Trade.Ticker == one.Item1.Ticker && held.Trade.ListedOn == one.Item1.ListedOn)).Select(one => (one.Item1, one.Item2)),
+                ];
+                same = [.. same.Where(one => seen.Add((one.Trade.Ticker, one.Trade.ListedOn))).OrderBy(one => one.Trade.ListedOn).ThenBy(one => one.Trade.Ticker, StringComparer.Ordinal)];
+                bool Carried(PaperTrade trade) => into.Any(carry => Within(carry, trade)) && same.Any(one => one.Trade.Ticker == trade.Ticker && one.Trade.ListedOn == trade.ListedOn);
+
+                return account with
+                {
+                    Trades = [.. account.Trades.Where(one => !Carried(one.Trade))],
+                    Earlier = account.Earlier is null ? null : [.. account.Earlier.Where(one => !Carried(one.Trade))],
+                    Same = same,
+                    SameSince = same.Length == 0 ? account.SameSince : new[] { account.SameSince, into.Min(carry => carry.Since) }.OfType<DateOnly>().Min(),
+                };
+            }),
+        ];
+    }
+
     // A trade is bought at its fill on the session after its night, sized from the close its plan was set at; one still
     // waiting on that session, or holding none, is bought by no account. A trade with no target whose family trails reads
     // the distance it trails as its close less its stop where its table stores none, as its walk does.

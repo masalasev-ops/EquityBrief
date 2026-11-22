@@ -36,4 +36,7 @@ public interface IPaperReads
     Task<IReadOnlyList<DateOnly>> SessionsFromAsync(DateOnly from);
 
     Task<IReadOnlyDictionary<string, PaperStockRow>> PaperStocksAsync(IReadOnlyList<string> tickers, DateOnly night);
+
+    // From 24.23 the presses on the case for promotion and the night's answers to them, whose carries the accounts read.
+    Task<(IReadOnlyList<PromotionPressRow> Presses, IReadOnlyList<PromotionSwapRow> Answers)> PromotionSwapsAsync();
 }

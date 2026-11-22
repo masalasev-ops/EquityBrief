@@ -866,6 +866,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.LoopLink, Touch.Read),
             new StoreTouch(Store.ReleaseAnswerEdge, Touch.Read),
             new StoreTouch(Store.LoopDecision, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.PromotionPress, Touch.Insert),
             new StoreTouch(Store.LoopApplied, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.LoopAlarm, Touch.Read),
