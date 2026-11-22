@@ -161,7 +161,7 @@ public static class JudgeFactReader
         {
             ["return_twelve_less_one"] = JudgeFacts.ReturnTwelveLessOne(closes),
             ["high_ratio"] = JudgeFacts.HighRatio(closes, highs),
-            ["business_score"] = score is { Applied: > 0 } held ? (double)held.Passed / held.Applied : null,
+            ["business_score"] = score is { Applied: > 0 } held ? held.Passed * 1.0 / held.Applied : null,
             ["surprise"] = At("surprise_percent") is { } beat && At("surprise_sessions") is not null ? beat : null,
             ["reward_to_risk"] = rewardToRisk,
         };
