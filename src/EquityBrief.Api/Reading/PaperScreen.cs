@@ -307,7 +307,7 @@ public static class PaperScreen
         foreach (var revision in revisions)
         {
             var first = lineage.FirstOrDefault(row => row.Id == revision.FirstId);
-            var chips = first is not null ? RuleScreen.ChipsOf(first) : [];
+            var chips = first is not null ? RuleRegister.ChipsOf(first) : [];
             string[]? changed = before is null
                 ? null
                 : revision.Code is { } code ? [code]
@@ -372,7 +372,7 @@ public static class PaperScreen
             : version with
             {
                 Reach = Core.Cards.VersionReach.Of(family, CandidateEvaluator.Read(live.Parameters), CandidateEvaluator.Read(row.Parameters)),
-                Differences = Named(RuleSentences.Between(RuleScreen.ChipsOf(live), RuleScreen.ChipsOf(row)), BaseOf(registrations ?? [], row) is { } beside ? RuleSentences.Between(RuleScreen.ChipsOf(beside), RuleScreen.ChipsOf(row)) : []),
+                Differences = Named(RuleSentences.Between(RuleRegister.ChipsOf(live), RuleRegister.ChipsOf(row)), BaseOf(registrations ?? [], row) is { } beside ? RuleSentences.Between(RuleRegister.ChipsOf(beside), RuleRegister.ChipsOf(row)) : []),
             };
 
     // The rule a variant was registered beside: its family's newest live registration on the index at or before the
@@ -434,9 +434,9 @@ public static class PaperScreen
             // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
             if (family == DipRule.Name)
             {
-                var (liveDip, versions) = RuleScreen.Accounts(family, large, indexName, register, night, null, asOf);
+                var (liveDip, versions) = RuleRegister.Accounts(family, large, indexName, register, night, null, asOf);
                 var dipChips = liveDip is not null
-                    ? RuleScreen.ChipsOf(liveDip)
+                    ? RuleRegister.ChipsOf(liveDip)
                     : [.. DipRule.Provisional.KeyedChipsOn(EquityBrief.Web.App.Universes.Offered.FirstOrDefault(universe => universe.Name == indexName)?.Code ?? EquityBrief.Web.App.Universes.Large.Code).Select(chip => new RuleChip(chip.Key, chip.Words))];
                 var dipHead = new PaperAccountSource(
                     ListKey(family),
@@ -451,7 +451,7 @@ public static class PaperScreen
                     liveDip?.Candidate ?? ReadApi.PageList + " " + family,
                     Short: liveDip is not null ? "Live rule" : "Provisional rule",
                     Changes: dipChips.Count > 0 ? string.Join(TabJoint, dipChips.Select(chip => chip.Words)) : null);
-                var dipRegistrations = RuleScreen.Registrations(family, large, indexName, register);
+                var dipRegistrations = RuleRegister.Registrations(family, large, indexName, register);
 
                 dipHead = dipHead with { Unfilled = Unfilled(rows.Where(dipHead.Keeps)) };
                 IReadOnlyList<CandidateRow> dipLineage = [.. dipRegistrations.Where(row => FamilyRecords.IsLive(row.Candidate))];
@@ -470,13 +470,13 @@ public static class PaperScreen
                 continue;
             }
 
-            var (live, variants) = RuleScreen.Accounts(family, large, indexName, register, night, large ? null : provisional, asOf);
+            var (live, variants) = RuleRegister.Accounts(family, large, indexName, register, night, large ? null : provisional, asOf);
             var book = family == HeavyweightRule.Name;
             var pageList = large && SetupFamilies.InPageOrder.Any(swing => swing.Name == family);
             var listed = pageList ? null : !large && live is not null ? live.Candidate : ReadApi.PageList + " " + family;
             var chips = live is not null
-                ? RuleScreen.ChipsOf(live)
-                : (!large || family == FundamentalsRule.Name) && provisional is not null ? RuleScreen.ProvisionalChips(family, provisional) : [];
+                ? RuleRegister.ChipsOf(live)
+                : (!large || family == FundamentalsRule.Name) && provisional is not null ? RuleRegister.ProvisionalChips(family, provisional) : [];
 
             // The S&P 500's page lists every family but the fundamentals-first family by its live rule, registered or not.
             var isLive = live is not null || (large && family != FundamentalsRule.Name);
@@ -495,7 +495,7 @@ public static class PaperScreen
                 Changes: chips.Count > 0 ? string.Join(TabJoint, chips.Select(chip => chip.Words)) : null);
             var cells = pageCells.Where(cell => cell.Family == family).ToArray();
             IReadOnlyList<(PaperTrade, double?)> trades = pageList ? PageTrades(cells, [.. rows.Where(row => live is not null && row.Account == live.Candidate)]) : Of(rows.Where(head.Keeps));
-            var registrations = RuleScreen.Registrations(family, large, indexName, register);
+            var registrations = RuleRegister.Registrations(family, large, indexName, register);
 
             head = head with { Unfilled = pageList ? PageUnfilled(cells) : Unfilled(rows.Where(head.Keeps)) };
 
@@ -539,8 +539,8 @@ public static class PaperScreen
         // see: A quality rule is registered as the family on its index and kept by the family's own step alone
         {
             var family = QualityRule.Name;
-            var (live, versions) = RuleScreen.Accounts(family, large, indexName, register, night, null, asOf);
-            var chips = live is not null ? RuleScreen.ChipsOf(live) : RuleChips.Of(RuleKind.Quality, QualityCandidate.ParametersOf(QualityRule.Starting));
+            var (live, versions) = RuleRegister.Accounts(family, large, indexName, register, night, null, asOf);
+            var chips = live is not null ? RuleRegister.ChipsOf(live) : RuleChips.Of(RuleKind.Quality, QualityCandidate.ParametersOf(QualityRule.Starting));
             var head = new PaperAccountSource(
                 ListKey(family),
                 family,
@@ -557,7 +557,7 @@ public static class PaperScreen
 
             head = head with { Unfilled = Unfilled(rows.Where(head.Keeps)) };
 
-            var registrations = RuleScreen.Registrations(family, large, indexName, register);
+            var registrations = RuleRegister.Registrations(family, large, indexName, register);
             IReadOnlyList<CandidateRow> lineage = [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))];
 
             accounts.Add(live is not null
@@ -577,8 +577,8 @@ public static class PaperScreen
         // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
         {
             var family = ImprovingRule.Name;
-            var (live, versions) = RuleScreen.Accounts(family, large, indexName, register, night, null, asOf);
-            var chips = live is not null ? RuleScreen.ChipsOf(live) : RuleChips.Of(RuleKind.Improving, ImprovingCandidate.ParametersOf(ImprovingGrid.Starting));
+            var (live, versions) = RuleRegister.Accounts(family, large, indexName, register, night, null, asOf);
+            var chips = live is not null ? RuleRegister.ChipsOf(live) : RuleChips.Of(RuleKind.Improving, ImprovingCandidate.ParametersOf(ImprovingGrid.Starting));
             var head = new PaperAccountSource(
                 ListKey(family),
                 family,
@@ -595,7 +595,7 @@ public static class PaperScreen
 
             head = head with { Unfilled = Unfilled(rows.Where(head.Keeps)) };
 
-            var registrations = RuleScreen.Registrations(family, large, indexName, register);
+            var registrations = RuleRegister.Registrations(family, large, indexName, register);
             IReadOnlyList<CandidateRow> lineage = [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))];
 
             accounts.Add(live is not null
@@ -673,8 +673,8 @@ public static class PaperScreen
         foreach (var family in families)
         {
             var settings = large || family == DipRule.Name ? null : provisional;
-            var standing = RuleScreen.Accounts(family, large, indexName, register, night, settings, read).Variants.Select(one => one.Row.Candidate).ToHashSet(StringComparer.Ordinal);
-            var (_, variants) = RuleScreen.Accounts(family, large, indexName, register, night, settings, DateTimeOffset.MaxValue);
+            var standing = RuleRegister.Accounts(family, large, indexName, register, night, settings, read).Variants.Select(one => one.Row.Candidate).ToHashSet(StringComparer.Ordinal);
+            var (_, variants) = RuleRegister.Accounts(family, large, indexName, register, night, settings, DateTimeOffset.MaxValue);
 
             foreach (var (row, tab) in variants.Where(one => !standing.Contains(one.Row.Candidate) && one.Row.RegisteredAt >= read))
             {

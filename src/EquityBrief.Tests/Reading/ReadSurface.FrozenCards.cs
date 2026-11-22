@@ -534,8 +534,8 @@ public partial class ReadSurface
         // A provisional rule's chips read the floor its night stored, the sector heavyweights' reading no check.
         var settings = IndexRuleSettings.Read(IndexFamilies.Settings("MID"));
 
-        Assert.Equal("market check on its own breadth at 45%", RuleScreen.ProvisionalChips(DriftRule.Name, settings)[^1].Words);
-        Assert.DoesNotContain(RuleScreen.ProvisionalChips(HeavyweightRule.Name, settings), chip => chip.Words.StartsWith("market check", StringComparison.Ordinal));
+        Assert.Equal("market check on its own breadth at 45%", RuleRegister.ProvisionalChips(DriftRule.Name, settings)[^1].Words);
+        Assert.DoesNotContain(RuleRegister.ProvisionalChips(HeavyweightRule.Name, settings), chip => chip.Words.StartsWith("market check", StringComparison.Ordinal));
     }
 
     [Fact]

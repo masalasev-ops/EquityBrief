@@ -151,7 +151,7 @@ public class RevisionPages
 
         Assert.True(moved.Length == 0, "A change to what a rule's trades do starts a revision: record it in CodeRevisions with the session it first runs and what it changed.\n" + string.Join("\n", moved));
 
-        string[] families = [.. Core.Candidates.CandidateEvaluators.All.Where(evaluator => Api.Reading.RuleScreen.KindOf(evaluator) is not null || evaluator is Core.Candidates.DipCandidate).Select(evaluator => evaluator.Name)];
+        string[] families = [.. Core.Candidates.CandidateEvaluators.All.Where(evaluator => RuleRegister.KindOf(evaluator) is not null || evaluator is Core.Candidates.DipCandidate).Select(evaluator => evaluator.Name)];
 
         Assert.Empty(families.Except(CodeRevisions.All.Select(entry => entry.Evaluator), StringComparer.Ordinal));
     }

@@ -581,7 +581,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("<option value=\"fundamentals\"", select, StringComparison.Ordinal);
 
         // The variant's tab and its row's name are its one change as a sentence.
-        var (_, tabs) = RuleScreen.Accounts("breakout", true, "S&P 500", await new ReadApi(store.DatabaseFile, EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates)).RegisteredCandidatesAsync(), new DateOnly(2026, 10, 2));
+        var (_, tabs) = RuleRegister.Accounts("breakout", true, "S&P 500", await new ReadApi(store.DatabaseFile, EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates)).RegisteredCandidatesAsync(), new DateOnly(2026, 10, 2));
         var tab = Assert.Single(tabs).Tab;
         var sentence = char.ToUpperInvariant(tab["V1 · ".Length]) + tab[("V1 · ".Length + 1)..];
 
@@ -635,7 +635,7 @@ public partial class ReadSurface
         var register = await new ReadApi(store.DatabaseFile, EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 3, 16, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates)).RegisteredCandidatesAsync();
 
         // Numbered and named as its card will number it once a night reads it: V2, after V1, what it changes its tab's words.
-        var (_, after) = RuleScreen.Accounts("breakout", true, "S&P 500", register, new DateOnly(2026, 10, 5));
+        var (_, after) = RuleRegister.Accounts("breakout", true, "S&P 500", register, new DateOnly(2026, 10, 5));
         var tab = after.Single(one => one.Row.Candidate == NeighbourBreakout).Tab;
 
         Assert.StartsWith("V2 · ", tab, StringComparison.Ordinal);

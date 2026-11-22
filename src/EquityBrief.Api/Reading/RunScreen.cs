@@ -1840,7 +1840,7 @@ public static class RunScreen
             .Where(row => row.Retires is null)
             .GroupBy(row => row.Candidate, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.OrderBy(row => row.RegisteredAt).Last(), StringComparer.Ordinal);
-        var liveChips = live is not null && newest.TryGetValue(live.Candidate, out var liveRow) ? RuleScreen.ChipsOf(liveRow) : [];
+        var liveChips = live is not null && newest.TryGetValue(live.Candidate, out var liveRow) ? RuleRegister.ChipsOf(liveRow) : [];
 
         return
         [
@@ -1854,7 +1854,7 @@ public static class RunScreen
                     // running revision's.
                     // see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
                     IReadOnlyList<ChangeLine> changes = !candidate.Live && newest.TryGetValue(candidate.Candidate, out var row) && liveChips.Count > 0
-                        ? RuleSentences.Between(liveChips, RuleScreen.ChipsOf(row))
+                        ? RuleSentences.Between(liveChips, RuleRegister.ChipsOf(row))
                         : [];
                     var named = changes.FirstOrDefault(change => change.Key != "hooks") ?? changes.FirstOrDefault();
 
@@ -2168,7 +2168,7 @@ public static class RunScreen
                 return row with { Short = BeforeTheFreeze, Verdict = null };
             }
 
-            var (_, variants) = RuleScreen.Accounts(row.Family, large, indexName, register, night, asOf: asOf);
+            var (_, variants) = RuleRegister.Accounts(row.Family, large, indexName, register, night, asOf: asOf);
             var tab = variants.Where(variant => variant.Row.Candidate == row.Rule).Select(variant => variant.Tab).FirstOrDefault();
             var test = tests.FirstOrDefault(one => one.Family == row.Family && one.Rule == row.Rule)
                 ?? (row.Live ? tests.FirstOrDefault(one => one.Family == row.Family && one.Standing != PaperAccountView.Variant) : null);

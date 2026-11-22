@@ -1928,7 +1928,7 @@ async Task<IResult> TonightScreenAsync(
         indexCards = await WithBehindAsync(read, indexCards, reading, dated);
         // A drift's numbers read off the setup the ledger stored on its report day, within the window its rule states.
         var indexSettings = IndexRuleSettings.Read(indexNight.Settings);
-        var (liveDrift, _) = RuleScreen.Accounts(EquityBrief.Core.Families.DriftRule.Name, false, reading.Name, indexRegister, dated, indexSettings, indexAsOf);
+        var (liveDrift, _) = RuleRegister.Accounts(EquityBrief.Core.Families.DriftRule.Name, false, reading.Name, indexRegister, dated, indexSettings, indexAsOf);
         indexCards = await WithNumbersAsync(read, indexCards, reading, dated, indexClose, driftWindow: TonightScreen.DriftWindow(liveDrift, indexSettings));
         indexCards = TonightScreen.WithDipChips(TonightScreen.WithDipLabels(indexCards, indexDipPicks), indexDipNight, reading.Code);
         // From 22.3 the dip's card where a frozen rule drew its night, with the line every frozen card draws.
@@ -2025,7 +2025,7 @@ async Task<IResult> TonightScreenAsync(
             Growths(bookRows.Where(holding => holding.EndedOn is null).Select(holding => (holding.Ticker, holding.EnteredOn, holding.Growth))),
             false,
             _ => TonightScreen.StoresNoSectorReading,
-            RuleScreen.DesignB(indexHeavyweightVariant ?? heavyweightRule, indexRegister));
+            RuleRegister.DesignB(indexHeavyweightVariant ?? heavyweightRule, indexRegister));
 
         // On the operator's ruling of 2026-11-16 the live book's own exit beside it, a record only.
         // see: Each book's own exit is walked beside its live book as a record on its card, and registers no version and draws no pick
@@ -2382,7 +2382,7 @@ async Task<IResult> TonightScreenAsync(
         RuleWords.Heavyweights(EquityBrief.Core.Families.HeavyweightRule.Live));
     var heavyweightHoldings = await read.HeavyweightHoldingsAsync(dated, heavyweightVariant);
     var heavyweightRead = await read.HeavyweightReadAsync(dated, heavyweightVariant);
-    var heavyweightSettings = RuleScreen.HeavyweightSettingsOf(heavyweightVariant, register) ?? EquityBrief.Core.Families.HeavyweightRule.Live;
+    var heavyweightSettings = RuleRegister.HeavyweightSettingsOf(heavyweightVariant, register) ?? EquityBrief.Core.Families.HeavyweightRule.Live;
     var heavyweights = cards is null
         ? null
         : CardScreen.WithCards(
@@ -3388,7 +3388,7 @@ async Task<IReadOnlyDictionary<string, PaperBookLine>> BookLinesAsync(ReadApi re
 
     if (heads.FirstOrDefault(account => account.Family == EquityBrief.Core.Families.HeavyweightRule.Name) is { } heavy)
     {
-        var settings = large ? EquityBrief.Core.Families.HeavyweightRule.Live : RuleScreen.HeavyweightSettingsOf(heavy.Listed, register) ?? EquityBrief.Core.Families.HeavyweightRule.Live;
+        var settings = large ? EquityBrief.Core.Families.HeavyweightRule.Live : RuleRegister.HeavyweightSettingsOf(heavy.Listed, register) ?? EquityBrief.Core.Families.HeavyweightRule.Live;
         var last = heavy.Trades.Select(one => (DateOnly?)one.Trade.ListedOn).Max();
         var next = last is null ? null : EquityBrief.Core.Families.HeavyweightRule.NextRebalance(night, last, settings);
 
@@ -3441,12 +3441,12 @@ static async Task<IReadOnlyDictionary<string, string>> HoldingStandingsAsync(
         return new Dictionary<string, string>(StringComparer.Ordinal);
     }
 
-    var settings = large ? null : RuleScreen.HeavyweightSettingsOf(head.Listed, register);
+    var settings = large ? null : RuleRegister.HeavyweightSettingsOf(head.Listed, register);
     var lookBack = large
         ? EquityBrief.Core.Families.HeavyweightRule.Live.LookBack
         : settings?.LookBack ?? (provisional is not null && int.TryParse(provisional.Heavyweights.GetValueOrDefault("look-back"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var sessions) ? sessions : EquityBrief.Core.Families.HeavyweightRule.LookBack);
     var fundReturn = large && EquityBrief.Core.Families.HeavyweightRule.Live.FundReturn;
-    var designB = !large && RuleScreen.DesignB(head.Listed, register);
+    var designB = !large && RuleRegister.DesignB(head.Listed, register);
     var funds = await read.FundStandingClosesAsync([.. EquityBrief.Core.Families.GicsSectors.Funds.Values], night, lookBack, null);
     var members = fundReturn || designB ? new Dictionary<string, string?>(StringComparer.Ordinal) : await read.MemberSectorsAsync(reading.Code, night);
     var closes = await read.StockStandingClosesAsync([.. open.Concat(members.Keys).Distinct(StringComparer.Ordinal)], night, lookBack, null);
@@ -4128,9 +4128,9 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
         family => family,
         family =>
         {
-            var (live, _) = RuleScreen.Accounts(family, large, reading.Name, register, night ?? DateOnly.MinValue, large ? null : provisional, loopAsOf);
+            var (live, _) = RuleRegister.Accounts(family, large, reading.Name, register, night ?? DateOnly.MinValue, large ? null : provisional, loopAsOf);
 
-            return (IReadOnlyList<string>)[.. (live is not null ? RuleScreen.ChipsOf(live) : !large && provisional is not null ? RuleScreen.ProvisionalChips(family, provisional) : []).Select(chip => chip.Words)];
+            return (IReadOnlyList<string>)[.. (live is not null ? RuleRegister.ChipsOf(live) : !large && provisional is not null ? RuleRegister.ProvisionalChips(family, provisional) : []).Select(chip => chip.Words)];
         },
         StringComparer.Ordinal);
 

@@ -145,7 +145,7 @@ public static class RevisionScreen
 
         foreach (var row in planned.Where(one => one.Live && one.Ticker == ticker && one.Listed <= night && !one.NotFilled && (one.Fill is null || one.EndedOn is null)).GroupBy(one => (one.Family, one.Listed)).Select(group => group.First()))
         {
-            var lineage = RuleScreen.Registrations(row.Family, large, indexName, register).Where(one => EquityBrief.Core.Candidates.FamilyRecords.IsLive(one.Candidate)).ToArray();
+            var lineage = RuleRegister.Registrations(row.Family, large, indexName, register).Where(one => EquityBrief.Core.Candidates.FamilyRecords.IsLive(one.Candidate)).ToArray();
             var revision = PaperScreen.RevisionViews(lineage).LastOrDefault(one => one.From <= row.Listed);
             var waiting = row.Fill is null;
             var stop = PlanScreen.StopOf(row);
@@ -210,7 +210,7 @@ public static class RevisionScreen
     public static PlanRowsView PlanRows(string family, string index, CandidateRow? row)
     {
         var parameters = row is null ? new Dictionary<string, double>() : EquityBrief.Core.Candidates.CandidateEvaluator.Read(row.Parameters);
-        var chips = row is null ? [] : RuleScreen.ChipsOf(row);
+        var chips = row is null ? [] : RuleRegister.ChipsOf(row);
         EquityBrief.Core.Loop.PlanCombination? plan;
 
         try
