@@ -46,7 +46,7 @@ public sealed record QualityHoldingRow(
 public sealed partial class ReadApi
 {
     // The rule its holdings are kept under before a freeze registers one, the night's own word.
-    public const string QualityProvisional = "provisional";
+    public const string QualityProvisional = PaperBooks.Provisional;
 
     // From 22.11 the rule the card draws on a night: the live rule where the night kept one, its row naming it, and the
     // provisional rule otherwise.

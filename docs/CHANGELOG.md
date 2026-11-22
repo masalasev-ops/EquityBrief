@@ -7,6 +7,20 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-22 - docs/ARCHITECTURE.html, docs/RUNBOOK.md and .claude/rules/checks.md - Paper trading's accounts worked in Core over one reader, at 24.21
+Decision: The monthly run stores each case standing from Paper trading's accounts in Core, and the local run writes its words
+Was:
+> ARCHITECTURE.html, the catalogue: the Read API's row followed by the Mark renderer's; the read and write matrix: the same
+> ARCHITECTURE.html, section 15.21's Reads: "... The page works out the accounts and every figure it draws beside them with the core's one function and stores none of them (see: ...)." ending the paragraph
+> RUNBOOK.md, the account and the trades taken from a card: "... and saving your own replaces it." followed by the paragraph on the follower
+> checks.md, read-surface: "... and `tools/merge` merging, fast-forwarding and migrating in that order, refused while the night's lock file stands |"
+Now:
+> the catalogue and the matrix gaining "Paper reads" after the Read API, reading what the accounts read and writing nothing
+> section 15.21's Reads gaining "From 24.21 the accounts' rows are read through Paper reads, the one reader in the data project, and the core's one function works them from what it hands over; the worker's <code>paper-figures</code> verb reads and works them the same way, so for every account of every index it states the trades, the walk, the record in its own measure and the progress the page draws (see: ...)."
+> RUNBOOK.md gaining the paragraph on `paper-figures` after it
+> read-surface gaining "; and from 24.21 Paper trading's accounts worked by the core's one function over Paper reads, each live or provisional rule's tile and each variant's row read back over constructed stores on the S&P 400 and 500 beside the figures the worker's `paper-figures` verb states for it, and no source the move touches one a rule's version pins |"
+Why: 24.21 moves Paper trading's account computation out of the page's code into Core, reading its rows through one reader in the data project, on the operator's answer of 2026-11-21 kept as Appendix V of `prompts/2026-11-16-24.0-phase-24-plan-second-version.md`, so the monthly run's cases at 24.22 read the same figures the page draws.
+
 ### 2026-11-21 - docs/SCHEMA.md - the night's rows copied once more as their insider readings are read again, at 24.19
 Decision: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
 Was:

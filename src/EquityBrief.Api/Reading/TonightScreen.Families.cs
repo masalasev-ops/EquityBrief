@@ -382,7 +382,7 @@ public static partial class TonightScreen
 
     // The design a heavyweights rule reads, its sweep's answers recorded under it: design (b) where its registration
     // states it and design (a) otherwise.
-    static string DesignOf(string? live, IReadOnlyList<CandidateRow> register) => RuleScreen.DesignB(live, register) ? "b" : "a";
+    static string DesignOf(string? live, IReadOnlyList<CandidateRow> register) => RuleRegister.DesignB(live, register) ? "b" : "a";
 
     // A family's freezes up to an instant: each instant its own register rows were written at, its live rule read as its
     // standing is at that instant, and a freeze where that rule names one other than the rule standing just before.
@@ -396,7 +396,7 @@ public static partial class TonightScreen
 
     // The instant past a night from which nothing recorded counts on its page: a freeze or an answer written after the
     // night is read on no night before it.
-    public static DateTimeOffset PastTheNight(DateOnly night) => new(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+    public static DateTimeOffset PastTheNight(DateOnly night) => RuleRegister.PastTheNight(night);
 
     // Each card with the line its family's recorded sweep answers draw on the night, read against its freezes and the live
     // rule that reads it; on a card kept at the freeze made on a sweep that passed none, the years of the last two its

@@ -21264,3 +21264,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             checks on the roster run and passed.
 Carried:    the rules' half for the monthly run of 2027-02-06; the store's build of every member's readings on every session,
             on the operator's word of 2026-11-21, with each index's counts and the check's findings.
+
+### 24.21 - Paper trading's accounts computed in Core, one copy for the page and the worker   2026-11-22
+
+Queue:      done, 24.0 to 24.19; in progress, 24.21; next, 24.22, the cases stored, then 24.23, the swap; 24.20, the
+            picker's mockup, waits for the operator's word on it.
+Built:      Paper trading's account computation moved out of the page's code into `EquityBrief.Core.Paper`: the stored rows'
+            and views' records, the register's reading, the planned trades, the pick cells and `PaperBooks`, and
+            `PaperWork.WorkAsync`, which reads an index's rows, costs, halves and tones its accounts and walks and judges each.
+            Its rows are read through `PaperReads`, one reader in the data project, declared as the component Paper reads,
+            which the read API now delegates to. The page's accounts and every card's record call `PaperWork`, and the
+            worker's `paper-figures --session <day> [--index <code>]` prints each account's figures from the same call,
+            writing nothing. No figure any page draws changed.
+Tests:      2 new: over three constructed stores, the S&P 400's and two of the S&P 500's, one with a registered rule and its
+            variant, every live or provisional rule's tile and every variant's row read back off the page against the
+            worker's figures for it, its return, its open and closed trades, the day it counts from and its too-few words,
+            the S&P 400 pullback's 0.01904 worked by hand in the page's own test; and no source the move writes or changes
+            one a rule's version pins. Every existing paper trading, Past picks, Home and case page test runs unchanged.
+Claims:     1683, two of the plan's two: Paper reads' catalogue and matrix rows, its check's row landing as a clause of
+            read-surface's roster row.
+Pins:       none moved, asserted.
+Mutated:    the rule, stated before the run: the guard the checkpoint adds is that the page and the worker state the same
+            figures, so the worker's figures read one figure off the wrong field. m1 an account's open trades read as its
+            closed: red, the S&P 400 pullback's tile 3 open against the worker's 2. Filtered to its test and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below stated before
+            that run: all six steps, 0 warnings, 0 errors, 3922 of 3922 tests ran with none failed, migrations 0 to 157 with none
+            pending, schema version 157, against `data-ci` and never `data`; the phase report 68 tables, 1683 claims, 1683
+            passing, none out of scope and none unexamined, 1698 placements and verdicts reconciled against a floor of 34, 57
+            checks on the roster run and passed.
+Carried:    the rules' half for the monthly run of 2027-02-06; the store's build of every member's readings on every session,
+            running, with each index's counts and the check's findings.

@@ -375,9 +375,9 @@ public partial class ReadSurface
         // first session whatever the replay found.
         var standing = new CandidateRow(204, ProvisionalBreakout, TheSetupFamilies.Breakouts[^2].Evaluator, "registered", null, new DateTimeOffset(2026, 9, 29, 12, 0, 0, TimeSpan.Zero), EvaluatorVersion: "v");
 
-        Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.StartOf(standing));
-        Assert.Equal(new DateOnly(2026, 9, 21), PaperScreen.RecordFrom(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), true, "reproduced", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
-        Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.RecordFrom(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), false, "differs", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
+        Assert.Equal(new DateOnly(2026, 9, 29), PaperBooks.StartOf(standing));
+        Assert.Equal(new DateOnly(2026, 9, 21), PaperBooks.RecordFrom(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), true, "reproduced", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
+        Assert.Equal(new DateOnly(2026, 9, 29), PaperBooks.RecordFrom(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), false, "differs", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
     }
 
     [Fact]

@@ -127,16 +127,8 @@ public static partial class TonightScreen
         return cards;
     }
 
-    // The instant an S&P 400's or 600's page reads the register and the sweep answers as of: past the night's evening, or,
-    // where the night read the register later, as a night run again after a freeze does, the second after that instant,
-    // so a night run again draws the rules it read. A night stored before it stated the instant is read past its evening.
-    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
-    public static DateTimeOffset ReadAsOf(IndexNightRow? night, DateOnly session)
-    {
-        var past = PastTheNight(session);
-
-        return night is not null && IndexRuleSettings.Read(night.Settings).RegisterAt is { } read && read.AddSeconds(1) > past ? read.AddSeconds(1) : past;
-    }
+    // The instant an S&P 400's or 600's page reads the register as of, as the core reads it.
+    public static DateTimeOffset ReadAsOf(IndexNightRow? night, DateOnly session) => RuleRegister.ReadAsOf(night, session);
 
     // A family's freezes on an index up to the instant its page reads as of, and its live rule where the night read its
     // list by it, none where no freeze stands or the night did not read it; what its card's sweep line is read against.

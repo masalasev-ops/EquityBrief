@@ -2,42 +2,6 @@ using System.Globalization;
 
 namespace EquityBrief.Web.Marks;
 
-// One revision of a rule as the pages draw it: its number, the first session it ran, the last where a later revision followed
-// it, none while it runs, and what it changed from the revision before in the words the rule's settings are drawn in, none
-// for the first.
-// see: A rule's revision is a run of its registrations stating the same settings, and every trade belongs to the revision that listed it
-public sealed record RevisionView(int Number, DateOnly From, DateOnly? Until, string? Changed)
-{
-    // What a revision changed where its settings read the same and a change in its code changed what its trades do.
-    public const string CodeOnly = "The same settings, with a change in its code that changed what its trades do";
-
-    public bool Running => Until is null;
-
-    // The registration that started it, which its plan is read from.
-    public long Registration { get; init; }
-
-    public string Name => Named(Number);
-
-    public static string Named(int number) => "Revision " + number.ToString(CultureInfo.InvariantCulture);
-
-    // "Revision 9, running since 16 Nov 2026", or "Revision 8, ran 30 Oct to 13 Nov 2026" for one no longer running.
-    public string Tag => Until is { } until
-        ? Name + ", ran " + Ran(From, until)
-        : Name + ", running since " + Day(From);
-
-    // The sessions it ran, the year once where both fall in it.
-    public static string Ran(DateOnly from, DateOnly until) =>
-        from.Year == until.Year
-            ? from.ToString("d MMM", CultureInfo.InvariantCulture) + " to " + Day(until)
-            : Day(from) + " to " + Day(until);
-
-    public static string Day(DateOnly day) => day.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
-}
-
-// One setting a variant states differently from its running revision: the chip's key, its short words and the plain sentence
-// a page names it by.
-public sealed record ChangeLine(string Key, string Words, string Sentence);
-
 // A trade or an order a revision holds on a stock, as the top of its own page names it: its setup, the revision that placed
 // it, whether it waits, the night it was placed and the session it was bought, its price, stop and one take-profit, the
 // trading days left to it, the night's close and where it stands.

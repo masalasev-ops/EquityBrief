@@ -24,10 +24,10 @@ public static class HomeSince
     {
         if (row.Fill is not { } fill || row.FilledOn is not { } bought)
         {
-            var last = PlanScreen.LastDay(row.Listed, row.Order.Window);
+            var last = PlannedTrades.LastDay(row.Listed, row.Order.Window);
 
             return row.NotFilled ? "Waited and was not bought, cancelled on " + Day(last) + "."
-                : PlanScreen.BuysAtAPrice(row) ? "Still waiting for its price, until " + Day(last) + "."
+                : PlannedTrades.BuysAtAPrice(row) ? "Still waiting for its price, until " + Day(last) + "."
                 : "Not bought yet.";
         }
 

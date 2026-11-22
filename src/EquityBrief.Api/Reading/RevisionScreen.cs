@@ -40,47 +40,47 @@ public static class RevisionScreen
                     ? account.Key
                     : account.Revisions.LastOrDefault(revision => revision.From <= placed) is { } earlier ? EarlierKey(account.Key, earlier.Number) : account.Key;
 
-            string RevisionAt(DateOnly placed) => PaperScreen.VersionAt(account.Revisions, placed);
+            string RevisionAt(DateOnly placed) => PaperBooks.VersionAt(account.Revisions, placed);
 
             foreach (var row in rows)
             {
                 covered.Add((row.Ticker, row.Listed));
-                var last = PlanScreen.LastDay(row.Listed, row.Order.Window);
+                var last = PlannedTrades.LastDay(row.Listed, row.Order.Window);
 
-                if (row.Fill is not null && row.EndedOn is null && PlanScreen.TakeProfitFromWords(row) is { } placedBy)
+                if (row.Fill is not null && row.EndedOn is null && PlannedTrades.TakeProfitFromWords(row) is { } placedBy)
                 {
                     profitFrom[ProfitKey(KeyOf(row.Listed), row.Ticker, row.Listed)] = placedBy;
                 }
 
                 // An order whose plan placed no price never buys, so it waits on no list: it left on its own night.
-                if (PlanScreen.IsWaiting(row) && row.Order.PlacesNoPrice())
+                if (PlannedTrades.IsWaiting(row) && row.Order.PlacesNoPrice())
                 {
                     if (row.Listed >= since)
                     {
                         Add(left, KeyOf(row.Listed), new LeftOrderView(row.Ticker, row.Listed, false, row.Ticker + " not placed: " + PlanOrderWords.NotFilledOf(row.Order), RevisionAt(row.Listed)));
                     }
                 }
-                else if (PlanScreen.IsWaiting(row))
+                else if (PlannedTrades.IsWaiting(row))
                 {
-                    var exit = PlanScreen.ExitOf(row);
+                    var exit = PlannedTrades.ExitOf(row);
 
                     Add(waiting, KeyOf(row.Listed), new WaitingRowView(
                         row.Ticker,
                         company(row.Ticker),
                         row.Listed,
-                        PlanScreen.Price(row),
+                        PlannedTrades.Price(row),
                         close(row.Ticker, night),
-                        PlanScreen.Price(row) is null ? null : PlanScreen.StopOf(row),
+                        PlannedTrades.Price(row) is null ? null : PlannedTrades.StopOf(row),
                         exit?.First is { } first ? Statistic.ToPrice(first) : null,
                         exit?.FirstIsPart ?? false,
                         row.Order.Level is null ? null : last,
                         row.Order.Level is null ? null : ExchangeClosures.SessionsUntil(night, last),
                         row.Order.Level is null ? EquityBrief.Core.Cards.PaperAccount.Waiting : row.Order.PlacesNoPrice() ? PlanOrderWords.NotFilledOf(row.Order) : null,
-                        RevisionAt(row.Listed)) { TakeProfitFrom = PlanScreen.TakeProfitFromWords(row) });
+                        RevisionAt(row.Listed)) { TakeProfitFrom = PlannedTrades.TakeProfitFromWords(row) });
                 }
-                else if (row.FilledOn is { } filled && filled >= since && filled <= night && row.Fill is { } fill && PlanScreen.BuysAtAPrice(row))
+                else if (row.FilledOn is { } filled && filled >= since && filled <= night && row.Fill is { } fill && PlannedTrades.BuysAtAPrice(row))
                 {
-                    Add(left, KeyOf(row.Listed), new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlanScreen.Price(row)), RevisionAt(row.Listed)));
+                    Add(left, KeyOf(row.Listed), new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlannedTrades.Price(row)), RevisionAt(row.Listed)));
                 }
                 else if (row.NotFilled && last >= since && last <= night)
                 {
@@ -119,13 +119,13 @@ public static class RevisionScreen
         var since = recent.Length > 0 ? recent.Min() : night;
         var left = new List<LeftOrderView>();
 
-        foreach (var row in planned.Where(row => row.Live && PlanScreen.BuysAtAPrice(row)).GroupBy(row => (row.Family, row.Ticker, row.Listed)).Select(group => group.First()))
+        foreach (var row in planned.Where(row => row.Live && PlannedTrades.BuysAtAPrice(row)).GroupBy(row => (row.Family, row.Ticker, row.Listed)).Select(group => group.First()))
         {
-            var last = PlanScreen.LastDay(row.Listed, row.Order.Window);
+            var last = PlannedTrades.LastDay(row.Listed, row.Order.Window);
 
             if (row.FilledOn is { } filled && filled >= since && filled <= night && row.Fill is { } fill)
             {
-                left.Add(new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlanScreen.Price(row)), string.Empty) { Family = row.Family, Listed = row.Listed });
+                left.Add(new LeftOrderView(row.Ticker, filled, true, LeftOrderView.BoughtWords(row.Ticker, filled, fill, PlannedTrades.Price(row)), string.Empty) { Family = row.Family, Listed = row.Listed });
             }
             else if (row.NotFilled && last >= since && last <= night)
             {
@@ -141,18 +141,18 @@ public static class RevisionScreen
     public static IReadOnlyList<NameTradeView> NameTrades(string ticker, IReadOnlyList<PlannedTradeRow> planned, IReadOnlyList<CandidateRow> register, bool large, string indexName, DateOnly night, decimal? close)
     {
         var rows = new List<NameTradeView>();
-        using var reading = PaperScreen.ReadingNight(night);
+        using var reading = PaperBooks.ReadingNight(night);
 
         foreach (var row in planned.Where(one => one.Live && one.Ticker == ticker && one.Listed <= night && !one.NotFilled && (one.Fill is null || one.EndedOn is null)).GroupBy(one => (one.Family, one.Listed)).Select(group => group.First()))
         {
-            var lineage = RuleScreen.Registrations(row.Family, large, indexName, register).Where(one => EquityBrief.Core.Candidates.FamilyRecords.IsLive(one.Candidate)).ToArray();
-            var revision = PaperScreen.RevisionViews(lineage).LastOrDefault(one => one.From <= row.Listed);
+            var lineage = RuleRegister.Registrations(row.Family, large, indexName, register).Where(one => EquityBrief.Core.Candidates.FamilyRecords.IsLive(one.Candidate)).ToArray();
+            var revision = PaperBooks.RevisionViews(lineage).LastOrDefault(one => one.From <= row.Listed);
             var waiting = row.Fill is null;
-            var stop = PlanScreen.StopOf(row);
-            var take = PlanScreen.TakeProfitOf(row);
-            var price = waiting ? PlanScreen.Price(row) : row.Fill;
+            var stop = PlannedTrades.StopOf(row);
+            var take = PlannedTrades.TakeProfitOf(row);
+            var price = waiting ? PlannedTrades.Price(row) : row.Fill;
             int? left = waiting
-                ? ExchangeClosures.SessionsUntil(night, PlanScreen.LastDay(row.Listed, row.Order.Window))
+                ? ExchangeClosures.SessionsUntil(night, PlannedTrades.LastDay(row.Listed, row.Order.Window))
                 : row.FilledOn is { } bought && EquityBrief.Core.Cards.PaperAccount.HeldDays(bought, night) is { } held ? Math.Max(0, row.Cap - held) : null;
             string Away(decimal? to, string what) =>
                 close is { } now && to is { } at && now > 0m ? FormattableString.Invariant($"{Math.Abs(Statistic.FromRatio((at / now) - 1m)) * 100:0.0}% {(at >= now ? "above" : "below")} the last close, {what}") : string.Empty;
@@ -210,7 +210,7 @@ public static class RevisionScreen
     public static PlanRowsView PlanRows(string family, string index, CandidateRow? row)
     {
         var parameters = row is null ? new Dictionary<string, double>() : EquityBrief.Core.Candidates.CandidateEvaluator.Read(row.Parameters);
-        var chips = row is null ? [] : RuleScreen.ChipsOf(row);
+        var chips = row is null ? [] : RuleRegister.ChipsOf(row);
         EquityBrief.Core.Loop.PlanCombination? plan;
 
         try

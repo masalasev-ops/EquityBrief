@@ -581,7 +581,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("<option value=\"fundamentals\"", select, StringComparison.Ordinal);
 
         // The variant's tab and its row's name are its one change as a sentence.
-        var (_, tabs) = RuleScreen.Accounts("breakout", true, "S&P 500", await new ReadApi(store.DatabaseFile, EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates)).RegisteredCandidatesAsync(), new DateOnly(2026, 10, 2));
+        var (_, tabs) = RuleRegister.Accounts("breakout", true, "S&P 500", await new ReadApi(store.DatabaseFile, EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates)).RegisteredCandidatesAsync(), new DateOnly(2026, 10, 2));
         var tab = Assert.Single(tabs).Tab;
         var sentence = char.ToUpperInvariant(tab["V1 · ".Length]) + tab[("V1 · ".Length + 1)..];
 
@@ -635,7 +635,7 @@ public partial class ReadSurface
         var register = await new ReadApi(store.DatabaseFile, EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 3, 16, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates)).RegisteredCandidatesAsync();
 
         // Numbered and named as its card will number it once a night reads it: V2, after V1, what it changes its tab's words.
-        var (_, after) = RuleScreen.Accounts("breakout", true, "S&P 500", register, new DateOnly(2026, 10, 5));
+        var (_, after) = RuleRegister.Accounts("breakout", true, "S&P 500", register, new DateOnly(2026, 10, 5));
         var tab = after.Single(one => one.Row.Candidate == NeighbourBreakout).Tab;
 
         Assert.StartsWith("V2 · ", tab, StringComparison.Ordinal);
@@ -666,24 +666,24 @@ public partial class ReadSurface
         static DateTimeOffset At(int month, int day, int hour, int minute = 0) => new(2026, month, day, hour, minute, 0, TimeSpan.Zero);
 
         // A Thursday before the night's usual start: that evening's night reads it.
-        Assert.Equal(new DateOnly(2026, 10, 29), PaperScreen.FirstNight(At(10, 29, 14), starts));
+        Assert.Equal(new DateOnly(2026, 10, 29), PaperBooks.FirstNight(At(10, 29, 14), starts));
 
         // At the start's own second, or after it, the night has begun without it: Friday's.
-        Assert.Equal(new DateOnly(2026, 10, 30), PaperScreen.FirstNight(At(10, 29, 23), starts));
-        Assert.Equal(new DateOnly(2026, 10, 30), PaperScreen.FirstNight(At(10, 29, 23, 30), starts));
+        Assert.Equal(new DateOnly(2026, 10, 30), PaperBooks.FirstNight(At(10, 29, 23), starts));
+        Assert.Equal(new DateOnly(2026, 10, 30), PaperBooks.FirstNight(At(10, 29, 23, 30), starts));
 
         // A Friday after its night and a Saturday: Monday's.
-        Assert.Equal(new DateOnly(2026, 11, 2), PaperScreen.FirstNight(At(10, 30, 23, 30), starts));
-        Assert.Equal(new DateOnly(2026, 11, 2), PaperScreen.FirstNight(At(10, 31, 12), starts));
+        Assert.Equal(new DateOnly(2026, 11, 2), PaperBooks.FirstNight(At(10, 30, 23, 30), starts));
+        Assert.Equal(new DateOnly(2026, 11, 2), PaperBooks.FirstNight(At(10, 31, 12), starts));
 
         // The Wednesday before Thanksgiving after its night: the Friday after, the holiday between.
-        Assert.Equal(new DateOnly(2026, 11, 27), PaperScreen.FirstNight(At(11, 25, 23, 30), starts));
+        Assert.Equal(new DateOnly(2026, 11, 27), PaperBooks.FirstNight(At(11, 25, 23, 30), starts));
 
         // No usual start to read: the next trading day, whatever the hour.
-        Assert.Equal(new DateOnly(2026, 10, 30), PaperScreen.FirstNight(At(10, 29, 14), null));
+        Assert.Equal(new DateOnly(2026, 10, 30), PaperBooks.FirstNight(At(10, 29, 14), null));
 
         // Past the closure table's reach: none, and the line says the next night the exchange trades.
-        Assert.Null(PaperScreen.FirstNight(new DateTimeOffset(2030, 1, 7, 12, 0, 0, TimeSpan.Zero), starts));
+        Assert.Null(PaperBooks.FirstNight(new DateTimeOffset(2030, 1, 7, 12, 0, 0, TimeSpan.Zero), starts));
         Assert.Equal(
             "Registered 2030-01-07. Its first night is the next night the exchange trades.",
             MarkRenderer.ComingLine(new PaperComingView("breakout", "V2", null, "words", new DateOnly(2030, 1, 7), null)));

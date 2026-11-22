@@ -157,7 +157,7 @@ public partial class ReadSurface
 
         foreach (var family in families)
         {
-            var kind = RuleScreen.KindOf(CandidateEvaluators.Find(family[0].Evaluator)!)!.Value;
+            var kind = RuleRegister.KindOf(CandidateEvaluators.Find(family[0].Evaluator)!)!.Value;
             var live = RuleChips.Of(kind, family[0].Parameters);
 
             foreach (var registration in family.Skip(1))

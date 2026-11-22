@@ -69,14 +69,14 @@ public partial class ReadSurface
     public void AnAccountCountsFromItsVersionsFirstSessionAndTheSameTradesBeforeItStandApartUnderIt()
     {
         const string rule = "the live breakout rule at the order's words";
-        var standing = new EquityBrief.Api.Reading.CandidateRow(301, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 11, 3, 2, 0, 0, TimeSpan.Zero), EvaluatorVersion: "v");
-        var earlier = new EquityBrief.Api.Reading.CandidateRow(300, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 9, 24, 22, 0, 0, TimeSpan.Zero), "{\"volumeMultiple\": 2}", EvaluatorVersion: "u");
+        var standing = new CandidateRow(301, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 11, 3, 2, 0, 0, TimeSpan.Zero), EvaluatorVersion: "v");
+        var earlier = new CandidateRow(300, rule, "family-breakout", "registered", null, new DateTimeOffset(2026, 9, 24, 22, 0, 0, TimeSpan.Zero), "{\"volumeMultiple\": 2}", EvaluatorVersion: "u");
         var replay = new EquityBrief.Core.Candidates.FamilyReplayRow(rule, "v", new DateOnly(2026, 10, 2), true, "reproduced", new DateTimeOffset(2026, 11, 3, 3, 0, 0, TimeSpan.Zero));
 
         (PaperTrade, double?) Trade(string ticker, DateOnly listed) => (new PaperTrade(ticker, listed.AddDays(1), 100m, 90m, null, null, null, 1, Listed: listed), null);
 
-        var head = new EquityBrief.Api.Reading.PaperAccountSource("list-breakout", "breakout", PaperAccountView.Live, "Live", rule, null, false, [], null, rule);
-        var started = EquityBrief.Api.Reading.PaperScreen.Started(head, [Trade("OLD", new DateOnly(2026, 9, 30)), Trade("LH", new DateOnly(2026, 10, 29)), Trade("GDDY", new DateOnly(2026, 11, 4))], standing, [replay], [earlier, standing]);
+        var head = new PaperAccountSource("list-breakout", "breakout", PaperAccountView.Live, "Live", rule, null, false, [], null, rule);
+        var started = PaperBooks.Started(head, [Trade("OLD", new DateOnly(2026, 9, 30)), Trade("LH", new DateOnly(2026, 10, 29)), Trade("GDDY", new DateOnly(2026, 11, 4))], standing, [replay], [earlier, standing]);
 
         // It counts from 3 Nov, the session its version registered on; LH, listed on 29 Oct inside the replayed span,
         // stands apart as the same trades since 2 Oct; OLD, listed before the replay's start, is an earlier version's.
@@ -113,12 +113,12 @@ public partial class ReadSurface
     {
         var day = new DateOnly(2026, 11, 3);
         (PaperTrade, double?)[] picks = [.. Enumerable.Range(1, 11).Select(at => ((PaperTrade, double?))(new PaperTrade("P" + at.ToString("00", System.Globalization.CultureInfo.InvariantCulture), day, 100m, 99.5m, null, null, 0m, at, Listed: day.AddDays(-1)), null))];
-        var head = new EquityBrief.Api.Reading.PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, picks, day);
+        var head = new PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, picks, day);
         var settings = new AccountSettings(100_000m, 1m, 0.2m);
 
         // The risk would buy 2,000 shares; a tenth of $100,000 at 100 is 100. Ten positions spend the account and the
         // eleventh is skipped under the cash.
-        var view = Assert.Single(EquityBrief.Api.Reading.PaperScreen.Views([head], [], [], settings, [day], day, (_, _) => 100m, _ => null));
+        var view = Assert.Single(PaperBooks.Views([head], [], [], settings, [day], day, (_, _) => 100m, _ => null));
 
         Assert.Equal((10, 1), (view.Walk!.Taken, view.Walk.Skipped));
         Assert.All(view.Walk.Trades.Where(one => one.Skipped is null), one => Assert.Equal(100, one.Shares));
@@ -267,10 +267,10 @@ public partial class ReadSurface
 
         var dd = Trade("DD", new DateOnly(2026, 11, 4));
         var gww = Trade("GWW", night);
-        var drift = new EquityBrief.Api.Reading.PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, [(dd, null), (gww, null)], new DateOnly(2026, 11, 3), Unfilled: [("DD", night, PaperAccount.Waiting), ("XYZ", night, PaperAccount.Waiting)]);
+        var drift = new PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, [(dd, null), (gww, null)], new DateOnly(2026, 11, 3), Unfilled: [("DD", night, PaperAccount.Waiting), ("XYZ", night, PaperAccount.Waiting)]);
         var walk = new PaperWalk([(night, 100_000m)], [new PaperTaken(dd, 10, null), new PaperTaken(gww, 0, PaperAccount.UnderTheCash)], 1, 1, 0, 0.0, 0.0, null, null, night, [(night, 0.0)]);
         var view = new PaperAccountView("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", "within luck", null, "risks", [], walk, 2, 0, null, new DateOnly(2026, 11, 3));
-        var built = EquityBrief.Api.Reading.PaperScreen.Page([drift], [view], night, [night], (_, _) => 100m, new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal), _ => null, null, "drift", "SPY", _ => null);
+        var built = EquityBrief.Api.Reading.PaperScreen.Page([drift], [view], night, [night], (_, _) => 100m, new Dictionary<string, PaperStockRow>(StringComparer.Ordinal), _ => null, null, "drift", "SPY", _ => null);
         var page = PaperPageOf(built);
         var line = Regex.Match(page, "<p class=\"paper-unbought\"[^>]*data-family=\"drift\">.*?</p>").Value;
 
@@ -295,9 +295,9 @@ public partial class ReadSurface
         PaperTrade Holding(string ticker) => new(ticker, held, 170.94m, null, null, null, 0m, 1, 22, Listed: new DateOnly(2026, 11, 2));
         PaperWalk Walked(params PaperTaken[] trades) => new([(night, 100_000m)], trades, trades.Length, 0, 0, 0.0, 0.0, null, null, night, [(night, 0.0)]);
 
-        var heavyweights = new EquityBrief.Api.Reading.PaperAccountSource("list-heavyweight", "heavyweight", PaperAccountView.Live, "Live", "the live heavyweights rule", null, true, [(Holding("ABNB"), null)], new DateOnly(2026, 10, 21), Unfilled: [("ABNB", night, PaperAccount.Waiting)]);
-        var drift = new EquityBrief.Api.Reading.PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, [], new DateOnly(2026, 11, 3), Unfilled: [("ABNB", night, PaperAccount.Waiting), ("CPAY", night, PaperAccount.Waiting)]);
-        PaperAccountView View(EquityBrief.Api.Reading.PaperAccountSource source, PaperWalk walk) =>
+        var heavyweights = new PaperAccountSource("list-heavyweight", "heavyweight", PaperAccountView.Live, "Live", "the live heavyweights rule", null, true, [(Holding("ABNB"), null)], new DateOnly(2026, 10, 21), Unfilled: [("ABNB", night, PaperAccount.Waiting)]);
+        var drift = new PaperAccountSource("list-drift", "drift", PaperAccountView.Live, "Live", "the live drift rule", null, false, [], new DateOnly(2026, 11, 3), Unfilled: [("ABNB", night, PaperAccount.Waiting), ("CPAY", night, PaperAccount.Waiting)]);
+        PaperAccountView View(PaperAccountSource source, PaperWalk walk) =>
             new(source.Key, source.Family, PaperAccountView.Live, "Live", source.Words, "within luck", null, "risks", [], walk, source.Trades.Count, 0, null, source.Since);
 
         var built = EquityBrief.Api.Reading.PaperScreen.Page(
@@ -306,7 +306,7 @@ public partial class ReadSurface
             night,
             [night],
             (_, _) => 190m,
-            new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal),
+            new Dictionary<string, PaperStockRow>(StringComparer.Ordinal),
             _ => null,
             null,
             "drift",
@@ -335,26 +335,26 @@ public partial class ReadSurface
 
         // The live S&P 500 Fundamentals rule holds at 7 in 9 for at most 126 sessions: FTNT at 8 of 9 still qualifies, a
         // holding at 6 of 9 does not; at 5 of 7 it is under 7 in every 9 too, 45 of 63.
-        Assert.Equal("Sells when a filing drops it below 7 in every 9 of the checks that apply, or after 126 trading days", EquityBrief.Api.Reading.PaperScreen.FundamentalsSells(7, 126));
-        Assert.Equal("Still qualifies: 8 of 9 apply, at least 7 in every 9", EquityBrief.Api.Reading.PaperScreen.FundamentalsTonight(8, 9, 7));
-        Assert.Equal("No longer qualifies: 6 of 9 apply, under 7 in every 9", EquityBrief.Api.Reading.PaperScreen.FundamentalsTonight(6, 9, 7));
-        Assert.Equal("No longer qualifies: 5 of 7 apply, under 7 in every 9", EquityBrief.Api.Reading.PaperScreen.FundamentalsTonight(5, 7, 7));
-        Assert.Equal("Sold at the reshuffle if it no longer qualifies, next on 1 Dec", EquityBrief.Api.Reading.PaperScreen.QualitySells(new DateOnly(2026, 12, 1)));
-        Assert.Equal("Sold at the reshuffle if it no longer leads its sector, next on 1 Dec", EquityBrief.Api.Reading.PaperScreen.HeavyweightSells(false, new DateOnly(2026, 12, 1)));
+        Assert.Equal("Sells when a filing drops it below 7 in every 9 of the checks that apply, or after 126 trading days", PaperBooks.FundamentalsSells(7, 126));
+        Assert.Equal("Still qualifies: 8 of 9 apply, at least 7 in every 9", PaperBooks.FundamentalsTonight(8, 9, 7));
+        Assert.Equal("No longer qualifies: 6 of 9 apply, under 7 in every 9", PaperBooks.FundamentalsTonight(6, 9, 7));
+        Assert.Equal("No longer qualifies: 5 of 7 apply, under 7 in every 9", PaperBooks.FundamentalsTonight(5, 7, 7));
+        Assert.Equal("Sold at the reshuffle if it no longer qualifies, next on 1 Dec", PaperBooks.QualitySells(new DateOnly(2026, 12, 1)));
+        Assert.Equal("Sold at the reshuffle if it no longer leads its sector, next on 1 Dec", PaperBooks.HeavyweightSells(false, new DateOnly(2026, 12, 1)));
 
-        EquityBrief.Api.Reading.PaperAccountSource Book(string family, string ticker) =>
+        PaperAccountSource Book(string family, string ticker) =>
             new("list-" + family, family, PaperAccountView.Live, "Live", "the live rule", null, true, [(Holding(ticker), null)], new DateOnly(2026, 11, 2));
-        PaperAccountView View(EquityBrief.Api.Reading.PaperAccountSource source) =>
+        PaperAccountView View(PaperAccountSource source) =>
             new(source.Key, source.Family, PaperAccountView.Live, "Live", source.Words, "within luck", null, MarkRenderer.LoopPoints, [], new PaperWalk([(night, 100_000m)], [new PaperTaken(source.Trades[0].Trade, 45, null)], 1, 0, 0, 0.0, 0.0, null, null, night, [(night, 0.0)]), 1, 0, null, source.Since);
 
         var improving = Book("improving", "FTNT");
         var quality = Book("quality", "MGM");
         var books = new Dictionary<string, EquityBrief.Api.Reading.PaperBookLine>(StringComparer.Ordinal)
         {
-            ["improving"] = new(EquityBrief.Api.Reading.PaperScreen.FundamentalsSells(7, 126), new Dictionary<string, string>(StringComparer.Ordinal) { ["FTNT"] = EquityBrief.Api.Reading.PaperScreen.FundamentalsTonight(8, 9, 7) }),
-            ["quality"] = new(EquityBrief.Api.Reading.PaperScreen.QualitySells(new DateOnly(2026, 12, 1)), new Dictionary<string, string>(StringComparer.Ordinal) { ["MGM"] = "Still qualifies." }),
+            ["improving"] = new(PaperBooks.FundamentalsSells(7, 126), new Dictionary<string, string>(StringComparer.Ordinal) { ["FTNT"] = PaperBooks.FundamentalsTonight(8, 9, 7) }),
+            ["quality"] = new(PaperBooks.QualitySells(new DateOnly(2026, 12, 1)), new Dictionary<string, string>(StringComparer.Ordinal) { ["MGM"] = "Still qualifies." }),
         };
-        var built = EquityBrief.Api.Reading.PaperScreen.Page([improving, quality], [View(improving), View(quality)], night, [night], (_, _) => 110m, new Dictionary<string, EquityBrief.Api.Reading.PaperStockRow>(StringComparer.Ordinal), _ => null, null, "improving", "SPY", _ => null, null, books);
+        var built = EquityBrief.Api.Reading.PaperScreen.Page([improving, quality], [View(improving), View(quality)], night, [night], (_, _) => 110m, new Dictionary<string, PaperStockRow>(StringComparer.Ordinal), _ => null, null, "improving", "SPY", _ => null, null, books);
         var page = PaperPageOf(built);
 
         Assert.Contains("<td class=\"pb-sells\" colspan=\"2\" data-sells>Sells when a filing drops it below 7 in every 9 of the checks that apply, or after 126 trading days</td>", page, StringComparison.Ordinal);

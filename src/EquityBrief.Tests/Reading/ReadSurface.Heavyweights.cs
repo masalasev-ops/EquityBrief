@@ -366,7 +366,7 @@ public partial class ReadSurface
     [Fact]
     public void TheRulesSentenceNamesItsRebalanceSessionAndEachSaleAtEveryExitAndPeriod()
     {
-        static string Words(HeavyweightSettings settings) => EquityBrief.Api.Reading.RuleWords.Heavyweights(settings);
+        static string Words(HeavyweightSettings settings) => RuleWords.Heavyweights(settings);
 
         // A month's rebalance opens the sentence, and each exit names the session it sells on.
         Assert.StartsWith(

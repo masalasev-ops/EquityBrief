@@ -1,40 +1,11 @@
 using System.Globalization;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Loop;
-using EquityBrief.Data;
+using EquityBrief.Core.Paper;
 
-namespace EquityBrief.Api.Reading;
+namespace EquityBrief.Data;
 
-// From the 23.10 correction of 2026-11-13 a live rule's trade kept under a plan that buys at a price, as of a night: the
-// family and stock, the night that listed it and its place, the listing close and the rule's own stop, target, trail and
-// limit, the plan's order, and what became of it by the night: filled at its price on a session, ended unfilled at its
-// window's last session, or neither, waiting; and once filled, its end, result and sale where they came by the night.
-// see: A live rule's trade under a plan is drawn on every page as its plan made it, and its waiting orders are cards of their own nearest their buy price first
-public sealed record PlannedTradeRow(
-    string Owner,
-    string Index,
-    string Family,
-    string Ticker,
-    DateOnly Listed,
-    int Place,
-    decimal Entry,
-    decimal? Stop,
-    decimal? Target,
-    decimal? Trail,
-    int Cap,
-    PlanOrder Order,
-    DateOnly? FilledOn,
-    decimal? Fill,
-    bool NotFilled,
-    DateOnly? EndedOn,
-    double? Result,
-    decimal? Sale)
-{
-    // Whether the rule keeping it is its family's live rule on its index, whose trades every page draws.
-    public bool Live => Owner.StartsWith(EquityBrief.Core.Candidates.FamilyRecords.LivePrefix, StringComparison.Ordinal);
-}
-
-public sealed partial class ReadApi
+public sealed partial class PaperReads
 {
     // The S&P 500's registered rules' trades kept under a plan, their fill and sale as the fill step stored them, and from
     // 23.10's second part the swing filter's rules' the same; the S&P 400's and 600's the same; and every index's dip rules',

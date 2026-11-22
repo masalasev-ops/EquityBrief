@@ -1,9 +1,8 @@
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Loop;
-using EquityBrief.Web.Marks;
 
-namespace EquityBrief.Api.Reading;
+namespace EquityBrief.Core.Paper;
 
 // A rule's settings as plain sentences: one template a setting, matched on the chip's own words and filled with the values
 // they state, and one for a setting the running revision states and a variant leaves out. A variant is named by the sentence

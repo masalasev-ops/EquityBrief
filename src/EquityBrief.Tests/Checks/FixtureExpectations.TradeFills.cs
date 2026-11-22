@@ -223,13 +223,13 @@ public partial class FixtureExpectations
 
         // An S&P 400 list's two trades: the first listed on the 1st, its stock holding no next session, and the second
         // listed on the 5th, filled at 101 at the open of the 6th, its plan's close 100 and its stop 95.
-        EquityBrief.Api.Reading.PaperRow[] rows =
+        PaperRow[] rows =
         [
             new("list pullback", "pullback", "AAA", first, 1, 100, 95, null, null, false, null, null, Unfilled: TradeFills.NoNextSession),
             new("list pullback", "pullback", "BBB", new DateOnly(2026, 10, 5), 1, 100, 95, new DateOnly(2026, 10, 7), 1.6, false, null, null, 101, new DateOnly(2026, 10, 6), 101),
         ];
 
-        var account = EquityBrief.Api.Reading.PaperScreen.Accounts(false, "S&P 400", night, [], null, rows, [], []).Single(one => one.Family == "pullback" && one.Standing == EquityBrief.Web.Marks.PaperAccountView.Provisional);
+        var account = PaperBooks.Accounts(false, "S&P 400", night, [], null, rows, [], []).Single(one => one.Family == "pullback" && one.Standing == PaperAccountView.Provisional);
 
         // The start is the first night the list kept a trade, as it was before entries moved to the open.
         Assert.Equal(first, account.Since);
@@ -280,7 +280,9 @@ public partial class FixtureExpectations
         var files = new[]
         {
             Path.Combine(Repository.Root, "src", "EquityBrief.Api", "Reading", "ReadApi.cs"),
-            Path.Combine(Repository.Root, "src", "EquityBrief.Api", "Reading", "ReadApi.Paper.cs"),
+            Path.Combine(Repository.Root, "src", "EquityBrief.Data", "PaperReads.cs"),
+            Path.Combine(Repository.Root, "src", "EquityBrief.Data", "PaperReads.Picks.cs"),
+            Path.Combine(Repository.Root, "src", "EquityBrief.Data", "PaperReads.Register.cs"),
             Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Loop", "LiveAlarmReader.cs"),
         };
 

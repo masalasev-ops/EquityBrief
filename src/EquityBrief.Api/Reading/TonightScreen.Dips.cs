@@ -40,7 +40,7 @@ public static partial class TonightScreen
     // The rule the dip's card is drawn by on a night, as its night's settings name it: the provisional rule before a
     // freeze and from 22.3 the live rule after one.
     // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
-    public const string ProvisionalDip = "provisional";
+    public const string ProvisionalDip = PaperBooks.Provisional;
 
     public static string RuleOf(DipNightRow night)
     {

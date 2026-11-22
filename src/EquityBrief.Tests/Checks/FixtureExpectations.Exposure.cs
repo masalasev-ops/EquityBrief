@@ -115,7 +115,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(
             [true, false, true, false, false],
-            new DateOnly[] { new(2026, 11, 2), new(2026, 11, 3), new(2026, 11, 4), new(2026, 11, 5), new(2026, 11, 6) }.Select(night => PaperScreen.HalvedOn(exposure, nights, night)));
+            new DateOnly[] { new(2026, 11, 2), new(2026, 11, 3), new(2026, 11, 4), new(2026, 11, 5), new(2026, 11, 6) }.Select(night => PaperBooks.HalvedOn(exposure, nights, night)));
 
         // The account of a rule standing at the exposure has its trades marked, by the rule its words name; another rule's
         // account is left whole; and the trade log carries the mark.
@@ -126,9 +126,9 @@ public partial class FixtureExpectations
             new(2, "the S&P 400 drift rule at its provisional setting", "drift-400", "registered", null, DateTimeOffset.UnixEpoch, CandidateEvaluator.Write(CheckedAt(DriftRule.Name, "MID", 0, 0.40))),
         ];
         PaperAccountSource Source(string words) => new("key-" + words.Length, DriftRule.Name, "variant", "V", words, words, false, [(new PaperTrade("AAA", new(2026, 11, 3), 20m, 18m, null, null, null, 1, Listed: new DateOnly(2026, 11, 2)), null)], null);
-        var marked = PaperScreen.Halved([Source(Graded), Source(register[1].Candidate)], register, nights);
+        var marked = PaperBooks.Halved([Source(Graded), Source(register[1].Candidate)], register, nights);
 
-        Assert.Equal([new DateOnly(2026, 11, 2)], PaperScreen.ExposedNights([Source(Graded), Source(register[1].Candidate)], register));
+        Assert.Equal([new DateOnly(2026, 11, 2)], PaperBooks.ExposedNights([Source(Graded), Source(register[1].Candidate)], register));
         Assert.Equal([true, false], marked.Select(account => account.Trades.Single().Trade.Halved));
         Assert.True(PaperScreen.Log(marked[0], null, new DateOnly(2026, 11, 6), (_, _) => null).Single().Halved);
     }
