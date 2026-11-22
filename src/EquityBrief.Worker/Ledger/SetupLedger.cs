@@ -3217,6 +3217,13 @@ public sealed partial class SetupLedger : IComponent
             read += await command.ExecuteNonQueryAsync(cancellation);
         }
 
+        // The rows just rewritten are copied again, so every member's readings on every session holds the night's as they stand.
+        foreach (var index in memberRows.Select(row => row.Index).Distinct(StringComparer.Ordinal))
+        {
+            await ExecuteAsync(connection, transaction, CopyNightReadings, [("$index", index), ("$from", Stamp(session)), ("$through", Stamp(session))], cancellation);
+            await CountSessionYearsAsync(connection, transaction, index, session.Year, session.Year, cancellation);
+        }
+
         await transaction.CommitAsync(cancellation);
 
         return read;

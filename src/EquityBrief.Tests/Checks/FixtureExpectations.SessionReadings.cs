@@ -125,6 +125,36 @@ public partial class FixtureExpectations
         Assert.Equal([SetupLedger.Ok, SetupLedger.NotComputed], Query(store, $"SELECT outcome FROM run_log WHERE stage = '{SetupLedger.SessionCheckStage}' ORDER BY rowid;"));
     }
 
+    // The fixture's replayed night copies its own rows into every member's readings on every session unchanged, and each
+    // index's year counts them, counted here from the rows themselves.
+    [Fact]
+    public async Task TheFixturesNightCopiesItsOwnReadingsIntoEveryMembersReadingsOnEverySessionAndCountsTheirYear()
+    {
+        var expected = Expected("every-session");
+
+        Assert.Equal("derived", expected.GetProperty("derivation").GetString());
+        Assert.Equal(["session_reading", "session_reading_year"], expected.GetProperty("tables").EnumerateArray().Select(table => table.GetString()!));
+        Assert.Equal(SetupLedger.NightCopyDays, expected.GetProperty("copiedDays").GetInt32());
+        Assert.Equal(SetupLedger.NightSource, expected.GetProperty("source").GetString());
+
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        var nights = Query(store, "SELECT index_code || '|' || session_date || '|' || ticker || '|' || readings || '|' || pin FROM ledger_reading ORDER BY 1;");
+
+        Assert.NotEmpty(nights);
+        Assert.Equal(nights, Query(store, $"SELECT index_code || '|' || session_date || '|' || ticker || '|' || readings || '|' || pin FROM session_reading WHERE source = '{SetupLedger.NightSource}' ORDER BY 1;"));
+        Assert.Equal(0, Scalar(store, $"SELECT COUNT(*) FROM session_reading WHERE source <> '{SetupLedger.NightSource}';"));
+
+        var counted = nights
+            .Select(row => row.Split('|'))
+            .GroupBy(row => (Index: row[0], Year: row[1][..4]))
+            .OrderBy(group => group.Key.Index, StringComparer.Ordinal)
+            .ThenBy(group => group.Key.Year, StringComparer.Ordinal)
+            .Select(group => $"{group.Key.Index}|{group.Key.Year}|{group.Count()}|{group.Select(row => row[1]).Distinct().Count()}|{group.Select(row => row[1]).Distinct().Count()}|{group.Min(row => row[1])}|{group.Max(row => row[1])}");
+
+        Assert.Equal(counted, Query(store, "SELECT index_code || '|' || year || '|' || rows || '|' || sessions || '|' || night_sessions || '|' || first_session || '|' || last_session FROM session_reading_year ORDER BY index_code, year;"));
+    }
+
     static string SessionBar(string ticker, DateOnly day, decimal close) =>
         FormattableString.Invariant($"('{ticker}', '{SessionDay(day)}', '{close}', '{close + 0.05m}', '{close - 0.05m}', '{close}', '{close}', 1000000, 'r')");
 

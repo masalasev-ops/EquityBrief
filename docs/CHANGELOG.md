@@ -7,6 +7,14 @@ Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RU
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
+### 2026-11-21 - docs/SCHEMA.md - the night's rows copied once more as their insider readings are read again, at 24.19
+Decision: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
+Was:
+> `session_reading`: "... their insider, business and release readings having been rewritten in place since, so a copied row is the night's as it stands."
+Now:
+> "... their insider, business and release readings having been rewritten in place since, and copies the night's rows once more in the transaction that reads their insider readings again, so a copied row is the night's as it stands."
+Why: the fixture's replayed night showed the night's copied rows a night behind `ledger_reading`, its insider readings read again after the ledger's step had copied them; the step reading them again now copies the night's rows in its own transaction.
+
 ### 2026-11-21 - CLAUDE.md, docs/ARCHITECTURE.html, docs/SCHEMA.md and docs/RUNBOOK.md - every member's readings on every session, at 24.19
 Decision: The readings for every stock on every session are built once before the reviewer, the picker's comparison reading the same plan on every stock until then
 Was:

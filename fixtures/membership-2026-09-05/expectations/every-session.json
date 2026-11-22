@@ -1,0 +1,8 @@
+{
+  "stage": "every-session",
+  "derivation": "derived",
+  "derivedFrom": "the ledger's night step and the table's form, not a run: each night copies its own ledger_reading rows and those of the 14 days before it into session_reading unchanged under the source night, so the replayed night's table holds exactly the rows ledger_reading holds over those days, and each index's year in session_reading_year counts those rows, their sessions and the sessions ledger_reading holds; the suite reads both tables back and counts each year from the rows by its own arithmetic",
+  "tables": ["session_reading", "session_reading_year"],
+  "copiedDays": 14,
+  "source": "night"
+}
